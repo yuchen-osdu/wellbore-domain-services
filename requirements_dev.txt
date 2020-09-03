@@ -1,0 +1,6 @@
+pytest
+pytest-asyncio
+pytest-cov
+pytest-mock
+mockito
+requests # used by starlette.TestClient for testing
