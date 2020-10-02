@@ -86,7 +86,7 @@ class ConfigurationContainer:
     default_data_tenant_project_id: EnvVar = EnvVar(
         key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
         description='Data tenant ID',
-        default=None)
+        default='UNDEFINED')
 
     default_data_tenant_credentials: EnvVar = EnvVar(
         key='OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS',

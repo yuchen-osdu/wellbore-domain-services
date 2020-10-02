@@ -11,14 +11,10 @@ structlog
 python-rapidjson
 python-multipart
 jsonpath-ng # jsonpath-rw maintenance is it bit abandoned
+httpx>=0.12.1
+typing-extensions>=3.7.4.2
+pydantic>=1.5
 
 opencensus
 opencensus-ext-stackdriver
 opencensus-ext-ocagent
-
-log-recognition-lib>=0.0.3
-osdu-data-ecosystem-storage>=0.3.1, <0.4
-osdu-data-ecosystem-entitlements>=0.3.1, <0.4
-osdu-data-ecosystem-search>=0.3.1, <0.4
-osdu-core-lib-python-gcp>=0.2.0, <0.3
-osdu-core-lib-python>=0.3.0, <0.4
