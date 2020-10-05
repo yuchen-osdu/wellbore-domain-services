@@ -14,7 +14,6 @@ jsonpath-ng # jsonpath-rw maintenance is it bit abandoned
 httpx>=0.12.1
 typing-extensions>=3.7.4.2
 pydantic>=1.5
-
 opencensus
 opencensus-ext-stackdriver
 opencensus-ext-ocagent
