@@ -6,6 +6,7 @@ include:
     file: "standard-setup.yml"
 
   - local: 'python.yml'
+  - local: 'fossa-python.yml'
 
 # --------------------------------------------------------------------------------
 
