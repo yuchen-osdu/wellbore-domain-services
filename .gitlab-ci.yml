@@ -1,30 +1,16 @@
-stages:
-  - pytest
-  - build
-  - test
+variables:
+  PIP_REQUIREMENTS: "requirements.txt requirements_opengroup.txt requirements_dev.txt"
 
-build:
-  stage: pytest
-  image: python:3.7-slim-buster
-  script:
-    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
-    - apt update
-    - apt install -y --no-install-recommends git
-    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
-    - pip3 install -r requirements.txt
-    - pip3 install -r requirements_opengroup.txt
-    - pip3 install -r requirements_dev.txt
-    - echo ---- ---- ---- UNIT TESTS ---- ---- ----
-    - pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=xml:coverage.xml --cov-report=term ./tests/unit
-  coverage: '/^(?i)(TOTAL).*\s+(\d+\%)$/'
-  artifacts:
-    when: always
-    reports:
-      junit: unit_tests_report.xml
-      cobertura: coverage.xml
+include:
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "standard-setup.yml"
+
+  - local: 'python.yml'
+
+# --------------------------------------------------------------------------------
 
 deploy:
-  stage: build
+  stage: deploy
   image: docker:18.09.7-dind
   variables:
       IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
@@ -56,8 +42,3 @@ deploy:
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
-#Scanning for vulnerabilities
-include:
-  - template: Container-Scanning.gitlab-ci.yml
-  - template: Dependency-Scanning.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
