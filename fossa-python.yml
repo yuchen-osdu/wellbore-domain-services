@@ -1,7 +1,7 @@
 
 fossa-analyze:
   extends: .python
-  image: $CI_REGISTRY/divido/fossa-cli-utilities/fossa-cli-utilities:v3.1
+  image: $CI_REGISTRY/divido/fossa-cli-utilities/fossa-cli-utilities:v4.0
   stage: scan
   needs: ['compile-and-unit-test']
   tags: ['osdu-medium']
