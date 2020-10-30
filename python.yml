@@ -13,6 +13,7 @@
     # Establish a virtual environment for the packages, which is cached between runs
     - python3 -m venv venv
     - source venv/bin/activate
+    - pip3 install --upgrade pip
     - pip3 install wheel
 
     # Install all the requirements
