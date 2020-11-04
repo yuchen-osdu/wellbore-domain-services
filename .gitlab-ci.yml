@@ -11,16 +11,11 @@ include:
 # --------------------------------------------------------------------------------
 
 deploy:
-  stage: deploy
-  image: docker:18.09.7-dind
+  stage: containerize
+  image: docker:19.03
+  tags: ['osdu-medium']
   variables:
       IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
-      DOCKER_DRIVER: overlay2
-      DOCKER_TLS_CERTDIR: ""
-  services:
-    - name: docker:18.09.7-dind
-      entrypoint: ["env", "-u", "DOCKER_TLS_CERTDIR"]
-      command: ["dockerd-entrypoint.sh"]
 
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
