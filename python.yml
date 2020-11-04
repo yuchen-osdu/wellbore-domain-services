@@ -4,6 +4,7 @@
   tags: ['osdu-medium']
 
   cache:
+    key: $CI_JOB_IMAGE
     paths:
       - venv
 
