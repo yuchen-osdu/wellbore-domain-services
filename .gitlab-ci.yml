@@ -14,6 +14,10 @@ include:
     ref: "python-support"
     file: "scanners/fossa-python.yml"
 
+  - project: "osdu/platform/ci-cd-pipelines"
+    ref: "python-support"
+    file: "scanners/gitlab-ultimate.yml"
+
 # --------------------------------------------------------------------------------
 
 deploy:
