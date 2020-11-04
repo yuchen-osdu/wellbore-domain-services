@@ -21,6 +21,9 @@ include:
 # --------------------------------------------------------------------------------
 
 deploy:
+  extends:
+    - .skipForTriggeringMergeRequests
+
   stage: containerize
   image: docker:19.03
   tags: ['osdu-medium']
