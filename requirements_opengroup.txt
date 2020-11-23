@@ -1,0 +1,11 @@
+git+https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-core/wellbore-client-storage.git@slb-code-push#egg=osdu-data-ecosystem-storage
+git+https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-core/wellbore-client-entitlements.git@slb-code-push#egg=osdu-data-ecosystem-entitlements
+git+https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-core/wellbore-client-search.git@slb-code-push#egg=osdu-data-ecosystem-search
+git+https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-cloud/wellbore-azure-lib.git@slb-code-push#egg=osdu-core-lib-python-azure
+git+https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-cloud/wellbore-gcp-lib.git@slb-code-push#egg=osdu-core-lib-python-gcp
+git+https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-core/wellbore-core-lib.git@slb-code-push#egg=osdu-core-lib-python
+git+https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-core/wellbore-log-recognition.git@slb-code-push#egg=log-recognition-lib
+
+
+
+

@@ -1,0 +1,49 @@
+variables:
+  PIP_REQUIREMENTS: "requirements.txt requirements_opengroup.txt requirements_dev.txt"
+
+include:
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "standard-setup.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "build/python.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/fossa-python.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/gitlab-ultimate.yml"
+
+# --------------------------------------------------------------------------------
+
+deploy:
+  extends:
+    - .skipForTriggeringMergeRequests
+
+  stage: containerize
+  image: docker:19.03
+  tags: ['osdu-medium']
+  variables:
+      IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+
+  script:
+    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
+    - apk update
+    - apk add git
+    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
+    - commit_id=$(git log -n 1 --pretty="%h")
+    - echo ---- ---- TAG NAME
+    - tag_name="_gitlab_$commit_id"
+    - echo $tag_name
+    - echo ---- ---- DATE
+    - current_utc_date=`date --utc`
+    - echo $current_utc_date
+    - echo ---- ---- COMMIT BRANCH
+    - commit_branch=$commit_id
+    - echo $commit_branch
+    - echo ---- ---- BUILD IMAGE
+    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo ---- ---- PUSH IMAGE
+    - docker push $IMAGE_TAG
+    - docker push $CI_REGISTRY_IMAGE:latest

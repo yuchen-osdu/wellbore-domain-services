@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE
+.idea/
+
+# Distribution / packaging
+.Python
+develop-eggs/
+dist/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+python-packages
+
+
+# Unit test / coverage reports
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+venv*/
+ENV/
+env.bak/
+venv.bak/
+.envs/
+secrets/
+
+.DS_Store
+deploy/.DS_Store
