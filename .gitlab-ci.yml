@@ -3,19 +3,15 @@ variables:
 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "python-support"
     file: "standard-setup.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "python-support"
     file: "build/python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "python-support"
     file: "scanners/fossa-python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "python-support"
     file: "scanners/gitlab-ultimate.yml"
 
 # --------------------------------------------------------------------------------
