@@ -1,6 +1,45 @@
 from abc import ABC, abstractmethod
-from typing import Type, Any, Optional
+from typing import Type, Any, Callable
 import asyncio
+
+
+class WithLifeTime:
+    """
+    This class gathers lifetime definitions. The goal is to encapsulate lifetime management. Each definition implements
+    `make` method that takes as input a callable that constructs the object and returns a callable
+     that provides an object with its lifetime managed somehow.
+    """
+    class Base(ABC):
+        """ Base lifetime class """
+        @abstractmethod
+        def make(self, builder_fn) -> Callable:
+            """
+            :param builder_fn: input factory function/callable that builds an object.
+            :return: returns a callable that returns an object
+            """
+            raise NotImplemented()
+
+    class Transient(Base):
+        """ Transient lifetime: a new object is created each time """
+        def make(self, builder_fn) -> Callable:
+            return builder_fn
+
+    class Singleton(Base):
+        """
+        Singleton lifetime: only one instance is constructed, build at the first call then always provides this instance
+        """
+        def __init__(self):
+            self._builder_fn = None
+            self._instance = None
+
+        def make(self, builder_fn) -> Callable:
+            self._builder_fn = builder_fn
+            return self   # return self, meaning the
+
+        async def __call__(self, *args, **kwargs) -> Any:
+            if self._instance is None:
+                self._instance = await self._builder_fn(*args, **kwargs)
+            return self._instance
 
 
 class AppInjector(ABC):
@@ -12,9 +51,16 @@ class AppInjector(ABC):
     def __init__(self):
         self._factory_dict = {}
 
-    def register(self, interface: Type, factory_coroutine):
+    def register(self, interface: Type, factory_coroutine, lifetime: WithLifeTime.Base = WithLifeTime.Transient()):
+        """
+        :param interface: with interface to register
+        :param factory_coroutine: async builder callable
+        :param lifetime: specific lifetime. By default it use transient lifetime which mean the build function is called
+        everytime. Use WithLifeTime.Singleton to use a single instance instead
+        :return:
+        """
         assert asyncio.iscoroutinefunction(factory_coroutine), 'only coroutine is expected'
-        self._factory_dict[self._key_from_type(interface)] = factory_coroutine
+        self._factory_dict[self._key_from_type(interface)] = lifetime.make(factory_coroutine)
 
     async def get(self, interface: Type, *args, **kwargs) -> Any:
         """

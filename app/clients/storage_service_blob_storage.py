@@ -1,8 +1,12 @@
 from asyncio import iscoroutinefunction, gather
 import uuid
-
+from fastapi import FastAPI, HTTPException
+from osdu.core.api.storage.tenant import Tenant
+from starlette import status
 from odes_storage.models import *
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+
+from app.model import model_utils
 
 
 async def no_check_appkey_token(appkey, token):
@@ -16,6 +20,12 @@ class StorageRecordServiceBlobStorage:
     This is not meant to be used in production but for various testing and debugging purposes. Use injectors to override
     the osdu impl to use this one instead
     """
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
 
     def __init__(self,
                  blob_storage: BlobStorageBase,
@@ -55,17 +65,18 @@ class StorageRecordServiceBlobStorage:
                 rec.id = str(uuid.uuid4())
 
         await gather(*[
-            self._storage.upload(self._project,
-                                 self._container,
-                                 self._build_record_path(record.id, data_partition_id),
-                                 record.json(),
-                                 content_type='application/json')
+            self._storage.upload(
+                Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
+                self._build_record_path(record.id, data_partition_id),
+                model_utils.record_to_json(record),
+                content_type='application/json')
             for record in record_list
         ], return_exceptions=False)  # return_exceptions False means will throw if a single error occurs
 
         # manual for now
         return CreateUpdateRecordsResponse(recordCount=len(record_list),
-                                           recordIds=[record.id for record in record_list])
+                                           recordIds=[record.id for record in record_list],
+                                           skipped_record_ids=[])
 
     async def get_record(self,
                          id: str,
@@ -74,8 +85,13 @@ class StorageRecordServiceBlobStorage:
                          token: str = None) -> Record:
         await self._check_auth(appkey, token)
         object_name = self._build_record_path(id, data_partition_id)
-        bin_data = await self._storage.download(self._project, self._container, object_name)
-        return Record.parse_raw(bin_data)
+        try:
+            bin_data = await self._storage.download(
+                Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
+                object_name)
+            return Record.parse_raw(bin_data)
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="Item not found")
 
     async def get_all_record_versions(self,
                                       id: str,
@@ -102,7 +118,12 @@ class StorageRecordServiceBlobStorage:
                             token: str = None) -> None:
         await self._check_auth(appkey, token)
         object_name = self._build_record_path(id, data_partition_id)
-        await self._storage.delete(self._project, self._container, object_name)
+        try:
+            await self._storage.delete(
+                Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
+                object_name)
+        except FileNotFoundError:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
     async def get_schema(self, kind, data_partition_id=None, appkey=None, token=None, *args, **kwargs):
         raise NotImplementedError('StorageServiceBlobStorage.get_schema')

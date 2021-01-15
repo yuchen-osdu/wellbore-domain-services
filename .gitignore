@@ -22,10 +22,14 @@ python-packages
 
 # Unit test / coverage reports
 .pytest_cache/
+htmlcov
+.coverage*
+coverage.xml
+unit_tests_report.xml
 
 # Environments
 .env
-.venv
+.venv*
 env/
 venv/
 venv*/
@@ -35,5 +39,5 @@ venv.bak/
 .envs/
 secrets/
 
-.DS_Store
-deploy/.DS_Store
+**/.DS_Store
+

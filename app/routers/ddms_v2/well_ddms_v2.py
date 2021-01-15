@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Query
 import starlette.status as status
 from starlette.responses import Response
-from typing import List
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.clients.search_service_client import get_search_service
@@ -9,6 +8,8 @@ from odes_storage.models import *
 from app.model.model_curated import *
 from app.utils import Context
 from app.utils import get_ctx
+from app.model.model_utils import to_record, from_record
+from app.model.entity_utils import Entity
 
 import app.routers.ddms_v2.storage_helper as storage_helper
 
@@ -28,10 +29,9 @@ async def get_well(
         wellid: str,
         ctx: Context = Depends(get_ctx)
 ) -> well:
-    storage_service = await get_storage_record_service(ctx)
-    welldict = await storage_service.get_record(id=wellid, data_partition_id=ctx.partition_id)
-    # TODO add a check on the kind (*:wks:well:1.0.2)
-    return well(**welldict.dict())
+    storage_client = await get_storage_record_service(ctx)
+    well_record = await storage_client.get_record(id=wellid, data_partition_id=ctx.partition_id)
+    return from_record(well, well_record)
 
 
 @router.delete('/wells/{wellid}',
@@ -45,20 +45,31 @@ async def get_well(
                )
 async def del_well(
         wellid: str,
-        recursive: bool = Header(False),
+        recursive: bool = Query(default=False, description="Whether or not to delete records children"),
         ctx: Context = Depends(get_ctx)):
-    storage_service = await get_storage_record_service(ctx)
+    storage_client = await get_storage_record_service(ctx)
     if recursive:
+
+        sub_entity_types = [
+            Entity.WELLBORE,
+            Entity.LOGSET,
+            Entity.LOG,
+            Entity.MARKER,
+            Entity.TRAJECTORY,
+            Entity.DIPSET
+        ]
+
         await storage_helper.StorageHelper.delete_recursively(
+            ctx,
             entity_id=wellid,
             relationship='well',
-            kind_list=["opendes:wks:wellbore:1.0.6"],
+            entity_list=sub_entity_types,
             data_partition_id=ctx.partition_id,
             search_service=await get_search_service(ctx),
-            storage_service=storage_service
+            storage_service=storage_client
         )
     else:
-        await storage_service.delete_record(id=wellid, data_partition_id=ctx.partition_id)
+        await storage_client.delete_record(id=wellid, data_partition_id=ctx.partition_id)
 
 
 @router.get('/wells/{wellid}/versions',
@@ -70,8 +81,8 @@ async def get_well_versions(
         wellid: str,
         ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
-    storage_service = await get_storage_record_service(ctx)
-    return await storage_service.get_all_record_versions(id=wellid, data_partition_id=ctx.partition_id)
+    storage_client = await get_storage_record_service(ctx)
+    return await storage_client.get_all_record_versions(id=wellid, data_partition_id=ctx.partition_id)
 
 
 @router.get('/wells/{wellid}/versions/{version}',
@@ -89,26 +100,24 @@ async def get_well_version(
         version: int,
         ctx: Context = Depends(get_ctx)
 ) -> well:
-    storage_service = await get_storage_record_service(ctx)
-    result_well = await storage_service.get_record_version(id=wellid,
-                                                               version=version,
-                                                               data_partition_id=ctx.partition_id)
-    # TODO add a check on the kind (*:wks:well:1.0.2)
-    return well(**result_well.dict())
+    storage_client = await get_storage_record_service(ctx)
+    well_record = await storage_client.get_record_version(id=wellid,
+                                                          version=version,
+                                                          data_partition_id=ctx.partition_id)
+    return from_record(well, well_record)
 
 
-@router.put('/wells',
-            response_model=CreateUpdateRecordsResponse,
-            summary="Create or update the Wells using wks:well:1.0.2 schema",
-            operation_id="put_well",
-            responses={
-                status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
-async def put_well(
+@router.post('/wells',
+             response_model=CreateUpdateRecordsResponse,
+             summary="Create or update the Wells using wks:well:1.0.2 schema",
+             operation_id="post_well",
+             responses={
+                 status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
+async def post_well(
         wells: List[well],
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
-    storage_service = await get_storage_record_service(ctx)
-
-    # TODO: the following works 'by chance' because there's no manipulation
-    #  and it only uses methods of BaseModel, but it's not rigorous
-    return await storage_service.create_or_update_records(record=wells, data_partition_id=ctx.partition_id)
+    storage_client = await get_storage_record_service(ctx)
+    return await storage_client.create_or_update_records(
+        record=[to_record(w) for w in wells],
+        data_partition_id=ctx.partition_id)

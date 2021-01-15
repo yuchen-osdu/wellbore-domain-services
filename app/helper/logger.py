@@ -1,10 +1,21 @@
 import logging
 import traceback
 import sys
-import rapidjson
+
+from app.conf import Config
+from app.utils import get_or_create_ctx
+
 import structlog
-from structlog.contextvars import merge_contextvars
-from structlog.contextvars import bind_contextvars
+from structlog.contextvars import merge_contextvars, bind_contextvars
+from opencensus.ext.azure.log_exporter import AzureLogHandler
+from opencensus.trace import config_integration
+import rapidjson
+
+_LOGGER = None
+
+
+def get_logger():
+    return _LOGGER
 
 
 def add_fields(**kwargs):
@@ -46,22 +57,87 @@ class StackDriverRenderer(object):
         return event_dict
 
 
-def init_logger(service_name='wellbore-ddms'):
+class AzureContextLoggerAdapter(logging.LoggerAdapter):
+    """
+    This adapter adds contextual information into messages to be logged in Azure monitoring.
+    It aims to add as custom properties contextual fields, following this instructions:
+    https://docs.microsoft.com/en-us/azure/azure-monitor/app/opencensus-python
+    """
 
-    """ Initialize structlog with following configuration:
-    - Make logs compatible with Stackdriver
-    - if dev_mode, display stacktrace out of json item
-    Return initialized root logger
+    @staticmethod
+    def _set_extra_attrs(properties):
+        ctx = get_or_create_ctx()
+
+        properties.setdefault('correlation-id', ctx.correlation_id)
+        properties.setdefault('request-id', ctx.request_id)
+        properties.setdefault('data-partition-id', ctx.partition_id)
+        properties.setdefault('app-key', ctx.app_key)
+        properties.setdefault('api-key', ctx.api_key)
+
+    def process(self, msg, kwargs):
+        """
+        Retrieve context created in basic middleware from request info to append them
+        in log message as custom attributes
+        """
+        custom_properties = dict()
+        self._set_extra_attrs(custom_properties)
+        kwargs['extra'] = dict(custom_dimensions=custom_properties)
+
+        return msg, kwargs
+
+
+def init_logger():
+    global _LOGGER
+
+    if Config.cloud_provider.value == 'az':
+        _LOGGER = create_azure_logger()
+    elif Config.cloud_provider.value == 'gcp':
+        _LOGGER = create_gcp_logger()
+    else:
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+        _LOGGER = logging.getLogger(__name__)
+
+    return _LOGGER
+
+
+def create_azure_logger():
+    """
+    Create logger with two handlers:
+     - AzureLogHandler: to see Dependencies, Requests, Traces and Exception into Azure monitoring
+     - [default] StreamHandler (c.f. logging.basicConfig() ) to see all logs into the std.out captured in container logs
+
+     returns logger configured wrapped into ContextLoggerAdapter
+    """
+    config_integration.trace_integrations(['logging'])
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler(sys.stdout)
+    logger.addHandler(ch)
+
+    key = Config.get('az_ai_instrumentation_key')
+    logger_level = Config.get('az_logger_level')
+    handler = AzureLogHandler(connection_string=f'InstrumentationKey={key}')
+    handler.setLevel(logging.getLevelName(logger_level))
+    logger.addHandler(handler)
+
+    return AzureContextLoggerAdapter(logger, extra=dict())
+
+
+def create_gcp_logger(service_name='wellbore-ddms'):
+    """
+    Initialize structlog with following configuration:
+        - Make logs compatible with Stackdriver
+        - if dev_mode, display stacktrace out of json item
+    Returns structlog
     """
 
     structlog.configure(
         processors=[
             StackDriverRenderer(service_name=service_name),
             merge_contextvars,
-            # structlog.processors.KeyValueRenderer(),
             structlog.stdlib.filter_by_level,
             structlog.stdlib.add_logger_name,
-            # structlog.stdlib.add_log_level,
             structlog.stdlib.PositionalArgumentsFormatter(),
             structlog.processors.TimeStamper(fmt="iso"),
             structlog.processors.StackInfoRenderer(),
@@ -75,15 +151,15 @@ def init_logger(service_name='wellbore-ddms'):
         cache_logger_on_first_use=True,
     )
 
-    my_logger = structlog.getLogger('ddms-app')
+    my_logger = structlog.getLogger(__name__)
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(message)s')
-    ch.setFormatter(formatter)
+    ch.setFormatter(logging.Formatter('%(message)s'))
     my_logger.addHandler(ch)
 
-    std_ddms_app = logging.getLogger('ddms-app')
+    std_ddms_app = logging.getLogger(__name__)
+    # avoid double logging by the root logger
     std_ddms_app.propagate = False
 
     return my_logger

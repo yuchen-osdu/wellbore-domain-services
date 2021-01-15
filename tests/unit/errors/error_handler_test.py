@@ -1,50 +1,59 @@
 import json
-
-import httpx
 import pytest
-from mockito import when
+import mock
+from fastapi import Header
 
 from fastapi.testclient import TestClient
 import starlette.status as status
 
+from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
+from app.middleware import require_data_partition_id
+from app.utils import Context
 from app.wdms_app import wdms_app
 from app.clients import *
 from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
 
-from tests.unit.test_utils import patch_async, create_mock_class, make_async_do_nothing, make_async_return_value
-
+from tests.unit.test_utils import patch_async, create_mock_class, nope_logger_fixture
 from odes_storage.exceptions import (
     UnexpectedResponse as OSDUStorageUnexpectedResponse,
     ResponseValidationError as OSDUStorageResponseValidationError,
     ResponseHandlingException as OSDUStorageResponseHandlingException
 )
 
+from osdu_az.exceptions.data_access_error import DataAccessError as OSDUPartitionError
+
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)
+StorageRecordServiceBlobStorageMock = create_mock_class(StorageRecordServiceBlobStorage)
 
 
 @pytest.fixture
-def client():
+def client(nope_logger_fixture):
     async def bypass_authorization():
         pass
 
-    with patch_async(
-            'app.routers.ddms_v2.logset_ddms_v2.get_storage_record_service',
-            return_value=StorageRecordServiceClientMock()):
-        with patch_async(
-                'app.routers.ddms_v2.logset_ddms_v2.get_search_service',
-                return_value=SearchServiceClientMock()):
-            wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
-            client = TestClient(wdms_app)
-            yield client
-            wdms_app.dependency_overrides = {}
+    async def set_default_partition(data_partition_id: str = Header('opendes')):
+        Context.set_current_with_value(partition_id=data_partition_id)
+
+    mock_storage = mock.AsyncMock(return_value=StorageRecordServiceClientMock())
+    mock_search = mock.AsyncMock(return_value=SearchServiceClientMock())
+    mock_storage_blob = mock.AsyncMock(return_value=StorageRecordServiceBlobStorageMock())
+
+    with mock.patch('app.routers.ddms_v2.logset_ddms_v2.get_storage_record_service', mock_storage):
+        with mock.patch('app.routers.ddms_v2.logset_ddms_v2.get_search_service', mock_search):
+            with mock.patch('app.routers.ddms_v2.log_ddms_v2.get_storage_record_service', mock_storage_blob):
+                wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
+                wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
+                client = TestClient(wdms_app)
+                yield client
+                wdms_app.dependency_overrides = {}
 
 
-header = httpx.Headers({"Content-Type": "application/json, charset=utf-16"})
+header = {"Content-Type": "application/json, charset=utf-16"}
 
 
 def _error_content(code: int, msg: str) -> str:
@@ -58,13 +67,14 @@ def _error_content(code: int, msg: str) -> str:
 
 # This test should work also for other exceptions
 def test_storage_client_raise_api_exception(client):
-    content = _error_content(401, "Not athorized")
+    exception = OSDUStorageUnexpectedResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content=_error_content(status.HTTP_401_UNAUTHORIZED, "Not authorized").encode('utf-8'),
+        headers=header,
+        reason_phrase="An unexpected response")
 
-    with when(StorageRecordServiceClientMock).delete_record(
-            id='123456', data_partition_id='opendes').thenRaise(
-        OSDUStorageUnexpectedResponse(status_code=401, content=content,
-                                      headers=header,
-                                      reason_phrase="An unexpected response")):
+    with StorageRecordServiceClientMock.set_throw('delete_record', exception):
+        # when
         response = client.delete("/ddms/v2/logsets/123456")
         json_res = response.json()
         assert json_res['origin'] == 'osdu-data-ecosystem-storage'
@@ -73,47 +83,54 @@ def test_storage_client_raise_api_exception(client):
 
 
 def test_storage_client_raise_response_handling_exception(client):
-    with when(StorageRecordServiceClientMock).delete_record(
-            id='123456', data_partition_id='opendes').thenRaise(
-        OSDUStorageResponseHandlingException(KeyError("Exception"))):
+    exception = OSDUStorageResponseHandlingException(KeyError("Exception"))
+
+    with StorageRecordServiceClientMock.set_throw('delete_record', exception):
         response = client.delete("/ddms/v2/logsets/123456")
         json_res = response.json()
-        print(json_res)
+
         assert json_res['origin'] == 'osdu-data-ecosystem-storage'
         assert json_res['errors'][0] == "Exception"
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 def test_storage_client_raise_response_validation_error(client):
-    with when(StorageRecordServiceClientMock).delete_record(
-            id='123456', data_partition_id='opendes').thenRaise(
-        OSDUStorageResponseValidationError(source=ArithmeticError("Cannot devide by zero"), status_code=403,
-                                           content="Cannot devide by zero")):
+    exception = OSDUStorageResponseValidationError(
+        source=ArithmeticError("Cannot divide by zero"),
+        status_code=403,
+        content="Cannot divide by zero")
+
+    with StorageRecordServiceClientMock.set_throw('delete_record', exception):
         response = client.delete("/ddms/v2/logsets/123456")
         json_res = response.json()
-        print(json_res)
+
         assert json_res['origin'] == 'osdu-data-ecosystem-storage'
-        assert json_res['errors'][0] == "Cannot devide by zero"
+        assert json_res['errors'][0] == "Cannot divide by zero"
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_validation_error_exception(client):
-    response = client.put("/ddms/v2/logsets", data={'test': 'test'})
+    response = client.post("/ddms/v2/logsets", data={'test': 'test'})
     json_res = response.json()
-    assert len(json_res['errors']) == 1
-    assert json_res['errors'][0]
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
+@mock.patch.object(StorageRecordServiceClientMock,
+                   'delete_record',
+                   mock.AsyncMock(side_effect=KeyError("Error")))
 def test_unhandled_exception(client):
-    with when(StorageRecordServiceClientMock).delete_record(
-            id='123456', data_partition_id='opendes').thenRaise(
-        KeyError("Error")):
-        try:
-            response = client.delete("/ddms/v2/logsets/123456")
-            json_res = response.json()
-            assert json_res['errors'][0] == "Internal server error"
-            assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-            print("Hello")
-        except Exception as e:
-            assert isinstance(e, KeyError)
+    with pytest.raises(KeyError):
+        client.delete("/ddms/v2/logsets/123456")
+
+
+def test_partition_client_raise_api_exception(client):
+    exception = OSDUPartitionError(
+        status_code=status.HTTP_404_NOT_FOUND,
+        message='Failed to retrieve partition. Not found.')
+
+    with StorageRecordServiceBlobStorageMock.set_throw('get_record', exception):
+        response = client.get("/ddms/v2/logs/123456/data")
+        json_res = response.json()
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert json_res['errors'][0] == 'Failed to retrieve partition. Not found.'

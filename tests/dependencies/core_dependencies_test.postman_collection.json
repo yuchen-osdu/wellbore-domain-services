@@ -1,0 +1,1094 @@
+{
+	"info": {
+		"_postman_id": "5c914854-d2c9-4565-b3ee-cab8d62dd8db",
+		"name": "Core dependencies test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Entitlements",
+			"item": [
+				{
+					"name": "entitlements - get groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"    pm.response.to.be.ok;",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"",
+									"    pm.expect(pm.response.json().groups).to.not.be.empty;",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"value": "{{data_partition}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/entitlements/v1/groups",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"entitlements",
+								"v1",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Storage",
+			"item": [
+				{
+					"name": "storage -  query all kinds",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"    pm.response.to.be.ok;",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"value": "{{data_partition}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/storage/v2/query/kinds",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"storage",
+								"v2",
+								"query",
+								"kinds"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "storage - get schema from logSetKind",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"    pm.response.to.be.ok;",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"",
+									"    pm.expect(pm.response.json().schema).to.not.be.empty;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"value": "{{data_partition}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/storage/v2/schemas/{{logSetKind}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"storage",
+								"v2",
+								"schemas",
+								"{{logSetKind}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "storage -  create logset record Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const resobj = pm.response.json();",
+									"",
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"    pm.expect(resobj.recordCount).to.eql(1);",
+									"    pm.expect(resobj.recordIds.length).to.eql(1);",
+									"    if (resobj.skippedRecordIds)",
+									"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+									"});",
+									"",
+									"// stored the record id for the following tests",
+									"let record_id = resobj.recordIds[0];",
+									"console.log(\"created-logset-record-id\", record_id)",
+									"pm.variables.set(\"created-logset-record-id\", record_id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"kind\": \"{{logSetKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"storage",
+								"v2",
+								"records"
+							],
+							"query": [
+								{
+									"key": "skipdupes",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "storage -  get logset record by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"    pm.response.to.be.ok;",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/storage/v2/records/{{created-logset-record-id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"storage",
+								"v2",
+								"records",
+								"{{created-logset-record-id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "storage -  delete logset record Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/storage/v2/records/{{created-logset-record-id}}:delete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"storage",
+								"v2",
+								"records",
+								"{{created-logset-record-id}}:delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "search setUp - dummy records creation",
+					"item": [
+						{
+							"name": "search -  create dummy logset record",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"",
+											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.withBody;",
+											"    pm.response.to.be.json;",
+											"    pm.expect(resobj.recordCount).to.eql(1);",
+											"    pm.expect(resobj.recordIds.length).to.eql(1);",
+											"    if (resobj.skippedRecordIds)",
+											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{data_partition}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:doc:WDMS-dependencies-test-dummy-logset\",\n        \"kind\": \"{{logSetKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"storage",
+										"v2",
+										"records"
+									],
+									"query": [
+										{
+											"key": "skipdupes",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search -  create dummy well record",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"",
+											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.withBody;",
+											"    pm.response.to.be.json;",
+											"    pm.expect(resobj.recordCount).to.eql(1);",
+											"    pm.expect(resobj.recordIds.length).to.eql(1);",
+											"    if (resobj.skippedRecordIds)",
+											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{data_partition}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:doc:WDMS-dependencies-test-dummy-well\",\n        \"kind\": \"{{wellKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"storage",
+										"v2",
+										"records"
+									],
+									"query": [
+										{
+											"key": "skipdupes",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search -  create dummy wellbore record",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"",
+											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.withBody;",
+											"    pm.response.to.be.json;",
+											"    pm.expect(resobj.recordCount).to.eql(1);",
+											"    pm.expect(resobj.recordIds.length).to.eql(1);",
+											"    if (resobj.skippedRecordIds)",
+											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{data_partition}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:doc:WDMS-dependencies-test-dummy-wellbore\",\n        \"kind\": \"{{wellboreKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"storage",
+										"v2",
+										"records"
+									],
+									"query": [
+										{
+											"key": "skipdupes",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search -  create dummy log record",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"",
+											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.withBody;",
+											"    pm.response.to.be.json;",
+											"    pm.expect(resobj.recordCount).to.eql(1);",
+											"    pm.expect(resobj.recordIds.length).to.eql(1);",
+											"    if (resobj.skippedRecordIds)",
+											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{data_partition}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:doc:WDMS-dependencies-test-dummy-log\",\n        \"kind\": \"{{logKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"storage",
+										"v2",
+										"records"
+									],
+									"query": [
+										{
+											"key": "skipdupes",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "This setup phase aims to create records with well known kinds (well, wellbore, logset, log) to ensure API calls to search service will not fail because of missing records kind. \r\nIndeed, search APIs will only return records that have been indexed. This indexation is triggered asynchronously after record creation. It could cause the failure of these tests the very first time they are run.",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "search logset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"\r",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							},
+							{
+								"key": "appkey",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"kind\": \"{{logSetKind}}\",\r\n  \"limit\": 30,\r\n  \"returnedFields\": [\"id\", \"data.name\", \"legal\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/v2/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"v2",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search wellbores",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"\r",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"kind\": \"{{wellboreKind}}\",\r\n  \"limit\": 30,\r\n  \"returnedFields\": [\"id\", \"data.name\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/v2/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"v2",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search well",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"\r",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"kind\": \"{{wellKind}}\",\r\n  \"limit\": 30,\r\n  \"returnedFields\": [\"id\", \"data.name\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/v2/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"v2",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search logs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"\r",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"kind\": \"{{logKind}}\",\r\n  \"limit\": 30,\r\n  \"returnedFields\": [\"id\", \"data.name\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/v2/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"v2",
+								"query"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "wellKind",
+			"value": "{{data_partition}}:wks:well:1.0.2"
+		},
+		{
+			"key": "wellboreKind",
+			"value": "{{data_partition}}:wks:wellbore:1.0.6"
+		},
+		{
+			"key": "logSetKind",
+			"value": "{{data_partition}}:wks:logSet:1.0.5"
+		},
+		{
+			"key": "logKind",
+			"value": "{{data_partition}}:wks:log:1.0.5"
+		},
+		{
+			"key": "data_partition",
+			"value": ""
+		},
+		{
+			"key": "base_url",
+			"value": ""
+		},
+		{
+			"key": "legal_tag",
+			"value": ""
+		},
+		{
+			"key": "acl_domain",
+			"value": "contoso.com"
+		},
+		{
+			"key": "acl_owner",
+			"value": "data.default.owners@{{data_partition}}.{{acl_domain}}"
+		},
+		{
+			"key": "acl_viewer",
+			"value": "data.default.viewers@{{data_partition}}.{{acl_domain}}"
+		}
+	]
+}

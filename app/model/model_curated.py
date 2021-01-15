@@ -2,6 +2,10 @@
 #   filename:  openapi_curated.yaml
 #   timestamp: 2020-03-25T08:19:10+00:00
 
+# - Warning :
+#   This file is no longer generated
+#   If you want to generate new version please make sure to not break the changes made to the file
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -11,20 +15,40 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Extra, Field, confloat
 
 
-class AboutResponseUser(BaseModel):
+# forbid unknown field in the root of the models
+class DDMSBaseModel(BaseModel):
+    """
+    The base model forbids fields which are not declared initially in the pydantic model
+    """
+
+    class Config:
+        extra = Extra.forbid
+
+
+# only allow unknown field in the data
+class DDMSBaseModelWithExtra(BaseModel):
+    """
+    Used for data model allows extra fields which are not declared initially in the pydantic model
+    """
+
+    class Config:
+        extra = Extra.allow
+
+
+class AboutResponseUser(DDMSBaseModel):
     tenant: Optional[str] = None
     email: Optional[str] = None
 
 
-class V1DmsInfo(BaseModel):
+class V1DmsInfo(DDMSBaseModel):
     kinds: Optional[List[str]] = None
 
 
-class FastSearchResponse(BaseModel):
+class FastSearchResponse(DDMSBaseModel):
     results: Optional[List[str]] = None
 
 
-class Point(BaseModel):
+class Point(DDMSBaseModel):
     latitude: Optional[confloat(ge=-90.0, le=90.0)] = Field(
         None, description='Latitude of point.'
     )
@@ -33,7 +57,7 @@ class Point(BaseModel):
     )
 
 
-class Legal(BaseModel):
+class Legal(DDMSBaseModel):
     legaltags: Optional[List[str]] = Field(
         None,
         description='The list of legal tags, see compliance API.',
@@ -49,14 +73,11 @@ class Legal(BaseModel):
     )
 
 
-class LinkList(BaseModel):
+class LinkList(DDMSBaseModelWithExtra):
     pass
 
-    class Config:
-        extra = Extra.allow
 
-
-class Kind(Enum):
+class Kind(str, Enum):
     CRS = 'CRS'
     Unit = 'Unit'
     Measurement = 'Measurement'
@@ -64,7 +85,7 @@ class Kind(Enum):
     DateTime = 'DateTime'
 
 
-class MetaItem(BaseModel):
+class MetaItem(DDMSBaseModel):
     kind: Kind = Field(
         ...,
         description='The kind of reference, unit, measurement, CRS or azimuth reference.',
@@ -97,14 +118,11 @@ class MetaItem(BaseModel):
     )
 
 
-class TagDictionary(BaseModel):
+class TagDictionary(DDMSBaseModelWithExtra):
     pass
 
-    class Config:
-        extra = Extra.allow
 
-
-class ToOneRelationship(BaseModel):
+class ToOneRelationship(DDMSBaseModel):
     confidence: Optional[float] = Field(
         None,
         description='The confidence of the relationship. If the property is absent a well-known relation is implied.',
@@ -127,7 +145,7 @@ class ToOneRelationship(BaseModel):
     )
 
 
-class ValueWithUnit(BaseModel):
+class ValueWithUnit(DDMSBaseModel):
     unitKey: str = Field(
         ...,
         description="Unit for value of the corresponding attribute for the domain object in question. The key can be looked up in the 'frameOfReference.units' for further details.",
@@ -160,7 +178,7 @@ class Type_4(Enum):
     MultiLineString = 'MultiLineString'
 
 
-class GeoJsonMultiLineString(BaseModel):
+class GeoJsonMultiLineString(DDMSBaseModel):
     bbox: Optional[List[float]] = None
     coordinates: List[List[List[float]]]
     type: Type_4
@@ -178,13 +196,13 @@ class Type_7(Enum):
     Point = 'Point'
 
 
-class GeoJsonPoint(BaseModel):
+class GeoJsonPoint(DDMSBaseModel):
     bbox: Optional[List[float]] = None
     coordinates: List[float]
     type: Type_7
 
 
-class Point3dNonGeoJson(BaseModel):
+class Point3dNonGeoJson(DDMSBaseModel):
     coordinates: List[float] = Field(
         ...,
         description="3-dimensional point; the first coordinate is typically pointing east (easting or longitude), the second coordinate typically points north (northing or latitude). The third coordinate is an elevation (upwards positive, downwards negative). The point's CRS is given by the container.",
@@ -206,13 +224,13 @@ class Type_8(Enum):
     Polygon = 'Polygon'
 
 
-class Polygon(BaseModel):
+class Polygon(DDMSBaseModel):
     bbox: Optional[List[float]] = None
     coordinates: List[List[List[float]]]
     type: Type_8
 
 
-class valueArrayWithUnit(BaseModel):
+class valueArrayWithUnit(DDMSBaseModel):
     unitKey: str = Field(
         ...,
         description="Unit for array value of the corresponding attribute for the domain object in question. The key can be looked up in the 'frameOfReference.units' for further details.",
@@ -225,7 +243,7 @@ class valueArrayWithUnit(BaseModel):
     )
 
 
-class core_dl_geopoint(BaseModel):
+class core_dl_geopoint(DDMSBaseModel):
     latitude: confloat(ge=-90.0, le=90.0) = Field(
         ...,
         description='The latitude value in degrees of arc (dega). Value range [-90, 90].',
@@ -238,7 +256,7 @@ class core_dl_geopoint(BaseModel):
     )
 
 
-class geographicPosition(BaseModel):
+class geographicPosition(DDMSBaseModel):
     crsKey: str = Field(
         ...,
         description="The 'crsKey', which can be looked up in the 'frameOfReference.crs' for further details.",
@@ -261,7 +279,7 @@ class geographicPosition(BaseModel):
     )
 
 
-class PlssLocation(BaseModel):
+class PlssLocation(DDMSBaseModel):
     aliquotPart: Optional[str] = Field(
         None,
         description='A terse, hierarchical reference to a piece of land, in which successive subdivisions of some larger area.',
@@ -282,7 +300,7 @@ class PlssLocation(BaseModel):
     )
 
 
-class projectedPosition(BaseModel):
+class projectedPosition(DDMSBaseModel):
     crsKey: str = Field(
         ...,
         description="The 'crsKey', which can be looked up in the 'frameOfReference.crs' for further details.",
@@ -305,7 +323,7 @@ class projectedPosition(BaseModel):
     )
 
 
-class wellborerelationships(BaseModel):
+class wellborerelationships(DDMSBaseModel):
     definitiveTimeDepthRelation: Optional[ToOneRelationship] = Field(
         None,
         description='The definitive tome-depth relation providing the MD to seismic travel-time transformation.',
@@ -420,7 +438,7 @@ class Format(Enum):
     float128 = 'float128'
 
 
-class logsetrelationships(BaseModel):
+class logsetrelationships(DDMSBaseModel):
     well: Optional[ToOneRelationship] = Field(
         None,
         description='The well to which this logSet belongs. Only required if the wellbore is unknown.',
@@ -436,7 +454,63 @@ class logsetrelationships(BaseModel):
     )
 
 
-class toManyRelationship(BaseModel):
+class dipsetrelationships(DDMSBaseModel):
+    well: Optional[ToOneRelationship] = Field(
+        None,
+        description='The well to which this dipSet belongs. Only required if the wellbore is unknown.',
+        title='Well',
+    )
+    wellbore: ToOneRelationship = Field(
+        ..., description='The wellbore to which this dipSet belongs.', title='Wellbore'
+    )
+    wellboreSection: Optional[ToOneRelationship] = Field(
+        None,
+        description='The wellbore section to which this dipSet belongs.',
+        title='Wellbore Section',
+    )
+    referenceLog: Optional[ToOneRelationship] = Field(
+        None,
+        description='The true dip azimuth log of the dipset.',
+        title='True dip azimuth log',
+    )
+    trueDipAzimuthLog: Optional[ToOneRelationship] = Field(
+        None,
+        description='The true dip azimuth log of the dipset.',
+        title='True dip azimuth log',
+    )
+    trueDipInclinationLog: Optional[ToOneRelationship] = Field(
+        None,
+        description='The X-coordinate log of the dipset',
+        title='X-coordinate log',
+    )
+    xCoordinateLog: Optional[ToOneRelationship] = Field(
+        None,
+        description='The X-coordinate log of the dipset',
+        title='X-coordinate log',
+    )
+    yCoordinateLog: Optional[ToOneRelationship] = Field(
+        None,
+        description='The Y-coordinate log of the dipset',
+        title='Y-coordinate log',
+    )
+    zCoordinateLog: Optional[ToOneRelationship] = Field(
+        None,
+        description='The Z-coordinate log of the dipset',
+        title='Z-coordinate log',
+    )
+    qualityLog: Optional[ToOneRelationship] = Field(
+        None,
+        description='The quality log of the dipset',
+        title='Quality log',
+    )
+    classificationLog: Optional[ToOneRelationship] = Field(
+        None,
+        description='The classification log of the dipset',
+        title='Classification log',
+    )
+
+
+class toManyRelationship(DDMSBaseModel):
     confidences: Optional[List[float]] = Field(
         None,
         description='The confidences of the relationships. Keep all the arrays ordered and aligned.',
@@ -485,7 +559,7 @@ class Format_1(Enum):
     float128 = 'float128'
 
 
-class trajectorychannel(BaseModel):
+class trajectorychannel(DDMSBaseModel):
     absentValue: Optional[str] = Field(
         None,
         description='Optional field carrying the absent value as string for this channel.',
@@ -558,7 +632,7 @@ class trajectorychannel(BaseModel):
     )
 
 
-class trajectoryrelationships(BaseModel):
+class trajectoryrelationships(DDMSBaseModel):
     wellbore: ToOneRelationship = Field(
         ...,
         description='The wellbore to which this trajectory belongs.',
@@ -566,7 +640,7 @@ class trajectoryrelationships(BaseModel):
     )
 
 
-class wgs84Position(BaseModel):
+class wgs84Position(DDMSBaseModel):
     elevationFromMsl: ValueWithUnit = Field(
         ...,
         description="Elevation from Mean Seal Level, downwards negative. The unit definition is found via 'elevationFromMsl.unitKey' in 'frameOfReference.units' dictionary.",
@@ -584,7 +658,7 @@ class wgs84Position(BaseModel):
     )
 
 
-class markerrelationships(BaseModel):
+class markerrelationships(DDMSBaseModel):
     horizon: Optional[ToOneRelationship] = Field(
         None,
         description='The related stratigraphic horizon',
@@ -612,7 +686,7 @@ class markerrelationships(BaseModel):
     )
 
 
-class valueAzimuth(BaseModel):
+class valueAzimuth(DDMSBaseModel):
     azimuthKey: str = Field(
         ...,
         description="Azimuth reference for the value of the corresponding attribute for the domain object in question. It can be looked up in 'frameOfReference.azimuths'.",
@@ -638,7 +712,7 @@ class valueAzimuth(BaseModel):
     )
 
 
-class v1LogProperties(BaseModel):
+class v1LogProperties(DDMSBaseModel):
     rowKeysUnit: Optional[str] = Field(
         None, title="The unit of the row keys, e.g. 'm' or 'ft'"
     )
@@ -704,7 +778,7 @@ class Format_2(Enum):
     float128 = 'float128'
 
 
-class historyRecord(BaseModel):
+class historyRecord(DDMSBaseModel):
     date: Optional[datetime] = Field(
         None,
         description='The UTC date time of the log creation/processing',
@@ -731,7 +805,7 @@ class ReferenceType(Enum):
     Two_Way_Time = 'Two-Way Time'
 
 
-class logRelationships(BaseModel):
+class logRelationships(DDMSBaseModel):
     logSet: Optional[ToOneRelationship] = Field(
         None,
         description='The logSet to which this log belongs. If the log is not part of a log set this relationship stays empty.',
@@ -754,7 +828,7 @@ class logRelationships(BaseModel):
     )
 
 
-class basinContext(BaseModel):
+class basinContext(DDMSBaseModel):
     basinCode: Optional[str] = Field(
         None,
         description='The code of the basin in which the well is located.',
@@ -777,7 +851,7 @@ class basinContext(BaseModel):
     )
 
 
-class wellrelationships(BaseModel):
+class wellrelationships(DDMSBaseModel):
     asset: Optional[ToOneRelationship] = Field(
         None, description='The asset this well belongs to.', title='Asset'
     )
@@ -873,19 +947,19 @@ class WellType(Enum):
     unknown = 'unknown'
 
 
-class V1AboutResponse(BaseModel):
+class V1AboutResponse(DDMSBaseModel):
     user: Optional[AboutResponseUser] = None
     dmsInfo: Optional[V1DmsInfo] = None
 
 
-class ByBoundingBox(BaseModel):
+class ByBoundingBox(DDMSBaseModel):
     topLeft: Point = Field(..., description='Top left corner of the bounding box.')
     bottomRight: Point = Field(
         ..., description='Bottom right corner of the bounding box.'
     )
 
 
-class ByDistance(BaseModel):
+class ByDistance(DDMSBaseModel):
     distance: Optional[confloat(ge=0.0, le=9.223372036854776e18)] = Field(
         None,
         description='The radius of the circle centered on the specified location. Points which fall into this circle are considered to be matches.',
@@ -893,13 +967,13 @@ class ByDistance(BaseModel):
     point: Point = Field(..., description='Center point of the query.')
 
 
-class ByGeoPolygon(BaseModel):
+class ByGeoPolygon(DDMSBaseModel):
     points: Optional[List[Point]] = Field(
         None, description='Polygon defined by a set of points.'
     )
 
 
-class SimpleElevationReference(BaseModel):
+class SimpleElevationReference(DDMSBaseModel):
     elevationFromMsl: ValueWithUnit = Field(
         ...,
         description="The elevation above mean sea level (MSL), at which the vertical origin is 0.0. The 'unitKey' is further defined in 'frameOfReference.units'.",
@@ -912,19 +986,19 @@ class SimpleElevationReference(BaseModel):
     )
 
 
-class GeoJsonLineString(BaseModel):
+class GeoJsonLineString(DDMSBaseModel):
     bbox: Optional[List[float]] = None
     coordinates: List[List[float]]
     type: Type_3
 
 
-class GeoJsonMultiPoint(BaseModel):
+class GeoJsonMultiPoint(DDMSBaseModel):
     bbox: Optional[List[float]] = None
     coordinates: List[List[float]]
     type: Type_5
 
 
-class GeoJsonMultiPolygon(BaseModel):
+class GeoJsonMultiPolygon(DDMSBaseModel):
     bbox: Optional[List[float]] = Field(
         None, description='Bounding box in longitude, latitude WGS 84.'
     )
@@ -935,7 +1009,7 @@ class GeoJsonMultiPolygon(BaseModel):
     type: Type_6
 
 
-class namedProperty(BaseModel):
+class namedProperty(DDMSBaseModel):
     associations: Optional[List[str]] = Field(
         None,
         description='The optional associations contains one or more mnemonics found elsewhere in the logSet.',
@@ -971,7 +1045,7 @@ class namedProperty(BaseModel):
     )
 
 
-class logchannel(BaseModel):
+class logchannel(DDMSBaseModel):
     columnNames: Optional[List[str]] = Field(
         None,
         description="A list of names for multi-dimensional logs (dimension>1). The length of this array is expected to be equal to 'dimension'. For one-dimensional this property stays empty as the columnName is by definition the log name.",
@@ -1036,7 +1110,7 @@ class logchannel(BaseModel):
     )
 
 
-class logData(BaseModel):
+class logData(DDMSBaseModelWithExtra):
     azimuthReference: Optional[str] = Field(
         None,
         description='Only supplied with azimuth logs: the azimuth reference code defining the type of North, default TN for true north.',
@@ -1102,7 +1176,7 @@ class logData(BaseModel):
     )
 
 
-class log(BaseModel):
+class log(DDMSBaseModel):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
@@ -1145,7 +1219,7 @@ class log(BaseModel):
     )
 
 
-class SpatialFilter(BaseModel):
+class SpatialFilter(DDMSBaseModel):
     field: Optional[str] = Field(
         None,
         description='geo-point field in the index on which filtering will be performed. Use GET schema API to find which fields supports spatial search.',
@@ -1164,7 +1238,7 @@ class SpatialFilter(BaseModel):
     )
 
 
-class geometryItem(BaseModel):
+class geometryItem(DDMSBaseModel):
     bbox: Optional[List[float]] = None
     geometries: List[Union[
         GeoJsonPoint,
@@ -1177,7 +1251,7 @@ class geometryItem(BaseModel):
     type: Type
 
 
-class GeoJsonFeature(BaseModel):
+class GeoJsonFeature(DDMSBaseModel):
     bbox: Optional[List[float]] = None
     geometry: Union[
         GeoJsonPoint,
@@ -1192,13 +1266,13 @@ class GeoJsonFeature(BaseModel):
     type: Type_1
 
 
-class GeoJsonFeatureCollection(BaseModel):
+class GeoJsonFeatureCollection(DDMSBaseModel):
     bbox: Optional[List[float]] = None
     features: List[GeoJsonFeature]
     type: Type_2
 
 
-class wellboreData(BaseModel):
+class wellboreData(DDMSBaseModelWithExtra):
     airGap: Optional[ValueWithUnit] = Field(
         None,
         description='The gap between water surface and offshore drilling platform.',
@@ -1413,7 +1487,7 @@ class wellboreData(BaseModel):
     )
 
 
-class wellbore(BaseModel):
+class wellbore(DDMSBaseModel):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
@@ -1457,7 +1531,7 @@ class wellbore(BaseModel):
     )
 
 
-class channel(BaseModel):
+class channel(DDMSBaseModel):
     absentValue: Optional[str] = Field(
         None,
         description='Optional field carrying the absent value as string for this channel.',
@@ -1522,7 +1596,7 @@ class channel(BaseModel):
     )
 
 
-class logSetData(BaseModel):
+class logSetData(DDMSBaseModelWithExtra):
     azimuthReference: Optional[str] = Field(
         None,
         description='Azimuth reference code defining the type of North. Only used for logSets with azimuth data',
@@ -1577,7 +1651,57 @@ class logSetData(BaseModel):
     stop: Optional[ValueWithUnit] = None
 
 
-class logset(BaseModel):
+class dipSetData(DDMSBaseModelWithExtra):
+    azimuthReference: Optional[str] = Field(
+        None,
+        description='Azimuth reference code defining the type of North. Only used for dipSets with azimuth data',
+        title='Azimuth Reference Code',
+    )
+    classification: Optional[str] = Field(
+        'Externally Processed LogSet',
+        description='The well-known log set classification code.',
+        title='Log Set Classification',
+    )
+    dateCreated: Optional[datetime] = Field(
+        None,
+        description='The UTC date time of the entity creation',
+        title='Creation Date and Time',
+    )
+    dateModified: Optional[datetime] = Field(
+        None,
+        description='The UTC date time of the last entity modification',
+        title='Last Modification Date and Time',
+    )
+    elevationReference: Optional[SimpleElevationReference] = None
+    externalIds: Optional[List[str]] = Field(
+        None,
+        description='An array of identities (e.g. some kind if URL to be resolved in an external data store), which links to external realizations of the same entity.',
+        title='Array of External IDs',
+    )
+    name: Optional[str] = Field(
+        None, description='The name of this dip set', title='Dip Set Name'
+    )
+    operation: Optional[str] = Field(
+        None, description='The operation which created this entity', title='Operation'
+    )
+    reference: Optional[channel] = None
+    referenceType: Optional[str] = Field(
+        None,
+        description='The reference index type of the dip set.',
+        title='Reference Type',
+    )
+    relationships: Optional[dipsetrelationships] = None
+    start: Optional[ValueWithUnit] = None
+    step: Optional[ValueWithUnit] = None
+    stop: Optional[ValueWithUnit] = None
+    bulkURI: Optional[str] = Field(
+        None,
+        description='bulkURI either URL or URN.',
+        title='bulk URI',
+    )
+
+
+class logset(DDMSBaseModel):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
@@ -1619,7 +1743,49 @@ class logset(BaseModel):
     )
 
 
-class trajectoryData(BaseModel):
+class dipset(DDMSBaseModel):
+    acl: Optional[TagDictionary] = Field(
+        None,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    ancestry: Optional[LinkList] = Field(
+        None,
+        description='The links to data, which constitute the inputs.',
+        title='Ancestry',
+    )
+    data: Optional[dipSetData] = Field(
+        None,
+        description='dipset data',
+        title='Dip Set Data',
+    )
+    id: Optional[str] = Field(
+        None, description='The unique identifier of the dip set', title='Dip Set ID'
+    )
+    kind: Optional[str] = Field(
+        'osdu:wks:dipSet:0.0.1', description='Kind specification', title='Dip Set Kind'
+    )
+    legal: Optional[Legal] = Field(
+        None, description="The dip-set's legal tags", title='Legal Tags'
+    )
+    meta: Optional[List[MetaItem]] = Field(
+        None,
+        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
+        title='Frame of Reference Meta Data',
+    )
+    type: Optional[str] = Field(
+        None,
+        description='The reference entity type as declared in common:metadata:entity:*.',
+        title='Entity Type',
+    )
+    version: Optional[float] = Field(
+        None,
+        description='The version number of this dip set; set by the framework.',
+        title='Entity Version Number',
+    )
+
+
+class trajectoryData(DDMSBaseModelWithExtra):
     azimuthReference: Optional[str] = Field(
         None,
         description='Azimuth reference code defining the type of North, default TN for true north.',
@@ -1701,7 +1867,7 @@ class trajectoryData(BaseModel):
     )
 
 
-class trajectory(BaseModel):
+class trajectory(DDMSBaseModel):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
@@ -1747,7 +1913,7 @@ class trajectory(BaseModel):
     )
 
 
-class markerData(BaseModel):
+class markerData(DDMSBaseModelWithExtra):
     age: Optional[ValueWithUnit] = Field(
         None,
         description="The absolute age at the feature boundary. The unit definition is found via the property's unitKey' in 'frameOfReference.units' dictionary.",
@@ -1864,7 +2030,7 @@ class markerData(BaseModel):
     )
 
 
-class marker(BaseModel):
+class marker(DDMSBaseModel):
     acl: TagDictionary = Field(
         ...,
         description='The access control tags associated with this entity.',
@@ -1902,7 +2068,7 @@ class marker(BaseModel):
     )
 
 
-class wellData(BaseModel):
+class wellData(DDMSBaseModelWithExtra):
     basinContext: Optional[basinContext] = Field(
         None,
         description='The basin context details for the well.',
@@ -2075,7 +2241,7 @@ class wellData(BaseModel):
     )
 
 
-class well(BaseModel):
+class well(DDMSBaseModel):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',

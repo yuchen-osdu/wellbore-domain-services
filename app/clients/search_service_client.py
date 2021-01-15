@@ -3,4 +3,4 @@ from app.utils import Context
 
 
 async def get_search_service(ctx: Context) -> SearchServiceClient:
-    return await ctx.app_injector.get(SearchServiceClient, appkey=ctx.app_key, token=ctx.auth)
+    return await ctx.app_injector.get(SearchServiceClient)

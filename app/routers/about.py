@@ -12,6 +12,7 @@ class AboutResponse(BaseModel):
     service: str = None
     version: str = None
     buildNumber: str = None
+    cloudEnvironment: str = None
 
 
 @router.get("/about", response_model=AboutResponse, include_in_schema=True)
@@ -19,7 +20,8 @@ async def get_about() -> AboutResponse:
     return AboutResponse.construct(
         service=__app_name__,
         version=__version__,
-        buildNumber=__build_number__
+        buildNumber=__build_number__,
+        cloudEnvironment=Config.cloud_provider.value
     )
 
 

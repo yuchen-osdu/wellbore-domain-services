@@ -1,0 +1,174 @@
+{
+    "kind": "DATA_PARTITION_TAG:wks:trajectory:1.0.5",
+    "schema": [
+        {
+            "path": "azimuthReference",
+            "kind": "string"
+        },
+        {
+            "path": "channelMnemonics",
+            "kind": "[]string"
+        },
+        {
+            "path": "channelNames",
+            "kind": "[]string"
+        },
+        {
+            "path": "classification",
+            "kind": "string"
+        },
+        {
+            "path": "dateCreated",
+            "kind": "datetime"
+        },
+        {
+            "path": "dateModified",
+            "kind": "datetime"
+        },
+        {
+            "path": "elevationReference.elevationFromMsl.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "elevationReference.elevationFromMsl.value",
+            "kind": "double"
+        },
+        {
+            "path": "elevationReference.name",
+            "kind": "string"
+        },
+        {
+            "path": "externalIds",
+            "kind": "[]link"
+        },
+        {
+            "path": "index.absentValue",
+            "kind": "string"
+        },
+        {
+            "path": "index.azimuthKey",
+            "kind": "string"
+        },
+        {
+            "path": "index.crsKey",
+            "kind": "string"
+        },
+        {
+            "path": "index.dataType",
+            "kind": "string"
+        },
+        {
+            "path": "index.dimension",
+            "kind": "int"
+        },
+        {
+            "path": "index.family",
+            "kind": "string"
+        },
+        {
+            "path": "index.familyType",
+            "kind": "string"
+        },
+        {
+            "path": "index.format",
+            "kind": "string"
+        },
+        {
+            "path": "index.logstoreId",
+            "kind": "long"
+        },
+        {
+            "path": "index.longName",
+            "kind": "string"
+        },
+        {
+            "path": "index.mnemonic",
+            "kind": "string"
+        },
+        {
+            "path": "index.name",
+            "kind": "string"
+        },
+        {
+            "path": "index.properties",
+            "kind": "[]string"
+        },
+        {
+            "path": "index.source",
+            "kind": "string"
+        },
+        {
+            "path": "index.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "indexType",
+            "kind": "string"
+        },
+        {
+            "path": "locationWGS84",
+            "kind": "core:dl:geoshape:1.0.0"
+        },
+        {
+            "path": "name",
+            "kind": "string"
+        },
+        {
+            "path": "referencePosition.coordinates",
+            "kind": "[]double"
+        },
+        {
+            "path": "referencePosition.crsKey",
+            "kind": "string"
+        },
+        {
+            "path": "referencePosition.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "relationships.wellbore.confidence",
+            "kind": "double"
+        },
+        {
+            "path": "relationships.wellbore.id",
+            "kind": "link"
+        },
+        {
+            "path": "relationships.wellbore.name",
+            "kind": "string"
+        },
+        {
+            "path": "relationships.wellbore.version",
+            "kind": "long"
+        },
+        {
+            "path": "start",
+            "kind": "double"
+        },
+        {
+            "path": "step",
+            "kind": "double"
+        },
+        {
+            "path": "stop",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadWgs84.elevationFromMsl.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "wellHeadWgs84.elevationFromMsl.value",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadWgs84.latitude",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadWgs84.longitude",
+            "kind": "double"
+        }
+    ],
+    "ext": null
+}
