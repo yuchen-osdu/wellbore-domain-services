@@ -21,7 +21,6 @@ The following software have components provided under the terms of this license:
 - importlib-metadata (from http://importlib-metadata.readthedocs.io/)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - multidict (from https://github.com/aio-libs/multidict/)
-- opencensus (from https://github.com/census-instrumentation/opencensus-python)
 - opencensus-context (from https://github.com/census-instrumentation/opencensus-python/tree/master/context/opencensus-context)
 - opencensus-ext-ocagent (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent)
 - opencensus-ext-stackdriver (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver)
@@ -29,6 +28,7 @@ The following software have components provided under the terms of this license:
 - packaging (from https://github.com/pypa/packaging)
 - pyarrow (from https://arrow.apache.org/)
 - pytest-asyncio (from https://github.com/pytest-dev/pytest-asyncio)
+- pytest-dependency (from )
 - python-dateutil (from https://dateutil.readthedocs.org)
 - python-multipart (from http://github.com/andrew-d/python-multipart)
 - requests (from http://python-requests.org)
@@ -43,6 +43,7 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- mock (from https://github.com/testing-cabal/mock)
 - packaging (from https://github.com/pypa/packaging)
 - ply (from http://www.dabeaz.com/ply/)
 - pyasn1 (from http://sourceforge.net/projects/pyasn1/)
@@ -61,17 +62,24 @@ The following software have components provided under the terms of this license:
 - httpcore (from https://github.com/encode/httpcore)
 - httpx (from https://github.com/encode/httpx)
 - idna (from https://github.com/kjd/idna)
+- isodate (from http://cheeseshop.python.org/pypi/isodate)
+- mock (from https://github.com/testing-cabal/mock)
 - numpy (from http://www.numpy.org)
+- oauthlib (from https://github.com/idan/oauthlib)
 - packaging (from https://github.com/pypa/packaging)
+- pandas (from http://pandas.pydata.org)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
+- psutil (from https://github.com/giampaolo/psutil)
 - pyarrow (from https://arrow.apache.org/)
 - pyasn1 (from http://sourceforge.net/projects/pyasn1/)
 - pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
 - pycparser (from https://github.com/eliben/pycparser)
+- pyrsistent (from http://github.com/tobgu/pyrsistent/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
 - python-dateutil (from https://dateutil.readthedocs.org)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
+- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 - starlette (from https://github.com/encode/starlette)
 - uvicorn (from https://github.com/tomchristie/uvicorn)
 
@@ -87,6 +95,7 @@ CNRI-Python
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- isodate (from http://cheeseshop.python.org/pypi/isodate)
 - ply (from http://www.dabeaz.com/ply/)
 
 ========================================================================
@@ -114,6 +123,13 @@ The following software have components provided under the terms of this license:
 - numpy (from http://www.numpy.org)
 
 ========================================================================
+ISC
+========================================================================
+The following software have components provided under the terms of this license:
+
+- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
+
+========================================================================
 JSON
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -128,10 +144,18 @@ The following software have components provided under the terms of this license:
 - chardet (from https://github.com/chardet/chardet)
 
 ========================================================================
+LGPL-2.1-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- chardet (from https://github.com/chardet/chardet)
+
+========================================================================
 LGPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- chardet (from https://github.com/chardet/chardet)
 - pycparser (from https://github.com/eliben/pycparser)
 
 ========================================================================
@@ -143,6 +167,11 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioredis (from https://github.com/aio-libs/aioredis)
 - attrs (from https://attrs.readthedocs.io/)
+- azure-common (from https://github.com/Azure/azure-sdk-for-python)
+- azure-core (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/core/azure-core)
+- azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/identity/azure-identity)
+- azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
+- azure-storage-blob (from https://github.com/Azure/azure-storage-python)
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi (from http://cffi.readthedocs.org)
 - coverage (from https://coverage.readthedocs.io)
@@ -150,16 +179,22 @@ The following software have components provided under the terms of this license:
 - h11 (from https://github.com/python-hyper/h11)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig)
 - mockito (from https://github.com/kaste/mockito-python)
+- msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
+- msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
+- msrest (from https://github.com/Azure/msrest-for-python)
+- munch (from http://github.com/Infinidat/munch)
 - pluggy (from https://github.com/pytest-dev/pluggy)
 - py (from http://pylib.readthedocs.org/)
 - pyarrow (from https://arrow.apache.org/)
 - pydantic (from https://github.com/samuelcolvin/pydantic)
 - pyparsing (from http://pyparsing.wikispaces.com/)
+- pyrsistent (from http://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
 - pytest-mock (from https://github.com/pytest-dev/pytest-mock/)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - pytz (from http://pythonhosted.org/pytz)
+- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 - six (from http://pypi.python.org/pypi/six/)
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from http://www.structlog.org/)
@@ -184,6 +219,7 @@ The following software have components provided under the terms of this license:
 - coverage (from https://coverage.readthedocs.io)
 - cryptography (from https://github.com/pyca/cryptography)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python)
+- portalocker (from https://github.com/WoLpH/portalocker)
 - python-dateutil (from https://dateutil.readthedocs.org)
 - pytz (from http://pythonhosted.org/pytz)
 - rsa (from https://stuvel.eu/rsa)
