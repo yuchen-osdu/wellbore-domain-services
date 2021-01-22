@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Query
 import starlette.status as status
 from starlette.responses import Response
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.clients.search_service_client import get_search_service
 from odes_storage.models import *
-from app.model.model_curated import *
+from app.model.model_curated import logset
 from app.utils import Context
 from app.utils import get_ctx
+from app.model.model_utils import to_record, from_record
+from app.model.entity_utils import Entity
 
 import app.routers.ddms_v2.storage_helper as storage_helper
 
@@ -24,10 +26,9 @@ async def get_logset(
         logsetid: str,
         ctx: Context = Depends(get_ctx)
 ) -> logset:
-    storage_service = await get_storage_record_service(ctx)
-    logset_record = await storage_service.get_record(id=logsetid, data_partition_id=ctx.partition_id)
-    # TODO add a check on the kind (*:wks:logSet:1.0.5)
-    return logset(**logset_record.dict())
+    storage_client = await get_storage_record_service(ctx)
+    logset_record = await storage_client.get_record(id=logsetid, data_partition_id=ctx.partition_id)
+    return from_record(logset, logset_record)
 
 
 @router.delete('/logsets/{logsetid}',
@@ -41,20 +42,21 @@ async def get_logset(
                })
 async def del_logset(
         logsetid: str,
-        recursive: bool = Header(False),
+        recursive: bool = Query(default=False, description="Whether or not to delete records children"),
         ctx: Context = Depends(get_ctx)):
-    storage_service = await get_storage_record_service(ctx)
+    storage_client = await get_storage_record_service(ctx)
     if recursive:
         await storage_helper.StorageHelper.delete_recursively(
+            ctx,
             entity_id=logsetid,
             relationship='logset',
-            kind_list=["opendes:wks:log:1.0.5"],
+            entity_list=[Entity.LOG],
             data_partition_id=ctx.partition_id,
             search_service=await get_search_service(ctx),
-            storage_service=storage_service
+            storage_service=storage_client
         )
     else:
-        await storage_service.delete_record(id=logsetid, data_partition_id=ctx.partition_id)
+        await storage_client.delete_record(id=logsetid, data_partition_id=ctx.partition_id)
 
 
 @router.get('/logsets/{logsetid}/versions',
@@ -66,8 +68,8 @@ async def get_logset_versions(
         logsetid: str,
         ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
-    storage_service = await get_storage_record_service(ctx)
-    return await storage_service.get_all_record_versions(id=logsetid, data_partition_id=ctx.partition_id)
+    storage_client = await get_storage_record_service(ctx)
+    return await storage_client.get_all_record_versions(id=logsetid, data_partition_id=ctx.partition_id)
 
 
 @router.get('/logsets/{logsetid}/versions/{version}',
@@ -81,33 +83,24 @@ async def get_logset_version(
         version: int,
         ctx: Context = Depends(get_ctx)
 ) -> logset:
-    storage_service = await get_storage_record_service(ctx)
-    result_logset = await storage_service.get_record_version(id=logsetid,
-                                                             version=version,
-                                                             data_partition_id=ctx.partition_id)
-    # TODO add a check on the kind (*:wks:logSet:1.0.5)
-    return logset(**result_logset.dict())
+    storage_client = await get_storage_record_service(ctx)
+    result_logset = await storage_client.get_record_version(id=logsetid,
+                                                            version=version,
+                                                            data_partition_id=ctx.partition_id)
+    return from_record(logset, result_logset)
 
 
-@router.post('/logsets/{logsetid}/harmonize',
-             response_model=logset,
+@router.post('/logsets',
+             response_model=CreateUpdateRecordsResponse,
              summary="Create or update the LogSets using wks:logSet:1.0.5 schema",
-             operation_id="harmonize_logset",
-             responses={status.HTTP_404_NOT_FOUND: {"description": "logset not found"}})
-async def harmonize_logset(logsetid: str) -> logset:
-    return logset(id=logsetid, data=logSetData(operation="Harmonization"))
-
-
-@router.put('/logsets',
-            response_model=CreateUpdateRecordsResponse,
-            summary="Create or update the LogSets using wks:logSet:1.0.5 schema",
-            operation_id="put_logset",
-            responses={
-                status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
-async def put_logset(
+             operation_id="post_logset",
+             responses={
+                 status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
+async def post_logset(
         logsets: List[logset],
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
-    storage_service = await get_storage_record_service(ctx)
-    return await storage_service.create_or_update_records(record=logsets, data_partition_id=ctx.partition_id)
-
+    storage_client = await get_storage_record_service(ctx)
+    return await storage_client.create_or_update_records(
+        record=[to_record(lgset) for lgset in logsets],
+        data_partition_id=ctx.partition_id)

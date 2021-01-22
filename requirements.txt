@@ -1,19 +1,20 @@
 fastapi>=0.59.0
 cachetools==3.1.1
 aiohttp==3.6.2
-pyjwt>=1.7.1
+pyjwt==1.7.1
 cryptography>=2.7
 pyarrow>=0.15.0
-pandas==1.0.3 # fix 1.0.3 because bug https://github.com/pandas-dev/pandas/issues/34467
+pandas==1.1.2
 uvicorn
 Click
 structlog
 python-rapidjson
 python-multipart
-jsonpath-ng # jsonpath-rw maintenance is it bit abandoned
-httpx>=0.12.1
-typing-extensions>=3.7.4.2
-pydantic>=1.5
+jsonpath-ng # maintenance of 'jsonpath-rw' lib it's bit abandoned
+
 opencensus
 opencensus-ext-stackdriver
+opencensus-ext-azure
 opencensus-ext-ocagent
+opencensus-ext-logging
+

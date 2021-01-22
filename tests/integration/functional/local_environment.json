@@ -1,0 +1,26 @@
+{
+  "description": "This is just a convenient file to ease to run the integration/functional tests locally. Empty value will be ignored",
+  "name": "wdms integration/functional local environment",
+  "values": [
+    {
+      "enabled": true,
+      "key": "token", "value": ""
+    },
+    {
+      "enabled": true,
+      "key": "cloud_provider", "value": ""
+    },
+    {
+      "enabled": true,
+      "key": "base_url", "value": ""
+    },
+    {
+      "enabled": false,
+      "key": "acl_domain", "value": ""
+    },
+    {
+      "enabled": false,
+      "key": "legal_tag", "value": ""
+    }
+  ]
+}

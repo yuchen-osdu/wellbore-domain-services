@@ -1,9 +1,11 @@
 import pytest
 from tempfile import TemporaryDirectory
 from odes_storage.models import Record, StorageAcl, Legal
-import unittest.mock
+import mock
 import asyncio
 from contextlib import contextmanager
+from app.model.model_utils import record_to_dict
+from app.utils import get_or_create_ctx
 
 
 def from_env(key, default=None):
@@ -11,6 +13,50 @@ def from_env(key, default=None):
     result = os.environ.get(key, default)
     # assert result, "Failed to get {} env variable".format(key)
     return result
+
+
+@pytest.fixture()
+def ctx_fixture():
+    """ Create context with a fake tracer in it """
+    ctx = get_or_create_ctx().set_current_with_value(tracer=mock.MagicMock(), logger=NopeLogger())
+    yield ctx
+
+
+@pytest.fixture
+def nope_logger_fixture():
+    from app.helper import logger
+    logger._LOGGER = NopeLogger()
+    yield
+
+
+class NopeLogger:
+    def __init__(self):
+        # empty method
+        pass
+
+    def debug(*arg, **kargs):
+        # empty method
+        pass
+
+    def info(*arg, **kargs):
+        # empty method
+        pass
+
+    def warning(*arg, **kargs):
+        # empty method
+        pass
+
+    def error(*arg, **kargs):
+        # empty method
+        pass
+
+    def exception(*arg, **kargs):
+        # empty method
+        pass
+
+    def critical(*arg, **kargs):
+        # empty method
+        pass
 
 
 class AsyncMock:
@@ -32,7 +78,7 @@ class AsyncMock:
         return args[self._from_input_index]
 
 
-def patch_async(target: str, return_value, mocker=unittest.mock):
+def patch_async(target: str, return_value, mocker=mock):
     future = asyncio.Future()
     future.set_result(return_value)
     return mocker.patch(target, return_value=future)
@@ -40,6 +86,12 @@ def patch_async(target: str, return_value, mocker=unittest.mock):
 
 def create_mock_class(cls_to_mock):
     cls_name = cls_to_mock.__name__ + 'AutoMock'
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
 
     @classmethod
     async def _async_method(cls, *args, **kwargs):
@@ -78,9 +130,18 @@ def create_mock_class(cls_to_mock):
     def set_return_value(cls, method_name, return_value):
         return cls.set_answer(method_name, lambda *args, **kwargs: return_value)
 
+    @classmethod
+    def set_throw(cls, method_name, exception):
+        def _do_throw(*args, **kwargs):
+            raise exception
+        return cls.set_answer(method_name, _do_throw)
+
     m_dict = {
         'set_return_value': set_return_value,
-        'set_answer': set_answer
+        'set_answer': set_answer,
+        'set_throw': set_throw,
+        '__aenter__': __aenter__,
+        '__aexit__': __aexit__,
     }
     for name, _ in cls_to_mock.__dict__.items():
         if name.startswith('_'):
@@ -119,19 +180,20 @@ async def temp_directory() -> str:
         yield tmpdir
 
 
-def build_basic_record(kind: str = None):
-    return Record(
-        kind=kind or 'opendes:osdu:raw:2.0.0',
-        acl=StorageAcl(viewers=['data.default.viewers@opendes.p4d.cloud.ds.com'],
-                       owners=['data.default.owners@opendes.p4d.cloud.ds.com']),
-        legal=Legal(),
-        data={}
-    )
+def make_record(as_dict=False, **kwargs):
+    kwargs.setdefault('kind', 'opendes:osdu:raw:2.0.0')
+    kwargs.setdefault('acl', StorageAcl(
+        viewers=['data.default.viewers@opendes.p4d.cloud.ds.com'],
+        owners=['data.default.owners@opendes.p4d.cloud.ds.com']))
+    kwargs.setdefault('legal', Legal())
+    kwargs.setdefault('data', {})
+    record = Record(**kwargs)
+    return record_to_dict(record) if as_dict else record
 
 
 @pytest.fixture
 def basic_record(kind: str = None):
-    return build_basic_record(kind)
+    return make_record() if kind is None else make_record(kind=kind)
 
 
 def make_fn_return_value(value_to_return, as_coroutine: bool = False):

@@ -3,18 +3,13 @@ import concurrent.futures
 from functools import lru_cache
 from aiohttp import ClientSession
 import contextvars
+from os import path, makedirs
+import tempfile
+import json
 
 from app.model.user import User
 from app.injector.app_injector import AppInjector
 from app.conf import Config
-from app.storage.mime_types import MimeType, MimeTypes
-from os import path, makedirs
-import tempfile
-
-try:
-    import ujson as json
-except ImportError:
-    import json
 
 
 @lru_cache()
@@ -22,11 +17,11 @@ def get_http_client_session(key: str = 'GLOBAL'):
     return ClientSession(json_serialize=json.dumps)
 
 
-def get_process_pool_executor():
-    return get_process_pool_executor._pool
+def get_pool_executor():
+    return get_pool_executor._pool
 
 
-get_process_pool_executor._pool = concurrent.futures.ProcessPoolExecutor(2)  # how many ?
+get_pool_executor._pool = concurrent.futures.ThreadPoolExecutor()
 
 
 def _setup_temp_dir() -> str:
@@ -56,32 +51,6 @@ async def async_with_cache(cache, key: str, fn_coroutine, *args, **kwargs):
     except ValueError:
         pass  # value too large
     return v
-
-
-class NopeLogger:
-    def __init__(self):
-        # empty method
-        pass
-
-    def debug(*arg, **kargs):
-        # empty method
-        pass
-
-    def info(*arg, **kargs):
-        # empty method
-        pass
-
-    def warning(*arg, **kargs):
-        # empty method
-        pass
-
-    def error(*arg, **kargs):
-        # empty method
-        pass
-
-    def critical(*arg, **kargs):
-        # empty method
-        pass
 
 
 class Context:
@@ -307,11 +276,21 @@ class Context:
     def app_injector(self) -> Optional[AppInjector]:
         return self._app_injector
 
-    def __repr__(self):
-        return self.__dict__.__repr__()
+    def __dict__(self):
+        return {
+            "tracer": self.tracer,
+            "logger": self.logger,
+            "correlation_id": self.correlation_id,
+            "request_id": self.request_id,
+            "dev_mode": self.dev_mode,
+            "partition_id": self.partition_id,
+            "app_key": self.app_key,
+            "api_key": self.api_key
+        }
 
-    def __str__(self):
-        return self.__repr__()
+    def __repr__(self):
+        return json.dumps(self.__dict__())
+
 
 
 def get_ctx() -> Context:

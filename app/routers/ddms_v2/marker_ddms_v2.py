@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Query
 import starlette.status as status
 from starlette.responses import Response
 
@@ -6,6 +6,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from odes_storage.models import *
 from app.model.model_curated import *
 from app.utils import Context, get_ctx
+from app.model.model_utils import to_record, from_record
 
 router = APIRouter()
 
@@ -20,10 +21,9 @@ async def get_marker(
         markerid: str,
         ctx: Context = Depends(get_ctx)
 ) -> marker:
-    storage_service = await get_storage_record_service(ctx)
-    marker_record = await storage_service.get_record(id=markerid, data_partition_id=ctx.partition_id)
-    # TODO add a check on the kind (*:wks:marker:1.0.4)
-    return marker(**marker_record.dict())
+    storage_client = await get_storage_record_service(ctx)
+    marker_record = await storage_client.get_record(id=markerid, data_partition_id=ctx.partition_id)
+    return from_record(marker, marker_record)
 
 
 @router.delete('/markers/{markerid}',
@@ -37,10 +37,9 @@ async def get_marker(
                )
 async def del_marker(
         markerid: str,
-        recursive: bool = Header(False),
         ctx: Context = Depends(get_ctx)):
-    storage_service = await get_storage_record_service(ctx)
-    await storage_service.delete_record(id=markerid, data_partition_id=ctx.partition_id)
+    storage_client = await get_storage_record_service(ctx)
+    await storage_client.delete_record(id=markerid, data_partition_id=ctx.partition_id)
 
 
 @router.get('/markers/{markerid}/versions',
@@ -52,8 +51,8 @@ async def get_marker_versions(
         markerid: str,
         ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
-    storage_service = await get_storage_record_service(ctx)
-    return await storage_service.get_all_record_versions(id=markerid, data_partition_id=ctx.partition_id)
+    storage_client = await get_storage_record_service(ctx)
+    return await storage_client.get_all_record_versions(id=markerid, data_partition_id=ctx.partition_id)
 
 
 @router.get('/markers/{markerid}/versions/{version}',
@@ -66,23 +65,23 @@ async def get_marker_version(
         version: int,
         ctx: Context = Depends(get_ctx)
 ) -> marker:
-    storage_service = await get_storage_record_service(ctx)
-    result_marker = await storage_service.get_record_version(id=markerid,
-                                                             version=version,
-                                                             data_partition_id=ctx.partition_id)
-    # TODO add a check on the kind (*:wks:marker:1.0.4)
-    return marker(**result_marker.dict())
+    storage_client = await get_storage_record_service(ctx)
+    result_marker = await storage_client.get_record_version(id=markerid,
+                                                            version=version,
+                                                            data_partition_id=ctx.partition_id)
+    return from_record(marker, result_marker)
 
 
-@router.put('/markers', response_model=CreateUpdateRecordsResponse,
-            summary="Create or update the markers using wks:marker:1.0.4 schema",
-            operation_id="put_marker",
-            responses={
-                status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
-async def put_marker(
+@router.post('/markers', response_model=CreateUpdateRecordsResponse,
+             summary="Create or update the markers using wks:marker:1.0.4 schema",
+             operation_id="post_marker",
+             responses={
+                 status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
+async def post_marker(
         markers: List[marker],
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
-    storage_service = await get_storage_record_service(ctx)
-    return await storage_service.create_or_update_records(record=markers,
-                                                          data_partition_id=ctx.partition_id)
+    storage_client = await get_storage_record_service(ctx)
+    return await storage_client.create_or_update_records(
+        record=[to_record(mk) for mk in markers],
+        data_partition_id=ctx.partition_id)

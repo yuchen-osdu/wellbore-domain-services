@@ -1,0 +1,1386 @@
+openapi: 3.0.2
+info:
+  title: Wellbore DDMS Search OSDU
+  version: '0.2'
+servers:
+  - url: https://api.evq.csp.slb.com/osdu/wdms/search/v2
+security:
+- bearer: []
+- appkey: []
+paths:
+  /query:
+    post:
+      tags:
+        - Search
+      summary: Query
+      operationId: query_ddms_query_post
+      parameters:
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /query_with_cursor:
+    post:
+      tags:
+        - Search
+      summary: Query with cursor
+      operationId: query_ddms_query_with_cursor_post
+      parameters:
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /query/wellbores:
+    post:
+      tags:
+        - Search
+      summary: Query with cursor
+      description: |-
+        Get all Wellbores object.  <p>The wellbore kind is
+                *:wks:wellbore:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbores_post
+      parameters:
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /query/wellbores/bydistance:
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
+      description: |-
+        Get all Wellbores object in a specific area. <p>The specific area will be define by a circle
+                    based on its center coordinates (lat, lon) and radius (meters) </p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbores_bydistance_post
+      parameters:
+        - required: true
+          schema:
+            title: Latitude
+            type: number
+          name: latitude
+          in: query
+        - required: true
+          schema:
+            title: Longitude
+            type: number
+          name: longitude
+          in: query
+        - required: true
+          schema:
+            title: Distance
+            type: integer
+          name: distance
+          in: query
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /query/wellbores/byboundingbox:
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
+      description: |-
+        Get all Wellbores object in a specific area. <p>The specific area will be define by a square
+                    based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbores_byboundingbox_post
+      parameters:
+        - required: true
+          schema:
+            title: Latitude Top Left
+            type: number
+          name: latitude_top_left
+          in: query
+        - required: true
+          schema:
+            title: Longitude Top Left
+            type: number
+          name: longitude_top_left
+          in: query
+        - required: true
+          schema:
+            title: Latitude Bottom Right
+            type: number
+          name: latitude_bottom_right
+          in: query
+        - required: true
+          schema:
+            title: Longitude Bottom Right
+            type: number
+          name: longitude_bottom_right
+          in: query
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /query/wellbores/bygeopolygon:
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
+      description: |-
+        Get all Wellbores object in a specific area.  <p>The specific area will be define by a
+                    polygon based on each of its coordinates (lat, lon) with a minimum of three</p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbores_bygeopolygon_post
+      parameters:
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Points
+              type: array
+              items:
+                $ref: '#/components/schemas/Point'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/query/wellbore/{wellbore_id}/logsets':
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, search logSets by wellbore ID'
+      description: |-
+        Get all LogSets object using its relationship Wellbore ID.  <p>All LogSets linked to this
+                    specific ID will be returned</p>
+                    <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbore__wellbore_id__logsets_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Id
+            type: string
+          name: wellbore_id
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/query/wellbores/{wellbore_attribute}/logsets':
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, search logSets by wellbore attribute'
+      description: |-
+        Get all LogSets object using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores
+                    with this specific attribute will be returned</p>
+                    <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbores__wellbore_attribute__logsets_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Attribute
+            type: string
+          name: wellbore_attribute
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /query/logs:
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, gets logs'
+      description: |-
+        Get all Logs object.  <p>The Logs kind is
+                *:wks:log:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_logs_post
+      parameters:
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/query/wellbore/{wellbore_id}/logs':
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, search logs by wellbore ID'
+      description: |-
+        Get all Logs object using its relationship Wellbore ID.  <p>All Logs linked to this
+                    specific ID will be returned</p>
+                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbore__wellbore_id__logs_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Id
+            type: string
+          name: wellbore_id
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/query/wellbores/{wellbore_attribute}/logs':
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, search logs by wellbore attribute'
+      description: |-
+        Get all Logs object using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores
+                    with this specific attribute will be returned</p>
+                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbores__wellbore_attribute__logs_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Attribute
+            type: string
+          name: wellbore_attribute
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/query/logset/{logset_id}/logs':
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, search logs by logSet ID'
+      description: |-
+        Get all Logs object using its relationship Logset ID.  <p>All Logs linked to this
+                    specific ID will be returned</p>
+                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_logset__logset_id__logs_post
+      parameters:
+        - required: true
+          schema:
+            title: Logset Id
+            type: string
+          name: logset_id
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/query/logsets/{logset_attribute}/logs':
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, search logs by logSet attribute'
+      description: |-
+        Get all Logs object using a specific attribute of LogSets.  <p>All Logs linked to LogSets
+                    with this specific attribute will be returned</p>
+                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_logsets__logset_attribute__logs_post
+      parameters:
+        - required: true
+          schema:
+            title: Logset Attribute
+            type: string
+          name: logset_attribute
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/query/wellbore/{wellbore_id}/markers':
+    post:
+      tags:
+        - Search
+      summary: 'Query with cursor, search markers by wellbore ID'
+      description: |-
+        Get all Markers object using its relationship Wellbore ID.  <p>All Markers linked to this
+                    specific ID will be returned</p>
+                    <p>The Marker kind is *:wks:marker:* returns all records directly based on existing schemas</p>
+      operationId: query_ddms_query_wellbore__wellbore_id__markers_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Id
+            type: string
+          name: wellbore_id
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /fastquery/wellbores:
+    post:
+      tags:
+        - Fast search
+      summary: Query with cursor
+      description: |-
+        Get all Wellbores IDs object.  <p>The wellbore kind is
+                *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbores_post
+      parameters:
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /fastquery/wellbores/bydistance:
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
+      description: |-
+        Get all Wellbores IDs IDs objects in a specific area. <p>The specific area will be define by a circle
+                    based on its center coordinates (lat, lon) and radius (meters) </p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbores_bydistance_post
+      parameters:
+        - required: true
+          schema:
+            title: Latitude
+            type: number
+          name: latitude
+          in: query
+        - required: true
+          schema:
+            title: Longitude
+            type: number
+          name: longitude
+          in: query
+        - required: true
+          schema:
+            title: Distance
+            type: integer
+          name: distance
+          in: query
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /fastquery/wellbores/byboundingbox:
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
+      description: |-
+        Get all Wellbores IDs objects in a specific area. <p>The specific area will be define by a square
+                    based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbores_byboundingbox_post
+      parameters:
+        - required: true
+          schema:
+            title: Latitude Top Left
+            type: number
+          name: latitude_top_left
+          in: query
+        - required: true
+          schema:
+            title: Longitude Top Left
+            type: number
+          name: longitude_top_left
+          in: query
+        - required: true
+          schema:
+            title: Latitude Bottom Right
+            type: number
+          name: latitude_bottom_right
+          in: query
+        - required: true
+          schema:
+            title: Longitude Bottom Right
+            type: number
+          name: longitude_bottom_right
+          in: query
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /fastquery/wellbores/bygeopolygon:
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
+      description: |-
+        Get all Wellbores IDs objects in a specific area.  <p>The specific area will be define by a
+                    polygon based on each of its coordinates (lat, lon) with a minimum of three</p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbores_bygeopolygon_post
+      parameters:
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Points
+              type: array
+              items:
+                $ref: '#/components/schemas/Point'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/fastquery/wellbore/{wellbore_id}/logsets':
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, search logSets IDs by wellbore ID'
+      description: |-
+        Get all LogSets IDs objects using its relationship Wellbore ID.  <p>All LogSets linked to this
+                    specific ID will be returned</p>
+                    <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbore__wellbore_id__logsets_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Id
+            type: string
+          name: wellbore_id
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/fastquery/wellbores/{wellbore_attribute}/logsets':
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, search logSets IDs by wellbore attribute'
+      description: |-
+        Get all LogSets IDs objects using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores
+                    with this specific attribute will be returned</p>
+                    <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbores__wellbore_attribute__logsets_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Attribute
+            type: string
+          name: wellbore_attribute
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  /fastquery/logs:
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, gets logs'
+      description: |-
+        Get all Logs object.  <p>The Logs kind is
+                *:wks:log:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_logs_post
+      parameters:
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/fastquery/wellbore/{wellbore_id}/logs':
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, search logs IDs by wellbore ID'
+      description: |-
+        Get all Logs IDs objects using its relationship Wellbore ID.  <p>All Logs linked to this
+                    specific ID will be returned</p>
+                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbore__wellbore_id__logs_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Id
+            type: string
+          name: wellbore_id
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/fastquery/wellbores/{wellbore_attribute}/logs':
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, search logs IDs by wellbore attribute'
+      description: |-
+        Get all Logs IDs objects using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores
+                    with this specific attribute will be returned</p>
+                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbores__wellbore_attribute__logs_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Attribute
+            type: string
+          name: wellbore_attribute
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/fastquery/logset/{logset_id}/logs':
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, search logs IDs by logSet ID'
+      description: |-
+        Get all Logs IDs objects using its relationship Logset ID.  <p>All Logs linked to this
+                    specific ID will be returned</p>
+                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_logset__logset_id__logs_post
+      parameters:
+        - required: true
+          schema:
+            title: Logset Id
+            type: string
+          name: logset_id
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/fastquery/logsets/{logset_attribute}/logs':
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, search logs IDs by logSet attribute'
+      description: |-
+        Get all Logs IDs objects using a specific attribute of LogSets.  <p>All Logs linked to LogSets
+                    with this specific attribute will be returned</p>
+                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_logsets__logset_attribute__logs_post
+      parameters:
+        - required: true
+          schema:
+            title: Logset Attribute
+            type: string
+          name: logset_attribute
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/fastquery/wellbore/{wellbore_id}/markers':
+    post:
+      tags:
+        - Fast search
+      summary: 'Query with cursor, search markers IDs by wellbore ID'
+      description: |-
+        Get all Markers IDs objects using its relationship Wellbore ID.  <p>All Markers linked to this
+                    specific ID will be returned</p>
+                    <p>The Marker kind is *:wks:marker:* returns all records IDs directly based on existing schemas</p>
+      operationId: query_ddms_fastquery_wellbore__wellbore_id__markers_post
+      parameters:
+        - required: true
+          schema:
+            title: Wellbore Id
+            type: string
+          name: wellbore_id
+          in: path
+        - required: false
+          schema:
+            title: Query
+            type: string
+          name: query
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+components:
+  schemas:
+    ByBoundingBox:
+      title: ByBoundingBox
+      required:
+        - topLeft
+        - bottomRight
+      type: object
+      properties:
+        topLeft:
+          $ref: '#/components/schemas/Point'
+        bottomRight:
+          $ref: '#/components/schemas/Point'
+    ByDistance:
+      title: ByDistance
+      required:
+        - point
+      type: object
+      properties:
+        distance:
+          title: Distance
+          type: number
+        point:
+          $ref: '#/components/schemas/Point'
+    ByGeoPolygon:
+      title: ByGeoPolygon
+      type: object
+      properties:
+        points:
+          title: Points
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        errors:
+          title: Errors
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    Point:
+      title: Point
+      type: object
+      properties:
+        latitude:
+          title: Latitude
+          type: number
+        longitude:
+          title: Longitude
+          type: number
+    QueryRequest:
+      title: QueryRequest
+      required:
+        - kind
+      type: object
+      properties:
+        kind:
+          title: Kind
+          type: string
+        limit:
+          title: Limit
+          type: integer
+        query:
+          title: Query
+          type: string
+        returnedFields:
+          title: Returnedfields
+          type: array
+          items:
+            type: string
+        sort:
+          $ref: '#/components/schemas/SortQuery'
+        queryAsOwner:
+          title: Queryasowner
+          type: boolean
+        spatialFilter:
+          $ref: '#/components/schemas/SpatialFilter'
+        offset:
+          title: Offset
+          type: integer
+    SortQuery:
+      title: SortQuery
+      type: object
+      properties:
+        field:
+          title: Field
+          type: array
+          items:
+            type: string
+        order:
+          title: Order
+          type: string
+          enum: ['ASC', 'DESC']
+    SpatialFilter:
+      title: SpatialFilter
+      type: object
+      properties:
+        field:
+          title: Field
+          type: string
+        byBoundingBox:
+          $ref: '#/components/schemas/ByBoundingBox'
+        byDistance:
+          $ref: '#/components/schemas/ByDistance'
+        byGeoPolygon:
+          $ref: '#/components/schemas/ByGeoPolygon'
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+  securitySchemes:
+    bearer:
+      type: apiKey
+      name: Authorization
+      in: header
+    appkey:
+      type: apiKey
+      in: header
+      name: appkey

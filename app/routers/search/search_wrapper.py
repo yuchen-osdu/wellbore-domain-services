@@ -18,16 +18,10 @@ class SearchWrapper:
         # Convert the query string into query object
         cursor = None
 
-        request_with_cursor = CursorQueryRequest(
-            kind=query_request.kind,
-            limit=100,
-            query=query_request.query,
-            returned_fields=query_request.returned_fields,
-            sort=query_request.sort,
-            query_as_owner=query_request.query_as_owner,
-            spatial_filter=query_request.spatial_filter,
-            cursor=cursor
-        )
+        test_dict = query_request.dict(by_alias=True)
+        request_with_cursor = CursorQueryRequest.parse_obj(test_dict)
+        request_with_cursor.limit = 100
+        request_with_cursor.cursor = cursor
 
         agregated_result = CursorQueryResponse()
         agregated_result.results = []

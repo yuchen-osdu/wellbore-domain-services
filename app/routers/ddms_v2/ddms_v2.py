@@ -1,16 +1,9 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from app.model.model_curated import *
-from app.utils import Context
-from app.storage.tenant_provider import resolve_tenant
+from app.utils import Context, get_ctx
 
 
 router = APIRouter()
-
-
-def get_ctx() -> Context:
-    return Context.current()
-
 
 
 @router.get('/status', response_model=V1AboutResponse,

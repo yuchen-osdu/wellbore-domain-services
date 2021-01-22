@@ -1,14 +1,15 @@
 from dataclasses import dataclass
-from typing import Optional, Callable, Any, Dict
+from typing import Optional, Callable, Any, Dict, List
 import logging
+import os
 
-__all__ = ['Config', 'ConfigurationContainer', 'check_environment', 'InvalidConfigurationException']
+__all__ = ['Config',
+           'ConfigurationContainer',
+           'check_environment',
+           'cloud_provider_additional_environment',
+           'validator_path_must_exist']
 
 logger = logging.getLogger('configuration')
-
-
-class InvalidConfigurationException(Exception):
-    pass
 
 
 @dataclass
@@ -18,12 +19,17 @@ class EnvVar:
     secret: bool = False
     default: Optional[str] = None
     value: Optional[Any] = None
+    allowed_values: Optional[List[Any]] = None  # if value not in the given list, it's reassigned to None
+    is_mandatory: bool = False
     factory: Optional[Callable[[str], Any]] = None  # transform input value into the target
+    validator: Optional[Callable[[Any], int]] = None  # value is always check if None
 
-    def load(self):
-        import os
-        value = os.environ.get(self.key, self.default)
-        self.value = value if self.factory is None else self.factory(value)
+    def load(self, environment_dict):
+        value = environment_dict.get(self.key, self.default)
+        if self.factory is not None and value is not None:
+            value = self.factory(value)
+        if self.allowed_values is None or value in self.allowed_values:
+            self.value = value
 
     def __call__(self):
         return self.value
@@ -32,15 +38,21 @@ class EnvVar:
         return f'{self.key} = {self.printable_value}'
 
     def __bool__(self):
-        return self.value is not None
+        if self.value is None:
+            return False
+        return True if self.validator is None else self.validator(self.value)
 
     @property
     def printable_value(self) -> str:
-        if not self:
+        if self.value is None:
             return 'UNDEFINED'
         if self.secret:
             return '*****'
         return str(self.value)
+
+
+def validator_path_must_exist(path: str):
+    return os.path.exists(path)
 
 
 @dataclass(repr=False, eq=False)
@@ -62,35 +74,48 @@ class ConfigurationContainer:
 
     use env_var.printable_value instead of env_var.value when the goal is to log/display it.
     """
+
+    cloud_provider: EnvVar = EnvVar(
+        key='CLOUD_PROVIDER',
+        description='Short name of the current cloud provider environment, must be "gcp" or "az"',
+        default=None,
+        is_mandatory=True,
+        allowed_values=['gcp', 'az', 'local'],
+        factory=lambda x: x.lower()
+    )
+
     service_host_entitlements: EnvVar = EnvVar(
         key='SERVICE_HOST_ENTITLEMENTS',
         description='Back-end for entitlements service',
-        default=None)
-
+        is_mandatory=True)
+  
     service_host_search: EnvVar = EnvVar(
         key='SERVICE_HOST_SEARCH',
         description='Back-end for search service',
-        default=None)
-
+        is_mandatory=True)
+  
     service_host_storage: EnvVar = EnvVar(
         key='SERVICE_HOST_STORAGE',
         description='Back-end for storage service',
-        default=None)
+        is_mandatory=True)
 
-    optional_routes: EnvVar = EnvVar(
-        key='OS_WELLBORE_DDMS_SHOW_OPTIONAL_ROUTES',
-        description='show optional routes for development purposes',
-        default='false',
-        factory=lambda x: x.lower() == 'true' or x == '1')
+    de_client_config_timeout: EnvVar = EnvVar(
+        key='DE_CLIENT_CFG_TIMEOUT',
+        description='set connect, read, write, and pool timeouts (in seconds) for all DE client.',
+        default='45',  # gateway timeout is 30s, greater value ensure the async client won't be the bottleneck.
+        factory=lambda x: int(x))
 
-    default_data_tenant_project_id: EnvVar = EnvVar(
-        key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
-        description='Data tenant ID',
-        default='UNDEFINED')
+    de_client_config_max_connection: EnvVar = EnvVar(
+        key='DE_CLIENT_CFG_MAX_CONNECTION',
+        description='maximum number of allowable connections, 0 to always allow.',
+        default='200',
+        factory=lambda x: int(x))
 
-    default_data_tenant_credentials: EnvVar = EnvVar(
-        key='OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS',
-        description='path to the key file of the SA to access the data tenant')
+    de_client_config_max_keepalive: EnvVar = EnvVar(
+        key='DE_CLIENT_CFG_MAX_KEEPALIVE',
+        description='number of allowable keep-alive connections, 0 to always allow.',
+        default='200',
+        factory=lambda x: int(x))
 
     build_details: EnvVar = EnvVar(
         key='OS_WELLBORE_DDMS_BUILD_DETAILS',
@@ -107,7 +132,17 @@ class ConfigurationContainer:
     openapi_prefix: EnvVar = EnvVar(
         key='OPENAPI_PREFIX',
         description='specify the base path for the openapi doc, in case deployed beind a proxy',
-        default='/')
+        default='/api/os-wellbore-ddms')
+
+    custom_catalog_timeout: EnvVar = EnvVar(
+        key='CUSTOM_CATALOG_TIMEOUT',
+        description='Timeout to invalidate custom catalog in seconds',
+        default='300',
+        factory=lambda x: int(x))
+
+    _environment_dict: Dict = os.environ
+
+    _contextual_loader: Callable = None
 
     def add(self, name: str, value: Any, *, override: bool = False):
         """ add a custom """
@@ -118,46 +153,62 @@ class ConfigurationContainer:
     def add_from_env(self,
                      env_var_key: str,
                      attribute_name: Optional[str] = None,
-                     optional: bool = True,
+                     is_mandatory: bool = False,
                      description: str = '',
                      secret: bool = False,
                      default: Optional[str] = None,
+                     allowed_values: Optional[List[Any]] = None,
                      factory: Optional[Callable[[str], Any]] = None,
+                     validator: Optional[Callable[[Any], int]] = None,
                      *, override: bool = False) -> Optional:
-        env_var = EnvVar(key=env_var_key, description=description, secret=secret, default=default, factory=factory)
-        env_var.load()
+        env_var = EnvVar(key=env_var_key,
+                         description=description,
+                         secret=secret,
+                         default=default,
+                         factory=factory,
+                         allowed_values=allowed_values,
+                         is_mandatory=is_mandatory,
+                         validator=validator)
+        env_var.load(self._environment_dict)
         self.add(attribute_name or env_var_key, env_var, override=override)
         return env_var.value
 
-
     @classmethod
-    def with_load_all(cls):
-        inst = cls()
-        # loop for EnvVar and load them all
-        for var in inst.env_vars():
-            var.load()
-
+    def with_load_all(cls, environment_dict=os.environ, contextual_loader=None):
+        inst = cls(_environment_dict=environment_dict,
+                   _contextual_loader=contextual_loader)
+        inst.reload()
         return inst
+
+    def reload(self, environment_dict=None):
+        if environment_dict is not None:
+            self._environment_dict = environment_dict
+
+        # loop for EnvVar and load them all
+        for var in self.env_vars():
+            var.load(self._environment_dict)
+
+        if self._contextual_loader is not None:
+            self._contextual_loader(self)
 
     def __getitem__(self, name):
         """ look for any declared attribute and env var key """
-        if name in self.__dict__:
-            attribute = self.__getattribute__(name)
-        else:
-            attribute = next(v for v in self.env_vars() if v.key == name)
+        attribute = self.get_env_or_attribute(name)
+        if attribute is None:  # fallback into environment dict
+            return self._environment_dict[name]
+
         return attribute.value if isinstance(attribute, EnvVar) else attribute
 
     def get(self, name, default=None):
-        if name in self:
+        try:
             return self[name]
-        return default
+        except KeyError:
+            return default
 
-    def get_env(self, name) -> Optional[EnvVar]:
+    def get_env_or_attribute(self, name) -> Optional[EnvVar]:
         if name in self.__dict__:
-            attribute = self.__getattribute__(name)
-        else:
-            attribute = next(v for v in self.env_vars() if v.key == name)
-        return attribute if isinstance(attribute, EnvVar) else None
+            return self.__getattribute__(name)
+        return next((v for v in self.env_vars() if v.key == name), None)
 
     def __contains__(self, name) -> bool:
         if name in self.__dict__:
@@ -168,7 +219,11 @@ class ConfigurationContainer:
         return ', '.join([f'{k}={v}' for k, v in self.as_printable_dict().items()])
 
     def as_printable_dict(self) -> Dict[str, str]:
-        return {name: att.printable_value if isinstance(att, EnvVar) else att for name, att in self.__dict__.items()}
+        return {
+            name:
+                att.printable_value if isinstance(att, EnvVar)
+                else att for name, att in self.__dict__.items()
+            if not name.startswith('_')}
 
     def env_vars(self):
         """ generator of all env vars only """
@@ -177,37 +232,61 @@ class ConfigurationContainer:
                 yield attribute
 
 
+def cloud_provider_additional_environment(config: ConfigurationContainer):
+    provider = config.cloud_provider.value
+    if provider == 'az':
+        config.add_from_env(attribute_name='az_ai_instrumentation_key',
+                            env_var_key='AZ_AI_INSTRUMENTATION_KEY',
+                            description='azure app insights instrumentation key',
+                            secret=True,
+                            is_mandatory=True,
+                            override=True)
+
+        config.add_from_env(attribute_name='az_logger_level',
+                            env_var_key='AZ_LOGGER_LEVEL',
+                            description='azure logger level',
+                            default='INFO',
+                            secret=False,
+                            is_mandatory=False,
+                            override=True)
+
+    if provider == 'gcp':
+        config.add_from_env(attribute_name='default_data_tenant_project_id',
+                            env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
+                            description='GCP data tenant ID',
+                            default='logstore-dev',
+                            is_mandatory=True,
+                            override=True)
+
+        config.add_from_env(attribute_name='default_data_tenant_credentials',
+                            env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS',
+                            description='path to the key file of the SA to access the data tenant',
+                            is_mandatory=True,
+                            override=True,
+                            validator=validator_path_must_exist)
+
+
 # Global config instance
-Config = ConfigurationContainer.with_load_all()
+Config = ConfigurationContainer.with_load_all(contextual_loader=cloud_provider_additional_environment)
 
 
 def check_environment(configuration):
-    import os.path
     """
-    The goal is to fail fast and provide meaningfully report in case of error to ease any fix/debug
-    We may generalize and isolate this in each module (some implementation may need specific setup,
-    e.g. some Azure impl may require an dedicated env var to some valid file).
-    For now keep every rules here and review it later.
+        The goal is to fail fast and provide meaningfully report in case of error to ease any fix/debug
+        We may generalize and isolate this in each module (some implementation may need specific setup,
+        e.g. some Azure impl may require an dedicated env var to some valid file).
+        For now keep every rules here and review it later.
 
-    By default, in dev_mode log only. In not dev mode
+        By default, in dev_mode log only. In not dev mode
     """
     logger.info('Environment configuration:')
     for k, v in configuration.as_printable_dict().items():
         logger.info(f'   - {k} = {v}')
 
-    # check for mandatory undefined env var
-    errors = [
-        f'env var {v.key} ({v.description}) is undefined' for v in [
-            configuration.default_data_tenant_project_id,
-            configuration.default_data_tenant_credentials]
-        if not v]
-
-    # check path exists
-    errors.extend([
-        f'file {v.value} not found path set in {v.key} ({v.description})' for v in [
-            configuration.default_data_tenant_credentials]
-        if not v or not os.path.exists(v.value)
-    ])
+    mandatory_variables = [v for v in configuration.env_vars()
+                           if v.is_mandatory and not v]
+    errors = [f'env var {v.key} ({v.description}) is undefined or invalid, current value={os.environ.get(v.key)}'
+              for v in mandatory_variables]
 
     logger_level = logger.warning if configuration.dev_mode.value else logger.error
     for err in errors:
@@ -220,4 +299,9 @@ def check_environment(configuration):
         else:  # just abort
             raise RuntimeError('Incorrect environment: ' + ', '.join(errors))
 
+
+AUTHORIZATION_HEADER_NAME = 'Authorization'
+APP_KEY_HEADER_NAME = 'appKey'
+CORRELATION_ID_HEADER_NAME = 'correlation-id'
+REQUEST_ID_HEADER_NAME = 'Request-ID'
 

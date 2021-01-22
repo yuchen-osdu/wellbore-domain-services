@@ -1,52 +1,44 @@
 from fastapi import FastAPI, Depends
-from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
-from fastapi import HTTPException
 
-from app.routers import experiment, login, probes, parquet, about
-from app.routers.ddms_v2 import ddms_v2, wellbore_ddms_v2, logset_ddms_v2, trajectory_ddms_v2, marker_ddms_v2, \
-    log_ddms_v2, well_ddms_v2
-from app.routers.logrecognition import log_recognition
-from app.routers.storage import storage
-from app.routers.entitlements import entitlements
-from app.routers.search import search
-from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
-from app.middleware.basic_context_middleware import require_data_partition_id, require_appkey
-from app.injector.main_injector import MainInjector
-from app.injector.app_injector import AppInjector
+from app import __version__, __build_number__, __app_name__
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
+from app.errors.exception_handlers import add_exception_handlers
+
+from app.helper import traces, logger
+from app.injector.app_injector import AppInjector
+from app.injector.main_injector import MainInjector
+from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
+from app.middleware.basic_context_middleware import require_data_partition_id
+from app.routers import probes, about
+from app.routers.ddms_v2 import (
+    ddms_v2,
+    wellbore_ddms_v2,
+    logset_ddms_v2,
+    marker_ddms_v2,
+    log_ddms_v2,
+    well_ddms_v2
+)
+from app.routers.trajectory import trajectory_ddms_v2
+from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
+from app.routers.logrecognition import log_recognition
+from app.routers.search import search, fast_search
+from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import get_http_client_session, OpenApiHandler, get_wdms_temp_dir
 
-from app.helper import logger, traces
-from app import __version__, __build_number__, __app_name__
+base_app = FastAPI()
 
-from app.errors.validation_error import http422_error_handler
 
-from odes_entitlements.exceptions import ApiException as OSDUEntitlementsException
-from odes_search.exceptions import ApiException as OSDUSearchException
-from odes_storage.exceptions import ApiException as OSDUStorageException
-
-from app.errors.client_error import (
-    http_search_error_handler,
-    http_storage_error_handler,
-    http_entitlements_error_handler
-)
-
-from app.errors.unhandled_error import unhandled_error_handler
-
-ddms_logger = logger.init_logger()
-
+#The sub application which contains all the routers
 wdms_app = FastAPI(title=__app_name__,
                    description='build ' + __build_number__,
                    version=__version__,
-
-                   # https://fastapi.tiangolo.com/advanced/sub-applications-proxy/
-                   # when deployed, it may be behind a proxy such as istio, with path being rewritten.
-                   root_path=Config.openapi_prefix.value,
                    )
 
 app_injector = AppInjector()
+
+base_app.mount(Config.openapi_prefix.value, wdms_app)
 
 
 def custom_openapi(*args, **kwargs):
@@ -69,11 +61,6 @@ def custom_openapi(*args, **kwargs):
 
 wdms_app.openapi = custom_openapi
 
-# These modules are only needed for development purposes
-# they are enabled but the corresponding routers will only appear
-# if the OS_WELLBORE_DDMS_SHOW_OPTIONAL_ROUTES env var is true
-optional_modules = [storage, entitlements, search, parquet]
-
 
 def hide_router_modules(modules):
     for mod in modules:
@@ -81,28 +68,32 @@ def hide_router_modules(modules):
             rte.include_in_schema = False
 
 
-# Check the OS_WELLBORE_DDMS_SHOW_OPTIONAL_ROUTES env var now
-# at startup event routes are already displayed
-if not Config.optional_routes.value:
-    hide_router_modules(optional_modules)
-
-
-@wdms_app.on_event("startup")
+@base_app.on_event("startup")
 async def startup_event():
+    logger.init_logger()
     check_environment(Config)
     print('using temporary directory:', get_wdms_temp_dir())
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name='os-wellbore-ddms')
 
 
-@wdms_app.on_event('shutdown')
+@base_app.on_event('shutdown')
 async def shutdown_event():
+    # clients close
+    storage_client = await app_injector.get(StorageRecordServiceClient)
+    if storage_client is not None:
+        await storage_client.api_client.close()
+
+    search_client = await app_injector.get(SearchServiceClient)
+    if search_client is not None:
+        await storage_client.api_client.close()
+
     await get_http_client_session().close()
 
+wellbore_api_group_prefix = '/ddms/v2'
 
-wdms_app.include_router(login.router)
 wdms_app.include_router(probes.router)
-wdms_app.include_router(about.router)
+wdms_app.include_router(about.router, prefix=wellbore_api_group_prefix)
 
 ddms_v2_routes_groups = [
     (ddms_v2, "Wellbore DDMS"),
@@ -112,45 +103,33 @@ ddms_v2_routes_groups = [
     (trajectory_ddms_v2, "Trajectory"),
     (marker_ddms_v2, "Marker"),
     (log_ddms_v2, "Log"),
+    (dipset_ddms_v2, "Dipset"),
+    (dip_ddms_v2, "Dips"),
 ]
 for ddms_v2_routes_group in ddms_v2_routes_groups:
     wdms_app.include_router(ddms_v2_routes_group[0].router,
-                            prefix='/ddms/v2',
+                            prefix=wellbore_api_group_prefix,
                             tags=[ddms_v2_routes_group[1]],
                             dependencies=[
                                 Depends(require_opendes_authorized_user, use_cache=False),
                                 Depends(require_data_partition_id, use_cache=False)
                             ])
 
-wdms_app.include_router(storage.router, prefix='/ddms', tags=['storage'], dependencies=[
-    Depends(require_data_partition_id, use_cache=False),
-    Depends(require_opendes_authorized_user, use_cache=False),
-    Depends(require_appkey, use_cache=False)
-])
-
-wdms_app.include_router(entitlements.router, prefix='/ddms', tags=['entitlements'], dependencies=[
-    Depends(require_data_partition_id, use_cache=False),
-    Depends(require_opendes_authorized_user, use_cache=False),
-    Depends(require_appkey, use_cache=False)
-])
-
 wdms_app.include_router(search.router, prefix='/ddms', tags=['search'], dependencies=[
     Depends(require_data_partition_id, use_cache=False),
-    Depends(require_opendes_authorized_user, use_cache=False),
-    Depends(require_appkey, use_cache=False)
+    Depends(require_opendes_authorized_user, use_cache=False)
 ])
-# wdms_app.include_router(experiment.router, prefix='/experiment', tags=['experiment'])
-wdms_app.include_router(parquet.router, prefix='/parquet', tags=['parquet'])
+wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search'], dependencies=[
+    Depends(require_data_partition_id, use_cache=False),
+    Depends(require_opendes_authorized_user, use_cache=False)])
 
-wdms_app.include_router(log_recognition.router, prefix='/log-recognition', tags=['log-recognition'])
+wdms_app.include_router(log_recognition.router, prefix='/log-recognition', tags=['log-recognition'], dependencies=[
+    Depends(require_data_partition_id, use_cache=False),
+    Depends(require_opendes_authorized_user, use_cache=False)])
 
 # order is last executed first
-wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector, app_logger=ddms_logger)
 wdms_app.add_middleware(TracingMiddleware)
+wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
 
 # adding exception handling
-wdms_app.add_exception_handler(RequestValidationError, http422_error_handler)
-wdms_app.add_exception_handler(OSDUSearchException, http_search_error_handler)
-wdms_app.add_exception_handler(OSDUStorageException, http_storage_error_handler)
-wdms_app.add_exception_handler(OSDUEntitlementsException, http_entitlements_error_handler)
-wdms_app.add_exception_handler(Exception, unhandled_error_handler)
+add_exception_handlers(wdms_app)

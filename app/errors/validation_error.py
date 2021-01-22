@@ -8,16 +8,18 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
+from app.helper.logger import get_logger
+
 
 async def http422_error_handler(
-    _: Request, exc: Union[RequestValidationError, ValidationError],
+    request: Request, exc: Union[RequestValidationError, ValidationError],
 ) -> JSONResponse:
     """
     Catches and handles pydantic validation errors
     """
-    return JSONResponse(
-        {"errors": exc.errors()}, status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-    )
+
+    get_logger().exception(f"http422_error_handler - {request.url}")
+    return JSONResponse({"errors": exc.errors()}, status_code=HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 validation_error_response_definition["properties"] = {

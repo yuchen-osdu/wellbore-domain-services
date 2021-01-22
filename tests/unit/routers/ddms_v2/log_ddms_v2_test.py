@@ -1,3 +1,7 @@
+"""
+tests specific to logset APIs. Common tests implemented in common_ddms_v2_test
+"""
+
 import asyncio
 import json
 from tempfile import TemporaryDirectory
@@ -7,7 +11,7 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from fastapi import HTTPException
+from fastapi import HTTPException, Header
 from fastapi.testclient import TestClient
 import pytest
 
@@ -18,11 +22,13 @@ from odes_storage.models import Record, CreateUpdateRecordsResponse
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
+from app.middleware import require_data_partition_id
 from app.model.log_bulk import LogBulkHelper
-from app.storage.mime_types import MimeTypes
+from app.bulk_persistence import MimeTypes
+from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
-from tests.unit.test_utils import assert_dict_contained, build_basic_record
+from tests.unit.test_utils import assert_dict_contained, make_record
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
@@ -47,7 +53,7 @@ class TestHelper:
         return loop.run_until_complete(_fetcher(record_id))
 
     @staticmethod
-    def put_record_to_storage(one_record_or_list_of_records):
+    def post_record_to_storage(one_record_or_list_of_records):
         """ return one id it single record else list of ids """
 
         async def _putter(record_or_list):
@@ -67,7 +73,7 @@ class TestHelper:
 
     @staticmethod
     def make_minimal_log_record(name: str, id: str = None) -> Record:
-        record = build_basic_record()
+        record = make_record()
         record.data = {"log": {"name": name}}
 
         if id:
@@ -88,6 +94,9 @@ def client():
         async def blob_storage_builder(*args, **kwargs):
             return LocalFSBlobStorage(directory=tmpdir)
 
+        async def set_default_partition(data_partition_id: str = Header('opendes')):
+            Context.set_current_with_value(partition_id=data_partition_id)
+
         app_injector.register(BlobStorageBase, blob_storage_builder)
         app_injector.register(StorageRecordServiceClient, storage_service_builder)
 
@@ -96,73 +105,11 @@ def client():
             pass
 
         wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
+        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
 
         yield TestClient(wdms_app)
 
-
-def test_log_put_single(client):
-    # given
-    input_data = [TestHelper.make_minimal_log_dict('test_log')]
-
-    # when
-    response = client.put(TestHelper.build_url('/logs'), json.dumps(input_data), headers=TestHelper.BASE_HEADERS)
-
-    # then
-    assert response.status_code == 200
-    store_response = CreateUpdateRecordsResponse.parse_obj(response.json())
-    assert store_response.record_count == 1
-    record_id = store_response.record_ids[0]
-    assert record_id
-
-    # check what has been stored
-    actual = TestHelper.get_record_from_storage(record_id)
-
-    ref_data = input_data[0]
-    ref_data['id'] = record_id
-
-    assert_dict_contained(actual.dict(), ref_data)
-
-
-def test_log_put_multiple(client):
-    # given
-    size = 3
-    input_data = [TestHelper.make_minimal_log_dict(f'log{i}') for i in range(size)]
-
-    # when
-    response = client.put(TestHelper.build_url('/logs'), json.dumps(input_data), headers=TestHelper.BASE_HEADERS)
-
-    # then
-    assert response.status_code == 200
-    store_response = CreateUpdateRecordsResponse.parse_obj(response.json())
-    assert store_response.record_count == size
-
-    for count, record_id in enumerate(store_response.record_ids):
-        assert record_id
-
-        # check what has been stored
-        actual = TestHelper.get_record_from_storage(record_id)
-
-        ref_data = input_data[count]
-        ref_data['id'] = record_id
-
-        assert_dict_contained(actual.dict(), ref_data)
-
-
-def test_logs_get(client):
-    # given
-    size = 3
-    input_data = [TestHelper.make_minimal_log_record(f'log{i}', f'log_{i}') for i in range(size)]
-    ids = TestHelper.put_record_to_storage(input_data)
-
-    # when
-    for expected_record in input_data:
-        response = client.get(TestHelper.build_url(f'/logs/{expected_record.id}'), headers=TestHelper.BASE_HEADERS)
-
-        assert response.status_code == 200
-        actual_record = Record.parse_raw(response.content)
-
-        # because some default field may have been created
-        assert_dict_contained(actual_record.dict(), expected_record.dict())
+        wdms_app.dependency_overrides = {}  # clean up
 
 
 log_data = [
@@ -183,37 +130,43 @@ log_data = [
 log_data_orient = 'values'
 
 
-@pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
-                                            pytest.param(False, id="native_nan")])
-@pytest.mark.parametrize("test_data", log_data)
-def test_logs_write_then_read_data(client, test_data, nan_conversion):
+def logs_write(client, test_data, nan_conversion):
     # given
-    record = TestHelper.make_minimal_log_record('test_logs_write_data_log', id='1337')
-    TestHelper.put_record_to_storage(record)
+    log_id = '1337'
+    record = TestHelper.make_minimal_log_record('test_logs_write_data_log', id=log_id)
+    TestHelper.post_record_to_storage(record)
     df = pd.DataFrame(test_data)
     content = df
     if nan_conversion:
         content = content.fillna("NaN")
-    content = content.to_json(orient='values')
 
+    byte_stream = BytesIO(str.encode(content.to_json(orient=log_data_orient)))
     # when WRITE ----------------------------------------------------------
-    response = client.put(TestHelper.build_url('/logs/1337/data?orient='+log_data_orient),
-                          content,
+    response = client.post(TestHelper.build_url(f'/logs/{log_id}/upload_data?orient=' + log_data_orient),
+                          files={'file': ('test_file_data.json', byte_stream, 'application/json')},
                           headers=TestHelper.BASE_HEADERS)
+    return log_id, df, response, client
+
+
+@pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
+                                            pytest.param(False, id="native_nan")])
+@pytest.mark.parametrize("test_data", log_data)
+def test_logs_write_then_read_data(client, test_data, nan_conversion):
+    log_id, df, response, client = logs_write(client, test_data, nan_conversion)
 
     # then
     assert response.status_code == 200
     store_response = CreateUpdateRecordsResponse.parse_raw(response.content)
     assert store_response.record_count == 1
-    assert store_response.record_ids[0] == '1337'
+    assert store_response.record_ids[0] == log_id
 
     # check
-    actual = TestHelper.get_record_from_storage('1337')
+    actual = TestHelper.get_record_from_storage(log_id)
     bulk_id = TestHelper.get_bulk_id_from_record(actual)
     assert bulk_id
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url('/logs/1337/data?orient='+log_data_orient),
+    response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
     data = response.json()
@@ -224,34 +177,39 @@ def test_logs_write_then_read_data(client, test_data, nan_conversion):
 @pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
                                             pytest.param(False, id="native_nan")])
 @pytest.mark.parametrize("test_data", log_data)
-def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
-    # given
-    record = TestHelper.make_minimal_log_record('test_logs_write_data_log', id='1337')
-    TestHelper.put_record_to_storage(record)
-    df = pd.DataFrame(test_data)
-    content = df
-    if nan_conversion:
-        content = content.fillna("NaN")
+def test_logs_write_then_read_data_statistics(client, test_data, nan_conversion):
+    log_id, df, response, client = logs_write(client, test_data, nan_conversion)
 
-    byte_stream = BytesIO(str.encode(content.to_json(orient=log_data_orient)))
-    # when WRITE ----------------------------------------------------------
-    response = client.put(TestHelper.build_url('/logs/1337/upload_data?orient='+log_data_orient),
-                          files={'file': ('test_file_data.json', byte_stream, 'application/json')},
+    # when READ -----------------------------------------------------------
+    response = client.get(TestHelper.build_url(f'/logs/{log_id}/statistics'),
                           headers=TestHelper.BASE_HEADERS)
+
+    df_stat = df.describe(include="all").to_json()
+    data = response.json()
+    actual_df_stat = pd.DataFrame(data).to_json()
+    assert df_stat == actual_df_stat
+
+
+@pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
+                                            pytest.param(False, id="native_nan")])
+@pytest.mark.parametrize("test_data", log_data)
+def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
+
+    log_id, df, response, client = logs_write(client, test_data, nan_conversion)
 
     # then
     assert response.status_code == 200
     store_response = CreateUpdateRecordsResponse.parse_raw(response.content)
     assert store_response.record_count == 1
-    assert store_response.record_ids[0] == '1337'
+    assert store_response.record_ids[0] == log_id
 
     # check
-    actual = TestHelper.get_record_from_storage('1337')
+    actual = TestHelper.get_record_from_storage(log_id)
     bulk_id = TestHelper.get_bulk_id_from_record(actual)
     assert bulk_id
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url('/logs/1337/data?orient='+log_data_orient),
+    response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
     data = response.json()
@@ -260,10 +218,9 @@ def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
 
 
 def test_logs_upload_parquet_read_json(client):
-
     # given
     record = TestHelper.make_minimal_log_record('test_logs_upload_parquet_read_json', id='1337')
-    TestHelper.put_record_to_storage(record)
+    TestHelper.post_record_to_storage(record)
 
     df = pd.DataFrame([[1, [1, 4]], [2, [2, 5]], [3, [3, 6]]])
     buffer = BytesIO()
@@ -273,7 +230,7 @@ def test_logs_upload_parquet_read_json(client):
     # df.to_hdf(byte_stream, key='df')
 
     # when WRITE ----------------------------------------------------------
-    response = client.put(TestHelper.build_url('/logs/1337/upload_data?orient='+log_data_orient),
+    response = client.post(TestHelper.build_url('/logs/1337/upload_data?orient=' + log_data_orient),
                           files={'file': ('test_file_data.parquet', buffer, MimeTypes.PARQUET.type)},
                           headers=TestHelper.BASE_HEADERS)
 
@@ -289,7 +246,7 @@ def test_logs_upload_parquet_read_json(client):
     assert bulk_id
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url('/logs/1337/data?orient='+log_data_orient),
+    response = client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
     data = response.json()
@@ -303,7 +260,7 @@ def test_logs_upload_parquet_read_json(client):
 def test_logs_write_twice_then_read_data(client, test_data, nan_conversion):
     # given
     record = TestHelper.make_minimal_log_record('test_logs_write_twice_then_read_data', id='1337')
-    TestHelper.put_record_to_storage(record)
+    TestHelper.post_record_to_storage(record)
 
     initial_df = pd.DataFrame(test_data)
     initial_df_json = initial_df
@@ -312,11 +269,11 @@ def test_logs_write_twice_then_read_data(client, test_data, nan_conversion):
     initial_df_json = initial_df_json.to_json(orient='values')
 
     # when WRITE twice ----------------------------------------------------------
-    client.put(TestHelper.build_url('/logs/1337/data?orient=values'),
+    client.post(TestHelper.build_url('/logs/1337/data?orient=values'),
                initial_df_json,
                headers=TestHelper.BASE_HEADERS)
 
-    client.put(TestHelper.build_url('/logs/1337/data?orient=values'),
+    client.post(TestHelper.build_url('/logs/1337/data?orient=values'),
                initial_df_json,
                headers=TestHelper.BASE_HEADERS)
 
@@ -454,6 +411,14 @@ decimated_log_data = [
                  HTTPException(status_code=422),
                  2.2, 2.6, 2,
                  id="text array with NaN"),
+    pytest.param(pd.DataFrame([1.2, 1.5, 2.3, 2.4, 4.6, 5.8]),
+                 HTTPException(status_code=400),
+                 2.2, 2.6, 2,
+                 id="data with one column, bulk data must have an index"),
+    pytest.param(pd.DataFrame([[2.0], [2.2], [2.4], [2.6]]),
+                 HTTPException(status_code=400),
+                 2.2, 2.6, 2,
+                 id="data with one column, bulk data must have an index"),
 ]
 decimated_log_data_orient = 'values'
 
@@ -464,13 +429,13 @@ decimated_log_data_orient = 'values'
 def test_decimated_logs(client, decimated_test_data, expected_result, start, stop, quantile, nan_conversion):
     # given
     record = TestHelper.make_minimal_log_record('test_decimated_logs', id='1337')
-    TestHelper.put_record_to_storage(record)
+    TestHelper.post_record_to_storage(record)
     content = decimated_test_data
     if nan_conversion:
         content = content.fillna("NaN")
     content = content.to_json(orient='values')
 
-    response = client.put(TestHelper.build_url('/logs/1337/data?orient='+decimated_log_data_orient),
+    response = client.post(TestHelper.build_url('/logs/1337/data?orient=' + decimated_log_data_orient),
                           content,
                           headers=TestHelper.BASE_HEADERS)
 
@@ -489,7 +454,7 @@ def test_decimated_logs(client, decimated_test_data, expected_result, start, sto
         params.update({'start': start})
     if stop is not None:
         params.update({'stop': stop})
-    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient='+decimated_log_data_orient),
+    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=' + decimated_log_data_orient),
                           params=params,
                           headers=TestHelper.BASE_HEADERS)
     data = response.json()
