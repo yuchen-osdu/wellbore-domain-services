@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+{{ include "os-wellbore-ddms.commonAnnotations" . | indent 4}}
+  labels:
+{{ include "os-wellbore-ddms.commonLabels" . | indent 4}}
+  name: {{ .Values.deployment.name }}{{ include "os-wellbore-ddms.name-suffix" . }}
+{{ include "os-wellbore-ddms.namespace" . | indent 2}}
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+{{ include "os-wellbore-ddms.commonLabels" . | indent 4}}
