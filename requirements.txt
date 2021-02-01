@@ -18,3 +18,11 @@ opencensus-ext-azure
 opencensus-ext-ocagent
 opencensus-ext-logging
 
+log-recognition-lib>=0.0.7
+osdu-data-ecosystem-storage~=1.0.0
+osdu-data-ecosystem-entitlements>=0.3.2, <0.4
+osdu-data-ecosystem-search>=0.3.2, <0.4
+
+osdu-core-lib-python-gcp>=0.3.0, <0.4
+osdu-core-lib-python-azure>=0.1.2, <0.2
+osdu-core-lib-python>=0.4.0, <0.5
