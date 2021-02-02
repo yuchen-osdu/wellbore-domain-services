@@ -1,5 +1,5 @@
 variables:
-  PIP_REQUIREMENTS: "requirements.txt requirements_opengroup.txt requirements_dev.txt"
+  PIP_REQUIREMENTS: "requirements.txt requirements_dev.txt"
 
 include:
   - project: "osdu/platform/ci-cd-pipelines"

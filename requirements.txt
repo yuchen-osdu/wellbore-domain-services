@@ -18,3 +18,30 @@ opencensus-ext-azure
 opencensus-ext-ocagent
 opencensus-ext-logging
 
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/356/packages/pypi/simple/
+log-recognition-lib>=0.0.7
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/228/packages/pypi/simple/
+osdu-data-ecosystem-storage~=1.0.0
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/227/packages/pypi/simple/
+osdu-data-ecosystem-entitlements>=0.3.2, <0.4
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/229/packages/pypi/simple/
+osdu-data-ecosystem-search>=0.3.2, <0.4
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/224/packages/pypi/simple/
+osdu-core-lib-python-gcp>=0.3.0, <0.4
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/226/packages/pypi/simple/
+osdu-core-lib-python-azure>=0.1.2, <0.2
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/223/packages/pypi/simple/
+osdu-core-lib-python>=0.4.0, <0.5
