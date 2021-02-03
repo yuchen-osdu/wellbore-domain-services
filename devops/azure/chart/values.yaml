@@ -1,0 +1,52 @@
+# Default values for os-wellbore-ddms.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: osdu
+deployment:
+  instrumentationKey:
+    secretName: central-logging
+  osduSvcProperties: osdu-svc-properties
+  keyvaultUrlPropertyName: ENV_KEYVAULT
+  name: os-wellbore-ddms
+
+replicaCount: 2
+
+annotations:
+  buildNumber: #{Build.BuildNumber}#
+  buildOrigin: AzureDevops build/#{Build.DefinitionName}#
+  commitBranch: #{Build.SourceBranch}#
+  commitId: #{Build.SourceVersion}#
+
+image:
+  repository: #{CONTAINER_REGISTRY_NAME}#.azurecr.io/#{app}#-#{env}#
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: #{Build.SourceVersion}#
+
+tempDeployment:
+  enabled: false
+  name: prxxxx
+
+labels:
+  aadpodidbinding: osdu-identity
+  env: #{env}#
+
+configMap:
+  data:
+    entitlementsEndpoint: http://entitlements-azure.osdu/api/entitlements
+    storageEndpoint: http://storage.osdu/api/storage
+    searchEndpoint: http://search-service.osdu/api/search
+    partitionEndpoint: http://partition.osdu/api/partition
+    usePartitionService: 'enabled'
+    loggerLevel: 'INFO'
+  name: os-wellbore-ddms-envs
+
+ingress:
+  enabled: false
+  hosts:
+    host: # leave it empty for our dev cluster
+    pathPrefix: /api/os-wellbore-ddms
+  tlsSecret: osdu-certificate
+
+authorizationPolicy:
+  name: wellbore-jwt-authz

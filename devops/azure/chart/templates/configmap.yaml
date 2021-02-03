@@ -1,0 +1,19 @@
+{{$nameSuffix := include "os-wellbore-ddms.name-suffix" .}}
+apiVersion: v1
+data:
+  CLOUD_PROVIDER: az
+  OPENAPI_PREFIX: {{ include "os-wellbore-ddms.prefix" . }}
+  SERVICE_HOST_ENTITLEMENTS: {{ .Values.configMap.data.entitlementsEndpoint }}
+  SERVICE_HOST_STORAGE: {{ .Values.configMap.data.storageEndpoint }}
+  SERVICE_HOST_SEARCH: {{ .Values.configMap.data.searchEndpoint }}
+  SERVICE_HOST_PARTITION: {{ .Values.configMap.data.partitionEndpoint }}
+  USE_PARTITION_SERVICE: {{ .Values.configMap.data.usePartitionService }}
+  AZ_LOGGER_LEVEL: {{ .Values.configMap.data.loggerLevel }}
+kind: ConfigMap
+metadata:
+  annotations:
+{{ include "os-wellbore-ddms.commonAnnotations" . | indent 4}}
+  labels:
+{{ include "os-wellbore-ddms.commonLabels" . | indent 4}}
+  name: {{ .Values.configMap.name }}{{ $nameSuffix }}
+{{ include "os-wellbore-ddms.namespace" . | indent 2}}

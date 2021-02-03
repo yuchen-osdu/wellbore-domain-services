@@ -1,0 +1,38 @@
+{{- if .Values.ingress.enabled -}}
+{{$nameSuffix := include "os-wellbore-ddms.name-suffix" .}}
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+{{ include "os-wellbore-ddms.commonAnnotations" . | indent 4}}      
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    appgw.ingress.kubernetes.io/connection-draining: "true"    
+    appgw.ingress.kubernetes.io/connection-draining-timeout: "30"
+    kubernetes.io/ingress.class: azure/application-gateway
+{{ if .Values.ingress.hosts.host }}
+    cert-manager.io/acme-challenge-type: http01
+    cert-manager.io/cluster-issuer: letsencrypt
+{{ end }}    
+
+  labels:
+{{ include "os-wellbore-ddms.commonLabels" . | indent 4}}
+  name: {{ .Values.deployment.name }}{{ $nameSuffix }}
+{{ include "os-wellbore-ddms.namespace" . | indent 2}}
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ .Values.deployment.name }}{{ $nameSuffix }}
+          servicePort: 80
+        path: {{ include "os-wellbore-ddms.prefix" . }}/*
+{{ if .Values.ingress.hosts.host }}
+    host: {{ .Values.ingress.hosts.host }}
+{{ end }}  
+  tls:
+  - secretName: {{ .Values.ingress.tlsSecret }}
+{{ if .Values.ingress.hosts.host }}
+    hosts:
+    - {{ .Values.ingress.hosts.host }}
+{{ end }}    
+{{- end -}}
