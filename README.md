@@ -6,7 +6,7 @@ Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is
 
 ## Install Software and Packages
 
-1. Clone the os-wellbore-ddms repository
+1. Clone the os-wellbore-ddms [repository](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services.git)
 2. Download [Python](https://www.python.org/downloads/) >=3.7
 3. Ensure pip, a pre-installed package manager and installer for Python, is installed and is upgraded to the latest version.
 
