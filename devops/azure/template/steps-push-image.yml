@@ -1,0 +1,42 @@
+parameters:
+  azureSubscription: ''
+  sourceACRName: ''
+  destinationACRName: ''
+  environment: ''
+  imageTag: ''
+  appName: ''
+
+steps:
+
+# Current implementation pulls the Image from a 'central' ACR first.
+# It is an ACR to which the image was pushed during the build stage
+# 
+# This could eventually be changed to an other apprach:
+# - Push the built image as a ADO artifact, which will be downlaoded during the deploy stage
+# - Or rebuild the image during the deploy stage
+  - task: AzureCLI@2
+    displayName: "Pull from WDMS Core ACR"
+    inputs:
+      azureSubscription: TO_BE_DEFINED
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        echo "az acr login -n ${{ parameters.sourceACRName }}"
+        az acr login -n ${{ parameters.sourceACRName }}
+        echo "docker pull ${{ parameters.sourceACRName}}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }}"
+        docker pull ${{ parameters.sourceACRName}}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }}
+
+  - task: AzureCLI@2
+    displayName: "Push to R3 MVP ${{ parameters.environment }} ACR"
+    inputs:
+      azureSubscription: ${{ parameters.azureSubscription }}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -e
+        echo "${{ parameters.azureSubscription }}"
+        echo "${{ parameters.destinationACRName }}"
+        az acr login --name ${{ parameters.destinationACRName }}
+        docker tag ${{ parameters.sourceACRName }}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }} ${{ parameters.destinationACRName }}.azurecr.io/${{ parameters.appName }}-${{ parameters.environment }}:$(Build.SourceVersion)
+        docker push ${{ parameters.destinationACRName }}.azurecr.io/${{ parameters.appName }}-${{ parameters.environment }}:$(Build.SourceVersion)
+        az acr repository show-tags --name ${{ parameters.destinationACRName }} --repository ${{ parameters.appName }}-${{ parameters.environment }} --orderby time_desc --top 3

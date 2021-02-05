@@ -1,0 +1,47 @@
+
+stages:
+  - stage: build
+    jobs:
+      - job: unit_test_version3_7
+        steps:
+          - template: steps-unit-tests.yaml
+            parameters: 
+              python_version: '3.7'
+      - job: unit_test_version3_8
+        steps:
+          - template: steps-unit-tests.yaml
+            parameters:
+              python_version: '3.8'
+              include_coverage: false
+      - job: build
+        dependsOn:
+        - unit_test_version3_7
+        - unit_test_version3_8 
+        steps:
+          - template: steps-build.yaml
+            parameters:
+              acr_names: 
+              - ${{ variables.global_acr_name }}
+      - job: setupVariables
+        steps:
+          - task: Bash@3
+            displayName: 'setup basePath'
+            name: 'setupBasePath'
+            env:
+              build_reason: $(Build.Reason)
+              pull_request_id: $(System.PullRequest.PullRequestId)
+            inputs:
+              targetType: 'inline'
+              script: |
+                set -e
+
+                echo "build_reason: $build_reason"
+                echo "pull_request_id: $pull_request_id"
+
+                basePath=/api/os-wellbore-ddms
+                if [ "${build_reason}" == "PullRequest" ]; then
+                  echo "Pull Request. Changing BasePath"
+                  basePath=$basePath---pr${pull_request_id}
+                fi
+                echo "setting: basePath=$basePath"
+                echo "##vso[task.setvariable variable=basePath;isOutput=true]${basePath}"

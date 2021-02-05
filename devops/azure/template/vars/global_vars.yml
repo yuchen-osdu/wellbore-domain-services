@@ -1,0 +1,9 @@
+variables:
+  app: 'wdms'
+  global_acr_name: TO_BE_DEFINED
+  chartPath: 'devops/azure/chart'
+  valuesFile: 'devops/azure/chart/values.yaml'
+  hldRegPath: 'providers/azure/hld-registry'
+  fluxServiceName: 'os-wellbore-ddms'
+  base_path : '/api/os-wellbore-ddms'
+  SERVICE_CONNECTION_NAME: placeholder # Must be defined, but the value will be overriden by environment specific variable
