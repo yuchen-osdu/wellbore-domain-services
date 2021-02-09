@@ -1,0 +1,6 @@
+variables:
+  # This allow to translate variables from the Infra and Shared Service to the current Wellbore DMS ADO tasks
+  # Eventually we could adjust the tasks to use directly the shared Variables, and remove this file
+  legal_tag: $(LEGAL_TAG)
+  acl_domain: $(DOMAIN)
+  data_partition: $(MY_TENANT)

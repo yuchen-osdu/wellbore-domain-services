@@ -270,17 +270,14 @@ Then access app on `http://127.0.0.1:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
 A Personal Access Token (PAT) is required to pull all the python packages.
 
 ```bash
-USER=<username>
-PAT=<PAT>
-
 # Set PIP_EXTRA_URL
-PIP_EXTRA_URL="<URL>"
+PIP_EXTRA_URL=https://community.opengroup.org/groups/osdu/platform/domain-data-mgmt-services/wellbore/-/packages
 
 # Set IMAGE_TAG
 IMAGE_TAG="os-wellbore-ddms:dev"
 
 # Build Image
-docker build -t=$IMAGE_TAG --rm . -f ./build/dockerfile --build-arg PIP_EXTRA_URL=$PIP_EXTRA_URL --build-arg PIP_WHEEL_DIR=python-packages
+docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_EXTRA_URL=$PIP_EXTRA_URL --build-arg PIP_WHEEL_DIR=python-packages
 ```
 
 #### Run Image
