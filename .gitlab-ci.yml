@@ -1,6 +1,12 @@
 variables:
   PIP_REQUIREMENTS: "requirements.txt requirements_dev.txt"
 
+  OSDU_GCP_APPLICATION_NAME: wellbore-ddms
+  OSDU_GCP_SERVICE: wellbore-ddms
+  OSDU_GCP_ENV_VARS: CLOUD_PROVIDER=gcp,OS_WELLBORE_DDMS_DATA_PROJECT_ID=$OSDU_GCP_PROJECT,SERVICE_HOST_ENTITLEMENTS=$OSDU_GCP_ENTITLEMENTS_URL,SERVICE_HOST_SEARCH=$OSDU_GCP_SEARCH_HOST,SERVICE_HOST_STORAGE=$OSDU_GCP_STORAGE_URL
+  OSDU_GCP_CLOUD_RUN_PARAMETERS: "--port 8097"
+  OSDU_GCP_VENDOR: gcp
+
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
@@ -14,9 +20,11 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
 
+  - project: 'osdu/platform/ci-cd-pipelines'
+    file: 'cloud-providers/osdu-gcp-cloudrun.yml'
 # --------------------------------------------------------------------------------
 
-deploy:
+containerize:
   extends:
     - .skipForTriggeringMergeRequests
 
@@ -47,3 +55,21 @@ deploy:
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
+
+osdu-gcp-containerize:
+  script:
+    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
+    - gcloud config set project $OSDU_GCP_PROJECT
+    - touch .gcloudignore
+    - docker build -t gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA --rm . -f ./build/Dockerfile
+    - gcloud docker -- push gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
+  cache: { }
+  tags: [ 'osdu-medium' ]
+
+osdu-gcp-test-python:
+  allow_failure: true
+  script:
+    - echo "STUB"; exit 1
+
+osdu-gcp-test:
+  extends: []

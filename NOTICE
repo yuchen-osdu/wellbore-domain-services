@@ -9,6 +9,8 @@ The following software have components provided under the terms of this license:
 
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
+- boto3 (from https://github.com/boto/boto3)
+- botocore (from https://github.com/boto/botocore)
 - coverage (from https://coverage.readthedocs.io)
 - cryptography (from https://github.com/pyca/cryptography)
 - google-api-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
@@ -37,6 +39,7 @@ The following software have components provided under the terms of this license:
 - requests (from http://python-requests.org)
 - rfc3986 (from https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
+- s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from http://www.structlog.org/)
 - yarl (from https://github.com/aio-libs/yarl/)
@@ -178,12 +181,14 @@ The following software have components provided under the terms of this license:
 - azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
 - azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
 - azure-storage-blob (from https://github.com/Azure/azure-storage-python)
+- botocore (from https://github.com/boto/botocore)
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi (from http://cffi.readthedocs.org)
 - coverage (from https://coverage.readthedocs.io)
 - fastapi (from https://github.com/tiangolo/fastapi)
 - h11 (from https://github.com/python-hyper/h11)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig)
+- jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema (from http://github.com/Julian/jsonschema)
 - mockito (from https://github.com/kaste/mockito-python)
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
@@ -254,6 +259,7 @@ public-domain
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- botocore (from https://github.com/boto/botocore)
 - coverage (from https://coverage.readthedocs.io)
 - py (from http://pylib.readthedocs.org/)
 - pytz (from http://pythonhosted.org/pytz)
