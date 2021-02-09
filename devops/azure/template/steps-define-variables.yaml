@@ -1,0 +1,14 @@
+steps:
+
+- task: Bash@3
+  displayName: 'define variables'
+  name: 'defineVariables'
+  inputs:
+    targetType: 'inline'
+    script: |
+      source_full_version=$(Build.SourceVersion)
+      commit_id=${source_full_version:0:7}
+      echo "##vso[task.setvariable variable=commit_id;]${commit_id}"
+      tag_name=$commit_id
+      echo "##vso[task.setvariable variable=tag_name]${tag_name}"
+      echo "##vso[task.setvariable variable=tag_name_output;isOutput=true]${tag_name}"

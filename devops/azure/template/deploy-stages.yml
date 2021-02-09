@@ -1,0 +1,69 @@
+parameters:
+  - name: providers
+    type: object
+    default: []
+
+stages:
+
+- ${{ each provider in parameters.providers }}:
+  - ${{ each environment in provider.environments }}:
+    - stage: 'Deploy_${{ provider.name }}_R3MVP_${{ environment }}'
+      variables:
+      - group: 'R3MVP - ${{ provider.name }} Target Env - ${{ environment }}'
+      - template: 'vars/env_vars.yml'   
+      - name: env
+        value: ${{ environment }}
+      condition: "and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))"
+      jobs:
+      - deployment: Deploy
+        pool:
+          vmImage: "ubuntu-latest"
+        environment: ${{ environment }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - template: steps-define-variables.yaml
+              - template: steps-push-image.yml
+                parameters:
+                  azureSubscription: $(SERVICE_CONNECTION_NAME)
+                  sourceACRName: $(us_acr_name)
+                  destinationACRName: $(CONTAINER_REGISTRY_NAME)
+                  environment: ${{ environment }}
+                  imageTag: $(defineVariables.tag_name_output)
+                  appName: $(app)
+              - template: devops/tasks/aks-deployment-steps.yml@pipelineTemplatesRepo
+                parameters:
+                  environment: ${{ environment }}
+                  serviceName: $(app)
+                  providerName:  ${{ provider.short_name }}
+                  chartPath: $(chartPath)
+                  valuesFile: $(valuesFile)
+                  hldRegPath: $(hldRegPath)
+              - template: devops/tasks/flux-service-wait.yml@pipelineTemplatesRepo
+                parameters:
+                  environment: ${{ environment }}
+                  serviceName: $(fluxServiceName)
+                  imageRepoName: $(app)
+                  skipDeploy: false
+
+    - stage: Test_${{ provider.name }}_R3MVP_${{ environment }}
+      dependsOn:
+      - Deploy_${{ provider.name }}_R3MVP_${{ environment }}
+      variables:
+      - group: 'R3MVP - ${{ provider.name }} Target Env - ${{ environment }}'
+      - template: 'vars/env_vars.yml'
+      - template: 'vars/global_vars.yml'
+      condition: "and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))"
+      jobs:
+        - job: e2e_test
+          steps:  
+            - template: steps-e2e-tests.yaml
+              parameters:
+                baseUrl: "https://$(DNS_HOST)"
+                basePath: ${{ variables.base_path }}
+                aclDomain: ${{ variables.acl_domain }}
+                legalTag: ${{ variables.legal_tag }}
+                dataPartition: ${{ variables.data_partition }}
+                cloudProvider:  ${{ provider.short_name }}
+                testServiceAccount: TO_BE_DEFINED
