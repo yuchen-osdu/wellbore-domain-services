@@ -1,29 +1,10 @@
-##################################################################
-# Create a first image with credentials. It will download the dep.
-##################################################################
-
-FROM python:3.7-slim-buster as build
-WORKDIR /root/build_directory
-
-LABEL maintainer="OSDU Wellbore data domain services team <WellboreDDMS@slb.com>"
-
-COPY requirements.txt  .
-
-RUN pip wheel uvicorn --wheel-dir=python-packages
-
-ARG PIP_EXTRA_URL
-ARG PIP_WHEEL_DIR
-RUN pip wheel -r requirements.txt --extra-index-url=$PIP_EXTRA_URL --wheel-dir=$PIP_WHEEL_DIR
-
-
-#################################################################
-# Create a second image without credentials
-#################################################################
 FROM python:3.7-slim-buster
 
+RUN apt-get update && apt-get install -y git
+COPY requirements.txt requirements_dev.txt ./
 
-COPY --from=build /root/build_directory .
-RUN pip install --force-reinstall --ignore-installed --upgrade --no-index --no-deps python-packages/*
+RUN pip install -r requirements.txt
+RUN pip install -r requirements_dev.txt
 
 COPY ./app /app
 ENV PYTHONPATH=./
@@ -46,4 +27,3 @@ RUN addgroup --system appuser && adduser --system appuser && adduser appuser app
 USER appuser
 
 CMD ["uvicorn", "app.wdms_app:wdms_app", "--host", "0.0.0.0", "--port", "8097"]
-
