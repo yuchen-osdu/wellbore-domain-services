@@ -6,7 +6,7 @@ Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is
 
 ## Install Software and Packages
 
-1. Clone the os-wellbore-ddms repository
+1. Clone the os-wellbore-ddms [repository](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services.git)
 2. Download [Python](https://www.python.org/downloads/) >=3.7
 3. Ensure pip, a pre-installed package manager and installer for Python, is installed and is upgraded to the latest version.
 
@@ -46,16 +46,18 @@ Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is
 ### Library Dependencies
 
 - Common parts and interfaces
-  - osdu-core-python
+  - osdu-core-lib-python
 
 - Implementation of blob storage on GCP
-  - osdu-core-python-gcp
+  - osdu-core-lib-python-gcp
 
 - Implementation of blob storage and partition service on Azure
-  - osdu-core-python-azure
+  - osdu-core-lib-python-azure
 
-- Storage, search and entitlements
-  - osdu-python-clients
+- Client libraries for OSDU data ecosystem services
+  - osdu-data-ecosystem-entitlements
+  - osdu-data-ecosystem-search
+  - osdu-data-ecosystem-storage
 
 ## Project Startup
 
@@ -114,9 +116,8 @@ python main.py -e SERVICE_HOST_ENTITLEMENTS https://api.example.com/entitlements
 
 1. Generate bearer token as all APIs but `/about` require authentication.
 
-    - Navigate to `http://127.0.0.1:8080/token` and follow the steps to generate a bearer token.
+    - Navigate to `http://127.0.0.1:8080/api/os-wellbore-ddms/docs`. Click `Authorize` and enter your token. That will allow for authenticated requests.
 
-    - Navigate to `http://127.0.0.1:8080/docs`. Click `Authorize` and enter your token. That will allow for authenticated requests.
 
 2. Choose storage option
 
@@ -260,7 +261,7 @@ To create a `log` record, below is a payload sample for the PUT `/ddms/v2/logs` 
 uvicorn app.wdms_app:wdms_app --port LOCAL_PORT
 ```
 
-Then access app on `http://localhost:LOCAL_PORT/docs`
+Then access app on `http://127.0.0.1:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
 
 ### Run with Docker
 
@@ -291,7 +292,7 @@ docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_EXTRA_UR
     docker run -d -p $LOCAL_PORT:8080 -e OS_WELLBORE_DDMS_DEV_MODE=1 -e USE_LOCALFS_BLOB_STORAGE_WITH_PATH=1 $IMAGE_TAG
     ```
 
-2. Access app on `http://localhost:LOCAL_PORT/docs`
+2. Access app on `http://127.0.0.1:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
 
 3. The environment variable `OS_WELLBORE_DDMS_DEV_MODE=1` enables dev mode
 
@@ -312,11 +313,33 @@ python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html -
 
 Coverage reports can be viewed after the command is run. The HMTL reports are saved in the htmlcov directory.
 
+### Run Integration Tests locally
+
+This example runs basic tests using the local filesystem for blob storage and storage service. There's no search or entilements service, everything runs locally.  
+
+First, create the temp storage folders and run the service.
+
+```bash
+mkdir -p tmpstorage
+mkdir -p tmpblob
+python main.py -e USE_INTERNAL_STORAGE_SERVICE_WITH_PATH $(pwd)/tmpstorage -e USE_LOCALFS_BLOB_STORAGE_WITH_PATH $(pwd)/tmpblob -e CLOUD_PROVIDER local
+```
+
+In another terminal, generate a minimum configuration file and run the integration tests.
+
+```bash
+cd tests/integration
+python gen_postman_env.py --token $(pyjwt --key=secret encode email=nobody@example.com) --base_url "http://127.0.0.1:8080/api/os-wellbore-ddms" --cloud_provider "local" --data_partition "dummy"
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+```
+
+For more information see the [integration tests README](tests/integration/README.md)
+
 ### Port Forward from Kubernetes
 
  1. List the pods: `kubectl get pods`
  2. Port forward: `kubectl port-forward pods/POD_NAME LOCAL_PORT:8080`
- 3. Access it on `http://localhost:LOCAL_PORT/docs`
+ 3. Access it on `http://127.0.0.1:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
 
 ### Tracing
 
