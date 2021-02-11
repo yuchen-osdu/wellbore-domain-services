@@ -10,6 +10,7 @@ from app.clients.search_service_client import SearchServiceClient
 from app.clients import make_search_client, make_storage_record_client
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from app.helper.logger import get_logger
+from app.injector.ibm_injector import IBMInjector
 
 
 class MainInjector(AppInjectorModule):
@@ -41,6 +42,10 @@ class MainInjector(AppInjectorModule):
         if Config.cloud_provider.value == 'gcp':
             logger.info('using gcp injector')
             GCPInjector().configure(app_injector)
+
+        if Config.cloud_provider.value == 'ibm':
+            logger.info('using ibm injector')
+            IBMInjector().configure(app_injector)
 
         # run overriders
         self.overriders(app_injector)
