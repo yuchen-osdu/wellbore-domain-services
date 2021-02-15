@@ -17,7 +17,7 @@ info:
   title: Wellbore DDMS Geology OSDU
   version: '0.2'
 servers:
-    - url: https://api.evq.csp.slb.com/osdu/wdms/geology/v2
+    - url: https://api.example.com/osdu/wdms/geology/v2
 security:
     - bearer: [ ]
     - appkey: [ ]

@@ -17,7 +17,7 @@ info:
   title: Log Recognition OSDU
   version: '0.2'
 servers:
-  - url: https://api.evq.csp.slb.com/osdu/wdms/log-recognition/v2
+  - url: https://api.example.com/osdu/wdms/log-recognition/v2
 security:
 - bearer: []
 - appkey: []
@@ -155,9 +155,9 @@ components:
       example:
         acl:
           viewers:
-            - 'abc@slb.com, cde@slb.com'
+            - 'abc@example.com, cde@example.com'
           owners:
-            - 'abc@slb.com, cde@slb.com'
+            - 'abc@example.com, cde@example.com'
         legal:
           legaltags:
             - opendes-public-usa-dataset-1
