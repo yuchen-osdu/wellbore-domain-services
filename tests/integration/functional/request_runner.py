@@ -92,15 +92,22 @@ class RunResult:
     response: Any
 
     def assert_ok(self):
+        """ assert for any error (see requests.raise_for_status() )"""
         try:
             self.response.raise_for_status()
         except requests.HTTPError:
             logger.error('Error on call:')
-            logger.error(self.__str__())
+            logger.error(str(self))
             raise
 
     def assert_status_code(self, expected_code):
-        assert int(expected_code) == self.response.status_code, f'unexpected status code, actual={self.response.status_code}, expected={expected_code}'
+        """ assert for a specific code """
+        if int(expected_code) != self.response.status_code:
+            logger.error(f'Unexpected status code: actual={self.response.status_code}, expected={expected_code}')
+            logger.error(str(self))
+
+        assert int(expected_code) == self.response.status_code,\
+            f'unexpected status code, actual={self.response.status_code}, expected={expected_code}'
 
     @property
     def ok(self):

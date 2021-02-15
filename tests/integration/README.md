@@ -88,13 +88,10 @@ functional\tests\test_search.py::test_search_logs_by_logset_attribute SKIPPED   
 
 ========================================================================================================= 2 passed, 51 skipped in 0.73s =========================================================================================================
 ```
- 
- 
+
 To export logs into a file use `--log-file=test_log.txt`. The level for log file can be set independently: 
 `pytest ./functional --log-cli-level= INFO --log-file=test_log.txt --log-file-level=DEBUG`
 => the log dumped into the file use level `DEBUG`, what is print on the console uses level `INFO`.
-
-
 
 _Note_: `pytest` and `python -m pytest` are equivalent.
 
@@ -110,7 +107,7 @@ Create a [RequestRunner](./functional/request_runner.py) from a [Request](./func
 ```python
 request_definition = Request(
         name='any name',
-        method='PUT',  # 'POST' ,'GET', 'PATCH', 'DELETE' ...
+        method='POST',  # 'POST' ,'GET', 'PATCH', 'DELETE' ...
         url='{{base_url}}/ddms/my_api',
         headers={
             'accept': 'application/json',
@@ -122,6 +119,7 @@ request_definition = Request(
 request_runner = RequestRunner(request_definition)
 ```
 
+#### payload formats
 the payload can be anything supported in (https://requests.readthedocs.io/en/latest/api/) which is _"Dictionary, list of
  tuples, bytes, or file-like object"_:
  
@@ -149,9 +147,30 @@ with open("file_path") as file:
     rq.call(...)
 ``` 
 
+#### Assert for successful response or specific status code
+```python
+# build the request runner
+request_runner = RequestRunner(my_request(...))
+
+# do the call a get the result
+call_result = request_runner.call(...)
+```
+
+To assert for any successful response: `call_result.assert_ok()`.
+To assert for a specific status code: `call_result.assert_for_status(404)`.
+
+Alternatively use the argument `assert_status` in the `request_runner.call` method:
+
+```python
+# do the call asserting a specific status code
+call_result = request_runner.call(..., assert_status = 404)
+```
+
+_Note: A request is always fully logged in case of unexpected status code._ 
 
 
 
+#### Variable substitution
 Variable expression (format `{{VARIABLE_NAME}}`) can be used in the URL, headers and payload.
 
 Use the `with_env_wdms` fixture from [fixtures.py](./functional/tests/fixtures.py) to get the environment variables with

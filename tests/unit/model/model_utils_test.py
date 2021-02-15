@@ -273,3 +273,35 @@ def test_back_and_forth_from_to_record():
 
     # compare json outputs
     assert json.loads(utils.record_to_json(record)) == json.loads(utils.record_to_json(wellbore))
+
+
+@pytest.mark.parametrize('model_cls, data_content',
+                         [
+                             (models.log, {"relationships": {}}),
+                             (models.logset, {"relationships": {"wellbore": ""}}),
+                             (models.well, {"relationships": {}}),
+                             (models.wellbore, {"relationships": {}}),
+                             (models.trajectory, {"relationships": {"wellbore": ""}}),
+                             (models.marker,
+                              {"name": "foo", "md": {"value": 1, "unitKey": "m"}, "relationships": {"wellbore": ""}}),
+                             (models.dipset, {"relationships": {"wellbore": ""}})
+                         ])
+def test_model_allow_extra_field_in_relationship_success(model_cls, data_content):
+    data_content["relationships"]["extra_field_in_relationship"] = "extra_value"
+    raw_base_dict = {
+        "acl": {"viewers": [], "owners": []},
+        "legal": {"legaltags": []},
+        "id": "123456",
+        "kind": "opened:osdu:dummy",
+        "data": data_content
+    }
+    parsed_obj = model_cls.parse_raw(json.dumps(raw_base_dict))
+    # deserialized should keep it extra field
+    assert parsed_obj.data.relationships.extra_field_in_relationship == "extra_value"
+    # serialized should keep it
+    assert parsed_obj.dict()['data']['relationships']['extra_field_in_relationship'] == "extra_value"
+    # using utils from/to record
+    record_obj = utils.to_record(parsed_obj)
+    assert record_obj.data['relationships']['extra_field_in_relationship'] == "extra_value"
+    parsed_obj = utils.from_record(model_cls, record_obj)
+    assert parsed_obj.data.relationships.extra_field_in_relationship == "extra_value"

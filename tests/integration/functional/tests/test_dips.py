@@ -555,3 +555,10 @@ def test_delete_dipset(with_wdms_env):
     if with_wdms_env.get('dipsetId', None):
         result = build_request_delete_dipset().call(with_wdms_env)
         result.assert_status_code(204)
+
+
+@pytest.mark.tag('basic', 'crud', 'smoke', 'dip')
+def test_dip_error_code(with_wdms_env):
+    env = with_wdms_env
+    env.set('dipsetId', 'opendes:doc:00000000000000000000000000000000000')
+    build_request_get_dips().call(with_wdms_env, assert_status=404).get_response_obj()
