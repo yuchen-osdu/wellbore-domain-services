@@ -38,7 +38,8 @@ router = APIRouter()
         convert the results to match the *wks:well:1.0.2*. If convertion is
         not possible returns an error **500**""",
             operation_id="get_well",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "Well not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "Well not found"}},
+            response_model_exclude_unset=True)
 async def get_well(
         wellid: str,
         ctx: Context = Depends(get_ctx)
@@ -108,7 +109,8 @@ async def get_well_versions(
         convert the results to match the *wks:well:1.0.2*. If convertion is
         not possible returns an error **500**""",
             operation_id="get_well_version",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "Well not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "Well not found"}},
+            response_model_exclude_unset=True)
 async def get_well_version(
         wellid: str,
         version: int,

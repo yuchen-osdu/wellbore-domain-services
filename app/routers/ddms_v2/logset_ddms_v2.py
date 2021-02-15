@@ -35,7 +35,8 @@ router = APIRouter()
             summary="Get the LogSet using wks:logSet:1.0.5 schema",
             description="""Get the LogSet object using its **id**""",
             operation_id="get_logset",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "LogSet not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "LogSet not found"}},
+            response_model_exclude_unset=True)
 async def get_logset(
         logsetid: str,
         ctx: Context = Depends(get_ctx)
@@ -91,7 +92,8 @@ async def get_logset_versions(
             summary="Get the given version of LogSet using wks:logSet:1.0.5 schema",
             description=""""Get the LogSet object using its **id**.""",
             operation_id="get_logset_version",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "LogSet not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "LogSet not found"}},
+            response_model_exclude_unset=True)
 async def get_logset_version(
         logsetid: str,
         version: int,

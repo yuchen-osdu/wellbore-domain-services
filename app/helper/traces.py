@@ -13,16 +13,14 @@
 # limitations under the License.
 
 from app.conf import Config
+from app.helper.utils import rename_cloud_role_func, COMPONENT
 
 from opencensus.common.transports.async_ import AsyncTransport
-from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
 from opencensus.trace import base_exporter
 from opencensus.ext.stackdriver.trace_exporter import StackdriverExporter
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
 
-from starlette.requests import Request
-import http
 """
 How to add specific span in a method
 
@@ -37,6 +35,14 @@ How to add specific span in a method
 >>             return MyResponseClass(result)
 
 """
+
+
+def get_trace_propagator() -> TraceContextPropagator:
+    """
+        Returns the implementation of standard tracing propagation as defined
+        by W3C: https://www.w3.org/TR/trace-context/
+    """
+    return TraceContextPropagator()
 
 
 def _create_azure_exporter(key: str):
@@ -65,6 +71,7 @@ def create_exporter(service_name):
         key = Config.get('az_ai_instrumentation_key')
         try:
             az_exporter = _create_azure_exporter(key)
+            az_exporter.add_telemetry_processor(rename_cloud_role_func(service_name))
             combined_exporter.add_exporter(az_exporter)
         except ValueError as e:
             print('Unable to create AzureExporter:', str(e))
@@ -94,59 +101,3 @@ class CombinedExporter(base_exporter.Exporter):
 
         for e in self.exporters:
             e.export(span_datas)
-
-
-def get_trace_propagator() -> TraceContextPropagator:
-    """
-        Returns the implementation of standard tracing propagation as defined
-        by W3C: https://www.w3.org/TR/trace-context/
-    """
-    return TraceContextPropagator()
-
-
-def _get_status_phrase(status_code):
-    try:
-        return http.HTTPStatus(status_code).phrase
-    except ValueError:
-        return str()
-
-
-STATUS_PHRASES = {
-    status_code: _get_status_phrase(status_code) for status_code in range(100, 600)
-}
-
-
-def process_message(request: Request, status_code: int):
-    """
-        Returns pretty print string to be logger, from Starlette request and status code.
-        E.g. Request from: 127.0.0.1:55353 - "GET /api/os-wellbore-ddms/ddms/v2/about" 200 OK
-    """
-    reason = STATUS_PHRASES[status_code]
-    return f'Request from: {_get_client_str(request.client)} - "{request.method}' \
-           f' {request.url.path}" {status_code} {reason}'
-
-
-def _get_client_str(client) -> str:
-    """
-        Returns a string container host:port from given starlette client
-    """
-    host, port = client.host, client.port
-    if not host:
-        return ""
-    return f'{host}:{port}'
-
-
-"""
-Attributes helper have been used similarly to some examples:
-Ex of other middleware : https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-django/opencensus/ext/django/middleware.py
-https://github.com/census-instrumentation/opencensus-python/blob/master/opencensus/trace/attributes_helper.py
-"""
-HTTP_HOST = COMMON_ATTRIBUTES['HTTP_HOST']
-HTTP_METHOD = COMMON_ATTRIBUTES['HTTP_METHOD']
-HTTP_PATH = COMMON_ATTRIBUTES['HTTP_PATH']
-HTTP_ROUTE = COMMON_ATTRIBUTES['HTTP_ROUTE']
-HTTP_URL = COMMON_ATTRIBUTES['HTTP_URL']
-HTTP_STATUS_CODE = COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
-HTTP_REQUEST_SIZE = COMMON_ATTRIBUTES['HTTP_REQUEST_SIZE']
-HTTP_RESPONSE_SIZE = COMMON_ATTRIBUTES['HTTP_RESPONSE_SIZE']
-COMPONENT = COMMON_ATTRIBUTES['COMPONENT']

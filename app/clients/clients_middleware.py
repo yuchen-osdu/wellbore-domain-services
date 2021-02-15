@@ -16,7 +16,7 @@ from opencensus.trace.span import SpanKind
 
 from app import conf
 from app.utils import Context
-from app.helper import traces
+from app.helper import utils, traces
 
 
 def _before_tracing_attributes(ctx, request):
@@ -24,16 +24,16 @@ def _before_tracing_attributes(ctx, request):
         Add request attributes + correlation id to the the current tracer's span
     """
     ctx.tracer.add_attribute_to_current_span(
-        attribute_key=traces.HTTP_HOST,
+        attribute_key=utils.HTTP_HOST,
         attribute_value=request.url.host)
     ctx.tracer.add_attribute_to_current_span(
-        attribute_key=traces.HTTP_METHOD,
+        attribute_key=utils.HTTP_METHOD,
         attribute_value=request.method)
     ctx.tracer.add_attribute_to_current_span(
-        attribute_key=traces.HTTP_PATH,
+        attribute_key=utils.HTTP_PATH,
         attribute_value=str(request.url.path))
     ctx.tracer.add_attribute_to_current_span(
-        attribute_key=traces.HTTP_URL,
+        attribute_key=utils.HTTP_URL,
         attribute_value=str(request.url))
     ctx.tracer.add_attribute_to_current_span(
         attribute_key=conf.CORRELATION_ID_HEADER_NAME,
@@ -60,6 +60,6 @@ async def client_middleware(request, call_next):
             request.headers[conf.APP_KEY_HEADER_NAME] = ctx.app_key
 
         result = await call_next(request)
-        span.add_attribute(traces.HTTP_STATUS_CODE, result.status_code)
+        span.add_attribute(utils.HTTP_STATUS_CODE, result.status_code)
 
         return result

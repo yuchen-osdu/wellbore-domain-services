@@ -89,12 +89,18 @@ class ConfigurationContainer:
     use env_var.printable_value instead of env_var.value when the goal is to log/display it.
     """
 
+    service_name: EnvVar = EnvVar(
+        key='SERVICE_NAME',
+        description='Display name of the service when exporting entries for logging and tracing',
+        default='os-wellbore-ddms---local'
+    )
+
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
-        description='Short name of the current cloud provider environment, must be "gcp" or "az" or "ibm',
+        description='Short name of the current cloud provider environment, must be "gcp" or "az"',
         default=None,
         is_mandatory=True,
-        allowed_values=['gcp', 'az', 'local', 'ibm'],
+        allowed_values=['gcp', 'az', 'local'],
         factory=lambda x: x.lower()
     )
 
@@ -279,13 +285,6 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             override=True,
                             validator=validator_path_must_exist)
 
-    if provider == 'ibm':
-        config.add_from_env(attribute_name='default_data_tenant_project_id',
-                            env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
-                            description='IBM data tenant ID',
-                            default='logstore-ibm',
-                            is_mandatory=True,
-                            override=True)
 
 # Global config instance
 Config = ConfigurationContainer.with_load_all(contextual_loader=cloud_provider_additional_environment)

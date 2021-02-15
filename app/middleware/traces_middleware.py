@@ -19,10 +19,11 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
-from app.helper import traces
 from opencensus.trace import tracer as open_tracer
 from opencensus.trace.samplers import AlwaysOnSampler
 from opencensus.trace.span import SpanKind
+
+from app.helper import traces, utils
 from app.utils import get_or_create_ctx
 from app import conf
 from inspect import isfunction as is_function
@@ -64,20 +65,20 @@ class TracingMiddleware(BaseHTTPMiddleware):
     @staticmethod
     def _before_request(request: Request, tracer: open_tracer.Tracer):
         tracer.add_attribute_to_current_span(
-            attribute_key=traces.HTTP_HOST,
+            attribute_key=utils.HTTP_HOST,
             attribute_value=request.url.hostname)
         tracer.add_attribute_to_current_span(
-            attribute_key=traces.HTTP_METHOD,
+            attribute_key=utils.HTTP_METHOD,
             attribute_value=request.method)
 
         tracer.add_attribute_to_current_span(
-            attribute_key=traces.HTTP_ROUTE,
+            attribute_key=utils.HTTP_ROUTE,
             attribute_value=request.url.path)
         tracer.add_attribute_to_current_span(
-            attribute_key=traces.HTTP_PATH,
+            attribute_key=utils.HTTP_PATH,
             attribute_value=str(request.url.path))
         tracer.add_attribute_to_current_span(
-            attribute_key=traces.HTTP_URL,
+            attribute_key=utils.HTTP_URL,
             attribute_value=str(request.url))
 
         ctx_correlation_id = get_or_create_ctx().correlation_id
@@ -90,13 +91,13 @@ class TracingMiddleware(BaseHTTPMiddleware):
     @staticmethod
     def _after_successful_request(response: Response, tracer):
         tracer.add_attribute_to_current_span(
-            attribute_key=traces.HTTP_STATUS_CODE,
+            attribute_key=utils.HTTP_STATUS_CODE,
             attribute_value=response.status_code)
 
     @staticmethod
     def _after_request(request, tracer):
         tracer.add_attribute_to_current_span(
-            attribute_key=traces.HTTP_ROUTE,
+            attribute_key=utils.HTTP_ROUTE,
             attribute_value=TracingMiddleware._retrieve_raw_path(request))
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:
@@ -125,5 +126,5 @@ class TracingMiddleware(BaseHTTPMiddleware):
 
             finally:
                 status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
-                ctx.logger.info(traces.process_message(request, status))
+                ctx.logger.info(utils.process_message(request, status))
                 self._after_request(request, tracer)

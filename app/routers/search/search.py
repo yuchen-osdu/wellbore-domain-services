@@ -22,7 +22,8 @@ from odes_search.models import (
     Point,
     ByDistance,
     ByBoundingBox,
-    ByGeoPolygon)
+    ByGeoPolygon,
+    CursorQueryRequest)
 from app.clients.search_service_client import get_search_service
 from app.utils import Context
 import app.routers.search.search_wrapper as search_wrapper
@@ -83,10 +84,13 @@ def query_spatial_filter_builder(spacial_filter_type: str, latitude1: str = None
     return spatial_filter
 
 
+def create_relationships_id_str(data_type, id):
+    return f'data.relationships.{data_type}.id:\"{id}\"'
+
+
 async def query_request_with_specific_attribute(query_type: str, attribute: str, attribute_kind: str, kind: str,
                                                 data_type: str,
                                                 ctx: Context, query: str = None):
-
     query_request = QueryRequest(kind=attribute_kind,
                                  query=attribute,
                                  returnedFields=['id'])
@@ -97,17 +101,13 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
         data_partition_id=ctx.partition_id,
         query_request=query_request)
 
-    respond = CursorQueryResponse.parse_obj(query_result.dict())
-    id_list = None
-    if respond.results:
-        for i in range(len(respond.results)):
-            relationships_id = f'data.relationships.{data_type}.id:\"{respond.results[i]["id"]}\"'
-            if i == 0:
-                id_list = relationships_id
-            else:
-                id_list = f'{id_list} OR {relationships_id}'
-    else:
+    response = CursorQueryResponse.parse_obj(query_result.dict())
+
+    if not response.results:
         return query_result
+
+    relationships_ids = [create_relationships_id_str(data_type, r["id"]) for r in response.results]
+    id_list = ' OR '.join(relationships_ids) # [a, b, c] => 'a OR b OR c'
 
     if query:
         query = f'({id_list}) AND ({query})'
@@ -124,7 +124,7 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
         query_request=query_request)
 
 
-async def basic_query_with_cursor_request(query_type: str, kind: str, ctx: Context, query: str = None):
+async def basic_query_request(query_type: str, kind: str, ctx: Context, query: str = None):
     returned_fields = query_type_returned_fields(query_type)
     query_request = QueryRequest(kind=kind,
                                  query=query,
@@ -135,20 +135,23 @@ async def basic_query_with_cursor_request(query_type: str, kind: str, ctx: Conte
         data_partition_id=ctx.partition_id,
         query_request=query_request)
 
+
 async def basic_query_request_with_cursor(query_type: str, kind: str, ctx: Context, query: str = None):
     returned_fields = query_type_returned_fields(query_type)
-    query_request = QueryRequest(kind=kind,
-                                 limit=LIMIT,
-                                 query=query,
-                                 returnedFields=[returned_fields])
+    if not query:
+        query = None
+    query_request = CursorQueryRequest(kind=kind,
+                                       limit=LIMIT,
+                                       query=query,
+                                       returnedFields=[returned_fields])
     client = await get_search_service(ctx)
     return await client.query_with_cursor(
         data_partition_id=ctx.partition_id,
-        query_request=query_request)
+        cursor_query_request=query_request)
 
 
 def added_query(id: str, data_type: str, query: str = None):
-    relationships_id = f'data.relationships.{data_type}.id:\"{id}\"'
+    relationships_id = create_relationships_id_str(data_type, id)
     if query:
         query = f'{relationships_id} AND ({query})'
     else:
@@ -159,7 +162,6 @@ def added_query(id: str, data_type: str, query: str = None):
 @router.post('/query', summary='Query')
 async def query(query_request: QueryRequest,
                 ctx: Context = Depends(get_ctx)) -> QueryResponse:
-
     client = await get_search_service(ctx)
     return await client.query(data_partition_id=ctx.partition_id,
                               query_request=query_request)
@@ -167,8 +169,7 @@ async def query(query_request: QueryRequest,
 
 @router.post('/query_with_cursor', summary='Query with cursor')
 async def query_with_cursor(query_request: QueryRequest,
-                ctx: Context = Depends(get_ctx)):
-
+                            ctx: Context = Depends(get_ctx)):
     client = await get_search_service(ctx)
     return await search_wrapper.SearchWrapper.query_cursorless(
         search_service=client,
@@ -188,7 +189,7 @@ async def query_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_c
             based on its center coordinates (lat, lon) and radius (meters) </p>
             <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>""")
 async def query_wellbores_bydistance(latitude: float, longitude: float, distance: int, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                                     ctx: Context = Depends(get_ctx)):
     spatial_filter = query_spatial_filter_builder("bydistance", latitude1=latitude, longitude1=longitude,
                                                   distance=distance)
     return await query_request_with_spatial_filter(query_type, spatial_filter, ctx, body.query)
@@ -199,8 +200,8 @@ async def query_wellbores_bydistance(latitude: float, longitude: float, distance
             based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>
             <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>""")
 async def query_wellbores_byboundingbox(latitude_top_left: float, longitude_top_left: float,
-                latitude_bottom_right: float, longitude_bottom_right: float,
-                body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
+                                        latitude_bottom_right: float, longitude_bottom_right: float,
+                                        body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
     spatial_filter = query_spatial_filter_builder("byboundingbox", latitude1=latitude_top_left,
                                                   longitude1=longitude_top_left,
                                                   latitude2=latitude_bottom_right, longitude2=longitude_bottom_right)
@@ -212,7 +213,7 @@ async def query_wellbores_byboundingbox(latitude_top_left: float, longitude_top_
             polygon based on each of its coordinates (lat, lon) with a minimum of three</p>
             <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>""")
 async def query_wellbores_bygeopolygon(points: List[Point], query: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                                       ctx: Context = Depends(get_ctx)):
     spatial_filter = query_spatial_filter_builder("bygeopolygon", points=points)
     return await query_request_with_spatial_filter(query_type, spatial_filter, ctx, query.query)
 
@@ -222,9 +223,9 @@ async def query_wellbores_bygeopolygon(points: List[Point], query: SearchQuery =
             specific ID will be returned</p>
             <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>""")
 async def query_logsets_bywellbore(wellboreId: str, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                                   ctx: Context = Depends(get_ctx)):
     query = added_query(wellboreId, "wellbore", body.query)
-    return await basic_query_with_cursor_request(query_type, logSet_kind, ctx, query)
+    return await basic_query_request(query_type, logSet_kind, ctx, query)
 
 
 @router.post('/query/wellbores/{wellboreAttribute}/logsets',
@@ -233,7 +234,7 @@ async def query_logsets_bywellbore(wellboreId: str, body: SearchQuery = None,
             with this specific attribute will be returned</p>
             <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>""")
 async def query_logsets_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                                            ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, wellboreAttribute, wellbore_kind, logSet_kind,
                                                        "wellbore", ctx,
                                                        body.query)
@@ -251,9 +252,9 @@ async def query_logs(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
             specific ID will be returned</p>
             <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>""")
 async def query_logs_bywellbore(wellboreId: str, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                                ctx: Context = Depends(get_ctx)):
     query = added_query(wellboreId, "wellbore", body.query)
-    return await basic_query_with_cursor_request(query_type, log_kind, ctx, query)
+    return await basic_query_request(query_type, log_kind, ctx, query)
 
 
 @router.post('/query/wellbores/{wellboreAttribute}/logs',
@@ -262,7 +263,7 @@ async def query_logs_bywellbore(wellboreId: str, body: SearchQuery = None,
             with this specific attribute will be returned</p>
             <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>""")
 async def query_logs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                                         ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, wellboreAttribute, wellbore_kind, log_kind,
                                                        "wellbore", ctx,
                                                        body.query)
@@ -273,9 +274,9 @@ async def query_logs_bywellboreattribute(wellboreAttribute: str, body: SearchQue
             specific ID will be returned</p>
             <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>""")
 async def query_logs_bylogset(logsetId: str, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                              ctx: Context = Depends(get_ctx)):
     query = added_query(logsetId, "logSet", body.query)
-    return await basic_query_with_cursor_request(query_type, log_kind, ctx, query)
+    return await basic_query_request(query_type, log_kind, ctx, query)
 
 
 @router.post('/query/logsets/{logsetAttribute}/logs', summary='Query with cursor, search logs by logSet attribute',
@@ -283,7 +284,7 @@ async def query_logs_bylogset(logsetId: str, body: SearchQuery = None,
             with this specific attribute will be returned</p>
             <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>""")
 async def query_logs_bylogsetattribute(logsetAttribute: str, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                                       ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, logsetAttribute, logSet_kind, log_kind, "logSet",
                                                        ctx,
                                                        body.query)
@@ -294,6 +295,6 @@ async def query_logs_bylogsetattribute(logsetAttribute: str, body: SearchQuery =
             specific ID will be returned</p>
             <p>The Marker kind is *:wks:marker:* returns all records directly based on existing schemas</p>""")
 async def query_markers_bywellbore(wellboreId: str, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
+                                   ctx: Context = Depends(get_ctx)):
     query = added_query(wellboreId, "wellbore", body.query)
-    return await basic_query_with_cursor_request(query_type, marker_kind, ctx, query)
+    return await basic_query_request(query_type, marker_kind, ctx, query)

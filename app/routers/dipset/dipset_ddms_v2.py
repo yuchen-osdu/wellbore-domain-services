@@ -50,6 +50,7 @@ async def post_dipset(dipsets: List[dipset], ctx: Context = Depends(get_ctx)) ->
     description=""""Get the DipSet object using its **id**.""",
     operation_id="get_dipset_version",
     responses={status.HTTP_404_NOT_FOUND: {"description": "DipSet not found"}},
+    response_model_exclude_unset=True
 )
 async def get_dipset_version(dipsetid: str, version: int, ctx: Context = Depends(get_ctx)) -> dipset:
     storage_client = await get_storage_record_service(ctx)
@@ -77,6 +78,7 @@ async def get_dipset_versions(dipsetid: str, ctx: Context = Depends(get_ctx)) ->
     description="""Get the DipSet object using its **id**""",
     operation_id="get_dipset",
     responses={status.HTTP_404_NOT_FOUND: {"description": "DipSet not found"}},
+    response_model_exclude_unset=True
 )
 async def get_dipset(dipsetid: str, ctx: Context = Depends(get_ctx)) -> dipset:
     storage_client = await get_storage_record_service(ctx)

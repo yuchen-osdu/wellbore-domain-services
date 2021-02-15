@@ -14,7 +14,7 @@
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, HTTPException
 from starlette import status
 from starlette.responses import Response
 from pandas import DataFrame
@@ -27,9 +27,10 @@ from app.model.model_curated import (
     trajectorychannel as TrajectoryChannel,
 )
 from app.model.model_utils import from_record, to_record
-from app.routers.common_parameters import json_orient_parameter
+from app.routers.trajectory.parameters import trajectory_json_orient_parameter
 from app.routers.trajectory.persistence import Persistence
-from app.bulk_persistence import DataframeSerializer, JSONOrient, MimeTypes
+from app.bulk_persistence import DataframeSerializer, JSONOrient, MimeTypes, NoBulkException, UnknownChannelsException, \
+    InvalidBulkException
 
 from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx
 
@@ -61,6 +62,7 @@ async def get_trajectory_record(ctx, trajectoryid: TrajectoryId) -> Trajectory:
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Trajectory not found"}
     },
+    response_model_exclude_unset=True
 )
 async def get_trajectory(
     trajectoryid: TrajectoryId, ctx: Context = Depends(get_ctx)
@@ -118,6 +120,7 @@ async def get_trajectory_versions(
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Trajectory not found"}
     },
+    response_model_exclude_unset=True
 )
 async def get_trajectory_version(
     trajectoryid: TrajectoryId, version: int, ctx: Context = Depends(get_ctx)
@@ -208,7 +211,7 @@ _trajectory_dataframe_example = DataFrame([
 async def post_traj_data(
     request: Request,
     trajectoryid: TrajectoryId,
-    orient: str = Depends(json_orient_parameter),
+    orient: str = Depends(trajectory_json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     persistence: Persistence = Depends(get_persistence)) -> CreateUpdateRecordsResponse:
 
@@ -270,11 +273,13 @@ async def post_traj_data(
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "trajectory not found"},
         status.HTTP_400_BAD_REQUEST: {"description": "unknown channels"},
+        status.HTTP_204_NO_CONTENT: {"description": "No bulkURI"},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Record has an invalid bulkURI"},
     },
 )
 async def get_traj_data(
     trajectoryid: TrajectoryId,
-    orient: str = Depends(json_orient_parameter),
+    orient: str = Depends(trajectory_json_orient_parameter),
     channels: Optional[List[str]] = Query(
         None, description="List of channels to get. If not provided, return all channels."
     ),
@@ -283,6 +288,14 @@ async def get_traj_data(
 ):
     record = await get_trajectory_record(ctx, trajectoryid)
 
-    df = await persistence.read_bulk(ctx, record, channels)
+    try:
+        df = await persistence.read_bulk(ctx, record, channels)
+    except NoBulkException:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except UnknownChannelsException as key_error:  # unknown channels
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(key_error)) from key_error
+    except InvalidBulkException as ex:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex))
+
     content = DataframeSerializer.to_json(df, orient=orient)
     return Response(content=content, media_type=MimeTypes.JSON.type)
