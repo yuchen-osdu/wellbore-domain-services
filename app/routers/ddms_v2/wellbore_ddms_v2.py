@@ -38,7 +38,8 @@ router = APIRouter()
         convert the results to match the *wks:wellbore:1.0.6*. If convertion is
         not possible returns an error **500**""",
             operation_id="get_wellbore",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
+            response_model_exclude_unset=True)
 async def get_wellbore(
         wellboreid: str,
         ctx: Context = Depends(get_ctx)
@@ -98,7 +99,8 @@ async def get_wellbore_versions(
         convert the results to match the *wks:wellbore:1.0.6*. If convertion is
         not possible returns an error **500**""",
             operation_id="get_wellbore_version",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
+            response_model_exclude_unset=True)
 async def get_wellbore_version(
         wellboreid: str,
         version: int,

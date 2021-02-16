@@ -16,6 +16,9 @@ import math
 from typing import List, NamedTuple, Tuple, Union
 
 import pandas as pd
+import starlette.status as status
+from fastapi import HTTPException
+from odes_storage import UnexpectedResponse
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model import entity_utils
@@ -282,13 +285,28 @@ async def write_dipset_data(ctx, dataframe: pd.DataFrame, ds: Union[dipset, str]
 
 
 async def read_dipset_data(ctx, ds: Union[dipset, str]) -> Tuple[dipset, pd.DataFrame]:
+    """Gets the bulk data for the dipset
+
+    Create or update the log associated to the dipset and return the updated dipset
+
+    Args:
+    Union[dipset, str]: dipset record or dipset ID to get the bulkd data
+
+    Returns:
+    Tuple[dipset, pandas.DataFrame]: updated dipset record and dataframe containing bulkd data for the specified record
+
+    Raises:
+    HTTPException: 404 record is not found
+    """
     my_dipset = await fetch_dipset(ctx, ds) if not isinstance(ds, dipset) else ds
 
     if my_dipset.data is None or my_dipset.data.bulkURI is None: # what about empty string ?
         return my_dipset, pd.DataFrame()
 
     # Fetch data
-    return my_dipset, await get_dataframe(ctx, BulkId.bulk_urn_decode(my_dipset.data.bulkURI))
+    df = await get_dataframe(ctx, BulkId.bulk_urn_decode(my_dipset.data.bulkURI))
+
+    return my_dipset, df
 
 
 async def fetch_dipset(ctx, dipsetid: str) -> dipset:
@@ -298,7 +316,10 @@ async def fetch_dipset(ctx, dipsetid: str) -> dipset:
     # TODO input validation  dipset record should have data, data.relationships, data.relationships.wellbore
 
     storage_client = await get_storage_record_service(ctx)
-    return from_record(dipset,
-                       await storage_client.get_record(
-                           id=dipsetid,
-                           data_partition_id=ctx.partition_id))
+    try:  # TODO creating a custom exception for instance RecordNotFoundException
+        storage_record = await storage_client.get_record(id=dipsetid,
+                           data_partition_id=ctx.partition_id)
+    except UnexpectedResponse as unexpected_response:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(unexpected_response))
+
+    return from_record(dipset, storage_record)

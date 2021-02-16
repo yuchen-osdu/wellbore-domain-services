@@ -15,34 +15,22 @@
 import logging
 import traceback
 import sys
+import rapidjson
+
+import structlog
+from structlog.contextvars import merge_contextvars
+from opencensus.ext.azure.log_exporter import AzureLogHandler
+from opencensus.trace import config_integration
 
 from app.conf import Config
 from app.utils import get_or_create_ctx
-
-import structlog
-from structlog.contextvars import merge_contextvars, bind_contextvars
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-from opencensus.trace import config_integration
-import rapidjson
+from app.helper.utils import rename_cloud_role_func
 
 _LOGGER = None
 
 
 def get_logger():
     return _LOGGER
-
-
-def add_fields(**kwargs):
-    """
-    Add key-value pairs to our homemade logger
-    e.g.
-        >>> bind_contextvars(a=1, b=2)
-        >>> # Then use loggers as per normal
-        >>> log.msg("hello")
-        a=1 b=2 event='hello'
-    Full documentation: https://www.structlog.org/en/stable/contextvars.html
-    """
-    bind_contextvars(**kwargs)
 
 
 class StackDriverRenderer(object):
@@ -100,13 +88,13 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
         return msg, kwargs
 
 
-def init_logger():
+def init_logger(service_name):
     global _LOGGER
 
     if Config.cloud_provider.value == 'az':
-        _LOGGER = create_azure_logger()
+        _LOGGER = create_azure_logger(service_name)
     elif Config.cloud_provider.value == 'gcp':
-        _LOGGER = create_gcp_logger()
+        _LOGGER = create_gcp_logger(service_name)
     else:
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
         _LOGGER = logging.getLogger(__name__)
@@ -114,7 +102,7 @@ def init_logger():
     return _LOGGER
 
 
-def create_azure_logger():
+def create_azure_logger(service_name):
     """
     Create logger with two handlers:
      - AzureLogHandler: to see Dependencies, Requests, Traces and Exception into Azure monitoring
@@ -133,12 +121,13 @@ def create_azure_logger():
     logger_level = Config.get('az_logger_level')
     handler = AzureLogHandler(connection_string=f'InstrumentationKey={key}')
     handler.setLevel(logging.getLevelName(logger_level))
+    handler.add_telemetry_processor(rename_cloud_role_func(service_name))
     logger.addHandler(handler)
 
     return AzureContextLoggerAdapter(logger, extra=dict())
 
 
-def create_gcp_logger(service_name='wellbore-ddms'):
+def create_gcp_logger(service_name):
     """
     Initialize structlog with following configuration:
         - Make logs compatible with Stackdriver

@@ -49,19 +49,6 @@ class DDMSBaseModelWithExtra(BaseModel):
         extra = Extra.allow
 
 
-class AboutResponseUser(DDMSBaseModel):
-    tenant: Optional[str] = None
-    email: Optional[str] = None
-
-
-class V1DmsInfo(DDMSBaseModel):
-    kinds: Optional[List[str]] = None
-
-
-class FastSearchResponse(DDMSBaseModel):
-    results: Optional[List[str]] = None
-
-
 class Point(DDMSBaseModel):
     latitude: Optional[confloat(ge=-90.0, le=90.0)] = Field(
         None, description='Latitude of point.'
@@ -337,7 +324,7 @@ class projectedPosition(DDMSBaseModel):
     )
 
 
-class wellborerelationships(DDMSBaseModel):
+class wellborerelationships(DDMSBaseModelWithExtra):
     definitiveTimeDepthRelation: Optional[ToOneRelationship] = Field(
         None,
         description='The definitive tome-depth relation providing the MD to seismic travel-time transformation.',
@@ -452,7 +439,7 @@ class Format(Enum):
     float128 = 'float128'
 
 
-class logsetrelationships(DDMSBaseModel):
+class logsetrelationships(DDMSBaseModelWithExtra):
     well: Optional[ToOneRelationship] = Field(
         None,
         description='The well to which this logSet belongs. Only required if the wellbore is unknown.',
@@ -468,7 +455,7 @@ class logsetrelationships(DDMSBaseModel):
     )
 
 
-class dipsetrelationships(DDMSBaseModel):
+class dipsetrelationships(DDMSBaseModelWithExtra):
     well: Optional[ToOneRelationship] = Field(
         None,
         description='The well to which this dipSet belongs. Only required if the wellbore is unknown.',
@@ -646,7 +633,7 @@ class trajectorychannel(DDMSBaseModel):
     )
 
 
-class trajectoryrelationships(DDMSBaseModel):
+class trajectoryrelationships(DDMSBaseModelWithExtra):
     wellbore: ToOneRelationship = Field(
         ...,
         description='The wellbore to which this trajectory belongs.',
@@ -672,7 +659,7 @@ class wgs84Position(DDMSBaseModel):
     )
 
 
-class markerrelationships(DDMSBaseModel):
+class markerrelationships(DDMSBaseModelWithExtra):
     horizon: Optional[ToOneRelationship] = Field(
         None,
         description='The related stratigraphic horizon',
@@ -819,7 +806,7 @@ class ReferenceType(Enum):
     Two_Way_Time = 'Two-Way Time'
 
 
-class logRelationships(DDMSBaseModel):
+class logRelationships(DDMSBaseModelWithExtra):
     logSet: Optional[ToOneRelationship] = Field(
         None,
         description='The logSet to which this log belongs. If the log is not part of a log set this relationship stays empty.',
@@ -865,7 +852,7 @@ class basinContext(DDMSBaseModel):
     )
 
 
-class wellrelationships(DDMSBaseModel):
+class wellrelationships(DDMSBaseModelWithExtra):
     asset: Optional[ToOneRelationship] = Field(
         None, description='The asset this well belongs to.', title='Asset'
     )
@@ -959,11 +946,6 @@ class WellType(Enum):
     respud = 'respud'
     sidetrack = 'sidetrack'
     unknown = 'unknown'
-
-
-class V1AboutResponse(DDMSBaseModel):
-    user: Optional[AboutResponseUser] = None
-    dmsInfo: Optional[V1DmsInfo] = None
 
 
 class ByBoundingBox(DDMSBaseModel):

@@ -43,7 +43,7 @@ from app.model.log_bulk import LogBulkHelper
 from app.model.model_curated import log
 from app.model.model_utils import from_record, to_record
 from app.routers.ddms_v2.persistence import Persistence
-from app.routers.common_parameters import json_orient_parameter
+from app.routers.ddms_v2.common_parameters import json_orient_parameter
 from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx
 
 
@@ -105,7 +105,8 @@ async def update_records(ctx: Context, records: List[BaseModel]) -> CreateUpdate
                 record and convert the results to match the *wks:log:1.0.5*. If
                 conversion is not possible returns an error **500**</p>""",
             operation_id="get_log",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}},
+            response_model_exclude_unset=True)
 async def get_log(
         logid: str,
         ctx: Context = Depends(get_ctx)
@@ -164,7 +165,7 @@ async def del_log(
     response_model=RecordVersions,
     summary="Get all versions of the log",
     operation_id="get_log_versions",
-    responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}},
+    responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}}
 )
 async def get_log_versions(
     logid: str, ctx: Context = Depends(get_ctx)
@@ -188,6 +189,7 @@ async def get_log_versions(
     summary="Get the given version of log using wks:log:1.0.5 schema",
     operation_id="get_log_version",
     responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}},
+    response_model_exclude_unset=True
 )
 async def get_log_version(
     logid: str, version: int, ctx: Context = Depends(get_ctx)
@@ -242,7 +244,6 @@ _log_dataframe_example = pd.DataFrame(
     columns=["Ref", "col_100X", "col_200X"],
 )
 
-
 # manually setup doc as we wanted to tweaked the classic mechanism in order to best perf as we can
 @OpenApiHandler.set(
     operation_id="write_log_data",
@@ -287,8 +288,7 @@ async def write_log_data(
 ) -> CreateUpdateRecordsResponse:
     content = await request.body()  # request.stream()
     df = DataframeSerializer.read_json(content, orient)
-    return await _write_log_data(ctx, persistence, logid, bulk_path, df)
-
+    return  await _write_log_data(ctx, persistence, logid, bulk_path, df)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------

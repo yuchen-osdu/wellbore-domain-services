@@ -84,11 +84,13 @@ def hide_router_modules(modules):
 
 @base_app.on_event("startup")
 async def startup_event():
-    logger.init_logger()
+    service_name = Config.service_name.value
+
+    logger.init_logger(service_name=service_name)
     check_environment(Config)
     print('using temporary directory:', get_wdms_temp_dir())
     MainInjector().configure(app_injector)
-    wdms_app.trace_exporter = traces.create_exporter(service_name='os-wellbore-ddms')
+    wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
 
 
 @base_app.on_event('shutdown')

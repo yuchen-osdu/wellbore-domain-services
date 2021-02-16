@@ -359,7 +359,7 @@ def test_swagger_generation():
             "schema"][
             "$ref"] == '#/components/schemas/CatalogRecord'
     assert swagger_dict["components"]["schemas"]["CatalogRecord"]["example"] == {
-        'acl': {'viewers': ['abc@slb.com, cde@slb.com'], 'owners': ['abc@slb.com, cde@slb.com']},
+        'acl': {'viewers': ['abc@example.com, cde@example.com'], 'owners': ['abc@example.com, cde@example.com']},
         'legal': {'legaltags': ['opendes-public-usa-dataset-1'], 'otherRelevantDataCountries': ['US']},
         'data': {'family_catalog': [{'unit': 'ohm.m', 'family': 'Medium Resistivity', 'rule': 'MEDR'}],
                  'main_family_catalog': [

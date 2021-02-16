@@ -89,6 +89,12 @@ class ConfigurationContainer:
     use env_var.printable_value instead of env_var.value when the goal is to log/display it.
     """
 
+    service_name: EnvVar = EnvVar(
+        key='SERVICE_NAME',
+        description='Display name of the service when exporting entries for logging and tracing',
+        default='os-wellbore-ddms---local'
+    )
+
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
         description='Short name of the current cloud provider environment, must be "gcp" or "az" or "ibm',

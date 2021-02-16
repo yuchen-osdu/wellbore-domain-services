@@ -108,23 +108,29 @@ def test_azure_configuration_checker(azure_config_fixture):
 def test_azure_trace_exporter_created(azure_config_fixture):
     exporter_name = 'AzureExporter'
 
-    with mock.patch('app.helper.traces._create_azure_exporter', mock.Mock(return_value=exporter_name)):
+    mock_exporter = mock.MagicMock()
+    mock_exporter.configure_mock(**{'exporter_name': exporter_name})
+
+    with mock.patch('app.helper.traces._create_azure_exporter', mock.Mock(return_value=mock_exporter)):
         exporter = create_exporter('test-service')
         assert len(exporter.exporters) == 1
         # ensure called method is azure exporter
-        created_exporter_name = exporter.exporters[0]
-        assert created_exporter_name == exporter_name
+        azure_exporter = exporter.exporters[0]
+        assert azure_exporter.exporter_name == exporter_name
 
 
 def test_gcp_trace_exporter_created(gcp_config_fixture):
     exporter_name = 'StackdriverExporter'
 
-    with mock.patch('app.helper.traces._create_gcp_exporter', mock.Mock(return_value=exporter_name)):
+    mock_exporter = mock.MagicMock()
+    mock_exporter.configure_mock(**{'exporter_name': exporter_name})
+
+    with mock.patch('app.helper.traces._create_gcp_exporter', mock.Mock(return_value=mock_exporter)):
         exporter = create_exporter('test-service')
         assert len(exporter.exporters) == 1
         # ensure called method is gcp exporter
-        created_exporter_name = exporter.exporters[0]
-        assert created_exporter_name == exporter_name
+        gcp_exporter = exporter.exporters[0]
+        assert gcp_exporter.exporter_name == exporter_name
 
 
 def test_config_get_by_name(testing_config):

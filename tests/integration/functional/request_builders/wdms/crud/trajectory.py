@@ -75,6 +75,31 @@ def build_request_delete_trajectory() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_create_trajectory_with_id() -> RequestRunner:
+    rq_proto = Request(
+        name='Create trajectory',
+        method='POST',
+        url='{{base_url}}/ddms/v2/trajectories',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload=r"""
+[
+  {
+        "acl": {{record_acl}},
+        "legal": {{record_legal}},
+        "kind":"{{trajectoryKind}}",
+        "id":"{{trajectory_record_id}}",
+        "data": {{trajectory_data}}
+    }
+]
+"""
+    )
+    return RequestRunner(rq_proto)
+
 def build_request_create_trajectory() -> RequestRunner:
     rq_proto = Request(
         name='Create trajectory',
@@ -88,13 +113,57 @@ def build_request_create_trajectory() -> RequestRunner:
         },
         payload=r"""
 [
-{
-  "acl": {{record_acl}}, "legal": {{record_legal}},
-  "data": {"name": "wdms_e2e_trajectory"},
-  "kind": "{{trajectoryKind}}"
-}
+  {
+        "acl": {{record_acl}},
+        "legal": {{record_legal}},
+        "data": {{trajectory_data}},
+        "kind":"{{trajectoryKind}}"
+    }
 ]
 """
     )
     return RequestRunner(rq_proto)
 
+def build_request_get_trajectory_bulk_data() -> RequestRunner:
+    rq_proto = Request(
+        name='Create trajectory data',
+        method='GET',
+        url='{{base_url}}/ddms/v2/trajectories/{{trajectory_record_id}}/data?orient=split',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        }
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_add_trajectory_bulk_data() -> RequestRunner:
+    rq_proto = Request(
+        name='Add trajectory bulk data',
+        method='POST',
+        url='{{base_url}}/ddms/v2/trajectories/{{trajectory_record_id}}/data?orient=split',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload={
+            "columns": [
+                "MD",
+                "X",
+                "Y"
+            ],
+            "index": [0, 1, 2, 3, 4],
+            "data": [
+                [0.0, 1001, 2001],
+                [0.5, 1002, 2002],
+                [1.0, 1003, 2003],
+                [1.5, 1004, 2004],
+                [2.0, 1005, 2005]
+            ]
+        }
+    )
+    return RequestRunner(rq_proto)

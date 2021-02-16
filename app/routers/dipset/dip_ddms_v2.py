@@ -57,7 +57,8 @@ async def post_dips(
     Operation will sort by reference all dips in dipset (may modify dip indexes).""",
     operation_id="insert_dips",
 )
-async def insert_dips(dips: List[Dip], dipsetid: str, ctx: Context = Depends(get_ctx)) -> List[Dip]:
+async def insert_dips(
+        dips: List[Dip], dipsetid: str, ctx: Context = Depends(get_ctx)) -> List[Dip]:
     my_dipset, df = await persistence.read_dipset_data(ctx, ds=dipsetid)
     df = df.append(persistence.dips_to_df(dips))
     await persistence.write_dipset_data(ctx, dataframe=df, ds=my_dipset)
@@ -80,6 +81,7 @@ async def get_dips(
     limit: Optional[int] = Query(None, ge=0),
     ctx: Context = Depends(get_ctx),
 ) -> List[Dip]:
+
     _, df = await persistence.read_dipset_data(ctx, ds=dipsetid)
 
     start = 0

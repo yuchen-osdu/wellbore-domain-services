@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from fastapi import APIRouter, Depends, HTTPException
+
+from app.model.ddms_model_response import V1AboutResponse, AboutResponseUser
 from app.model.model_curated import *
 from app.utils import Context, get_ctx
 

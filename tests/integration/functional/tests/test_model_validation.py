@@ -24,6 +24,7 @@ def test_create_log_with_invalid_data_should_422(with_wdms_env):
 
 @pytest.fixture
 def env_with_record_extra_created(with_wdms_env):
+    with_wdms_env.set("entity", 'logs')
     result = build_request_create_log_with_extra_fields().call(with_wdms_env)
     result.assert_ok()
     with_wdms_env.set("record_id", result.get_response_obj().recordIds[0])
@@ -34,8 +35,29 @@ def env_with_record_extra_created(with_wdms_env):
 
 @pytest.mark.tag('basic', 'smoke', 'error')
 def test_record_should_keep_extra_field(env_with_record_extra_created):
-    result = build_request_get_log_check_for_extra_fields().call(env_with_record_extra_created)
+    result = build_request_get_record_check_for_extra_fields().call(env_with_record_extra_created)
     result.assert_ok()
     resobj = result.get_response_obj()
     assert resobj.data.xxx_extra_at_data == 'value_at_data'
     assert 'US' in resobj.legal.otherRelevantDataCountries
+
+
+tests_parameters_for_relationship_extra_field = [
+    ('logs', "{{logKind}}", {"relationships": {"extra_field": "EXTRA_VALUE"}}),
+    ('logsets', "{{logSetKind}}", {"relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
+    ('markers', "{{markerKind}}", {"name": "foo", "md": {"value": 1, "unitKey": "m"}, "relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
+    ('trajectories', "{{trajectoryKind}}", {"relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
+    ('dipsets', "{{dipsetKind}}", {"relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
+    ('wellbores', "{{wellboreKind}}", {"relationships": {"extra_field": "EXTRA_VALUE"}}),
+    ('wells', "{{wellKind}}", {"relationships": {"extra_field": "EXTRA_VALUE"}})
+]
+@pytest.mark.parametrize('entities, entities_kind, data_extra_field', tests_parameters_for_relationship_extra_field)
+def test_relationships_extra_field(with_wdms_env, entities, entities_kind, data_extra_field):
+    with_wdms_env.set("base_url_entity", entities)
+    with_wdms_env.set("entity_kind", entities_kind)
+    with_wdms_env.set("data", data_extra_field)
+    result = build_request_create_data_extra_fields().call(with_wdms_env, assert_status=200)
+    with_wdms_env.set("record_id", result.get_response_obj().recordIds[0])
+    result = build_request_get_record_check_for_extra_fields().call(with_wdms_env, assert_status=200)
+    resobj = result.get_response_obj()
+    assert resobj.data.relationships.extra_field == 'EXTRA_VALUE'

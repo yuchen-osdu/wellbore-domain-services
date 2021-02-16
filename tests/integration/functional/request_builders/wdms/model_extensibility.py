@@ -15,11 +15,11 @@
 from request_runner import RequestRunner, Request
 
 
-def build_request_get_log_check_for_extra_fields() -> RequestRunner:
+def build_request_get_record_check_for_extra_fields() -> RequestRunner:
     rq_proto = Request(
-        name='get_log_check_for_extra_fields',
+        name='get_record_check_for_extra_fields',
         method='GET',
-        url='{{base_url}}/ddms/v2/logs/{{record_id}}',
+        url='{{base_url}}/ddms/v2/{{base_url_entity}}/{{record_id}}',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -71,3 +71,26 @@ def build_request_create_log_with_extra_fields() -> RequestRunner:
     )
     return RequestRunner(rq_proto)
 
+
+def build_request_create_data_extra_fields() -> RequestRunner:
+    rq_proto = Request(
+        name='build_request_create_data_extra_fields',
+        method='POST',
+        url='{{base_url}}/ddms/v2/{{base_url_entity}}',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload=r"""
+[
+{
+  "acl": {{record_acl}}, "legal": {{record_legal}},
+  "data": {{data}},
+  "kind": "{{entity_kind}}"
+}
+]
+"""
+    )
+    return RequestRunner(rq_proto)

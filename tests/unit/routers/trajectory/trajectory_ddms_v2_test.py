@@ -17,6 +17,7 @@ from tempfile import TemporaryDirectory
 
 from fastapi.testclient import TestClient
 from fastapi import Header
+from starlette.status import HTTP_204_NO_CONTENT, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_400_BAD_REQUEST
 import pytest
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -54,7 +55,6 @@ legal = {
         "opendes-public-usa-dataset-1"
     ],
     "otherRelevantDataCountries": ["US", "FR"],
-    "status": None
 }
 
 trajectory_kind = "opendes:wks:trajectory:1.0.5"
@@ -74,28 +74,6 @@ traj = {
 
 headers = { "data-partition-id": "DATA_PARTITION_ID" }
 
-body = {
-    "MD": {
-        "0": 1.0,
-        "1": 1.5,
-        "2": 2.0
-    },
-    "X": {
-        "0": 10,
-        "1": 20,
-        "2": 30
-    },
-    "Y": {
-        "0": 11,
-        "1": 21,
-        "2": 31
-    },
-    "Z": {
-        "0": 12,
-        "1": 22,
-        "2": 32
-    }
-}
 
 
 @pytest.fixture
@@ -125,17 +103,53 @@ def client(nope_logger_fixture):
         wdms_app.dependency_overrides = {}  # clean up
 
 
-def test_traj_bulk(client):
+@pytest.mark.parametrize("orient_value, data",
+[
+    (
+        "split",
+        {
+            "columns": ["MD", "X", "Y", "Z"],
+            "index": [0, 1, 2],
+            "data": [[1.0, 10, 11, 12], [1.5, 20, 21, 22], [2.0, 30, 31, 32]]
+        }
+    ),
+    (
+        "index",
+        {
+            "0": {"MD": 1.0, "X": 10, "Y": 11, "Z": 12},
+            "1": {"MD": 1.5, "X": 20, "Y": 21, "Z": 22},
+            "2": {"MD": 2.0, "X": 30, "Y": 31, "Z": 32},
+        }
+    ),
+    (
+        "columns",
+        {
+            "MD": {"0": 1.0, "1": 1.5, "2": 2.0},
+            "X": {"0": 10, "1": 20, "2": 30},
+            "Y": {"0": 11, "1": 21, "2": 31},
+            "Z": {"0": 12, "1": 22, "2": 32},
+        }
+    ),
+    (
+        "records",
+        [
+            {"MD": 1.0, "X": 10, "Y": 11, "Z": 12},
+            {"MD": 1.5, "X": 20, "Y": 21, "Z": 22},
+            {"MD": 2.0, "X": 30, "Y": 31, "Z": 32}
+        ]
+    )
+])
+def test_traj_bulk(client, orient_value, data):
     # Create or update a traj record
     response = client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
     assert response.ok, "Create or update trajectory failed"
 
     # get data
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient=columns", headers=headers)
-    assert response.status_code == 404, "GET trajectory data should return 404 when trajectory doesn't have data"
+    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
+    assert response.status_code == HTTP_204_NO_CONTENT, "GET trajectory data should return 204 when trajectory doesn't have data"
 
     # add data to the traj
-    response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient=columns", json=body, headers=headers)
+    response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data, headers=headers)
     assert response.ok, "PUT trajectory data failed"
 
     # check record
@@ -158,9 +172,9 @@ def test_traj_bulk(client):
     assert computed_channel["Z"] == computed_record["data"]["bulkURI"] + ":Z",  "bulkid for channel Z should match {data.bulkid}:MD"
 
     # get data
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient=columns", headers=headers)
+    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
     assert response.ok, "GET trajectory data failed"
-    assert response.json() == body, "GET trajectory data  response json body should match trajectory data"
+    assert response.json() == data, "GET trajectory data  response json should match trajectory data"
 
     # get specific channels data
     response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data", headers=headers, params={'orient': 'columns', 'channels': ['X', 'Y']})
@@ -181,7 +195,7 @@ def test_traj_bulk(client):
     # get unknow channels
     response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient=columns&channels=X&channels=Wrong",
                           headers=headers)
-    assert response.status_code == 400, "Get unknown channels data should fail with code 400"
+    assert response.status_code == HTTP_400_BAD_REQUEST, "Get unknown channels data should fail with code 400"
     assert response.reason == "Bad Request"
     assert response.text == '{"detail":"\\"[\'Wrong\'] not in index\\""}'
 
@@ -194,3 +208,19 @@ def test_traj_create_and_delete(client):
 
     response = client.delete(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
     assert response.ok
+
+
+@pytest.mark.parametrize("orient_value, data", [("wrong_orient", {}), ("values", {})])
+def test_get_data_orient_param_validation_negative(client, orient_value, data):
+    # Create or update a traj record
+    response = client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
+    assert response.ok, "Create or update trajectory failed"
+
+    # get data
+    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
+    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+
+    # add data to the traj
+    response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data,
+                           headers=headers)
+    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY

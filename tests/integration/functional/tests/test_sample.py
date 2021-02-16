@@ -94,7 +94,7 @@ def sample_of_test():
 
     # other info
     print('call took', result.elapsed, 'seconds')
-    print(result)
+    result.assert_status_code(200)  # assert on a specific status code
 
 
 

@@ -30,7 +30,7 @@ def build_request_seach_tests_setup_end() -> RequestRunner:
 def build_request_seach_tests_setup_create_logsets() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_logsets',
-        method='PUT',
+        method='POST',
         url='{{base_url}}/ddms/v2/logsets',
         headers={
             'accept': 'application/json',
@@ -203,7 +203,7 @@ def build_request_seach_tests_setup_create_logsets() -> RequestRunner:
 def build_request_seach_tests_setup_create_record_refs() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_record_refs',
-        method='PUT',
+        method='POST',
         url='{{base_url}}/ddms/v2/logsets',
         headers={
             'accept': 'application/json',
@@ -235,7 +235,7 @@ def build_request_seach_tests_setup_create_record_refs() -> RequestRunner:
 def build_request_seach_tests_setup_create_logs() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_logs',
-        method='PUT',
+        method='POST',
         url='{{base_url}}/ddms/v2/logs',
         headers={
             'accept': 'application/json',
@@ -373,7 +373,7 @@ def build_request_seach_tests_setup_create_logs() -> RequestRunner:
 def build_request_seach_tests_setup_create_wellbore() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_wellbore',
-        method='PUT',
+        method='POST',
         url='{{base_url}}/ddms/v2/wellbores',
         headers={
             'accept': 'application/json',
@@ -484,10 +484,10 @@ def build_request_seach_tests_setup_create_wellbore() -> RequestRunner:
     }, 
     "region": "North America", 
     "relationships": {
-      "asset": {
-        "name": "Bell Stark"
-      }
-    }, 
+      "well": {
+        "name": "Newton 2-31"
+        } 
+    },
     "state": "North Dakota", 
     "uwi": "33-089-00300-00", 
     "wellHeadElevation": {
@@ -536,7 +536,7 @@ def build_request_seach_tests_setup_create_wellbore() -> RequestRunner:
 def build_request_seach_tests_setup_create_markers() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_markers',
-        method='PUT',
+        method='POST',
         url='{{base_url}}/ddms/v2/markers',
         headers={
             'accept': 'application/json',
@@ -552,7 +552,6 @@ def build_request_seach_tests_setup_create_markers() -> RequestRunner:
     "name": "wdms_e2e_search_record_v{{search_record_version}}",
     "md": {"unitKey": "Unknown", "value": 0},
      "relationships": {
-      "well": {"name": "Newton 2-31"}, 
       "wellbore": {
         "confidence": 1.0, 
         "id": "{{setup_search_wellbore_id}}", 

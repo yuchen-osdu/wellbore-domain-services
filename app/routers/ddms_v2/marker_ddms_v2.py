@@ -30,7 +30,8 @@ router = APIRouter()
             summary="Get the marker using wks:marker:1.0.4 schema",
             description="""Get the Marker object using its **id**""",
             operation_id="get_marker",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "marker not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "marker not found"}},
+            response_model_exclude_unset=True)
 async def get_marker(
         markerid: str,
         ctx: Context = Depends(get_ctx)
@@ -73,7 +74,8 @@ async def get_marker_versions(
             response_model=marker,
             summary="Get the given version of marker using wks:marker:1.0.4 schema",
             operation_id="get_marker_version",
-            responses={status.HTTP_404_NOT_FOUND: {"description": "marker not found"}})
+            responses={status.HTTP_404_NOT_FOUND: {"description": "marker not found"}},
+            response_model_exclude_unset=True)
 async def get_marker_version(
         markerid: str,
         version: int,

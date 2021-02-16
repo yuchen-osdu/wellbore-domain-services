@@ -52,6 +52,7 @@ tests_parameters = [
     ('/ddms/v2/wells', well(id='123456', data={}))
 ]
 
+
 tests_parameters_for_recursive = [
     ('/ddms/v2/logsets', logset(id='123456', data={})),
     ('/ddms/v2/dipsets', dipset(id="123456", data={})),
@@ -71,7 +72,7 @@ def client(nope_logger_fixture):
         # empty method
         pass
 
-    async def set_default_partition(data_partition_id: str =Header('opendes')):
+    async def set_default_partition(data_partition_id: str = Header('opendes')):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
@@ -114,6 +115,19 @@ def test_get_record_success(client, base_url, record_obj):
 
         # assert it validates the input object schema
         record_obj.validate(response.json())
+
+@pytest.mark.parametrize('base_url, record_obj', tests_parameters)
+def test_get_record_without_default_values(client, base_url, record_obj):
+    record_id = record_obj.id
+    moc = mock.AsyncMock(return_value=record_obj)
+
+    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', moc):
+        # when
+        response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        assert response.status_code == status.HTTP_200_OK
+
+        # assert we retrieve only the input fields
+        assert(response.json() == record_obj.dict(exclude_unset=True))
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
@@ -197,8 +211,8 @@ def test_delete_recursive_record_with_recursive_true_successful_delete_multiple_
             return_value=mocked_query_response
     ):
         with mock.patch.object(
-            StorageRecordServiceClientMock, 'get_record',
-            return_value=record_obj
+                StorageRecordServiceClientMock, 'get_record',
+                return_value=record_obj
         ):
             with mock.patch.object(
                     StorageRecordServiceClientMock, 'delete_record',
@@ -284,6 +298,20 @@ def test_get_record_at_version_successful(client, base_url, record_obj):
         response_obj = record_obj.validate(response.json())
         assert response_obj.version == record_obj.version
 
+@pytest.mark.parametrize('base_url, record_obj', tests_parameters)
+def test_get_record_at_version_successful_without_default_values(client, base_url, record_obj):
+    record_id = record_obj.id
+    record_obj.version = 1337
+
+    moc_get_record_version = mock.AsyncMock(return_value=record_obj)
+    with mock.patch.object(StorageRecordServiceClientMock, 'get_record_version', moc_get_record_version):
+        # when
+        response = client.get(f'{base_url}/{record_id}/versions/{record_obj.version}',
+                              headers={'data-partition-id': 'testing_partition'})
+        assert response.status_code == status.HTTP_200_OK
+
+        # assert we retrieve only the input fields
+        assert(response.json() == record_obj.dict(exclude_unset=True))
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_get_record_at_version_errors(client, base_url, record_obj):

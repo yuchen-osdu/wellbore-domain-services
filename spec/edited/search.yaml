@@ -17,7 +17,7 @@ info:
   title: Wellbore DDMS Search OSDU
   version: '0.2'
 servers:
-  - url: https://api.evq.csp.slb.com/osdu/wdms/search/v2
+  - url: https://api.example.com/osdu/wdms/search/v2
 security:
 - bearer: []
 - appkey: []
