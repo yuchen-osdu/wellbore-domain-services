@@ -13,12 +13,6 @@
 # limitations under the License.
 
 parameters:
-  - name: testSA
-    type: string
-    default: "" #Needed only for Google Test SA
-  - name: deAudience
-    type: string
-    default: "" #Needed only for Google Test SA
   - name: baseUrl
     type: string
   - name: osduBaseUrl
@@ -34,12 +28,19 @@ parameters:
     type: string
   - name: dataPartition
     type: string
-  - name: testServiceAccount
-    type: object
   - name: skipCertValidation
     # Used in case of invalid certificate (self-signed,...) 
     type: boolean
     default: false
+# The following parameters allow to inject a template intented to perform authentication and generate a token
+# the token is to be added as a secure output variable:
+#   echo "##vso[task.setvariable variable=token;issecret=true]${token}"
+  - name: authenticationTemplate
+    type: string
+    default: ""
+  - name: authenticationTemplateParameters
+    type: object
+    default: {}
 
 steps:
 
@@ -54,7 +55,6 @@ steps:
       echo "parameters.aclDomain: ${{ parameters.aclDomain }}"
       echo "parameters.legalTag: ${{ parameters.legalTag }}"
       echo "parameters.dataPartition: ${{ parameters.dataPartition }}"
-      echo "parameters.testServiceAccount.type: ${{ parameters.testServiceAccount.type }}"
   displayName: 'Display Info'
 
 - task: Bash@3
@@ -71,44 +71,12 @@ steps:
     addToPath: true
 
 
-
-#############
-# TO_BE_DEFINED
-#------------
-# In the current version, here should be a couple of tasks which goal is to generate a token to be used for integration tests.
-# the 'testServiceAccount' parameter could be used to pass information on how to get the token (reference to secret, type of Identity Provider...)
-#
-# the token is to be added as a secure output variable:
-#   echo "##vso[task.setvariable variable=token;issecret=true]${token}"
-#
-# The following section for a GCP Service Account Token is given as example.
-# A better approach could eventually be considered such as:
-# - pass the token as parameter, and delegate to a higher task the responsibility to generate the token depending on the Service Account Type
-# - use some kind of injection mechanism to include a template specific to the service account type
-# 
-###########
-
-### GCP Service Account based token
-- ${{ if eq(parameters.testServiceAccount.type, 'gcp') }}:
-  - task: DownloadSecureFile@1
-    displayName: 'Download secret File : ${{parameters.testServiceAccount.secretFile}}'
-    name: secretFile
-    inputs:
-      secureFile: ${{ parameters.testServiceAccount.secretFile }}
-
-  - bash: |
-        set -e
-        gcloud auth activate-service-account --key-file $(secretFile.secureFilePath)
-    displayName: 'SETUP - Authenticate for GCP'
-    
-  - task: Bash@3
-    displayName: 'Generate Token for GCP'
-    inputs:
-      targetType: 'inline'
-      script: |
-        token=$(gcloud auth print-identity-token --audiences=${{ parameters.deAudience }})
-        echo "##vso[task.setvariable variable=token;issecret=true]${token}"
-### End of GCP Service Account based token
+# This template is injected by parameters
+# and will generate the $(token) variable
+- template: ${{ parameters.authenticationTemplate }}
+  parameters: 
+    ${{ each parameter in parameters.authenticationTemplateParameters }}:
+      ${{ parameter.key}}: ${{ parameter.value}}
 
 
 - bash: |
