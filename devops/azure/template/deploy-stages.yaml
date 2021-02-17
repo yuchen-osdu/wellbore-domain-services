@@ -16,39 +16,50 @@ parameters:
   - name: providers
     type: object
     default: []
+        # ex:
+        # providers:
+        # - name: Azure
+        #   short_name: az
+        #   environments: [dev]  
+        #   # Injected templates
+        #   getImageTemplate: ${{ getImageTemplate }}
+        #   getImageTemplateParameters: ${{ getImageTemplateParameters }}
+        #   authenticationTemplate: ${{ authenticationTemplate }}
+        #   authenticationTemplateParameters: ${{ authenticationTemplateParameter }}
+
 
 stages:
 
 - ${{ each provider in parameters.providers }}:
   - ${{ each environment in provider.environments }}:
-    - stage: 'Deploy_${{ provider.name }}_R3MVP_${{ environment }}'
+    - stage: 'Deploy_${{ provider.name }}_R3MVP_${{ environment.name }}'
       variables:
-      - group: 'R3MVP - ${{ provider.name }} Target Env - ${{ environment }}'
-      - template: 'vars/env_vars.yml'   
-      - name: env
-        value: ${{ environment }}
-      condition: "and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))"
+      - group: '${{ variables.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
+      - name: env # This variable is used as input of the helm template
+        value: ${{ environment.name }}
       jobs:
       - deployment: Deploy
         pool:
           vmImage: "ubuntu-latest"
-        environment: ${{ environment }}
+        environment: ${{ environment.name }}
         strategy:
           runOnce:
             deploy:
               steps:
               - template: steps-define-variables.yaml
-              - template: steps-push-image.yml
+              - template: ${{ provider.getImageTemplate }}
+                parameters: ${{ provider.getImageTemplateParameters }}
+              - template: steps-push-image.yaml
                 parameters:
                   azureSubscription: $(SERVICE_CONNECTION_NAME)
                   sourceACRName: $(us_acr_name)
                   destinationACRName: $(CONTAINER_REGISTRY_NAME)
-                  environment: ${{ environment }}
+                  environment: ${{ environment.name }}
                   imageTag: $(defineVariables.tag_name_output)
                   appName: $(app)
               - template: devops/tasks/aks-deployment-steps.yml@pipelineTemplatesRepo
                 parameters:
-                  environment: ${{ environment }}
+                  environment: ${{ environment.name }}
                   serviceName: $(app)
                   providerName:  ${{ provider.short_name }}
                   chartPath: $(chartPath)
@@ -56,19 +67,17 @@ stages:
                   hldRegPath: $(hldRegPath)
               - template: devops/tasks/flux-service-wait.yml@pipelineTemplatesRepo
                 parameters:
-                  environment: ${{ environment }}
+                  environment: ${{ environment.name }}
                   serviceName: $(fluxServiceName)
                   imageRepoName: $(app)
                   skipDeploy: false
 
-    - stage: Test_${{ provider.name }}_R3MVP_${{ environment }}
+    - stage: Test_${{ provider.name }}_R3MVP_${{ environment.name }}
       dependsOn:
-      - Deploy_${{ provider.name }}_R3MVP_${{ environment }}
+      - Deploy_${{ provider.name }}_R3MVP_${{ environment.name }}
       variables:
-      - group: 'R3MVP - ${{ provider.name }} Target Env - ${{ environment }}'
-      - template: 'vars/env_vars.yml'
+      - group: '${{ variables.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
       - template: 'vars/global_vars.yml'
-      condition: "and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))"
       jobs:
         - job: e2e_test
           steps:  
@@ -76,15 +85,9 @@ stages:
               parameters:
                 baseUrl: "https://$(DNS_HOST)"
                 basePath: ${{ variables.base_path }}
-                aclDomain: ${{ variables.acl_domain }}
-                legalTag: ${{ variables.legal_tag }}
-                dataPartition: ${{ variables.data_partition }}
+                aclDomain: $(DOMAIN)
+                legalTag: $(LEGAL_TAG)
+                dataPartition: $(MY_TENANT)
                 cloudProvider:  ${{ provider.short_name }}
-
-                # The following is an example using a google service account to get a token for the integration tests.
-                # it should be enhanced, and injected by parameters or variables
-                # PLACEHOLDER
-                authenticationTemplate: auth_template_google.yaml
-                authenticationTemplateParameters:
-                  audience: ${{ variables.de_audience  }}
-                  secretFile: ${{ variables.test_service_account_secret_file }}
+                authenticationTemplate: ${{ environment.authenticationTemplate }}
+                authenticationTemplateParameters: ${{ environment.authenticationTemplateParameters }}

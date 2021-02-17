@@ -39,10 +39,19 @@ variables:
 
 stages:
   - template: template/build-stage.yml
-      
+    parameters:
+      # TODO: The following templates needs to be injected as parameters
+      postBuildTemplate: TO_BE_DEFINED
+      postBuildTemplateParameters: {}
+
   - template: template/deploy-stages.yml
     parameters:
       providers:
-        -  name: Azure
-           short_name: az
-           environments: ['demo']
+        - name: Azure
+          short_name: az
+          environments: ['demo']
+          # TODO: The following templates needs to be injected as parameters
+          getImageTemplate: TO_BE_DEFINED
+          getImageTemplateParameters: {}
+          authenticationTemplate: TO_BE_DEFINED
+          authenticationTemplateParameters: {}

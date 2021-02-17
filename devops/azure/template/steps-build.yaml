@@ -13,12 +13,16 @@
 # limitations under the License.
 
 parameters:
-- name: acr_names
-  type: object #List of string
+# The following parameters allow to inject a template to perform post build tasks
+# such as pushing the generated docker manifest to some central shared container repositories
+  - name: postBuildTemplate
+    type: string
+    default: ""
+  - name: postBuildTemplateParameters
+    type: object
+    default: {}
 
 steps:
-
-
 - template: steps-define-variables.yaml
 
 - task: Bash@3
@@ -68,23 +72,10 @@ steps:
                    --build-arg commit_branch=$(Build.SourceBranch)
 
 
-# Current implementation pushes the images to a couple of 'central' ACR.
-# They are different from the ACR mapped to a given environment
-# The steps to publish to the environment specific ACR happens in a deploy stage, pulling the image from one those central ACR first.
-#
-# This could eventually be changed to an other apprach:
-# - Push the built image as a ADO artifact, which will be downlaoded during the deploy stage
-# - Or rebuild the image during the deploy stage
-- ${{ each acr_name in parameters.acr_names }}:
-  - task: AzureCLI@2
-    displayName: 'push image to acr "${{ acr_name }}""'
-    inputs:
-      azureSubscription: TO_BE_DEFINED
-      scriptType: bash
-      scriptLocation: inlineScript
-      inlineScript: |
-        set -e
-        az acr login --name ${{ acr_name }}
-        docker tag wdms-osdu:$(tag_name) ${{ acr_name }}.azurecr.io/os-wellbore-ddms:$(tag_name)
-        docker push ${{ acr_name }}.azurecr.io/os-wellbore-ddms:$(tag_name)
+# This template is injected by parameters
+# and will generate the $(token) variable
+- template: ${{ parameters.postBuildTemplate }}
+  parameters: 
+    ${{ each parameter in parameters.postBuildTemplateParameters }}:
+      ${{ parameter.key}}: ${{ parameter.value}}
 
