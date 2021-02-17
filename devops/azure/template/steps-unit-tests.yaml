@@ -1,0 +1,72 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+parameters:
+- name: python_version
+  type: string
+  default: ''
+- name: include_coverage
+  type: boolean
+  default: true
+  
+steps:
+
+# Use Python version
+# Use the specified version of Python from the tool cache, optionally adding it to the PATH
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: ${{ parameters.python_version }}
+    addToPath: true
+
+- task: Bash@3
+  displayName: 'run unit tests'
+  inputs:
+    targetType: 'inline'
+    script: |
+      echo ----- setup: installing dependencies --------
+      echo $(System.DefaultWorkingDirectory)
+      python --version
+      pip --version
+      pip install virtualenv
+      virtualenv venv
+      source venv/bin/activate
+      pip install -r ./requirements.txt
+      pip install -r ./requirements_dev.txt
+
+      echo ----- run tests --------
+      includeCoverage="${{ lower(parameters.include_coverage) }}"
+      if $includeCoverage
+      then
+        python -m pytest --junit-xml=unit_tests_report.xml -o junit_suite_name=wdms_ut_python_${{ parameters.python_version }} --cov=app --cov-report=html --cov-report=xml ./tests/unit
+      else
+        python -m pytest --junit-xml=unit_tests_report.xml -o junit_suite_name=wdms_ut_python_${{ parameters.python_version }} ./tests/unit
+      fi
+
+      echo ----- teardown --------
+      deactivate
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/*_tests_report*.xml'
+    failTaskOnFailedTests: true
+
+- ${{ if eq(parameters.include_coverage, true) }}:
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage.xml'
+      pathToSources: '$(System.DefaultWorkingDirectory)/app'
+      reportDirectory: '$(System.DefaultWorkingDirectory)/htmlcov'
+      additionalCodeCoverageFiles: '$(System.DefaultWorkingDirectory)/htmlcov/**'

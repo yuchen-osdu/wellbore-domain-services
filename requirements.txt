@@ -1,0 +1,51 @@
+fastapi>=0.59.0
+cachetools==3.1.1
+aiohttp==3.6.2
+pyjwt==1.7.1
+cryptography>=2.7
+pyarrow>=0.15.0
+pandas==1.1.2
+uvicorn
+Click
+structlog
+python-rapidjson
+python-multipart
+jsonpath-ng # maintenance of 'jsonpath-rw' lib it's bit abandoned
+
+opencensus
+opencensus-ext-stackdriver
+opencensus-ext-azure
+opencensus-ext-ocagent
+opencensus-ext-logging
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/356/packages/pypi/simple/
+log-recognition-lib>=0.0.7
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/228/packages/pypi/simple/
+osdu-data-ecosystem-storage~=1.0.0
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/227/packages/pypi/simple/
+osdu-data-ecosystem-entitlements>=0.3.2, <0.4
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/229/packages/pypi/simple/
+osdu-data-ecosystem-search>=0.3.2, <0.4
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/224/packages/pypi/simple/
+osdu-core-lib-python-gcp>=0.3.0, <0.4
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/226/packages/pypi/simple/
+osdu-core-lib-python-azure~=0.2.0
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/223/packages/pypi/simple/
+osdu-core-lib-python>=0.4.0, <0.5
+
+--extra-index-url \
+https://community.opengroup.org/api/v4/projects/431/packages/pypi/simple/
+osdu-core-lib-python-ibm>=0.0.1, <0.1

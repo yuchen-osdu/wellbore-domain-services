@@ -1,0 +1,354 @@
+{
+    "kind": "DATA_PARTITION_TAG:wks:wellbore:1.0.6",
+    "schema": [
+        {
+            "path": "airGap.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "airGap.value",
+            "kind": "double"
+        },
+        {
+            "path": "block",
+            "kind": "string"
+        },
+        {
+            "path": "country",
+            "kind": "string"
+        },
+        {
+            "path": "county",
+            "kind": "string"
+        },
+        {
+            "path": "dateCreated",
+            "kind": "datetime"
+        },
+        {
+            "path": "dateModified",
+            "kind": "datetime"
+        },
+        {
+            "path": "drillingDaysTarget.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "drillingDaysTarget.value",
+            "kind": "double"
+        },
+        {
+            "path": "elevationReference.elevationFromMsl.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "elevationReference.elevationFromMsl.value",
+            "kind": "double"
+        },
+        {
+            "path": "elevationReference.name",
+            "kind": "string"
+        },
+        {
+            "path": "externalIds",
+            "kind": "[]link"
+        },
+        {
+            "path": "field",
+            "kind": "string"
+        },
+        {
+            "path": "formationAtTd",
+            "kind": "string"
+        },
+        {
+            "path": "formationProjected",
+            "kind": "string"
+        },
+        {
+            "path": "hasAchievedTotalDepth",
+            "kind": "boolean"
+        },
+        {
+            "path": "isActive",
+            "kind": "boolean"
+        },
+        {
+            "path": "kickOffMd.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "kickOffMd.value",
+            "kind": "double"
+        },
+        {
+            "path": "kickOffTvd.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "kickOffTvd.value",
+            "kind": "double"
+        },
+        {
+            "path": "locationWGS84",
+            "kind": "core:dl:geoshape:1.0.0"
+        },
+        {
+            "path": "name",
+            "kind": "string"
+        },
+        {
+            "path": "operator",
+            "kind": "string"
+        },
+        {
+            "path": "permitDate",
+            "kind": "datetime"
+        },
+        {
+            "path": "permitNumber",
+            "kind": "string"
+        },
+        {
+            "path": "plssLocation.aliquotPart",
+            "kind": "string"
+        },
+        {
+            "path": "plssLocation.range",
+            "kind": "string"
+        },
+        {
+            "path": "plssLocation.section",
+            "kind": "int"
+        },
+        {
+            "path": "plssLocation.township",
+            "kind": "string"
+        },
+        {
+            "path": "relationships.definitiveTimeDepthRelation.confidence",
+            "kind": "double"
+        },
+        {
+            "path": "relationships.definitiveTimeDepthRelation.id",
+            "kind": "link"
+        },
+        {
+            "path": "relationships.definitiveTimeDepthRelation.name",
+            "kind": "string"
+        },
+        {
+            "path": "relationships.definitiveTimeDepthRelation.version",
+            "kind": "long"
+        },
+        {
+            "path": "relationships.definitiveTrajectory.confidence",
+            "kind": "double"
+        },
+        {
+            "path": "relationships.definitiveTrajectory.id",
+            "kind": "link"
+        },
+        {
+            "path": "relationships.definitiveTrajectory.name",
+            "kind": "string"
+        },
+        {
+            "path": "relationships.definitiveTrajectory.version",
+            "kind": "long"
+        },
+        {
+            "path": "relationships.tieInWellbore.confidence",
+            "kind": "double"
+        },
+        {
+            "path": "relationships.tieInWellbore.id",
+            "kind": "link"
+        },
+        {
+            "path": "relationships.tieInWellbore.name",
+            "kind": "string"
+        },
+        {
+            "path": "relationships.tieInWellbore.version",
+            "kind": "long"
+        },
+        {
+            "path": "relationships.well.confidence",
+            "kind": "double"
+        },
+        {
+            "path": "relationships.well.id",
+            "kind": "link"
+        },
+        {
+            "path": "relationships.well.name",
+            "kind": "string"
+        },
+        {
+            "path": "relationships.well.version",
+            "kind": "long"
+        },
+        {
+            "path": "shape",
+            "kind": "string"
+        },
+        {
+            "path": "spudDate",
+            "kind": "datetime"
+        },
+        {
+            "path": "state",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthMd.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthMd.value",
+            "kind": "double"
+        },
+        {
+            "path": "totalDepthMdDriller.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthMdDriller.value",
+            "kind": "double"
+        },
+        {
+            "path": "totalDepthMdPlanned.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthMdPlanned.value",
+            "kind": "double"
+        },
+        {
+            "path": "totalDepthMdSubSeaPlanned.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthMdSubSeaPlanned.value",
+            "kind": "double"
+        },
+        {
+            "path": "totalDepthProjectedMd.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthProjectedMd.value",
+            "kind": "double"
+        },
+        {
+            "path": "totalDepthTvd.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthTvd.value",
+            "kind": "double"
+        },
+        {
+            "path": "totalDepthTvdDriller.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthTvdDriller.value",
+            "kind": "double"
+        },
+        {
+            "path": "totalDepthTvdPlanned.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthTvdPlanned.value",
+            "kind": "double"
+        },
+        {
+            "path": "totalDepthTvdSubSeaPlanned.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "totalDepthTvdSubSeaPlanned.value",
+            "kind": "double"
+        },
+        {
+            "path": "uwi",
+            "kind": "string"
+        },
+        {
+            "path": "wellHeadElevation.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "wellHeadElevation.value",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadGeographic.crsKey",
+            "kind": "string"
+        },
+        {
+            "path": "wellHeadGeographic.elevationFromMsl.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "wellHeadGeographic.elevationFromMsl.value",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadGeographic.latitude",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadGeographic.longitude",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadProjected.crsKey",
+            "kind": "string"
+        },
+        {
+            "path": "wellHeadProjected.elevationFromMsl.unitKey",
+            "kind": "string"
+        },
+        {
+            "path": "wellHeadProjected.elevationFromMsl.value",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadProjected.x",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadProjected.y",
+            "kind": "double"
+        },
+        {
+            "path": "wellHeadWgs84",
+            "kind": "core:dl:geopoint:1.0.0"
+        },
+        {
+            "path": "wellboreNumberGovernment",
+            "kind": "string"
+        },
+        {
+            "path": "wellboreNumberOperator",
+            "kind": "string"
+        },
+        {
+            "path": "wellborePurpose",
+            "kind": "string"
+        },
+        {
+            "path": "wellboreStatus",
+            "kind": "string"
+        },
+        {
+            "path": "wellboreType",
+            "kind": "string"
+        }
+    ],
+    "ext": null
+}

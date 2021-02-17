@@ -1,0 +1,90 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+parameters:
+- name: acr_names
+  type: object #List of string
+
+steps:
+
+
+- template: steps-define-variables.yaml
+
+- task: Bash@3
+  displayName: 'set version info'
+  inputs:
+    targetType: 'inline'
+    script: |
+      build_number=$(Build.BuildNumber)
+      patch_number=${build_number:0:8}
+      python ./build/set_version.py build_number=$build_number patch_number=$patch_number
+
+- task: Bash@3
+  displayName: 'prepare artifacts'
+  inputs:
+    targetType: 'inline'
+    script: |
+      echo ----- GET IMAGE TAG ------------=
+      echo $(tag_name)
+
+      echo ----- PUBLISH ARTIFACTS ------------
+      echo $(tag_name)> $(Build.ArtifactStagingDirectory)/image_tag.txt
+      directories_to_copy=(deploy scripts tests)
+      for directory_to_copy in  ${directories_to_copy[@]}; do
+        echo copying $directory_to_copy/
+        mkdir $(Build.ArtifactStagingDirectory)/$directory_to_copy
+        cp -R $directory_to_copy/* $(Build.ArtifactStagingDirectory)/$directory_to_copy/
+      done
+
+- task: Bash@3
+  displayName: 'build image'
+  inputs:
+    targetType: 'inline'
+    script: |
+      current_utc_date=`date --utc`
+      echo $current_utc_date
+
+      echo ----- BUILD IMAGE ------------
+      docker build -t=wdms-osdu:$(tag_name) \
+                   -t=wdms-osdu:latest \
+                   --rm . -f ./build/Dockerfile \
+                   --build-arg PIP_EXTRA_URL=$PIP_EXTRA_INDEX_URL \
+                   --build-arg PIP_WHEEL_DIR=python-packages \
+                   --build-arg build_date="$current_utc_date" \
+                   --build-arg build_number="$(Build.BuildNumber)" \
+                   --build-arg commit_id=$(commit_id) \
+                   --build-arg build_origin="AzureDevops build/$(Build.DefinitionName)" \
+                   --build-arg commit_branch=$(Build.SourceBranch)
+
+
+# Current implementation pushes the images to a couple of 'central' ACR.
+# They are different from the ACR mapped to a given environment
+# The steps to publish to the environment specific ACR happens in a deploy stage, pulling the image from one those central ACR first.
+#
+# This could eventually be changed to an other apprach:
+# - Push the built image as a ADO artifact, which will be downlaoded during the deploy stage
+# - Or rebuild the image during the deploy stage
+- ${{ each acr_name in parameters.acr_names }}:
+  - task: AzureCLI@2
+    displayName: 'push image to acr "${{ acr_name }}""'
+    inputs:
+      azureSubscription: TO_BE_DEFINED
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -e
+        az acr login --name ${{ acr_name }}
+        docker tag wdms-osdu:$(tag_name) ${{ acr_name }}.azurecr.io/os-wellbore-ddms:$(tag_name)
+        docker push ${{ acr_name }}.azurecr.io/os-wellbore-ddms:$(tag_name)
+
