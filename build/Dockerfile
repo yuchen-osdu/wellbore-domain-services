@@ -40,4 +40,4 @@ WORKDIR ./
 RUN addgroup --system appuser && adduser --system appuser && adduser appuser appuser
 USER appuser
 
-CMD ["uvicorn", "app.wdms_app:wdms_app", "--host", "0.0.0.0", "--port", "8097"]
+CMD ["uvicorn", "app.wdms_app:base_app", "--host", "0.0.0.0", "--port", "8097"]
