@@ -36,6 +36,9 @@ include:
 
   - project: 'osdu/platform/ci-cd-pipelines'
     file: 'cloud-providers/osdu-gcp-cloudrun.yml'
+
+  - project: 'osdu/platform/ci-cd-pipelines'
+    file: 'cloud-providers/ibm-wellbore.yml'
 # --------------------------------------------------------------------------------
 
 containerize:
