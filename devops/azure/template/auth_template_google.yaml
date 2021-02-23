@@ -1,0 +1,38 @@
+# This template generates a token from a Google Service Account
+
+parameters:
+- name: secretFile
+  type: string
+- name: audience
+  type: string
+  
+steps:
+  - ${{ each parameter in parameters }}:
+    - bash: |
+        set -e
+          
+        echo "${{parameters.p1}}"
+        echo "---"
+        echo "${{parameter.key}}"
+        echo "---"
+        echo "${{parameter.value}}"
+      displayName: 'Info'
+
+  - task: DownloadSecureFile@1
+    displayName: 'Download secret File : ${{ parameters.secretFile }}'
+    name: secretFile
+    inputs:
+      secureFile: ${{ parameters.secretFile }}
+
+  - bash: |
+        set -e
+        gcloud auth activate-service-account --key-file $(secretFile.secureFilePath)
+    displayName: 'SETUP - Authenticate for GCP'
+    
+  - task: Bash@3
+    displayName: 'Generate Token for GCP'
+    inputs:
+      targetType: 'inline'
+      script: |
+        token=$(gcloud auth print-identity-token --audiences=${{ parameters.audience }})
+        echo "##vso[task.setvariable variable=token;issecret=true]${token}"

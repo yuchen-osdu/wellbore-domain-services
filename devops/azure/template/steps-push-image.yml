@@ -12,7 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Current implementation pulls the Image from a 'central' ACR first.
+# It is an ACR to which the image was pushed during the build stage
+# 
+# This could eventually be changed to an other apprach:
+# - Push the built image as a ADO artifact, which will be downlaoded during the deploy stage
+# - Or rebuild the image during the deploy stage
+
 parameters:
+  centralAzureSubscription: '' #Subscription to a central ACR from which to pull the container
   azureSubscription: ''
   sourceACRName: ''
   destinationACRName: ''
@@ -21,17 +29,10 @@ parameters:
   appName: ''
 
 steps:
-
-# Current implementation pulls the Image from a 'central' ACR first.
-# It is an ACR to which the image was pushed during the build stage
-# 
-# This could eventually be changed to an other apprach:
-# - Push the built image as a ADO artifact, which will be downlaoded during the deploy stage
-# - Or rebuild the image during the deploy stage
   - task: AzureCLI@2
     displayName: "Pull from WDMS Core ACR"
     inputs:
-      azureSubscription: TO_BE_DEFINED
+      azureSubscription: ${{ parameters.centralAzureSubscription }}
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |

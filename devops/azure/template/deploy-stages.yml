@@ -80,4 +80,11 @@ stages:
                 legalTag: ${{ variables.legal_tag }}
                 dataPartition: ${{ variables.data_partition }}
                 cloudProvider:  ${{ provider.short_name }}
-                testServiceAccount: TO_BE_DEFINED
+
+                # The following is an example using a google service account to get a token for the integration tests.
+                # it should be enhanced, and injected by parameters or variables
+                # PLACEHOLDER
+                authenticationTemplate: auth_template_google.yaml
+                authenticationTemplateParameters:
+                  audience: ${{ variables.de_audience  }}
+                  secretFile: ${{ variables.test_service_account_secret_file }}
