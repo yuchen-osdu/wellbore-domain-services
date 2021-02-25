@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+parameters:
+# The following parameters allow to inject a template perform post build tasks
+# such as pushing the generated docker manifest to some central shared container repositories
+  - name: postBuildTemplate
+    type: string
+    default: ""
+  - name: postBuildTemplateParameters
+    type: object
+    default: {}
 
 stages:
   - stage: build
@@ -34,8 +43,8 @@ stages:
         steps:
           - template: steps-build.yaml
             parameters:
-              acr_names: 
-              - ${{ variables.global_acr_name }}
+              postBuildTemplate: ${{ parameters.postBuildTemplate }}
+              postBuildTemplateParameters: ${{ parameters.postBuildTemplateParameters }}
       - job: setupVariables
         steps:
           - task: Bash@3

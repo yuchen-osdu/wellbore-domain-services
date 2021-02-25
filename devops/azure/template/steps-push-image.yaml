@@ -20,7 +20,6 @@
 # - Or rebuild the image during the deploy stage
 
 parameters:
-  centralAzureSubscription: '' #Subscription to a central ACR from which to pull the container
   azureSubscription: ''
   sourceACRName: ''
   destinationACRName: ''
@@ -29,18 +28,6 @@ parameters:
   appName: ''
 
 steps:
-  - task: AzureCLI@2
-    displayName: "Pull from WDMS Core ACR"
-    inputs:
-      azureSubscription: ${{ parameters.centralAzureSubscription }}
-      scriptType: bash
-      scriptLocation: inlineScript
-      inlineScript: |
-        echo "az acr login -n ${{ parameters.sourceACRName }}"
-        az acr login -n ${{ parameters.sourceACRName }}
-        echo "docker pull ${{ parameters.sourceACRName}}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }}"
-        docker pull ${{ parameters.sourceACRName}}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }}
-
   - task: AzureCLI@2
     displayName: "Push to R3 MVP ${{ parameters.environment }} ACR"
     inputs:

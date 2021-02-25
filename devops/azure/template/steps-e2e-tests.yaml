@@ -130,7 +130,7 @@ steps:
     source venv37/bin/activate
     pip install -r ./requirements_dev.txt
 
-    pytest tests/integration/functional/ --junit-xml=$(testReportBaseName)_int_tests_report.xml -o junit_suite_name="wdms_integration_$(testReportBaseName)" --environment=generated/postman_environment.json $(insecure_flag) --retry-on-error=502
+    pytest tests/integration/functional/ --filter-tag=!search --junit-xml=$(testReportBaseName)_int_tests_report.xml -o junit_suite_name="wdms_integration_$(testReportBaseName)" --environment=generated/postman_environment.json $(insecure_flag) --retry-on-error=502
     deactivate
   displayName: 'RUN INTEGRATION-E2E'
 
