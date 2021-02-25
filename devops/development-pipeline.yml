@@ -49,9 +49,10 @@ stages:
       providers:
         - name: Azure
           short_name: az
-          environments: ['dev']
-          # TODO: The following templates needs to be injected as parameters
+          environments: 
+          - name: dev
+            # TODO: The following templates needs to be injected as parameters
+            authenticationTemplate: TO_BE_DEFINED
+            authenticationTemplateParameters: {}
           getImageTemplate: TO_BE_DEFINED
           getImageTemplateParameters: {}
-          authenticationTemplate: TO_BE_DEFINED
-          authenticationTemplateParameters: {}
