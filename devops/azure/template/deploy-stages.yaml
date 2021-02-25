@@ -18,15 +18,15 @@ parameters:
     default: []
         # ex:
         # providers:
-        # - name: Azure
-        #   short_name: az
-        #   environments: [dev]  
-        #   # Injected templates
-        #   getImageTemplate: ${{ getImageTemplate }}
-        #   getImageTemplateParameters: ${{ getImageTemplateParameters }}
-        #   authenticationTemplate: ${{ authenticationTemplate }}
-        #   authenticationTemplateParameters: ${{ authenticationTemplateParameter }}
-
+        #   - name: Azure
+        #     short_name: az
+        #     environments: 
+        #     - name: dev
+        #       # TODO: The following templates needs to be injected as parameters
+        #       authenticationTemplate: ${{ getImageTemplate }}
+        #       authenticationTemplateParameters: ${{ getImageTemplateParameters }}
+        #     getImageTemplate: ${{ authenticationTemplate }}
+        #     getImageTemplateParameters: ${{ authenticationTemplateParameter }}
 
 stages:
 
