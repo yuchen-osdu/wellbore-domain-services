@@ -16,9 +16,6 @@ variables:
   PIP_REQUIREMENTS: "requirements.txt requirements_dev.txt"
 
   OSDU_GCP_APPLICATION_NAME: wellbore-ddms
-  OSDU_GCP_SERVICE: wellbore-ddms
-  OSDU_GCP_ENV_VARS: CLOUD_PROVIDER=gcp,OS_WELLBORE_DDMS_DATA_PROJECT_ID=$OSDU_GCP_PROJECT,SERVICE_HOST_ENTITLEMENTS=$OSDU_GCP_ENTITLEMENTS_URL,SERVICE_HOST_SEARCH=$OSDU_GCP_SEARCH_HOST,SERVICE_HOST_STORAGE=$OSDU_GCP_STORAGE_URL
-  OSDU_GCP_CLOUD_RUN_PARAMETERS: "--port 8097"
   OSDU_GCP_VENDOR: gcp
 
 include:
@@ -36,6 +33,9 @@ include:
 
   - project: 'osdu/platform/ci-cd-pipelines'
     file: 'cloud-providers/osdu-gcp-cloudrun.yml'
+
+  - project: 'osdu/platform/ci-cd-pipelines'
+    file: 'cloud-providers/ibm-wellbore.yml'
 # --------------------------------------------------------------------------------
 
 containerize:
@@ -80,10 +80,47 @@ osdu-gcp-containerize:
   cache: { }
   tags: [ 'osdu-medium' ]
 
-osdu-gcp-test-python:
-  allow_failure: true
+osdu-gcp-deploy:
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  needs: ["osdu-gcp-containerize"]
+  stage: deploy
+  variables:
+    OSDU_GCP_PROJECT: nice-etching-277309
   script:
-    - echo "STUB"; exit 1
+    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
+    - gcloud config set project $OSDU_GCP_PROJECT
+    - gcloud container clusters get-credentials  wb --zone us-central1-c --project $OSDU_GCP_PROJECT
+    - curl https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
+    - >
+      helm upgrade wellbore devops/gcp
+      --install
+      --create-namespace
+      --namespace=wellbore
+      --wait
+      --set image.repository=gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR
+      --set image.tag=$CI_COMMIT_SHORT_SHA
+      --set secret.gcpSA=$OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS
+    - status_code=$(curl -X GET --write-out '%{http_code}' --silent --output /dev/null https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz)
+    - if [[ "$status_code" -ne 200 ]] ; then echo exit 1 ; else echo health check OK! ; fi
+
+osdu-gcp-test-python:
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  variables:
+    OSDU_GCP_WELLBORE_DDMS_URL: https://wellbore-ddms-attcrcktoa-uc.a.run.app/api/os-wellbore-ddms
+  script:
+    - apt-get install -y python3-venv
+    - python3 -m venv env
+    - source env/bin/activate
+    - pip install --upgrade pip
+    - pip install wheel pytest pytest-cov
+    - pip install -r requirements.txt
+    - pip install -r requirements_dev.txt
+    - cd tests/integration
+    - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
+    - gcloud auth activate-service-account --key-file file.json
+    - gcloud config set project $OSDU_GCP_PROJECT
+    - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_TENANT --acl_domain $DOMAIN --legal_tag $LEGAL_TAG
+    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
 osdu-gcp-test:
   extends: []

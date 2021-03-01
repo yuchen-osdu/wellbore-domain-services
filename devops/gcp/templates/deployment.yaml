@@ -15,30 +15,34 @@ spec:
       labels:
         {{- include "gcp.selectorLabels" . | nindent 8 }}
     spec:
+      volumes:
+        - name: service-account-key
+          secret:
+            secretName:  {{ .Values.secret.name }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          volumeMounts:
+            - mountPath: /tmp/key
+              name: service-account-key
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: {{ .Values.configMap.name }}
           env:
             - name: OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secret.name }}
-                  key: {{ .Values.secret.key }}
+              value: /tmp/key/{{ .Values.secret.key }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/os-wellbore-ddms/healthz
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/os-wellbore-ddms/healthz
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

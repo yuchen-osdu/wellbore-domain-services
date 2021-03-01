@@ -22,7 +22,7 @@ async def resolve_tenant(data_partition_id: str) -> Tenant:
             data_partition_id=data_partition_id,
             project_id=Config.default_data_tenant_project_id.value,
             credentials=Config.default_data_tenant_credentials.value,
-            bucket_name='logstore-osdu'
+            bucket_name=f'{Config.default_data_tenant_project_id.value}-logstore-osdu'
         )
 
     if Config.cloud_provider.value == 'az':
