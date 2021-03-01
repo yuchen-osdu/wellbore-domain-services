@@ -41,6 +41,7 @@ StorageRecordServiceClient = AsyncRecordsApi
 class Limits:
     max_connections: Optional[int] = None
     max_keepalive_connections: Optional[int] = None
+    keepalive_expiry: Optional[float] = 5.0
 
 
 def make_entitlements_auth_client(host) -> EntitlementsAuthServiceClient:
