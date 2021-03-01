@@ -106,7 +106,7 @@ osdu-gcp-deploy:
 osdu-gcp-test-python:
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   variables:
-    OSDU_GCP_WELLBORE_DDMS_URL: https://wellbore-ddms-attcrcktoa-uc.a.run.app/api/os-wellbore-ddms
+    OSDU_GCP_WELLBORE_DDMS_URL: https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms
   script:
     - apt-get install -y python3-venv
     - python3 -m venv env
