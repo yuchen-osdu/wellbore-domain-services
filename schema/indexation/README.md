@@ -39,13 +39,10 @@ in case of data partition = `opendes` is must be updated to
  
 ## Commands
 
-### Token
-see [here](https://dev.azure.com/slb-des-ext-collaboration/open-data-ecosystem/_wiki/wikis/open-data-ecosystem.wiki/553/Authentication?anchor=get-an-sauth-token-from-an-sauth-service-account---sauth-v2) for token generation.
-
-
-### cURL
-
 given TOKEN, BASE_URL and DATA_PARTITION
+
+### Fetch a  schema
+
 
 ```
 curl \
@@ -55,3 +52,18 @@ curl \
 --header "data-partition-id: $DATA_PARTITION" \
 --header "Authorization: Bearer $TOKEN"
 ```
+
+### Register a schema
+
+```
+curl \
+--location \
+--request POST "$BASE_URL/api/storage/v2/schemas' \
+--header 'Content-Type: application/json' \
+--header "data-partition-id: $DATA_PARTITION" \
+--header "Authorization: Bearer $TOKEN"
+--data-raw '{
+	...
+}'
+```
+

@@ -1,0 +1,44 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This task allows to pull the image from one ACR, 
+# It is an ACR to which the image was pushed during the build stage
+#
+# Some alternatives could for example be
+# - pull the built image as a ADO artifact, which was be uploaded during the build stage
+# - or rebuild the image
+
+parameters:
+  centralAzureSubscription: '' #Subscription to a central ACR from which to pull the container
+  sourceACRName: ''
+  imageTag: ''
+
+steps:
+  - task: AzureCLI@2
+    displayName: "Pull from central ACR"
+    inputs:
+      azureSubscription: ${{ parameters.centralAzureSubscription }}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -e
+
+        echo "parameters.azureSubscription: ${{ parameters.azureSubscription }}"
+        echo "parameters.sourceACRName: ${{ parameters.sourceACRName }}"
+        echo "parameters.imageTag: ${{ parameters.imageTag }}"
+
+        echo "az acr login -n ${{ parameters.sourceACRName }}"
+        az acr login -n ${{ parameters.sourceACRName }}
+        echo "docker pull ${{ parameters.sourceACRName}}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }}"
+        docker pull ${{ parameters.sourceACRName}}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }}

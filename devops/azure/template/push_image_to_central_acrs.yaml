@@ -1,0 +1,44 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This task allows to push the image to one of multiple central ACR, 
+# They are different from the ACR mapped to a given environment
+# The steps to publish to the environment specific ACR happens in a deploy stage, in which we could pull the image from one those central ACR first.
+#
+# Some alternatives could for example be
+# - Push the built image as a ADO artifact, which will be downlaoded during the deploy stage
+# - Or rebuild the image during the deploy stage
+
+
+
+
+parameters:
+ - name: azureSubscription
+   type: string
+ - name: acr_names
+   type: object #List of string
+
+steps:
+- ${{ each acr_name in parameters.acr_names }}:
+  - task: AzureCLI@2
+    displayName: 'push image to acr "${{ acr_name }}""'
+    inputs:
+      azureSubscription: ${{ parameters.azureSubscription }}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -e
+        az acr login --name ${{ acr_name }}
+        docker tag wdms-osdu:$(tag_name) ${{ acr_name }}.azurecr.io/os-wellbore-ddms:$(tag_name)
+        docker push ${{ acr_name }}.azurecr.io/os-wellbore-ddms:$(tag_name)
