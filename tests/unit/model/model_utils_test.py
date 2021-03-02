@@ -65,7 +65,8 @@ wellbore_str = """
             "value": 123
         },
         "xxx_color": "#56AF8E"
-    }
+    },
+    "tags":{"any": "string:string", "dict": "accepted"}
 }
 """
 

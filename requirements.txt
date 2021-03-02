@@ -23,8 +23,8 @@ https://community.opengroup.org/api/v4/projects/356/packages/pypi/simple/
 log-recognition-lib>=0.0.7
 
 --extra-index-url \
-https://community.opengroup.org/api/v4/projects/228/packages/pypi/simple/
-osdu-data-ecosystem-storage~=1.0.0
+https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
+osdu-data-ecosystem-storage~=1.1.0
 
 --extra-index-url \
 https://community.opengroup.org/api/v4/projects/227/packages/pypi/simple/

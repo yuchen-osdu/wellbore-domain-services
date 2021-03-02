@@ -28,6 +28,12 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra, Field, confloat
 
+class Tags(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    __root__: str
+
 
 # forbid unknown field in the root of the models
 class DDMSBaseModel(BaseModel):
@@ -48,35 +54,8 @@ class DDMSBaseModelWithExtra(BaseModel):
     class Config:
         extra = Extra.allow
 
-
-class Point(DDMSBaseModel):
-    latitude: Optional[confloat(ge=-90.0, le=90.0)] = Field(
-        None, description='Latitude of point.'
-    )
-    longitude: Optional[confloat(ge=-180.0, le=180.0)] = Field(
-        None, description='Longitude of point.'
-    )
-
-
-class Legal(DDMSBaseModel):
-    legaltags: Optional[List[str]] = Field(
-        None,
-        description='The list of legal tags, see compliance API.',
-        title='Legal Tags',
-    )
-    otherRelevantDataCountries: Optional[List[str]] = Field(
-        None,
-        description='The list of other relevant data countries using the ISO 2-letter codes, see compliance API.',
-        title='Other Relevant Data Countries',
-    )
-    status: Optional[str] = Field(
-        None, description='The legal status.', title='Legal Status'
-    )
-
-
 class LinkList(DDMSBaseModelWithExtra):
     pass
-
 
 class Kind(str, Enum):
     CRS = 'CRS'
@@ -116,6 +95,80 @@ class MetaItem(DDMSBaseModel):
         None,
         description='The uncertainty of the values measured given the unit or CRS unit.',
         title='Uncertainty',
+    )
+
+
+# Common Elements for entities
+class DDMSBaseRecord(BaseModel):
+    ancestry: Optional[LinkList] = Field(
+        None,
+        description='The links to data, which constitute the inputs.',
+        title='Ancestry',
+    )
+    meta: Optional[List[MetaItem]] = Field(
+        None,
+        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
+        title='Frame of Reference Meta Data',
+    )
+    type: Optional[str] = Field(
+        None,
+        description='The reference entity type as declared in common:metadata:entity:*.',
+        title='Entity Type',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+
+
+class Point(DDMSBaseModel):
+    latitude: Optional[confloat(ge=-90.0, le=90.0)] = Field(
+        None, description='Latitude of point.'
+    )
+    longitude: Optional[confloat(ge=-180.0, le=180.0)] = Field(
+        None, description='Longitude of point.'
+    )
+
+
+class Legal(DDMSBaseModel):
+    legaltags: Optional[List[str]] = Field(
+        None,
+        description='The list of legal tags, see compliance API.',
+        title='Legal Tags',
+    )
+    otherRelevantDataCountries: Optional[List[str]] = Field(
+        None,
+        description='The list of other relevant data countries using the ISO 2-letter codes, see compliance API.',
+        title='Other Relevant Data Countries',
+    )
+    status: Optional[str] = Field(
+        None, description='The legal status.', title='Legal Status'
     )
 
 
@@ -1172,16 +1225,11 @@ class logData(DDMSBaseModelWithExtra):
     )
 
 
-class log(DDMSBaseModel):
+class log(DDMSBaseModel, DDMSBaseRecord):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
         title='Access Control List',
-    )
-    ancestry: Optional[LinkList] = Field(
-        None,
-        description='The links to data, which constitute the inputs.',
-        title='Ancestry',
     )
     data: Optional[logData] = Field(
         None, description='Log data associated with a wellbore', title='Log Data'
@@ -1195,24 +1243,15 @@ class log(DDMSBaseModel):
     legal: Optional[Legal] = Field(
         None, description="The log's legal tags", title='Legal Tags'
     )
-    meta: Optional[List[MetaItem]] = Field(
-        None,
-        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
-        title='Frame of Reference Meta Data',
-    )
     status: Optional[str] = Field(
         'compliant', description='The status of this log', title='Entity Status'
-    )
-    type: Optional[str] = Field(
-        None,
-        description='The reference entity type as declared in common:metadata:entity:*.',
-        title='Entity Type',
     )
     version: Optional[float] = Field(
         None,
         description='The version number of this log; set by the framework.',
         title='Entity Version Number',
     )
+
 
 
 class SpatialFilter(DDMSBaseModel):
@@ -1483,16 +1522,11 @@ class wellboreData(DDMSBaseModelWithExtra):
     )
 
 
-class wellbore(DDMSBaseModel):
+class wellbore(DDMSBaseModel, DDMSBaseRecord):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
         title='Access Control List',
-    )
-    ancestry: Optional[LinkList] = Field(
-        None,
-        description='The links to data, which constitute the inputs.',
-        title='Ancestry',
     )
     data: Optional[wellboreData] = Field(
         None, description='Wellbore data container', title='Wellbore Data'
@@ -1509,16 +1543,6 @@ class wellbore(DDMSBaseModel):
         None,
         description="The geological interpretation's legal tags",
         title='Legal Tags',
-    )
-    meta: Optional[List[MetaItem]] = Field(
-        None,
-        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
-        title='Frame of Reference Meta Data',
-    )
-    type: Optional[str] = Field(
-        None,
-        description='The reference entity type as declared in common:metadata:entity:*.',
-        title='Entity Type',
     )
     version: Optional[float] = Field(
         None,
@@ -1697,16 +1721,11 @@ class dipSetData(DDMSBaseModelWithExtra):
     )
 
 
-class logset(DDMSBaseModel):
+class logset(DDMSBaseModel, DDMSBaseRecord):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
         title='Access Control List',
-    )
-    ancestry: Optional[LinkList] = Field(
-        None,
-        description='The links to data, which constitute the inputs.',
-        title='Ancestry',
     )
     data: Optional[logSetData] = Field(
         None,
@@ -1722,16 +1741,6 @@ class logset(DDMSBaseModel):
     legal: Optional[Legal] = Field(
         None, description="The log-set's legal tags", title='Legal Tags'
     )
-    meta: Optional[List[MetaItem]] = Field(
-        None,
-        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
-        title='Frame of Reference Meta Data',
-    )
-    type: Optional[str] = Field(
-        None,
-        description='The reference entity type as declared in common:metadata:entity:*.',
-        title='Entity Type',
-    )
     version: Optional[float] = Field(
         None,
         description='The version number of this log set; set by the framework.',
@@ -1739,16 +1748,11 @@ class logset(DDMSBaseModel):
     )
 
 
-class dipset(DDMSBaseModel):
+class dipset(DDMSBaseModel, DDMSBaseRecord):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
         title='Access Control List',
-    )
-    ancestry: Optional[LinkList] = Field(
-        None,
-        description='The links to data, which constitute the inputs.',
-        title='Ancestry',
     )
     data: Optional[dipSetData] = Field(
         None,
@@ -1763,16 +1767,6 @@ class dipset(DDMSBaseModel):
     )
     legal: Optional[Legal] = Field(
         None, description="The dip-set's legal tags", title='Legal Tags'
-    )
-    meta: Optional[List[MetaItem]] = Field(
-        None,
-        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
-        title='Frame of Reference Meta Data',
-    )
-    type: Optional[str] = Field(
-        None,
-        description='The reference entity type as declared in common:metadata:entity:*.',
-        title='Entity Type',
     )
     version: Optional[float] = Field(
         None,
@@ -1863,16 +1857,11 @@ class trajectoryData(DDMSBaseModelWithExtra):
     )
 
 
-class trajectory(DDMSBaseModel):
+class trajectory(DDMSBaseModel, DDMSBaseRecord):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
         title='Access Control List',
-    )
-    ancestry: Optional[LinkList] = Field(
-        None,
-        description='The links to data, which constitute the inputs.',
-        title='Ancestry',
     )
     data: Optional[trajectoryData] = Field(
         None,
@@ -1891,16 +1880,6 @@ class trajectory(DDMSBaseModel):
     )
     legal: Optional[Legal] = Field(
         None, description="The trajectory's legal tags", title='Legal Tags'
-    )
-    meta: Optional[List[MetaItem]] = Field(
-        None,
-        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
-        title='Frame of Reference Meta Data',
-    )
-    type: Optional[str] = Field(
-        None,
-        description='The reference entity type as declared in common:metadata:entity:*.',
-        title='Entity Type',
     )
     version: Optional[float] = Field(
         None,
@@ -2026,16 +2005,11 @@ class markerData(DDMSBaseModelWithExtra):
     )
 
 
-class marker(DDMSBaseModel):
+class marker(DDMSBaseModel, DDMSBaseRecord):
     acl: TagDictionary = Field(
         ...,
         description='The access control tags associated with this entity.',
         title='Access Control List',
-    )
-    ancestry: Optional[LinkList] = Field(
-        None,
-        description='The links to data, which constitute the inputs.',
-        title='Ancestry',
     )
     data: Optional[markerData] = Field(
         None,
@@ -2047,16 +2021,6 @@ class marker(DDMSBaseModel):
     )
     kind: str = Field(..., description='Marker kind specification', title='Marker Kind')
     legal: Legal = Field(..., description="The marker's legal tags", title='Legal Tags')
-    meta: Optional[List[MetaItem]] = Field(
-        None,
-        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
-        title='Frame of Reference Meta Data',
-    )
-    type: Optional[str] = Field(
-        None,
-        description='The reference entity type as declared in common:metadata:entity:*.',
-        title='Entity Type',
-    )
     version: Optional[float] = Field(
         None,
         description='The version number of this marker; set by the framework.',
@@ -2237,16 +2201,11 @@ class wellData(DDMSBaseModelWithExtra):
     )
 
 
-class well(DDMSBaseModel):
+class well(DDMSBaseModel, DDMSBaseRecord):
     acl: Optional[TagDictionary] = Field(
         None,
         description='The access control tags associated with this entity.',
         title='Access Control List',
-    )
-    ancestry: Optional[LinkList] = Field(
-        None,
-        description='The links to data, which constitute the inputs.',
-        title='Ancestry',
     )
     data: Optional[wellData] = Field(
         None, description='Well data container', title='Well Data'
@@ -2263,16 +2222,6 @@ class well(DDMSBaseModel):
         None,
         description="The geological interpretation's legal tags",
         title='Legal Tags',
-    )
-    meta: Optional[List[MetaItem]] = Field(
-        None,
-        description="The meta data section linking the 'unitKey', 'crsKey' to self-contained definitions (persistableReference)",
-        title='Frame of Reference Meta Data',
-    )
-    type: Optional[str] = Field(
-        None,
-        description='The reference entity type as declared in common:metadata:entity:*.',
-        title='Entity Type',
     )
     version: Optional[float] = Field(
         None,
