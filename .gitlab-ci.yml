@@ -18,6 +18,8 @@ variables:
   OSDU_GCP_APPLICATION_NAME: wellbore-ddms
   OSDU_GCP_VENDOR: gcp
 
+  IBM_INT_TEST_PY_SUBDIR: tests/integration
+
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
