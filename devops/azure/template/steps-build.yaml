@@ -63,7 +63,6 @@ steps:
       docker build -t=wdms-osdu:$(tag_name) \
                    -t=wdms-osdu:latest \
                    --rm . -f ./build/Dockerfile \
-                   --build-arg PIP_EXTRA_URL=$PIP_EXTRA_INDEX_URL \
                    --build-arg PIP_WHEEL_DIR=python-packages \
                    --build-arg build_date="$current_utc_date" \
                    --build-arg build_number="$(Build.BuildNumber)" \
