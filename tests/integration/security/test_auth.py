@@ -81,7 +81,7 @@ def test_invalid_token_returns_40X(base_url, check_cert, token):
     blank = {}
     token_invalid = token[0:len(token) - 10]
     headers = {
-        'Authorization': f"REMOVED_FOR_CICD_SCAN'
+        'Authorization': f"REMOVED_FOR_CICD_SCAN"
     }
 
     response = requests.request("GET", url, headers=headers, data=blank, verify=check_cert)
