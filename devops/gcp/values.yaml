@@ -15,8 +15,8 @@ configMap:
 secret:
   name: wellbore
   key: "key.json"
-  gcpSA: "" # base64 encoded value
-    
+  gcpSA: "" #ENTER in base64 service-account value
+
 replicaCount: 1
 
 image:
@@ -26,7 +26,8 @@ image:
   tag: "7e6b01b5"
 
 service:
-  type: ClusterIP
+  #type: ClusterIP
+  type: NodePort
   port: 8080
 
 ingress:
