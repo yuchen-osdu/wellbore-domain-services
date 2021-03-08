@@ -20,6 +20,7 @@ parameters:
         # providers:
         #   - name: Azure
         #     short_name: az
+        #     varGroupPrefix: ""
         #     environments: 
         #     - name: dev
         #       # TODO: The following templates needs to be injected as parameters
@@ -34,7 +35,7 @@ stages:
   - ${{ each environment in provider.environments }}:
     - stage: 'Deploy_${{ provider.name }}_R3MVP_${{ environment.name }}'
       variables:
-      - group: '${{ variables.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
+      - group: '${{ provider.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
       - name: env # This variable is used as input of the helm template
         value: ${{ environment.name }}
       jobs:
@@ -76,7 +77,7 @@ stages:
       dependsOn:
       - Deploy_${{ provider.name }}_R3MVP_${{ environment.name }}
       variables:
-      - group: '${{ variables.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
+      - group: '${{ provider.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
       - template: 'vars/global_vars.yml'
       jobs:
         - job: e2e_test

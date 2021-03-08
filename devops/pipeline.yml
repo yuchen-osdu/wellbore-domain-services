@@ -49,6 +49,7 @@ stages:
       providers:
         - name: Azure
           short_name: az
+          varGroupPrefix: ""
           environments: 
           - name: demo
             # TODO: The following templates needs to be injected as parameters
