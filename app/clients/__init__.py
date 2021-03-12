@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import odes_entitlements
+
 import odes_search
 import odes_storage
-from odes_entitlements.api_client import AsyncEntitlementsAuthAdministrationApi
 from odes_search.api_client import AsyncSearchApi
 from odes_storage.api_client import AsyncRecordsApi
 from app.conf import Config
@@ -23,16 +22,13 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-__all__ = ['EntitlementsAuthServiceClient',
-           'SearchServiceClient',
+__all__ = ['SearchServiceClient',
            'StorageRecordServiceClient',
-           'make_entitlements_auth_client',
            'make_search_client',
            'make_storage_record_client']
 
 from app.clients.clients_middleware import client_middleware
 
-EntitlementsAuthServiceClient = AsyncEntitlementsAuthAdministrationApi
 SearchServiceClient = AsyncSearchApi
 StorageRecordServiceClient = AsyncRecordsApi
 
@@ -42,19 +38,6 @@ class Limits:
     max_connections: Optional[int] = None
     max_keepalive_connections: Optional[int] = None
     keepalive_expiry: Optional[float] = 5.0
-
-
-def make_entitlements_auth_client(host) -> EntitlementsAuthServiceClient:
-    entitlements_client = odes_entitlements.ApiClient(
-        host=host,
-        timeout=Config.de_client_config_timeout.value,
-        limits=Limits(
-            max_connections=Config.de_client_config_max_connection.value or None,
-            max_keepalive_connections=Config.de_client_config_max_keepalive.value or None)
-    )
-
-    entitlements_client.add_middleware(middleware=client_middleware)
-    return odes_entitlements.AsyncApis(entitlements_client).entitlements_auth_administration_api
 
 
 def make_search_client(host) -> SearchServiceClient:

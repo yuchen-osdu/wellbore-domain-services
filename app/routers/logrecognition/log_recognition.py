@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import far.family_processor.model as farmodel
-from fastapi import APIRouter, Depends, HTTPException
-from starlette import status
+from fastapi import APIRouter, Depends, HTTPException, status
+
 from typing import Optional, List
 from pydantic import BaseModel, Field
 import odes_storage.models as model
@@ -22,6 +22,7 @@ import odes_storage.models as model
 import app.routers.logrecognition.family_processor_manager as fp_manager
 from app.clients.storage_service_client import get_storage_record_service
 from app.conf import Config
+from app.routers.conf import REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
 
@@ -34,7 +35,7 @@ class CatalogItem(BaseModel):
     rule: str
 
 
-class MainFanilyCatalogItem(BaseModel):
+class MainFamilyCatalogItem(BaseModel):
     MainFamily: str
     Family: str
     Unit: str
@@ -42,7 +43,7 @@ class MainFanilyCatalogItem(BaseModel):
 
 class Catalog(BaseModel):
     family_catalog: List[CatalogItem]
-    main_family_catalog: Optional[List[MainFanilyCatalogItem]] = None
+    main_family_catalog: Optional[List[MainFamilyCatalogItem]] = None
 
 
 class CatalogRecord(BaseModel):
@@ -55,10 +56,10 @@ class CatalogRecord(BaseModel):
             "example": {
                 "acl": {
                     "viewers": [
-                        "abc@example.com, cde@example.com"
+                        "abc@slb.com, cde@slb.com"
                     ],
                     "owners": [
-                        "abc@example.com, cde@example.com"
+                        "abc@slb.com, cde@slb.com"
                     ]
                 },
                 "legal": {
@@ -146,7 +147,7 @@ async def post_recognize_custom(body: GuessRequest,
             summary="Upload user-defined catalog with family assignment rules",
             description="""Upload user-defined catalog with family assignment rules for specific partition ID. 
             If there is an existing catalog, it will be replaced. It takes maximum of 5 mins to replace the existing catalog. 
-            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog""",
+            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog. {}""".format(REQUIRED_ROLES_WRITE),
             operation_id="upload-catalog")
 async def upload_catalog(body: CatalogRecord,
                          ctx: Context = Depends(get_ctx)) -> model.CreateUpdateRecordsResponse:

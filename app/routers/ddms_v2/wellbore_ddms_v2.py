@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Query
-import starlette.status as status
-from starlette.responses import Response
+from fastapi import APIRouter, Depends, Query, status, Response, Body
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.clients.search_service_client import get_search_service
 from odes_storage.models import *
 from app.model.model_curated import *
+from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
+from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.model.entity_utils import Entity
 
@@ -36,7 +36,7 @@ router = APIRouter()
         *wks:wellbore:1.0.6* returns the record directly</p> <p>If the wellbore
         kind is different *wks:wellbore:1.0.6* it will get the raw record and
         convert the results to match the *wks:wellbore:1.0.6*. If convertion is
-        not possible returns an error **500**""",
+        not possible returns an error **500**. {}""".format(REQUIRED_ROLES_READ),
             operation_id="get_wellbore",
             responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
             response_model_exclude_unset=True)
@@ -51,6 +51,7 @@ async def get_wellbore(
 
 @router.delete('/wellbores/{wellboreid}',
                summary="Delete the wellbore. The API performs a logical deletion of the given record",
+               description="{}".format(REQUIRED_ROLES_WRITE),
                operation_id="del_wellbore",
                status_code=status.HTTP_204_NO_CONTENT,
                response_class=Response,
@@ -80,6 +81,7 @@ async def del_wellbore(
 @router.get('/wellbores/{wellboreid}/versions',
             response_model=RecordVersions,
             summary="Get all versions of the Wellbore",
+            description="{}".format(REQUIRED_ROLES_READ),
             operation_id="get_wellbore_versions",
             responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}})
 async def get_wellbore_versions(
@@ -97,7 +99,7 @@ async def get_wellbore_versions(
         *wks:wellbore:1.0.6* returns the record directly</p> <p>If the wellbore
         kind is different *wks:wellbore:1.0.6* it will get the raw record and
         convert the results to match the *wks:wellbore:1.0.6*. If convertion is
-        not possible returns an error **500**""",
+        not possible returns an error **500**. {}""".format(REQUIRED_ROLES_READ),
             operation_id="get_wellbore_version",
             responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
             response_model_exclude_unset=True)
@@ -112,15 +114,15 @@ async def get_wellbore_version(
                                                               data_partition_id=ctx.partition_id)
     return from_record(wellbore, wellbore_record)
 
-
 @router.post('/wellbores',
              response_model=CreateUpdateRecordsResponse,
              summary="Create or update the Wellbores using wks:wellbore:1.0.6 schema",
+             description="{}".format(REQUIRED_ROLES_WRITE),
              operation_id="post_wellbore",
              responses={
                  status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
 async def post_wellbore(
-        wellbores: List[wellbore],
+        wellbores: List[wellbore] = Body(..., example=load_schema_example("wellbore_v2.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
     storage_client = await get_storage_record_service(ctx)

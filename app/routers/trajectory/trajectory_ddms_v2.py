@@ -14,9 +14,8 @@
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, Request, HTTPException
-from starlette import status
-from starlette.responses import Response
+from fastapi import APIRouter, Depends, Query, Request, HTTPException, Response, status, Body
+
 from pandas import DataFrame
 
 from odes_storage.models import CreateUpdateRecordsResponse, RecordVersions
@@ -27,12 +26,13 @@ from app.model.model_curated import (
     trajectorychannel as TrajectoryChannel,
 )
 from app.model.model_utils import from_record, to_record
+from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.trajectory.parameters import trajectory_json_orient_parameter
 from app.routers.trajectory.persistence import Persistence
 from app.bulk_persistence import DataframeSerializer, JSONOrient, MimeTypes, NoBulkException, UnknownChannelsException, \
     InvalidBulkException
 
-from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx
+from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx, load_schema_example
 
 router = APIRouter()
 
@@ -57,7 +57,7 @@ async def get_trajectory_record(ctx, trajectoryid: TrajectoryId) -> Trajectory:
     "/trajectories/{trajectoryid}",
     response_model=Trajectory,
     summary="Get the trajectory using wks:trajectory:1.0.5 schema",
-    description="""Get the Trajectory object using its **id**""",
+    description="""Get the Trajectory object using its **id**. {}""".format(REQUIRED_ROLES_READ),
     operation_id="get_trajectory",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Trajectory not found"}
@@ -74,6 +74,7 @@ async def get_trajectory(
 @router.delete(
     "/trajectories/{trajectoryid}",
     summary="Delete the Trajectory. The API performs a logical deletion of the given record",
+    description="{}".format(REQUIRED_ROLES_WRITE),
     operation_id="del_trajectory",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
@@ -98,6 +99,7 @@ async def del_trajectory(
     "/trajectories/{trajectoryid}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the Trajectory",
+    description="{}".format(REQUIRED_ROLES_READ),
     operation_id="get_trajectory_versions",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Trajectory not found"}
@@ -116,6 +118,7 @@ async def get_trajectory_versions(
     "/trajectories/{trajectoryid}/versions/{version}",
     response_model=Trajectory,
     summary="Get the given version of Trajectory using wks:Trajectory:1.0.5 schema",
+    description="{}".format(REQUIRED_ROLES_READ),
     operation_id="get_trajectory_version",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Trajectory not found"}
@@ -136,6 +139,7 @@ async def get_trajectory_version(
     "/trajectories",
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the trajectories using wks:Trajectory:1.0.5 schema",
+    description="{}".format(REQUIRED_ROLES_WRITE),
     operation_id="post_trajectory",
     responses={
         status.HTTP_400_BAD_REQUEST: {
@@ -144,7 +148,7 @@ async def get_trajectory_version(
     },
 )
 async def post_trajectory(
-    trajectories: List[Trajectory], ctx: Context = Depends(get_ctx)
+    trajectories: List[Trajectory] = Body(..., example= load_schema_example("trajectory_v2.json")), ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
 
     storage_client = await get_storage_record_service(ctx)
@@ -155,12 +159,12 @@ async def post_trajectory(
 
 
 _trajectory_dataframe_example = DataFrame([
-    [0, 1001, 2001],
-    [0.5, 1002, 2002],
-    [1, 1003, 2003],
-    [1.5, 1004, 2004],
-    [2, 1005, 2005]],
-    columns=['MD', 'X', 'Y']
+    [0, 0, 1001, 2001],
+    [0.5, 0.5, 1002, 2002],
+    [1, 0.75, 1003, 2003],
+    [1.5, 1, 1004, 2004],
+    [2, 1.5, 1005, 2005]],
+    columns=['MD', 'TVD', 'X', 'Y']
 )
 
 
@@ -200,7 +204,7 @@ _trajectory_dataframe_example = DataFrame([
 @router.post(
     "/trajectories/{trajectoryid}/data",
     summary="Writes the specified data to the trajectory (atomic).",
-    description="Overwrite if exists",
+    description="Overwrite if exists. {}".format(REQUIRED_ROLES_WRITE),
     operation_id="post_traj_data",
     response_model=CreateUpdateRecordsResponse,
     responses={
@@ -268,7 +272,7 @@ async def post_traj_data(
 @router.get(
     "/trajectories/{trajectoryid}/data",
     summary="Returns all data within the specified filters. Strongly consistent.",
-    description="return full bulk data",
+    description="return full bulk data. {}".format(REQUIRED_ROLES_READ),
     operation_id="get_traj_data",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "trajectory not found"},

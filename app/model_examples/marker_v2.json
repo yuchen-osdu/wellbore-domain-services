@@ -1,0 +1,51 @@
+[
+    {
+        "acl": {
+            "viewers": [
+                "data.default.viewers@{{datapartitionid}}.{{domain}}.com"
+            ],
+            "owners": [
+                "data.default.owners@{{datapartitionid}}.{{domain}}.com"
+            ]
+        },
+        "data": {
+            "depth": {
+                "unitKey": "ft",
+                "value": 150
+            },
+            "md": {
+                "unitKey": "ft",
+                "value": 150
+            },
+            "tvd": {
+                "unitKey": "ft",
+                "value": 200
+            },
+            "name": "myMarker",
+            "relationships": {               
+                "well": {
+                    "confidence": 1.0,
+                    "id": "{{datapartitionid}}:well:myWell",
+                    "name": "myWell"
+                },
+                "wellbore": {
+                    "confidence": 1.0,
+                    "id": "{{datapartitionid}}:wellbore:myWellbore",
+                    "name": "myWellbore"
+                }
+            }
+        },
+        "id": "{{datapartitionid}}:marker:myMarker",
+        "kind": "{{datapartitionid}}:wks:marker:1.0.4",
+        "legal": {
+            "legaltags": [
+                "{{legaltags}}"
+            ],
+            "otherRelevantDataCountries": [
+                "FR",
+                "US"
+            ],
+            "status": "compliant"
+        }
+    }
+]
