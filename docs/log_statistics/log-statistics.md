@@ -1,5 +1,7 @@
 # Log statistics
 
+[API specification](/solutions/wellboreddms/apis/osdu-wellbore-service#/Log/get_log_data_statistics_ddms_v2_logs__logid__statistics_get)
+
 **Goal:** Provide statistical information for Bulk log data
 
 **Use case 1:** Data consumers interested in specific statistics for specific log.
@@ -8,7 +10,7 @@
 
 When transferring bulk data to Wellbore DMS it might happened that due to various reasons (human, system) 
 the data is not transferred correctly and might not be discovered until the data is actually used. 
-By launching the calculation on the application side and comparing the results to the ones form this service, 
+By launching the calculation on the application side and comparing the results from this service, 
 you will be able to compare results quickly.
 
 The method calculate the following statistics:

@@ -56,6 +56,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -99,6 +100,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -146,6 +148,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -181,6 +184,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -232,6 +236,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -265,6 +270,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -319,6 +325,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -366,6 +373,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -401,6 +409,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -452,6 +461,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -485,6 +495,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -534,6 +545,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -581,6 +593,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -616,6 +629,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -662,6 +676,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -701,6 +716,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -734,6 +750,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -783,6 +800,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -830,6 +848,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -865,6 +884,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -910,6 +930,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -943,6 +964,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -1011,6 +1033,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1070,6 +1093,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1110,6 +1134,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1157,6 +1182,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1192,6 +1218,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1237,6 +1264,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1270,6 +1298,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -1325,6 +1354,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1363,6 +1393,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1392,6 +1423,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -1440,6 +1472,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1485,6 +1518,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1542,6 +1576,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1607,6 +1642,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1777,6 +1813,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -1833,6 +1870,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1914,6 +1952,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1942,6 +1981,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -1997,6 +2037,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2036,6 +2077,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2076,6 +2118,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2123,6 +2166,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2175,6 +2219,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2219,6 +2264,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -2273,6 +2319,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -2343,6 +2390,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2390,6 +2438,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2435,6 +2484,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2485,6 +2535,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -2527,6 +2578,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -2563,6 +2615,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -2608,6 +2661,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2666,6 +2720,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2730,6 +2785,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2770,6 +2826,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -2825,6 +2882,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2871,6 +2929,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2910,6 +2969,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2956,6 +3016,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3002,6 +3063,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3048,6 +3110,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3094,6 +3157,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3140,6 +3204,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3179,6 +3244,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3237,6 +3303,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3301,6 +3368,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3341,6 +3409,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -3396,6 +3465,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3442,6 +3512,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3481,6 +3552,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3527,6 +3599,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3573,6 +3646,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3619,6 +3693,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3665,6 +3740,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3711,6 +3787,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -3742,6 +3819,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -3783,6 +3861,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -3892,7 +3971,7 @@ components:
           title: Main Family Catalog
           type: array
           items:
-            $ref: '#/components/schemas/MainFanilyCatalogItem'
+            $ref: '#/components/schemas/MainFamilyCatalogItem'
     CatalogItem:
       title: CatalogItem
       required:
@@ -3927,9 +4006,9 @@ components:
       example:
         acl:
           viewers:
-            - 'abc@example.com, cde@example.com'
+            - 'abc@slb.com, cde@slb.com'
           owners:
-            - 'abc@example.com, cde@example.com'
+            - 'abc@slb.com, cde@slb.com'
         legal:
           legaltags:
             - opendes-public-usa-dataset-1
@@ -4390,8 +4469,8 @@ components:
       properties: {}
       additionalProperties: false
       description: The base model forbids fields which are not declared initially in the pydantic model
-    MainFanilyCatalogItem:
-      title: MainFanilyCatalogItem
+    MainFamilyCatalogItem:
+      title: MainFamilyCatalogItem
       required:
         - MainFamily
         - Family
