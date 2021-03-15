@@ -92,7 +92,7 @@ def test_storage_client_raise_api_exception(client):
         response = client.delete("/ddms/v2/logsets/123456")
         json_res = response.json()
         assert json_res['origin'] == 'osdu-data-ecosystem-storage'
-        assert json_res['errors'][0] == "An unexpected response"
+        assert json_res['errors'][0] == {'error': {'code': 401, 'message': 'Not authorized'}}
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 

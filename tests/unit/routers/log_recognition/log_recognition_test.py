@@ -15,8 +15,8 @@
 import time
 import mock
 import pytest
-import starlette.status as status
-from fastapi import Header
+
+from fastapi import Header, status
 from fastapi.testclient import TestClient
 from odes_storage import models as m
 from odes_storage.exceptions import UnexpectedResponse
@@ -353,13 +353,13 @@ def test_swagger_generation():
                "summary"] == 'Upload user-defined catalog with family assignment rules'
     assert swagger_dict["paths"]["/log-recognition/upload-catalog"]["put"]["description"] == """Upload user-defined catalog with family assignment rules for specific partition ID. 
             If there is an existing catalog, it will be replaced. It takes maximum of 5 mins to replace the existing catalog. 
-            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog"""
+            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog. <p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>"""
     assert \
         swagger_dict["paths"]["/log-recognition/upload-catalog"]["put"]["requestBody"]["content"]["application/json"][
             "schema"][
             "$ref"] == '#/components/schemas/CatalogRecord'
     assert swagger_dict["components"]["schemas"]["CatalogRecord"]["example"] == {
-        'acl': {'viewers': ['abc@example.com, cde@example.com'], 'owners': ['abc@example.com, cde@example.com']},
+        'acl': {'viewers': ['abc@slb.com, cde@slb.com'], 'owners': ['abc@slb.com, cde@slb.com']},
         'legal': {'legaltags': ['opendes-public-usa-dataset-1'], 'otherRelevantDataCountries': ['US']},
         'data': {'family_catalog': [{'unit': 'ohm.m', 'family': 'Medium Resistivity', 'rule': 'MEDR'}],
                  'main_family_catalog': [
