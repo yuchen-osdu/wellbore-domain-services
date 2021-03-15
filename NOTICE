@@ -50,7 +50,6 @@ BSD-2-Clause
 The following software have components provided under the terms of this license:
 
 - mock (from https://github.com/testing-cabal/mock)
-- packaging (from https://github.com/pypa/packaging)
 - ply (from http://www.dabeaz.com/ply/)
 - pyasn1 (from http://sourceforge.net/projects/pyasn1/)
 - pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
@@ -64,6 +63,7 @@ The following software have components provided under the terms of this license:
 - click (from http://github.com/mitsuhiko/click)
 - cryptography (from https://github.com/pyca/cryptography)
 - decorator (from https://github.com/micheles/decorator)
+- grpcio (from http://www.grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore)
 - httpx (from https://github.com/encode/httpx)
@@ -90,13 +90,6 @@ The following software have components provided under the terms of this license:
 - uvicorn (from https://github.com/tomchristie/uvicorn)
 
 ========================================================================
-CC0-1.0
-========================================================================
-The following software have components provided under the terms of this license:
-
-- coverage (from https://coverage.readthedocs.io)
-
-========================================================================
 CNRI-Python
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -110,6 +103,7 @@ GPL-2.0-only
 The following software have components provided under the terms of this license:
 
 - coverage (from https://coverage.readthedocs.io)
+- grpcio (from http://www.grpc.io)
 
 ========================================================================
 GPL-3.0-only
@@ -117,6 +111,7 @@ GPL-3.0-only
 The following software have components provided under the terms of this license:
 
 - coverage (from https://coverage.readthedocs.io)
+- grpcio (from http://www.grpc.io)
 - numpy (from http://www.numpy.org)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
@@ -133,7 +128,15 @@ ISC
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- grpcio (from http://www.grpc.io)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
+
+========================================================================
+Info-ZIP
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from http://www.grpc.io)
 
 ========================================================================
 JSON
@@ -186,11 +189,11 @@ The following software have components provided under the terms of this license:
 - cffi (from http://cffi.readthedocs.org)
 - coverage (from https://coverage.readthedocs.io)
 - fastapi (from https://github.com/tiangolo/fastapi)
+- grpcio (from http://www.grpc.io)
 - h11 (from https://github.com/python-hyper/h11)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema (from http://github.com/Julian/jsonschema)
-- mockito (from https://github.com/kaste/mockito-python)
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
 - msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
 - msrest (from https://github.com/Azure/msrest-for-python)
@@ -224,13 +227,18 @@ The following software have components provided under the terms of this license:
 - certifi (from http://certifi.io/)
 
 ========================================================================
+OpenSSL
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from http://www.grpc.io)
+
+========================================================================
 Python-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
-- coverage (from https://coverage.readthedocs.io)
-- cryptography (from https://github.com/pyca/cryptography)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python)
 - portalocker (from https://github.com/WoLpH/portalocker)
 - python-dateutil (from https://dateutil.readthedocs.org)
@@ -239,6 +247,13 @@ The following software have components provided under the terms of this license:
 - sniffio (from https://github.com/python-trio/sniffio)
 - typing-extensions (from https://github.com/python/typing)
 - urllib3 (from https://urllib3.readthedocs.io/)
+
+========================================================================
+Unlicense
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from http://www.grpc.io)
 
 ========================================================================
 WTFPL
@@ -255,12 +270,19 @@ The following software have components provided under the terms of this license:
 - pytz (from http://pythonhosted.org/pytz)
 
 ========================================================================
+Zlib
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from http://www.grpc.io)
+
+========================================================================
 public-domain
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - botocore (from https://github.com/boto/botocore)
-- coverage (from https://coverage.readthedocs.io)
+- grpcio (from http://www.grpc.io)
 - py (from http://pylib.readthedocs.org/)
 - pytz (from http://pythonhosted.org/pytz)
 
