@@ -1,0 +1,151 @@
+# EXPECTED PIPELINE INHERITED GROUP VARIABLES
+# --------------------------------------------------------------------------------
+# AZURE                     (Protected Branch)
+# AZURE_APP_ID              (Protected Branch)
+# AZURE_APP_ID_OTHER        (Protected Branch)
+# AZURE_APP_OID_OTHER       (Protected Branch)
+# AZURE_BASE                (Protected Branch)
+# AZURE_BASENAME_21         (Protected Branch)
+# AZURE_DNS_NAME            (Protected Branch)
+# AZURE_ELASTIC_HOST        (Protected Branch)
+# AZURE_ELASTIC_PASSWORD    (Protected Branch/Masked Variable)
+# AZURE_INVALID_JWT         (Protected Branch)
+# AZURE_NO_ACCESS_ID        (Protected Branch)
+# AZURE_NO_ACCESS_SECRET    (Protected Branch/Masked Variable)
+# AZURE_PRINCIPAL_ID        (Protected Branch)
+# AZURE_PRINCIPAL_SECRET    (Protected Branch/Masked Variable)
+# AZURE_REGISTRY            (Protected Branch)
+# AZURE_SERVICEBUS_KEY      (Protected Branch/Masked Variable)
+# AZURE_STORAGE_KEY         (Protected Branch/Masked Variable)
+# AZURE_SUBSCRIPTION_ID     (Protected Branch)
+# AZURE_SUBSCRIPTION_NAME   (Protected Branch)
+# AZURE_TENANT_ID           (Protected Branch)
+
+# EXPECTED PIPELINE VARIABLES
+# --------------------------------------------------------------------------------
+# AZURE_TEST_SUBDIR
+
+
+.azure_variables:
+  variables:
+    LOG_LEVEL: INFO
+    # Common Section
+    ENTITLEMENT_URL: https://${AZURE_DNS_NAME}/entitlements/v1/
+    ENTITLEMENT_V2_URL: https://${AZURE_DNS_NAME}/api/entitlements/v2/
+    LEGAL_URL: https://${AZURE_DNS_NAME}/api/legal/v1/
+    STORAGE_URL: https://${AZURE_DNS_NAME}/api/storage/v2/
+    SEARCH_URL: https://${AZURE_DNS_NAME}/api/search/v2/
+    INDEXER_URL: https://${AZURE_DNS_NAME}/api/indexer/v2/
+    DELIVERY_URL: https://${AZURE_DNS_NAME}/api/delivery/v2/
+    FILE_URL: https://${AZURE_DNS_NAME}/api/file/v2/
+    WORKFLOW_URL: https://${AZURE_DNS_NAME}/api/workflow/v1/
+    AZURE_AD_TENANT_ID: $AZURE_TENANT_ID
+    INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
+    AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
+    AZURE_AD_APP_RESOURCE_ID: $AZURE_APP_ID
+    AZURE_STORAGE_ACCOUNT: ${AZURE_BASE}data
+    MY_TENANT: opendes
+    SHARED_TENANT: opendes
+    DOMAIN: contoso.com
+    ELASTIC_HOST: $AZURE_ELASTIC_HOST
+    ELASTIC_PORT: 9243
+    ELASTIC_USER_NAME: elastic
+    ELASTIC_PASSWORD: $AZURE_ELASTIC_PASSWORD
+    VENDOR: azure
+    HOST: https://${AZURE_DNS_NAME}
+    ACL_OWNERS: data.test1
+    ACL_VIEWERS: data.test1
+    WELLBORE_URL: https://${AZURE_DNS_NAME}/api/os-wellbore-ddms
+    LEGAL_TAG: "opendes-public-usa-dataset-7643990"
+    DATA_PARTITION_ID: opendes
+    
+
+# JOBS
+# --------------------------------------------------------------------------------
+
+azure_containerize:
+  tags: ["osdu-medium"]
+  image: danielscholl/azure-build-image
+  stage: containerize
+  needs: ["compile-and-unit-test"]
+  variables:
+    SHA_IMAGE: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - az --version
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+  script:
+    - echo "Azure Deployment for Wellbore DMS"
+    # Dockerfile used from AZURE_DOCKER_SUBDIR
+    - echo "Startup docker build is $AZURE_DOCKER_SUBDIR"
+    - docker build -f $AZURE_DOCKER_SUBDIR -t $CI_REGISTRY_IMAGE/$SHA_IMAGE .
+    # Gitlab Container Registry
+    - docker push ${CI_REGISTRY_IMAGE}/$SHA_IMAGE
+    - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE $CI_REGISTRY_IMAGE/$LATEST_IMAGE
+    - docker push ${CI_REGISTRY_IMAGE}/$LATEST_IMAGE
+
+    # Azure Container Registry
+    - az acr login -n $AZURE_REGISTRY
+    - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker push ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+    - docker push ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+  only:
+    variables:
+      - $AZURE == 'true'
+
+azure_deploy:
+  image: danielscholl/azure-build-image
+  tags: ["osdu-medium"]
+  stage: deploy
+  needs: ["azure_containerize"]
+  variables:
+    BRANCH: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
+    TAG: $CI_COMMIT_SHA
+  extends:
+    - .azure_variables
+  before_script:
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+    - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
+  script:
+    # Install Service
+    - helm upgrade -i osdu-gitlab-$CI_PROJECT_NAME devops/azure/chart --set image.repository=${AZURE_REGISTRY}.azurecr.io --set image.branch=$BRANCH --set image.tag=$TAG
+    # Increasing to 900s as rolling updates are happening and each service is expected to have minimum 2 containers.
+    - kubectl rollout status deployment.v1.apps/osdu-gitlab-$CI_PROJECT_NAME -n osdu --timeout=900s
+    - pod=$(kubectl get pod -n osdu|grep $CI_PROJECT_NAME |tail -1 |awk '{print $1}')
+    - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=300s)
+    - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
+  only:
+    variables:
+      - $AZURE == 'true'
+  except:
+    variables:
+      - $AZURE_SKIP_DEPLOY == 'true'
+azure_test_py:
+  image: python:3.8
+  stage: integration
+  needs: ["azure_deploy"]
+  allow_failure: true
+  extends:
+    - .azure_variables
+  script:
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install wheel pytest pytest-cov
+    - pip install -r requirements.txt
+    - pip install -r requirements_dev.txt
+    - svctoken=$(python devops/scripts/azure_jwt_client.py)
+    - cd $AZURE_TEST_SUBDIR
+    - python ./gen_postman_env.py --token ${svctoken} --base_url ${WELLBORE_URL} --cloud_provider ${VENDOR} --acl_domain ${DOMAIN} --legal_tag ${LEGAL_TAG} --data_partition ${DATA_PARTITION_ID}
+    - pytest ./functional --environment="./generated/postman_environment.json" --insecure --timeout-request=15000 --filter-tag=basic
+  only:
+    variables:
+      - $AZURE == 'true' && $AZURE_SKIP_DEPLOY != 'true' && $AZURE_TEST_TYPE == 'python'
+  except:
+    variables:
+      - $AZURE_SKIP_TEST == 'true'
+
+

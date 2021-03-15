@@ -18,7 +18,11 @@ variables:
   OSDU_GCP_APPLICATION_NAME: wellbore-ddms
   OSDU_GCP_VENDOR: gcp
 
-
+  AZURE_SERVICE: wellbore-ddms
+  AZURE_DOCKER_SUBDIR: build/Dockerfile
+  AZURE_TEST_SUBDIR: tests/integration
+  AZURE_TEST_TYPE: python
+ 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
@@ -37,6 +41,8 @@ include:
 
   - project: 'osdu/platform/ci-cd-pipelines'
     file: 'cloud-providers/ibm-wellbore.yml'
+
+  - local: "/devops/azure/azure-wellbore.yml"
 # --------------------------------------------------------------------------------
 
 containerize:
