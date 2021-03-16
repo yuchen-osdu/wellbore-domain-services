@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Query
-import starlette.status as status
-from starlette.responses import Response
+
+from fastapi import APIRouter, Depends, Query, status, Response, Body
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.clients.search_service_client import get_search_service
 from odes_storage.models import *
 from app.model.model_curated import logset
+from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
+from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.model.entity_utils import Entity
 
@@ -33,7 +34,7 @@ router = APIRouter()
 @router.get('/logsets/{logsetid}',
             response_model=logset,
             summary="Get the LogSet using wks:logSet:1.0.5 schema",
-            description="""Get the LogSet object using its **id**""",
+            description="""Get the LogSet object using its **id**. {}""".format(REQUIRED_ROLES_READ),
             operation_id="get_logset",
             responses={status.HTTP_404_NOT_FOUND: {"description": "LogSet not found"}},
             response_model_exclude_unset=True)
@@ -48,6 +49,7 @@ async def get_logset(
 
 @router.delete('/logsets/{logsetid}',
                summary="Delete the LogSet. The API performs a logical deletion of the given record",
+               description="{}".format(REQUIRED_ROLES_WRITE),
                operation_id="del_logset",
                status_code=status.HTTP_204_NO_CONTENT,
                response_class=Response,
@@ -76,7 +78,8 @@ async def del_logset(
 
 @router.get('/logsets/{logsetid}/versions',
             response_model=RecordVersions,
-            summary="Get all versions of the logset",
+            summary="Get all versions of the logset.",
+            description="{}".format(REQUIRED_ROLES_READ),
             operation_id="get_logset_versions",
             responses={status.HTTP_404_NOT_FOUND: {"description": "LogSet not found"}})
 async def get_logset_versions(
@@ -90,7 +93,7 @@ async def get_logset_versions(
 @router.get('/logsets/{logsetid}/versions/{version}',
             response_model=logset,
             summary="Get the given version of LogSet using wks:logSet:1.0.5 schema",
-            description=""""Get the LogSet object using its **id**.""",
+            description=""""Get the LogSet object using its **id**. {}""".format(REQUIRED_ROLES_READ),
             operation_id="get_logset_version",
             responses={status.HTTP_404_NOT_FOUND: {"description": "LogSet not found"}},
             response_model_exclude_unset=True)
@@ -105,15 +108,15 @@ async def get_logset_version(
                                                             data_partition_id=ctx.partition_id)
     return from_record(logset, result_logset)
 
-
 @router.post('/logsets',
              response_model=CreateUpdateRecordsResponse,
              summary="Create or update the LogSets using wks:logSet:1.0.5 schema",
+             description="{}".format(REQUIRED_ROLES_WRITE),
              operation_id="post_logset",
              responses={
                  status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
 async def post_logset(
-        logsets: List[logset],
+        logsets: List[logset] = Body(..., example= load_schema_example("logSet_v2.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
     storage_client = await get_storage_record_service(ctx)

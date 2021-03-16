@@ -1,12 +1,13 @@
 # Log Recognition Service
 
-[**Introduction**](#introduction)
+- [Introduction](#introduction)
+- [About the service](#about-the-service) 
+- [How to use this service](#how-to-use-this-service)
+- [How to create a custom catalog](#how-to-create-a-custom-catalog)
 
-[**How to use this service**](#how-to-use-this-service)
+## Introduction <a name="introduction"></a>
 
-[**How to create a custom catalog**](#how-to-create-a-custom-catalog)
-
-# **Introduction** 
+[Log Recognition API specification](/solutions/wellboreddms/apis/osdu-log-recognition-service)
 
 Wellbore logs are acquired by different logging company with their
 convention of defining the log name. This leads to a log called by
@@ -18,8 +19,8 @@ classified in groups / Families based on the measurement. This would
 help in identifying the logs easily and optimize the time spent looking
 for the logs.
 
-*Example: The following curves coming from the field are all gamma ray.
-But have different names.*
+*Example: The following curves coming from the field are all gamma ray, 
+but they have different names.*
 
 ![](/sites/default/files/solution/wellboreDMS/gamma-ray-logviewer.png)
 
@@ -36,10 +37,10 @@ the Family attribute to the all the logs automatically using family
 assignment rules. This will ensure that the correct logs are picked up
 by the workflows for automatic processing.
 
-**About the service**
+## About the service <a name="about-the-service"></a>
 
 Log Recognition service has a huge ***default catalog*** of assignment
-rules. Which help in the identification of log family using the Log name
+rules, which helps in the identification of log family using the Log name
 / Mnemonics, Log unit and description. This catalog cannot be modified
 by user. But the users can create their own ***custom catalog*** with
 different set of assignment rules specific to their data partition. The
@@ -49,7 +50,7 @@ present in the default catalog or override some rules defined in the
 default catalog that are different for their company. Then, they could
 create their own customized catalog.
 
-# **How to use this service** 
+## How to use this service <a name="how-to-use-this-service"></a>
 
 Log Recognition service provides API's to assign Family attribute to
 logs using the Log name / Mnemonics, Description of the Log and log
@@ -117,7 +118,7 @@ The result will be
 }
 ```
 
-# **How to create a custom catalog** 
+## How to create a custom catalog <a name="how-to-create-a-custom-catalog"></a>
 
 The custom catalog consists of the following attributes.
 

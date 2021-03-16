@@ -1,0 +1,124 @@
+[
+    {
+        "acl": {
+            "viewers": [
+                "data.default.viewers@{{datapartitionid}}.{{domain}}.com"
+            ],
+            "owners": [
+                "data.default.owners@{{datapartitionid}}.{{domain}}.com"
+            ]
+        },
+        "data": {
+            "name": "myWellbore",
+            "airGap": {
+                "unitKey": "ft",
+                "value": 35.0
+            },
+            "country": "United States of America",
+            "dateCreated": "2013-03-22T11:16:03.123Z",
+            "dateModified": "2013-03-22T11:16:03.123Z",
+            "locationWGS84": {
+                "features": [{
+                        "geometry": {
+                            "coordinates": [
+                                [
+                                    -103.2380248,
+                                    46.8925081,
+                                    5301.0
+                                ],
+                                [
+                                    -103.2380248,
+                                    46.8925081,
+                                    2801.0
+                                ],
+                                [
+                                    -103.2378748,
+                                    46.892608100000004,
+                                    301.0
+                                ],
+                                [
+                                    -103.23742477750001,
+                                    46.89270811,
+                                    -2199.0
+                                ],
+                                [
+                                    -103.23667470999663,
+                                    46.892808120001,
+                                    -4699.0
+                                ],
+                                [
+                                    -103.2356245974865,
+                                    46.892908130002,
+                                    -7199.0
+                                ]
+                            ],
+                            "type": "LineString"
+                        },
+                        "properties": {
+                            "name": "Newton 2-31-Lat-1"
+                        },
+                        "type": "Feature"
+                    }
+                ],
+                "type": "FeatureCollection"
+            },
+            "propertyDictionary": {
+                "Country Name": "UNITED STATES",
+                "Date First Report": "11-12-1982",
+                "Date Last Activity": "06-03-2016",
+                "Field Name": "WILDCAT",
+                "Well Num": "34-14"
+            },
+            "relationships": {
+                "well": {
+                    "confidence": 1.0,
+                    "id": "{datapartitionid}:well:myWell",
+                    "name": "myWell"
+                }
+            },
+            "uwi": "33-089-00300-00-01",
+            "wellHeadGeographic": {
+                "crsKey": "geographic",
+                "elevationFromMsl": {
+                    "unitKey": "ft",
+                    "value": 2650.5
+                },
+                "latitude": 46.89249512931594,
+                "longitude": -103.23756979739804
+            },
+            "wellHeadProjected": {
+                "crsKey": "projected",
+                "elevationFromMsl": {
+                    "unitKey": "ft",
+                    "value": 2650.5
+                },
+                "x": 1315694.366039069,
+                "y": 458966.7531300551
+            },
+            "wellHeadWgs84": {
+                "latitude": 46.8925081,
+                "longitude": -103.2380248
+            },
+            "wellboreType": "bypass"
+        },
+        "meta": [{
+            "kind": "Unit",
+            "name": "Measure depth default unit",
+            "persistableReference": "persistableReference",
+            "propertyNames": ["symbol"],
+            "propertyValues": ["ft"] 
+        }],
+        "id": "{{datapartitionid}}:wellbore:myWellbore",
+        "kind": "{{datapartitionid}}:wks:wellbore:1.0.6",
+        "legal": {
+            "legaltags": [
+                "{{legaltags}}"
+            ],
+            "otherRelevantDataCountries": [
+                "FR",
+                "US"
+            ],
+            "status": "compliant"
+        }
+    }
+]

@@ -323,6 +323,10 @@ def get_or_create_ctx() -> Context:
         ctx.set_current()
     return ctx
 
+def load_schema_example(file_name: str):
+    with open('./app/model_examples/' + file_name, 'r') as json_file:
+        return json.load(json_file)  # this parse the content and returns a dictionnary
+
 
 class OpenApiResponse(NamedTuple):
     status: int

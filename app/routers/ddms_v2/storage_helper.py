@@ -17,8 +17,7 @@ import asyncio
 from functools import reduce
 from collections import namedtuple
 
-import starlette.status as status
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from odes_search.models import QueryRequest, CursorQueryResponse
 
 from app.routers.search import search_wrapper

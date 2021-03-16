@@ -65,7 +65,7 @@ class Kind(str, Enum):
     DateTime = 'DateTime'
 
 
-class MetaItem(DDMSBaseModel):
+class MetaItem(DDMSBaseModelWithExtra):
     kind: Kind = Field(
         ...,
         description='The kind of reference, unit, measurement, CRS or azimuth reference.',

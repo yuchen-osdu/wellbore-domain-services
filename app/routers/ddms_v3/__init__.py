@@ -11,10 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from app.clients import EntitlementsAuthServiceClient
-from app.utils import Context
-
-
-async def get_entitlements_auth_service(ctx: Context) -> EntitlementsAuthServiceClient:
-    return await ctx.app_injector.get(EntitlementsAuthServiceClient)

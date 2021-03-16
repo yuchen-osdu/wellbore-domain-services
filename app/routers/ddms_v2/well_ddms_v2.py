@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Query
-import starlette.status as status
-from starlette.responses import Response
+from fastapi import APIRouter, Depends, Query, Response, status, Body
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.clients.search_service_client import get_search_service
 from odes_storage.models import *
 from app.model.model_curated import *
+from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
+from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.model.entity_utils import Entity
 
@@ -36,7 +36,7 @@ router = APIRouter()
         *wks:well:1.0.2* returns the record directly</p> <p>If the well
         kind is different *wks:well:1.0.2* it will get the raw record and
         convert the results to match the *wks:well:1.0.2*. If convertion is
-        not possible returns an error **500**""",
+        not possible returns an error **500**. {}""".format(REQUIRED_ROLES_READ),
             operation_id="get_well",
             responses={status.HTTP_404_NOT_FOUND: {"description": "Well not found"}},
             response_model_exclude_unset=True)
@@ -51,6 +51,7 @@ async def get_well(
 
 @router.delete('/wells/{wellid}',
                summary="Delete the well. The API performs a logical deletion of the given record",
+               description="{}".format(REQUIRED_ROLES_WRITE),
                operation_id="del_well",
                status_code=status.HTTP_204_NO_CONTENT,
                response_class=Response,
@@ -90,6 +91,7 @@ async def del_well(
 @router.get('/wells/{wellid}/versions',
             response_model=RecordVersions,
             summary="Get all versions of the Well",
+            description="{}".format(REQUIRED_ROLES_READ),
             operation_id="get_well_versions",
             responses={status.HTTP_404_NOT_FOUND: {"description": "Well not found"}})
 async def get_well_versions(
@@ -107,7 +109,7 @@ async def get_well_versions(
         *wks:well:1.0.2* returns the record directly</p> <p>If the well
         kind is different *wks:well:1.0.2* it will get the raw record and
         convert the results to match the *wks:well:1.0.2*. If convertion is
-        not possible returns an error **500**""",
+        not possible returns an error **500**. {}""".format(REQUIRED_ROLES_READ),
             operation_id="get_well_version",
             responses={status.HTTP_404_NOT_FOUND: {"description": "Well not found"}},
             response_model_exclude_unset=True)
@@ -122,15 +124,15 @@ async def get_well_version(
                                                           data_partition_id=ctx.partition_id)
     return from_record(well, well_record)
 
-
 @router.post('/wells',
              response_model=CreateUpdateRecordsResponse,
              summary="Create or update the Wells using wks:well:1.0.2 schema",
+             description="{}".format(REQUIRED_ROLES_WRITE),
              operation_id="post_well",
              responses={
                  status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
 async def post_well(
-        wells: List[well],
+        wells: List[well] = Body(..., example= load_schema_example("well_v2.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
     storage_client = await get_storage_record_service(ctx)
