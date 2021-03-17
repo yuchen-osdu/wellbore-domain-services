@@ -17,6 +17,7 @@ from app.conf import *
 from .app_injector import AppInjector, AppInjectorModule, WithLifeTime
 
 from app.injector.az_injector import AzureInjector
+from app.injector.aws_injector import AwsInjector
 from app.injector.gcp_injector import GCPInjector
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
@@ -61,6 +62,9 @@ class MainInjector(AppInjectorModule):
             logger.info('using ibm injector')
             IBMInjector().configure(app_injector)
 
+        if Config.cloud_provider.value == 'aws':
+            logger.info('using aws injector')
+            AwsInjector().configure(app_injector)
         # run overriders
         self.overriders(app_injector)
 
