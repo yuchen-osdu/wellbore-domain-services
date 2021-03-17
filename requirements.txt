@@ -30,6 +30,3 @@ osdu-core-lib-python-gcp>=0.3.0, <0.4
 osdu-core-lib-python-azure~=0.2.0
 osdu-core-lib-python>=0.4.0, <0.5
 
---extra-index-url \
-https://community.opengroup.org/api/v4/projects/431/packages/pypi/simple/
-osdu-core-lib-python-ibm>=0.0.1, <0.1
