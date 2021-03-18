@@ -23,6 +23,12 @@ INTEGRATION_TEST_OUTPUT_DIR=${INTEGRATION_TEST_OUTPUT_DIR:-$OUTPUT_DIR}/testing
 
 rm -rf "$INTEGRATION_TEST_OUTPUT_DIR"
 mkdir -p "$INTEGRATION_TEST_OUTPUT_DIR"
+
+if [ ! -e requirements_dev.txt ]; then
+    echo "File requirements_dev.txt does not exist!"
+else
+    cp requirements_dev.txt tests/aws-test/build-aws/requirements.txt
+fi
 cp  -r tests/aws-test "${INTEGRATION_TEST_OUTPUT_DIR}"
 cp  -r tests/integration "${INTEGRATION_TEST_OUTPUT_DIR}"
 cp  -r schema/indexation "${INTEGRATION_TEST_OUTPUT_DIR}"
