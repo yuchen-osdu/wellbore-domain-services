@@ -43,7 +43,6 @@ def gcp_config_fixture(monkeypatch):
 
     environment_dict = os.environ.copy()
     environment_dict[ConfigurationContainer.cloud_provider.key] = provider_name
-    environment_dict['SERVICE_HOST_ENTITLEMENTS'] = 'https://test-endpoint/api/entitlements'
     environment_dict['SERVICE_HOST_STORAGE'] = 'https://test-endpoint/api/storage'
     environment_dict['SERVICE_HOST_SEARCH'] = 'https://test-endpoint/api/search'
 
@@ -64,7 +63,6 @@ def azure_config_fixture(monkeypatch):
     environment_dict = os.environ.copy()
     environment_dict[ConfigurationContainer.cloud_provider.key] = provider_name
     environment_dict['AZ_AI_INSTRUMENTATION_KEY'] = 'ffffffff-1111-2222-aaaa-ffffffffffff'
-    environment_dict['SERVICE_HOST_ENTITLEMENTS'] = 'https://test-endpoint/api/entitlements'
     environment_dict['SERVICE_HOST_STORAGE'] = 'https://test-endpoint/api/storage'
     environment_dict['SERVICE_HOST_SEARCH'] = 'https://test-endpoint/api/search'
     environment_dict['USE_PARTITION_SERVICE'] = 'disabled'

@@ -35,6 +35,7 @@ stages:
   - ${{ each environment in provider.environments }}:
     - stage: 'Deploy_${{ provider.name }}_R3MVP_${{ environment.name }}'
       variables:
+      - group: '${{ provider.varGroupPrefix }}${{ provider.name }} Target Env Secrets - ${{ environment.name }}'
       - group: '${{ provider.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
       - name: env # This variable is used as input of the helm template
         value: ${{ environment.name }}

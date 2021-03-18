@@ -17,7 +17,7 @@ info:
   title: Wellbore DDMS OSDU
   version: '0.2'
 servers:
-  - url: https://api.example.com/osdu/wdms/wellbore/v2
+  - url: https://api.evq.csp.slb.com/osdu/wdms/wellbore/v2
 security:
 - bearer: []
 - appkey: []
@@ -59,6 +59,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -103,6 +104,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -151,6 +153,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -187,6 +190,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -239,6 +243,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -273,6 +278,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -328,6 +334,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -376,6 +383,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -412,6 +420,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -464,6 +473,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -498,6 +508,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -548,6 +559,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -596,6 +608,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -632,6 +645,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -679,6 +693,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -699,52 +714,12 @@ paths:
       security:
         - bearer: []
         - appkey: []
-  '/logsets/{logsetid}/harmonize':
-    post:
-      tags:
-        - Logset
-      summary: 'Create or update the LogSets using wks:logSet:1.0.5 schema'
-      operationId: harmonize_logset
-      parameters:
-        - required: true
-          schema:
-            title: Logsetid
-            type: string
-          name: logsetid
-          in: path
-        - description: identifier of the data partition to query
-          required: false
-          schema:
-            title: data partition id
-            minLength: 1
-            type: string
-            description: identifier of the data partition to query
-          name: data-partition-id
-          in: header
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/logset'
-        '404':
-          description: logset not found
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-      security:
-        - bearer: []
-        - appkey: []
   /logsets:
     post:
       tags:
         - Logset
       summary: 'Create or update the LogSets using wks:logSet:1.0.5 schema'
-      operationId: put_logset
+      operationId: post_logset
       parameters:
         - description: identifier of the data partition to query
           required: false
@@ -753,6 +728,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -803,6 +779,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -835,15 +812,6 @@ paths:
             type: string
           name: trajectoryid
           in: path
-        - description: Whether or not to delete records children
-          required: false
-          schema:
-            title: Recursive
-            type: boolean
-            description: Whether or not to delete records children
-            default: false
-          name: recursive
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -851,6 +819,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -887,6 +856,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -933,6 +903,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -967,6 +938,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -1020,12 +992,13 @@ paths:
             description: 'List of channels to get. If not provided, return all channels.'
           name: channels
           in: query
-        - description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
+        - description: 'define format when using JSON data is used. Value can be split, index, columns, records'
           required: false
           schema:
             title: Orient
+            pattern: split|index|columns|records
             type: string
-            description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
+            description: 'define format when using JSON data is used. Value can be split, index, columns, records'
             default: split
           name: orient
           in: query
@@ -1036,6 +1009,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1043,7 +1017,7 @@ paths:
           description: |-
             Get trajectory data of the given channels.
             It uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
-             Here're examples for data with 5 rows for channels MD, X, Y with different _orient_:
+             Here're examples for data with 5 rows for channels MD, X, Y with different _orient_: 
             * split:  <br/>`{"columns":["MD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;
             * index:  <br/>`{"0":{"MD":0.0,"X":1001,"Y":2001},"1":{"MD":0.5,"X":1002,"Y":2002},"2":{"MD":1.0,"X":1003,"Y":2003},"3":{"MD":1.5,"X":1004,"Y":2004},"4":{"MD":2.0,"X":1005,"Y":2005}}`<br/>&nbsp;
             * columns:  <br/>`{"MD":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"Y":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
@@ -1054,6 +1028,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/GetLogDataResponse'
               example: '{"columns":["MD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}'
+        '204':
+          description: No bulkURI
         '400':
           description: unknown channels
         '404':
@@ -1064,6 +1040,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        '500':
+          description: Record has an invalid bulkURI
       security:
         - bearer: []
         - appkey: []
@@ -1080,12 +1058,13 @@ paths:
             type: string
           name: trajectoryid
           in: path
-        - description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
+        - description: 'define format when using JSON data is used. Value can be split, index, columns, records'
           required: false
           schema:
             title: Orient
+            pattern: split|index|columns|records
             type: string
-            description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
+            description: 'define format when using JSON data is used. Value can be split, index, columns, records'
             default: split
           name: orient
           in: query
@@ -1096,6 +1075,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1116,6 +1096,92 @@ paths:
       security:
         - bearer: []
         - appkey: []
+      requestBody:
+        description: |-
+          Write trajectory bulk data. Each column corresponds to a channel.
+          It uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
+           Here're examples for data with 5 rows and 3 channels (MD, X, Y) with different _orient_: 
+          * split: <br/>`{"columns":["MD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;
+          * index: <br/>`{"0":{"MD":0.0,"X":1001,"Y":2001},"1":{"MD":0.5,"X":1002,"Y":2002},"2":{"MD":1.0,"X":1003,"Y":2003},"3":{"MD":1.5,"X":1004,"Y":2004},"4":{"MD":2.0,"X":1005,"Y":2005}}`<br/>&nbsp;
+          * columns: <br/>`{"MD":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"Y":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
+          * records: <br/>`[{"MD":0.0,"X":1001,"Y":2001},{"MD":0.5,"X":1002,"Y":2002},{"MD":1.0,"X":1003,"Y":2003},{"MD":1.5,"X":1004,"Y":2004},{"MD":2.0,"X":1005,"Y":2005}]`<br/>&nbsp;
+        required: true
+        content:
+          application/json:
+            schema:
+              example: '{"columns":["MD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}'
+              oneOf:
+                - title: SplitFormat
+                  type: object
+                  properties:
+                    data:
+                      title: Data
+                      anyOf:
+                        - type: array
+                          items:
+                            anyOf:
+                              - type: string
+                              - type: integer
+                              - type: number
+                        - type: array
+                          items:
+                            type: array
+                            items:
+                              anyOf:
+                                - type: string
+                                - type: integer
+                                - type: number
+                    columns:
+                      title: Columns
+                      type: array
+                      items:
+                        anyOf:
+                          - type: string
+                          - type: integer
+                          - type: number
+                    index:
+                      title: Index
+                      type: array
+                      items:
+                        anyOf:
+                          - type: string
+                          - type: integer
+                          - type: number
+                  required:
+                    - data
+                - title: IndexFormat
+                  type: object
+                  properties:
+                    TODO:
+                      title: Todo
+                      type: string
+                  required:
+                    - TODO
+                - title: ColumnFormat
+                  type: object
+                  properties:
+                    TODO:
+                      title: Todo
+                      type: string
+                  required:
+                    - TODO
+                - title: RecordsFormat
+                  type: object
+                  properties:
+                    TODO:
+                      title: Todo
+                      type: string
+                  required:
+                    - TODO
+                - title: ValuesFormat
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      anyOf:
+                        - type: string
+                        - type: integer
+                        - type: number
   '/logs/{logid}':
     get:
       tags:
@@ -1143,6 +1209,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1182,6 +1249,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1212,6 +1280,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -1261,6 +1330,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1307,6 +1377,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1345,6 +1416,7 @@ paths:
           required: false
           schema:
             title: Orient
+            pattern: split|index|columns|records|values
             type: string
             description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
             default: split
@@ -1365,6 +1437,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1372,7 +1445,7 @@ paths:
           description: |-
             Get log bulk data in format in the given _orient_ value.
             It uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
-             Here're examples for data with 5 rows and 3 columns with different _orient_:
+             Here're examples for data with 5 rows and 3 columns with different _orient_: 
             * split:  <br/>`{"columns":["Ref","col_100X","col_200X"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;
             * index:  <br/>`{"0":{"Ref":0.0,"col_100X":1001,"col_200X":2001},"1":{"Ref":0.5,"col_100X":1002,"col_200X":2002},"2":{"Ref":1.0,"col_100X":1003,"col_200X":2003},"3":{"Ref":1.5,"col_100X":1004,"col_200X":2004},"4":{"Ref":2.0,"col_100X":1005,"col_200X":2005}}`<br/>&nbsp;
             * columns:  <br/>`{"Ref":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"col_100X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"col_200X":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
@@ -1411,6 +1484,7 @@ paths:
           required: false
           schema:
             title: Orient
+            pattern: split|index|columns|records|values
             type: string
             description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
             default: split
@@ -1431,6 +1505,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1455,7 +1530,7 @@ paths:
         description: |-
           Write log bulk data.
           It uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
-           Here're examples for data with 5 rows and 3 columns with different _orient_:
+           Here're examples for data with 5 rows and 3 columns with different _orient_: 
           * split:  <br/>`{"columns":["Ref","col_100X","col_200X"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;
           * index:  <br/>`{"0":{"Ref":0.0,"col_100X":1001,"col_200X":2001},"1":{"Ref":0.5,"col_100X":1002,"col_200X":2002},"2":{"Ref":1.0,"col_100X":1003,"col_200X":2003},"3":{"Ref":1.5,"col_100X":1004,"col_200X":2004},"4":{"Ref":2.0,"col_100X":1005,"col_200X":2005}}`<br/>&nbsp;
           * columns:  <br/>`{"Ref":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"col_100X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"col_200X":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
@@ -1582,6 +1657,7 @@ paths:
           required: false
           schema:
             title: Orient
+            pattern: split|index|columns|records|values
             type: string
             description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
             default: split
@@ -1602,6 +1678,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -1659,6 +1736,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -1668,6 +1746,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetStatisticResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - bearer: []
+        - appkey: []
+  '/logs/{logid}/versions/{version}/data':
+    get:
+      tags:
+        - Log
+      summary: Returns all data within the specified filters. Strongly consistent.
+      description: return full bulk data
+      operationId: get_log_data_by_version
+      parameters:
+        - required: true
+          schema:
+            title: Logid
+            type: string
+          name: logid
+          in: path
+        - required: true
+          schema:
+            title: Version
+            type: integer
+          name: version
+          in: path
+        - description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
+          required: false
+          schema:
+            title: Orient
+            pattern: split|index|columns|records|values
+            type: string
+            description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
+            default: split
+          name: orient
+          in: query
+        - description: 'The json path to the bulk reference (see https://goessner.net/articles/JsonPath/). Required for non wks:log.'
+          required: false
+          schema:
+            title: Bulk-Path
+            type: string
+            description: 'The json path to the bulk reference (see https://goessner.net/articles/JsonPath/). Required for non wks:log.'
+          name: bulk-path
+          in: query
+        - description: identifier of the data partition to query
+          required: false
+          schema:
+            title: data partition id
+            minLength: 1
+            type: string
+            description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
+          name: data-partition-id
+          in: header
+      responses:
+        '200':
+          description: |-
+            Get log bulk data in format in the given _orient_ value.
+            It uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
+             Here're examples for data with 5 rows and 3 columns with different _orient_: 
+            * split:  <br/>`{"columns":["Ref","col_100X","col_200X"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;
+            * index:  <br/>`{"0":{"Ref":0.0,"col_100X":1001,"col_200X":2001},"1":{"Ref":0.5,"col_100X":1002,"col_200X":2002},"2":{"Ref":1.0,"col_100X":1003,"col_200X":2003},"3":{"Ref":1.5,"col_100X":1004,"col_200X":2004},"4":{"Ref":2.0,"col_100X":1005,"col_200X":2005}}`<br/>&nbsp;
+            * columns:  <br/>`{"Ref":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"col_100X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"col_200X":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
+            * records:  <br/>`[{"Ref":0.0,"col_100X":1001,"col_200X":2001},{"Ref":0.5,"col_100X":1002,"col_200X":2002},{"Ref":1.0,"col_100X":1003,"col_200X":2003},{"Ref":1.5,"col_100X":1004,"col_200X":2004},{"Ref":2.0,"col_100X":1005,"col_200X":2005}]`<br/>&nbsp;
+            * values:  <br/>`[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]`<br/>&nbsp;
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLogDataResponse'
+              example: '{"columns":["Ref","col_100X","col_200X"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}'
+        '404':
+          description: log not found
         '422':
           description: Validation Error
           content:
@@ -1721,6 +1874,7 @@ paths:
           required: false
           schema:
             title: Orient
+            pattern: split|index|columns|records|values
             type: string
             description: 'define format when using JSON data is used. Value can be split, index, columns, records, values'
             default: split
@@ -1741,6 +1895,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       responses:
@@ -2153,8 +2308,7 @@ components:
       title: LinkList
       type: object
       properties: {}
-      additionalProperties: false
-      description: The base model forbids fields which are not declared initially in the pydantic model
+      description: Used for data model allows extra fields which are not declared initially in the pydantic model
     MetaItem:
       title: MetaItem
       required:
@@ -2980,8 +3134,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/ToOneRelationship'
           description: The wellbore to which this log belongs. This relationship is the most important; only the wellbore can provide the unique context for the measured depth index.
-      additionalProperties: false
-      description: The base model forbids fields which are not declared initially in the pydantic model
+      description: Used for data model allows extra fields which are not declared initially in the pydantic model
     logSetData:
       title: logSetData
       type: object
@@ -3188,8 +3341,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/ToOneRelationship'
           description: The wellboreSection to which this logSet belongs.
-      additionalProperties: false
-      description: The base model forbids fields which are not declared initially in the pydantic model
+      description: Used for data model allows extra fields which are not declared initially in the pydantic model
     namedProperty:
       title: namedProperty
       type: object
@@ -3492,8 +3644,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/ToOneRelationship'
           description: The wellbore to which this trajectory belongs.
-      additionalProperties: false
-      description: The base model forbids fields which are not declared initially in the pydantic model
+      description: Used for data model allows extra fields which are not declared initially in the pydantic model
     well:
       title: well
       type: object
@@ -4023,8 +4174,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/ToOneRelationship'
           description: The well to which this wellbore belongs.
-      additionalProperties: false
-      description: The base model forbids fields which are not declared initially in the pydantic model
+      description: Used for data model allows extra fields which are not declared initially in the pydantic model
     wellrelationships:
       title: wellrelationships
       type: object
@@ -4034,8 +4184,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/ToOneRelationship'
           description: The asset this well belongs to.
-      additionalProperties: false
-      description: The base model forbids fields which are not declared initially in the pydantic model
+      description: Used for data model allows extra fields which are not declared initially in the pydantic model
     wgs84Position:
       title: wgs84Position
       required:

@@ -17,7 +17,7 @@ info:
   title: Wellbore DDMS Search OSDU
   version: '0.2'
 servers:
-  - url: https://api.example.com/osdu/wdms/search/v2
+  - url: https://api.evq.csp.slb.com/osdu/wdms/search/v2
 security:
 - bearer: []
 - appkey: []
@@ -36,6 +36,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -64,7 +65,7 @@ paths:
       tags:
         - Search
       summary: Query with cursor
-      operationId: query_ddms_query_with_cursor_post
+      operationId: query_with_cursor_ddms_query_with_cursor_post
       parameters:
         - description: identifier of the data partition to query
           required: false
@@ -73,6 +74,7 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
@@ -104,14 +106,8 @@ paths:
       description: |-
         Get all Wellbores object.  <p>The wellbore kind is
                 *:wks:wellbore:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbores_post
+      operationId: query_wellbores_ddms_query_wellbores_post
       parameters:
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -119,8 +115,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -145,7 +147,7 @@ paths:
         Get all Wellbores object in a specific area. <p>The specific area will be define by a circle
                     based on its center coordinates (lat, lon) and radius (meters) </p>
                     <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbores_bydistance_post
+      operationId: query_wellbores_bydistance_ddms_query_wellbores_bydistance_post
       parameters:
         - required: true
           schema:
@@ -165,12 +167,6 @@ paths:
             type: integer
           name: distance
           in: query
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -178,8 +174,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -204,7 +206,7 @@ paths:
         Get all Wellbores object in a specific area. <p>The specific area will be define by a square
                     based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>
                     <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbores_byboundingbox_post
+      operationId: query_wellbores_byboundingbox_ddms_query_wellbores_byboundingbox_post
       parameters:
         - required: true
           schema:
@@ -230,12 +232,6 @@ paths:
             type: number
           name: longitude_bottom_right
           in: query
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -243,8 +239,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -266,17 +268,11 @@ paths:
         - Search
       summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
       description: |-
-        Get all Wellbores object in a specific area.  <p>The specific area will be define by a
+        Get all Wellbores object in a specific area.  <p>The specific area will be define by a 
                     polygon based on each of its coordinates (lat, lon) with a minimum of three</p>
                     <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbores_bygeopolygon_post
+      operationId: query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post
       parameters:
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -284,16 +280,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
         content:
           application/json:
             schema:
-              title: Points
-              type: array
-              items:
-                $ref: '#/components/schemas/Point'
+              $ref: '#/components/schemas/Body_query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post'
         required: true
       responses:
         '200':
@@ -310,7 +304,7 @@ paths:
       security:
         - bearer: []
         - appkey: []
-  '/query/wellbore/{wellbore_id}/logsets':
+  '/query/wellbore/{wellboreId}/logsets':
     post:
       tags:
         - Search
@@ -319,20 +313,14 @@ paths:
         Get all LogSets object using its relationship Wellbore ID.  <p>All LogSets linked to this
                     specific ID will be returned</p>
                     <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbore__wellbore_id__logsets_post
+      operationId: query_logsets_bywellbore_ddms_query_wellbore__wellboreId__logsets_post
       parameters:
         - required: true
           schema:
-            title: Wellbore Id
+            title: Wellboreid
             type: string
-          name: wellbore_id
+          name: wellboreId
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -340,8 +328,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -357,7 +351,7 @@ paths:
       security:
         - bearer: []
         - appkey: []
-  '/query/wellbores/{wellbore_attribute}/logsets':
+  '/query/wellbores/{wellboreAttribute}/logsets':
     post:
       tags:
         - Search
@@ -366,20 +360,14 @@ paths:
         Get all LogSets object using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores
                     with this specific attribute will be returned</p>
                     <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbores__wellbore_attribute__logsets_post
+      operationId: query_logsets_bywellboreattribute_ddms_query_wellbores__wellboreAttribute__logsets_post
       parameters:
         - required: true
           schema:
-            title: Wellbore Attribute
+            title: Wellboreattribute
             type: string
-          name: wellbore_attribute
+          name: wellboreAttribute
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -387,8 +375,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -412,14 +406,8 @@ paths:
       description: |-
         Get all Logs object.  <p>The Logs kind is
                 *:wks:log:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_logs_post
+      operationId: query_logs_ddms_query_logs_post
       parameters:
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -427,8 +415,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -444,7 +438,7 @@ paths:
       security:
         - bearer: []
         - appkey: []
-  '/query/wellbore/{wellbore_id}/logs':
+  '/query/wellbore/{wellboreId}/logs':
     post:
       tags:
         - Search
@@ -453,20 +447,14 @@ paths:
         Get all Logs object using its relationship Wellbore ID.  <p>All Logs linked to this
                     specific ID will be returned</p>
                     <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbore__wellbore_id__logs_post
+      operationId: query_logs_bywellbore_ddms_query_wellbore__wellboreId__logs_post
       parameters:
         - required: true
           schema:
-            title: Wellbore Id
+            title: Wellboreid
             type: string
-          name: wellbore_id
+          name: wellboreId
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -474,8 +462,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -491,7 +485,7 @@ paths:
       security:
         - bearer: []
         - appkey: []
-  '/query/wellbores/{wellbore_attribute}/logs':
+  '/query/wellbores/{wellboreAttribute}/logs':
     post:
       tags:
         - Search
@@ -500,20 +494,14 @@ paths:
         Get all Logs object using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores
                     with this specific attribute will be returned</p>
                     <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbores__wellbore_attribute__logs_post
+      operationId: query_logs_bywellboreattribute_ddms_query_wellbores__wellboreAttribute__logs_post
       parameters:
         - required: true
           schema:
-            title: Wellbore Attribute
+            title: Wellboreattribute
             type: string
-          name: wellbore_attribute
+          name: wellboreAttribute
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -521,8 +509,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -538,7 +532,7 @@ paths:
       security:
         - bearer: []
         - appkey: []
-  '/query/logset/{logset_id}/logs':
+  '/query/logset/{logsetId}/logs':
     post:
       tags:
         - Search
@@ -547,20 +541,14 @@ paths:
         Get all Logs object using its relationship Logset ID.  <p>All Logs linked to this
                     specific ID will be returned</p>
                     <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_logset__logset_id__logs_post
+      operationId: query_logs_bylogset_ddms_query_logset__logsetId__logs_post
       parameters:
         - required: true
           schema:
-            title: Logset Id
+            title: Logsetid
             type: string
-          name: logset_id
+          name: logsetId
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -568,8 +556,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -585,7 +579,7 @@ paths:
       security:
         - bearer: []
         - appkey: []
-  '/query/logsets/{logset_attribute}/logs':
+  '/query/logsets/{logsetAttribute}/logs':
     post:
       tags:
         - Search
@@ -594,20 +588,14 @@ paths:
         Get all Logs object using a specific attribute of LogSets.  <p>All Logs linked to LogSets
                     with this specific attribute will be returned</p>
                     <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_logsets__logset_attribute__logs_post
+      operationId: query_logs_bylogsetattribute_ddms_query_logsets__logsetAttribute__logs_post
       parameters:
         - required: true
           schema:
-            title: Logset Attribute
+            title: Logsetattribute
             type: string
-          name: logset_attribute
+          name: logsetAttribute
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -615,8 +603,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -632,7 +626,7 @@ paths:
       security:
         - bearer: []
         - appkey: []
-  '/query/wellbore/{wellbore_id}/markers':
+  '/query/wellbore/{wellboreId}/markers':
     post:
       tags:
         - Search
@@ -641,20 +635,14 @@ paths:
         Get all Markers object using its relationship Wellbore ID.  <p>All Markers linked to this
                     specific ID will be returned</p>
                     <p>The Marker kind is *:wks:marker:* returns all records directly based on existing schemas</p>
-      operationId: query_ddms_query_wellbore__wellbore_id__markers_post
+      operationId: query_markers_bywellbore_ddms_query_wellbore__wellboreId__markers_post
       parameters:
         - required: true
           schema:
-            title: Wellbore Id
+            title: Wellboreid
             type: string
-          name: wellbore_id
+          name: wellboreId
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -662,8 +650,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -682,19 +676,13 @@ paths:
   /fastquery/wellbores:
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: Query with cursor
       description: |-
         Get all Wellbores IDs object.  <p>The wellbore kind is
                 *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbores_post
+      operationId: fastquery_wellbores_ddms_fastquery_wellbores_post
       parameters:
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -702,8 +690,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -722,13 +716,13 @@ paths:
   /fastquery/wellbores/bydistance:
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
       description: |-
         Get all Wellbores IDs IDs objects in a specific area. <p>The specific area will be define by a circle
                     based on its center coordinates (lat, lon) and radius (meters) </p>
                     <p>The wellbore kind is *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbores_bydistance_post
+      operationId: fastquery_wellbores_bydistance_ddms_fastquery_wellbores_bydistance_post
       parameters:
         - required: true
           schema:
@@ -748,12 +742,6 @@ paths:
             type: integer
           name: distance
           in: query
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -761,8 +749,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -781,13 +775,13 @@ paths:
   /fastquery/wellbores/byboundingbox:
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
       description: |-
         Get all Wellbores IDs objects in a specific area. <p>The specific area will be define by a square
                     based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>
                     <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbores_byboundingbox_post
+      operationId: fastquery_wellbores_byboundingbox_ddms_fastquery_wellbores_byboundingbox_post
       parameters:
         - required: true
           schema:
@@ -813,12 +807,6 @@ paths:
             type: number
           name: longitude_bottom_right
           in: query
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -826,8 +814,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -846,20 +840,14 @@ paths:
   /fastquery/wellbores/bygeopolygon:
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, CRS format: data.wellHeadWgs84'
       description: |-
-        Get all Wellbores IDs objects in a specific area.  <p>The specific area will be define by a
+        Get all Wellbores IDs objects in a specific area.  <p>The specific area will be define by a 
                     polygon based on each of its coordinates (lat, lon) with a minimum of three</p>
                     <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbores_bygeopolygon_post
+      operationId: fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post
       parameters:
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -867,16 +855,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
       requestBody:
         content:
           application/json:
             schema:
-              title: Points
-              type: array
-              items:
-                $ref: '#/components/schemas/Point'
+              $ref: '#/components/schemas/Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post'
         required: true
       responses:
         '200':
@@ -896,13 +882,13 @@ paths:
   '/fastquery/wellbore/{wellbore_id}/logsets':
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, search logSets IDs by wellbore ID'
       description: |-
         Get all LogSets IDs objects using its relationship Wellbore ID.  <p>All LogSets linked to this
                     specific ID will be returned</p>
                     <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbore__wellbore_id__logsets_post
+      operationId: fastquery_logsets_bywellbore_ddms_fastquery_wellbore__wellbore_id__logsets_post
       parameters:
         - required: true
           schema:
@@ -910,12 +896,6 @@ paths:
             type: string
           name: wellbore_id
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -923,8 +903,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -943,13 +929,13 @@ paths:
   '/fastquery/wellbores/{wellbore_attribute}/logsets':
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, search logSets IDs by wellbore attribute'
       description: |-
         Get all LogSets IDs objects using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores
                     with this specific attribute will be returned</p>
                     <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbores__wellbore_attribute__logsets_post
+      operationId: fastquery_logsets_bywellboreattribute_ddms_fastquery_wellbores__wellbore_attribute__logsets_post
       parameters:
         - required: true
           schema:
@@ -957,12 +943,6 @@ paths:
             type: string
           name: wellbore_attribute
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -970,8 +950,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -990,19 +976,13 @@ paths:
   /fastquery/logs:
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, gets logs'
       description: |-
         Get all Logs object.  <p>The Logs kind is
                 *:wks:log:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_logs_post
+      operationId: fastquery_logs_ddms_fastquery_logs_post
       parameters:
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -1010,8 +990,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -1030,13 +1016,13 @@ paths:
   '/fastquery/wellbore/{wellbore_id}/logs':
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, search logs IDs by wellbore ID'
       description: |-
         Get all Logs IDs objects using its relationship Wellbore ID.  <p>All Logs linked to this
                     specific ID will be returned</p>
                     <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbore__wellbore_id__logs_post
+      operationId: fastquery_logs_bywellbore_ddms_fastquery_wellbore__wellbore_id__logs_post
       parameters:
         - required: true
           schema:
@@ -1044,12 +1030,6 @@ paths:
             type: string
           name: wellbore_id
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -1057,8 +1037,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -1077,13 +1063,13 @@ paths:
   '/fastquery/wellbores/{wellbore_attribute}/logs':
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, search logs IDs by wellbore attribute'
       description: |-
         Get all Logs IDs objects using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores
                     with this specific attribute will be returned</p>
                     <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbores__wellbore_attribute__logs_post
+      operationId: fastquery_logs_bywellboreattribute_ddms_fastquery_wellbores__wellbore_attribute__logs_post
       parameters:
         - required: true
           schema:
@@ -1091,12 +1077,6 @@ paths:
             type: string
           name: wellbore_attribute
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -1104,8 +1084,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -1124,13 +1110,13 @@ paths:
   '/fastquery/logset/{logset_id}/logs':
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, search logs IDs by logSet ID'
       description: |-
         Get all Logs IDs objects using its relationship Logset ID.  <p>All Logs linked to this
                     specific ID will be returned</p>
                     <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_logset__logset_id__logs_post
+      operationId: fastquery_logs_bylogset_ddms_fastquery_logset__logset_id__logs_post
       parameters:
         - required: true
           schema:
@@ -1138,12 +1124,6 @@ paths:
             type: string
           name: logset_id
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -1151,8 +1131,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -1171,13 +1157,13 @@ paths:
   '/fastquery/logsets/{logset_attribute}/logs':
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, search logs IDs by logSet attribute'
       description: |-
         Get all Logs IDs objects using a specific attribute of LogSets.  <p>All Logs linked to LogSets
                     with this specific attribute will be returned</p>
                     <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_logsets__logset_attribute__logs_post
+      operationId: fastquery_logs_bylogsetattribute_ddms_fastquery_logsets__logset_attribute__logs_post
       parameters:
         - required: true
           schema:
@@ -1185,12 +1171,6 @@ paths:
             type: string
           name: logset_attribute
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -1198,8 +1178,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -1218,13 +1204,13 @@ paths:
   '/fastquery/wellbore/{wellbore_id}/markers':
     post:
       tags:
-        - Fast search
+        - fast-search
       summary: 'Query with cursor, search markers IDs by wellbore ID'
       description: |-
         Get all Markers IDs objects using its relationship Wellbore ID.  <p>All Markers linked to this
                     specific ID will be returned</p>
                     <p>The Marker kind is *:wks:marker:* returns all records IDs directly based on existing schemas</p>
-      operationId: query_ddms_fastquery_wellbore__wellbore_id__markers_post
+      operationId: fastquery_markers_bywellbore_ddms_fastquery_wellbore__wellbore_id__markers_post
       parameters:
         - required: true
           schema:
@@ -1232,12 +1218,6 @@ paths:
             type: string
           name: wellbore_id
           in: path
-        - required: false
-          schema:
-            title: Query
-            type: string
-          name: query
-          in: query
         - description: identifier of the data partition to query
           required: false
           schema:
@@ -1245,8 +1225,14 @@ paths:
             minLength: 1
             type: string
             description: identifier of the data partition to query
+            default: slb-osdu-dev-sis-internal-hq
           name: data-partition-id
           in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
       responses:
         '200':
           description: Successful Response
@@ -1264,6 +1250,32 @@ paths:
         - appkey: []
 components:
   schemas:
+    Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post:
+      title: Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post
+      required:
+        - points
+      type: object
+      properties:
+        points:
+          title: Points
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+        query:
+          $ref: '#/components/schemas/SearchQuery'
+    Body_query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post:
+      title: Body_query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post
+      required:
+        - points
+      type: object
+      properties:
+        points:
+          title: Points
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+        query:
+          $ref: '#/components/schemas/SearchQuery'
     ByBoundingBox:
       title: ByBoundingBox
       required:
@@ -1344,6 +1356,13 @@ components:
         offset:
           title: Offset
           type: integer
+    SearchQuery:
+      title: SearchQuery
+      type: object
+      properties:
+        query:
+          title: Query
+          type: string
     SortQuery:
       title: SortQuery
       type: object

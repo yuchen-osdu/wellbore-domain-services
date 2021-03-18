@@ -34,6 +34,7 @@ from app.routers.ddms_v2 import (
     log_ddms_v2,
     well_ddms_v2
 )
+from app.routers.ddms_v3 import wellbore_ddms_v3, well_ddms_v3, welllog_ddms_v3
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.logrecognition import log_recognition
@@ -126,6 +127,20 @@ for ddms_v2_routes_group in ddms_v2_routes_groups:
     wdms_app.include_router(ddms_v2_routes_group[0].router,
                             prefix=wellbore_api_group_prefix,
                             tags=[ddms_v2_routes_group[1]],
+                            dependencies=[
+                                Depends(require_opendes_authorized_user, use_cache=False),
+                                Depends(require_data_partition_id, use_cache=False)
+                            ])
+
+ddms_v3_routes_groups = [
+    (wellbore_ddms_v3, "Wellbore"),
+    (well_ddms_v3, "Well"),
+    (welllog_ddms_v3, "WellLog"),
+]
+for ddms_v3_routes_group in ddms_v3_routes_groups:
+    wdms_app.include_router(ddms_v3_routes_group[0].router,
+                            prefix='/ddms/v3',
+                            tags=[ddms_v3_routes_group[1]],
                             dependencies=[
                                 Depends(require_opendes_authorized_user, use_cache=False),
                                 Depends(require_data_partition_id, use_cache=False)

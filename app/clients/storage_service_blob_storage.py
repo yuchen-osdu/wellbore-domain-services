@@ -14,9 +14,9 @@
 
 from asyncio import iscoroutinefunction, gather
 import uuid
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from osdu.core.api.storage.tenant import Tenant
-from starlette import status
+
 from odes_storage.models import *
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 

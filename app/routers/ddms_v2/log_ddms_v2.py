@@ -18,8 +18,7 @@ from typing import List, Optional
 
 import numpy as np
 import pandas as pd
-import starlette
-import starlette.status as status
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -28,6 +27,9 @@ from fastapi import (
     Query,
     Request,
     UploadFile,
+    Response,
+    status,
+    Body
 )
 from odes_storage.models import (
     CreateUpdateRecordsResponse,
@@ -35,16 +37,16 @@ from odes_storage.models import (
     RecordVersions,
 )
 from pydantic import BaseModel, Field
-from starlette.responses import Response
 
 from app.bulk_persistence import DataframeSerializer, JSONOrient, MimeTypes, get_dataframe
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.log_bulk import LogBulkHelper
 from app.model.model_curated import log
 from app.model.model_utils import from_record, to_record
+from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v2.persistence import Persistence
 from app.routers.ddms_v2.common_parameters import json_orient_parameter
-from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx
+from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx, load_schema_example
 
 
 router = APIRouter()
@@ -98,12 +100,11 @@ async def update_records(ctx: Context, records: List[BaseModel]) -> CreateUpdate
 @router.get('/logs/{logid}',
             response_model=log,
             summary="Get the Log using wks:log:1.0.5 schema",
-            description="""
-                Get the log object using its data ecosystem **id**.  <p>If the log
+            description="""Get the log object using its data ecosystem **id**.  <p>If the log
                 kind is *wks:log:1.0.5* returns the record directly</p> <p>If the
                 wellbore kind is different *wks:log:1.0.5* it will get the raw
                 record and convert the results to match the *wks:log:1.0.5*. If
-                conversion is not possible returns an error **500**</p>""",
+                conversion is not possible returns an error **500**.</p>{}""".format(REQUIRED_ROLES_READ),
             operation_id="get_log",
             responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}},
             response_model_exclude_unset=True)
@@ -122,11 +123,12 @@ async def get_log(
 # ---------------------------------------------------------------------------------------------------------------------
 @router.post('/logs', response_model=CreateUpdateRecordsResponse,
              summary="Create or update the logs using wks:log:1.0.5 schema",
+             description="{}".format(REQUIRED_ROLES_WRITE),
              operation_id="post_log",
              responses={
                  status.HTTP_400_BAD_REQUEST: {"description": "Missing mandatory parameter or unknown parameter"}})
 async def post_log(
-        logs: List[log],
+        logs: List[log] = Body(..., example= load_schema_example("log_v2.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
     if len(logs) == 0:
@@ -142,6 +144,7 @@ async def post_log(
 # ---------------------------------------------------------------------------------------------------------------------
 @router.delete('/logs/{logid}',
                summary="Delete the log. The API performs a logical deletion of the given record",
+               description="{}".format(REQUIRED_ROLES_WRITE),
                operation_id="del_log",
                status_code=status.HTTP_204_NO_CONTENT,
                response_class=Response,
@@ -164,6 +167,7 @@ async def del_log(
     "/logs/{logid}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the log",
+    description="{}".format(REQUIRED_ROLES_READ),
     operation_id="get_log_versions",
     responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}}
 )
@@ -187,6 +191,7 @@ async def get_log_versions(
     "/logs/{logid}/versions/{version}",
     response_model=log,
     summary="Get the given version of log using wks:log:1.0.5 schema",
+    description="{}".format(REQUIRED_ROLES_READ),
     operation_id="get_log_version",
     responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}},
     response_model_exclude_unset=True
@@ -273,7 +278,7 @@ _log_dataframe_example = pd.DataFrame(
     })
 @router.post('/logs/{logid}/data',
              summary="Writes the specified data to the log (atomic).",
-             description='Overwrite if exists',
+             description='Overwrite if exists. {}'.format(REQUIRED_ROLES_WRITE),
              operation_id="write_log_data",
              response_model=CreateUpdateRecordsResponse,
              responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"},
@@ -297,7 +302,7 @@ async def write_log_data(
 # ---------------------------------------------------------------------------------------------------------------------
 @router.post('/logs/{logid}/upload_data',
              summary='Writes the data to the log. Support json file (then orient must be provided) and parquet',
-             description='Overwrite if exists',
+             description='Overwrite if exists. {}'.format(REQUIRED_ROLES_WRITE),
              operation_id="upload_log_data",
              response_model=CreateUpdateRecordsResponse,
              responses={
@@ -391,7 +396,7 @@ async def _get_log_data(
     ])
 @router.get('/logs/{logid}/data',
             summary="Returns all data within the specified filters. Strongly consistent.",
-            description='return full bulk data',
+            description='return full bulk data. {}'.format(REQUIRED_ROLES_READ),
             operation_id="get_log_data",
             responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}})
 async def get_log_data(
@@ -428,7 +433,8 @@ class GetStatisticResponse(BaseModel):
 
 @router.get('/logs/{logid}/statistics',
             summary='Data statistics',
-            description="This API will return count, mean, std, min, max and percentiles of each column",
+            description="This API will return count, mean, std, min, max and percentiles of each column. {}"
+            .format(REQUIRED_ROLES_READ),
             response_model=GetStatisticResponse,
             )
 async def get_log_data_statistics(logid: str,
@@ -472,7 +478,7 @@ async def get_log_data_statistics(logid: str,
     ])
 @router.get('/logs/{logid}/versions/{version}/data',
             summary="Returns all data within the specified filters. Strongly consistent.",
-            description='return full bulk data',
+            description='return full bulk data. {}'.format(REQUIRED_ROLES_READ),
             operation_id="get_log_data_by_version",
             responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}})
 async def get_log_data_by_version(
@@ -503,7 +509,7 @@ async def get_log_data_by_version(
 @router.get('/logs/{logid}/decimated',
             summary="Returns a decimated version of all data within the specified filters. Eventually consistent.",
             description="""TODO
-            Note: row order is not preserved.""",
+            Note: row order is not preserved. {}""".format(REQUIRED_ROLES_READ),
             operation_id="get_log_decimated",
             responses={
                 status.HTTP_404_NOT_FOUND: {"description": "log not found"},
@@ -524,7 +530,7 @@ async def get_log_decimated(
 
     # TODO : remove this after review what should be done with index column
     if len(df.columns) == 1:
-        raise HTTPException(status_code=starlette.status.HTTP_400_BAD_REQUEST,
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="data frame doesn't contain index")
 
     if df.dtypes[1] not in [np.float64, np.float32]:

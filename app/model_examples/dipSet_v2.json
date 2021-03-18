@@ -1,0 +1,39 @@
+[
+    {
+        "acl": {
+            "viewers": [
+                "data.default.viewers@{{datapartitionid}}.{{domain}}.com"
+            ],
+            "owners": [
+                "data.default.owners@{{datapartitionid}}.{{domain}}.com"
+            ]
+        },
+        "data": {
+            "classification": "Externally Processed LogSet",
+            "name": "myDipSet",
+            "relationships": {               
+                "well": {
+                    "confidence": 1.0,
+                    "id": "{{datapartitionid}}:well:myWell",
+                    "name": "myWell"
+                },
+                "wellbore": {
+                    "confidence": 1.0,
+                    "id": "{{datapartitionid}}:wellbore:myWellbore",
+                    "name": "myWellbore"
+                }
+            }
+        },
+        "id": "{{datapartitionid}}:dipSet:myDipSet",
+        "kind": "{{datapartitionid}}:wks:dipSet:0.0.1",
+        "legal": {
+            "legaltags": [
+                "{{legaltags}}"
+            ],
+            "otherRelevantDataCountries": [
+                "FR",
+                "US"
+            ],
+            "status": "compliant"
+        }
+    }]

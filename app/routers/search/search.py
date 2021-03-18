@@ -25,6 +25,7 @@ from odes_search.models import (
     ByGeoPolygon,
     CursorQueryRequest)
 from app.clients.search_service_client import get_search_service
+from app.routers.conf import REQUIRED_ROLES_READ
 from app.utils import Context
 import app.routers.search.search_wrapper as search_wrapper
 from pydantic import BaseModel, Field
@@ -159,7 +160,7 @@ def added_query(id: str, data_type: str, query: str = None):
     return query
 
 
-@router.post('/query', summary='Query')
+@router.post('/query', summary='Query', description="{}".format(REQUIRED_ROLES_READ))
 async def query(query_request: QueryRequest,
                 ctx: Context = Depends(get_ctx)) -> QueryResponse:
     client = await get_search_service(ctx)
@@ -167,7 +168,7 @@ async def query(query_request: QueryRequest,
                               query_request=query_request)
 
 
-@router.post('/query_with_cursor', summary='Query with cursor')
+@router.post('/query_with_cursor', summary='Query with cursor', description="{}".format(REQUIRED_ROLES_READ))
 async def query_with_cursor(query_request: QueryRequest,
                             ctx: Context = Depends(get_ctx)):
     client = await get_search_service(ctx)
@@ -179,7 +180,7 @@ async def query_with_cursor(query_request: QueryRequest,
 
 @router.post('/query/wellbores', summary='Query with cursor',
              description="""Get all Wellbores object.  <p>The wellbore kind is
-        *:wks:wellbore:* returns all records directly based on existing schemas</p>""")
+        *:wks:wellbore:* returns all records directly based on existing schemas</p>{}""".format(REQUIRED_ROLES_READ))
 async def query_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
     return await basic_query_request_with_cursor(query_type, wellbore_kind, ctx, body.query)
 
@@ -187,7 +188,8 @@ async def query_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_c
 @router.post('/query/wellbores/bydistance', summary=f'Query with cursor, CRS format: {crs_format}',
              description="""Get all Wellbores object in a specific area. <p>The specific area will be define by a circle
             based on its center coordinates (lat, lon) and radius (meters) </p>
-            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>""")
+            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_wellbores_bydistance(latitude: float, longitude: float, distance: int, body: SearchQuery = None,
                                      ctx: Context = Depends(get_ctx)):
     spatial_filter = query_spatial_filter_builder("bydistance", latitude1=latitude, longitude1=longitude,
@@ -198,7 +200,8 @@ async def query_wellbores_bydistance(latitude: float, longitude: float, distance
 @router.post('/query/wellbores/byboundingbox', summary=f'Query with cursor, CRS format: {crs_format}',
              description="""Get all Wellbores object in a specific area. <p>The specific area will be define by a square
             based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>
-            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>""")
+            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_wellbores_byboundingbox(latitude_top_left: float, longitude_top_left: float,
                                         latitude_bottom_right: float, longitude_bottom_right: float,
                                         body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
@@ -211,7 +214,8 @@ async def query_wellbores_byboundingbox(latitude_top_left: float, longitude_top_
 @router.post('/query/wellbores/bygeopolygon', summary=f'Query with cursor, CRS format: {crs_format}',
              description="""Get all Wellbores object in a specific area.  <p>The specific area will be define by a 
             polygon based on each of its coordinates (lat, lon) with a minimum of three</p>
-            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>""")
+            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_wellbores_bygeopolygon(points: List[Point], query: SearchQuery = None,
                                        ctx: Context = Depends(get_ctx)):
     spatial_filter = query_spatial_filter_builder("bygeopolygon", points=points)
@@ -221,7 +225,8 @@ async def query_wellbores_bygeopolygon(points: List[Point], query: SearchQuery =
 @router.post('/query/wellbore/{wellboreId}/logsets', summary='Query with cursor, search logSets by wellbore ID',
              description="""Get all LogSets object using its relationship Wellbore ID.  <p>All LogSets linked to this
             specific ID will be returned</p>
-            <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>""")
+            <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_logsets_bywellbore(wellboreId: str, body: SearchQuery = None,
                                    ctx: Context = Depends(get_ctx)):
     query = added_query(wellboreId, "wellbore", body.query)
@@ -232,7 +237,8 @@ async def query_logsets_bywellbore(wellboreId: str, body: SearchQuery = None,
              summary='Query with cursor, search logSets by wellbore attribute',
              description="""Get all LogSets object using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores
             with this specific attribute will be returned</p>
-            <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>""")
+            <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_logsets_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
                                             ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, wellboreAttribute, wellbore_kind, logSet_kind,
@@ -242,7 +248,7 @@ async def query_logsets_bywellboreattribute(wellboreAttribute: str, body: Search
 
 @router.post('/query/logs', summary='Query with cursor, gets logs',
              description="""Get all Logs object.  <p>The Logs kind is
-        *:wks:log:* returns all records directly based on existing schemas</p>""")
+        *:wks:log:* returns all records directly based on existing schemas</p>{}""".format(REQUIRED_ROLES_READ))
 async def query_logs(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
     return await basic_query_request_with_cursor(query_type, log_kind, ctx, body.query)
 
@@ -250,7 +256,8 @@ async def query_logs(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
 @router.post('/query/wellbore/{wellboreId}/logs', summary='Query with cursor, search logs by wellbore ID',
              description="""Get all Logs object using its relationship Wellbore ID.  <p>All Logs linked to this
             specific ID will be returned</p>
-            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>""")
+            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_logs_bywellbore(wellboreId: str, body: SearchQuery = None,
                                 ctx: Context = Depends(get_ctx)):
     query = added_query(wellboreId, "wellbore", body.query)
@@ -261,7 +268,8 @@ async def query_logs_bywellbore(wellboreId: str, body: SearchQuery = None,
              summary='Query with cursor, search logs by wellbore attribute',
              description="""Get all Logs object using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores
             with this specific attribute will be returned</p>
-            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>""")
+            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_logs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
                                          ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, wellboreAttribute, wellbore_kind, log_kind,
@@ -272,7 +280,8 @@ async def query_logs_bywellboreattribute(wellboreAttribute: str, body: SearchQue
 @router.post('/query/logset/{logsetId}/logs', summary='Query with cursor, search logs by logSet ID',
              description="""Get all Logs object using its relationship Logset ID.  <p>All Logs linked to this
             specific ID will be returned</p>
-            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>""")
+            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_logs_bylogset(logsetId: str, body: SearchQuery = None,
                               ctx: Context = Depends(get_ctx)):
     query = added_query(logsetId, "logSet", body.query)
@@ -282,7 +291,8 @@ async def query_logs_bylogset(logsetId: str, body: SearchQuery = None,
 @router.post('/query/logsets/{logsetAttribute}/logs', summary='Query with cursor, search logs by logSet attribute',
              description="""Get all Logs object using a specific attribute of LogSets.  <p>All Logs linked to LogSets
             with this specific attribute will be returned</p>
-            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>""")
+            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>{}"""
+             .format(REQUIRED_ROLES_READ))
 async def query_logs_bylogsetattribute(logsetAttribute: str, body: SearchQuery = None,
                                        ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, logsetAttribute, logSet_kind, log_kind, "logSet",

@@ -1,7 +1,7 @@
 from structlog.contextvars import bind_contextvars
 from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
 
-from starlette.requests import Request
+from fastapi import Request
 import http
 
 

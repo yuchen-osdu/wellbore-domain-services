@@ -13,9 +13,9 @@
 # limitations under the License.
 
 apiVersion: v2
-name: wdms
+name: wellbore-domain-services
 description: OSDU Wellbore DDMS Service
-
+appVersion: "latest"
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives

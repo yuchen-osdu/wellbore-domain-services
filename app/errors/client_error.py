@@ -12,12 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from odes_entitlements.exceptions import (
-    ApiException as OSDUEntitlementsException,
-    UnexpectedResponse as OSDUEntitlementsUnexpectedResponse,
-    ResponseValidationError as OSDUEntitlementsResponseValidationError,
-    ResponseHandlingException as OSDUEntitlementsResponseHandlingException
-)
+import json
+from typing import Dict
 from odes_search.exceptions import (
     ApiException as OSDUSearchException,
     UnexpectedResponse as OSDUSearchUnexpectedResponse,
@@ -40,10 +36,18 @@ from app.utils import get_ctx
 
 OSDU_DATA_ECOSYSTEM_SEARCH = "osdu-data-ecosystem-search"
 OSDU_DATA_ECOSYSTEM_STORAGE = "osdu-data-ecosystem-storage"
-OSDU_DATA_ECOSYSTEM_ENTITLEMENTS = "osdu-data-ecosystem-entitlements"
 OSDU_DATA_ECOSYSTEM_PARTITION = "osdu-data-ecosystem-partition"
 
-CONTENT_ENCODING = "utf-16"
+
+
+def load_content(content) -> Dict:
+    """
+    returns dict from content  whenever content is json or text
+    """
+    try:
+        return json.loads(content)
+    except Exception:
+        return f"{content}"
 
 
 async def http_search_error_handler(request: Request, exc: OSDUSearchException) -> JSONResponse:
@@ -53,7 +57,7 @@ async def http_search_error_handler(request: Request, exc: OSDUSearchException) 
     get_ctx().logger.exception(f"http_search_error_handler - url: '{request.url}'")
     if isinstance(exc, OSDUSearchUnexpectedResponse):
         status = exc.status_code
-        errors = [exc.reason_phrase]
+        errors = [load_content(exc.content)]
     elif isinstance(exc, OSDUSearchResponseValidationError):
         status = exc.status_code
         errors = exc.args
@@ -72,12 +76,9 @@ async def http_storage_error_handler(request: Request, exc: OSDUStorageException
     Catches and handles Exceptions raised by os-python-client
     """
     get_ctx().logger.exception(f"http_storage_error_handler - url: '{request.url}'")
-    if isinstance(exc, OSDUStorageUnexpectedResponse):
+    if isinstance(exc, OSDUStorageUnexpectedResponse) or isinstance(exc, OSDUStorageResponseValidationError):
         status = exc.status_code
-        errors = [exc.reason_phrase]
-    elif isinstance(exc, OSDUStorageResponseValidationError):
-        status = exc.status_code
-        errors = [exc.content]
+        errors = [load_content(exc.content)]
     elif isinstance(exc, OSDUStorageResponseHandlingException):
         status = HTTP_500_INTERNAL_SERVER_ERROR
         errors = exc.source.args
@@ -86,27 +87,6 @@ async def http_storage_error_handler(request: Request, exc: OSDUStorageException
         errors = exc.args
 
     return JSONResponse({"origin": OSDU_DATA_ECOSYSTEM_STORAGE, "errors": errors}, status_code=status)
-
-
-async def http_entitlements_error_handler(request: Request, exc: OSDUEntitlementsException) -> JSONResponse:
-    """
-    Catches and handles Exceptions raised by os-python-client
-    """
-    get_ctx().logger.exception(f"http_entitlements_error_handler - url: '{request.url}'")
-    if isinstance(exc, OSDUEntitlementsUnexpectedResponse):
-        status = exc.status_code
-        errors = [exc.reason_phrase]
-    elif isinstance(exc, OSDUEntitlementsResponseValidationError):
-        status = exc.status_code
-        errors = [exc.content]
-    elif isinstance(exc, OSDUEntitlementsResponseHandlingException):
-        status = HTTP_500_INTERNAL_SERVER_ERROR
-        errors = exc.source.args
-    else:
-        status = HTTP_500_INTERNAL_SERVER_ERROR
-        errors = exc.args
-
-    return JSONResponse({"origin": OSDU_DATA_ECOSYSTEM_ENTITLEMENTS, "errors": errors}, status_code=status)
 
 
 async def http_partition_error_handler(request: Request, exc: OSDUPartitionException) -> JSONResponse:

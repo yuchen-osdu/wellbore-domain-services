@@ -104,11 +104,6 @@ class ConfigurationContainer:
         factory=lambda x: x.lower()
     )
 
-    service_host_entitlements: EnvVar = EnvVar(
-        key='SERVICE_HOST_ENTITLEMENTS',
-        description='Back-end for entitlements service',
-        is_mandatory=True)
-  
     service_host_search: EnvVar = EnvVar(
         key='SERVICE_HOST_SEARCH',
         description='Back-end for search service',
@@ -128,13 +123,13 @@ class ConfigurationContainer:
     de_client_config_max_connection: EnvVar = EnvVar(
         key='DE_CLIENT_CFG_MAX_CONNECTION',
         description='maximum number of allowable connections, 0 to always allow.',
-        default='200',
+        default='1000',
         factory=lambda x: int(x))
 
     de_client_config_max_keepalive: EnvVar = EnvVar(
         key='DE_CLIENT_CFG_MAX_KEEPALIVE',
         description='number of allowable keep-alive connections, 0 to always allow.',
-        default='200',
+        default='500',
         factory=lambda x: int(x))
 
     build_details: EnvVar = EnvVar(

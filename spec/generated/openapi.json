@@ -1017,75 +1017,13 @@
         ]
       }
     },
-    "/ddms/v2/logsets/{logsetid}/harmonize": {
-      "post": {
-        "tags": [
-          "Logset"
-        ],
-        "summary": "Create or update the LogSets using wks:logSet:1.0.5 schema",
-        "operationId": "harmonize_logset",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Logsetid",
-              "type": "string"
-            },
-            "name": "logsetid",
-            "in": "path"
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "required": false,
-            "schema": {
-              "title": "data partition id",
-              "minLength": 1,
-              "type": "string",
-              "description": "identifier of the data partition to query"
-            },
-            "name": "data-partition-id",
-            "in": "header"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/logset"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "logset not found"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OpenDESBearerToken": []
-          }
-        ]
-      }
-    },
     "/ddms/v2/logsets": {
       "post": {
         "tags": [
           "Logset"
         ],
         "summary": "Create or update the LogSets using wks:logSet:1.0.5 schema",
-        "operationId": "put_logset",
+        "operationId": "post_logset",
         "parameters": [
           {
             "description": "identifier of the data partition to query",
@@ -1223,18 +1161,6 @@
             },
             "name": "trajectoryid",
             "in": "path"
-          },
-          {
-            "description": "Whether or not to delete records children",
-            "required": false,
-            "schema": {
-              "title": "Recursive",
-              "type": "boolean",
-              "description": "Whether or not to delete records children",
-              "default": false
-            },
-            "name": "recursive",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -1507,12 +1433,13 @@
             "in": "query"
           },
           {
-            "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
+            "description": "define format when using JSON data is used. Value can be split, index, columns, records",
             "required": false,
             "schema": {
               "title": "Orient",
+              "pattern": "split|index|columns|records",
               "type": "string",
-              "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
+              "description": "define format when using JSON data is used. Value can be split, index, columns, records",
               "default": "split"
             },
             "name": "orient",
@@ -1549,6 +1476,12 @@
           "400": {
             "description": "unknown channels"
           },
+          "204": {
+            "description": "No bulkURI"
+          },
+          "500": {
+            "description": "Record has an invalid bulkURI"
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1584,12 +1517,13 @@
             "in": "path"
           },
           {
-            "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
+            "description": "define format when using JSON data is used. Value can be split, index, columns, records",
             "required": false,
             "schema": {
               "title": "Orient",
+              "pattern": "split|index|columns|records",
               "type": "string",
-              "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
+              "description": "define format when using JSON data is used. Value can be split, index, columns, records",
               "default": "split"
             },
             "name": "orient",
@@ -1637,7 +1571,162 @@
           {
             "OpenDESBearerToken": []
           }
-        ]
+        ],
+        "requestBody": {
+          "description": "Write trajectory bulk data. Each column corresponds to a channel.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 channels (MD, X, Y) with different _orient_: \n* split: <br/>`{\"columns\":[\"MD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* index: <br/>`{\"0\":{\"MD\":0.0,\"X\":1001,\"Y\":2001},\"1\":{\"MD\":0.5,\"X\":1002,\"Y\":2002},\"2\":{\"MD\":1.0,\"X\":1003,\"Y\":2003},\"3\":{\"MD\":1.5,\"X\":1004,\"Y\":2004},\"4\":{\"MD\":2.0,\"X\":1005,\"Y\":2005}}`<br/>&nbsp;\n* columns: <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records: <br/>`[{\"MD\":0.0,\"X\":1001,\"Y\":2001},{\"MD\":0.5,\"X\":1002,\"Y\":2002},{\"MD\":1.0,\"X\":1003,\"Y\":2003},{\"MD\":1.5,\"X\":1004,\"Y\":2004},{\"MD\":2.0,\"X\":1005,\"Y\":2005}]`<br/>&nbsp;",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": "{\"columns\":[\"MD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}",
+                "oneOf": [
+                  {
+                    "title": "SplitFormat",
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "title": "Data",
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "columns": {
+                        "title": "Columns",
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      "index": {
+                        "title": "Index",
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "data"
+                    ]
+                  },
+                  {
+                    "title": "IndexFormat",
+                    "type": "object",
+                    "properties": {
+                      "TODO": {
+                        "title": "Todo",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "TODO"
+                    ]
+                  },
+                  {
+                    "title": "ColumnFormat",
+                    "type": "object",
+                    "properties": {
+                      "TODO": {
+                        "title": "Todo",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "TODO"
+                    ]
+                  },
+                  {
+                    "title": "RecordsFormat",
+                    "type": "object",
+                    "properties": {
+                      "TODO": {
+                        "title": "Todo",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "TODO"
+                    ]
+                  },
+                  {
+                    "title": "ValuesFormat",
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "/ddms/v2/markers/{markerid}": {
@@ -1717,18 +1806,6 @@
             },
             "name": "markerid",
             "in": "path"
-          },
-          {
-            "description": "Whether or not to delete records children",
-            "required": false,
-            "schema": {
-              "title": "Recursive",
-              "type": "boolean",
-              "description": "Whether or not to delete records children",
-              "default": false
-            },
-            "name": "recursive",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -2307,6 +2384,7 @@
             "required": false,
             "schema": {
               "title": "Orient",
+              "pattern": "split|index|columns|records|values",
               "type": "string",
               "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
               "default": "split"
@@ -2392,6 +2470,7 @@
             "required": false,
             "schema": {
               "title": "Orient",
+              "pattern": "split|index|columns|records|values",
               "type": "string",
               "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
               "default": "split"
@@ -2673,6 +2752,7 @@
             "required": false,
             "schema": {
               "title": "Orient",
+              "pattern": "split|index|columns|records|values",
               "type": "string",
               "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
               "default": "split"
@@ -2820,6 +2900,103 @@
         ]
       }
     },
+    "/ddms/v2/logs/{logid}/versions/{version}/data": {
+      "get": {
+        "tags": [
+          "Log"
+        ],
+        "summary": "Returns all data within the specified filters. Strongly consistent.",
+        "description": "return full bulk data",
+        "operationId": "get_log_data_by_version",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Logid",
+              "type": "string"
+            },
+            "name": "logid",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            },
+            "name": "version",
+            "in": "path"
+          },
+          {
+            "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
+            "required": false,
+            "schema": {
+              "title": "Orient",
+              "pattern": "split|index|columns|records|values",
+              "type": "string",
+              "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
+              "default": "split"
+            },
+            "name": "orient",
+            "in": "query"
+          },
+          {
+            "description": "The json path to the bulk reference (see https://goessner.net/articles/JsonPath/). Required for non wks:log.",
+            "required": false,
+            "schema": {
+              "title": "Bulk-Path",
+              "type": "string",
+              "description": "The json path to the bulk reference (see https://goessner.net/articles/JsonPath/). Required for non wks:log."
+            },
+            "name": "bulk-path",
+            "in": "query"
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "required": false,
+            "schema": {
+              "title": "data partition id",
+              "minLength": 1,
+              "type": "string",
+              "description": "identifier of the data partition to query"
+            },
+            "name": "data-partition-id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},\"1\":{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},\"2\":{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},\"3\":{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},\"4\":{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}]`<br/>&nbsp;\n* values:  <br/>`[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]`<br/>&nbsp;",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetLogDataResponse"
+                },
+                "example": "{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}"
+              }
+            }
+          },
+          "404": {
+            "description": "log not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OpenDESBearerToken": []
+          }
+        ]
+      }
+    },
     "/ddms/v2/logs/{logid}/decimated": {
       "get": {
         "tags": [
@@ -2876,6 +3053,7 @@
             "required": false,
             "schema": {
               "title": "Orient",
+              "pattern": "split|index|columns|records|values",
               "type": "string",
               "description": "define format when using JSON data is used. Value can be split, index, columns, records, values",
               "default": "split"
@@ -3889,7 +4067,7 @@
           "search"
         ],
         "summary": "Query with cursor",
-        "operationId": "query_ddms_query_with_cursor_post",
+        "operationId": "query_with_cursor_ddms_query_with_cursor_post",
         "parameters": [
           {
             "description": "identifier of the data partition to query",
@@ -3948,17 +4126,8 @@
         ],
         "summary": "Query with cursor",
         "description": "Get all Wellbores object.  <p>The wellbore kind is\n        *:wks:wellbore:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbores_post",
+        "operationId": "query_wellbores_ddms_query_wellbores_post",
         "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
           {
             "description": "identifier of the data partition to query",
             "required": false,
@@ -3972,6 +4141,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4006,7 +4184,7 @@
         ],
         "summary": "Query with cursor, CRS format: data.wellHeadWgs84",
         "description": "Get all Wellbores object in a specific area. <p>The specific area will be define by a circle\n            based on its center coordinates (lat, lon) and radius (meters) </p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbores_bydistance_post",
+        "operationId": "query_wellbores_bydistance_ddms_query_wellbores_bydistance_post",
         "parameters": [
           {
             "required": true,
@@ -4036,15 +4214,6 @@
             "in": "query"
           },
           {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
-          {
             "description": "identifier of the data partition to query",
             "required": false,
             "schema": {
@@ -4057,6 +4226,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4091,7 +4269,7 @@
         ],
         "summary": "Query with cursor, CRS format: data.wellHeadWgs84",
         "description": "Get all Wellbores object in a specific area. <p>The specific area will be define by a square\n            based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbores_byboundingbox_post",
+        "operationId": "query_wellbores_byboundingbox_ddms_query_wellbores_byboundingbox_post",
         "parameters": [
           {
             "required": true,
@@ -4130,15 +4308,6 @@
             "in": "query"
           },
           {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
-          {
             "description": "identifier of the data partition to query",
             "required": false,
             "schema": {
@@ -4151,6 +4320,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4185,17 +4363,8 @@
         ],
         "summary": "Query with cursor, CRS format: data.wellHeadWgs84",
         "description": "Get all Wellbores object in a specific area.  <p>The specific area will be define by a \n            polygon based on each of its coordinates (lat, lon) with a minimum of three</p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbores_bygeopolygon_post",
+        "operationId": "query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post",
         "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
           {
             "description": "identifier of the data partition to query",
             "required": false,
@@ -4213,11 +4382,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "title": "Points",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Point"
-                }
+                "$ref": "#/components/schemas/Body_query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post"
               }
             }
           },
@@ -4250,32 +4415,23 @@
         ]
       }
     },
-    "/ddms/query/wellbore/{wellbore_id}/logsets": {
+    "/ddms/query/wellbore/{wellboreId}/logsets": {
       "post": {
         "tags": [
           "search"
         ],
         "summary": "Query with cursor, search logSets by wellbore ID",
         "description": "Get all LogSets object using its relationship Wellbore ID.  <p>All LogSets linked to this\n            specific ID will be returned</p>\n            <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbore__wellbore_id__logsets_post",
+        "operationId": "query_logsets_bywellbore_ddms_query_wellbore__wellboreId__logsets_post",
         "parameters": [
           {
             "required": true,
             "schema": {
-              "title": "Wellbore Id",
+              "title": "Wellboreid",
               "type": "string"
             },
-            "name": "wellbore_id",
+            "name": "wellboreId",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -4290,6 +4446,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4317,32 +4482,23 @@
         ]
       }
     },
-    "/ddms/query/wellbores/{wellbore_attribute}/logsets": {
+    "/ddms/query/wellbores/{wellboreAttribute}/logsets": {
       "post": {
         "tags": [
           "search"
         ],
         "summary": "Query with cursor, search logSets by wellbore attribute",
         "description": "Get all LogSets object using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbores__wellbore_attribute__logsets_post",
+        "operationId": "query_logsets_bywellboreattribute_ddms_query_wellbores__wellboreAttribute__logsets_post",
         "parameters": [
           {
             "required": true,
             "schema": {
-              "title": "Wellbore Attribute",
+              "title": "Wellboreattribute",
               "type": "string"
             },
-            "name": "wellbore_attribute",
+            "name": "wellboreAttribute",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -4357,6 +4513,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4391,17 +4556,8 @@
         ],
         "summary": "Query with cursor, gets logs",
         "description": "Get all Logs object.  <p>The Logs kind is\n        *:wks:log:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_logs_post",
+        "operationId": "query_logs_ddms_query_logs_post",
         "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
           {
             "description": "identifier of the data partition to query",
             "required": false,
@@ -4415,6 +4571,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4442,32 +4607,23 @@
         ]
       }
     },
-    "/ddms/query/wellbore/{wellbore_id}/logs": {
+    "/ddms/query/wellbore/{wellboreId}/logs": {
       "post": {
         "tags": [
           "search"
         ],
         "summary": "Query with cursor, search logs by wellbore ID",
         "description": "Get all Logs object using its relationship Wellbore ID.  <p>All Logs linked to this\n            specific ID will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbore__wellbore_id__logs_post",
+        "operationId": "query_logs_bywellbore_ddms_query_wellbore__wellboreId__logs_post",
         "parameters": [
           {
             "required": true,
             "schema": {
-              "title": "Wellbore Id",
+              "title": "Wellboreid",
               "type": "string"
             },
-            "name": "wellbore_id",
+            "name": "wellboreId",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -4482,6 +4638,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4509,32 +4674,23 @@
         ]
       }
     },
-    "/ddms/query/wellbores/{wellbore_attribute}/logs": {
+    "/ddms/query/wellbores/{wellboreAttribute}/logs": {
       "post": {
         "tags": [
           "search"
         ],
         "summary": "Query with cursor, search logs by wellbore attribute",
         "description": "Get all Logs object using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbores__wellbore_attribute__logs_post",
+        "operationId": "query_logs_bywellboreattribute_ddms_query_wellbores__wellboreAttribute__logs_post",
         "parameters": [
           {
             "required": true,
             "schema": {
-              "title": "Wellbore Attribute",
+              "title": "Wellboreattribute",
               "type": "string"
             },
-            "name": "wellbore_attribute",
+            "name": "wellboreAttribute",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -4549,6 +4705,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4576,32 +4741,23 @@
         ]
       }
     },
-    "/ddms/query/logset/{logset_id}/logs": {
+    "/ddms/query/logset/{logsetId}/logs": {
       "post": {
         "tags": [
           "search"
         ],
         "summary": "Query with cursor, search logs by logSet ID",
         "description": "Get all Logs object using its relationship Logset ID.  <p>All Logs linked to this\n            specific ID will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_logset__logset_id__logs_post",
+        "operationId": "query_logs_bylogset_ddms_query_logset__logsetId__logs_post",
         "parameters": [
           {
             "required": true,
             "schema": {
-              "title": "Logset Id",
+              "title": "Logsetid",
               "type": "string"
             },
-            "name": "logset_id",
+            "name": "logsetId",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -4616,6 +4772,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4643,32 +4808,23 @@
         ]
       }
     },
-    "/ddms/query/logsets/{logset_attribute}/logs": {
+    "/ddms/query/logsets/{logsetAttribute}/logs": {
       "post": {
         "tags": [
           "search"
         ],
         "summary": "Query with cursor, search logs by logSet attribute",
         "description": "Get all Logs object using a specific attribute of LogSets.  <p>All Logs linked to LogSets\n            with this specific attribute will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_logsets__logset_attribute__logs_post",
+        "operationId": "query_logs_bylogsetattribute_ddms_query_logsets__logsetAttribute__logs_post",
         "parameters": [
           {
             "required": true,
             "schema": {
-              "title": "Logset Attribute",
+              "title": "Logsetattribute",
               "type": "string"
             },
-            "name": "logset_attribute",
+            "name": "logsetAttribute",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -4683,6 +4839,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4710,32 +4875,23 @@
         ]
       }
     },
-    "/ddms/query/wellbore/{wellbore_id}/markers": {
+    "/ddms/query/wellbore/{wellboreId}/markers": {
       "post": {
         "tags": [
           "search"
         ],
         "summary": "Query with cursor, search markers by wellbore ID",
         "description": "Get all Markers object using its relationship Wellbore ID.  <p>All Markers linked to this\n            specific ID will be returned</p>\n            <p>The Marker kind is *:wks:marker:* returns all records directly based on existing schemas</p>",
-        "operationId": "query_ddms_query_wellbore__wellbore_id__markers_post",
+        "operationId": "query_markers_bywellbore_ddms_query_wellbore__wellboreId__markers_post",
         "parameters": [
           {
             "required": true,
             "schema": {
-              "title": "Wellbore Id",
+              "title": "Wellboreid",
               "type": "string"
             },
-            "name": "wellbore_id",
+            "name": "wellboreId",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -4750,6 +4906,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4784,17 +4949,8 @@
         ],
         "summary": "Query with cursor",
         "description": "Get all Wellbores IDs object.  <p>The wellbore kind is\n        *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbores_post",
+        "operationId": "fastquery_wellbores_ddms_fastquery_wellbores_post",
         "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
           {
             "description": "identifier of the data partition to query",
             "required": false,
@@ -4808,6 +4964,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4842,7 +5007,7 @@
         ],
         "summary": "Query with cursor, CRS format: data.wellHeadWgs84",
         "description": "Get all Wellbores IDs IDs objects in a specific area. <p>The specific area will be define by a circle\n            based on its center coordinates (lat, lon) and radius (meters) </p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbores_bydistance_post",
+        "operationId": "fastquery_wellbores_bydistance_ddms_fastquery_wellbores_bydistance_post",
         "parameters": [
           {
             "required": true,
@@ -4872,15 +5037,6 @@
             "in": "query"
           },
           {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
-          {
             "description": "identifier of the data partition to query",
             "required": false,
             "schema": {
@@ -4893,6 +5049,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4927,7 +5092,7 @@
         ],
         "summary": "Query with cursor, CRS format: data.wellHeadWgs84",
         "description": "Get all Wellbores IDs objects in a specific area. <p>The specific area will be define by a square\n            based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbores_byboundingbox_post",
+        "operationId": "fastquery_wellbores_byboundingbox_ddms_fastquery_wellbores_byboundingbox_post",
         "parameters": [
           {
             "required": true,
@@ -4966,15 +5131,6 @@
             "in": "query"
           },
           {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
-          {
             "description": "identifier of the data partition to query",
             "required": false,
             "schema": {
@@ -4987,6 +5143,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5021,17 +5186,8 @@
         ],
         "summary": "Query with cursor, CRS format: data.wellHeadWgs84",
         "description": "Get all Wellbores IDs objects in a specific area.  <p>The specific area will be define by a \n            polygon based on each of its coordinates (lat, lon) with a minimum of three</p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbores_bygeopolygon_post",
+        "operationId": "fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post",
         "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
           {
             "description": "identifier of the data partition to query",
             "required": false,
@@ -5049,11 +5205,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "title": "Points",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Point"
-                }
+                "$ref": "#/components/schemas/Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post"
               }
             }
           },
@@ -5093,7 +5245,7 @@
         ],
         "summary": "Query with cursor, search logSets IDs by wellbore ID",
         "description": "Get all LogSets IDs objects using its relationship Wellbore ID.  <p>All LogSets linked to this\n            specific ID will be returned</p>\n            <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbore__wellbore_id__logsets_post",
+        "operationId": "fastquery_logsets_bywellbore_ddms_fastquery_wellbore__wellbore_id__logsets_post",
         "parameters": [
           {
             "required": true,
@@ -5103,15 +5255,6 @@
             },
             "name": "wellbore_id",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -5126,6 +5269,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5160,7 +5312,7 @@
         ],
         "summary": "Query with cursor, search logSets IDs by wellbore attribute",
         "description": "Get all LogSets IDs objects using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbores__wellbore_attribute__logsets_post",
+        "operationId": "fastquery_logsets_bywellboreattribute_ddms_fastquery_wellbores__wellbore_attribute__logsets_post",
         "parameters": [
           {
             "required": true,
@@ -5170,15 +5322,6 @@
             },
             "name": "wellbore_attribute",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -5193,6 +5336,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5227,17 +5379,8 @@
         ],
         "summary": "Query with cursor, gets logs",
         "description": "Get all Logs object.  <p>The Logs kind is\n        *:wks:log:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_logs_post",
+        "operationId": "fastquery_logs_ddms_fastquery_logs_post",
         "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
-          },
           {
             "description": "identifier of the data partition to query",
             "required": false,
@@ -5251,6 +5394,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5285,7 +5437,7 @@
         ],
         "summary": "Query with cursor, search logs IDs by wellbore ID",
         "description": "Get all Logs IDs objects using its relationship Wellbore ID.  <p>All Logs linked to this\n            specific ID will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbore__wellbore_id__logs_post",
+        "operationId": "fastquery_logs_bywellbore_ddms_fastquery_wellbore__wellbore_id__logs_post",
         "parameters": [
           {
             "required": true,
@@ -5295,15 +5447,6 @@
             },
             "name": "wellbore_id",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -5318,6 +5461,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5352,7 +5504,7 @@
         ],
         "summary": "Query with cursor, search logs IDs by wellbore attribute",
         "description": "Get all Logs IDs objects using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbores__wellbore_attribute__logs_post",
+        "operationId": "fastquery_logs_bywellboreattribute_ddms_fastquery_wellbores__wellbore_attribute__logs_post",
         "parameters": [
           {
             "required": true,
@@ -5362,15 +5514,6 @@
             },
             "name": "wellbore_attribute",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -5385,6 +5528,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5419,7 +5571,7 @@
         ],
         "summary": "Query with cursor, search logs IDs by logSet ID",
         "description": "Get all Logs IDs objects using its relationship Logset ID.  <p>All Logs linked to this\n            specific ID will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_logset__logset_id__logs_post",
+        "operationId": "fastquery_logs_bylogset_ddms_fastquery_logset__logset_id__logs_post",
         "parameters": [
           {
             "required": true,
@@ -5429,15 +5581,6 @@
             },
             "name": "logset_id",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -5452,6 +5595,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5486,7 +5638,7 @@
         ],
         "summary": "Query with cursor, search logs IDs by logSet attribute",
         "description": "Get all Logs IDs objects using a specific attribute of LogSets.  <p>All Logs linked to LogSets\n            with this specific attribute will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_logsets__logset_attribute__logs_post",
+        "operationId": "fastquery_logs_bylogsetattribute_ddms_fastquery_logsets__logset_attribute__logs_post",
         "parameters": [
           {
             "required": true,
@@ -5496,15 +5648,6 @@
             },
             "name": "logset_attribute",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -5519,6 +5662,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5553,7 +5705,7 @@
         ],
         "summary": "Query with cursor, search markers IDs by wellbore ID",
         "description": "Get all Markers IDs objects using its relationship Wellbore ID.  <p>All Markers linked to this\n            specific ID will be returned</p>\n            <p>The Marker kind is *:wks:marker:* returns all records IDs directly based on existing schemas</p>",
-        "operationId": "query_ddms_fastquery_wellbore__wellbore_id__markers_post",
+        "operationId": "fastquery_markers_bywellbore_ddms_fastquery_wellbore__wellbore_id__markers_post",
         "parameters": [
           {
             "required": true,
@@ -5563,15 +5715,6 @@
             },
             "name": "wellbore_id",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Query",
-              "type": "string"
-            },
-            "name": "query",
-            "in": "query"
           },
           {
             "description": "identifier of the data partition to query",
@@ -5586,6 +5729,15 @@
             "in": "header"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5776,6 +5928,44 @@
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model"
       },
+      "Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post": {
+        "title": "Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post",
+        "required": [
+          "points"
+        ],
+        "type": "object",
+        "properties": {
+          "points": {
+            "title": "Points",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            }
+          },
+          "query": {
+            "$ref": "#/components/schemas/SearchQuery"
+          }
+        }
+      },
+      "Body_query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post": {
+        "title": "Body_query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post",
+        "required": [
+          "points"
+        ],
+        "type": "object",
+        "properties": {
+          "points": {
+            "title": "Points",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            }
+          },
+          "query": {
+            "$ref": "#/components/schemas/SearchQuery"
+          }
+        }
+      },
       "Body_upload_log_data_file_ddms_v2_logs__logid__upload_data_post": {
         "title": "Body_upload_log_data_file_ddms_v2_logs__logid__upload_data_post",
         "required": [
@@ -5853,7 +6043,7 @@
             "title": "Main Family Catalog",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MainFanilyCatalogItem"
+              "$ref": "#/components/schemas/MainFamilyCatalogItem"
             }
           }
         }
@@ -5903,10 +6093,10 @@
         "example": {
           "acl": {
             "viewers": [
-              "abc@example.com, cde@example.com"
+              "abc@slb.com, cde@slb.com"
             ],
             "owners": [
-              "abc@example.com, cde@example.com"
+              "abc@slb.com, cde@slb.com"
             ]
           },
           "legal": {
@@ -6501,7 +6691,10 @@
           },
           "family_type": {
             "title": "Family Type",
-            "type": "string"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "log_unit": {
             "title": "Log Unit",
@@ -6542,11 +6735,10 @@
         "title": "LinkList",
         "type": "object",
         "properties": {},
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model"
+        "description": "Used for data model allows extra fields which are not declared initially in the pydantic model"
       },
-      "MainFanilyCatalogItem": {
-        "title": "MainFanilyCatalogItem",
+      "MainFamilyCatalogItem": {
+        "title": "MainFamilyCatalogItem",
         "required": [
           "MainFamily",
           "Family",
@@ -6805,6 +6997,16 @@
           "Two-Way Time"
         ],
         "description": "An enumeration."
+      },
+      "SearchQuery": {
+        "title": "SearchQuery",
+        "type": "object",
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          }
+        }
       },
       "Shape": {
         "title": "Shape",
@@ -7738,8 +7940,7 @@
             "description": "The classification log of the dipset"
           }
         },
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model"
+        "description": "Used for data model allows extra fields which are not declared initially in the pydantic model"
       },
       "geographicPosition": {
         "title": "geographicPosition",
@@ -8093,8 +8294,7 @@
             "description": "The wellbore to which this log belongs. This relationship is the most important; only the wellbore can provide the unique context for the measured depth index."
           }
         },
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model"
+        "description": "Used for data model allows extra fields which are not declared initially in the pydantic model"
       },
       "logSetData": {
         "title": "logSetData",
@@ -8385,8 +8585,7 @@
             "description": "The wellboreSection to which this logSet belongs."
           }
         },
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model"
+        "description": "Used for data model allows extra fields which are not declared initially in the pydantic model"
       },
       "marker": {
         "title": "marker",
@@ -8696,8 +8895,7 @@
             "description": "The wellbore entity, to which this marker belongs."
           }
         },
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model"
+        "description": "Used for data model allows extra fields which are not declared initially in the pydantic model"
       },
       "namedProperty": {
         "title": "namedProperty",
@@ -9145,8 +9343,7 @@
             "description": "The wellbore to which this trajectory belongs."
           }
         },
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model"
+        "description": "Used for data model allows extra fields which are not declared initially in the pydantic model"
       },
       "well": {
         "title": "well",
@@ -9957,8 +10154,7 @@
             "description": "The well to which this wellbore belongs."
           }
         },
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model"
+        "description": "Used for data model allows extra fields which are not declared initially in the pydantic model"
       },
       "wellrelationships": {
         "title": "wellrelationships",
@@ -9974,8 +10170,7 @@
             "description": "The asset this well belongs to."
           }
         },
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model"
+        "description": "Used for data model allows extra fields which are not declared initially in the pydantic model"
       },
       "wgs84Position": {
         "title": "wgs84Position",
