@@ -58,7 +58,8 @@
     WELLBORE_URL: https://${AZURE_DNS_NAME}/api/os-wellbore-ddms
     LEGAL_TAG: "opendes-public-usa-dataset-7643990"
     DATA_PARTITION_ID: opendes
-    
+    PROJECT_NAME: os-wellbore-ddms
+    CLOUD_PROVIDER: az
 
 # JOBS
 # --------------------------------------------------------------------------------
@@ -109,11 +110,12 @@ azure_deploy:
     - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
     - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
   script:
+    - az acr login -n $AZURE_REGISTRY
     # Install Service
-    - helm upgrade -i osdu-gitlab-$CI_PROJECT_NAME devops/azure/chart --set image.repository=${AZURE_REGISTRY}.azurecr.io --set image.branch=$BRANCH --set image.tag=$TAG
+    - helm upgrade -i $PROJECT_NAME devops/azure/chart --set image.repository=${AZURE_REGISTRY}.azurecr.io/$BRANCH --set image.tag=$TAG
     # Increasing to 900s as rolling updates are happening and each service is expected to have minimum 2 containers.
-    - kubectl rollout status deployment.v1.apps/osdu-gitlab-$CI_PROJECT_NAME -n osdu --timeout=900s
-    - pod=$(kubectl get pod -n osdu|grep $CI_PROJECT_NAME |tail -1 |awk '{print $1}')
+    - kubectl rollout status deployment.v1.apps/$PROJECT_NAME -n osdu --timeout=900s
+    - pod=$(kubectl get pod -n osdu|grep $PROJECT_NAME |tail -1 |awk '{print $1}')
     - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=300s)
     - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
   only:
@@ -139,7 +141,7 @@ azure_test_py:
     - pip install -r requirements_dev.txt
     - svctoken=$(python devops/scripts/azure_jwt_client.py)
     - cd $AZURE_TEST_SUBDIR
-    - python ./gen_postman_env.py --token ${svctoken} --base_url ${WELLBORE_URL} --cloud_provider ${VENDOR} --acl_domain ${DOMAIN} --legal_tag ${LEGAL_TAG} --data_partition ${DATA_PARTITION_ID}
+    - python ./gen_postman_env.py --token ${svctoken} --base_url ${WELLBORE_URL} --cloud_provider ${CLOUD_PROVIDER} --acl_domain ${DOMAIN} --legal_tag ${LEGAL_TAG} --data_partition ${DATA_PARTITION_ID}
     - pytest ./functional --environment="./generated/postman_environment.json" --insecure --timeout-request=15000 --filter-tag=basic
   only:
     variables:

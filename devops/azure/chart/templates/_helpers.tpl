@@ -1,4 +1,13 @@
 {{/*
+Common Annotations
+*/}}
+{{- define "os-wellbore-ddms.commonAnnotations" -}}
+build-number: {{ .Values.annotations.buildNumber | quote }}
+build-origin: {{ .Values.annotations.buildOrigin | quote }}
+commit-branch: {{ .Values.annotations.commitBranch | quote }}
+commit-id: {{ .Values.annotations.commitId | quote }}
+{{- end}}
+{{/*
 Common Labels
 */}}
 {{- define "os-wellbore-ddms.commonLabels" -}}

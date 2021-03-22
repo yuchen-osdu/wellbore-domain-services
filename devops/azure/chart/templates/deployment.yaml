@@ -16,9 +16,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+{{ include "os-wellbore-ddms.commonAnnotations" . | indent 4}}
   labels:
 {{ include "os-wellbore-ddms.commonLabels" . | indent 4}}
-  name: {{ .Values.deployment.name }}
+  name: {{ .Values.deployment.name }}{{ $nameSuffix }}
 {{ include "os-wellbore-ddms.namespace" . | indent 2}}
 spec:
   replicas: {{ .Values.replicaCount }}
@@ -27,6 +29,8 @@ spec:
 {{ include "os-wellbore-ddms.commonLabels" . | indent 6}}
   template:
     metadata:
+      annotations:
+{{ include "os-wellbore-ddms.commonAnnotations" . | indent 8}}
       labels:
         aadpodidbinding: "{{ .Values.labels.aadpodidbinding }}"
 {{ include "os-wellbore-ddms.commonLabels" . | indent 8}}
@@ -46,8 +50,8 @@ spec:
             volumeAttributes:
               secretProviderClass: "azure-keyvault"
       containers:
-      - name: {{ .Values.deployment.name }}
-        image: {{ .Values.image.repository }}/{{ .Values.image.branch }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+      - name: {{ .Values.deployment.name }}      
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         ports:
           - containerPort: 8080
         # This preStop hook has been added as a temporary workaround to minimize downtime during deployments until this limitation is addressed at the AGIC level
