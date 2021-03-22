@@ -67,3 +67,13 @@ curl \
 }'
 ```
 
+The `loadschema.sh` script is a convenient script to register all schemas (to be run from within this directory), and can be used the following way:
+
+```bash
+#set the following variable
+BASE_URL=TBD
+DATA_PARTITION=TBD
+TOKEN=TBD
+
+./loadSchema.sh $BASE_URL $DATA_PARTITION $TOKEN
+```
