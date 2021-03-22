@@ -11,27 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: wellbore-jwt-authz
-  namespace: osdu
+  annotations:
+{{ include "os-wellbore-ddms.commonAnnotations" . | indent 4}}
+  labels:
+{{ include "os-wellbore-ddms.commonLabels" . | indent 4}}
+  name: {{ .Values.authorizationPolicy.name }}{{ include "os-wellbore-ddms.name-suffix" . }}
+{{ include "os-wellbore-ddms.namespace" . | indent 2}}
 spec:
-  selector:
-    matchLabels:
-      app: osdu-gitlab-wellbore-domain-services
   action: DENY
   rules:
-    - from:
-        - source:
-            notRequestPrincipals: ["*"]
-      to:
-        - operation:
-            notPaths: ["/","*/index.html",
-                       "*/v2/api-docs",
-                       "*/swagger","*/swagger-resources","*/swagger-ui.html",
-                       "*/actuator/health", "*/health",
-                       "*/configuration/ui","*/configuration/security",
-                       "/api/os-wellbore-ddms/swagger-resources/*",
-                       "/api/os-wellbore-ddms/*",
-                       "/api/os-wellbore-ddms/webjars/*"]
+  - from:
+    - source:
+        notRequestPrincipals:
+        - '*'
+    to:
+    - operation:
+        notPaths:
+        - {{ include "os-wellbore-ddms.prefix" . }}/
+        - {{ include "os-wellbore-ddms.prefix" . }}/ddms/v2/about
+        - {{ include "os-wellbore-ddms.prefix" . }}/docs
+        - {{ include "os-wellbore-ddms.prefix" . }}/openapi.json
+  selector:
+    matchLabels:
+{{ include "os-wellbore-ddms.commonLabels" . | indent 6}}

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Default values for osdu-gitlab-wellbore-domain-services.
+# Default values for os-wellbore-ddms.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -22,15 +22,21 @@ deployment:
     secretName: central-logging
   osduSvcProperties: osdu-svc-properties
   keyvaultUrlPropertyName: ENV_KEYVAULT
-  name: osdu-gitlab-wellbore-domain-services
+  name: os-wellbore-ddms
 
-replicaCount: 1
+replicaCount: 2
+
+annotations:
+  buildNumber: []
+  buildOrigin: AzureDevops build/#{Build.DefinitionName}#
+  commitBranch: []
+  commitId: []
 
 image:
-  repository: community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services
-  branch: master
+  repository: community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/wellbore-domain-services-master
+  # Overrides the image tag whose default is the chart appVersion.
   tag: latest
-  
+
 
 tempDeployment:
   enabled: false
@@ -38,7 +44,7 @@ tempDeployment:
 
 labels:
   aadpodidbinding: osdu-identity
-  env: glab
+  env: gitlab
 
 configMap:
   data:
