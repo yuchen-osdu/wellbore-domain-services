@@ -34,8 +34,10 @@ token=$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id
 
 #### RUN INTEGRATION TEST #########################################################################
 
-cd deployment/osdu-core/os-wellbore-domain-services/testing
 
+cd deployment/osdu-core/os-wellbore-domain-services/testing
+python3 -m venv env
+source env/bin/activate
 pip install -r ./aws-test/build-aws/requirements.txt
 rm -rf test-reports/
 mkdir test-reports
@@ -73,4 +75,5 @@ python gen_postman_env.py --token $token --base_url $svc_url --cloud_provider "a
 pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
 TEST_EXIT_CODE=$?
+deactivate
 exit $TEST_EXIT_CODE
