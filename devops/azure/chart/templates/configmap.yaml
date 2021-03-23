@@ -25,6 +25,8 @@ data:
   AZ_LOGGER_LEVEL: {{ .Values.configMap.data.loggerLevel }}
 kind: ConfigMap
 metadata:
+  annotations:
+{{ include "os-wellbore-ddms.commonAnnotations" . | indent 4}}
   labels:
 {{ include "os-wellbore-ddms.commonLabels" . | indent 4}}
   name: {{ .Values.configMap.name }}{{ $nameSuffix }}
