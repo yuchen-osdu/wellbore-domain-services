@@ -15,9 +15,9 @@
 import pytest
 import mock
 from odes_search.models import CursorQueryResponse
-from starlette import status
+
 from starlette.exceptions import HTTPException as starletteHTTPException
-from fastapi import HTTPException as fastApiHTTPException
+from fastapi import HTTPException as fastApiHTTPException, status
 from odes_search.exceptions import UnexpectedResponse as clientHTTPException
 
 from app.clients import StorageRecordServiceClient

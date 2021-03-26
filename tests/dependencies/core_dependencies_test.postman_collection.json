@@ -428,7 +428,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:doc:WDMS-dependencies-test-dummy-logset\",\n        \"kind\": \"{{logSetKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:logSet:WDMS-dependencies-test-dummy-logset\",\n        \"kind\": \"{{logSetKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -510,7 +510,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:doc:WDMS-dependencies-test-dummy-well\",\n        \"kind\": \"{{wellKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:well:WDMS-dependencies-test-dummy-well\",\n        \"kind\": \"{{wellKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -592,7 +592,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:doc:WDMS-dependencies-test-dummy-wellbore\",\n        \"kind\": \"{{wellboreKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:wellbore:WDMS-dependencies-test-dummy-wellbore\",\n        \"kind\": \"{{wellboreKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -674,7 +674,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:doc:WDMS-dependencies-test-dummy-log\",\n        \"kind\": \"{{logKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:log:WDMS-dependencies-test-dummy-log\",\n        \"kind\": \"{{logKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1080,7 +1080,7 @@
 		},
 		{
 			"key": "acl_domain",
-			"value": "contoso.com"
+			"value": "enterprisedata.cloud.slb-ds.com"
 		},
 		{
 			"key": "acl_owner",

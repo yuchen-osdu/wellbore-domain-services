@@ -46,6 +46,36 @@ def build_request(path: Union[str, List[str]], sep: str = ".") -> "RequestRunner
         return crud.wellbore.build_request_get_versions_of_wellbore()
     if n_path == "crud.wellbore.create_wellbore":
         return crud.wellbore.build_request_create_wellbore()
+    if n_path == "crud.osdu_wellbore.delete_osdu_wellbore":
+        return crud.osdu_wellbore.build_request_delete_osdu_wellbore()
+    if n_path == "crud.osdu_wellbore.get_osdu_wellbore_specific_version":
+        return crud.osdu_wellbore.build_request_get_osdu_wellbore_specific_version()
+    if n_path == "crud.osdu_wellbore.get_osdu_wellbore":
+        return crud.osdu_wellbore.build_request_get_osdu_wellbore()
+    if n_path == "crud.osdu_wellbore.get_versions_of_osdu_wellbore":
+        return crud.osdu_wellbore.build_request_get_versions_of_osdu_wellbore()
+    if n_path == "crud.osdu_wellbore.create_osdu_wellbore":
+        return crud.osdu_wellbore.build_request_create_osdu_wellbore()
+    if n_path == "crud.osdu_well.delete_osdu_well":
+        return crud.osdu_well.build_request_delete_osdu_well()
+    if n_path == "crud.osdu_well.get_osdu_well_specific_version":
+        return crud.osdu_well.build_request_get_osdu_well_specific_version()
+    if n_path == "crud.osdu_well.get_osdu_well":
+        return crud.osdu_well.build_request_get_osdu_well()
+    if n_path == "crud.osdu_well.get_versions_of_osdu_well":
+        return crud.osdu_well.build_request_get_versions_of_osdu_well()
+    if n_path == "crud.osdu_well.create_osdu_well":
+        return crud.osdu_well.build_request_create_osdu_well()
+    if n_path == "crud.osdu_welllog.delete_osdu_welllog":
+        return crud.osdu_welllog.build_request_delete_osdu_welllog()
+    if n_path == "crud.osdu_welllog.get_osdu_welllog_specific_version":
+        return crud.osdu_welllog.build_request_get_osdu_welllog_specific_version()
+    if n_path == "crud.osdu_welllog.get_osdu_welllog":
+        return crud.osdu_welllog.build_request_get_osdu_welllog()
+    if n_path == "crud.osdu_welllog.get_versions_of_osdu_welllog":
+        return crud.osdu_welllog.build_request_get_versions_of_osdu_welllog()
+    if n_path == "crud.osdu_welllog.create_osdu_welllog":
+        return crud.osdu_welllog.build_request_create_osdu_welllog()
     if n_path == "crud.logset.get_versions_of_logset":
         return crud.logset.build_request_get_versions_of_logset()
     if n_path == "crud.logset.get_logset_specific_version":
@@ -182,3 +212,12 @@ def build_request(path: Union[str, List[str]], sep: str = ".") -> "RequestRunner
         return status.build_request_status()
 
     raise ValueError(f'No request matches the path {n_path}')
+
+
+def get_cleaned_ref_and_res(kind: str, res_dict: dict) -> (dict, dict):
+    if kind =="osdu_wellbore":
+        return crud.osdu_wellbore.get_cleaned_ref_and_res(res_dict)
+    if kind =="osdu_well":
+        return crud.osdu_well.get_cleaned_ref_and_res(res_dict)
+    if kind =="osdu_welllog":
+        return crud.osdu_welllog.get_cleaned_ref_and_res(res_dict)

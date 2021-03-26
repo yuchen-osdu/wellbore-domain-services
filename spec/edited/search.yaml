@@ -27,6 +27,7 @@ paths:
       tags:
         - Search
       summary: Query
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: query_ddms_query_post
       parameters:
         - description: identifier of the data partition to query
@@ -65,6 +66,7 @@ paths:
       tags:
         - Search
       summary: Query with cursor
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: query_with_cursor_ddms_query_with_cursor_post
       parameters:
         - description: identifier of the data partition to query
@@ -105,7 +107,7 @@ paths:
       summary: Query with cursor
       description: |-
         Get all Wellbores object.  <p>The wellbore kind is
-                *:wks:wellbore:* returns all records directly based on existing schemas</p>
+                *:wks:wellbore:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_wellbores_ddms_query_wellbores_post
       parameters:
         - description: identifier of the data partition to query
@@ -146,7 +148,7 @@ paths:
       description: |-
         Get all Wellbores object in a specific area. <p>The specific area will be define by a circle
                     based on its center coordinates (lat, lon) and radius (meters) </p>
-                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_wellbores_bydistance_ddms_query_wellbores_bydistance_post
       parameters:
         - required: true
@@ -205,7 +207,7 @@ paths:
       description: |-
         Get all Wellbores object in a specific area. <p>The specific area will be define by a square
                     based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>
-                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_wellbores_byboundingbox_ddms_query_wellbores_byboundingbox_post
       parameters:
         - required: true
@@ -270,7 +272,7 @@ paths:
       description: |-
         Get all Wellbores object in a specific area.  <p>The specific area will be define by a 
                     polygon based on each of its coordinates (lat, lon) with a minimum of three</p>
-                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post
       parameters:
         - description: identifier of the data partition to query
@@ -312,7 +314,7 @@ paths:
       description: |-
         Get all LogSets object using its relationship Wellbore ID.  <p>All LogSets linked to this
                     specific ID will be returned</p>
-                    <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>
+                    <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_logsets_bywellbore_ddms_query_wellbore__wellboreId__logsets_post
       parameters:
         - required: true
@@ -359,7 +361,7 @@ paths:
       description: |-
         Get all LogSets object using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores
                     with this specific attribute will be returned</p>
-                    <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>
+                    <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_logsets_bywellboreattribute_ddms_query_wellbores__wellboreAttribute__logsets_post
       parameters:
         - required: true
@@ -405,7 +407,7 @@ paths:
       summary: 'Query with cursor, gets logs'
       description: |-
         Get all Logs object.  <p>The Logs kind is
-                *:wks:log:* returns all records directly based on existing schemas</p>
+                *:wks:log:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_logs_ddms_query_logs_post
       parameters:
         - description: identifier of the data partition to query
@@ -446,7 +448,7 @@ paths:
       description: |-
         Get all Logs object using its relationship Wellbore ID.  <p>All Logs linked to this
                     specific ID will be returned</p>
-                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
+                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_logs_bywellbore_ddms_query_wellbore__wellboreId__logs_post
       parameters:
         - required: true
@@ -493,7 +495,7 @@ paths:
       description: |-
         Get all Logs object using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores
                     with this specific attribute will be returned</p>
-                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
+                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_logs_bywellboreattribute_ddms_query_wellbores__wellboreAttribute__logs_post
       parameters:
         - required: true
@@ -540,7 +542,7 @@ paths:
       description: |-
         Get all Logs object using its relationship Logset ID.  <p>All Logs linked to this
                     specific ID will be returned</p>
-                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
+                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_logs_bylogset_ddms_query_logset__logsetId__logs_post
       parameters:
         - required: true
@@ -587,7 +589,7 @@ paths:
       description: |-
         Get all Logs object using a specific attribute of LogSets.  <p>All Logs linked to LogSets
                     with this specific attribute will be returned</p>
-                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>
+                    <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: query_logs_bylogsetattribute_ddms_query_logsets__logsetAttribute__logs_post
       parameters:
         - required: true
@@ -680,7 +682,7 @@ paths:
       summary: Query with cursor
       description: |-
         Get all Wellbores IDs object.  <p>The wellbore kind is
-                *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>
+                *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_wellbores_ddms_fastquery_wellbores_post
       parameters:
         - description: identifier of the data partition to query
@@ -721,7 +723,7 @@ paths:
       description: |-
         Get all Wellbores IDs IDs objects in a specific area. <p>The specific area will be define by a circle
                     based on its center coordinates (lat, lon) and radius (meters) </p>
-                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_wellbores_bydistance_ddms_fastquery_wellbores_bydistance_post
       parameters:
         - required: true
@@ -780,7 +782,7 @@ paths:
       description: |-
         Get all Wellbores IDs objects in a specific area. <p>The specific area will be define by a square
                     based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>
-                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_wellbores_byboundingbox_ddms_fastquery_wellbores_byboundingbox_post
       parameters:
         - required: true
@@ -845,7 +847,7 @@ paths:
       description: |-
         Get all Wellbores IDs objects in a specific area.  <p>The specific area will be define by a 
                     polygon based on each of its coordinates (lat, lon) with a minimum of three</p>
-                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>
+                    <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post
       parameters:
         - description: identifier of the data partition to query
@@ -887,7 +889,7 @@ paths:
       description: |-
         Get all LogSets IDs objects using its relationship Wellbore ID.  <p>All LogSets linked to this
                     specific ID will be returned</p>
-                    <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>
+                    <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_logsets_bywellbore_ddms_fastquery_wellbore__wellbore_id__logsets_post
       parameters:
         - required: true
@@ -934,7 +936,7 @@ paths:
       description: |-
         Get all LogSets IDs objects using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores
                     with this specific attribute will be returned</p>
-                    <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>
+                    <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_logsets_bywellboreattribute_ddms_fastquery_wellbores__wellbore_attribute__logsets_post
       parameters:
         - required: true
@@ -980,7 +982,7 @@ paths:
       summary: 'Query with cursor, gets logs'
       description: |-
         Get all Logs object.  <p>The Logs kind is
-                *:wks:log:* returns all records IDs directly based on existing schemas</p>
+                *:wks:log:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_logs_ddms_fastquery_logs_post
       parameters:
         - description: identifier of the data partition to query
@@ -1021,7 +1023,7 @@ paths:
       description: |-
         Get all Logs IDs objects using its relationship Wellbore ID.  <p>All Logs linked to this
                     specific ID will be returned</p>
-                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
+                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_logs_bywellbore_ddms_fastquery_wellbore__wellbore_id__logs_post
       parameters:
         - required: true
@@ -1068,7 +1070,7 @@ paths:
       description: |-
         Get all Logs IDs objects using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores
                     with this specific attribute will be returned</p>
-                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
+                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_logs_bywellboreattribute_ddms_fastquery_wellbores__wellbore_attribute__logs_post
       parameters:
         - required: true
@@ -1115,7 +1117,7 @@ paths:
       description: |-
         Get all Logs IDs objects using its relationship Logset ID.  <p>All Logs linked to this
                     specific ID will be returned</p>
-                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
+                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_logs_bylogset_ddms_fastquery_logset__logset_id__logs_post
       parameters:
         - required: true
@@ -1162,7 +1164,7 @@ paths:
       description: |-
         Get all Logs IDs objects using a specific attribute of LogSets.  <p>All Logs linked to LogSets
                     with this specific attribute will be returned</p>
-                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>
+                    <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: fastquery_logs_bylogsetattribute_ddms_fastquery_logsets__logset_attribute__logs_post
       parameters:
         - required: true
