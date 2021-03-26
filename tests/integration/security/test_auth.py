@@ -41,7 +41,7 @@ def skip_if_gcp_environment(base_url):
 def test_expired_token_returns_40X(base_url, check_cert, token):
     url = build_url(base_url, "/about")
     headers = {
-        'Authorization': 'Bearer REMOVED_FOR_CICD_SCAN'
+        'Authorization': 'REMOVED_FOR_CICD_SCAN'
     }
     response = requests.request("GET", url, headers=headers, data=payload, verify=check_cert)
     assert response.status_code == 401
@@ -81,7 +81,7 @@ def test_invalid_token_returns_40X(base_url, check_cert, token):
     blank = {}
     token_invalid = token[0:len(token) - 10]
     headers = {
-        'Authorization': 'Bearer REMOVED_FOR_CICD_SCAN'
+        'Authorization': f"REMOVED_FOR_CICD_SCAN'
     }
 
     response = requests.request("GET", url, headers=headers, data=blank, verify=check_cert)
@@ -93,7 +93,7 @@ def test_invalid_issuer_token_returns_40X(base_url, check_cert, token):
     url = build_url(base_url, "/about")
     blank = {}
     headers = {
-        'Authorization': 'Bearer REMOVED_FOR_CICD_SCAN'
+        'Authorization': 'REMOVED_FOR_CICD_SCAN'
     }
     response = requests.request("GET", url, headers=headers, data=blank, verify=check_cert)
     assert response.status_code == 401

@@ -88,7 +88,7 @@ paths:
                 *wks:well:1.0.2* returns the record directly</p> <p>If the well
                 kind is different *wks:well:1.0.2* it will get the raw record and
                 convert the results to match the *wks:well:1.0.2*. If convertion is
-                not possible returns an error **500**
+                not possible returns an error **500**. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: get_well
       parameters:
         - required: true
@@ -129,6 +129,7 @@ paths:
       tags:
         - Well
       summary: Delete the well. The API performs a logical deletion of the given record
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: del_well
       parameters:
         - required: true
@@ -175,6 +176,7 @@ paths:
       tags:
         - Well
       summary: Get all versions of the Well
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_well_versions
       parameters:
         - required: true
@@ -221,7 +223,7 @@ paths:
                 *wks:well:1.0.2* returns the record directly</p> <p>If the well
                 kind is different *wks:well:1.0.2* it will get the raw record and
                 convert the results to match the *wks:well:1.0.2*. If convertion is
-                not possible returns an error **500**
+                not possible returns an error **500**. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: get_well_version
       parameters:
         - required: true
@@ -269,6 +271,7 @@ paths:
       tags:
         - Well
       summary: 'Create or update the Wells using wks:well:1.0.2 schema'
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: post_well
       parameters:
         - description: identifier of the data partition to query
@@ -289,6 +292,24 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/well'
+              example:
+                - acl:
+                    viewers:
+                      - 'data.default.viewers@{{datapartitionid}}.{{domain}}.com'
+                    owners:
+                      - 'data.default.owners@{{datapartitionid}}.{{domain}}.com'
+                  data:
+                    name: myWell
+                    uwi: 00-000-00000-00
+                  id: '{{datapartitionid}}:well:myWell'
+                  kind: '{{datapartitionid}}:wks:well:1.0.2'
+                  legal:
+                    legaltags:
+                      - '{{legaltags}}'
+                    otherRelevantDataCountries:
+                      - FR
+                      - US
+                    status: compliant
         required: true
       responses:
         '200':
@@ -318,7 +339,7 @@ paths:
                 *wks:wellbore:1.0.6* returns the record directly</p> <p>If the wellbore
                 kind is different *wks:wellbore:1.0.6* it will get the raw record and
                 convert the results to match the *wks:wellbore:1.0.6*. If convertion is
-                not possible returns an error **500**
+                not possible returns an error **500**. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: get_wellbore
       parameters:
         - required: true
@@ -359,6 +380,7 @@ paths:
       tags:
         - Wellbore
       summary: Delete the wellbore. The API performs a logical deletion of the given record
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: del_wellbore
       parameters:
         - required: true
@@ -405,6 +427,7 @@ paths:
       tags:
         - Wellbore
       summary: Get all versions of the Wellbore
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_wellbore_versions
       parameters:
         - required: true
@@ -451,7 +474,7 @@ paths:
                 *wks:wellbore:1.0.6* returns the record directly</p> <p>If the wellbore
                 kind is different *wks:wellbore:1.0.6* it will get the raw record and
                 convert the results to match the *wks:wellbore:1.0.6*. If convertion is
-                not possible returns an error **500**
+                not possible returns an error **500**. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: get_wellbore_version
       parameters:
         - required: true
@@ -499,6 +522,7 @@ paths:
       tags:
         - Wellbore
       summary: 'Create or update the Wellbores using wks:wellbore:1.0.6 schema'
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: post_wellbore
       parameters:
         - description: identifier of the data partition to query
@@ -519,6 +543,94 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/wellbore'
+              example:
+                - acl:
+                    viewers:
+                      - 'data.default.viewers@{{datapartitionid}}.{{domain}}.com'
+                    owners:
+                      - 'data.default.owners@{{datapartitionid}}.{{domain}}.com'
+                  data:
+                    name: myWellbore
+                    airGap:
+                      unitKey: ft
+                      value: 35
+                    country: United States of America
+                    dateCreated: '2013-03-22T11:16:03.123Z'
+                    dateModified: '2013-03-22T11:16:03.123Z'
+                    locationWGS84:
+                      features:
+                        - geometry:
+                            coordinates:
+                              - - -103.2380248
+                                - 46.8925081
+                                - 5301
+                              - - -103.2380248
+                                - 46.8925081
+                                - 2801
+                              - - -103.2378748
+                                - 46.892608100000004
+                                - 301
+                              - - -103.23742477750001
+                                - 46.89270811
+                                - -2199
+                              - - -103.23667470999663
+                                - 46.892808120001
+                                - -4699
+                              - - -103.2356245974865
+                                - 46.892908130002
+                                - -7199
+                            type: LineString
+                          properties:
+                            name: Newton 2-31-Lat-1
+                          type: Feature
+                      type: FeatureCollection
+                    propertyDictionary:
+                      Country Name: UNITED STATES
+                      Date First Report: 11-12-1982
+                      Date Last Activity: 06-03-2016
+                      Field Name: WILDCAT
+                      Well Num: 34-14
+                    relationships:
+                      well:
+                        confidence: 1
+                        id: '{datapartitionid}:well:myWell'
+                        name: myWell
+                    uwi: 33-089-00300-00-01
+                    wellHeadGeographic:
+                      crsKey: geographic
+                      elevationFromMsl:
+                        unitKey: ft
+                        value: 2650.5
+                      latitude: 46.89249512931594
+                      longitude: -103.23756979739804
+                    wellHeadProjected:
+                      crsKey: projected
+                      elevationFromMsl:
+                        unitKey: ft
+                        value: 2650.5
+                      x: 1315694.366039069
+                      'y': 458966.7531300551
+                    wellHeadWgs84:
+                      latitude: 46.8925081
+                      longitude: -103.2380248
+                    wellboreType: bypass
+                  meta:
+                    - kind: Unit
+                      name: Measure depth default unit
+                      persistableReference: persistableReference
+                      propertyNames:
+                        - symbol
+                      propertyValues:
+                        - ft
+                  id: '{{datapartitionid}}:wellbore:myWellbore'
+                  kind: '{{datapartitionid}}:wks:wellbore:1.0.6'
+                  legal:
+                    legaltags:
+                      - '{{legaltags}}'
+                    otherRelevantDataCountries:
+                      - FR
+                      - US
+                    status: compliant
         required: true
       responses:
         '200':
@@ -543,7 +655,7 @@ paths:
       tags:
         - Logset
       summary: 'Get the LogSet using wks:logSet:1.0.5 schema'
-      description: Get the LogSet object using its **id**
+      description: 'Get the LogSet object using its **id**. <p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_logset
       parameters:
         - required: true
@@ -584,6 +696,7 @@ paths:
       tags:
         - Logset
       summary: Delete the LogSet. The API performs a logical deletion of the given record
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: del_logset
       parameters:
         - required: true
@@ -629,7 +742,8 @@ paths:
     get:
       tags:
         - Logset
-      summary: Get all versions of the logset
+      summary: Get all versions of the logset.
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_logset_versions
       parameters:
         - required: true
@@ -671,7 +785,7 @@ paths:
       tags:
         - Logset
       summary: 'Get the given version of LogSet using wks:logSet:1.0.5 schema'
-      description: '"Get the LogSet object using its **id**.'
+      description: '"Get the LogSet object using its **id**. <p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_logset_version
       parameters:
         - required: true
@@ -719,6 +833,7 @@ paths:
       tags:
         - Logset
       summary: 'Create or update the LogSets using wks:logSet:1.0.5 schema'
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: post_logset
       parameters:
         - description: identifier of the data partition to query
@@ -739,6 +854,55 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/logset'
+              example:
+                - acl:
+                    viewers:
+                      - 'data.default.viewers@{{datapartitionid}}.{{domain}}.com'
+                    owners:
+                      - 'data.default.owners@{{datapartitionid}}.{{domain}}.com'
+                  data:
+                    name: myLogset
+                    channelMnemonics:
+                      - GR
+                      - NPOR
+                      - RHOB
+                    channelNames:
+                      - Gamma Ray
+                      - Neutron Porosity
+                      - Bulk Density
+                    relationships:
+                      well:
+                        confidence: 1
+                        id: '{{datapartitionid}}:well:myWell'
+                        name: myWell
+                      wellbore:
+                        confidence: 1
+                        id: '{{datapartitionid}}:wellbore:myWellbore'
+                        name: myWellbore
+                    elevationReference:
+                      elevationFromMsl:
+                        unitKey: ft
+                        value: 2680.5
+                      name: KB
+                    reference:
+                      dataType: number
+                      dimension: 1
+                      family: Measured Depth
+                      familyType: Depth
+                      format: float32
+                      mnemonic: MD
+                      name: Measured Depth
+                      unitKey: ft
+                    referenceType: Measured Depth
+                  id: '{{datapartitionid}}:logSet:myLogset'
+                  kind: '{{datapartitionid}}:wks:logSet:1.0.5'
+                  legal:
+                    legaltags:
+                      - '{{legaltags}}'
+                    otherRelevantDataCountries:
+                      - FR
+                      - US
+                    status: compliant
         required: true
       responses:
         '200':
@@ -763,7 +927,7 @@ paths:
       tags:
         - Trajectory
       summary: 'Get the trajectory using wks:trajectory:1.0.5 schema'
-      description: Get the Trajectory object using its **id**
+      description: 'Get the Trajectory object using its **id**. <p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_trajectory
       parameters:
         - required: true
@@ -804,6 +968,7 @@ paths:
       tags:
         - Trajectory
       summary: Delete the Trajectory. The API performs a logical deletion of the given record
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: del_trajectory
       parameters:
         - required: true
@@ -841,6 +1006,7 @@ paths:
       tags:
         - Trajectory
       summary: Get all versions of the Trajectory
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_trajectory_versions
       parameters:
         - required: true
@@ -882,6 +1048,7 @@ paths:
       tags:
         - Trajectory
       summary: 'Get the given version of Trajectory using wks:Trajectory:1.0.5 schema'
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_trajectory_version
       parameters:
         - required: true
@@ -929,6 +1096,7 @@ paths:
       tags:
         - Trajectory
       summary: 'Create or update the trajectories using wks:Trajectory:1.0.5 schema'
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: post_trajectory
       parameters:
         - description: identifier of the data partition to query
@@ -949,6 +1117,60 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/trajectory'
+              example:
+                - acl:
+                    viewers:
+                      - 'data.default.viewers@{{datapartitionid}}.{{domain}}.com'
+                    owners:
+                      - 'data.default.owners@{{datapartitionid}}.{{domain}}.com'
+                  data:
+                    azimuthReference: string
+                    channelMnemonics:
+                      - Measured Depth
+                      - True Vertical Depth
+                      - XOffset
+                      - YOffset
+                    channelNames:
+                      - MD
+                      - TVD
+                      - X
+                      - 'Y'
+                    channels:
+                      - dimension: 1
+                        family: Measured Depth
+                        name: MD
+                        unitKey: ft
+                      - dimension: 1
+                        family: True Vertical Depth
+                        name: TVD
+                        unitKey: ft
+                      - dimension: 1
+                        family: XOffset
+                        name: X
+                        unitKey: ft
+                      - dimension: 1
+                        family: YOffset
+                        name: 'Y'
+                        unitKey: ft
+                    name: myTrajectory
+                    relationships:
+                      well:
+                        confidence: 1
+                        id: '{{datapartitionid}}:well:myWell'
+                        name: myWell
+                      wellbore:
+                        confidence: 1
+                        id: '{{datapartitionid}}:wellbore:myWellbore'
+                        name: myWellbore
+                  id: '{{datapartitionid}}:trajectory:myTrajectory'
+                  kind: '{{datapartitionid}}:wks:trajectory:1.0.5'
+                  legal:
+                    legaltags:
+                      - '{{legaltags}}'
+                    otherRelevantDataCountries:
+                      - FR
+                      - US
+                    status: compliant
         required: true
       responses:
         '200':
@@ -973,7 +1195,7 @@ paths:
       tags:
         - Trajectory
       summary: Returns all data within the specified filters. Strongly consistent.
-      description: return full bulk data
+      description: 'return full bulk data. <p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_traj_data
       parameters:
         - required: true
@@ -1017,17 +1239,17 @@ paths:
           description: |-
             Get trajectory data of the given channels.
             It uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
-             Here're examples for data with 5 rows for channels MD, X, Y with different _orient_: 
-            * split:  <br/>`{"columns":["MD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;
-            * index:  <br/>`{"0":{"MD":0.0,"X":1001,"Y":2001},"1":{"MD":0.5,"X":1002,"Y":2002},"2":{"MD":1.0,"X":1003,"Y":2003},"3":{"MD":1.5,"X":1004,"Y":2004},"4":{"MD":2.0,"X":1005,"Y":2005}}`<br/>&nbsp;
-            * columns:  <br/>`{"MD":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"Y":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
-            * records:  <br/>`[{"MD":0.0,"X":1001,"Y":2001},{"MD":0.5,"X":1002,"Y":2002},{"MD":1.0,"X":1003,"Y":2003},{"MD":1.5,"X":1004,"Y":2004},{"MD":2.0,"X":1005,"Y":2005}]`<br/>&nbsp;
-            * values:  <br/>`[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]`<br/>&nbsp;
+             Here're examples for data with 5 rows for channels MD, TVD, X, Y with different _orient_: 
+            * split:  <br/>`{"columns":["MD","TVD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;
+            * index:  <br/>`{"0":{"MD":0.0,"TVD":0.0,"X":1001,"Y":2001},"1":{"MD":0.5,"TVD":0.5,"X":1002,"Y":2002},"2":{"MD":1.0,"TVD":0.75,"X":1003,"Y":2003},"3":{"MD":1.5,"TVD":1.0,"X":1004,"Y":2004},"4":{"MD":2.0,"TVD":1.5,"X":1005,"Y":2005}}`<br/>&nbsp;
+            * columns:  <br/>`{"MD":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"TVD":{"0":0.0,"1":0.5,"2":0.75,"3":1.0,"4":1.5},"X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"Y":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
+            * records:  <br/>`[{"MD":0.0,"TVD":0.0,"X":1001,"Y":2001},{"MD":0.5,"TVD":0.5,"X":1002,"Y":2002},{"MD":1.0,"TVD":0.75,"X":1003,"Y":2003},{"MD":1.5,"TVD":1.0,"X":1004,"Y":2004},{"MD":2.0,"TVD":1.5,"X":1005,"Y":2005}]`<br/>&nbsp;
+            * values:  <br/>`[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]`<br/>&nbsp;
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetLogDataResponse'
-              example: '{"columns":["MD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}'
+              example: '{"columns":["MD","TVD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}'
         '204':
           description: No bulkURI
         '400':
@@ -1049,7 +1271,7 @@ paths:
       tags:
         - Trajectory
       summary: Writes the specified data to the trajectory (atomic).
-      description: Overwrite if exists
+      description: 'Overwrite if exists. <p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: post_traj_data
       parameters:
         - required: true
@@ -1100,16 +1322,16 @@ paths:
         description: |-
           Write trajectory bulk data. Each column corresponds to a channel.
           It uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
-           Here're examples for data with 5 rows and 3 channels (MD, X, Y) with different _orient_: 
-          * split: <br/>`{"columns":["MD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;
-          * index: <br/>`{"0":{"MD":0.0,"X":1001,"Y":2001},"1":{"MD":0.5,"X":1002,"Y":2002},"2":{"MD":1.0,"X":1003,"Y":2003},"3":{"MD":1.5,"X":1004,"Y":2004},"4":{"MD":2.0,"X":1005,"Y":2005}}`<br/>&nbsp;
-          * columns: <br/>`{"MD":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"Y":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
-          * records: <br/>`[{"MD":0.0,"X":1001,"Y":2001},{"MD":0.5,"X":1002,"Y":2002},{"MD":1.0,"X":1003,"Y":2003},{"MD":1.5,"X":1004,"Y":2004},{"MD":2.0,"X":1005,"Y":2005}]`<br/>&nbsp;
+           Here're examples for data with 5 rows and 4 channels (MD, TVD, X, Y) with different _orient_: 
+          * split: <br/>`{"columns":["MD","TVD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;
+          * index: <br/>`{"0":{"MD":0.0,"TVD":0.0,"X":1001,"Y":2001},"1":{"MD":0.5,"TVD":0.5,"X":1002,"Y":2002},"2":{"MD":1.0,"TVD":0.75,"X":1003,"Y":2003},"3":{"MD":1.5,"TVD":1.0,"X":1004,"Y":2004},"4":{"MD":2.0,"TVD":1.5,"X":1005,"Y":2005}}`<br/>&nbsp;
+          * columns: <br/>`{"MD":{"0":0.0,"1":0.5,"2":1.0,"3":1.5,"4":2.0},"TVD":{"0":0.0,"1":0.5,"2":0.75,"3":1.0,"4":1.5},"X":{"0":1001,"1":1002,"2":1003,"3":1004,"4":1005},"Y":{"0":2001,"1":2002,"2":2003,"3":2004,"4":2005}}`<br/>&nbsp;
+          * records: <br/>`[{"MD":0.0,"TVD":0.0,"X":1001,"Y":2001},{"MD":0.5,"TVD":0.5,"X":1002,"Y":2002},{"MD":1.0,"TVD":0.75,"X":1003,"Y":2003},{"MD":1.5,"TVD":1.0,"X":1004,"Y":2004},{"MD":2.0,"TVD":1.5,"X":1005,"Y":2005}]`<br/>&nbsp;
         required: true
         content:
           application/json:
             schema:
-              example: '{"columns":["MD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}'
+              example: '{"columns":["MD","TVD","X","Y"],"index":[0,1,2,3,4],"data":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}'
               oneOf:
                 - title: SplitFormat
                   type: object
@@ -1189,11 +1411,11 @@ paths:
       summary: 'Get the Log using wks:log:1.0.5 schema'
       description: |2-
 
-                        Get the log object using its data ecosystem **id**.  <p>If the log
+        Get the log object using its data ecosystem **id**.  <p>If the log
                         kind is *wks:log:1.0.5* returns the record directly</p> <p>If the
                         wellbore kind is different *wks:log:1.0.5* it will get the raw
                         record and convert the results to match the *wks:log:1.0.5*. If
-                        conversion is not possible returns an error **500**</p>
+                        conversion is not possible returns an error **500**.</p><p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: get_log
       parameters:
         - required: true
@@ -1234,6 +1456,7 @@ paths:
       tags:
         - Log
       summary: Delete the log. The API performs a logical deletion of the given record
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: del_log
       parameters:
         - required: true
@@ -1271,6 +1494,7 @@ paths:
       tags:
         - Log
       summary: 'Create or update the logs using wks:log:1.0.5 schema'
+      description: '<p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: post_log
       parameters:
         - description: identifier of the data partition to query
@@ -1291,6 +1515,64 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/log'
+              example:
+                - acl:
+                    viewers:
+                      - 'data.default.viewers@{{datapartitionid}}.{{domain}}.com'
+                    owners:
+                      - 'data.default.owners@{{datapartitionid}}.{{domain}}.com'
+                  data:
+                    name: myLog_GR
+                    history:
+                      - date: '2019-02-01T11:16:03Z'
+                        description: Fake example
+                        user: BWillis
+                    log:
+                      dataType: number
+                      dimension: 20
+                      family: Gamma Ray
+                      familyType: Gamma Ray
+                      format: float32
+                      mnemonic: GR
+                      name: myLog_GR
+                      properties:
+                        - description: 'Linear depth offset of the channel sensor relative to some reference point, typically the toolstring zero'
+                          name: MEASURE_POINT_OFFSET
+                          unitKey: m
+                          value: 0.264922
+                      unitKey: gAPI
+                    reference:
+                      dataType: number
+                      dimension: 1
+                      family: Measured Depth
+                      familyType: Depth
+                      format: float32
+                      mnemonic: MD
+                      name: Measured Depth
+                      unitKey: ft
+                    referenceType: Measured Depth
+                    relationships:
+                      logSet:
+                        confidence: 1
+                        id: '{{datapartitionid}}:logSet:myLogset'
+                        name: myLogset
+                      well:
+                        confidence: 1
+                        id: '{{datapartitionid}}:well:myWell'
+                        name: myWell
+                      wellbore:
+                        confidence: 1
+                        id: '{{datapartitionid}}:wellbore:myWellbore'
+                        name: myWellbore
+                  id: '{{datapartitionid}}:log:myLog_GR'
+                  kind: '{{datapartitionid}}:wks:log:1.0.5'
+                  legal:
+                    legaltags:
+                      - '{{legaltags}}'
+                    otherRelevantDataCountries:
+                      - FR
+                      - US
+                    status: compliant
         required: true
       responses:
         '200':
@@ -1315,6 +1597,7 @@ paths:
       tags:
         - Log
       summary: Get all versions of the log
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_log_versions
       parameters:
         - required: true
@@ -1356,6 +1639,7 @@ paths:
       tags:
         - Log
       summary: 'Get the given version of log using wks:log:1.0.5 schema'
+      description: '<p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_log_version
       parameters:
         - required: true
@@ -1403,7 +1687,7 @@ paths:
       tags:
         - Log
       summary: Returns all data within the specified filters. Strongly consistent.
-      description: return full bulk data
+      description: 'return full bulk data. <p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_log_data
       parameters:
         - required: true
@@ -1471,7 +1755,7 @@ paths:
       tags:
         - Log
       summary: Writes the specified data to the log (atomic).
-      description: Overwrite if exists
+      description: 'Overwrite if exists. <p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: write_log_data
       parameters:
         - required: true
@@ -1644,7 +1928,7 @@ paths:
       tags:
         - Log
       summary: Writes the data to the log. Support json file (then orient must be provided) and parquet
-      description: Overwrite if exists
+      description: 'Overwrite if exists. <p>Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.</p>'
       operationId: upload_log_data
       parameters:
         - required: true
@@ -1712,7 +1996,7 @@ paths:
       tags:
         - Log
       summary: Data statistics
-      description: 'This API will return count, mean, std, min, max and percentiles of each column'
+      description: 'This API will return count, mean, std, min, max and percentiles of each column. <p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_log_data_statistics_ddms_v2_logs__logid__statistics_get
       parameters:
         - required: true
@@ -1760,7 +2044,7 @@ paths:
       tags:
         - Log
       summary: Returns all data within the specified filters. Strongly consistent.
-      description: return full bulk data
+      description: 'return full bulk data. <p>Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''. In addition, users must be a member of data groups to access the data.</p>'
       operationId: get_log_data_by_version
       parameters:
         - required: true
@@ -1837,7 +2121,7 @@ paths:
       summary: Returns a decimated version of all data within the specified filters. Eventually consistent.
       description: |-
         TODO
-                    Note: row order is not preserved.
+                    Note: row order is not preserved. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>
       operationId: get_log_decimated
       parameters:
         - required: true
@@ -2345,8 +2629,7 @@ components:
           title: Uncertainty
           type: number
           description: The uncertainty of the values measured given the unit or CRS unit.
-      additionalProperties: false
-      description: The base model forbids fields which are not declared initially in the pydantic model
+      description: Used for data model allows extra fields which are not declared initially in the pydantic model
     PlssLocation:
       title: PlssLocation
       required:
@@ -2521,6 +2804,9 @@ components:
       type: object
       properties: {}
       description: Used for data model allows extra fields which are not declared initially in the pydantic model
+    Tags:
+      title: Tags
+      type: string
     ToOneRelationship:
       title: ToOneRelationship
       type: object
@@ -2981,16 +3267,56 @@ components:
       title: log
       type: object
       properties:
-        acl:
-          title: Access Control List
-          allOf:
-            - $ref: '#/components/schemas/TagDictionary'
-          description: The access control tags associated with this entity.
         ancestry:
           title: Ancestry
           allOf:
             - $ref: '#/components/schemas/LinkList'
           description: 'The links to data, which constitute the inputs.'
+        meta:
+          title: Frame of Reference Meta Data
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaItem'
+          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
+        type:
+          title: Entity Type
+          type: string
+          description: 'The reference entity type as declared in common:metadata:entity:*.'
+        tags:
+          title: Tag Dictionary
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Tags'
+          description: A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.
+          example:
+            NameOfKey: String value
+        createTime:
+          title: Resource Object Creation DateTime
+          type: string
+          description: Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:46:20.163Z'
+        createUser:
+          title: Resource Object Creation User Reference
+          type: string
+          description: 'The user reference, which created the first version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        modifyTime:
+          title: Resource Object Version Creation DateTime
+          type: string
+          description: Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:52:24.477Z'
+        modifyUser:
+          title: Resource Object Version Creation User Reference
+          type: string
+          description: 'The user reference, which created this version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        acl:
+          title: Access Control List
+          allOf:
+            - $ref: '#/components/schemas/TagDictionary'
+          description: The access control tags associated with this entity.
         data:
           title: Log Data
           allOf:
@@ -3010,21 +3336,11 @@ components:
           allOf:
             - $ref: '#/components/schemas/Legal'
           description: The log's legal tags
-        meta:
-          title: Frame of Reference Meta Data
-          type: array
-          items:
-            $ref: '#/components/schemas/MetaItem'
-          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
         status:
           title: Entity Status
           type: string
           description: The status of this log
           default: compliant
-        type:
-          title: Entity Type
-          type: string
-          description: 'The reference entity type as declared in common:metadata:entity:*.'
         version:
           title: Entity Version Number
           type: number
@@ -3275,16 +3591,56 @@ components:
       title: logset
       type: object
       properties:
-        acl:
-          title: Access Control List
-          allOf:
-            - $ref: '#/components/schemas/TagDictionary'
-          description: The access control tags associated with this entity.
         ancestry:
           title: Ancestry
           allOf:
             - $ref: '#/components/schemas/LinkList'
           description: 'The links to data, which constitute the inputs.'
+        meta:
+          title: Frame of Reference Meta Data
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaItem'
+          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
+        type:
+          title: Entity Type
+          type: string
+          description: 'The reference entity type as declared in common:metadata:entity:*.'
+        tags:
+          title: Tag Dictionary
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Tags'
+          description: A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.
+          example:
+            NameOfKey: String value
+        createTime:
+          title: Resource Object Creation DateTime
+          type: string
+          description: Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:46:20.163Z'
+        createUser:
+          title: Resource Object Creation User Reference
+          type: string
+          description: 'The user reference, which created the first version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        modifyTime:
+          title: Resource Object Version Creation DateTime
+          type: string
+          description: Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:52:24.477Z'
+        modifyUser:
+          title: Resource Object Version Creation User Reference
+          type: string
+          description: 'The user reference, which created this version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        acl:
+          title: Access Control List
+          allOf:
+            - $ref: '#/components/schemas/TagDictionary'
+          description: The access control tags associated with this entity.
         data:
           title: Log Set Data
           allOf:
@@ -3304,16 +3660,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/Legal'
           description: The log-set's legal tags
-        meta:
-          title: Frame of Reference Meta Data
-          type: array
-          items:
-            $ref: '#/components/schemas/MetaItem'
-          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
-        type:
-          title: Entity Type
-          type: string
-          description: 'The reference entity type as declared in common:metadata:entity:*.'
         version:
           title: Entity Version Number
           type: number
@@ -3414,16 +3760,56 @@ components:
       title: trajectory
       type: object
       properties:
-        acl:
-          title: Access Control List
-          allOf:
-            - $ref: '#/components/schemas/TagDictionary'
-          description: The access control tags associated with this entity.
         ancestry:
           title: Ancestry
           allOf:
             - $ref: '#/components/schemas/LinkList'
           description: 'The links to data, which constitute the inputs.'
+        meta:
+          title: Frame of Reference Meta Data
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaItem'
+          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
+        type:
+          title: Entity Type
+          type: string
+          description: 'The reference entity type as declared in common:metadata:entity:*.'
+        tags:
+          title: Tag Dictionary
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Tags'
+          description: A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.
+          example:
+            NameOfKey: String value
+        createTime:
+          title: Resource Object Creation DateTime
+          type: string
+          description: Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:46:20.163Z'
+        createUser:
+          title: Resource Object Creation User Reference
+          type: string
+          description: 'The user reference, which created the first version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        modifyTime:
+          title: Resource Object Version Creation DateTime
+          type: string
+          description: Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:52:24.477Z'
+        modifyUser:
+          title: Resource Object Version Creation User Reference
+          type: string
+          description: 'The user reference, which created this version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        acl:
+          title: Access Control List
+          allOf:
+            - $ref: '#/components/schemas/TagDictionary'
+          description: The access control tags associated with this entity.
         data:
           title: Trajectory Data
           allOf:
@@ -3443,16 +3829,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/Legal'
           description: The trajectory's legal tags
-        meta:
-          title: Frame of Reference Meta Data
-          type: array
-          items:
-            $ref: '#/components/schemas/MetaItem'
-          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
-        type:
-          title: Entity Type
-          type: string
-          description: 'The reference entity type as declared in common:metadata:entity:*.'
         version:
           title: Entity Version Number
           type: number
@@ -3649,16 +4025,56 @@ components:
       title: well
       type: object
       properties:
-        acl:
-          title: Access Control List
-          allOf:
-            - $ref: '#/components/schemas/TagDictionary'
-          description: The access control tags associated with this entity.
         ancestry:
           title: Ancestry
           allOf:
             - $ref: '#/components/schemas/LinkList'
           description: 'The links to data, which constitute the inputs.'
+        meta:
+          title: Frame of Reference Meta Data
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaItem'
+          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
+        type:
+          title: Entity Type
+          type: string
+          description: 'The reference entity type as declared in common:metadata:entity:*.'
+        tags:
+          title: Tag Dictionary
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Tags'
+          description: A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.
+          example:
+            NameOfKey: String value
+        createTime:
+          title: Resource Object Creation DateTime
+          type: string
+          description: Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:46:20.163Z'
+        createUser:
+          title: Resource Object Creation User Reference
+          type: string
+          description: 'The user reference, which created the first version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        modifyTime:
+          title: Resource Object Version Creation DateTime
+          type: string
+          description: Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:52:24.477Z'
+        modifyUser:
+          title: Resource Object Version Creation User Reference
+          type: string
+          description: 'The user reference, which created this version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        acl:
+          title: Access Control List
+          allOf:
+            - $ref: '#/components/schemas/TagDictionary'
+          description: The access control tags associated with this entity.
         data:
           title: Well Data
           allOf:
@@ -3678,16 +4094,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/Legal'
           description: The geological interpretation's legal tags
-        meta:
-          title: Frame of Reference Meta Data
-          type: array
-          items:
-            $ref: '#/components/schemas/MetaItem'
-          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
-        type:
-          title: Entity Type
-          type: string
-          description: 'The reference entity type as declared in common:metadata:entity:*.'
         version:
           title: Entity Version Number
           type: number
@@ -3884,16 +4290,56 @@ components:
       title: wellbore
       type: object
       properties:
-        acl:
-          title: Access Control List
-          allOf:
-            - $ref: '#/components/schemas/TagDictionary'
-          description: The access control tags associated with this entity.
         ancestry:
           title: Ancestry
           allOf:
             - $ref: '#/components/schemas/LinkList'
           description: 'The links to data, which constitute the inputs.'
+        meta:
+          title: Frame of Reference Meta Data
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaItem'
+          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
+        type:
+          title: Entity Type
+          type: string
+          description: 'The reference entity type as declared in common:metadata:entity:*.'
+        tags:
+          title: Tag Dictionary
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Tags'
+          description: A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.
+          example:
+            NameOfKey: String value
+        createTime:
+          title: Resource Object Creation DateTime
+          type: string
+          description: Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:46:20.163Z'
+        createUser:
+          title: Resource Object Creation User Reference
+          type: string
+          description: 'The user reference, which created the first version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        modifyTime:
+          title: Resource Object Version Creation DateTime
+          type: string
+          description: Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.
+          format: date-time
+          example: '2020-12-16T11:52:24.477Z'
+        modifyUser:
+          title: Resource Object Version Creation User Reference
+          type: string
+          description: 'The user reference, which created this version of this resource object. Set by the System.'
+          example: some-user@some-company-cloud.com
+        acl:
+          title: Access Control List
+          allOf:
+            - $ref: '#/components/schemas/TagDictionary'
+          description: The access control tags associated with this entity.
         data:
           title: Wellbore Data
           allOf:
@@ -3913,16 +4359,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/Legal'
           description: The geological interpretation's legal tags
-        meta:
-          title: Frame of Reference Meta Data
-          type: array
-          items:
-            $ref: '#/components/schemas/MetaItem'
-          description: 'The meta data section linking the ''unitKey'', ''crsKey'' to self-contained definitions (persistableReference)'
-        type:
-          title: Entity Type
-          type: string
-          description: 'The reference entity type as declared in common:metadata:entity:*.'
         version:
           title: Entity Version Number
           type: number

@@ -18,7 +18,7 @@
             ],
             "log": {
                 "dataType": "number",
-                "dimension": 20,
+                "dimension": 1,
                 "family": "Gamma Ray",
                 "familyType": "Gamma Ray",
                 "format": "float32",

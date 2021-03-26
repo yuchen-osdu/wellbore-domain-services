@@ -15,11 +15,10 @@
 import pytest
 from ..request_runner import RequestRunner, Request
 from .fixtures import with_wdms_env
-from ..request_builders import build_request
+from ..request_builders import build_request, get_cleaned_ref_and_res
 
 
-kind_list = ['well', 'wellbore', 'logset', 'marker', 'trajectory', 'log']
-
+kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog']
 
 # parametrize of kind + dependency on the create_record
 param_kind_depend_on_create = [
@@ -44,8 +43,9 @@ def test_crud_create_record(with_wdms_env, kind):
 def test_crud_get_record(with_wdms_env, kind):
     result = build_request(f'crud.{kind}.get_{kind}').call(with_wdms_env)
     result.assert_ok()
-    resobj = result.get_response_obj()
-    assert resobj.data.name == f'wdms_e2e_{kind}'
+    res_dict = result.get_response_obj().toDict()
+    ref, res = get_cleaned_ref_and_res(kind, res_dict)
+    assert ref == res
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
@@ -67,8 +67,6 @@ def test_crud_record_versions(with_wdms_env, kind):
     )
 
     result.assert_ok()
-    resobj = result.get_response_obj()
-    assert resobj.data.name == f'wdms_e2e_{kind}'
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke')

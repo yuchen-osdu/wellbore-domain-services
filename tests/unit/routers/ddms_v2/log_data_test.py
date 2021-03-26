@@ -35,7 +35,8 @@ from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
 
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from fastapi import status
+
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
@@ -136,7 +137,7 @@ def test_log_get_data_orient_param_validation(client_with_log, orient_value):
 def test_log_get_orient_param_validation_negative(client_with_log):
     client, log_id, _ = client_with_log
     response = client.get(f"/ddms/v2/logs/{log_id}/data", params={"orient":"wrong_orient"}, headers=headers)
-    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 @pytest.mark.parametrize("orient_value, data",
@@ -182,7 +183,7 @@ def test_log_post_data_orient_param_validation(client_with_log, orient_value, da
 def test_log_post_data_orient_param_validation_negative(client_with_log):
     client, log_id, _ = client_with_log
     response = client.post(f"/ddms/v2/logs/{log_id}/data", params={"orient": "wrong_orient"}, json={}, headers=headers)
-    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 def test_log_version_data(client_with_log):
@@ -208,4 +209,4 @@ def test_log_version_data_orient_param_validation_negative(client_with_log):
 
     # get data for previous version
     response = client.get(f"/ddms/v2/logs/{log_id}/versions/{version_id}/data", params={"orient": "wrong"}, headers=headers)
-    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
