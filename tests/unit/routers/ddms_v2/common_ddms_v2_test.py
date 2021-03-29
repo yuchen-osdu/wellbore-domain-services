@@ -16,8 +16,8 @@ import json
 
 import mock
 import pytest
-import starlette.status as status
-from fastapi import HTTPException, Header
+
+from fastapi import HTTPException, Header, status
 from fastapi.testclient import TestClient
 from odes_search.models import CursorQueryResponse
 from odes_storage.models import RecordVersions, CreateUpdateRecordsResponse
@@ -28,6 +28,7 @@ from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.model.entity_utils import Entity
 from app.model.model_curated import *
+from app.model.osdu_model import Wellbore, Well, WellLog
 from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.routers.search.search_wrapper import SearchWrapper
 from app.utils import Context
@@ -42,14 +43,47 @@ tests_parameters = [
     ('/ddms/v2/logs', log(id='123456', data={})),
     ('/ddms/v2/logsets', logset(id='123456', data={})),
     ('/ddms/v2/dipsets', dipset(id="123456", data={})),
-    ('/ddms/v2/markers', marker(acl={},
+    ('/ddms/v2/markers', marker(acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
                                 kind='opendes:wks:marker:1.0.4',
                                 legal=Legal(),
                                 data=markerData(md=ValueWithUnit(value=1.0, unitKey='m'), name='name'),
                                 id='123456')),
     ('/ddms/v2/trajectories', trajectory(id='123456', data={})),
     ('/ddms/v2/wellbores', wellbore(id='123456', data={})),
-    ('/ddms/v2/wells', well(id='123456', data={}))
+    ('/ddms/v2/wells', well(id='123456', data={})),
+    ('/ddms/v3/wellbores',         Wellbore(
+            id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
+            kind="namespace:osdu:Wellbore:2.7.112",
+            groupType="master-data",
+            acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+            legal={
+                "legaltags": ["string"],
+                "otherRelevantDataCountries": ["FR"],
+            },
+            data={},
+        )),
+    ('/ddms/v3/wells', Well(
+        id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        kind="namespace:osdu:Well:2.7.112",
+        groupType="master-data",
+        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+        legal={
+            "legaltags": ["string"],
+            "otherRelevantDataCountries": ["FR"],
+        },
+        data={},
+    )),
+    ('/ddms/v3/welllogs', WellLog(
+        id=r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        kind="namespace:osdu:WellLog:2.7.112",
+        groupType="master-data",
+        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+        legal={
+            "legaltags": ["string"],
+            "otherRelevantDataCountries": ["FR"],
+        },
+        data={},
+    )),
 ]
 
 
@@ -331,7 +365,7 @@ def test_post_records_successful(client, base_url, record_obj):
 
     # done this way because of the current inconsistency of root fields between wdms model vs storage client model
     record_dict_list = [
-        make_record(True, data=record_obj.data.dict()) for _ in expected_response.record_ids
+        make_record(True, **(record_obj.dict(exclude_unset=True))) for _ in expected_response.record_ids
     ]
 
     moc_create_or_update_records = mock.AsyncMock(return_value=expected_response)

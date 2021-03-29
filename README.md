@@ -55,7 +55,6 @@ Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is
   - osdu-core-lib-python-azure
 
 - Client libraries for OSDU data ecosystem services
-  - osdu-data-ecosystem-entitlements
   - osdu-data-ecosystem-search
   - osdu-data-ecosystem-storage
 
@@ -83,17 +82,13 @@ Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is
     source env/bin/activate
     ```
 
-3. Create pip.ini (Windows) or pip.conf (MacOS and Linux) file inside the `env` directory. This allows us to set a global index url which can download packages/libraries needed from the AzDO artifacts. There are several ways to add this extra index url:
-
-    - It is also possible to use [--extra-index-url](https://pip.pypa.io/en/stable/reference/pip_install/#install-extra-index-url) parameter to specify it on the pip install cmd inline
-
-4. Install dependencies
+5. Install dependencies
 
     ```bash
     pip install -r requirements.txt
     ```
 
-5. Run the service
+6. Run the service
 
     ```bash
     # Run the service which will default to http://127.0.0.1:8080
@@ -106,10 +101,10 @@ Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is
     If host is `127.0.0.1` or `localhost`, the dev_mode is automatically set to True.
     The only significant change if dev_mode is on, is that configuration errors at startup are logged but don’t prevent the service to run, and allow to override some implementations.
 
-The hosts for the entitlements, search and storage services have to be provided as environment variables, or on the command line.
+The hosts for the search and storage services have to be provided as environment variables, or on the command line.
 
 ```bash
-python main.py -e SERVICE_HOST_ENTITLEMENTS https://api.example.com/entitlements -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVICE_HOST_SEARCH https://api.example.com/search
+python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVICE_HOST_SEARCH https://api.example.com/search
 ```
 
 ### Connect and Run Endpoints
@@ -146,7 +141,6 @@ python main.py -e SERVICE_HOST_ENTITLEMENTS https://api.example.com/entitlements
 - The following environment variables are required when the cloud provider is set to GCP:
   - OS_WELLBORE_DDMS_DATA_PROJECT_ID: GCP Data Tenant ID
   - OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS: path to the key file of the SA to access the data tenant
-  - SERVICE_HOST_ENTITLEMENTS: The Entitlements Service host
   - SERVICE_HOST_SEARCH: The Search Service host
   - SERVICE_HOST_STORAGE: The Storage Service host
 
@@ -154,14 +148,12 @@ python main.py -e SERVICE_HOST_ENTITLEMENTS https://api.example.com/entitlements
   python main.py -e CLOUD_PROVIDER gcp \
   -e OS_WELLBORE_DDMS_DATA_PROJECT_ID projectid \
   -e OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS pathtokeyfile \
-  -e SERVICE_HOST_ENTITLEMENTS entitlement_host \
   -e SERVICE_HOST_SEARCH search_host \
   -e SERVICE_HOST_STORAGE storage_host
   ```
 
 - The following environment variables are required when the cloud provider is set to Azure:
   - AZ_AI_INSTRUMENTATION_KEY: Azure Application Insights instrumentation key
-  - SERVICE_HOST_ENTITLEMENTS: The Entitlements Service host
   - SERVICE_HOST_SEARCH: The Search Service host
   - SERVICE_HOST_STORAGE: The Storage Service host
   - SERVICE_HOST_PARTITION: The Partition Service internal host
@@ -171,7 +163,6 @@ python main.py -e SERVICE_HOST_ENTITLEMENTS https://api.example.com/entitlements
   ```bash
   python main.py -e CLOUD_PROVIDER az \
   -e AZ_AI_INSTRUMENTATION_KEY instrumentationkey \
-  -e SERVICE_HOST_ENTITLEMENTS entitlement_host \
   -e SERVICE_HOST_SEARCH search_host \
   -e SERVICE_HOST_STORAGE storage_host \
   -e SERVICE_HOST_PARTITION partition_host \
@@ -267,17 +258,12 @@ Then access app on `http://127.0.0.1:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
 
 #### Build Image
 
-A Personal Access Token (PAT) is required to pull all the python packages.
-
 ```bash
-# Set PIP_EXTRA_URL
-PIP_EXTRA_URL=https://community.opengroup.org/groups/osdu/platform/domain-data-mgmt-services/wellbore/-/packages
-
 # Set IMAGE_TAG
 IMAGE_TAG="os-wellbore-ddms:dev"
 
 # Build Image
-docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_EXTRA_URL=$PIP_EXTRA_URL --build-arg PIP_WHEEL_DIR=python-packages
+docker build -t=$IMAGE_TAG --rm . -f ./build/dockerfile --build-arg PIP_WHEEL_DIR=python-packages
 ```
 
 #### Run Image

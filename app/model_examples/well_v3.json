@@ -1,0 +1,30 @@
+[
+    {
+        "acl": {
+            "viewers": [
+                "data.default.viewers@{{datapartitionid}}.{{domain}}"
+            ],
+            "owners": [
+                "data.default.owners@{{datapartitionid}}.{{domain}}"
+            ]
+        },
+        "data": {
+            "name": "{{wellName}}",
+            "ExtensionProperties": {
+                "UWI": "20-000-00000-00"
+            }
+        },
+        "id": "{{datapartitionid}}:master-data--Well:{{wellId}}",
+        "kind": "osdu:wks:master-data--Well:1.0.0",
+        "legal": {
+            "legaltags": [
+                "{{legaltags}}"
+            ],
+            "otherRelevantDataCountries": [
+                "FR",
+                "US"
+            ],
+            "status": "compliant"
+        }
+    }
+]

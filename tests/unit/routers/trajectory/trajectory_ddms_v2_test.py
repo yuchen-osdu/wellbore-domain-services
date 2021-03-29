@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
+
 from tempfile import TemporaryDirectory
 
 from fastapi.testclient import TestClient
-from fastapi import Header
-from starlette.status import HTTP_204_NO_CONTENT, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_400_BAD_REQUEST
+from fastapi import Header, status
+
 import pytest
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -146,7 +146,7 @@ def test_traj_bulk(client, orient_value, data):
 
     # get data
     response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
-    assert response.status_code == HTTP_204_NO_CONTENT, "GET trajectory data should return 204 when trajectory doesn't have data"
+    assert response.status_code == status.HTTP_204_NO_CONTENT, "GET trajectory data should return 204 when trajectory doesn't have data"
 
     # add data to the traj
     response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data, headers=headers)
@@ -195,7 +195,7 @@ def test_traj_bulk(client, orient_value, data):
     # get unknow channels
     response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient=columns&channels=X&channels=Wrong",
                           headers=headers)
-    assert response.status_code == HTTP_400_BAD_REQUEST, "Get unknown channels data should fail with code 400"
+    assert response.status_code == status.HTTP_400_BAD_REQUEST, "Get unknown channels data should fail with code 400"
     assert response.reason == "Bad Request"
     assert response.text == '{"detail":"\\"[\'Wrong\'] not in index\\""}'
 
@@ -218,9 +218,9 @@ def test_get_data_orient_param_validation_negative(client, orient_value, data):
 
     # get data
     response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
-    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     # add data to the traj
     response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data,
                            headers=headers)
-    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

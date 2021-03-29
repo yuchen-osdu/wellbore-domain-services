@@ -306,3 +306,22 @@ def test_model_allow_extra_field_in_relationship_success(model_cls, data_content
     assert record_obj.data['relationships']['extra_field_in_relationship'] == "extra_value"
     parsed_obj = utils.from_record(model_cls, record_obj)
     assert parsed_obj.data.relationships.extra_field_in_relationship == "extra_value"
+
+
+def test_meta_item_should_allow_extra():
+    example = {
+        "format": "yyyy-MM-ddTHH:mm:ssZ",
+        "kind": "DateTime",
+        "name": "datetime",
+        "persistableReference": "UTC",
+        "propertyNames": [
+            "dateLicenseIssued",
+            "dateModified",
+            "dateCreated",
+            "datePluggedAbandoned",
+            "dateSpudded"
+        ]
+    }
+    parsed = models.MetaItem.parse_obj(example)
+    assert 'format' in parsed.dict().keys()
+    assert parsed.format == 'yyyy-MM-ddTHH:mm:ssZ'

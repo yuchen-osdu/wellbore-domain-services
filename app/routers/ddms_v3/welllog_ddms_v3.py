@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Response, status, Body
 
 
 from app.clients.storage_service_client import get_storage_record_service
@@ -25,6 +25,7 @@ from app.model.osdu_model import WellLog
 from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
+from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 
 
@@ -136,7 +137,7 @@ async def get_osdu_welllog_version(
     },
 )
 async def post_welllog_osdu(
-    welllogs: List[WellLog], ctx: Context = Depends(get_ctx)
+    welllogs: List[WellLog]= Body(..., example= load_schema_example("wellLog_v3.json")), ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
 
     storage_client = await get_storage_record_service(ctx)
