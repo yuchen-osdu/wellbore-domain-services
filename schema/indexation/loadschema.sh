@@ -3,8 +3,9 @@
 set -e
 
 if [ $# -ne 3 ]
-  then
+then
     echo "Usage ./loadSchema.sh $BASE_URL $DATA_PARTITION $TOKEN"
+    exit -1
 fi
 
 BASE_URL=$1
