@@ -23,8 +23,7 @@ phases:
   install:
     commands:
       - apt-get update -y
-      - echo "Installing requirements_dev.txt"
-      - pip install -r ./requirements_dev.txt
+  
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR..."
@@ -45,21 +44,14 @@ phases:
       - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh
       - ./tests/aws-test/build-aws/prepare-dist.sh
 
-      - echo "Installing requirements.txt"
-      - export AWS_ACCOUNT_ID=`aws sts get-caller-identity | grep Account | cut -d':' -f 2 | cut -d'"' -f 2`
-      - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository osdu-python --region $AWS_REGION
-      - pip install -r ./provider/os-wellbore-ddms-aws/build-aws/requirements.txt
+      - pip install -r ./requirements.txt
+      - pip install -r ./requirements_dev.txt
 
       - echo "Logging into Docker Hub..."
       - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 
       - echo "Building docker image..."
-      # Set PIP_EXTRA_URL
-      - export PIP_EXTRA_URL=https://community.opengroup.org/groups/osdu/platform/domain-data-mgmt-services/wellbore/-/packages
-
-      - export CODEARTIFACT_TOKEN=`aws codeartifact get-authorization-token --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --query authorizationToken --output text`
-
-      - docker build -f provider/os-wellbore-ddms-aws/build-aws/builder.Dockerfile --build-arg aws_account_url=${AWS_OSDU_DEV_PYPI_URL} --build-arg token=${CODEARTIFACT_TOKEN} --build-arg PIP_EXTRA_URL=$PIP_EXTRA_URL --build-arg PIP_WHEEL_DIR=python-packages -t ${ECR_IMAGE} .
+      - docker build -f provider/os-wellbore-ddms-aws/build-aws/Dockerfile -t ${ECR_IMAGE} .
       - docker tag  ${ECR_IMAGE} ${ECR_IMAGE_BRANCH_LATEST}
       - echo "Pushing docker image..."
       - docker push ${ECR_IMAGE}

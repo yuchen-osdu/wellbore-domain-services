@@ -27,6 +27,7 @@ tenant='opendes'
 acl_domain='testing.com' 
 legal_tag='opendes-sdmstestlegaltag'
 
+
 #### RUN INTEGRATION TEST #########################################################################
 
 echo 'Generating token...'
@@ -41,29 +42,6 @@ source env/bin/activate
 pip install -r ./aws-test/build-aws/requirements.txt
 rm -rf test-reports/
 mkdir test-reports
-
-cd indexation
-
-schemaFiles=$(ls *.json)
-for schemaFile in $schemaFiles 
-do
-    echo "loading $schemaFile: "
-    schema=$(sed "s/DATA_PARTITION_TAG/${tenant}/" ${schemaFile})
-    echo $schema | head -c 100
-    echo "..."
-
-    curl \
-    --location \
-    --request POST "${AWS_BASE_URL}/api/storage/v2/schemas" \
-    --header "Content-Type: application/json" \
-    --header "data-partition-id: ${tenant}" \
-    --header "Authorization: Bearer ${token}" \
-    --data-raw "${schema}"
-
-    echo ""
-    echo "---"
-done
-cd ..
 
 cd integration
 

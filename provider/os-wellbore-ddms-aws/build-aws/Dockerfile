@@ -14,13 +14,7 @@
 
 FROM python:3.7-slim-buster
 
-ARG aws_account_url="dev"
-COPY provider/os-wellbore-ddms-aws/build-aws/requirements.txt .
-COPY requirements_dev.txt .
-RUN pip install awscli
-
-ARG token="token"
-RUN pip config set global.index-url https://aws:${token}@${aws_account_url}
+COPY requirements.txt requirements_dev.txt ./
 
 RUN pip install -r requirements.txt
 RUN pip install -r requirements_dev.txt
