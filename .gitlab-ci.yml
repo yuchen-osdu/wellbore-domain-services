@@ -22,6 +22,11 @@ variables:
   AZURE_DOCKER_SUBDIR: build/Dockerfile
   AZURE_TEST_SUBDIR: tests/integration
   AZURE_TEST_TYPE: python
+
+  AWS_SERVICE: wellbore-ddms
+  AWS_ENVIRONMENT: dev
+  AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
+  AWS_TEST_SUBDIR: tests/aws-test
  
 include:
   - project: "osdu/platform/ci-cd-pipelines"
@@ -43,6 +48,9 @@ include:
     file: 'cloud-providers/ibm-wellbore.yml'
 
   - local: "/devops/azure/azure-wellbore.yml"
+
+  - project: 'osdu/platform/ci-cd-pipelines'
+    file: 'cloud-providers/aws.yml'
 # --------------------------------------------------------------------------------
 
 containerize:
