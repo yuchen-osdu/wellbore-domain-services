@@ -26,7 +26,8 @@ variables:
   AWS_SERVICE: wellbore-ddms
   AWS_ENVIRONMENT: dev
   AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
-  AWS_TEST_SUBDIR: tests/aws-test
+  AWS_TEST_SUBDIR: tests/aws-test/build-aws
+  AWS_INT_TEST_TYPE: python
  
 include:
   - project: "osdu/platform/ci-cd-pipelines"
