@@ -4,7 +4,7 @@
 # echo $(ls)
 
 # echo "*********Am I at tests dir???**********"
-# cd ../../../
+cd ../../../
 # echo $(pwd)
 # echo $(ls)
 
