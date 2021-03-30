@@ -1,19 +1,12 @@
 #!/usr/bin/env bash
-# echo "**********Current Dir ***********************"
-# echo $(pwd)
-# echo $(ls)
-
-# echo "*********Am I at tests dir???**********"
+# from tests/aws-test/build-aws/ goes up to the tests dir.
 cd ../../../
-# echo $(pwd)
-# echo $(ls)
 
 # Install venv for python3
 which apt-get && sudo apt-get install -y python3 python3-pip python3-venv || echo "Not Ubuntu, skipping"
 which yum && sudo yum install -y python3 python3-pip python3-venv || echo "Not RHEL, skipping"
 
 python3 -m venv env
-# sed -i 's/$1/${1:-}/' env/bin/activate # Fix deactivation bug '$1 unbound variable'
 source env/bin/activate
 python3 -m pip install --upgrade pip
 python3 -m pip install -r requirements.txt
