@@ -97,10 +97,10 @@ class ConfigurationContainer:
 
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
-        description='Short name of the current cloud provider environment, must be "gcp" or "az" or "ibm',
+        description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm',
         default=None,
         is_mandatory=True,
-        allowed_values=['gcp', 'az', 'local', 'ibm'],
+        allowed_values=['aws', 'gcp', 'az', 'local', 'ibm'],
         factory=lambda x: x.lower()
     )
 
@@ -287,7 +287,19 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             default='logstore-ibm',
                             is_mandatory=True,
                             override=True)
-
+    if provider == 'aws':
+        config.add_from_env(attribute_name='aws_region',
+                            env_var_key='AWS_REGION',
+                            description='AWS data tenant ID',
+                            default='us-east-1',
+                            is_mandatory=True,
+                            override=True)
+        config.add_from_env(attribute_name='aws_env',
+                            env_var_key='ENVIRONMENT',
+                            description='AWS ResourcePrefix',
+                            default='osdu-',
+                            is_mandatory=True,
+                            override=True)
 # Global config instance
 Config = ConfigurationContainer.with_load_all(contextual_loader=cloud_provider_additional_environment)
 

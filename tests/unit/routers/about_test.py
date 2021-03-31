@@ -56,7 +56,7 @@ def test_about_contains_build_n_version(client):
     assert response_json['version']
 
 
-@pytest.mark.parametrize("cloud_provider", ['Azure', 'gcp', 'unknown', None])
+@pytest.mark.parametrize("cloud_provider", ['Azure', 'gcp', 'unknown', 'aws', None])
 def test_about_with_cloud_provider(client, cloud_provider):
 
     Config.cloud_provider.value = cloud_provider

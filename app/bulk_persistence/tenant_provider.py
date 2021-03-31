@@ -39,6 +39,12 @@ async def resolve_tenant(data_partition_id: str) -> Tenant:
             bucket_name='logstore-osdu-ibm'
         )
 
+    if Config.cloud_provider.value == 'aws':
+        return Tenant(
+            data_partition_id=data_partition_id,
+            project_id='',
+            bucket_name=f'{data_partition_id}-logstore-osdu' #folder name
+        )
     return Tenant(
             data_partition_id=data_partition_id,
             project_id='undefined',
