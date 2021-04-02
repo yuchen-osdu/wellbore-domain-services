@@ -8,7 +8,6 @@ configMap:
     cloudProvider: gcp
     projectId: nice-etching-277309
     searchEndpoint: https://os-search-attcrcktoa-uc.a.run.app/api/search
-    entitlementsEndpoint: https://os-entitlements-gcp-attcrcktoa-uc.a.run.app/entitlements/v1/
     storageEndpoint: https://os-storage-attcrcktoa-uc.a.run.app/api/storage
   name: wellbore
 
