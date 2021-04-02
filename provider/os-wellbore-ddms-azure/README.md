@@ -14,7 +14,6 @@ In order to run this service locally, you will need the following:
 ## Service Dependencies
 - [Storage Service](https://community.opengroup.org/osdu/platform/system/storage)
 - [Search Service](https://community.opengroup.org/osdu/platform/system/search-service)
-- [Entitlements Service](https://community.opengroup.org/osdu/platform/security-and-compliance/entitlements)
 
 > Add service dependencies here
 
@@ -40,7 +39,6 @@ az keyvault secret show --vault-name $KEY_VAULT_NAME --name $KEY_VAULT_SECRET_NA
 | `CLOUDPROVIDER` | `azure` | Cloud provider for this deployment | no | Constant |
 | `SERVICE_HOST` | `$DNS_HOST` | Description | no |  |
 | `SERVICE_PORT` | `8080` | Description | no |  |
-| `SERVICE_HOST_ENTITLEMENTS` | `https://${ENV_HOST}/entitlements/v1` | Entitlements service host | no | 
 | `SERVICE_HOST_STORAGE` | `https://${ENV_HOST}/api/storage/v2` | Storage service host | no | 
 | `SERVICE_HOST_SEARCH` | `https://${ENV_HOST}/api/search/v2` | Search service host | no | 
 | `SERVICE_HOST_PARTITION` | `https://${ENV_HOST}/api/partition/v2` | Partition service host | no | 

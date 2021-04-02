@@ -48,7 +48,6 @@ labels:
 
 configMap:
   data:
-    entitlementsEndpoint: http://entitlements-azure.osdu/api/entitlements
     storageEndpoint: http://storage.osdu/api/storage
     searchEndpoint: http://search-service.osdu/api/search
     partitionEndpoint: http://partition.osdu/api/partition

@@ -30,8 +30,6 @@
   variables:
     LOG_LEVEL: INFO
     # Common Section
-    ENTITLEMENT_URL: https://${AZURE_DNS_NAME}/entitlements/v1/
-    ENTITLEMENT_V2_URL: https://${AZURE_DNS_NAME}/api/entitlements/v2/
     LEGAL_URL: https://${AZURE_DNS_NAME}/api/legal/v1/
     STORAGE_URL: https://${AZURE_DNS_NAME}/api/storage/v2/
     SEARCH_URL: https://${AZURE_DNS_NAME}/api/search/v2/

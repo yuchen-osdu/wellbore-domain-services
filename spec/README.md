@@ -32,4 +32,4 @@ Log Recognition	| OSDU Wellbore DMS - Data Services | baseURL/osdu/wdms/log-reco
 `geology.yaml`, `log-recognition.yaml`, `search.yaml`, and `wellbore.yaml`, placed under `spec/edited`.
 
 
-_**Latest synced version:**_ Commit REMOVED_FOR_CICD_SCAN (Dec/10/2020)
+_**Latest synced version:**_ Commit 6bad362 (Dec/10/2020)
