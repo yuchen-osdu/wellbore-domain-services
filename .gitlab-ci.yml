@@ -17,17 +17,14 @@ variables:
 
   OSDU_GCP_APPLICATION_NAME: wellbore-ddms
   OSDU_GCP_VENDOR: gcp
+  OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
+  OSDU_GCP_APPLICATION_HEALTH_URL: https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz
+  OSDU_GCP_HELM_CHART: wellbore
 
   AZURE_SERVICE: wellbore-ddms
   AZURE_DOCKER_SUBDIR: build/Dockerfile
   AZURE_TEST_SUBDIR: tests/integration
   AZURE_TEST_TYPE: python
-
-  AWS_SERVICE: wellbore-ddms
-  AWS_ENVIRONMENT: dev
-  AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
-  AWS_TEST_SUBDIR: tests/aws-test/build-aws
-  AWS_INT_TEST_TYPE: python
  
 include:
   - project: "osdu/platform/ci-cd-pipelines"
@@ -43,16 +40,12 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/osdu-gcp-cloudrun.yml'
+    file: 'cloud-providers/osdu-gcp-stateful-k8s.yml'
 
   - project: 'osdu/platform/ci-cd-pipelines'
     file: 'cloud-providers/ibm-wellbore.yml'
 
   - local: "/devops/azure/azure-wellbore.yml"
-
-  - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/aws.yml'
-
 # --------------------------------------------------------------------------------
 
 containerize:
@@ -64,7 +57,6 @@ containerize:
   tags: ['osdu-medium']
   variables:
       IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
-
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
     - apk update
@@ -88,42 +80,25 @@ containerize:
     - docker push $CI_REGISTRY_IMAGE:latest
 
 osdu-gcp-containerize:
+  cache: {}
+  tags: [ 'osdu-medium' ]
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
   script:
     - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
     - gcloud config set project $OSDU_GCP_PROJECT
     - touch .gcloudignore
     - docker build -t gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA --rm . -f ./build/Dockerfile
     - gcloud docker -- push gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
-  cache: { }
-  tags: [ 'osdu-medium' ]
-
-osdu-gcp-deploy:
-  image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  needs: ["osdu-gcp-containerize"]
-  stage: deploy
-  variables:
-    OSDU_GCP_PROJECT: nice-etching-277309
-  script:
-    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
-    - gcloud config set project $OSDU_GCP_PROJECT
-    - gcloud container clusters get-credentials  wb --zone us-central1-c --project $OSDU_GCP_PROJECT
-    - curl https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
-    - >
-      helm upgrade wellbore devops/gcp
-      --install
-      --create-namespace
-      --namespace=wellbore
-      --wait
-      --set image.repository=gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR
-      --set image.tag=$CI_COMMIT_SHORT_SHA
-      --set secret.gcpSA=$OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS
-    - status_code=$(curl -X GET --write-out '%{http_code}' --silent --output /dev/null https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz)
-    - if [[ "$status_code" -ne 200 ]] ; then echo exit 1 ; else echo health check OK! ; fi
 
 osdu-gcp-test-python:
+  osdu-gcp-test-python:
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  variables:
-    OSDU_GCP_WELLBORE_DDMS_URL: https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms
+  allow_failure: true
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE == 'python'
   script:
     - apt-get install -y python3-venv
     - python3 -m venv env
@@ -138,7 +113,13 @@ osdu-gcp-test-python:
     - gcloud config set project $OSDU_GCP_PROJECT
     - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_TENANT --acl_domain $DOMAIN --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
-  allow_failure: true
 
 osdu-gcp-test:
   extends: []
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  allow_failure: true
+  stage: integration
+  needs: ["osdu-gcp-deploy"]
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE != 'python'
