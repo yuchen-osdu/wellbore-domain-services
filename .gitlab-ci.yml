@@ -20,6 +20,7 @@ variables:
   OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
   OSDU_GCP_APPLICATION_HEALTH_URL: https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz
   OSDU_GCP_HELM_CHART: wellbore
+  OSDU_GCP_ENV_HELM_EXTRA_VARS: --set env.USERNAME="app-username" --set env.PASSWORD="28sin47dsk9ik"
 
   AZURE_SERVICE: wellbore-ddms
   AZURE_DOCKER_SUBDIR: build/Dockerfile
@@ -46,6 +47,7 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: 'osdu/platform/ci-cd-pipelines'
+    ref: "GONRG-2066_release_common_pipe_k8s"
     file: 'cloud-providers/osdu-gcp-stateful-k8s.yml'
 
   - project: 'osdu/platform/ci-cd-pipelines'
@@ -58,49 +60,49 @@ include:
 
 # --------------------------------------------------------------------------------
 
-containerize:
-  extends:
-    - .skipForTriggeringMergeRequests
-
-  stage: containerize
-  image: docker:19.03
-  tags: ['osdu-medium']
-  variables:
-      IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
-  script:
-    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
-    - apk update
-    - apk add git
-    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
-    - commit_id=$(git log -n 1 --pretty="%h")
-    - echo ---- ---- TAG NAME
-    - tag_name="_gitlab_$commit_id"
-    - echo $tag_name
-    - echo ---- ---- DATE
-    - current_utc_date=`date --utc`
-    - echo $current_utc_date
-    - echo ---- ---- COMMIT BRANCH
-    - commit_branch=$commit_id
-    - echo $commit_branch
-    - echo ---- ---- BUILD IMAGE
-    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - echo ---- ---- PUSH IMAGE
-    - docker push $IMAGE_TAG
-    - docker push $CI_REGISTRY_IMAGE:latest
-
-osdu-gcp-containerize:
-  cache: {}
-  tags: [ 'osdu-medium' ]
-  only:
-    variables:
-      - $OSDU_GCP == 'true'
-  script:
-    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
-    - gcloud config set project $OSDU_GCP_PROJECT
-    - touch .gcloudignore
-    - docker build -t gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA --rm . -f ./build/Dockerfile
-    - gcloud docker -- push gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
+#containerize:
+#  extends:
+#    - .skipForTriggeringMergeRequests
+#
+#  stage: containerize
+#  image: docker:19.03
+#  tags: ['osdu-medium']
+#  variables:
+#      IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+#  script:
+#    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
+#    - apk update
+#    - apk add git
+#    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
+#    - commit_id=$(git log -n 1 --pretty="%h")
+#    - echo ---- ---- TAG NAME
+#    - tag_name="_gitlab_$commit_id"
+#    - echo $tag_name
+#    - echo ---- ---- DATE
+#    - current_utc_date=`date --utc`
+#    - echo $current_utc_date
+#    - echo ---- ---- COMMIT BRANCH
+#    - commit_branch=$commit_id
+#    - echo $commit_branch
+#    - echo ---- ---- BUILD IMAGE
+#    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#    - echo ---- ---- PUSH IMAGE
+#    - docker push $IMAGE_TAG
+#    - docker push $CI_REGISTRY_IMAGE:latest
+#
+#osdu-gcp-containerize:
+#  cache: {}
+#  tags: [ 'osdu-medium' ]
+#  only:
+#    variables:
+#      - $OSDU_GCP == 'true'
+#  script:
+#    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
+#    - gcloud config set project $OSDU_GCP_PROJECT
+#    - touch .gcloudignore
+#    - docker build -t gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA --rm . -f ./build/Dockerfile
+#    - gcloud docker -- push gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
 
 osdu-gcp-test-python:
   osdu-gcp-test-python:
