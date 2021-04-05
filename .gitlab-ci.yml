@@ -50,13 +50,13 @@ include:
     ref: "GONRG-2066_release_common_pipe_k8s"
     file: 'cloud-providers/osdu-gcp-stateful-k8s.yml'
 
-  - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/ibm-wellbore.yml'
-
-  - local: "/devops/azure/azure-wellbore.yml"
-  
-  - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/aws.yml'
+#  - project: 'osdu/platform/ci-cd-pipelines'
+#    file: 'cloud-providers/ibm-wellbore.yml'
+#
+#  - local: "/devops/azure/azure-wellbore.yml"
+#
+#  - project: 'osdu/platform/ci-cd-pipelines'
+#    file: 'cloud-providers/aws.yml'
 
 # --------------------------------------------------------------------------------
 
