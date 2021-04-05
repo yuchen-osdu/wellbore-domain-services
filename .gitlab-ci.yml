@@ -20,7 +20,7 @@ variables:
   OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
   OSDU_GCP_APPLICATION_HEALTH_URL: https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz
   OSDU_GCP_HELM_CHART: wellbore
-  OSDU_GCP_ENV_HELM_EXTRA_VARS: --set env.USERNAME="app-username" --set env.PASSWORD="28sin47dsk9ik"
+  #OSDU_GCP_ENV_HELM_EXTRA_VARS: --set env.USERNAME="app-username" --set env.PASSWORD="28sin47dsk9ik"
 
   AZURE_SERVICE: wellbore-ddms
   AZURE_DOCKER_SUBDIR: build/Dockerfile
