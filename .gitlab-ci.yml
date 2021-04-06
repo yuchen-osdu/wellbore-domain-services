@@ -121,7 +121,7 @@ osdu-gcp-test-python:
     - cd tests/integration
     - echo $OSDU_GCP_INTEGRATION_TESTER_PROD | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
-    - gcloud config set project $OSDU_GCP_PROJECT
+    - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_GCP_TENANT --acl_domain $DOMAIN --legal_tag $OSDU_GCP_LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
