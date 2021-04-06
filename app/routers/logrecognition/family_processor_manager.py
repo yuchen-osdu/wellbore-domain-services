@@ -33,7 +33,7 @@ class ProcessorItem:
     creation_date: datetime
 
 
-FIXED_RECORD_ID = ":doc:REMOVED_FOR_CICD_SCAN"
+FIXED_RECORD_ID = ":doc:" + "WDMS catalog".encode('utf-8').hex()
 # This name should not match any existing partition id
 DEFAULT_CATALOG_NAME = "default_WDMS_catalog"
 
