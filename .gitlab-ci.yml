@@ -20,6 +20,7 @@ variables:
   OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
   OSDU_GCP_APPLICATION_HEALTH_URL: https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz
   OSDU_GCP_HELM_CHART: wellbore
+  OSDU_GCP_LEGAL_TAG: odesprod-demo-legaltag
   #OSDU_GCP_ENV_HELM_EXTRA_VARS: --set env.USERNAME="app-username" --set env.PASSWORD="28sin47dsk9ik"
 
   AZURE_SERVICE: wellbore-ddms
@@ -104,34 +105,34 @@ include:
 #    - docker build -t gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA --rm . -f ./build/Dockerfile
 #    - gcloud docker -- push gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
 
-#osdu-gcp-test-python:
-#  image: gcr.io/google.com/cloudsdktool/cloud-sdk
-#  allow_failure: true
-#  only:
-#    variables:
-#      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE == 'python'
-#  script:
-#    - apt-get install -y python3-venv
-#    - python3 -m venv env
-#    - source env/bin/activate
-#    - pip install --upgrade pip
-#    - pip install wheel pytest pytest-cov
-#    - pip install -r requirements.txt
-#    - pip install -r requirements_dev.txt
-#    - cd tests/integration
-#    - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
-#    - gcloud auth activate-service-account --key-file file.json
-#    - gcloud config set project $OSDU_GCP_PROJECT
-#    - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_TENANT --acl_domain $DOMAIN --legal_tag $LEGAL_TAG
-#    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+osdu-gcp-test-python:
+  osdu-gcp-test-python:
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  allow_failure: true
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE == 'python'
+  script:
+    - apt-get install -y python3-venv
+    - python3 -m venv env
+    - source env/bin/activate
+    - pip install --upgrade pip
+    - pip install wheel pytest pytest-cov
+    - pip install -r requirements.txt
+    - pip install -r requirements_dev.txt
+    - cd tests/integration
+    - echo $OSDU_GCP_INTEGRATION_TESTER_PROD | base64 -d > file.json
+    - gcloud auth activate-service-account --key-file file.json
+    - gcloud config set project $OSDU_GCP_PROJECT
+    - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_GCP_TENANT --acl_domain $DOMAIN --legal_tag $OSDU_GCP_LEGAL_TAG
+    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
-#osdu-gcp-test:
-#  extends: []
-#  image: gcr.io/google.com/cloudsdktool/cloud-sdk
-#  allow_failure: true
-#  stage: integration
-#  needs: ["osdu-gcp-deploy"]
-#  only:
-#    variables:
-#      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE != 'python'
-#
+osdu-gcp-test:
+  extends: []
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  allow_failure: true
+  stage: integration
+  needs: ["osdu-gcp-deploy"]
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE != 'python'
