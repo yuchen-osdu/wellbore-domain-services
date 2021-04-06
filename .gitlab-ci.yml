@@ -106,7 +106,7 @@ include:
 #    - gcloud docker -- push gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
 
 osdu-gcp-test-python:
-  osdu-gcp-test-python:
+  #osdu-gcp-test-python:
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   allow_failure: true
   only:
