@@ -15,14 +15,14 @@
 variables:
   PIP_REQUIREMENTS: "requirements.txt requirements_dev.txt"
 
-  # Infrastructure variables
+  # OSDU Infrastructure variables
   OSDU_GCP_PROJECT_NAME: osdu-service-prod
   OSDU_GCP_ZONE: us-central1-c
   OSDU_GCP_TENANT: odesprod
   OSDU_GCP_CLUSTER: osdu-service-prod-gke-wellbore
   OSDU_GCP_LEGAL_TAG: odesprod-demo-legaltag
   OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD
-  # Service & Int test variables
+  # OSDU Service & Int test variables
   OSDU_GCP_WELLBORE_DDMS_URL: https://wellbore-ddms-preship.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms
   OSDU_GCP_APPLICATION_HEALTH_URL: https://wellbore-ddms-preship.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz
   OSDU_GCP_ENV_HELM_EXTRA_VARS: --set secret.gcpSA=$osdu_gcp_sa_encode --set namespace=$OSDU_GCP_APPLICATION_NAME --set configMap.data.projectId=$OSDU_GCP_PROJECT_NAME --set configMap.data.searchEndpoint="https://search-drgfbg5txq-uc.a.run.app/api/search" --set configMap.data.storageEndpoint="https://storage-drgfbg5txq-uc.a.run.app/api/storage" --set image.repository=gcr.io/osdu-service-prod/wellbore-ddms/wellbore-ddms-gcp --set image.tag=latest
