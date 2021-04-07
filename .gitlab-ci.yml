@@ -115,7 +115,7 @@ include:
 osdu-gcp-test-python:
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  extends: .osdu-gcp-variables-prod
+  extends: .osdu-gcp-variables-k8s
   allow_failure: true
   only:
     variables:
