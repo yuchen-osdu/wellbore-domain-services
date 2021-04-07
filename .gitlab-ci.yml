@@ -15,10 +15,6 @@
 variables:
   PIP_REQUIREMENTS: "requirements.txt requirements_dev.txt"
 
-  OSDU_GCP_APPLICATION_NAME: wellbore-ddms
-  OSDU_GCP_VENDOR: gcp
-  OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
-  OSDU_GCP_HELM_CHART: wellbore
 
   AZURE_SERVICE: wellbore-ddms
   AZURE_DOCKER_SUBDIR: build/Dockerfile
