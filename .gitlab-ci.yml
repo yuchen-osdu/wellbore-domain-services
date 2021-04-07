@@ -69,50 +69,101 @@ include:
 #    file: 'cloud-providers/aws.yml'
 
 # --------------------------------------------------------------------------------
+containerize:
+  extends:
+    - .skipForTriggeringMergeRequests
 
-#containerize:
-#  extends:
-#    - .skipForTriggeringMergeRequests
-#
-#  stage: containerize
-#  image: docker:19.03
-#  tags: ['osdu-medium']
-#  variables:
-#      IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
-#  script:
-#    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
-#    - apk update
-#    - apk add git
-#    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
-#    - commit_id=$(git log -n 1 --pretty="%h")
-#    - echo ---- ---- TAG NAME
-#    - tag_name="_gitlab_$commit_id"
-#    - echo $tag_name
-#    - echo ---- ---- DATE
-#    - current_utc_date=`date --utc`
-#    - echo $current_utc_date
-#    - echo ---- ---- COMMIT BRANCH
-#    - commit_branch=$commit_id
-#    - echo $commit_branch
-#    - echo ---- ---- BUILD IMAGE
-#    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
-#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-#    - echo ---- ---- PUSH IMAGE
-#    - docker push $IMAGE_TAG
-#    - docker push $CI_REGISTRY_IMAGE:latest
-#
-#osdu-gcp-containerize:
-#  cache: {}
-#  tags: [ 'osdu-medium' ]
-#  only:
-#    variables:
-#      - $OSDU_GCP == 'true'
-#  script:
-#    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
-#    - gcloud config set project $OSDU_GCP_PROJECT
-#    - touch .gcloudignore
-#    - docker build -t gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA --rm . -f ./build/Dockerfile
-#    - gcloud docker -- push gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
+  stage: containerize
+  image: docker:19.03
+  tags: ['osdu-medium']
+  variables:
+      IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+  script:
+    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
+    - apk update
+    - apk add git
+    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
+    - commit_id=$(git log -n 1 --pretty="%h")
+    - echo ---- ---- TAG NAME
+    - tag_name="_gitlab_$commit_id"
+    - echo $tag_name
+    - echo ---- ---- DATE
+    - current_utc_date=`date --utc`
+    - echo $current_utc_date
+    - echo ---- ---- COMMIT BRANCH
+    - commit_branch=$commit_id
+    - echo $commit_branch
+    - echo ---- ---- BUILD IMAGE
+    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo ---- ---- PUSH IMAGE
+    - docker push $IMAGE_TAG
+    - docker push $CI_REGISTRY_IMAGE:latest
+
+osdu-gcp-containerize:
+  cache: {}
+  tags: [ 'osdu-medium' ]
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
+  script:
+  variables:
+      IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+  script:
+    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
+    - apk update
+    - apk add git
+    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
+    - commit_id=$(git log -n 1 --pretty="%h")
+    - echo ---- ---- TAG NAME
+    - tag_name="_gitlab_$commit_id"
+    - echo $tag_name
+    - echo ---- ---- DATE
+    - current_utc_date=`date --utc`
+    - echo $current_utc_date
+    - echo ---- ---- COMMIT BRANCH
+    - commit_branch=$commit_id
+    - echo $commit_branch
+    - echo ---- ---- BUILD IMAGE
+    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo ---- ---- PUSH IMAGE
+    - docker push $IMAGE_TAG
+    - docker push $CI_REGISTRY_IMAGE:gcp-latest
+
+osdu-gcp-containerize-for-release:
+  extends:
+    - .osdu-gcp-variables-k8s
+  cache: {}
+  tags: [ 'osdu-medium' ]
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $RELEASE =~ /(v)(\d+\.)(\d+\.)\w+/i
+  script:
+  variables:
+      IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-$RELEASE
+  script:
+    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
+    - apk update
+    - apk add git
+    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
+    - commit_id=$(git log -n 1 --pretty="%h")
+    - echo ---- ---- TAG NAME
+    - tag_name="_gitlab_$commit_id"
+    - echo $tag_name
+    - echo ---- ---- DATE
+    - current_utc_date=`date --utc`
+    - echo $current_utc_date
+    - echo ---- ---- COMMIT BRANCH
+    - commit_branch=$commit_id
+    - echo $commit_branch
+    - echo ---- ---- BUILD IMAGE
+    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo ---- ---- PUSH IMAGE
+    - docker push $IMAGE_TAG
+
+#----------------------------------------------------
 
 osdu-gcp-test-python:
   stage: integration
