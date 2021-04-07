@@ -44,7 +44,7 @@ def test_expired_token_returns_40X(base_url, check_cert, token):
     url = build_url(base_url, "/about")
     token_expired = jwt.encode({"email":"nobody@example.com", "exp":datetime.datetime.utcnow() - datetime.timedelta(seconds=300)}, key="secret", algorithm="HS256")
     headers = {
-        'Authorization': f"Bearer {token_expired.decode()}"
+        'Authorization': f"Bearer {token_expired}"
     }
     response = requests.request("GET", url, headers=headers, data=payload, verify=check_cert)
     assert response.status_code == 401
@@ -97,7 +97,7 @@ def test_invalid_issuer_token_returns_40X(base_url, check_cert, token):
     blank = {}
     token_no_iss = jwt.encode({"email": "nobody@example.com"}, key="secret", algorithm="HS256")
     headers = {
-        'Authorization': f"Bearer {token_no_iss.decode()}"
+        'Authorization': f"Bearer {token_no_iss}"
     }
     response = requests.request("GET", url, headers=headers, data=blank, verify=check_cert)
     assert response.status_code == 401
