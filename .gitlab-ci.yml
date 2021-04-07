@@ -137,6 +137,7 @@ containerize:
 
 osdu-gcp-containerize-for-release:
   stage: containerize
+  image: docker:19.03
   extends:
     - .osdu-gcp-variables-k8s
   cache: {}
