@@ -97,7 +97,7 @@ def test_invalid_issuer_token_returns_40X(base_url, check_cert, token):
     blank = {}
     token_no_iss = jwt.encode({"email": "nobody@example.com"}, key="secret", algorithm="HS256")
     headers = {
-        'Authorization': f"Bearer {token_no_iss}"
+        'Authorization': f"Bearer {token_no_iss.decode()}"
     }
     response = requests.request("GET", url, headers=headers, data=blank, verify=check_cert)
     assert response.status_code == 401
