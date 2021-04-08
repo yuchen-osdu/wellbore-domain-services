@@ -74,9 +74,7 @@ include:
 
 # --------------------------------------------------------------------------------
 containerize:
-  extends:
-    - .skipForTriggeringMergeRequests
-
+  extends: .skipForTriggeringMergeRequests
   stage: containerize
   image: docker:19.03
   tags: ['osdu-medium']
@@ -106,6 +104,7 @@ containerize:
 
 #osdu-gcp-containerize:
 #  stage: containerize
+#  image: docker:19.03
 #  cache: {}
 #  tags: [ 'osdu-medium' ]
 #  only:
@@ -139,15 +138,13 @@ containerize:
 osdu-gcp-containerize-for-release:
   stage: containerize
   image: docker:19.03
-  extends:
-    - .osdu-gcp-variables-preprod
+  extends: .osdu-gcp-variables-preprod
   cache: {}
   tags: [ 'osdu-medium' ]
   only:
     variables:
       #- $OSDU_GCP == 'true' && $RELEASE =~ /(v)(\d+\.)(\d+\.)\w+/i
       - $OSDU_GCP == 'true'
-  script:
   variables:
       IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-$RELEASE
   script:
