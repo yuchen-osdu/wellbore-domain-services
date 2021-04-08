@@ -147,6 +147,7 @@ osdu-gcp-containerize-for-release:
       - $OSDU_GCP == 'true'
   variables:
       IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-$RELEASE
+      IMAGE_TAG_RELEASE: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-release
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
     - apk update
@@ -165,8 +166,10 @@ osdu-gcp-containerize-for-release:
     - echo ---- ---- BUILD IMAGE
     - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker tag $IMAGE_TAG_RELEASE
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG
+    - docker push $IMAGE_TAG_RELEASE
 
 #----------------------------------------------------
 
