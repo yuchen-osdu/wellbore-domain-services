@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.osdu-gcp-variables-k8s:
+.osdu-gcp-variables-preprod:
   variables:
     # OSDU Infrastructure variables
     OSDU_GCP_PROJECT_NAME: osdu-service-prod
@@ -140,7 +140,7 @@ osdu-gcp-containerize-for-release:
   stage: containerize
   image: docker:19.03
   extends:
-    - .osdu-gcp-variables-k8s
+    - .osdu-gcp-variables-preprod
   cache: {}
   tags: [ 'osdu-medium' ]
   only:
