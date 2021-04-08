@@ -54,7 +54,6 @@ tests_parameters = [
     ('/ddms/v3/wellbores',         Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
             kind="namespace:osdu:Wellbore:2.7.112",
-            groupType="master-data",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             legal={
                 "legaltags": ["string"],
@@ -65,7 +64,6 @@ tests_parameters = [
     ('/ddms/v3/wells', Well(
         id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32bfdea9",
         kind="namespace:osdu:Well:2.7.112",
-        groupType="master-data",
         acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
         legal={
             "legaltags": ["string"],
@@ -76,7 +74,6 @@ tests_parameters = [
     ('/ddms/v3/welllogs', WellLog(
         id=r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
         kind="namespace:osdu:WellLog:2.7.112",
-        groupType="master-data",
         acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
         legal={
             "legaltags": ["string"],
