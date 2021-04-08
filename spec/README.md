@@ -15,8 +15,7 @@ The `spec` directory contains the OpenAPI specification files for Wellbore DMS.
 Under `spec/generated`, the OpenAPI in JSON format is saved as-is.
 
 ## Publishing to Developer Portal
-API products are grouped in families as described in the table, and link below.
-https://wiki.slb.com/display/mptctransformation/Subscriptions+and+Developer+Portal
+API products are grouped in families as described in the table below.
 
 API reference/Swagger |	API Product |	Path | Objects/services 
 --- | --- | --- | --- 
