@@ -17,18 +17,24 @@ variables:
 
   OSDU_GCP_APPLICATION_NAME: wellbore-ddms
   OSDU_GCP_VENDOR: gcp
+  OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
+  OSDU_GCP_APPLICATION_HEALTH_URL: https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz
+  OSDU_GCP_HELM_CHART: wellbore
+  OSDU_GCP_APPLICATION_NAMESPACE: wellbore
+  OSDU_GCP_APPLICATION_IMAGE_REPOSITORY: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG
+  OSDU_GCP_APPLICATION_IMAGE_TAG: $CI_COMMIT_SHA
 
   AZURE_SERVICE: wellbore-ddms
   AZURE_DOCKER_SUBDIR: build/Dockerfile
   AZURE_TEST_SUBDIR: tests/integration
   AZURE_TEST_TYPE: python
-
+  
   AWS_SERVICE: wellbore-ddms
   AWS_ENVIRONMENT: dev
   AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
   AWS_TEST_SUBDIR: tests/aws-test/build-aws
   AWS_INT_TEST_TYPE: python
- 
+
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
@@ -43,13 +49,13 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/osdu-gcp-cloudrun.yml'
+    file: 'cloud-providers/osdu-gcp-stateful-k8s.yml'
 
   - project: 'osdu/platform/ci-cd-pipelines'
     file: 'cloud-providers/ibm-wellbore.yml'
 
   - local: "/devops/azure/azure-wellbore.yml"
-
+  
   - project: 'osdu/platform/ci-cd-pipelines'
     file: 'cloud-providers/aws.yml'
 
@@ -64,7 +70,6 @@ containerize:
   tags: ['osdu-medium']
   variables:
       IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
-
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
     - apk update
@@ -88,42 +93,76 @@ containerize:
     - docker push $CI_REGISTRY_IMAGE:latest
 
 osdu-gcp-containerize:
-  script:
-    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
-    - gcloud config set project $OSDU_GCP_PROJECT
-    - touch .gcloudignore
-    - docker build -t gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA --rm . -f ./build/Dockerfile
-    - gcloud docker -- push gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
-  cache: { }
-  tags: [ 'osdu-medium' ]
-
-osdu-gcp-deploy:
-  image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  needs: ["osdu-gcp-containerize"]
-  stage: deploy
+  stage: containerize
+  image: docker:19.03
   variables:
-    OSDU_GCP_PROJECT: nice-etching-277309
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+  cache: {}
+  tags: [ 'osdu-medium' ]
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
   script:
-    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
-    - gcloud config set project $OSDU_GCP_PROJECT
-    - gcloud container clusters get-credentials  wb --zone us-central1-c --project $OSDU_GCP_PROJECT
-    - curl https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
-    - >
-      helm upgrade wellbore devops/gcp
-      --install
-      --create-namespace
-      --namespace=wellbore
-      --wait
-      --set image.repository=gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_APPLICATION_NAME-$OSDU_GCP_VENDOR
-      --set image.tag=$CI_COMMIT_SHORT_SHA
-      --set secret.gcpSA=$OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS
-    - status_code=$(curl -X GET --write-out '%{http_code}' --silent --output /dev/null https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms/healthz)
-    - if [[ "$status_code" -ne 200 ]] ; then echo exit 1 ; else echo health check OK! ; fi
+    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
+    - apk update
+    - apk add git
+    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
+    - commit_id=$(git log -n 1 --pretty="%h")
+    - echo ---- ---- TAG NAME
+    - tag_name="_gitlab_$commit_id"
+    - echo $tag_name
+    - echo ---- ---- DATE
+    - current_utc_date=`date --utc`
+    - echo $current_utc_date
+    - echo ---- ---- COMMIT BRANCH
+    - commit_branch=$commit_id
+    - echo $commit_branch
+    - echo ---- ---- BUILD IMAGE
+    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo ---- ---- PUSH IMAGE
+    - docker push $IMAGE_TAG
+    - docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:gcp-latest
+    - docker push $CI_REGISTRY_IMAGE:gcp-latest
+
+osdu-gcp-containerize-for-release:
+  stage: containerize
+  image: docker:19.03
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-$RELEASE
+  cache: {}
+  tags: [ 'osdu-medium' ]
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $RELEASE =~ /(v)(\d+\.)(\d+\.)\w+/i
+  script:
+    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
+    - apk update
+    - apk add git
+    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
+    - commit_id=$(git log -n 1 --pretty="%h")
+    - echo ---- ---- TAG NAME
+    - tag_name="_gitlab_$commit_id"
+    - echo $tag_name
+    - echo ---- ---- DATE
+    - current_utc_date=`date --utc`
+    - echo $current_utc_date
+    - echo ---- ---- COMMIT BRANCH
+    - commit_branch=$commit_id
+    - echo $commit_branch
+    - echo ---- ---- BUILD IMAGE
+    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo ---- ---- PUSH IMAGE
+    - docker push $IMAGE_TAG
 
 osdu-gcp-test-python:
+  stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  variables:
-    OSDU_GCP_WELLBORE_DDMS_URL: https://wddms.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms
+  allow_failure: false
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE == 'python'
   script:
     - apt-get install -y python3-venv
     - python3 -m venv env
@@ -138,7 +177,15 @@ osdu-gcp-test-python:
     - gcloud config set project $OSDU_GCP_PROJECT
     - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_TENANT --acl_domain $DOMAIN --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
-  allow_failure: true
 
 osdu-gcp-test:
   extends: []
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  script:
+    - echo "Tests here"
+  allow_failure: false
+  stage: integration
+  needs: ["osdu-gcp-deploy"]
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE != 'python'
