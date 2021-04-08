@@ -176,7 +176,7 @@ osdu-gcp-containerize-for-release:
 osdu-gcp-test-python:
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  extends: .osdu-gcp-variables-k8s
+  extends: .osdu-gcp-variables-preprod
   allow_failure: true
   only:
     variables:
