@@ -22,7 +22,7 @@ new_parameters_env = {'authorityKind': 'slb',
 
 #it will only be run once
 @pytest.fixture(scope='module')
-def with_authority_in_kind(with_wdms_env):
+def get_env_variables_with_authority_in_kind(with_wdms_env):
     env_with_authority_in_kind = with_wdms_env.copy()
     for name, value in new_parameters_env.items():
         env_with_authority_in_kind.set(name, value)
