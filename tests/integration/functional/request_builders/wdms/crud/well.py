@@ -90,7 +90,7 @@ def build_request_create_well() -> RequestRunner:
 [
 {
   "acl": {{record_acl}}, "legal": {{record_legal}},
-  "data": {"name": "wdms_e2e_well"},
+  "data": {"name": "{{prefix_data_entity_name}}_well"},
   "kind": "{{wellKind}}"
 }
 ]

@@ -91,7 +91,7 @@ def build_request_create_wellbore() -> RequestRunner:
 {
 
   "acl": {{record_acl}}, "legal": {{record_legal}},
-  "data": {"name": "wdms_e2e_wellbore"},
+  "data": {"name": "{{prefix_data_entity_name}}_wellbore"},
   "kind": "{{wellboreKind}}"
 }
 ]
