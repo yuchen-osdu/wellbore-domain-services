@@ -27,7 +27,7 @@ param_kind_depend_on_create = [
 
 @pytest.fixture(scope='module')
 def with_wdms_env_authority_osdu(with_wdms_env):
-    with_wdms_env.set('authorityKind', 'osdu')
+    with_wdms_env.set('authorityKind', 'opendes')
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
