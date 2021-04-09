@@ -17,13 +17,8 @@ from .fixtures import with_wdms_env
 from ..request_builders import build_request
 
 kind_list = ['well', 'wellbore', 'logset', 'marker', 'trajectory', 'log']
-new_parameters_env = {'wellKind': '{{authorityKind}}:wks:well:1.0.2',
-                        'wellboreKind': '{{authorityKind}}:wks:wellbore:1.0.6',
-                        'logSetKind': '{{authorityKind}}:wks:logSet:1.0.5',
-                        'markerKind': '{{authorityKind}}:wks:marker:1.0.4',
-                        'trajectoryKind': '{{authorityKind}}:wks:trajectory:1.0.5',
-                        'logKind': '{{authorityKind}}:wks:log:1.0.5',
-                        'prefix_data_entity_name': 'wdms_e2e_osdu'}
+new_parameters_env = {'authorityKind': 'slb',
+                      'prefix_data_entity_name': 'wdms_e2e_slb_authority' }
 
 param_kind_depend_on_create = [
     pytest.param(k, marks=pytest.mark.dependency(depends=[f'test_create_record_{k}'])) for k in kind_list
@@ -31,15 +26,15 @@ param_kind_depend_on_create = [
 
 #it will only be run once
 @pytest.fixture(scope='module')
-def with_authority_in_kind(with_wdms_env):
+def get_env_variables_with_authority_in_kind(with_wdms_env):
     env_with_authority_in_kind = with_wdms_env.copy()
     for name, value in new_parameters_env.items():
         env_with_authority_in_kind.set(name, value)
     return env_with_authority_in_kind
 
-@pytest.fixture(params=['with_wdms_env', 'env_with_authority_in_kind'])
-def get_env(with_wdms_env, with_authority_in_kind, request):
-    return with_wdms_env if request.param == "with_wdms_env" else with_authority_in_kind
+@pytest.fixture(params=['authority_data_partition', 'authority_slb'])
+def get_env(with_wdms_env, get_env_variables_with_authority_in_kind, request):
+    return with_wdms_env if request.param == "authority_data_partition" else get_env_variables_with_authority_in_kind
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
