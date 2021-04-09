@@ -17,8 +17,8 @@ from .fixtures import with_wdms_env
 from ..request_builders.wdms.crud.dips import *
 from jsonschema import validate
 
-new_parameters_env = {'dipsetKind': '{{authorityKind}}:wks:dipSet:1.0.0',
-                      'prefix_data_entity_name': 'wdms_e2e_osdu'}
+new_parameters_env = {'authorityKind': 'slb',
+                      'prefix_data_entity_name': 'wdms_e2e_osdu' }
 
 #it will only be run once
 @pytest.fixture(scope='module')
@@ -28,9 +28,9 @@ def with_authority_in_kind(with_wdms_env):
         env_with_authority_in_kind.set(name, value)
     return env_with_authority_in_kind
 
-@pytest.fixture(params=['with_wdms_env', 'env_with_authority_in_kind'])
-def get_env(with_wdms_env, with_authority_in_kind, request):
-    return with_wdms_env if request.param == "with_wdms_env" else with_authority_in_kind
+@pytest.fixture(params=['authority_data_partition', 'authority_slb'])
+def get_env(with_wdms_env, get_env_variables_with_authority_in_kind, request):
+    return with_wdms_env if request.param == "authority_data_partition" else get_env_variables_with_authority_in_kind
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
