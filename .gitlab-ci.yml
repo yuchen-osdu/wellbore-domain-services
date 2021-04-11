@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.osdu-gcp-variables-preprod:
-  variables:
+#.osdu-gcp-variables-preprod:
+#  variables:
 #    # OSDU Infrastructure variables
 #    OSDU_GCP_PROJECT_NAME: osdu-service-prod
 #    OSDU_GCP_ZONE: us-central1-c
@@ -138,7 +138,7 @@ containerize:
 osdu-gcp-containerize-for-release:
   stage: containerize
   image: docker:19.03
-  extends: .osdu-gcp-variables-preprod
+  #extends: .osdu-gcp-variables-preprod
   cache: {}
   tags: [ 'osdu-medium' ]
   only:
@@ -175,7 +175,7 @@ osdu-gcp-containerize-for-release:
 osdu-gcp-test-python:
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  extends: .osdu-gcp-variables-preprod
+  #extends: .osdu-gcp-variables-preprod
   allow_failure: true
   only:
     variables:
