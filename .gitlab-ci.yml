@@ -167,8 +167,8 @@ osdu-gcp-test-python:
     - pip install -r requirements.txt
     - pip install -r requirements_dev.txt
     - cd tests/integration
-    - echo $OSDU_GCP_INTEGRATION_TESTER_PROD | base64 -d > file.json
-    - gcloud auth activate-service-account --key-file file.json
+    - echo $OSDU_GCP_PROJECT_SA | base64 -d > sa.json
+    - gcloud auth activate-service-account --key-file sa.json
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT_NAME
     - OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n wellbore-ddms -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'API_URL'}'`
@@ -177,6 +177,9 @@ osdu-gcp-test-python:
     - echo $OSDU_GCP_WELLBORE_DDMS_URL
     - echo $OSDU_GCP_TENANT
     - echo $OSDU_GCP_LEGAL_TAG
+    - echo $OSDU_GCP_INTEGRATION_TESTER_PROD | base64 -d > file.json
+    - gcloud auth activate-service-account --key-file file.json
+    - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_GCP_TENANT --acl_domain $DOMAIN --legal_tag $OSDU_GCP_LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
