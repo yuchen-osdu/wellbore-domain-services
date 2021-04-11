@@ -26,6 +26,12 @@ variables:
   AWS_TEST_SUBDIR: tests/aws-test/build-aws
   AWS_INT_TEST_TYPE: python
 
+  OSDU_GCP_PROJECT_NAME: osdu-service-prod
+  OSDU_GCP_CLUSTER: osdu-service-prod-gke-wellbore
+  OSDU_GCP_ZONE: us-central1-c
+  OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD #type = variable, in base64
+
+
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
@@ -116,7 +122,6 @@ containerize:
 osdu-gcp-containerize-for-release:
   stage: containerize
   image: docker:19.03
-  #extends: .osdu-gcp-variables-preprod
   cache: {}
   tags: [ 'osdu-medium' ]
   only:
@@ -153,7 +158,6 @@ osdu-gcp-containerize-for-release:
 osdu-gcp-test-python:
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  #extends: .osdu-gcp-variables-preprod
   allow_failure: true
   only:
     variables:
@@ -174,9 +178,6 @@ osdu-gcp-test-python:
     - OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n wellbore-ddms -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'API_URL'}'`
     - OSDU_GCP_TENANT=`kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'TENANT'}'`
     - OSDU_GCP_LEGAL_TAG=`kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'LEGAL_TAG'}'`
-    - echo $OSDU_GCP_WELLBORE_DDMS_URL
-    - echo $OSDU_GCP_TENANT
-    - echo $OSDU_GCP_LEGAL_TAG
     - echo $OSDU_GCP_INTEGRATION_TESTER_PROD | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
