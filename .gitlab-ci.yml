@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#.osdu-gcp-variables-preprod:
-#  variables:
+.osdu-gcp-variables-preprod:
+  variables:
 #    # OSDU Infrastructure variables
 #    OSDU_GCP_PROJECT_NAME: osdu-service-prod
 #    OSDU_GCP_ZONE: us-central1-c
