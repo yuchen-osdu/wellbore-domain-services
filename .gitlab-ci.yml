@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.osdu-gcp-variables-preprod:
-  variables:
-    # OSDU Infrastructure variables
-    OSDU_GCP_PROJECT_NAME: osdu-service-prod
-    OSDU_GCP_ZONE: us-central1-c
-    OSDU_GCP_CLUSTER: osdu-service-prod-gke-wellbore
-    OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD
-    OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp/osdu-helm
+#.osdu-gcp-variables-preprod:
+#  variables:
+#    # OSDU Infrastructure variables
+#    OSDU_GCP_PROJECT_NAME: osdu-service-prod
+#    OSDU_GCP_ZONE: us-central1-c
+#    OSDU_GCP_CLUSTER: osdu-service-prod-gke-wellbore
+#    OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD
+#    OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp/osdu-helm
+
 #    # OSDU Service & Int test variables
 #    OSDU_GCP_WELLBORE_DDMS_URL: https://wellbore-ddms-preship.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms
 #    OSDU_GCP_TENANT: odesprod
@@ -31,8 +32,6 @@
 #    #OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
 #    OSDU_GCP_HELM_CHART: wellbore
 
-.osdu-gcp-variables-community:
-  variables:
 
 variables:
   PIP_REQUIREMENTS: "requirements.txt requirements_dev.txt"
