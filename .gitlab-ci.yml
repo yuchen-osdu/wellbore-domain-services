@@ -17,20 +17,19 @@
     # OSDU Infrastructure variables
     OSDU_GCP_PROJECT_NAME: osdu-service-prod
     OSDU_GCP_ZONE: us-central1-c
-
     OSDU_GCP_CLUSTER: osdu-service-prod-gke-wellbore
-
     OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD
-    # OSDU Service & Int test variables
-    OSDU_GCP_WELLBORE_DDMS_URL: https://wellbore-ddms-preship.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms
-    OSDU_GCP_TENANT: odesprod
-    OSDU_GCP_LEGAL_TAG: odesprod-demo-legaltag
-    #OSDU_GCP_ENV_HELM_EXTRA_VARS: --set secret.gcpSA=$osdu_gcp_sa_encode --set namespace=$OSDU_GCP_APPLICATION_NAME --set configMap.data.projectId=$OSDU_GCP_PROJECT_NAME --set configMap.data.searchEndpoint="https://search-drgfbg5txq-uc.a.run.app/api/search" --set configMap.data.storageEndpoint="https://storage-drgfbg5txq-uc.a.run.app/api/storage" --set image.repository=gcr.io/osdu-service-prod/wellbore-ddms/wellbore-ddms-gcp --set image.tag=latest
-    #OSDU_GCP_ENV_HELM_EXTRA_VARS: --set secret.gcpSA=$osdu_gcp_sa_encode --set namespace=$OSDU_GCP_APPLICATION_NAME --set configMap.data.projectId=$OSDU_GCP_PROJECT_NAME --set configMap.data.searchEndpoint="https://search-drgfbg5txq-uc.a.run.app/api/search" --set configMap.data.storageEndpoint="https://storage-drgfbg5txq-uc.a.run.app/api/storage" #--set image.repository=$CI_REGISTRY_IMAGE --set image.tag=gcp-
-    OSDU_GCP_APPLICATION_NAME: wellbore-ddms
     OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp/osdu-helm
-    #OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
-    OSDU_GCP_HELM_CHART: wellbore
+#    # OSDU Service & Int test variables
+#    OSDU_GCP_WELLBORE_DDMS_URL: https://wellbore-ddms-preship.osdu-gcp.go3-nrg.projects.epam.com/api/os-wellbore-ddms
+#    OSDU_GCP_TENANT: odesprod
+#    OSDU_GCP_LEGAL_TAG: odesprod-demo-legaltag
+#    #OSDU_GCP_ENV_HELM_EXTRA_VARS: --set secret.gcpSA=$osdu_gcp_sa_encode --set namespace=$OSDU_GCP_APPLICATION_NAME --set configMap.data.projectId=$OSDU_GCP_PROJECT_NAME --set configMap.data.searchEndpoint="https://search-drgfbg5txq-uc.a.run.app/api/search" --set configMap.data.storageEndpoint="https://storage-drgfbg5txq-uc.a.run.app/api/storage" --set image.repository=gcr.io/osdu-service-prod/wellbore-ddms/wellbore-ddms-gcp --set image.tag=latest
+#    #OSDU_GCP_ENV_HELM_EXTRA_VARS: --set secret.gcpSA=$osdu_gcp_sa_encode --set namespace=$OSDU_GCP_APPLICATION_NAME --set configMap.data.projectId=$OSDU_GCP_PROJECT_NAME --set configMap.data.searchEndpoint="https://search-drgfbg5txq-uc.a.run.app/api/search" --set configMap.data.storageEndpoint="https://storage-drgfbg5txq-uc.a.run.app/api/storage" #--set image.repository=$CI_REGISTRY_IMAGE --set image.tag=gcp-
+#    OSDU_GCP_APPLICATION_NAME: wellbore-ddms
+#    OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp/osdu-helm
+#    #OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp
+#    OSDU_GCP_HELM_CHART: wellbore
 
 .osdu-gcp-variables-community:
   variables:
@@ -195,7 +194,9 @@ osdu-gcp-test-python:
     - gcloud auth activate-service-account --key-file file.json
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT_NAME
-    - $OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n wellbore-ddms -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'API_URL'}'`
+    - OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n wellbore-ddms -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'API_URL'}'`
+    - OSDU_GCP_TENANT=`kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'TENANT'}'`
+    - OSDU_GCP_LEGAL_TAG=`kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'LEGAL_TAG'}'`
     - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_GCP_TENANT --acl_domain $DOMAIN --legal_tag $OSDU_GCP_LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
