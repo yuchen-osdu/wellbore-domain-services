@@ -27,7 +27,7 @@ variables:
   AWS_INT_TEST_TYPE: python
 
   OSDU_GCP_PROJECT_NAME: osdu-service-prod
-  OSDU_GCP_CLUSTER: osdu-service-prod-gke-wellbore
+  OSDU_GCP_CLUSTER: wellbore-test
   OSDU_GCP_ZONE: us-central1-c
   OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD #type = variable, in base64
 
