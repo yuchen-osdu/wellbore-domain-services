@@ -29,7 +29,6 @@ variables:
   OSDU_GCP_PROJECT_NAME: nice-etching-277309
   OSDU_GCP_CLUSTER: wb
   OSDU_GCP_ZONE: us-central1-c
-  OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD #type = variable, in base64
   SERVICE_NAME: wellbore #Must be same as in configmap.yaml (namespace = name)
 
 
@@ -50,13 +49,13 @@ include:
     ref: "GONRG-2066_release_common_pipe_k8s"
     file: 'cloud-providers/osdu-gcp-stateful-k8s.yml'
 
-#  - project: 'osdu/platform/ci-cd-pipelines'
-#    file: 'cloud-providers/ibm-wellbore.yml'
-#
-#  - local: "/devops/azure/azure-wellbore.yml"
-#
-#  - project: 'osdu/platform/ci-cd-pipelines'
-#    file: 'cloud-providers/aws.yml'
+  - project: 'osdu/platform/ci-cd-pipelines'
+    file: 'cloud-providers/ibm-wellbore.yml'
+
+  - local: "/devops/azure/azure-wellbore.yml"
+
+  - project: 'osdu/platform/ci-cd-pipelines'
+    file: 'cloud-providers/aws.yml'
 
 containerize:
   extends: .skipForTriggeringMergeRequests
@@ -120,7 +119,38 @@ osdu-gcp-containerize:
     - docker push $IMAGE_TAG
     - docker push $IMAGE_TAG_COMMUNITY
 
-#----------------------------------------------------
+osdu-gcp-containerize-for-release:
+  stage: containerize
+  image: docker:19.03
+  cache: {}
+  tags: [ 'osdu-medium' ]
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $RELEASE =~ /(v)(\d+\.)(\d+\.)\w+/i
+  variables:
+      IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-$RELEASE
+      IMAGE_TAG_RELEASE: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-release
+  script:
+    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
+    - apk update
+    - apk add git
+    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
+    - commit_id=$(git log -n 1 --pretty="%h")
+    - echo ---- ---- TAG NAME
+    - tag_name="_gitlab_$commit_id"
+    - echo $tag_name
+    - echo ---- ---- DATE
+    - current_utc_date=`date --utc`
+    - echo $current_utc_date
+    - echo ---- ---- COMMIT BRANCH
+    - commit_branch=$commit_id
+    - echo $commit_branch
+    - echo ---- ---- BUILD IMAGE
+    - docker build -t $IMAGE_TAG -t $IMAGE_TAG_RELEASE -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo ---- ---- PUSH IMAGE
+    - docker push $IMAGE_TAG
+    - docker push $IMAGE_TAG_RELEASE
 
 osdu-gcp-test-python:
   stage: integration
