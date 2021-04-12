@@ -1,27 +1,25 @@
-# Source: gcp/templates/configmap.yaml
 kind: ConfigMap
 apiVersion: v1
 data:
   # System sevice variables
   CLOUD_PROVIDER: gcp
-  OS_WELLBORE_DDMS_DATA_PROJECT_ID: {}
-  SERVICE_HOST_SEARCH: {}
-  SERVICE_HOST_STORAGE: {}
+  OS_WELLBORE_DDMS_DATA_PROJECT_ID: nice-etching-277309
+  SERVICE_HOST_SEARCH: https://os-search-attcrcktoa-uc.a.run.app/api/search
+  SERVICE_HOST_STORAGE: https://os-storage-attcrcktoa-uc.a.run.app/api/storage
   # Custom variables
-  IMAGE_NAME: {}
-  IMAGE_TAG: {}
+  IMAGE_NAME: community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/gcp-trusted-gonrg-2066-release-wellbore-pipe-k8s
+  IMAGE_TAG: gcp-community
   HEALTH_URL: /api/os-wellbore-ddms/healthz
   API_URL: /api/os-wellbore-ddms
-  SERVICE_NAME: {}
-  TENANT: {}
-  LEGAL_TAG: {}
-  DEPLOYMENT_DIR: {}
+  SERVICE_NAME: wellbore
+  TENANT: osdu
+  LEGAL_TAG: osdu-demo-legaltag
+  DEPLOYMENT_DIR: devops/gcp/osdu-helm
 
 metadata:
   name: wellbore
   namespace: wellbore
 ---
-# Source: gcp/templates/secret.yaml
 kind: Secret
 apiVersion: v1
 metadata:
@@ -29,5 +27,4 @@ metadata:
   namespace: wellbore
 type: Opaque
 data:
-  "key.json": {}
----
+  "key.json": ""
