@@ -62,5 +62,5 @@ def make_storage_record_client(host) -> StorageRecordServiceClient:
             max_keepalive_connections=Config.de_client_config_max_keepalive.value or None)
     )
     storage_client.add_middleware(middleware=client_middleware)
-    search_client.add_middleware(middleware=backoff_middleware)
+    storage_client.add_middleware(middleware=backoff_middleware)
     return odes_storage.AsyncApis(storage_client).records_api
