@@ -10,6 +10,7 @@ structlog
 python-rapidjson
 python-multipart
 jsonpath-ng # maintenance of 'jsonpath-rw' lib it's bit abandoned
+jsonbender==0.9.3
 
 opencensus
 opencensus-ext-stackdriver

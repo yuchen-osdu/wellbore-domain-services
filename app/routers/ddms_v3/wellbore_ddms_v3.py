@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, status, Response, Body
-
+from fastapi import APIRouter, Depends, status, Response, Body, HTTPException
+import starlette.status
 
 from app.clients.storage_service_client import get_storage_record_service
 from odes_storage.models import (
@@ -27,9 +27,56 @@ from app.utils import Context
 from app.utils import get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
-
-
+from app.converter.wellbore_converter import WellboreConverter, ConverterUtils
+import re
 router = APIRouter()
+
+OSDU_WELLBORE_VERSION_REGEX = re.compile(r'^([\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+):([0-9]*)$')
+OSDU_WELLBORE_REGEX = re.compile(r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')
+DELFI_REGEX = re.compile(r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+$')
+
+
+def is_osdu_wellbore_id(entity_id:str) -> bool:
+    return OSDU_WELLBORE_REGEX.match(entity_id) is not None
+
+
+def is_osdu_versionned_wellbore_id(entity_id:str) -> (bool, str, str):
+    matches = OSDU_WELLBORE_VERSION_REGEX.match(entity_id)
+    if matches is None:
+        return False, None, None
+    return True, matches.group(1), matches.group(2)
+
+
+def is_delfi_id(entity_id:str) -> bool:
+    return DELFI_REGEX.match(entity_id) is not None
+
+
+def is_osdu_wellbore_fake_id(entity_id:str) -> (bool, str):
+    try:
+        delfi_id = ConverterUtils.decode_id(entity_id)
+        return is_delfi_id(delfi_id), delfi_id
+    except ValueError as e:
+        return False, None
+
+async def get_wellbore_as_osdu(wellboreid: str, ctx: Context) -> Wellbore:
+    storage_client = await get_storage_record_service(ctx)
+    wellbore_record = await storage_client.get_record(
+        id=wellboreid, data_partition_id=ctx.partition_id
+    )
+    res_as_dict = wellbore_record.dict(
+        exclude_unset=True, exclude_none=True, by_alias=True
+    )
+    wellbore = Wellbore.parse_obj(WellboreConverter.convert_wks_to_osdu(res_as_dict,
+                                                                        context={"namespace": ctx.partition_id}))
+    return wellbore
+
+
+async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
+    storage_client = await get_storage_record_service(ctx)
+    wellbore_record = await storage_client.get_record(
+        id=wellboreid, data_partition_id=ctx.partition_id
+    )
+    return from_record(Wellbore, wellbore_record)
 
 
 @router.get(
@@ -37,7 +84,9 @@ router = APIRouter()
     response_model=Wellbore,
     response_model_exclude_unset=True,
     summary="Get the Wellbore using osdu schema",
-    description="""Get the Wellbore object using its **id**. {}""".format(REQUIRED_ROLES_READ),
+    description="""Get the Wellbore object using its **id**.
+    <p>If the **id** is a Delfi Wellbore Id, tries to convert it on the fly to return the Wellbore as an osdu Wellbore.</p> 
+    {}""".format(REQUIRED_ROLES_READ),
     operation_id="get_wellbore_osdu",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}
@@ -46,20 +95,20 @@ router = APIRouter()
 async def get_wellbore_osdu(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
-    """
-    Regarding to the storage those fields are not stored and will be lost/not
-    retrieved:
-    - tags
-    - createTime
-    - createUser
-    - modifyTime
-    - modifyUser
-    """
     storage_client = await get_storage_record_service(ctx)
-    wellbore_record = await storage_client.get_record(
-        id=wellboreid, data_partition_id=ctx.partition_id
-    )
-    return from_record(Wellbore, wellbore_record)
+    delfi_convertion, delfi_id = is_osdu_wellbore_fake_id(wellboreid)
+    if delfi_convertion:
+        return await get_wellbore_as_osdu(delfi_id, ctx)
+    is_osdu_versionned, osdu_id, version = is_osdu_versionned_wellbore_id(wellboreid)
+    if is_osdu_versionned:
+        return await get_osdu_wellbore(osdu_id, ctx)
+    if is_osdu_wellbore_id(wellboreid):
+        return await get_osdu_wellbore(wellboreid, ctx)
+    if is_delfi_id(wellboreid):
+        return await get_wellbore_as_osdu(wellboreid, ctx)
+
+    raise HTTPException(status_code=status.HTTP_417_EXPECTATION_FAILED, detail="Id is not a wellbore")
+
 
 
 @router.delete(

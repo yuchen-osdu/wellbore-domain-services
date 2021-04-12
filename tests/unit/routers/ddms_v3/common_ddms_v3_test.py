@@ -37,31 +37,27 @@ from tests.unit.test_utils import create_mock_class, nope_logger_fixture
 Contains unified common tests for the different kind. Mainly CRUD test cases
 """
 
-modules_to_patch = [f"app.routers.ddms_v3.{m}" for m in ["wellbore_ddms_v3"]]
-
 tests_parameters = [
     (
-        "/ddms/v3/wellbores",
-        Wellbore(
-            id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        '/ddms/v3/wellbores', r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9", Wellbore(
+            id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:",
             kind="namespace:osdu:Wellbore:2.7.112",
-            groupType="master-data",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             legal={
                 "legaltags": ["string"],
                 "otherRelevantDataCountries": ["FR"],
             },
             data={},
-        ),
-        Record(
-            id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        )
+    ),
+    (
+        '/ddms/v3/wellbores', r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9" ,Wellbore(
+            id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:145",
             kind="namespace:osdu:Wellbore:2.7.112",
-            groupType="master-data",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             legal={
                 "legaltags": ["string"],
                 "otherRelevantDataCountries": ["FR"],
-                "status": r"compliant",
             },
             data={},
         ),
@@ -110,6 +106,7 @@ def client(nope_logger_fixture):
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
 
+
 def test_post_records_successful(client):
     base_url = "/ddms/v3/wellbores"
     expected_response = CreateUpdateRecordsResponse(
@@ -141,3 +138,54 @@ def test_post_records_successful(client):
             CreateUpdateRecordsResponse.parse_raw(response.text)
             == expected_response
         )
+
+getas_parameters = [
+    "opendes:doc:12345",
+    "opendes:master-data--Wellbore:6f70656e6465733a646f633a3132333435:"
+]
+@pytest.mark.parametrize('record_id', getas_parameters)
+def test_get_record_as_OSDU(client, record_id):
+    base_url = "/ddms/v3/wellbores"
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(dir_path, r"wellbore_wks.json")) as f:
+        source_wellbore = json.load(f)
+
+    # record_id = source_wellbore["id"]
+    rr = Record.parse_obj(source_wellbore)
+    moc = mock.AsyncMock(return_value=rr)
+
+    with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc):
+
+        # when
+        response = client.get(
+            f"{base_url}/opendes:doc:12345",
+            headers={"data-partition-id": "testing_partition"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        # then assert storage is called with the proper id and data_partition
+        moc.assert_called_with(
+            id="opendes:doc:12345", data_partition_id="testing_partition"
+        )
+
+        # assert it validates the input object schema
+        res = response.json()
+        Wellbore.validate(res)
+
+
+@pytest.mark.parametrize('base_url, id, record_obj', tests_parameters)
+def test_get_record_success(client, base_url, id, record_obj):
+    record_id = record_obj.id
+    moc = mock.AsyncMock(return_value=record_obj)
+
+    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', moc):
+        # when
+        response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        assert response.status_code == status.HTTP_200_OK
+
+        # then assert storage is called with the proper id and data_partition
+        moc.assert_called_with(id=id, data_partition_id='testing_partition')
+
+        # assert it validates the input object schema
+        record_obj.validate(response.json())
