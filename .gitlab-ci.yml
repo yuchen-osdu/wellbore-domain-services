@@ -46,7 +46,6 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: 'osdu/platform/ci-cd-pipelines'
-    ref: "GONRG-2066_release_common_pipe_k8s"
     file: 'cloud-providers/osdu-gcp-stateful-k8s.yml'
 
   - project: 'osdu/platform/ci-cd-pipelines'
