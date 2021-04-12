@@ -27,7 +27,7 @@ __all__ = ['SearchServiceClient',
            'make_search_client',
            'make_storage_record_client']
 
-from app.clients.clients_middleware import client_middleware
+from app.clients.clients_middleware import client_middleware, backoff_middleware
 
 SearchServiceClient = AsyncSearchApi
 StorageRecordServiceClient = AsyncRecordsApi
@@ -49,6 +49,7 @@ def make_search_client(host) -> SearchServiceClient:
             max_keepalive_connections=Config.de_client_config_max_keepalive.value or None)
     )
     search_client.add_middleware(middleware=client_middleware)
+    search_client.add_middleware(middleware=backoff_middleware)
     return odes_search.AsyncApis(search_client).search_api
 
 
@@ -61,4 +62,5 @@ def make_storage_record_client(host) -> StorageRecordServiceClient:
             max_keepalive_connections=Config.de_client_config_max_keepalive.value or None)
     )
     storage_client.add_middleware(middleware=client_middleware)
+    search_client.add_middleware(middleware=backoff_middleware)
     return odes_storage.AsyncApis(storage_client).records_api

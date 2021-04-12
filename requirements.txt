@@ -6,6 +6,7 @@ pyarrow>=0.15.0
 pandas==1.1.2
 uvicorn
 Click
+backoff
 structlog
 python-rapidjson
 python-multipart
