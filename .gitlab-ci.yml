@@ -30,7 +30,7 @@ variables:
   OSDU_GCP_CLUSTER: wb
   OSDU_GCP_ZONE: us-central1-c
   OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD #type = variable, in base64
-  SERVICE_NAME: wellbore #Must be same as in configmap.yaml
+  SERVICE_NAME: wellbore #Must be same as in configmap.yaml (namespace = name)
 
 
 include:
@@ -176,9 +176,9 @@ osdu-gcp-test-python:
     - gcloud auth activate-service-account --key-file sa.json
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT_NAME
-    - OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n wellbore-ddms -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'API_URL'}'`
-    - OSDU_GCP_TENANT=`kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'TENANT'}'`
-    - OSDU_GCP_LEGAL_TAG=`kubectl get configmap wellbore -n wellbore-ddms -o jsonpath='{.data.'LEGAL_TAG'}'`
+    - OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n $SERVICE_NAME -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'API_URL'}'`
+    - OSDU_GCP_TENANT=`kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'TENANT'}'`
+    - OSDU_GCP_LEGAL_TAG=`kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'LEGAL_TAG'}'`
     - echo $OSDU_GCP_INTEGRATION_TESTER_PROD | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
