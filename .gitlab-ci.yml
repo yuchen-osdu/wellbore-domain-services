@@ -172,14 +172,13 @@ osdu-gcp-test-python:
     - pip install -r requirements.txt
     - pip install -r requirements_dev.txt
     - cd tests/integration
-    - echo $OSDU_GCP_PROJECT_SA | base64 -d > sa.json
-    - gcloud auth activate-service-account --key-file sa.json
+    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT_NAME
     - OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n $SERVICE_NAME -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'API_URL'}'`
     - OSDU_GCP_TENANT=`kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'TENANT'}'`
     - OSDU_GCP_LEGAL_TAG=`kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'LEGAL_TAG'}'`
-    - echo $OSDU_GCP_INTEGRATION_TESTER_PROD | base64 -d > file.json
+    - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_GCP_TENANT --acl_domain $DOMAIN --legal_tag $OSDU_GCP_LEGAL_TAG
