@@ -50,13 +50,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/entitlements/v1/groups",
+							"raw": "{{base_url}}/api/entitlements/v2/groups",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"api",
 								"entitlements",
-								"v1",
+								"v2",
 								"groups"
 							]
 						}
