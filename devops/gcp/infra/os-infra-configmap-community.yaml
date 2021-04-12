@@ -1,0 +1,33 @@
+# Source: gcp/templates/configmap.yaml
+kind: ConfigMap
+apiVersion: v1
+data:
+  # System sevice variables
+  CLOUD_PROVIDER: gcp
+  OS_WELLBORE_DDMS_DATA_PROJECT_ID: {}
+  SERVICE_HOST_SEARCH: {}
+  SERVICE_HOST_STORAGE: {}
+  # Custom variables
+  IMAGE_NAME: {}
+  IMAGE_TAG: {}
+  HEALTH_URL: /api/os-wellbore-ddms/healthz
+  API_URL: /api/os-wellbore-ddms
+  SERVICE_NAME: {}
+  TENANT: {}
+  LEGAL_TAG: {}
+  DEPLOYMENT_DIR: {}
+
+metadata:
+  name: wellbore
+  namespace: wellbore
+---
+# Source: gcp/templates/secret.yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: wellbore
+  namespace: wellbore
+type: Opaque
+data:
+  "key.json": {}
+---
