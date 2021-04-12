@@ -63,7 +63,7 @@ def test_crud_record_versions(with_wdms_env, kind):
     # get specific version of the record
     result = build_request(f'crud.{kind}.get_{kind}_specific_version').call(
         with_wdms_env,
-        **{f'{kind}_record_version': resobj.versions[0]}  # set/pass version to fetch
+        **{f'{kind}_record_version': resobj.versions[len(resobj.versions)-1]}  # set/pass version to fetch
     )
 
     result.assert_ok()
