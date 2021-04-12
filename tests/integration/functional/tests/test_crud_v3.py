@@ -33,7 +33,7 @@ def with_wdms_env_authority_osdu(with_wdms_env):
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize(
     'kind', [pytest.param(k, marks=pytest.mark.dependency(name=f'test_create_record_{k}')) for k in kind_list])
-def test_crud_create_record(with_wdms_env, with_wdms_env_authority_osdu, kind):
+def test_crud_create_record(with_wdms_env, kind):
     result = build_request(f'crud.{kind}.create_{kind}').call(with_wdms_env)
     result.assert_ok()
     resobj = result.get_response_obj()
