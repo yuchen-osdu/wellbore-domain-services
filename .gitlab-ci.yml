@@ -191,4 +191,3 @@ osdu-gcp-test:
   only:
     variables:
       - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE != 'python'
-
