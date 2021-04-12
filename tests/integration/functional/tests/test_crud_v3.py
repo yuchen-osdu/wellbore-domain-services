@@ -25,10 +25,6 @@ param_kind_depend_on_create = [
     pytest.param(k, marks=pytest.mark.dependency(depends=[f'test_create_record_{k}'])) for k in kind_list
 ]
 
-@pytest.fixture(scope='module')
-def with_wdms_env_authority_osdu(with_wdms_env):
-    with_wdms_env.set('authorityKind', 'opendes')
-
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize(
