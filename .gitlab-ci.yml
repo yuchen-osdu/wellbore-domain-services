@@ -26,10 +26,11 @@ variables:
   AWS_TEST_SUBDIR: tests/aws-test/build-aws
   AWS_INT_TEST_TYPE: python
 
-  OSDU_GCP_PROJECT_NAME: osdu-service-prod
-  OSDU_GCP_CLUSTER: wellbore-test
+  OSDU_GCP_PROJECT_NAME: nice-etching-277309
+  OSDU_GCP_CLUSTER: wb
   OSDU_GCP_ZONE: us-central1-c
   OSDU_GCP_PROJECT_SA: $OSDU_GCP_SA_PROD #type = variable, in base64
+  SERVICE_NAME: wellbore #Must be same as in configmap.yaml
 
 
 include:
@@ -184,13 +185,14 @@ osdu-gcp-test-python:
     - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_GCP_TENANT --acl_domain $DOMAIN --legal_tag $OSDU_GCP_LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
-#osdu-gcp-test:
-#  stage: integration
-#  extends: []
-#  image: gcr.io/google.com/cloudsdktool/cloud-sdk
-#  allow_failure: true
-#  stage: integration
-#  needs: ["osdu-gcp-deploy"]
-#  only:
-#    variables:
-#      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE != 'python'
+osdu-gcp-test:
+  extends: []
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  script:
+    - echo "Tests here"
+  allow_failure: false
+  stage: integration
+  needs: ["osdu-gcp-deploy"]
+  only:
+    variables:
+      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE != 'python'
