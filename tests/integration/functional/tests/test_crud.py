@@ -18,7 +18,7 @@ from ..request_builders import build_request
 
 kind_list = ['well', 'wellbore', 'logset', 'marker', 'trajectory', 'log']
 new_parameters_env = {'authorityKind': 'slb',
-                      'prefix_data_entity_name': 'wdms_e2e_slb_authority' }
+                      'prefix_data_entity_name': 'wdms_e2e_slb_authority'}
 
 param_kind_depend_on_create = [
     pytest.param(k, marks=pytest.mark.dependency(depends=[f'test_create_record_{k}'])) for k in kind_list

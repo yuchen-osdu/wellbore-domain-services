@@ -18,18 +18,30 @@ from ..request_builders.wdms.search_apis.setup import *
 from ..request_builders.wdms.search_apis.search import *
 from time import sleep
 
+new_parameters_env = {'authorityKind': 'slb',
+                      'prefix_data_entity_name': 'wdms_e2e_slb_authority'}
 
+#it will only be run once
+@pytest.fixture(scope='module')
+def get_env_variables_with_authority_in_kind(with_wdms_env):
+    env_with_authority_in_kind = with_wdms_env.copy()
+    for name, value in new_parameters_env.items():
+        env_with_authority_in_kind.set(name, value)
+    return env_with_authority_in_kind
+
+@pytest.fixture(params=['authority_data_partition', 'authority_slb'])
+def get_env(with_wdms_env, get_env_variables_with_authority_in_kind, request):
+    return with_wdms_env if request.param == "authority_data_partition" else get_env_variables_with_authority_in_kind
+
+@pytest.fixture(params=['query', 'fastquery'])
+def set_search_query_type(get_env, request):
+    env = get_env
+    env.set('search_query_type', request.param)
 
 def query_for_record_set_available(env):
     result = build_request_seach_tests_setup_start().call(env)
     result.assert_ok()
     return result.get_response_obj()
-
-
-@pytest.fixture(params=['query', 'fastquery'])
-def set_search_query_type(with_wdms_env, request):
-    env = with_wdms_env
-    env.set('search_query_type', request.param)
 
 @pytest.mark.tag('search')
 @pytest.mark.dependency()
