@@ -43,7 +43,7 @@ def query_for_record_set_available(env):
     result.assert_ok()
     return result.get_response_obj()
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency()
 def test_setup_for_search(with_wdms_env):
     # TODO this must be revisited to have independent setup for each needed record
@@ -95,42 +95,42 @@ def test_setup_for_search(with_wdms_env):
     env.set('search_logset_id', ref_data.data.channelNames[1])
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_wellbores_by_distance(with_wdms_env, set_search_query_type):
     resobj = build_request_search_wellbores_by_distance().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_wellbores_by_bounding_box(with_wdms_env, set_search_query_type):
     resobj = build_request_search_wellbores_by_bounding_box().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_wellbores_by_geo_polygon(with_wdms_env, set_search_query_type):
     resobj = build_request_search_wellbores_by_geo_polygon().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logset_by_wellbore_id(with_wdms_env, set_search_query_type):
     resobj = build_request_search_logset_by_wellbore_id().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 2
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_markers_by_wellbore_id(with_wdms_env, set_search_query_type):
     resobj = build_request_search_markers_by_wellbore_id().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 2
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logset_by_wellbore_attribute(with_wdms_env, set_search_query_type):
     resobj = build_request_search_logset_by_wellbores_attribute().call(
@@ -138,14 +138,14 @@ def test_search_logset_by_wellbore_attribute(with_wdms_env, set_search_query_typ
     assert resobj.totalCount >= 2
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs_by_wellbore_id(with_wdms_env, set_search_query_type):
     resobj = build_request_search_logs_by_wellbore_id().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 3
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs_by_wellbore_attribute(with_wdms_env, set_search_query_type):
     resobj = build_request_search_logs_by_wellbores_attribute().call(
@@ -153,14 +153,14 @@ def test_search_logs_by_wellbore_attribute(with_wdms_env, set_search_query_type)
     assert resobj.totalCount >= 3
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs_by_logset_id(with_wdms_env, set_search_query_type):
     resobj = build_request_search_logs_by_logset_id().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 3
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs_by_logset_attribute(with_wdms_env, set_search_query_type):
     resobj = build_request_search_logs_by_logsets_attribute().call(
@@ -168,14 +168,14 @@ def test_search_logs_by_logset_attribute(with_wdms_env, set_search_query_type):
     assert resobj.totalCount >= 3
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_wellbores(with_wdms_env, set_search_query_type):
     build_request_search_wellbores().call(
         with_wdms_env, assert_status=200)
 
 
-@pytest.mark.tag('search')
+@pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs(with_wdms_env, set_search_query_type):
     build_request_search_logs().call(
