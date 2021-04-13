@@ -184,6 +184,7 @@ The following software have components provided under the terms of this license:
 - azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
 - azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
 - azure-storage-blob (from https://github.com/Azure/azure-storage-python)
+- backoff (from https://github.com/litl/backoff)
 - botocore (from https://github.com/boto/botocore)
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi (from http://cffi.readthedocs.org)
