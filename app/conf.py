@@ -132,6 +132,21 @@ class ConfigurationContainer:
         default='500',
         factory=lambda x: int(x))
 
+    de_client_backoff_max_tries: EnvVar = EnvVar(
+        key='DE_CLIENT_BACKOFF_MAX_RETRIES',
+        description="""The maximum number of attempts to make before giving
+            up. Once exhausted, the exception will be allowed to escape.
+            The default value of None means their is no limit to the
+            number of tries.""",
+        default='4',
+        factory=lambda x: int(x))
+
+    de_client_backoff_max_wait: EnvVar = EnvVar(
+        key='DE_CLIENT_BACKOFF_MAX_WAIT',
+        description="""The maximum wait in second between retry. """,
+        default='5',
+        factory=lambda x: int(x))
+
     build_details: EnvVar = EnvVar(
         key='OS_WELLBORE_DDMS_BUILD_DETAILS',
         description='contains optional extra information of the build, format is the multiple "key=value" separated'
