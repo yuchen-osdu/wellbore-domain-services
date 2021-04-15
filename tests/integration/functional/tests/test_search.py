@@ -29,7 +29,9 @@ def get_env_variables_with_authority_in_kind(with_wdms_env):
         env_with_authority_in_kind.set(name, value)
     return env_with_authority_in_kind
 
-@pytest.fixture(params=['authority_data_partition', 'authority_slb'])
+# to test authority slb in king, add 'authority_slb' param to the fixture
+# params=['authority_data_partition', 'authority_slb']
+@pytest.fixture(params=['authority_data_partition'])
 def get_env(with_wdms_env, get_env_variables_with_authority_in_kind, request):
     return with_wdms_env if request.param == "authority_data_partition" else get_env_variables_with_authority_in_kind
 
@@ -45,12 +47,12 @@ def query_for_record_set_available(env):
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency()
-def test_setup_for_search(with_wdms_env):
+def test_setup_for_search(get_env):
     # TODO this must be revisited to have independent setup for each needed record
     wait_attempt = 10
 
     # set here the version the data set of record needed for the tests
-    env = with_wdms_env
+    env = get_env
     env.set('search_record_version', '0001')
     # this value is use in the query to fetch the record
 
@@ -63,12 +65,12 @@ def test_setup_for_search(with_wdms_env):
         # create one wellbore
         record_id = build_request_seach_tests_setup_create_wellbore().call(
             env, assert_status=200).get_response_obj().recordIds[0]
-        env.set("setup_search_wellbore_id", record_id)
+        env.set("setup_search_{{prefix_data_entity_name}}_wellbore_id", record_id)
 
         for _ in range(2):  # create 2 logset
             record_id = build_request_seach_tests_setup_create_logsets().call(
                 env, assert_status=200).get_response_obj().recordIds[0]
-        env.set("setup_search_logset_id", record_id)  # it doesn't matter which logset id is set
+        env.set("setup_search_{{prefix_data_entity_name}}_logset_id", record_id)  # it doesn't matter which logset id is set
 
         for _ in range(2):  # create 2 marker
             build_request_seach_tests_setup_create_markers().call(env, assert_status=200)
@@ -91,92 +93,92 @@ def test_setup_for_search(with_wdms_env):
 
     # pick the first
     ref_data = query_result.results[0]
-    env.set('search_wellbore_id', ref_data.data.channelNames[0])
-    env.set('search_logset_id', ref_data.data.channelNames[1])
+    env.set('search_{{prefix_data_entity_name}}_wellbore_id', ref_data.data.channelNames[0])
+    env.set('search_{{prefix_data_entity_name}}_logset_id', ref_data.data.channelNames[1])
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_wellbores_by_distance(with_wdms_env, set_search_query_type):
-    resobj = build_request_search_wellbores_by_distance().call(with_wdms_env, assert_status=200).get_response_obj()
+def test_search_wellbores_by_distance(get_env, set_search_query_type):
+    resobj = build_request_search_wellbores_by_distance().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_wellbores_by_bounding_box(with_wdms_env, set_search_query_type):
-    resobj = build_request_search_wellbores_by_bounding_box().call(with_wdms_env, assert_status=200).get_response_obj()
+def test_search_wellbores_by_bounding_box(get_env, set_search_query_type):
+    resobj = build_request_search_wellbores_by_bounding_box().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_wellbores_by_geo_polygon(with_wdms_env, set_search_query_type):
-    resobj = build_request_search_wellbores_by_geo_polygon().call(with_wdms_env, assert_status=200).get_response_obj()
+def test_search_wellbores_by_geo_polygon(get_env, set_search_query_type):
+    resobj = build_request_search_wellbores_by_geo_polygon().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_logset_by_wellbore_id(with_wdms_env, set_search_query_type):
-    resobj = build_request_search_logset_by_wellbore_id().call(with_wdms_env, assert_status=200).get_response_obj()
+def test_search_logset_by_wellbore_id(get_env, set_search_query_type):
+    resobj = build_request_search_logset_by_wellbore_id().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 2
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_markers_by_wellbore_id(with_wdms_env, set_search_query_type):
-    resobj = build_request_search_markers_by_wellbore_id().call(with_wdms_env, assert_status=200).get_response_obj()
+def test_search_markers_by_wellbore_id(get_env, set_search_query_type):
+    resobj = build_request_search_markers_by_wellbore_id().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 2
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_logset_by_wellbore_attribute(with_wdms_env, set_search_query_type):
+def test_search_logset_by_wellbore_attribute(get_env, set_search_query_type):
     resobj = build_request_search_logset_by_wellbores_attribute().call(
-        with_wdms_env, assert_status=200).get_response_obj()
+        get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 2
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_logs_by_wellbore_id(with_wdms_env, set_search_query_type):
-    resobj = build_request_search_logs_by_wellbore_id().call(with_wdms_env, assert_status=200).get_response_obj()
+def test_search_logs_by_wellbore_id(get_env, set_search_query_type):
+    resobj = build_request_search_logs_by_wellbore_id().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 3
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_logs_by_wellbore_attribute(with_wdms_env, set_search_query_type):
+def test_search_logs_by_wellbore_attribute(get_env, set_search_query_type):
     resobj = build_request_search_logs_by_wellbores_attribute().call(
-        with_wdms_env, assert_status=200).get_response_obj()
+        get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 3
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_logs_by_logset_id(with_wdms_env, set_search_query_type):
-    resobj = build_request_search_logs_by_logset_id().call(with_wdms_env, assert_status=200).get_response_obj()
+def test_search_logs_by_logset_id(get_env, set_search_query_type):
+    resobj = build_request_search_logs_by_logset_id().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 3
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_logs_by_logset_attribute(with_wdms_env, set_search_query_type):
+def test_search_logs_by_logset_attribute(get_env, set_search_query_type):
     resobj = build_request_search_logs_by_logsets_attribute().call(
-        with_wdms_env, assert_status=200).get_response_obj()
+        get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 3
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_wellbores(with_wdms_env, set_search_query_type):
+def test_search_wellbores(get_env, set_search_query_type):
     build_request_search_wellbores().call(
-        with_wdms_env, assert_status=200)
+        get_env, assert_status=200)
 
 
 @pytest.mark.tag('search', 'basic')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
-def test_search_logs(with_wdms_env, set_search_query_type):
+def test_search_logs(get_env, set_search_query_type):
     build_request_search_logs().call(
-        with_wdms_env, assert_status=200)
+        get_env, assert_status=200)
