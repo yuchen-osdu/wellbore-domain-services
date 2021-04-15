@@ -29,7 +29,7 @@ def get_env_variables_with_authority_in_kind(with_wdms_env):
         env_with_authority_in_kind.set(name, value)
     return env_with_authority_in_kind
 
-# to test authority slb in king, add 'authority_slb' param to the fixture
+# to test authority slb in kind, add 'authority_slb' param to the fixture
 # params=['authority_data_partition', 'authority_slb']
 @pytest.fixture(params=['authority_data_partition'])
 def get_env(with_wdms_env, get_env_variables_with_authority_in_kind, request):
