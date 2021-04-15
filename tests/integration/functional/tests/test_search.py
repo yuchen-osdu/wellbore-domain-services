@@ -30,10 +30,10 @@ def get_env_variables_with_authority_in_kind(with_wdms_env):
     return env_with_authority_in_kind
 
 # to test authority slb in kind, add 'authority_slb' param to the fixture
-# params=['authority_data_partition', 'authority_slb']
-@pytest.fixture(params=['authority_data_partition'])
+# params=['data_partition', 'authority_slb']
+@pytest.fixture(params=['data_partition'])
 def get_env(with_wdms_env, get_env_variables_with_authority_in_kind, request):
-    return with_wdms_env if request.param == "authority_data_partition" else get_env_variables_with_authority_in_kind
+    return with_wdms_env if request.param == "data_partition" else get_env_variables_with_authority_in_kind
 
 @pytest.fixture(params=['query', 'fastquery'])
 def set_search_query_type(get_env, request):

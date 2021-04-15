@@ -28,9 +28,9 @@ def get_env_variables_with_authority_in_kind(with_wdms_env):
         env_with_authority_in_kind.set(name, value)
     return env_with_authority_in_kind
 
-@pytest.fixture(params=['authority_data_partition', 'authority_slb'])
+@pytest.fixture(params=['data_partition', 'authority_slb'])
 def get_env(with_wdms_env, get_env_variables_with_authority_in_kind, request):
-    return with_wdms_env if request.param == "authority_data_partition" else get_env_variables_with_authority_in_kind
+    return with_wdms_env if request.param == "data_partition" else get_env_variables_with_authority_in_kind
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
