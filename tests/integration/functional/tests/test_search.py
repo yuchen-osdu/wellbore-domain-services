@@ -45,7 +45,7 @@ def query_for_record_set_available(env):
     result.assert_ok()
     return result.get_response_obj()
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency()
 def test_setup_for_search(get_env):
     # TODO this must be revisited to have independent setup for each needed record
@@ -97,42 +97,42 @@ def test_setup_for_search(get_env):
     env.set('search_{{prefix_data_entity_name}}_logset_id', ref_data.data.channelNames[1])
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_wellbores_by_distance(get_env, set_search_query_type):
     resobj = build_request_search_wellbores_by_distance().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_wellbores_by_bounding_box(get_env, set_search_query_type):
     resobj = build_request_search_wellbores_by_bounding_box().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_wellbores_by_geo_polygon(get_env, set_search_query_type):
     resobj = build_request_search_wellbores_by_geo_polygon().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logset_by_wellbore_id(get_env, set_search_query_type):
     resobj = build_request_search_logset_by_wellbore_id().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 2
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_markers_by_wellbore_id(get_env, set_search_query_type):
     resobj = build_request_search_markers_by_wellbore_id().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 2
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logset_by_wellbore_attribute(get_env, set_search_query_type):
     resobj = build_request_search_logset_by_wellbores_attribute().call(
@@ -140,14 +140,14 @@ def test_search_logset_by_wellbore_attribute(get_env, set_search_query_type):
     assert resobj.totalCount >= 2
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs_by_wellbore_id(get_env, set_search_query_type):
     resobj = build_request_search_logs_by_wellbore_id().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 3
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs_by_wellbore_attribute(get_env, set_search_query_type):
     resobj = build_request_search_logs_by_wellbores_attribute().call(
@@ -155,14 +155,14 @@ def test_search_logs_by_wellbore_attribute(get_env, set_search_query_type):
     assert resobj.totalCount >= 3
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs_by_logset_id(get_env, set_search_query_type):
     resobj = build_request_search_logs_by_logset_id().call(get_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 3
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs_by_logset_attribute(get_env, set_search_query_type):
     resobj = build_request_search_logs_by_logsets_attribute().call(
@@ -170,14 +170,14 @@ def test_search_logs_by_logset_attribute(get_env, set_search_query_type):
     assert resobj.totalCount >= 3
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_wellbores(get_env, set_search_query_type):
     build_request_search_wellbores().call(
         get_env, assert_status=200)
 
 
-@pytest.mark.tag('search', 'basic')
+@pytest.mark.tag('search')
 @pytest.mark.dependency(depends=["test_setup_for_search"])
 def test_search_logs(get_env, set_search_query_type):
     build_request_search_logs().call(
