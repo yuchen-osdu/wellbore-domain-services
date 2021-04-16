@@ -17,6 +17,9 @@ from opencensus.trace.span import SpanKind
 from app import conf
 from app.utils import Context
 from app.helper import utils, traces
+from .backoff_policy import backoff_policy
+from sys import exc_info
+from traceback import format_exception
 
 
 def _before_tracing_attributes(ctx, request):
@@ -38,6 +41,19 @@ def _before_tracing_attributes(ctx, request):
     ctx.tracer.add_attribute_to_current_span(
         attribute_key=conf.CORRELATION_ID_HEADER_NAME,
         attribute_value=ctx.correlation_id)
+
+
+def backoff_handler_log_it(details):
+    ctx = Context.current()
+
+    exception_type, raised_exec, tb = exc_info()
+    s_stack = format_exception(exception_type, raised_exec, tb)
+    ctx.logger.exception(f"Backoff callback, tries={details['tries']}: {raised_exec}. Stack = {s_stack}")
+
+
+@backoff_policy(backoff_handler_log_it)
+async def backoff_middleware(request, call_next):
+    return await call_next(request)
 
 
 async def client_middleware(request, call_next):

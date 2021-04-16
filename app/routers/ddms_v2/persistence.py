@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.bulk_persistence import create_and_store_dataframe
 import pandas as pd
-from app.bulk_persistence import get_dataframe
+from opencensus.trace.span import SpanKind
 
 from odes_storage.models import Record
-from app.utils import Context
 
+from app.bulk_persistence import create_and_store_dataframe
+from app.bulk_persistence import get_dataframe
+from app.utils import Context
 from app.model.log_bulk import LogBulkHelper
 
 
@@ -38,4 +39,6 @@ class Persistence:
 
     @classmethod
     async def write_bulk(cls, ctx: Context, dataframe) -> str:
-        return await create_and_store_dataframe(ctx, dataframe)
+        with ctx.tracer.span(name=f'write bulk') as span:
+            span.span_kind = SpanKind.CLIENT
+            return await create_and_store_dataframe(ctx, dataframe)
