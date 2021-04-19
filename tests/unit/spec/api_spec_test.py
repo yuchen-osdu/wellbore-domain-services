@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This test ensures the API spec committed with the sources stays accurate.
+If the test fails, it replaces the saved spec with the current version.
+The updated spec file must then be committed with the latest changes.
+"""
+
+OPENAPI_PATH = 'spec/generated/openapi.json'
+
 from fastapi.testclient import TestClient
 import pytest
 from app.wdms_app import wdms_app
@@ -39,15 +47,15 @@ def test_api_spec(client):
     openapi_json = response.json()
     openapi_text = json.dumps(openapi_json, sort_keys=True, indent=2)
     # get the saved spec
-    specfile = open('spec/generated/openapi.json', 'r')
+    specfile = open(OPENAPI_PATH, 'r')
     specfile_json = json.load(specfile)
     specfile_text = json.dumps(specfile_json, sort_keys=True, indent=2)
     specfile.close()
     # compare formatted json strings
     if openapi_text != specfile_text:
         # save updated spec
-        specfile = open('spec/generated/openapi.json', 'w')
+        specfile = open(OPENAPI_PATH, 'w')
         specfile.write(openapi_text)
         specfile.close()
         # assert error
-        assert False, "spec/generated/openapi.json has changed, commit the updated file"
+        assert False, f"{OPENAPI_PATH} has changed, commit the updated file"
