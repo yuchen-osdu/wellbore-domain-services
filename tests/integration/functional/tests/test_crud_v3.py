@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import pytest
-from ..request_runner import RequestRunner, Request
 from .fixtures import with_wdms_env
 from ..request_builders import build_request, get_cleaned_ref_and_res
 
@@ -75,42 +74,46 @@ def test_crud_delete_record(with_wdms_env, kind):
     result = build_request(f'crud.{kind}.delete_{kind}').call(with_wdms_env)
     result.assert_status_code(204)
 
+
+GETAS_PARAMS = [
+    'wellbore',
+    'well'
+]
+
+
 @pytest.fixture()
-def wellbore_delfi_id(with_wdms_env):
-    # Create a delfi wellbore
-    result = build_request("crud.wellbore.create_wellbore").call(with_wdms_env)
+def delfi_id(with_wdms_env, kind):
+    # Create a delfi well
+    result = build_request(f"crud.{kind}.create_{kind}").call(with_wdms_env)
     result.assert_ok()
     resobj = result.get_response_obj()
     assert resobj.recordCount == 1
     assert len(resobj.recordIds) == 1
     delfi_record_id = resobj.recordIds[0]
-    with_wdms_env.set('wellbore_record_id', delfi_record_id)
+    with_wdms_env.set(f'{kind}_record_id', delfi_record_id)
 
     yield delfi_record_id
 
-    #Cleanup
-    result = build_request("crud.wellbore.delete_wellbore").call(with_wdms_env)
+    # Cleanup
+    result = build_request(f"crud.{kind}.delete_{kind}").call(with_wdms_env)
     result.assert_ok()
 
+
 @pytest.mark.tag('basic', 'crud', 'smoke')
-def test_crud_get_as_record(wellbore_delfi_id, with_wdms_env):
-    delfi_record_id = wellbore_delfi_id
-    with_wdms_env.set('osdu_wellbore_record_id', delfi_record_id)
+@pytest.mark.parametrize('kind', GETAS_PARAMS)
+def test_crud_get_as_record(delfi_id, kind, with_wdms_env):
+    delfi_record_id = delfi_id
+    with_wdms_env.set(f'osdu_{kind}_record_id', delfi_record_id)
 
     # Get it as osdu wellbore with delfi id
-    result = build_request('crud.osdu_wellbore.get_osdu_wellbore').call(with_wdms_env)
+    result = build_request(f'crud.osdu_{kind}.get_osdu_{kind}').call(with_wdms_env)
     result.assert_ok()
 
     # Get it as osdu wellbore with fake osdu id
     id_as_list = delfi_record_id.split(sep=":")
     encoded_str = delfi_record_id.encode().hex()
-    res_as_list = []
-    res_as_list.append(id_as_list[0])
-    res_as_list.append("master-data--Wellbore")
-    res_as_list.append(encoded_str)
-    res_as_list.append("")
+    res_as_list = [id_as_list[0], f"master-data--{kind.capitalize()}", encoded_str, ""]
     fakeid = ":".join(res_as_list)
-    with_wdms_env.set('osdu_wellbore_record_id', fakeid)  # stored the record id for the following tests
-    result = build_request('crud.osdu_wellbore.get_osdu_wellbore').call(with_wdms_env)
+    with_wdms_env.set(f'osdu_{kind}_record_id', fakeid)  # stored the record id for the following tests
+    result = build_request(f'crud.osdu_{kind}.get_osdu_{kind}').call(with_wdms_env)
     result.assert_ok()
-
