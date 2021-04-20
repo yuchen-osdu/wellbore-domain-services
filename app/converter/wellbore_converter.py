@@ -34,8 +34,7 @@ class WellboreConverter:
             "ExistenceKind": None,
             "ExtensionProperties": {
                 "slb": {
-                    "kind": S(BENDINGCONTEXT, "namespace")
-                            + K(":wbddms:WellboreExtensions:1.0.0"),
+                    "kind": K("slb:wbddms:WellboreExtensions:1.0.0"),
                     "airGap": {
                         "unitKey": OptionalS("data", "airGap", "unitKey"),
                         "value": OptionalS("data", "airGap", "value"),
@@ -562,15 +561,15 @@ class WellboreConverter:
     }
 
     @classmethod
-    def convert_wks_to_osdu(cls, wks_dict: dict, context: dict) -> dict:
+    def convert_delfi_to_osdu(cls, delfi_dict: dict, context: dict) -> dict:
         """
-        :param wks_dict:
+        :param delfi_dict:
         :param context: the context must contains at least namespace variable corresponding to the authority
         :return:
         """
-        wks_dict = ConverterUtils.remove_none_from_dict(wks_dict)
+        delfi_dict = ConverterUtils.remove_none_from_dict(delfi_dict)
         # inject context in input dict, to make it available easily during bending
-        wks_dict[BENDINGCONTEXT] = context
-        res = bend(cls.WELLBORE_WKS_OSDU_MAPPING, wks_dict)
+        delfi_dict[BENDINGCONTEXT] = context
+        res = bend(cls.WELLBORE_WKS_OSDU_MAPPING, delfi_dict)
         res = ConverterUtils.remove_none(res)
         return res

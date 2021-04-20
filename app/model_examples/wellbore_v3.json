@@ -7,7 +7,7 @@
             "data.default.owners@{{datapartitionid}}.{{domain}}"
         ]
     },
-    "id": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}",
+    "id": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
     "kind": "osdu:wks:master-data--Wellbore:1.0.0",
     "legal": {
         "legaltags": [
@@ -28,7 +28,8 @@
             "uwi": "33-089-00300-00-01",
             "wellboreType": "bypass"
         },
-        "Wgs84Coordinates": {
+        "SpatialLocation": {
+            "Wgs84Coordinates": {
             "features": [{
                     "geometry": {
                         "coordinates": [
@@ -72,8 +73,10 @@
                 }
             ],
             "type": "FeatureCollection"
+        }
         },
-        "name": "{{wellboreName}}",
+
+        "FacilityName": "{{wellboreName}}",
         "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:"           
     },        
     "meta": [{

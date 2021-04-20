@@ -22,7 +22,7 @@ from fastapi.testclient import TestClient
 from fastapi import Header, status
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record
-from app.model.osdu_model import Wellbore
+from app.model.osdu_model import Wellbore, Well
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 
 from app.helper import traces
@@ -39,7 +39,9 @@ Contains unified common tests for the different kind. Mainly CRUD test cases
 
 tests_parameters = [
     (
-        '/ddms/v3/wellbores', r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9", Wellbore(
+        "/ddms/v3/wellbores",
+        r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:",
             kind="namespace:osdu:Wellbore:2.7.112",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
@@ -48,10 +50,12 @@ tests_parameters = [
                 "otherRelevantDataCountries": ["FR"],
             },
             data={},
-        )
+        ),
     ),
     (
-        '/ddms/v3/wellbores', r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9" ,Wellbore(
+        "/ddms/v3/wellbores",
+        r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:145",
             kind="namespace:osdu:Wellbore:2.7.112",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
@@ -94,9 +98,7 @@ def client(nope_logger_fixture):
         wdms_app.dependency_overrides[
             require_opendes_authorized_user
         ] = bypass_authorization
-        wdms_app.dependency_overrides[
-            require_data_partition_id
-        ] = set_default_partition
+        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
         client = TestClient(wdms_app)
         yield client
     finally:
@@ -116,9 +118,7 @@ def test_post_records_successful(client):
         ],
     )
 
-    moc_create_or_update_records = mock.AsyncMock(
-        return_value=expected_response
-    )
+    moc_create_or_update_records = mock.AsyncMock(return_value=expected_response)
 
     with mock.patch.object(
         StorageRecordServiceClientMock,
@@ -134,58 +134,67 @@ def test_post_records_successful(client):
 
         # then
         assert response.status_code == status.HTTP_200_OK
-        assert (
-            CreateUpdateRecordsResponse.parse_raw(response.text)
-            == expected_response
-        )
+        assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
+
 
 getas_parameters = [
-    "opendes:doc:12345",
-    "opendes:master-data--Wellbore:6f70656e6465733a646f633a3132333435:"
+    (Wellbore, "/ddms/v3/wellbores", r"../../converter/wellbore_wks.json", "opendes:wellbore:12345"),
+    (Wellbore, "/ddms/v3/wellbores",r"../../converter/wellbore_wks.json", "opendes:master-data--Wellbore:6f70656e6465733a646f633a3132333435:"),
+    (Wellbore, "/ddms/v3/wellbores", r"../../../../app/model_examples/wellbore_v3.json", "opendes:master-data--Wellbore:123"),
+    (Well, "/ddms/v3/wells", r"../../converter/well_wks.json", "opendes:well:12345"),
+    (Well, "/ddms/v3/wells", r"../../converter/well_wks.json", "opendes:master-data--Well:6f70656e6465733a646f633a3132333435:"),
+    (Well, "/ddms/v3/wells", r"../../../../app/model_examples/well_v3.json", "opendes:master-data--Well:12345:456"),
 ]
-@pytest.mark.parametrize('record_id', getas_parameters)
-def test_get_record_as_OSDU(client, record_id):
-    base_url = "/ddms/v3/wellbores"
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, r"wellbore_wks.json")) as f:
-        source_wellbore = json.load(f)
 
-    # record_id = source_wellbore["id"]
-    rr = Record.parse_obj(source_wellbore)
-    moc = mock.AsyncMock(return_value=rr)
+
+def replace_template(source_obj_str: str) -> str:
+    source_obj_str = source_obj_str.replace("{{datapartitionid}}", "datapartitionid")\
+        .replace("{datapartitionid}", "datapartitionid").replace("{{domain}}", "domain")\
+        .replace("{{wellboreId}}", "wellboreId").replace("{{wellId}}", "wellId")
+    return source_obj_str
+
+
+@pytest.mark.parametrize("entity_class, base_url, source_file, record_id", getas_parameters)
+def test_get_record_as_OSDU(client, entity_class, base_url, source_file, record_id):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(dir_path, source_file)) as f:
+        record_str = replace_template(f.read())
+        source_record = json.loads(record_str)
+    if isinstance(source_record, list):
+        source_record = source_record[0]
+    record_entity = Record.parse_obj(source_record)
+    moc = mock.AsyncMock(return_value=record_entity)
 
     with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc):
 
         # when
         response = client.get(
-            f"{base_url}/opendes:doc:12345",
+            f"{base_url}/{record_id}",
             headers={"data-partition-id": "testing_partition"},
         )
 
         assert response.status_code == status.HTTP_200_OK
 
-        # then assert storage is called with the proper id and data_partition
-        moc.assert_called_with(
-            id="opendes:doc:12345", data_partition_id="testing_partition"
-        )
-
         # assert it validates the input object schema
         res = response.json()
-        Wellbore.validate(res)
+        entity_class.validate(res)
 
 
-@pytest.mark.parametrize('base_url, id, record_obj', tests_parameters)
+@pytest.mark.parametrize("base_url, id, record_obj", tests_parameters)
 def test_get_record_success(client, base_url, id, record_obj):
     record_id = record_obj.id
     moc = mock.AsyncMock(return_value=record_obj)
 
-    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', moc):
+    with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc):
         # when
-        response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        response = client.get(
+            f"{base_url}/{record_id}",
+            headers={"data-partition-id": "testing_partition"},
+        )
         assert response.status_code == status.HTTP_200_OK
 
         # then assert storage is called with the proper id and data_partition
-        moc.assert_called_with(id=id, data_partition_id='testing_partition')
+        moc.assert_called_with(id=id, data_partition_id="testing_partition")
 
         # assert it validates the input object schema
         record_obj.validate(response.json())
