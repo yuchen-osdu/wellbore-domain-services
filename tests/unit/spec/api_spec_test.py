@@ -47,15 +47,13 @@ def test_api_spec(client):
     openapi_json = response.json()
     openapi_text = json.dumps(openapi_json, sort_keys=True, indent=2)
     # get the saved spec
-    specfile = open(OPENAPI_PATH, 'r')
-    specfile_json = json.load(specfile)
-    specfile_text = json.dumps(specfile_json, sort_keys=True, indent=2)
-    specfile.close()
+    with open(OPENAPI_PATH, 'r') as specfile:
+        specfile_json = json.load(specfile)
+        specfile_text = json.dumps(specfile_json, sort_keys=True, indent=2)
     # compare formatted json strings
     if openapi_text != specfile_text:
         # save updated spec
-        specfile = open(OPENAPI_PATH, 'w')
-        specfile.write(openapi_text)
-        specfile.close()
+        with open(OPENAPI_PATH, 'w') as specfile:
+            specfile.write(openapi_text)
         # assert error
         assert False, f"{OPENAPI_PATH} has changed, commit the updated file"
