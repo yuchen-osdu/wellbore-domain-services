@@ -80,6 +80,7 @@ class ConverterUtils:
         for meta_item in metas:
             if meta_item.get(search_attribute, EMPTY) == search_value:
                 return meta_item.get(returned_attribute, EMPTY)
+        return EMPTY
 
     @staticmethod
     def date_to_datetime(in_date: str) -> str:
@@ -100,16 +101,29 @@ class ConverterUtils:
         return new_dict or None
 
     @staticmethod
+    def _is_value_keepable(value):
+        """
+        Utilitary function returning True is we keep the value
+        Value can be bool, string, numerical, list, dict, ...
+        Rejected values are EMPTY, None, [], {}, ()
+        None and [], {}, () are evaluated as false (but not equal to False)
+        value == False allow to keep boolean false values
+        :param v:
+        :return: True is we keep the value
+        """
+        return value != EMPTY and (value or value == False)
+
+    @staticmethod
     def remove_none(in_obj):
         # This method can be optimized in python 3.8 with assignment expression PEP572 := https://stackoverflow.com/questions/4097518/intermediate-variable-in-a-list-comprehension-for-simultaneous-filtering-and-tra
         #(x or x == False) keep x if x is not not None or if x a non empty container
         if isinstance(in_obj, (list, tuple, set)):
-            return type(in_obj)(ConverterUtils.remove_none(x) for x in in_obj if (x or x == False) and (
+            return type(in_obj)(ConverterUtils.remove_none(x) for x in in_obj if ConverterUtils._is_value_keepable(x) and (
                         ConverterUtils.remove_none(x) or ConverterUtils.remove_none(x) == False))
         elif isinstance(in_obj, dict):
             return type(in_obj)(
                 (ConverterUtils.remove_none(k), ConverterUtils.remove_none(v)) for k, v in in_obj.items()
-                if k is not None and (v or v == False)
+                if k is not None and ConverterUtils._is_value_keepable(v)
                 and (ConverterUtils.remove_none(k) or ConverterUtils.remove_none(k) == False)
                 and (ConverterUtils.remove_none(v) or ConverterUtils.remove_none(v) == False)
                 )
