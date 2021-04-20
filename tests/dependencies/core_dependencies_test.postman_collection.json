@@ -1052,20 +1052,24 @@
 			"value": ""
 		},
 		{
+			"key": "authorityKind",
+			"value": "slb"
+		},
+		{
 			"key": "wellKind",
-			"value": "{{data_partition}}:wks:well:1.0.2"
+			"value": "{{authorityKind}}:wks:well:1.0.2"
 		},
 		{
 			"key": "wellboreKind",
-			"value": "{{data_partition}}:wks:wellbore:1.0.6"
+			"value": "{{authorityKind}}:wks:wellbore:1.0.6"
 		},
 		{
 			"key": "logSetKind",
-			"value": "{{data_partition}}:wks:logSet:1.0.5"
+			"value": "{{authorityKind}}:wks:logSet:1.0.5"
 		},
 		{
 			"key": "logKind",
-			"value": "{{data_partition}}:wks:log:1.0.5"
+			"value": "{{authorityKind}}:wks:log:1.0.5"
 		},
 		{
 			"key": "data_partition",
