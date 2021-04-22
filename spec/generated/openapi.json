@@ -740,10 +740,10 @@
         "example": {
           "acl": {
             "owners": [
-              "abc@slb.com, cde@slb.com"
+              "abc@domain.com, cde@domain.com"
             ],
             "viewers": [
-              "abc@slb.com, cde@slb.com"
+              "abc@domain.com, cde@domain.com"
             ]
           },
           "data": {
