@@ -839,7 +839,6 @@ class Artefact(BaseModel):
     ] = Field(None, description='The SRN which identifies this OSDU Artefact resource.')
 
 
-
 class AbstractWellboreDrillingReason100(BaseModel):
     """
     Purpose for drilling a wellbore, which often is an indication of the level of risk.
@@ -946,6 +945,7 @@ class VerticalMeasurement(AbstractFacilityVerticalMeasurement100):
         description='The ID for a distinct vertical measurement within the Wellbore VerticalMeasurements array so that it may be referenced by other vertical measurements if necessary.',
     )
 
+
 class AbstractWPCGroupType100(BaseModel):
     """
     Generic reference object containing the universal group-type properties of a Work Product Component for inclusion in data type specific Work Product Component objects
@@ -968,7 +968,7 @@ class AbstractWPCGroupType100(BaseModel):
 
 class LineageAssertion(BaseModel):
     ID: Optional[
-        constr(regex=r'^[\w\-\.]+:[\w\-\.]+\-\-[\w\-\.]+:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='The object reference identifying the DIRECT, INDIRECT, REFERENCE dependency.',
@@ -1205,6 +1205,7 @@ class Well(BaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellData] = None
+
 
 class WellBoreData(AbstractCommonResources100, AbstractMaster100, AbstractFacility100):
     WellID: Optional[
@@ -1502,3 +1503,198 @@ class WellLog(BaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellLogData] = None
+
+
+class WellboreTrajectoryData(
+    AbstractCommonResources100,
+    AbstractWPCGroupType100,
+    AbstractWorkProductComponent100,
+):
+    ServiceCompanyID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(None, description='Name of the Survey Company.', title='Service Company')
+    WellboreID: constr(
+        regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$'
+    ) = Field(
+        ...,
+        description='A unique name, code or number designated to the Wellbore.',
+        title='Wellbore',
+    )
+    TopDepthMeasuredDepth: float = Field(
+        ...,
+        description='Measured depth in wellbore where the directional survey starts. This should equal the minimum station measured depth for this directional survey, regardless of whether the surveyed station represents an actual surveyed MD or not.',
+        title='Survey Top Measured Depth',
+    )
+    AzimuthReferenceType: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-AzimuthReferenceType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The North reference of the trajectory used to define the azimuth angular measurement values. For example, True North, Grid North, Magnetic North.',
+        title='Azimuth Reference Type',
+    )
+    CalculationMethodType: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CalculationMethodType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Calculation Method Type used to compute the TVD, X OFFSET, Y OFFSET and DOG LEG SEVERITY values for this Directional Survey. For example, Radius of Curvature, Minimum Curvature, Balanced Tangential, etc.',
+        title='Calculation Method Type',
+    )
+    ProjectedCRSID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CoordinateReferenceSystem:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Coordinate Reference System defining the Projection of the station EASTING and NORTHING values. If  type is "Grid North" and EASTING and NORTHING attributes are stored, clearly identifying their projection is required.',
+        example='namespace:reference-data--CoordinateReferenceSystem:ProjectedCRS.EPSG.32615:',
+        title='Projected Coordinate Reference System ID',
+    )
+    ActiveIndicator: Optional[bool] = Field(
+        None,
+        description='A flag indicating if the survey is currently active or valid within his lifecycle stage, not necessarily the definitive survey.',
+        title='Active Survey Indicator',
+    )
+    SurveyType: Optional[str] = Field(
+        None,
+        description='The type of this directional survey.  For example a "Directional Survey" where MD, Inclination and Azimuth are all measured or a "Position Log" where Inclination and Azimuth are both null and only MD, TVD and X/Y Offsets are available) - or "Full Survey" where everything is fully filled-up, depth-inclination-azimuth.',
+        title='Directional Survey Type',
+    )
+    AcquisitionDate: Optional[datetime] = Field(
+        None,
+        description='The date that the survey data was acquired on the field.',
+        title='Effective Date',
+    )
+    GeographicCRSID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CoordinateReferenceSystem:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Coordinate Reference System defining the Geodetic Datum of the station LATITUDE and LONGITUDE values. If LATITUDE and LONGITUDE attributes are stored, clearly identifying their Datum is required.',
+        example='namespace:reference-data--CoordinateReferenceSystem:GeodeticCRS.EPSG.4326:',
+        title='Geographic Coordinate Reference System',
+    )
+    AcquisitionRemark: Optional[str] = Field(
+        None,
+        description='Remarks related to acquisition context which is not the same as Description which is a summary of the work-product-component.',
+        title='Survey Remark',
+    )
+    SurveyReferenceIdentifier: Optional[str] = Field(
+        None,
+        description='Unique or Distinctive Survey Reference Number, Job Number, File Number, Identifier, Label, Name, etc. as indicated on a directional survey report, file, etc.  Use this attribute to allow correlation of the data in this Directional Survey back to the original source document, file, etc.',
+        title='Survey Reference Identifier',
+    )
+    SurveyToolTypeID: Optional[str] = Field(
+        None,
+        description='The type of tool or equipment used to acquire this Directional Survey.  For example, gyroscopic, magnetic, MWD, TOTCO, acid bottle, etc. Follow OWSG reference data and support the ISCWSA survey tool definitions.',
+        title='Type of the Survey Tool',
+    )
+    SurveyVersion: Optional[str] = Field(
+        None,
+        description='The version of the wellbore survey deliverable received from the service provider - as given by this provider',
+        title='Survey Version',
+    )
+    ExtrapolatedMeasuredDepth: Optional[float] = Field(
+        None,
+        description='The measured depth to which the survey segment was extrapolated.',
+        title='Extrapolated Measured Depth',
+    )
+    BaseDepthMeasuredDepth: float = Field(
+        ...,
+        description='Measured depth within the wellbore of the LAST surveyed station with recorded data.  If a stored survey has been extrapolated to a deeper depth than the last surveyed station then that is the extrapolated measured depth and not the survey base depth.',
+        title='Survey Base Measured Depth',
+    )
+    TieMeasuredDepth: Optional[float] = Field(
+        None,
+        description='Tie-point depth measured along the wellbore from the measurement reference datum to the survey station - where tie point is the place on the originating survey where the current survey intersect it.',
+        title='Tie Measured Depth',
+    )
+    VerticalMeasurement: AbstractFacilityVerticalMeasurement100 = Field(
+        ...,
+        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all survey station measured depths.',
+    )
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
+class WellboreTrajectory(BaseModel):
+    """
+    Work Product Component describing an individual instance of a wellbore trajectory data object. Also called a deviation survey, wellbore trajectory is data that is used to calculate the position and spatial uncertainty of a planned or actual wellbore in 2-dimensional and 3-dimensional space.
+    """
+
+    id: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$'
+        )
+    ] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:work-product-component--WellboreTrajectory:606f224a-ef1f-5690-9843-d26cd7e33e10',
+        title='Entity ID',
+    )
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:work-product-component--WellboreTrajectory:1.0.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellboreTrajectoryData] = None
