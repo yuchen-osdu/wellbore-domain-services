@@ -19,7 +19,7 @@ secret:
 replicaCount: 1
 
 image:
-  repository: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp-wellbore-ddms:gcp-release"
+  repository: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp-wellbore-ddms"
   pullPolicy: Always
   tag: "gcp-release"
 
