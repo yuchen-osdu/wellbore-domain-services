@@ -1,4 +1,5 @@
 # Copyright 2021 Schlumberger
+# Copyright 2021 EPAM
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@ variables:
   AZURE_DOCKER_SUBDIR: build/Dockerfile
   AZURE_TEST_SUBDIR: tests/integration
   AZURE_TEST_TYPE: python
-  
+
   AWS_SERVICE: wellbore-ddms
   AWS_ENVIRONMENT: dev
   AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
@@ -29,8 +30,7 @@ variables:
   OSDU_GCP_PROJECT_NAME: nice-etching-277309
   OSDU_GCP_CLUSTER: wb
   OSDU_GCP_ZONE: us-central1-c
-  SERVICE_NAME: wellbore #Must be same as in configmap.yaml (namespace = name)
-
+  OSDU_GCP_SERVICE: wellbore-ddms
 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
@@ -45,24 +45,24 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
 
-  - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/osdu-gcp-stateful-k8s.yml'
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/osdu-gcp-stateful-k8s.yml"
 
-  - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/ibm-wellbore.yml'
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/ibm-wellbore.yml"
 
   - local: "/devops/azure/azure-wellbore.yml"
 
-  - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/aws.yml'
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws.yml"
 
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
   image: docker:19.03
-  tags: ['osdu-medium']
+  tags: ["osdu-medium"]
   variables:
-      IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
     - apk update
@@ -89,13 +89,13 @@ osdu-gcp-containerize:
   stage: containerize
   image: docker:19.03
   cache: {}
-  tags: [ 'osdu-medium' ]
+  tags: ["osdu-medium"]
   only:
     variables:
       - $OSDU_GCP == 'true'
   variables:
-      IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
-      IMAGE_TAG_COMMUNITY: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-community
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:$CI_COMMIT_SHA
+    IMAGE_TAG_COMMUNITY: $CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:gcp-community
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
     - apk update
@@ -122,13 +122,13 @@ osdu-gcp-containerize-for-release:
   stage: containerize
   image: docker:19.03
   cache: {}
-  tags: [ 'osdu-medium' ]
+  tags: ["osdu-medium"]
   only:
     variables:
       - $OSDU_GCP == 'true' && $RELEASE =~ /(v)(\d+\.)(\d+\.)\w+/i
   variables:
-      IMAGE_TAG: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-$RELEASE
-      IMAGE_TAG_RELEASE: $CI_REGISTRY_IMAGE/gcp-$CI_COMMIT_REF_SLUG:gcp-release
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:gcp-$RELEASE
+    IMAGE_TAG_RELEASE: $CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:gcp-release
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
     - apk update
