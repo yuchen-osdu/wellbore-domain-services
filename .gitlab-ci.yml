@@ -47,6 +47,7 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/osdu-gcp-stateful-k8s.yml"
+    ref: gcp-wellbore
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm-wellbore.yml"
