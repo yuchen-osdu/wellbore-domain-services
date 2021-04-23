@@ -172,9 +172,9 @@ osdu-gcp-test-python:
     - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT_NAME
-    - OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n $SERVICE_NAME -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'API_URL'}'`
-    - OSDU_GCP_TENANT=`kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'TENANT'}'`
-    - OSDU_GCP_LEGAL_TAG=`kubectl get configmap $SERVICE_NAME -n $SERVICE_NAME -o jsonpath='{.data.'LEGAL_TAG'}'`
+    - OSDU_GCP_WELLBORE_DDMS_URL=http://`kubectl get ingress -n $OSDU_NAMESPACE -o jsonpath='{..ingress[*].'ip'}'``kubectl get configmap $OSDU_NAMESPACE -n $OSDU_NAMESPACE -o jsonpath='{.data.'API_URL'}'`
+    - OSDU_GCP_TENANT=`kubectl get configmap $OSDU_NAMESPACE -n $OSDU_NAMESPACE -o jsonpath='{.data.'TENANT'}'`
+    - OSDU_GCP_LEGAL_TAG=`kubectl get configmap $OSDU_NAMESPACE -n $OSDU_NAMESPACE -o jsonpath='{.data.'LEGAL_TAG'}'`
     - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
