@@ -7,10 +7,8 @@ Apache-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Pygments (from http://pygments.org/)
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
-- bleach (from http://github.com/mozilla/bleach)
 - boto3 (from https://github.com/boto/boto3)
 - botocore (from https://github.com/boto/botocore)
 - coverage (from https://coverage.readthedocs.io)
@@ -39,9 +37,7 @@ The following software have components provided under the terms of this license:
 - pytest-dependency (from )
 - python-dateutil (from https://dateutil.readthedocs.org)
 - python-multipart (from http://github.com/andrew-d/python-multipart)
-- readme-renderer (from https://github.com/pypa/readme_renderer)
 - requests (from http://python-requests.org)
-- requests-toolbelt (from https://toolbelt.readthedocs.org)
 - rfc3986 (from https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
 - s3transfer (from https://github.com/boto/s3transfer)
@@ -54,8 +50,6 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Pygments (from http://pygments.org/)
-- docutils (from http://docutils.sourceforge.net/)
 - grpcio (from http://www.grpc.io)
 - mock (from https://github.com/testing-cabal/mock)
 - numpy (from http://www.numpy.org)
@@ -69,13 +63,9 @@ BSD-3-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Pygments (from http://pygments.org/)
-- SecretStorage (from https://github.com/mitya57/secretstorage)
 - click (from http://github.com/mitsuhiko/click)
-- colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
 - decorator (from https://github.com/micheles/decorator)
-- docutils (from http://docutils.sourceforge.net/)
 - grpcio (from http://www.grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore)
@@ -101,7 +91,6 @@ The following software have components provided under the terms of this license:
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 - starlette (from https://github.com/encode/starlette)
 - uvicorn (from https://github.com/tomchristie/uvicorn)
-- webencodings (from https://github.com/SimonSapin/python-webencodings)
 
 ========================================================================
 CC-BY-SA-3.0
@@ -117,7 +106,6 @@ The following software have components provided under the terms of this license:
 
 - isodate (from http://cheeseshop.python.org/pypi/isodate)
 - ply (from http://www.dabeaz.com/ply/)
-- webencodings (from https://github.com/SimonSapin/python-webencodings)
 
 ========================================================================
 GPL-2.0-only
@@ -140,17 +128,9 @@ GPL-3.0-only
 The following software have components provided under the terms of this license:
 
 - coverage (from https://coverage.readthedocs.io)
-- docutils (from http://docutils.sourceforge.net/)
 - grpcio (from http://www.grpc.io)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
-
-========================================================================
-GPL-3.0-or-later
-========================================================================
-The following software have components provided under the terms of this license:
-
-- docutils (from http://docutils.sourceforge.net/)
 
 ========================================================================
 ISC
@@ -222,16 +202,13 @@ The following software have components provided under the terms of this license:
 - grpcio (from http://www.grpc.io)
 - h11 (from https://github.com/python-hyper/h11)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig)
-- jeepney (from https://gitlab.com/takluyver/jeepney)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema (from http://github.com/Julian/jsonschema)
-- keyring (from https://github.com/jaraco/keyring)
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
 - msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - munch (from http://github.com/Infinidat/munch)
 - numpy (from http://www.numpy.org)
-- pkginfo (from https://code.launchpad.net/~tseaver/pkginfo/trunk)
 - pluggy (from https://github.com/pytest-dev/pluggy)
 - py (from http://pylib.readthedocs.org/)
 - pyarrow (from https://arrow.apache.org/)
@@ -287,9 +264,7 @@ Python-2.0
 The following software have components provided under the terms of this license:
 
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
-- docutils (from http://docutils.sourceforge.net/)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python)
-- keyring (from https://github.com/jaraco/keyring)
 - numpy (from http://www.numpy.org)
 - portalocker (from https://github.com/WoLpH/portalocker)
 - python-dateutil (from https://dateutil.readthedocs.org)
@@ -340,9 +315,7 @@ public-domain
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Pygments (from http://pygments.org/)
 - botocore (from https://github.com/boto/botocore)
-- docutils (from http://docutils.sourceforge.net/)
 - grpcio (from http://www.grpc.io)
 - numpy (from http://www.numpy.org)
 - py (from http://pylib.readthedocs.org/)
