@@ -32,6 +32,9 @@ variables:
   OSDU_GCP_ZONE: us-central1-c
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp/osdu-helm
+  OSDU_GCP_SERVICE_PATH: /api/os-wellbore-ddms
+  OSDU_GCP_HEALTH_PATH: /api/os-wellbore-ddms/healthz
+
 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
@@ -50,13 +53,13 @@ include:
     file: "cloud-providers/osdu-gcp-stateful-k8s.yml"
     ref: gcp-wellbore
 
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/ibm-wellbore.yml"
+  # - project: "osdu/platform/ci-cd-pipelines"
+  #   file: "cloud-providers/ibm-wellbore.yml"
 
-  - local: "/devops/azure/azure-wellbore.yml"
+  # - local: "/devops/azure/azure-wellbore.yml"
 
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws.yml"
+  # - project: "osdu/platform/ci-cd-pipelines"
+  #   file: "cloud-providers/aws.yml"
 
 containerize:
   extends: .skipForTriggeringMergeRequests
@@ -173,5 +176,12 @@ osdu-gcp-test-python:
     - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
-    - python gen_postman_env.py --token $(gcloud auth print-identity-token) --base_url $OSDU_GCP_WELLBORE_DDMS_URL --cloud_provider $OSDU_GCP_VENDOR --data_partition $OSDU_GCP_TENANT --acl_domain $DOMAIN --legal_tag $OSDU_GCP_LEGAL_TAG
+    - >
+      python gen_postman_env.py
+      --token $(gcloud auth print-identity-token)
+      --base_url ${OSDU_GCP_URL}${OSDU_GCP_SERVICE_PATH}
+      --cloud_provider $OSDU_GCP_VENDOR
+      --data_partition $OSDU_GCP_TENANT
+      --acl_domain $DOMAIN
+      --legal_tag $OSDU_GCP_LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
