@@ -50,13 +50,13 @@ include:
     file: "cloud-providers/osdu-gcp-stateful-k8s.yml"
     ref: gcp-wellbore
 
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/ibm-wellbore.yml"
+  # - project: "osdu/platform/ci-cd-pipelines"
+  #   file: "cloud-providers/ibm-wellbore.yml"
 
-  - local: "/devops/azure/azure-wellbore.yml"
+  # - local: "/devops/azure/azure-wellbore.yml"
 
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws.yml"
+  # - project: "osdu/platform/ci-cd-pipelines"
+  #   file: "cloud-providers/aws.yml"
 
 containerize:
   extends: .skipForTriggeringMergeRequests
@@ -156,6 +156,7 @@ osdu-gcp-containerize-for-release:
 osdu-gcp-test-python:
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  needs: ['osdu-gcp-deploy']
   allow_failure: true
   only:
     variables:
