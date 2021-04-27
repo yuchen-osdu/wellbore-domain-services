@@ -2234,7 +2234,7 @@
         "properties": {
           "ID": {
             "description": "The object reference identifying the DIRECT, INDIRECT, REFERENCE dependency.",
-            "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+\\-\\-[\\w\\-\\.]+:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Id",
             "type": "string"
           },
