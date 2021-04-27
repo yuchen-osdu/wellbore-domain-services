@@ -56,10 +56,10 @@ class CatalogRecord(BaseModel):
             "example": {
                 "acl": {
                     "viewers": [
-                        "abc@slb.com, cde@slb.com"
+                        "abc@domain.com, cde@domain.com"
                     ],
                     "owners": [
-                        "abc@slb.com, cde@slb.com"
+                        "abc@domain.com, cde@domain.com"
                     ]
                 },
                 "legal": {
