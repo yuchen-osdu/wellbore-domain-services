@@ -1,7 +1,7 @@
 # Default values for gcp.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-namespace: wellbore
+namespace: osdu
 
 configMap:
   data:
@@ -19,10 +19,9 @@ secret:
 replicaCount: 1
 
 image:
-  repository: "gcr.io/nice-etching-277309/wellbore-ddms/wellbore-ddms-gcp"
+  repository: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp-wellbore-ddms"
   pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "7e6b01b5"
+  tag: "gcp-release"
 
 service:
   #type: ClusterIP
@@ -32,18 +31,18 @@ service:
 ingress:
   enabled: true
   annotations:
-     kubernetes.io/ingress.class: gcp
+    kubernetes.io/ingress.class: gcp
     # kubernetes.io/tls-acme: "true"
 #  hosts:
 #    - host: chart-example.local
 #      paths: []
 #  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+#  - secretName: chart-example-tls
+#    hosts:
+#      - chart-example.local
 
-
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
