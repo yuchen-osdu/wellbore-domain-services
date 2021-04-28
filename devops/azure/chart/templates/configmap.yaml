@@ -22,6 +22,7 @@ data:
   SERVICE_HOST_PARTITION: {{ .Values.configMap.data.partitionEndpoint }}
   USE_PARTITION_SERVICE: {{ .Values.configMap.data.usePartitionService }}
   AZ_LOGGER_LEVEL: {{ .Values.configMap.data.loggerLevel }}
+  ENVIRONMENT_NAME: {{ .Values.configMap.data.environmentName }}
 kind: ConfigMap
 metadata:
   annotations:
