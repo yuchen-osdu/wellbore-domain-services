@@ -7,7 +7,7 @@ from app.converter.converter_utils import ConverterUtils, BENDINGCONTEXT, SEP, E
 class WellboreConverter:
     WELLBORE_WKS_OSDU_MAPPING = {
         "id": OptionalS("id") >> F(ConverterUtils.fix_id, "master-data--Wellbore"),
-        "kind": S("kind") >> F(ConverterUtils.wellbore_kind_transform),
+        "kind": K("osdu:wks:master-data--Wellbore:1.0.0"),
         "version": OptionalS("version"),
         "acl": S("acl"),
         "legal": S("legal"),

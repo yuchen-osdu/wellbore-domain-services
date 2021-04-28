@@ -7,7 +7,7 @@ from app.converter.converter_utils import ConverterUtils, BENDINGCONTEXT, SEP, E
 class WellConverter:
     WELL_WKS_OSDU_MAPPING = {
         "id": OptionalS("id") >> F(ConverterUtils.fix_id, "master-data--Well"),
-        "kind": S("kind") >> F(ConverterUtils.well_kind_transform),
+        "kind": K("osdu:wks:master-data--Well:1.0.0"),
         "version": OptionalS("version"),
         "acl": S("acl"),
         "legal": S("legal"),
