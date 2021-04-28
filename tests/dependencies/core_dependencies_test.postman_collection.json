@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "5c914854-d2c9-4565-b3ee-cab8d62dd8db",
+		"_postman_id": "0c66ceb7-e92c-4bf6-831f-0a7d6e7969bb",
 		"name": "Core dependencies test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -70,7 +70,7 @@
 			"name": "Storage",
 			"item": [
 				{
-					"name": "storage -  query all kinds",
+					"name": "storage -  query all schemas",
 					"event": [
 						{
 							"listen": "test",
@@ -107,16 +107,26 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/storage/v2/query/kinds",
+							"raw": "{{base_url}}/api/schema-service/v1/schema?source=wks",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"storage",
-								"v2",
-								"query",
-								"kinds"
+								"schema-service",
+								"v1",
+								"schema"
+							],
+							"query": [
+								{
+									"key": "source",
+									"value": "wks"
+								},
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -162,15 +172,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/storage/v2/schemas/{{logSetKind}}",
+							"raw": "{{base_url}}/api/schema-service/v1/schema/{{logSetKind}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"storage",
-								"v2",
-								"schemas",
+								"schema-service",
+								"v1",
+								"schema",
 								"{{logSetKind}}"
 							]
 						}
