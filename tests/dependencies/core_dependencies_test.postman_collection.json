@@ -80,7 +80,7 @@
 									"    pm.response.to.be.ok;",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
-									"    pm.expect(pm.response.json().results).to.not.be.empty;",
+									"    pm.expect(pm.response.json()).to.not.be.empty;",
 									"});"
 								],
 								"type": "text/javascript"
@@ -144,7 +144,7 @@
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
 									"",
-									"    pm.expect(pm.response.json().schema).to.not.be.empty;",
+									"    pm.expect(pm.response.json()).to.not.be.empty;",
 									"});",
 									""
 								],
