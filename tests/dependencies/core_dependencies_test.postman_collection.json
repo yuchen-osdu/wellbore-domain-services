@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0c66ceb7-e92c-4bf6-831f-0a7d6e7969bb",
+		"_postman_id": "08ee8ed2-3963-442e-b118-b51f482225f2",
 		"name": "Core dependencies test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -107,7 +107,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/schema-service/v1/schema?source=wks",
+							"raw": "{{base_url}}/api/schema-service/v1/schema?source=wks&authority=slb",
 							"host": [
 								"{{base_url}}"
 							],
@@ -123,9 +123,8 @@
 									"value": "wks"
 								},
 								{
-									"key": "",
-									"value": null,
-									"disabled": true
+									"key": "authority",
+									"value": "slb"
 								}
 							]
 						}
