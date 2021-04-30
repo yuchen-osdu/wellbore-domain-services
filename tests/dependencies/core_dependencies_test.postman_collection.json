@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "5c914854-d2c9-4565-b3ee-cab8d62dd8db",
+		"_postman_id": "08ee8ed2-3963-442e-b118-b51f482225f2",
 		"name": "Core dependencies test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -70,7 +70,7 @@
 			"name": "Storage",
 			"item": [
 				{
-					"name": "storage -  query all kinds",
+					"name": "storage -  query all schemas",
 					"event": [
 						{
 							"listen": "test",
@@ -80,7 +80,7 @@
 									"    pm.response.to.be.ok;",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
-									"    pm.expect(pm.response.json().results).to.not.be.empty;",
+									"    pm.expect(pm.response.json()).to.not.be.empty;",
 									"});"
 								],
 								"type": "text/javascript"
@@ -107,16 +107,25 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/storage/v2/query/kinds",
+							"raw": "{{base_url}}/api/schema-service/v1/schema?source=wks&authority=slb",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"storage",
-								"v2",
-								"query",
-								"kinds"
+								"schema-service",
+								"v1",
+								"schema"
+							],
+							"query": [
+								{
+									"key": "source",
+									"value": "wks"
+								},
+								{
+									"key": "authority",
+									"value": "slb"
+								}
 							]
 						}
 					},
@@ -134,7 +143,7 @@
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
 									"",
-									"    pm.expect(pm.response.json().schema).to.not.be.empty;",
+									"    pm.expect(pm.response.json()).to.not.be.empty;",
 									"});",
 									""
 								],
@@ -162,15 +171,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/storage/v2/schemas/{{logSetKind}}",
+							"raw": "{{base_url}}/api/schema-service/v1/schema/{{logSetKind}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"storage",
-								"v2",
-								"schemas",
+								"schema-service",
+								"v1",
+								"schema",
 								"{{logSetKind}}"
 							]
 						}
