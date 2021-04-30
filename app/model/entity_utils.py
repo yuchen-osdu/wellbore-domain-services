@@ -29,8 +29,8 @@ class Entity(Enum):
 
 
 class KindMetaData:
-    def __init__(self, data_partition_id: str, source: str, entity_type: str, version: str):
-        self.data_partition_id = data_partition_id
+    def __init__(self, authority: str, source: str, entity_type: str, version: str):
+        self.authority = authority
         self.source = source
         self.entity_type = entity_type
         self.version = version
@@ -39,7 +39,7 @@ class KindMetaData:
         if not isinstance(other, KindMetaData):
             return False
 
-        return self.data_partition_id == other.data_partition_id and \
+        return self.authority == other.authority and \
                self.source == other.source and \
                self.entity_type == other.entity_type and \
                self.version == other.version
@@ -62,20 +62,20 @@ def get_version(entity: Entity):
     return current_version.get(entity)
 
 
-def format_kind(data_partition: str, source: str, entity: str, version: str):
-    return f'{data_partition}:{source}:{entity}:{version}'
+def format_kind(authority: str, source: str, entity: str, version: str):
+    return f'{authority}:{source}:{entity}:{version}'
 
 
-def get_kind(data_partition: str, source: str, entity: Entity):
+def get_kind(authority: str, source: str, entity: Entity):
     version = get_version(entity)
-    return format_kind(data_partition, source, entity.value, version)
+    return format_kind(authority, source, entity.value, version)
 
 
 def get_kind_meta(kind: str) -> KindMetaData:
-    # Split kind literal into {data-partition-id}:{source}:{entity-type}:{version}
+    # Split kind literal into {authority}:{source}:{entity-type}:{version}
     meta = kind.split(':', maxsplit=4)
     if len(meta) == 4:
-        return KindMetaData(data_partition_id=meta[0],
+        return KindMetaData(authority=meta[0],
                             source=meta[1],
                             entity_type=meta[2],
                             version=meta[3])
