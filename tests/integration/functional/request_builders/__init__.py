@@ -76,6 +76,16 @@ def build_request(path: Union[str, List[str]], sep: str = ".") -> "RequestRunner
         return crud.osdu_welllog.build_request_get_versions_of_osdu_welllog()
     if n_path == "crud.osdu_welllog.create_osdu_welllog":
         return crud.osdu_welllog.build_request_create_osdu_welllog()
+    if n_path == "crud.osdu_wellboretrajectory.delete_osdu_wellboretrajectory":
+        return crud.osdu_wellboretrajectory.build_request_delete_osdu_wellboretrajectory()
+    if n_path == "crud.osdu_wellboretrajectory.get_osdu_wellboretrajectory_specific_version":
+        return crud.osdu_wellboretrajectory.build_request_get_osdu_wellboretrajectory_specific_version()
+    if n_path == "crud.osdu_wellboretrajectory.get_osdu_wellboretrajectory":
+        return crud.osdu_wellboretrajectory.build_request_get_osdu_wellboretrajectory()
+    if n_path == "crud.osdu_wellboretrajectory.get_versions_of_osdu_wellboretrajectory":
+        return crud.osdu_wellboretrajectory.build_request_get_versions_of_osdu_wellboretrajectory()
+    if n_path == "crud.osdu_wellboretrajectory.create_osdu_wellboretrajectory":
+        return crud.osdu_wellboretrajectory.build_request_create_osdu_wellboretrajectory()
     if n_path == "crud.logset.get_versions_of_logset":
         return crud.logset.build_request_get_versions_of_logset()
     if n_path == "crud.logset.get_logset_specific_version":
@@ -221,3 +231,5 @@ def get_cleaned_ref_and_res(kind: str, res_dict: dict) -> (dict, dict):
         return crud.osdu_well.get_cleaned_ref_and_res(res_dict)
     if kind =="osdu_welllog":
         return crud.osdu_welllog.get_cleaned_ref_and_res(res_dict)
+    if kind =="osdu_wellboretrajectory":
+        return crud.osdu_wellboretrajectory.get_cleaned_ref_and_res(res_dict)

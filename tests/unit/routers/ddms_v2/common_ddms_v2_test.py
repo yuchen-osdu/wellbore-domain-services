@@ -28,7 +28,7 @@ from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.model.entity_utils import Entity
 from app.model.model_curated import *
-from app.model.osdu_model import Wellbore, Well, WellLog
+from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory
 from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.routers.search.search_wrapper import SearchWrapper
 from app.utils import Context
@@ -81,6 +81,21 @@ tests_parameters = [
         },
         data={},
     )),
+    ('/ddms/v3/wellboretrajectories', WellboreTrajectory(
+        id=r"namespace:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        kind="namespace:osdu:WellboreTrajectory:2.7.112",
+        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+        legal={
+            "legaltags": ["string"],
+            "otherRelevantDataCountries": ["FR"],
+        },
+        data={
+            "WellboreID": r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:456",
+            "TopDepthMeasuredDepth": 12.3,
+            "BaseDepthMeasuredDepth": 11.3,
+            "VerticalMeasurement": {}
+        },
+    ))
 ]
 
 tests_errors_422 = [
