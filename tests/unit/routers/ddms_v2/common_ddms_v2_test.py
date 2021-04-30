@@ -20,7 +20,7 @@ import pytest
 from fastapi import HTTPException, Header, status
 from fastapi.testclient import TestClient
 from odes_search.models import CursorQueryResponse
-from odes_storage.models import RecordVersions, CreateUpdateRecordsResponse
+from odes_storage.models import RecordVersions, CreateUpdateRecordsResponse, Record
 
 from app.auth.auth import require_opendes_authorized_user
 from app.clients import *
@@ -83,6 +83,10 @@ tests_parameters = [
     )),
 ]
 
+tests_errors_422 = [
+    ('/ddms/v2/wellbores', Record(id='123456', kind='xx', acl={'viewers': [], 'owners': []}, legal={},
+                                  data={"wellborePurpose": "develpment"})),
+]
 
 tests_parameters_for_recursive = [
     ('/ddms/v2/logsets', logset(id='123456', data={})),
@@ -146,6 +150,20 @@ def test_get_record_success(client, base_url, record_obj):
 
         # assert it validates the input object schema
         record_obj.validate(response.json())
+
+@pytest.mark.parametrize('base_url, record_obj', tests_errors_422)
+def test_get_record_422(client, base_url, record_obj):
+    record_id = record_obj.id
+    moc = mock.AsyncMock(return_value=record_obj)
+
+    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', moc):
+        # when
+        response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        # then assert storage is called with the proper id and data_partition
+        moc.assert_called_with(id=record_id, data_partition_id='testing_partition')
+
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_get_record_without_default_values(client, base_url, record_obj):

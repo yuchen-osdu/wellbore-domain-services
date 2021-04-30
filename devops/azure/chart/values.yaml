@@ -53,6 +53,7 @@ configMap:
     partitionEndpoint: http://partition.osdu/api/partition
     usePartitionService: 'enabled'
     loggerLevel: 'INFO'
+    environmentName: gitlab
   name: os-wellbore-ddms-envs
 
 ingress:
