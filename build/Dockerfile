@@ -14,7 +14,7 @@
 
 FROM python:3.7-slim-buster
 
-COPY requirements.txt requirements_dev.txt ./
+COPY requirements.txt requirements_dev.txt frozenrequirements.txt ./
 
 RUN pip install -r frozenrequirements.txt
 RUN pip install -r requirements.txt
