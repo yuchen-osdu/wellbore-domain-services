@@ -90,7 +90,7 @@ def build_request_create_logset() -> RequestRunner:
 [
 {
   "acl": {{record_acl}}, "legal": {{record_legal}},
-  "data": {"name": "wdms_e2e_logset"},
+  "data": {"name": "{{prefix_data_entity_name}}_logset"},
   "kind": "{{logSetKind}}"
 }
 ]
