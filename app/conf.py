@@ -95,6 +95,12 @@ class ConfigurationContainer:
         default='os-wellbore-ddms---local'
     )
 
+    environment_name: EnvVar = EnvVar(
+        key='ENVIRONMENT_NAME',
+        description='Environment name',
+        default='undefined'
+    )
+
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
         description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm',

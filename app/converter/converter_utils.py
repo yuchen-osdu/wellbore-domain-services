@@ -11,24 +11,6 @@ DELFI_SOURCE = "delfi_source_entity"
 
 class ConverterUtils:
     @staticmethod
-    def kind_transform(wks_kind: str, osdu_kind) -> str:
-        if wks_kind is None:
-            return None
-        kind_as_list = wks_kind.split(sep=":")
-        kind_as_list[1] = "osdu"
-        kind_as_list[2] = osdu_kind[0]
-        kind_as_list[3] = osdu_kind[1]
-        return ":".join(kind_as_list)
-
-    @staticmethod
-    def wellbore_kind_transform(wks_kind: str) -> str:
-        return ConverterUtils.kind_transform(wks_kind, ["Wellbore", "1.0.0"])
-
-    @staticmethod
-    def well_kind_transform(wks_kind: str) -> str:
-        return ConverterUtils.kind_transform(wks_kind, ["Well", "1.0.0"])
-
-    @staticmethod
     def decode_id(osdu_id: str) -> str:
         """
         decode osdu style id to delfi id
