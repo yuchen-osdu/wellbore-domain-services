@@ -728,13 +728,13 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
     del ref["modifyUser"]
     del ref["modifyTime"]
     # Add mandatory fields
-    ref["kind"] = "opendes:wks:master-data--WellLog:1.0.0"
+    ref["kind"] = "{{authorityKind}}:wks:master-data--WellLog:1.0.0"
     ref["acl"] = {
-        "owners": ["data.default.owners@opendes.p4d.cloud.slb-ds.com"],
-        "viewers": ["data.default.viewers@opendes.p4d.cloud.slb-ds.com"],
+        "owners": ["{{acl_owner}}"],
+        "viewers": ["{{acl_viewer}}"],
     }
     ref["legal"] = {
-        "legaltags": ["opendes-public-usa-dataset-1"],
+        "legaltags": ["{{legal_tag}}"],
         "otherRelevantDataCountries": ["US"],
         "status": "compliant",
     }
