@@ -17,6 +17,9 @@ import pytest
 from app.model import entity_utils, schema_version
 from app.model.entity_utils import Entity, KindMetaData
 
+@pytest.fixture(params=['authority_data_partition', 'authority_slb'])
+def authority(request):
+    return 'test_data_partition' if request.param == "authority_data_partition" else 'slb'
 
 def test_get_version():
     assert entity_utils.get_version(Entity.LOG) == schema_version.log_version
@@ -29,18 +32,18 @@ def test_get_version():
     assert entity_utils.get_version(Entity.DIPSET) == schema_version.dipset_version
 
 
-def test_get_kind():
-    expected_kind = 'my-data-partition:source-1:well:1.0.2'
-    actual_kind = entity_utils.get_kind(data_partition='my-data-partition', source='source-1', entity=Entity.WELL)
+def test_get_kind(authority):
+    expected_kind = f'{authority}:source-1:well:1.0.2'
+    actual_kind = entity_utils.get_kind(authority=authority, source='source-1', entity=Entity.WELL)
     assert actual_kind == expected_kind
 
 
-def test_get_kind_meta():
-    expected_meta = KindMetaData(data_partition_id='other-data-partition',
+def test_get_kind_meta(authority):
+    expected_meta = KindMetaData(authority=authority,
                                  source='source-1',
                                  entity_type='my-entity',
                                  version='0.0.8')
-    actual_meta = entity_utils.get_kind_meta('other-data-partition:source-1:my-entity:0.0.8')
+    actual_meta = entity_utils.get_kind_meta(f'{authority}:source-1:my-entity:0.0.8')
     assert actual_meta == expected_meta
 
 
