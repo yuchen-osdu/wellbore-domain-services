@@ -60,7 +60,12 @@ class StorageHelper:
         record = await storage_service.get_record(entity_id, data_partition_id)
         source = get_kind_meta(record.kind).source  # use same source than the given entity ?? e.g. wks ?
 
-        request = QueryRequest(kind=format_kind(data_partition_id, source, '*', '*'),
+        #TODO
+        # We want to support both kind types: authority and data_partition_id_authority
+        # lets call this request with '*' as first parameter in format_kind function
+        # Until data_partition stop to be used in the kind,
+        # replace format_kind(...) by format_kind(authority, source, '*', '*')
+        request = QueryRequest(kind=format_kind('*', source, '*', '*'),
                                query=f'data.relationships.{relationship}.id: \"{entity_id}\"',
                                returned_fields=["id", "kind"])
 
