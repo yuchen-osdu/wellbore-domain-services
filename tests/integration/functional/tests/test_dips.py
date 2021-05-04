@@ -17,6 +17,8 @@ from .fixtures import with_wdms_env
 from ..request_builders.wdms.crud.dips import *
 from jsonschema import validate
 
+from ..request_builders.wdms.crud.log import build_request_get_log
+
 new_parameters_env = {'authorityKind': 'slb',
                       'prefix_data_entity_name': 'wdms_e2e_osdu' }
 
@@ -173,6 +175,22 @@ def test_create_dips(get_env):
     result.assert_ok()
 
     assert result.response.json() == expected_dips
+
+@pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
+@pytest.mark.dependency(name="test_create_dips", depends=["test_create_dipset"])
+def test_get_dipset_virification_authority_kind(get_env):
+    result_dipset = build_request_get_dipset().call(get_env)
+    result_dipset.assert_ok()
+    resobj_dipset = result_dipset.get_response_obj()
+    log_list = [log_name for log_name in resobj_dipset.data.relationships if "Log" in log_name]
+    authorityKind = get_env.get("authorityKind")
+    for log in log_list:
+        log_id = resobj_dipset.data.relationships[log].id
+        get_env.set('log_record_id', log_id)
+        result_log = build_request_get_log().call(get_env)
+        resobj_log = result_log.get_response_obj()
+
+        assert resobj_log.kind.split(':')[0] == authorityKind
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
