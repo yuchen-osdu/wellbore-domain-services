@@ -91,7 +91,7 @@ def build_request_create_marker() -> RequestRunner:
 {
   "acl": {{record_acl}}, "legal": {{record_legal}},
   "data": {
-      "name": "wdms_e2e_marker",
+      "name": "{{prefix_data_entity_name}}_marker",
       "md": { "unitKey": "Unknown", "value": 0 }
   },
   "kind": "{{markerKind}}"
