@@ -1698,3 +1698,151 @@ class WellboreTrajectory(BaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellboreTrajectoryData] = None
+
+
+class Marker(BaseModel):
+    MarkerName: Optional[str] = Field(None, description='Name of the Marker')
+    MarkerMeasuredDepth: Optional[float] = Field(
+        None, description='The depth at which the Marker was noted.'
+    )
+    MarkerDate: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the date and time when the when the Marker was interpreted.',
+    )
+    MarkerObservationNumber: Optional[float] = Field(
+        None,
+        description='Any observation number that distinguishes a Marker observation from others with same Marker name, date.',
+    )
+    MarkerInterpreter: Optional[str] = Field(
+        None,
+        description='The name of the Marker interpreter (could be a person or vendor).',
+    )
+    MarkerTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-MarkerType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Marker Type Reference Type. Possible values - Biostratigraphy, Lithostratigraphy, seismic, depth of well, sequence, flow unit',
+    )
+    FeatureTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-FeatureType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Feature Type Reference Type. Possible values - Base, top, fault, salt, reef, sea floor',
+    )
+    FeatureName: Optional[str] = Field(
+        None, description='Name of the feature the marker is characterizing'
+    )
+    PositiveVerticalDelta: Optional[float] = Field(
+        None,
+        description='The distance vertically above the Marker position that marks the limit of the high confidence range for the Marker pick.',
+    )
+    NegativeVerticalDelta: Optional[float] = Field(
+        None,
+        description='The distance vertically below the Marker position that marks the limit of the high confidence range for the Marker pick.',
+    )
+    SurfaceDipAngle: Optional[float] = Field(
+        None, description='Dip angle for the Wellbore Marker.'
+    )
+    SurfaceDipAzimuth: Optional[float] = Field(
+        None, description='Dip azimuth for the Wellbore Marker.'
+    )
+    Missing: Optional[str] = None
+    GeologicalAge: Optional[str] = Field(None, description='Associated geological age')
+
+
+class WellboreMarkerSetData(
+    AbstractCommonResources100,
+    AbstractWPCGroupType100,
+    AbstractWorkProductComponent100,
+):
+    WellboreID: Optional[
+        constr(regex='^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(None, description='Wellbore ID')
+    VerticalMeasurement: Optional[
+        AbstractFacilityVerticalMeasurement100
+    ] = Field(
+        None,
+        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all marker measured depths of the Wellbore Marker Set Markers array.',
+    )
+    Markers: Optional[List[Marker]] = None
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
+class WellboreMarkerSet(BaseModel):
+    """
+    Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.
+    """
+
+    id: Optional[
+        constr(
+            regex='^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$'
+        )
+    ] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c',
+        title='Entity ID',
+    )
+    kind: constr(regex='^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:work-product-component--WellboreMarkerSet:1.0.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellboreMarkerSetData] = None
