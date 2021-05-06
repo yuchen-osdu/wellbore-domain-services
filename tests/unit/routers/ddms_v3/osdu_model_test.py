@@ -17,7 +17,7 @@ import json
 import os
 from typing import Type
 from pydantic import BaseModel
-from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory
+from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet
 
 
 test_parameters = [
@@ -25,6 +25,7 @@ test_parameters = [
     (Well, "Well_unit.json"),
     (WellLog, "WellLog_unit.json"),
     (WellboreTrajectory, "WellboreTrajectory_unit.json"),
+    (WellboreMarkerSet, "WellboreMarkerSet_unit.json"),
 ]
 
 
