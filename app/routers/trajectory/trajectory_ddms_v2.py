@@ -61,16 +61,6 @@ async def fetch_trajectory_record(ctx: Context, trajectoryid: TrajectoryId, vers
                     id=trajectoryid, data_partition_id=ctx.partition_id
                 )
 
-async def get_trajectory_record(ctx, trajectoryid: TrajectoryId) -> Trajectory:
-    storage_client = await get_storage_record_service(ctx)
-    return from_record(
-        Trajectory,
-        await storage_client.get_record(
-            id=trajectoryid, data_partition_id=ctx.partition_id
-        ),
-    )
-
-
 @router.get(
     "/trajectories/{trajectoryid}",
     response_model=Trajectory,
@@ -86,7 +76,10 @@ async def get_trajectory(
     trajectoryid: TrajectoryId, ctx: Context = Depends(get_ctx)
 ) -> Trajectory:
     # TODO add a check on the kind (*:wks:Trajectory:1.0.5)
-    return await fetch_trajectory_record(ctx, trajectoryid)
+    return await from_record(
+        Trajectory,
+        await fetch_trajectory_record(ctx, trajectoryid)
+    )
 
 
 @router.delete(
@@ -146,7 +139,7 @@ async def get_trajectory_versions(
 async def get_trajectory_version(
     trajectoryid: TrajectoryId, version: int, ctx: Context = Depends(get_ctx)
 ) -> Trajectory:
-    trajectory_record = fetch_trajectory_record(
+    trajectory_record = await fetch_trajectory_record(
         ctx=ctx, trajectoryid=trajectoryid, version=version
     )
     return from_record(Trajectory, trajectory_record)
@@ -239,7 +232,11 @@ async def post_traj_data(
     content = await request.body()  # request.stream()
     df = DataframeSerializer.read_json(content, orient)
 
-    record = await fetch_trajectory_record(ctx, trajectoryid)
+    record = from_record(
+        Trajectory,
+        await fetch_trajectory_record(ctx, trajectoryid)
+    )
+
 
     record.data.bulkURI = await persistence.write_bulk(ctx, df)
 
@@ -294,7 +291,10 @@ async def _get_trajectory_data(
     """
 
     # we may use an optimistic cache here
-    record = await fetch_trajectory_record(ctx, trajectoryid, version)
+    record = from_record(
+        Trajectory,
+        await fetch_trajectory_record(ctx, trajectoryid, version)
+    )
 
     try:
         df = await persistence.read_bulk(ctx, record, channels)
@@ -401,5 +401,5 @@ async def get_trajectory_data_by_version(
         trajectoryid=trajectoryid,
         orient=orient,
         channels=channels,
-        version=version,
+        version=version
     )
