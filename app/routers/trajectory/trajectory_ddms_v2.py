@@ -352,12 +352,12 @@ async def get_traj_data(
     ctx: Context = Depends(get_ctx),
     persistence: Persistence = Depends(get_persistence),
 ):
-    return _get_trajectory_data(ctx=ctx,
-        persistence=persistence,
-        trajectoryid=trajectoryid,
-        orient=orient,
-        channels=channels,
-        version=None)
+    return await _get_trajectory_data(ctx=ctx,
+            persistence=persistence,
+            trajectoryid=trajectoryid,
+            orient=orient,
+            channels=channels,
+            version=None)
 
 
 @OpenApiHandler.set(
