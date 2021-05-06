@@ -128,7 +128,7 @@ async def get_osdu_wellboreTrajectory_version(
     },
 )
 async def post_wellboreTrajectory_osdu(
-    wellboretrajectories: List[WellboreTrajectory]= Body(..., example= load_schema_example("wellLog_v3.json")), ctx: Context = Depends(get_ctx)
+    wellboretrajectories: List[WellboreTrajectory], ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
 
     storage_client = await get_storage_record_service(ctx)
