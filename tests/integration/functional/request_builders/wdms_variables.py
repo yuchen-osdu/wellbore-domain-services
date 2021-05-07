@@ -31,6 +31,7 @@ variables_dict = {
   "osduWellboreKind": "osdu:wks:master-data--Wellbore:1.0.0",
   "osduWellKind": "osdu:wks:master-data--Well:1.0.0",
   "osduWellLogKind": "osdu:wks:work-product-component--WellLog:1.0.0",
+  "osduWellboreTrajectoryKind": "osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
   "acl_domain": "p4d.cloud.slb-ds.com",
   "acl_owner": "data.default.owners@{{data_partition}}.{{acl_domain}}",
   "acl_viewer": "data.default.viewers@{{data_partition}}.{{acl_domain}}",

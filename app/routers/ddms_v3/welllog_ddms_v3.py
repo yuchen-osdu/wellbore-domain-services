@@ -46,15 +46,6 @@ router = APIRouter()
 async def get_welllog_osdu(
     welllogid: str, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
-    """
-    Regarding to the storage those fields are not stored and will be lost/not
-    retrieved:
-    - tags
-    - createTime
-    - createUser
-    - modifyTime
-    - modifyUser
-    """
     storage_client = await get_storage_record_service(ctx)
     welllog_record = await storage_client.get_record(
         id=welllogid, data_partition_id=ctx.partition_id
