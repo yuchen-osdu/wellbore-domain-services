@@ -28,7 +28,7 @@
                 "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:BulkDensity:"
             }
         ],
-        "WellboreId": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
+        "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
         "CreationDateTime": "2013-03-22T11:16:03Z",
         "VerticalMeasurement": {
             "VerticalMeasurement": 2680.5,

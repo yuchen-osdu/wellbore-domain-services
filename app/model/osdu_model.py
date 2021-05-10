@@ -1756,7 +1756,7 @@ class WellboreMarkerSetData(
     AbstractWorkProductComponent100,
 ):
     WellboreID: Optional[
-        constr(regex='^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(None, description='Wellbore ID')
     VerticalMeasurement: Optional[
         AbstractFacilityVerticalMeasurement100
@@ -1775,7 +1775,7 @@ class WellboreMarkerSet(BaseModel):
 
     id: Optional[
         constr(
-            regex='^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$'
+            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$'
         )
     ] = Field(
         None,
@@ -1783,7 +1783,7 @@ class WellboreMarkerSet(BaseModel):
         example='namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c',
         title='Entity ID',
     )
-    kind: constr(regex='^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
         ...,
         description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
         example='osdu:wks:work-product-component--WellboreMarkerSet:1.0.0',
