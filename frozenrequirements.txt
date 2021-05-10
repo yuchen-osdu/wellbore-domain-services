@@ -68,16 +68,6 @@ opencensus-ext-logging==0.1.0
 opencensus-ext-ocagent==0.7.1
 opencensus-ext-stackdriver==0.7.4
 opencensus-proto==0.1.0
---extra-index-url \
-https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
-osdu-core-lib-python==0.4.3
-osdu-core-lib-python-aws==0.0.1
-osdu-core-lib-python-azure==0.2.1
-osdu-core-lib-python-gcp==0.3.1
-osdu-core-lib-python-ibm==0.0.2
-osdu-data-ecosystem-search==0.3.3
-osdu-data-ecosystem-storage==1.1.0
-osdu-log-recognition-lib==0.0.9
 packaging==20.9
 pandas==1.1.2
 partd==1.2.0
