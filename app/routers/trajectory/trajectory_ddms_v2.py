@@ -76,10 +76,8 @@ async def get_trajectory(
     trajectoryid: TrajectoryId, ctx: Context = Depends(get_ctx)
 ) -> Trajectory:
     # TODO add a check on the kind (*:wks:Trajectory:1.0.5)
-    return await from_record(
-        Trajectory,
-        await fetch_trajectory_record(ctx, trajectoryid)
-    )
+    trajectory_record = await fetch_trajectory_record(ctx, trajectoryid)
+    return from_record(Trajectory, trajectory_record)
 
 
 @router.delete(
@@ -139,9 +137,7 @@ async def get_trajectory_versions(
 async def get_trajectory_version(
     trajectoryid: TrajectoryId, version: int, ctx: Context = Depends(get_ctx)
 ) -> Trajectory:
-    trajectory_record = await fetch_trajectory_record(
-        ctx=ctx, trajectoryid=trajectoryid, version=version
-    )
+    trajectory_record = await fetch_trajectory_record(ctx, trajectoryid, version)
     return from_record(Trajectory, trajectory_record)
 
 
@@ -232,11 +228,8 @@ async def post_traj_data(
     content = await request.body()  # request.stream()
     df = DataframeSerializer.read_json(content, orient)
 
-    record = from_record(
-        Trajectory,
-        await fetch_trajectory_record(ctx, trajectoryid)
-    )
-
+    trajectory_record = await fetch_trajectory_record(ctx, trajectoryid)
+    record = from_record(Trajectory, trajectory_record)
 
     record.data.bulkURI = await persistence.write_bulk(ctx, df)
 
@@ -291,10 +284,8 @@ async def _get_trajectory_data(
     """
 
     # we may use an optimistic cache here
-    record = from_record(
-        Trajectory,
-        await fetch_trajectory_record(ctx, trajectoryid, version)
-    )
+    trajectory_record = await fetch_trajectory_record(ctx, trajectoryid, version)
+    record = from_record(Trajectory, trajectory_record)
 
     try:
         df = await persistence.read_bulk(ctx, record, channels)
