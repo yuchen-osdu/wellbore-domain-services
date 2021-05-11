@@ -34,7 +34,7 @@ from app.routers.ddms_v2 import (
     log_ddms_v2,
     well_ddms_v2
 )
-from app.routers.ddms_v3 import wellbore_ddms_v3, well_ddms_v3, welllog_ddms_v3
+from app.routers.ddms_v3 import wellbore_ddms_v3, well_ddms_v3, welllog_ddms_v3, wellbore_trajectory_ddms_v3, markerset_ddms_v3
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.logrecognition import log_recognition
@@ -45,7 +45,7 @@ from app.utils import get_http_client_session, OpenApiHandler, get_wdms_temp_dir
 base_app = FastAPI()
 
 
-#The sub application which contains all the routers
+# The sub application which contains all the routers
 wdms_app = FastAPI(title=__app_name__,
                    description='build ' + __build_number__,
                    version=__version__,
@@ -136,6 +136,8 @@ ddms_v3_routes_groups = [
     (wellbore_ddms_v3, "Wellbore"),
     (well_ddms_v3, "Well"),
     (welllog_ddms_v3, "WellLog"),
+    (wellbore_trajectory_ddms_v3, "Trajectory"),
+    (markerset_ddms_v3, "Marker"),
 ]
 for ddms_v3_routes_group in ddms_v3_routes_groups:
     wdms_app.include_router(ddms_v3_routes_group[0].router,

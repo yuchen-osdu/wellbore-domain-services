@@ -2294,6 +2294,84 @@
         "title": "MainFamilyCatalogItem",
         "type": "object"
       },
+      "Marker": {
+        "properties": {
+          "FeatureName": {
+            "description": "Name of the feature the marker is characterizing",
+            "title": "Featurename",
+            "type": "string"
+          },
+          "FeatureTypeID": {
+            "description": "Feature Type Reference Type. Possible values - Base, top, fault, salt, reef, sea floor",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-FeatureType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Featuretypeid",
+            "type": "string"
+          },
+          "GeologicalAge": {
+            "description": "Associated geological age",
+            "title": "Geologicalage",
+            "type": "string"
+          },
+          "MarkerDate": {
+            "description": "Timestamp of the date and time when the when the Marker was interpreted.",
+            "format": "date-time",
+            "title": "Markerdate",
+            "type": "string"
+          },
+          "MarkerInterpreter": {
+            "description": "The name of the Marker interpreter (could be a person or vendor).",
+            "title": "Markerinterpreter",
+            "type": "string"
+          },
+          "MarkerMeasuredDepth": {
+            "description": "The depth at which the Marker was noted.",
+            "title": "Markermeasureddepth",
+            "type": "number"
+          },
+          "MarkerName": {
+            "description": "Name of the Marker",
+            "title": "Markername",
+            "type": "string"
+          },
+          "MarkerObservationNumber": {
+            "description": "Any observation number that distinguishes a Marker observation from others with same Marker name, date.",
+            "title": "Markerobservationnumber",
+            "type": "number"
+          },
+          "MarkerTypeID": {
+            "description": "Marker Type Reference Type. Possible values - Biostratigraphy, Lithostratigraphy, seismic, depth of well, sequence, flow unit",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-MarkerType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Markertypeid",
+            "type": "string"
+          },
+          "Missing": {
+            "title": "Missing",
+            "type": "string"
+          },
+          "NegativeVerticalDelta": {
+            "description": "The distance vertically below the Marker position that marks the limit of the high confidence range for the Marker pick.",
+            "title": "Negativeverticaldelta",
+            "type": "number"
+          },
+          "PositiveVerticalDelta": {
+            "description": "The distance vertically above the Marker position that marks the limit of the high confidence range for the Marker pick.",
+            "title": "Positiveverticaldelta",
+            "type": "number"
+          },
+          "SurfaceDipAngle": {
+            "description": "Dip angle for the Wellbore Marker.",
+            "title": "Surfacedipangle",
+            "type": "number"
+          },
+          "SurfaceDipAzimuth": {
+            "description": "Dip azimuth for the Wellbore Marker.",
+            "title": "Surfacedipazimuth",
+            "type": "number"
+          }
+        },
+        "title": "Marker",
+        "type": "object"
+      },
       "MetaItem": {
         "description": "Used for data model allows extra fields which are not declared initially in the pydantic model",
         "properties": {
@@ -4210,6 +4288,289 @@
         "title": "Wellbore",
         "type": "object"
       },
+      "WellboreMarkerSet": {
+        "description": "Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.",
+        "properties": {
+          "acl": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractAccessControlList100"
+              }
+            ],
+            "description": "The access control tags associated with this entity.",
+            "title": "Access Control List"
+          },
+          "ancestry": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractLegalParentList100"
+              }
+            ],
+            "description": "The links to data, which constitute the inputs.",
+            "title": "Ancestry"
+          },
+          "createTime": {
+            "description": "Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.",
+            "example": "2020-12-16T11:46:20.163Z",
+            "format": "date-time",
+            "title": "Resource Object Creation DateTime",
+            "type": "string"
+          },
+          "createUser": {
+            "description": "The user reference, which created the first version of this resource object. Set by the System.",
+            "example": "some-user@some-company-cloud.com",
+            "title": "Resource Object Creation User Reference",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WellboreMarkerSetData"
+          },
+          "id": {
+            "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
+            "example": "namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
+            "title": "Entity ID",
+            "type": "string"
+          },
+          "kind": {
+            "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
+            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
+            "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
+            "title": "Entity Kind",
+            "type": "string"
+          },
+          "legal": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractLegalTags100"
+              }
+            ],
+            "description": "The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+            "title": "Legal Tags"
+          },
+          "meta": {
+            "description": "The Frame of Reference meta data section linking the named properties to self-contained definitions.",
+            "items": {},
+            "title": "Frame of Reference Meta Data",
+            "type": "array"
+          },
+          "modifyTime": {
+            "description": "Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.",
+            "example": "2020-12-16T11:52:24.477Z",
+            "format": "date-time",
+            "title": "Resource Object Version Creation DateTime",
+            "type": "string"
+          },
+          "modifyUser": {
+            "description": "The user reference, which created this version of this resource object. Set by the System.",
+            "example": "some-user@some-company-cloud.com",
+            "title": "Resource Object Version Creation User Reference",
+            "type": "string"
+          },
+          "tags": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/app__model__osdu_model__Tags"
+            },
+            "description": "A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.",
+            "example": {
+              "NameOfKey": "String value"
+            },
+            "title": "Tag Dictionary",
+            "type": "object"
+          },
+          "version": {
+            "description": "The version number of this OSDU resource; set by the framework.",
+            "example": 1562066009929332,
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "acl",
+          "legal"
+        ],
+        "title": "WellboreMarkerSet",
+        "type": "object"
+      },
+      "WellboreMarkerSetData": {
+        "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
+        "properties": {
+          "Artefacts": {
+            "description": "An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly",
+            "items": {
+              "$ref": "#/components/schemas/Artefact"
+            },
+            "title": "Artefacts",
+            "type": "array"
+          },
+          "AuthorIDs": {
+            "description": "Array of Authors' names of the work product component.  Could be a person or company entity.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Authorids",
+            "type": "array"
+          },
+          "BusinessActivities": {
+            "description": "Array of business processes/workflows that the work product component has been through (ex. well planning, exploration).",
+            "items": {
+              "type": "string"
+            },
+            "title": "Businessactivities",
+            "type": "array"
+          },
+          "CreationDateTime": {
+            "description": "Date that a resource (work  product component here) is formed outside of OSDU before loading (e.g. publication date).",
+            "format": "date-time",
+            "title": "Creationdatetime",
+            "type": "string"
+          },
+          "Datasets": {
+            "items": {
+              "$ref": "#/components/schemas/Dataset"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "Description": {
+            "description": "Description.  Summary of the work product component.  Not the same as Remark which captures thoughts of creator about the wpc.",
+            "title": "Description",
+            "type": "string"
+          },
+          "ExistenceKind": {
+            "description": "Where does this data resource sit in the cradle-to-grave span of its existence?",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ExistenceKind:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Existence Kind",
+            "type": "string"
+          },
+          "ExtensionProperties": {
+            "title": "Extensionproperties",
+            "type": "object"
+          },
+          "GeoContexts": {
+            "description": "List of geographic entities which provide context to the WPC.  This may include multiple types or multiple values of the same type.",
+            "items": {},
+            "title": "Geocontexts",
+            "type": "array"
+          },
+          "IsDiscoverable": {
+            "description": "A flag that indicates if the work product component is searchable, which means covered in the search index.",
+            "title": "Isdiscoverable",
+            "type": "boolean"
+          },
+          "IsExtendedLoad": {
+            "description": "A flag that indicates if the work product component is undergoing an extended load.  It reflects the fact that the work product component is in an early stage and may be updated before finalization.",
+            "title": "Isextendedload",
+            "type": "boolean"
+          },
+          "LineageAssertions": {
+            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the Data.Artefacts[] array.",
+            "items": {
+              "$ref": "#/components/schemas/LineageAssertion"
+            },
+            "title": "Lineageassertions",
+            "type": "array"
+          },
+          "Markers": {
+            "items": {
+              "$ref": "#/components/schemas/Marker"
+            },
+            "title": "Markers",
+            "type": "array"
+          },
+          "Name": {
+            "description": "Name",
+            "title": "Name",
+            "type": "string"
+          },
+          "ResourceCurationStatus": {
+            "description": "Describes the current Curation status.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceCurationStatus:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Curation Status",
+            "type": "string"
+          },
+          "ResourceHomeRegionID": {
+            "description": "The name of the home [cloud environment] region for this OSDU resource object.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-OSDURegion:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Home Region ID",
+            "type": "string"
+          },
+          "ResourceHostRegionIDs": {
+            "description": "The name of the host [cloud environment] region(s) for this OSDU resource object.",
+            "items": {
+              "$ref": "#/components/schemas/ResourceHostRegionID"
+            },
+            "title": "Resource Host Region ID",
+            "type": "array"
+          },
+          "ResourceLifecycleStatus": {
+            "description": "Describes the current Resource Lifecycle status.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceLifecycleStatus:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Lifecycle Status",
+            "type": "string"
+          },
+          "ResourceSecurityClassification": {
+            "description": "Classifies the security level of the resource.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceSecurityClassification:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Security Classification",
+            "type": "string"
+          },
+          "Source": {
+            "description": "The entity that produced the record, or from which it is received; could be an organization, agency, system, internal team, or individual. For informational purposes only, the list of sources is not governed.",
+            "title": "Data Source",
+            "type": "string"
+          },
+          "SpatialArea": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+              }
+            ],
+            "description": "A polygon boundary that reflects the locale of the content of the work product component (location of the subject matter).",
+            "title": "Spatialarea"
+          },
+          "SpatialPoint": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+              }
+            ],
+            "description": "A centroid point that reflects the locale of the content of the work product component (location of the subject matter).",
+            "title": "Spatialpoint"
+          },
+          "SubmitterName": {
+            "description": "Name of the person that first submitted the work product component to OSDU.",
+            "title": "Submittername",
+            "type": "string"
+          },
+          "Tags": {
+            "description": "Array of key words to identify the work product, especially to help in search.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "VerticalMeasurement": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractFacilityVerticalMeasurement100"
+              }
+            ],
+            "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all marker measured depths of the Wellbore Marker Set Markers array.",
+            "title": "Verticalmeasurement"
+          },
+          "WellboreID": {
+            "description": "Wellbore ID",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Wellboreid",
+            "type": "string"
+          }
+        },
+        "title": "WellboreMarkerSetData",
+        "type": "object"
+      },
       "WellborePurpose": {
         "description": "An enumeration.",
         "enum": [
@@ -4263,6 +4624,376 @@
           "unknown"
         ],
         "title": "WellboreStatus"
+      },
+      "WellboreTrajectory": {
+        "description": "Work Product Component describing an individual instance of a wellbore trajectory data object. Also called a deviation survey, wellbore trajectory is data that is used to calculate the position and spatial uncertainty of a planned or actual wellbore in 2-dimensional and 3-dimensional space.",
+        "properties": {
+          "acl": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractAccessControlList100"
+              }
+            ],
+            "description": "The access control tags associated with this entity.",
+            "title": "Access Control List"
+          },
+          "ancestry": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractLegalParentList100"
+              }
+            ],
+            "description": "The links to data, which constitute the inputs.",
+            "title": "Ancestry"
+          },
+          "createTime": {
+            "description": "Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.",
+            "example": "2020-12-16T11:46:20.163Z",
+            "format": "date-time",
+            "title": "Resource Object Creation DateTime",
+            "type": "string"
+          },
+          "createUser": {
+            "description": "The user reference, which created the first version of this resource object. Set by the System.",
+            "example": "some-user@some-company-cloud.com",
+            "title": "Resource Object Creation User Reference",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WellboreTrajectoryData"
+          },
+          "id": {
+            "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
+            "example": "namespace:work-product-component--WellboreTrajectory:606f224a-ef1f-5690-9843-d26cd7e33e10",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
+            "title": "Entity ID",
+            "type": "string"
+          },
+          "kind": {
+            "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
+            "example": "osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
+            "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
+            "title": "Entity Kind",
+            "type": "string"
+          },
+          "legal": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractLegalTags100"
+              }
+            ],
+            "description": "The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+            "title": "Legal Tags"
+          },
+          "meta": {
+            "description": "The Frame of Reference meta data section linking the named properties to self-contained definitions.",
+            "items": {},
+            "title": "Frame of Reference Meta Data",
+            "type": "array"
+          },
+          "modifyTime": {
+            "description": "Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.",
+            "example": "2020-12-16T11:52:24.477Z",
+            "format": "date-time",
+            "title": "Resource Object Version Creation DateTime",
+            "type": "string"
+          },
+          "modifyUser": {
+            "description": "The user reference, which created this version of this resource object. Set by the System.",
+            "example": "some-user@some-company-cloud.com",
+            "title": "Resource Object Version Creation User Reference",
+            "type": "string"
+          },
+          "tags": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/app__model__osdu_model__Tags"
+            },
+            "description": "A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.",
+            "example": {
+              "NameOfKey": "String value"
+            },
+            "title": "Tag Dictionary",
+            "type": "object"
+          },
+          "version": {
+            "description": "The version number of this OSDU resource; set by the framework.",
+            "example": 1562066009929332,
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "acl",
+          "legal"
+        ],
+        "title": "WellboreTrajectory",
+        "type": "object"
+      },
+      "WellboreTrajectoryData": {
+        "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
+        "properties": {
+          "AcquisitionDate": {
+            "description": "The date that the survey data was acquired on the field.",
+            "format": "date-time",
+            "title": "Effective Date",
+            "type": "string"
+          },
+          "AcquisitionRemark": {
+            "description": "Remarks related to acquisition context which is not the same as Description which is a summary of the work-product-component.",
+            "title": "Survey Remark",
+            "type": "string"
+          },
+          "ActiveIndicator": {
+            "description": "A flag indicating if the survey is currently active or valid within his lifecycle stage, not necessarily the definitive survey.",
+            "title": "Active Survey Indicator",
+            "type": "boolean"
+          },
+          "Artefacts": {
+            "description": "An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly",
+            "items": {
+              "$ref": "#/components/schemas/Artefact"
+            },
+            "title": "Artefacts",
+            "type": "array"
+          },
+          "AuthorIDs": {
+            "description": "Array of Authors' names of the work product component.  Could be a person or company entity.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Authorids",
+            "type": "array"
+          },
+          "AzimuthReferenceType": {
+            "description": "The North reference of the trajectory used to define the azimuth angular measurement values. For example, True North, Grid North, Magnetic North.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-AzimuthReferenceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Azimuth Reference Type",
+            "type": "string"
+          },
+          "BaseDepthMeasuredDepth": {
+            "description": "Measured depth within the wellbore of the LAST surveyed station with recorded data.  If a stored survey has been extrapolated to a deeper depth than the last surveyed station then that is the extrapolated measured depth and not the survey base depth.",
+            "title": "Survey Base Measured Depth",
+            "type": "number"
+          },
+          "BusinessActivities": {
+            "description": "Array of business processes/workflows that the work product component has been through (ex. well planning, exploration).",
+            "items": {
+              "type": "string"
+            },
+            "title": "Businessactivities",
+            "type": "array"
+          },
+          "CalculationMethodType": {
+            "description": "Calculation Method Type used to compute the TVD, X OFFSET, Y OFFSET and DOG LEG SEVERITY values for this Directional Survey. For example, Radius of Curvature, Minimum Curvature, Balanced Tangential, etc.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CalculationMethodType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Calculation Method Type",
+            "type": "string"
+          },
+          "CreationDateTime": {
+            "description": "Date that a resource (work  product component here) is formed outside of OSDU before loading (e.g. publication date).",
+            "format": "date-time",
+            "title": "Creationdatetime",
+            "type": "string"
+          },
+          "Datasets": {
+            "items": {
+              "$ref": "#/components/schemas/Dataset"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "Description": {
+            "description": "Description.  Summary of the work product component.  Not the same as Remark which captures thoughts of creator about the wpc.",
+            "title": "Description",
+            "type": "string"
+          },
+          "ExistenceKind": {
+            "description": "Where does this data resource sit in the cradle-to-grave span of its existence?",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ExistenceKind:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Existence Kind",
+            "type": "string"
+          },
+          "ExtensionProperties": {
+            "title": "Extensionproperties",
+            "type": "object"
+          },
+          "ExtrapolatedMeasuredDepth": {
+            "description": "The measured depth to which the survey segment was extrapolated.",
+            "title": "Extrapolated Measured Depth",
+            "type": "number"
+          },
+          "GeoContexts": {
+            "description": "List of geographic entities which provide context to the WPC.  This may include multiple types or multiple values of the same type.",
+            "items": {},
+            "title": "Geocontexts",
+            "type": "array"
+          },
+          "GeographicCRSID": {
+            "description": "Coordinate Reference System defining the Geodetic Datum of the station LATITUDE and LONGITUDE values. If LATITUDE and LONGITUDE attributes are stored, clearly identifying their Datum is required.",
+            "example": "namespace:reference-data--CoordinateReferenceSystem:GeodeticCRS.EPSG.4326:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CoordinateReferenceSystem:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Geographic Coordinate Reference System",
+            "type": "string"
+          },
+          "IsDiscoverable": {
+            "description": "A flag that indicates if the work product component is searchable, which means covered in the search index.",
+            "title": "Isdiscoverable",
+            "type": "boolean"
+          },
+          "IsExtendedLoad": {
+            "description": "A flag that indicates if the work product component is undergoing an extended load.  It reflects the fact that the work product component is in an early stage and may be updated before finalization.",
+            "title": "Isextendedload",
+            "type": "boolean"
+          },
+          "LineageAssertions": {
+            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the Data.Artefacts[] array.",
+            "items": {
+              "$ref": "#/components/schemas/LineageAssertion"
+            },
+            "title": "Lineageassertions",
+            "type": "array"
+          },
+          "Name": {
+            "description": "Name",
+            "title": "Name",
+            "type": "string"
+          },
+          "ProjectedCRSID": {
+            "description": "Coordinate Reference System defining the Projection of the station EASTING and NORTHING values. If  type is \"Grid North\" and EASTING and NORTHING attributes are stored, clearly identifying their projection is required.",
+            "example": "namespace:reference-data--CoordinateReferenceSystem:ProjectedCRS.EPSG.32615:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CoordinateReferenceSystem:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Projected Coordinate Reference System ID",
+            "type": "string"
+          },
+          "ResourceCurationStatus": {
+            "description": "Describes the current Curation status.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceCurationStatus:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Curation Status",
+            "type": "string"
+          },
+          "ResourceHomeRegionID": {
+            "description": "The name of the home [cloud environment] region for this OSDU resource object.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-OSDURegion:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Home Region ID",
+            "type": "string"
+          },
+          "ResourceHostRegionIDs": {
+            "description": "The name of the host [cloud environment] region(s) for this OSDU resource object.",
+            "items": {
+              "$ref": "#/components/schemas/ResourceHostRegionID"
+            },
+            "title": "Resource Host Region ID",
+            "type": "array"
+          },
+          "ResourceLifecycleStatus": {
+            "description": "Describes the current Resource Lifecycle status.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceLifecycleStatus:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Lifecycle Status",
+            "type": "string"
+          },
+          "ResourceSecurityClassification": {
+            "description": "Classifies the security level of the resource.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceSecurityClassification:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Security Classification",
+            "type": "string"
+          },
+          "ServiceCompanyID": {
+            "description": "Name of the Survey Company.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Service Company",
+            "type": "string"
+          },
+          "Source": {
+            "description": "The entity that produced the record, or from which it is received; could be an organization, agency, system, internal team, or individual. For informational purposes only, the list of sources is not governed.",
+            "title": "Data Source",
+            "type": "string"
+          },
+          "SpatialArea": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+              }
+            ],
+            "description": "A polygon boundary that reflects the locale of the content of the work product component (location of the subject matter).",
+            "title": "Spatialarea"
+          },
+          "SpatialPoint": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+              }
+            ],
+            "description": "A centroid point that reflects the locale of the content of the work product component (location of the subject matter).",
+            "title": "Spatialpoint"
+          },
+          "SubmitterName": {
+            "description": "Name of the person that first submitted the work product component to OSDU.",
+            "title": "Submittername",
+            "type": "string"
+          },
+          "SurveyReferenceIdentifier": {
+            "description": "Unique or Distinctive Survey Reference Number, Job Number, File Number, Identifier, Label, Name, etc. as indicated on a directional survey report, file, etc.  Use this attribute to allow correlation of the data in this Directional Survey back to the original source document, file, etc.",
+            "title": "Survey Reference Identifier",
+            "type": "string"
+          },
+          "SurveyToolTypeID": {
+            "description": "The type of tool or equipment used to acquire this Directional Survey.  For example, gyroscopic, magnetic, MWD, TOTCO, acid bottle, etc. Follow OWSG reference data and support the ISCWSA survey tool definitions.",
+            "title": "Type of the Survey Tool",
+            "type": "string"
+          },
+          "SurveyType": {
+            "description": "The type of this directional survey.  For example a \"Directional Survey\" where MD, Inclination and Azimuth are all measured or a \"Position Log\" where Inclination and Azimuth are both null and only MD, TVD and X/Y Offsets are available) - or \"Full Survey\" where everything is fully filled-up, depth-inclination-azimuth.",
+            "title": "Directional Survey Type",
+            "type": "string"
+          },
+          "SurveyVersion": {
+            "description": "The version of the wellbore survey deliverable received from the service provider - as given by this provider",
+            "title": "Survey Version",
+            "type": "string"
+          },
+          "Tags": {
+            "description": "Array of key words to identify the work product, especially to help in search.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "TieMeasuredDepth": {
+            "description": "Tie-point depth measured along the wellbore from the measurement reference datum to the survey station - where tie point is the place on the originating survey where the current survey intersect it.",
+            "title": "Tie Measured Depth",
+            "type": "number"
+          },
+          "TopDepthMeasuredDepth": {
+            "description": "Measured depth in wellbore where the directional survey starts. This should equal the minimum station measured depth for this directional survey, regardless of whether the surveyed station represents an actual surveyed MD or not.",
+            "title": "Survey Top Measured Depth",
+            "type": "number"
+          },
+          "VerticalMeasurement": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractFacilityVerticalMeasurement100"
+              }
+            ],
+            "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all survey station measured depths.",
+            "title": "Verticalmeasurement"
+          },
+          "WellboreID": {
+            "description": "A unique name, code or number designated to the Wellbore.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Wellbore",
+            "type": "string"
+          }
+        },
+        "required": [
+          "WellboreID",
+          "TopDepthMeasuredDepth",
+          "BaseDepthMeasuredDepth",
+          "VerticalMeasurement"
+        ],
+        "title": "WellboreTrajectoryData",
+        "type": "object"
       },
       "WellboreType": {
         "description": "An enumeration.",
@@ -13588,6 +14319,326 @@
         ]
       }
     },
+    "/ddms/v3/wellboremarkersets": {
+      "post": {
+        "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_wellboreMarkerset_osdu",
+        "parameters": [
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                },
+                "title": "Wellboremarkersets",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUpdateRecordsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Missing mandatory parameter or unknown parameter"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create or update the Wellbore Markerset using osdu schema",
+        "tags": [
+          "Marker"
+        ]
+      }
+    },
+    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}": {
+      "delete": {
+        "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "del_osdu_wellboreMarkerset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboremarkersetid",
+            "required": true,
+            "schema": {
+              "title": "Wellboremarkersetid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Record deleted successfully"
+          },
+          "404": {
+            "description": "WellboreMarkerSet not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete the wellboreMarkerset. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
+        "tags": [
+          "Marker"
+        ]
+      },
+      "get": {
+        "description": "Get the WellboreMarkerSet object using its **id**. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_wellbore_markerset_osdu",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboremarkersetid",
+            "required": true,
+            "schema": {
+              "title": "Wellboremarkersetid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Wellbore Marker Set not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the WellboreMarkerSet using osdu schema",
+        "tags": [
+          "Marker"
+        ]
+      }
+    },
+    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}/versions": {
+      "get": {
+        "description": "<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_osdu_wellboreMarkerset_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboremarkersetid",
+            "required": true,
+            "schema": {
+              "title": "Wellboremarkersetid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordVersions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "WellboreMarkerSet not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get all versions of the WellboreMarkerSet",
+        "tags": [
+          "Marker"
+        ]
+      }
+    },
+    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}/versions/{version}": {
+      "get": {
+        "description": "\"Get the WellboreMarkerSet object using its **id**. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_osdu_wellboreMarkerset_version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboremarkersetid",
+            "required": true,
+            "schema": {
+              "title": "Wellboremarkersetid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "WellboreMarkerSet not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the given version of the WellboreMarkerSet using OSDU WellboreMarkerset schema",
+        "tags": [
+          "Marker"
+        ]
+      }
+    },
     "/ddms/v3/wellbores": {
       "post": {
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
@@ -14006,6 +15057,326 @@
         ]
       }
     },
+    "/ddms/v3/wellboretrajectories": {
+      "post": {
+        "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_wellboreTrajectory_osdu",
+        "parameters": [
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/WellboreTrajectory"
+                },
+                "title": "Wellboretrajectories",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUpdateRecordsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Missing mandatory parameter or unknown parameter"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create or update the WellboreTrajectories using osdu schema",
+        "tags": [
+          "Trajectory"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}": {
+      "delete": {
+        "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "del_osdu_wellboreTrajectory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboretrajectoryid",
+            "required": true,
+            "schema": {
+              "title": "Wellboretrajectoryid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Record deleted successfully"
+          },
+          "404": {
+            "description": "WellboreTrajectory not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete the wellboreTrajectory. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
+        "tags": [
+          "Trajectory"
+        ]
+      },
+      "get": {
+        "description": "Get the WellboreTrajectory object using its **id**. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_wellbore_trajectory_osdu",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboretrajectoryid",
+            "required": true,
+            "schema": {
+              "title": "Wellboretrajectoryid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellboreTrajectory"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Wellbore Trajectory not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the WellboreTrajectory using osdu schema",
+        "tags": [
+          "Trajectory"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}/versions": {
+      "get": {
+        "description": "<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_osdu_wellboreTrajectory_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboretrajectoryid",
+            "required": true,
+            "schema": {
+              "title": "Wellboretrajectoryid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordVersions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "WellboreTrajectory not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get all versions of the WellboreTrajectory",
+        "tags": [
+          "Trajectory"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}/versions/{version}": {
+      "get": {
+        "description": "\"Get the WellboreTrajectory object using its **id**. <p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'. In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_osdu_wellboreTrajectory_version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboretrajectoryid",
+            "required": true,
+            "schema": {
+              "title": "Wellboretrajectoryid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellboreTrajectory"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "WellboreTrajectory not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory schema",
+        "tags": [
+          "Trajectory"
+        ]
+      }
+    },
     "/ddms/v3/welllogs": {
       "post": {
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
@@ -14075,7 +15446,7 @@
                         "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
                         "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:ft:"
                       },
-                      "WellboreId": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:"
+                      "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:"
                     },
                     "id": "{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
                     "kind": "osdu:wks:work-product-component--WellLog:1.0.0",

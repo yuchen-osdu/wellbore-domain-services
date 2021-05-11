@@ -17,7 +17,7 @@ from .fixtures import with_wdms_env
 from ..request_builders import build_request, get_cleaned_ref_and_res
 
 
-kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog']
+kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog', 'osdu_wellboretrajectory', 'osdu_wellboremarkerset']
 
 # parametrize of kind + dependency on the create_record
 param_kind_depend_on_create = [
