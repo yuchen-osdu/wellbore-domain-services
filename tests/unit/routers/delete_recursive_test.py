@@ -30,6 +30,11 @@ from tests.unit.app_conf_test import testing_context
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 
 
+@pytest.fixture(params=['authority_data_partition', 'authority_slb'])
+def authority(request):
+    return 'test_data_partition' if request.param == "authority_data_partition" else 'slb'
+
+
 @pytest.fixture
 def data_partition():
     return 'test_data_partition'
@@ -41,10 +46,10 @@ def entity_source():
 
 
 @pytest.fixture
-def well_record(data_partition, entity_source):
+def well_record(authority, entity_source):
     return make_record(
         id='id:source_id',
-        kind=get_kind(data_partition, entity_source, Entity.WELL))
+        kind=get_kind(authority, entity_source, Entity.WELL))
 
 
 @pytest.fixture
@@ -59,6 +64,7 @@ def with_patched_get_record(well_record):
 
 @pytest.mark.asyncio
 async def test_delete_recursive_only_delete_entity_provided(testing_context,
+                                                            authority,
                                                             data_partition,
                                                             entity_source,
                                                             well_record,
@@ -69,13 +75,13 @@ async def test_delete_recursive_only_delete_entity_provided(testing_context,
     mocked_query_response_dict = {
         'results': [
             # expected to be delete
-            {'id': expect_delete_ids[0], 'kind': get_kind(data_partition, entity_source, entity_types[0])},
-            {'id': expect_delete_ids[1], 'kind': get_kind(data_partition, entity_source, entity_types[0])},
-            {'id': expect_delete_ids[2], 'kind': get_kind(data_partition, entity_source, entity_types[1])},
+            {'id': expect_delete_ids[0], 'kind': get_kind(authority, entity_source, entity_types[0])},
+            {'id': expect_delete_ids[1], 'kind': get_kind(authority, entity_source, entity_types[0])},
+            {'id': expect_delete_ids[2], 'kind': get_kind(authority, entity_source, entity_types[1])},
 
             # expected to NOT be delete
-            {'id': 'id:no_delete_1', 'kind': format_kind(data_partition, entity_source, 'otherEntity', '1')},
-            {'id': 'id:no_delete_2', 'kind': format_kind(data_partition, entity_source, 'otherEntity', '1')},
+            {'id': 'id:no_delete_1', 'kind': format_kind(authority, entity_source, 'otherEntity', '1')},
+            {'id': 'id:no_delete_2', 'kind': format_kind(authority, entity_source, 'otherEntity', '1')},
         ]
     }
     expect_delete_ids.append(well_record.id)
@@ -105,6 +111,7 @@ async def test_delete_recursive_only_delete_entity_provided(testing_context,
 
 @pytest.mark.asyncio
 async def test_delete_failure_on_parent_dont_delete_children(testing_context,
+                                                             authority,
                                                              data_partition,
                                                              entity_source,
                                                              well_record,
@@ -112,7 +119,7 @@ async def test_delete_failure_on_parent_dont_delete_children(testing_context,
     # in case of exception on delete call, should still call delete on all of them
 
     sub_ids = [f'id:{i}' for i in range(10)]
-    sub_kind = get_kind(data_partition, entity_source, Entity.LOGSET)
+    sub_kind = get_kind(authority, entity_source, Entity.LOGSET)
     expect_delete_ids = sub_ids + [well_record.id]
     with mock.patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
@@ -144,6 +151,7 @@ async def test_delete_failure_on_parent_dont_delete_children(testing_context,
 @pytest.mark.asyncio
 async def test_delete_should_keep_delete_heterogeneous_failure(
         testing_context,
+        authority,
         data_partition,
         entity_source,
         well_record,
@@ -154,7 +162,7 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
     # in case of exception on delete call, should still call delete on all of them
 
     sub_ids = [f'id:{i}' for i in range(10)]
-    sub_kind = get_kind(data_partition, entity_source, Entity.LOGSET)
+    sub_kind = get_kind(authority, entity_source, Entity.LOGSET)
     expect_delete_ids = sub_ids + [well_record.id]
     with mock.patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
@@ -198,6 +206,7 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
 @pytest.mark.asyncio
 async def test_delete_should_keep_delete_homogenous_failure(
         testing_context,
+        authority,
         data_partition,
         entity_source,
         well_record,
@@ -209,7 +218,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
     # in case of exception on delete call, should still call delete on all of them
 
     sub_ids = [f'id:{i}' for i in range(10)]
-    sub_kind = get_kind(data_partition, entity_source, Entity.LOGSET)
+    sub_kind = get_kind(authority, entity_source, Entity.LOGSET)
     expect_delete_ids = sub_ids + [well_record.id]
     with mock.patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
@@ -257,6 +266,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
                                                            headers={})])
 async def test_delete_404_of_sub_delete_is_valid(testing_context,
                                                  data_partition,
+                                                 authority,
                                                  entity_source,
                                                  well_record,
                                                  with_patched_get_record,
@@ -266,7 +276,7 @@ async def test_delete_404_of_sub_delete_is_valid(testing_context,
             return_value=CursorQueryResponse(**{
                 'results': [
                     {'id': 'id:sub',
-                     'kind': get_kind(data_partition, entity_source, Entity.LOGSET)}]
+                     'kind': get_kind(authority, entity_source, Entity.LOGSET)}]
             })
     ):
         async def delete_success_only_well(*args, **kwargs):
