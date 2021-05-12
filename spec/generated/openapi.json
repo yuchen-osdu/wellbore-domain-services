@@ -153,7 +153,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/Type"
+            "$ref": "#/components/schemas/app__model__osdu_model__Type"
           }
         },
         "required": [
@@ -2522,7 +2522,13 @@
         "description": "Used for data model allows extra fields which are not declared initially in the pydantic model",
         "properties": {
           "kind": {
-            "$ref": "#/components/schemas/Kind"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Kind"
+              }
+            ],
+            "description": "The kind of reference, unit, measurement, CRS or azimuth reference.",
+            "title": "Reference Kind"
           },
           "name": {
             "description": "The name of the CRS or the symbol/name of the unit",
@@ -2851,17 +2857,12 @@
             "type": "array"
           },
           "order": {
-            "anyOf": [
-              {
-                "const": "ASC",
-                "type": "string"
-              },
-              {
-                "const": "DESC",
-                "type": "string"
-              }
+            "enum": [
+              "ASC",
+              "DESC"
             ],
-            "title": "Order"
+            "title": "Order",
+            "type": "string"
           }
         },
         "title": "SortQuery",
@@ -2996,13 +2997,6 @@
         },
         "title": "ToOneRelationship",
         "type": "object"
-      },
-      "Type": {
-        "description": "An enumeration.",
-        "enum": [
-          "AnyCrsFeatureCollection"
-        ],
-        "title": "Type"
       },
       "Type1": {
         "description": "An enumeration.",
@@ -5254,7 +5248,14 @@
             "type": "string"
           },
           "dataType": {
-            "$ref": "#/components/schemas/DataType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataType"
+              }
+            ],
+            "default": "number",
+            "description": "The log value type (per log sample). The 'format' property may contain further hints about data type presentation.",
+            "title": "Data Type"
           },
           "dimension": {
             "description": "The dimension of this log or channel",
@@ -5272,7 +5273,14 @@
             "type": "string"
           },
           "format": {
-            "$ref": "#/components/schemas/Format"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Format"
+              }
+            ],
+            "default": "float32",
+            "description": "Optional format hint how to treat the log values as strings or number of bits per 'dataType'.",
+            "title": "Format Hint"
           },
           "logstoreId": {
             "description": "The id of this log or channel in the Logstore. This property is not present in the index channel.",
@@ -5713,7 +5721,7 @@
             "type": "array"
           },
           "type": {
-            "$ref": "#/components/schemas/Type"
+            "$ref": "#/components/schemas/app__model__model_curated__Type"
           }
         },
         "required": [
@@ -5937,7 +5945,13 @@
             "title": "Reference Index"
           },
           "referenceType": {
-            "$ref": "#/components/schemas/ReferenceType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReferenceType"
+              }
+            ],
+            "description": "The reference index type of the log set.",
+            "title": "Index Type"
           },
           "relationships": {
             "allOf": [
@@ -6127,7 +6141,14 @@
             "type": "array"
           },
           "dataType": {
-            "$ref": "#/components/schemas/DataType_2"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataType_2"
+              }
+            ],
+            "default": "number",
+            "description": "The log value type (per log sample). The 'format' property may contain further hints about data type presentation.",
+            "title": "Data Type"
           },
           "dimension": {
             "description": "The dimension of this log or channel",
@@ -6145,7 +6166,14 @@
             "type": "string"
           },
           "format": {
-            "$ref": "#/components/schemas/Format_2"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Format_2"
+              }
+            ],
+            "default": "float32",
+            "description": "Optional format hint how to treat the log values as strings or number of bits per 'dataType'.",
+            "title": "Format Hint"
           },
           "logstoreId": {
             "description": "The unique id of this log or channel in the Logstore. This property is not present in the index channel.",
@@ -7073,7 +7101,14 @@
             "type": "string"
           },
           "dataType": {
-            "$ref": "#/components/schemas/DataType_1"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataType_1"
+              }
+            ],
+            "default": "number",
+            "description": "The log value type (per log sample). The 'format' property may contain further hints about data type presentation.",
+            "title": "Data Type"
           },
           "dimension": {
             "description": "The dimension of this log or channel",
@@ -7091,7 +7126,14 @@
             "type": "string"
           },
           "format": {
-            "$ref": "#/components/schemas/Format_1"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Format_1"
+              }
+            ],
+            "default": "float32",
+            "description": "Optional format hint how to treat the log values as strings or number of bits per 'dataType'.",
+            "title": "Format Hint"
           },
           "logstoreId": {
             "description": "The id of this log or channel in the Logstore. This property is not present in the index channel.",
@@ -7322,7 +7364,13 @@
             "type": "string"
           },
           "directionWell": {
-            "$ref": "#/components/schemas/DirectionWell"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DirectionWell"
+              }
+            ],
+            "description": "POSC well direction. The direction of the flow of the fluids in a well facility (generally, injected or produced, or some combination).",
+            "title": "Well Direction"
           },
           "district": {
             "description": "The district name, to which the well belongs.",
@@ -7352,7 +7400,13 @@
             "type": "string"
           },
           "fluidWell": {
-            "$ref": "#/components/schemas/FluidWell"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FluidWell"
+              }
+            ],
+            "description": "POSC well fluid. The type of fluid being produced from or injected \\ninto a well facility.",
+            "title": "Well Fluid"
           },
           "groundElevation": {
             "allOf": [
@@ -7499,13 +7553,31 @@
             "type": "string"
           },
           "wellPurpose": {
-            "$ref": "#/components/schemas/WellPurpose"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WellPurpose"
+              }
+            ],
+            "description": "POSC well purpose",
+            "title": "Well Purpose"
           },
           "wellStatus": {
-            "$ref": "#/components/schemas/WellStatus"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WellStatus"
+              }
+            ],
+            "description": "POSC well status.",
+            "title": "Well Status"
           },
           "wellType": {
-            "$ref": "#/components/schemas/WellType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WellType"
+              }
+            ],
+            "description": "Type of well.",
+            "title": "Well Type"
           }
         },
         "title": "wellData",
@@ -7784,7 +7856,13 @@
             "title": "Relationships"
           },
           "shape": {
-            "$ref": "#/components/schemas/Shape"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Shape"
+              }
+            ],
+            "description": "POSC wellbore trajectory shape.",
+            "title": "Wellbore Shape"
           },
           "spudDate": {
             "description": "The date and time when activities to drill the borehole begin to create a hole in the earth. For a sidetrack, this is the date kickoff operations began. The format follows ISO 8601 YYYY-MM-DD extended format",
@@ -7930,13 +8008,31 @@
             "type": "string"
           },
           "wellborePurpose": {
-            "$ref": "#/components/schemas/WellborePurpose"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WellborePurpose"
+              }
+            ],
+            "description": "POSC wellbore purpose",
+            "title": "Wellbore Purpose"
           },
           "wellboreStatus": {
-            "$ref": "#/components/schemas/WellboreStatus"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WellboreStatus"
+              }
+            ],
+            "description": "POSC wellbore status.",
+            "title": "Wellbore Status"
           },
           "wellboreType": {
-            "$ref": "#/components/schemas/WellboreType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WellboreType"
+              }
+            ],
+            "description": "Type of wellbore.",
+            "title": "Wellbore Type"
           }
         },
         "title": "wellboreData",
