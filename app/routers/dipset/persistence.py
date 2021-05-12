@@ -142,7 +142,7 @@ async def create_missing_logs(ctx, my_dipset: dipset):
 
         dip_kind_metadata = entity_utils.get_kind_meta(my_dipset.kind)
         log_kind = entity_utils.get_kind(
-            dip_kind_metadata.data_partition_id,
+            dip_kind_metadata.authority,
             dip_kind_metadata.source,
             Entity.LOG)
 
