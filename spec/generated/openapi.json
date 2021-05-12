@@ -3000,7 +3000,7 @@
       "Type": {
         "description": "An enumeration.",
         "enum": [
-          "GeometryCollection"
+          "AnyCrsFeatureCollection"
         ],
         "title": "Type"
       },
