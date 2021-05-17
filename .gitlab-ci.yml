@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# Stub out maven build here
+.maven:
+  variables:
+    MAVEN_REPO_PATH: "$CI_PROJECT_DIR/.m2/repository"
+
+
 variables:
   PIP_REQUIREMENTS: "frozenrequirements.txt requirements.txt requirements_dev.txt"
 
@@ -42,9 +49,6 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "build/python.yml"
-
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "build/maven.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/fossa-python.yml"
