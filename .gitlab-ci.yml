@@ -18,7 +18,8 @@
 .maven:
   variables:
     MAVEN_REPO_PATH: "$CI_PROJECT_DIR/.m2/repository"
-
+  before_script:
+    - echo ---- ---- ---- MAVEN BUILD DISABLED FOR WELLBORE DMS ---- ---- ----
 
 variables:
   PIP_REQUIREMENTS: "frozenrequirements.txt requirements.txt requirements_dev.txt"
