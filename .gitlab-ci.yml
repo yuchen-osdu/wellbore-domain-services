@@ -44,6 +44,9 @@ include:
     file: "build/python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    file: "build/maven.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/fossa-python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
