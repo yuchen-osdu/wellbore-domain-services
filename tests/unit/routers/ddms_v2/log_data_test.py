@@ -72,7 +72,7 @@ StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 
 
 @pytest.fixture
-def client():
+def client(nope_logger_fixture):
     with TemporaryDirectory() as tmpdir:
         async def storage_service_builder(*args, **kwargs):
             return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmpdir), 'p1', 'c1')
@@ -127,7 +127,7 @@ def client_with_log(client):
     assert response.status_code in range(200, 209), "Delete test log failed"
 
 
-@pytest.mark.parametrize("orient_value", ["split", "index", "columns", "records", "values"])
+@pytest.mark.parametrize("orient_value", ["split", "index", "columns", "records"])
 def test_log_get_data_orient_param_validation(client_with_log, orient_value):
     client, log_id, _ = client_with_log
     response = client.get(f"/ddms/v2/logs/{log_id}/data", params={"orient":orient_value}, headers=headers)
@@ -195,7 +195,7 @@ def test_log_version_data(client_with_log):
     assert response.json() == prev_data, "response json body should match previous version data"
 
 
-@pytest.mark.parametrize("orient_value", ["split", "index", "columns", "records", "values"])
+@pytest.mark.parametrize("orient_value", ["split", "index", "columns", "records"])
 def test_log_version_data_orient_param_validation(client_with_log, orient_value):
     client, log_id, version_id = client_with_log
 

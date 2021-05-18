@@ -19,6 +19,7 @@ from osdu.core.api.storage.tenant import Tenant
 
 from odes_storage.models import *
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from app.model import model_utils
 
@@ -104,7 +105,7 @@ class StorageRecordServiceBlobStorage:
                 Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
                 object_name)
             return Record.parse_raw(bin_data)
-        except FileNotFoundError:
+        except (FileNotFoundError, ResourceNotFoundException):
             raise HTTPException(status_code=404, detail="Item not found")
 
     async def get_all_record_versions(self,

@@ -1,16 +1,15 @@
 fastapi>=0.59.0
-cachetools==3.1.1
-aiohttp==3.6.2
+aiohttp==3.7.4.post0
 cryptography>=2.7
 pyarrow>=0.15.0
-pandas==1.1.2
+pandas==1.2.4
 uvicorn
 Click
 backoff
 structlog
 python-rapidjson
 python-multipart
-jsonpath-ng # maintenance of 'jsonpath-rw' lib it's bit abandoned
+jsonpath-ng # TODO: remove when bulk_path no longer supported
 jsonbender==0.9.3
 
 opencensus
@@ -18,6 +17,12 @@ opencensus-ext-stackdriver
 opencensus-ext-azure
 opencensus-ext-ocagent
 opencensus-ext-logging
+
+# for chunking feature
+dask[distributed]==2021.4.1
+adlfs # azure fs
+gcsfs # google fs
+
 
 --extra-index-url \
 https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
@@ -28,8 +33,7 @@ osdu-data-ecosystem-storage~=1.1.0
 osdu-data-ecosystem-search>=0.3.2, <0.4
 
 osdu-core-lib-python-ibm>=0.0.1, <0.1
-osdu-core-lib-python-gcp>=0.3.0, <0.4
-osdu-core-lib-python-azure~=0.2.0
+osdu-core-lib-python-gcp~=1.0.0
+osdu-core-lib-python-azure~=1.0.0
 osdu-core-lib-python-aws>=0.0.1, <0.1
-osdu-core-lib-python>=0.4.0, <0.5
-
+osdu-core-lib-python~=1.0.0

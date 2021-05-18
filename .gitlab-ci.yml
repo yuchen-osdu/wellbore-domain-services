@@ -58,7 +58,7 @@ include:
   - local: "/devops/azure/azure-wellbore.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws.yml"
+    file: "cloud-providers/aws-global.yml"
 
 containerize:
   extends: .skipForTriggeringMergeRequests

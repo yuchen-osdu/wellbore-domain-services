@@ -18,7 +18,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.clients.search_service_client import get_search_service
 from odes_storage.models import *
 from app.model.model_curated import *
-from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
 from app.utils import load_schema_example

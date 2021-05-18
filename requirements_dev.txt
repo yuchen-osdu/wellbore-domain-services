@@ -4,16 +4,19 @@ pytest-cov
 pytest-mock
 pytest-httpx
 httpx
+numpy
+pandas
+pyarrow
 
 # Note since 3.8 includes Mock 4.0+.
 mock>=4.0
 requests # used by starlette.TestClient for testing
-pyjwt
 cryptography
 
 # the following are used in functional integration tests
 pytest-dependency
 munch
 jsonschema
+
 # Generates fake token for local integration tests runs
 pyjwt

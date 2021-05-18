@@ -22,7 +22,7 @@ from odes_storage.models import (
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import to_record, from_record
 from app.model.osdu_model import WellboreMarkerSet
-from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
 from app.utils import load_schema_example

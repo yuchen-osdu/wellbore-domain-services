@@ -46,22 +46,21 @@ class DataframeSerializer:
             index: List[Union[str, int, float]] = None
 
         class IndexFormat(BaseModel):
-            TODO: str
+            # TODO
+            pass
 
         class ColumnFormat(BaseModel):
-            TODO: str
-
-        class ValuesFormat(BaseModel):
-            __root__: List[List[Union[str, int, float]]]
+            # TODO
+            pass
 
         class RecordsFormat(BaseModel):
-            TODO: str
+            # TODO
+            pass
 
         schema_dict = {
             JSONOrient.split: SplitFormat.schema(),
             JSONOrient.index: IndexFormat.schema(),
             JSONOrient.columns: ColumnFormat.schema(),
-            JSONOrient.values: ValuesFormat.schema(),
             JSONOrient.records: RecordsFormat.schema()
         }
 
@@ -103,6 +102,4 @@ class DataframeSerializer:
         """
         orient = JSONOrient.get(orient)
 
-        if isinstance(data, bytes):
-            data = BytesIO(data)
         return pd.read_json(path_or_buf=data, orient=orient.value).replace("NaN", np.NaN)

@@ -101,6 +101,13 @@ class ConfigurationContainer:
         default='undefined'
     )
 
+    # TODO: based on environment name, hardcoded values here are temporary until chunking feature release
+    alpha_feature_enabled: EnvVar = EnvVar(
+        key='ENVIRONMENT_NAME',
+        description='enable alpha features',
+        default='',
+        factory=lambda x: x.lower() in ['evd', 'dev', 'qa'])
+
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
         description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm',

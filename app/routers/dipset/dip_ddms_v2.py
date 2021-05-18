@@ -18,7 +18,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Path, Query, status
 
 import app.routers.dipset.persistence as persistence
-from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.dipset.dip_model import Dip
 from app.utils import Context, get_ctx
 

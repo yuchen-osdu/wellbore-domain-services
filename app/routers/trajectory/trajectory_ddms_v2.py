@@ -25,12 +25,16 @@ from app.model.model_curated import (
     trajectory as Trajectory,
     trajectorychannel as TrajectoryChannel,
 )
+
+from app.routers.common_parameters import json_orient_parameter, REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.model.model_utils import from_record, to_record
-from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.routers.trajectory.parameters import trajectory_json_orient_parameter
 from app.routers.trajectory.persistence import Persistence
-from app.bulk_persistence import DataframeSerializer, JSONOrient, MimeTypes, NoBulkException, UnknownChannelsException, \
-    InvalidBulkException
+from app.bulk_persistence import (DataframeSerializer,
+                                  JSONOrient,
+                                  MimeTypes,
+                                  NoBulkException,
+                                  UnknownChannelsException,
+                                  InvalidBulkException)
 
 from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx, load_schema_example
 
@@ -187,8 +191,8 @@ _trajectory_dataframe_example = DataFrame([
                 _trajectory_dataframe_example.shape[0],
                 _trajectory_dataframe_example.shape[1],
                 ', '.join(_trajectory_dataframe_example.columns.tolist())) +
-            ''.join([f'\n* {o.value}: <br/>`{DataframeSerializer.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
-                     for o in JSONOrient if o != JSONOrient.values]),
+            ''.join([f'\n* {o}: <br/>`{DataframeSerializer.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
+                     for o in JSONOrient]),
         # put examples here because of bug in swagger UI to properly render multiple examples
         "required": True,
         "content": {
@@ -221,7 +225,7 @@ _trajectory_dataframe_example = DataFrame([
 async def post_traj_data(
     request: Request,
     trajectoryid: TrajectoryId,
-    orient: str = Depends(trajectory_json_orient_parameter),
+    orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     persistence: Persistence = Depends(get_persistence)) -> CreateUpdateRecordsResponse:
 
@@ -336,7 +340,7 @@ async def _get_trajectory_data(
 )
 async def get_traj_data(
     trajectoryid: TrajectoryId,
-    orient: str = Depends(trajectory_json_orient_parameter),
+    orient: JSONOrient = Depends(json_orient_parameter),
     channels: Optional[List[str]] = Query(
         None, description="List of channels to get. If not provided, return all channels."
     ),
