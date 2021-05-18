@@ -14,16 +14,19 @@
 
 from typing import Optional, Callable, List, Tuple, Union, NamedTuple
 import concurrent.futures
-from functools import lru_cache
+from functools import lru_cache, wraps
 from aiohttp import ClientSession
 import contextvars
 from os import path, makedirs
 import tempfile
 import json
+from asyncio import iscoroutinefunction
 
 from app.model.user import User
 from app.injector.app_injector import AppInjector
 from app.conf import Config
+from time import perf_counter, process_time
+from logging import INFO
 
 
 @lru_cache()
@@ -326,7 +329,53 @@ def get_or_create_ctx() -> Context:
 
 def load_schema_example(file_name: str):
     with open(path.join(path.dirname(path.realpath(__file__)), 'model_examples', file_name), 'r') as json_file:
-        return json.load(json_file)  # this parse the content and returns a dictionnary
+        return json.load(json_file)  # this parse the content and returns a dictionary
+
+
+def make_log_captured_timing_handler(level=INFO):
+    def log_captured_timing(tag, wall, cpu):
+        Context.current().logger.log(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
+    return log_captured_timing
+
+
+default_capture_timing_handlers = [make_log_captured_timing_handler(INFO)]
+
+
+def capture_timings(tag, handlers=default_capture_timing_handlers):
+    """ basic timing decorator, get both wall and cpu """
+    def decorate(target):
+
+        if iscoroutinefunction(target):
+
+            @wraps(target)
+            async def async_inner(*args, **kwargs):
+                start_perf = perf_counter()
+                start_process = process_time()
+                try:
+                    return await target(*args, **kwargs)
+                finally:
+                    perf_elapsed = perf_counter() - start_perf
+                    process_elapsed = process_time() - start_process
+                    for handler in handlers:
+                        handler(tag=tag, wall=perf_elapsed, cpu=process_elapsed)
+
+            return async_inner
+
+        @wraps(target)
+        def sync_inner(*args, **kwargs):
+            start_perf = perf_counter()
+            start_process = process_time()
+            try:
+                return target(*args, **kwargs)
+            finally:
+                perf_elapsed = perf_counter() - start_perf
+                process_elapsed = process_time() - start_process
+                for handler in handlers:
+                    handler(tag=tag, wall=perf_elapsed, cpu=process_elapsed)
+
+        return sync_inner
+
+    return decorate
 
 
 class OpenApiResponse(NamedTuple):
@@ -336,6 +385,7 @@ class OpenApiResponse(NamedTuple):
     description: str = ''
     schema: Optional[dict] = None
     example: Optional[dict] = None
+
 
 #NOSONAR
 class __OpenApiHandler:

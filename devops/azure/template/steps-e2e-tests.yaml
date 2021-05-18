@@ -28,6 +28,9 @@ parameters:
     type: string
   - name: dataPartition
     type: string
+  - name: environmentName
+    type: string
+    default: "UndefinedEnv"
   - name: skipCertValidation
     # Used in case of invalid certificate (self-signed,...) 
     type: boolean
@@ -55,6 +58,7 @@ steps:
       echo "parameters.aclDomain: ${{ parameters.aclDomain }}"
       echo "parameters.legalTag: ${{ parameters.legalTag }}"
       echo "parameters.dataPartition: ${{ parameters.dataPartition }}"
+      echo "parameters.environmentName: ${{ parameters.environmentName }}"
   displayName: 'Display Info'
 
 - task: Bash@3
@@ -83,6 +87,7 @@ steps:
     set -e
 
     insecure_flag=""
+    test_alpha_feature_flag=""
     checkCert="True"
 
     # Depending on the value of 'skipCertValidation' we add the '--insecure' option to newman
@@ -90,12 +95,25 @@ steps:
     skipCertValidation="${{ lower(parameters.skipCertValidation) }}"
     if $skipCertValidation
     then
-      echo "Adding --insecure flag to newman to disable cert validation."
+      echo "Adding --insecure flag to e2e tests to disable cert validation."
       insecure_flag="--insecure"
       checkCert=""
+
+      # in that case it means dev env, in that case enable test on alpha feature
+      echo "skipCertValidation case: adding --test-alpha-feature flag to e2e tests to enable test on alpha features."
+      test_alpha_feature_flag="--test-alpha-feature"
+    fi
+
+    # Depending on the value of environmentName, activate test on alpha feature
+    envName="${{ parameters.environmentName }}"
+    if [ "$envName" = "evd" ] || [ "$envName" = "dev" ] || [ "$envName" = "qa" ];
+    then
+      echo "Env = $envName: adding --test-alpha-feature flag to e2e tests to enable test on alpha features."
+      test_alpha_feature_flag="--test-alpha-feature"
     fi
 
     echo "##vso[task.setvariable variable=insecure_flag]${insecure_flag}"
+    echo "##vso[task.setvariable variable=test_alpha_feature_flag]${test_alpha_feature_flag}"
     echo "##vso[task.setvariable variable=checkCert]${checkCert}"
 
   displayName: 'Create test variables'
@@ -130,7 +148,7 @@ steps:
     source venv37/bin/activate
     pip install -r ./requirements_dev.txt
 
-    pytest tests/integration/functional/ --filter-tag=!search --junit-xml=$(testReportBaseName)_int_tests_report.xml -o junit_suite_name="wdms_integration_$(testReportBaseName)" --environment=generated/postman_environment.json $(insecure_flag) --retry-on-error=502
+    pytest tests/integration/functional/ --filter-tag=!search --junit-xml=$(testReportBaseName)_int_tests_report.xml -o junit_suite_name="wdms_integration_$(testReportBaseName)" --environment=generated/postman_environment.json --retry-on-error=502 $(insecure_flag) $(test_alpha_feature_flag)
     deactivate
   displayName: 'RUN INTEGRATION-E2E'
 

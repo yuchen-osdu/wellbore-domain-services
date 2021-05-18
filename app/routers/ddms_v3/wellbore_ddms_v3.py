@@ -22,7 +22,7 @@ from odes_storage.models import (
     RecordVersions,
 )
 from app.model.osdu_model import Wellbore
-from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
 from app.utils import load_schema_example

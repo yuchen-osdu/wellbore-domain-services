@@ -72,6 +72,10 @@ class NopeLogger:
         # empty method
         pass
 
+    def log(*arg, **kargs):
+        # empty method
+        pass
+
 
 class AsyncMock:
     def __init__(self, *, return_value=None, forward_input_name: str = None, forward_input_index: int = 0):

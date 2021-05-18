@@ -23,6 +23,7 @@ from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.clients.search_service_client import SearchServiceClient
 from app.clients import make_search_client, make_storage_record_client
+from app.persistence.sessions_storage import SessionsStorage
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from app.helper.logger import get_logger
 from app.injector.ibm_injector import IBMInjector
@@ -65,6 +66,12 @@ class MainInjector(AppInjectorModule):
         if Config.cloud_provider.value == 'aws':
             logger.info('using aws injector')
             AwsInjector().configure(app_injector)
+
+        async def make_sessions_storage():
+            return SessionsStorage(await app_injector.get(BlobStorageBase))
+
+        app_injector.register(SessionsStorage, make_sessions_storage)
+
         # run overriders
         self.overriders(app_injector)
 
@@ -86,6 +93,7 @@ class MainInjector(AppInjectorModule):
 
                 logger.warning(f'overriding blob storage to use local fs on path ' + blob_storage_localfs)
                 app_injector.register(BlobStorageBase, _blob_storage_builder)
+
 
     @staticmethod
     def make_storage_service_on_localfs_blob_storage_builder(path: str):

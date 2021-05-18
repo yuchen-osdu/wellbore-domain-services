@@ -51,7 +51,7 @@ class TracingMiddleware(BaseHTTPMiddleware):
         In this example 'get_wellbore' is called_endpoint_func variable, this function's name is needed to retrieve
         the APIRoute that contains the raw path.
         """
-        called_endpoint_func = request.scope['endpoint']
+        called_endpoint_func = request.scope.get('endpoint')
 
         if called_endpoint_func and is_function(called_endpoint_func):
             function_name = called_endpoint_func.__name__

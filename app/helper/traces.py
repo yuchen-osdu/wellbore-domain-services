@@ -11,15 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from app.conf import Config
-from app.helper.utils import rename_cloud_role_func, COMPONENT
+from functools import wraps
+from asyncio import iscoroutinefunction
 
 from opencensus.common.transports.async_ import AsyncTransport
 from opencensus.trace import base_exporter
 from opencensus.ext.stackdriver.trace_exporter import StackdriverExporter
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
+from opencensus.trace.span import SpanKind
+
+from app.conf import Config
+from app.helper.utils import rename_cloud_role_func, COMPONENT
+from app.utils import Context
 
 """
 How to add specific span in a method
@@ -101,3 +105,36 @@ class CombinedExporter(base_exporter.Exporter):
 
         for e in self.exporters:
             e.export(span_datas)
+
+
+def with_trace(label: str, span_kind=SpanKind.CLIENT):
+    """ decorate the function adding trace """
+    def decorate(target):
+
+        if iscoroutinefunction(target):
+
+            @wraps(target)
+            async def async_inner(*args, **kwargs):
+                tracer = Context.current().tracer
+                if tracer is None:
+                    return await target(*args, **kwargs)
+
+                with Context.current().tracer.span(name=label) as span:
+                    span.span_kind = span_kind
+                    return await target(*args, **kwargs)
+
+            return async_inner
+
+        @wraps(target)
+        def sync_inner(*args, **kwargs):
+            tracer = Context.current().tracer
+            if tracer is None:
+                return target(*args, **kwargs)
+
+            with Context.current().tracer.span(name=label) as span:
+                span.span_kind = span_kind
+                return target(*args, **kwargs)
+
+        return sync_inner
+
+    return decorate

@@ -22,7 +22,7 @@ import odes_storage.models as model
 import app.routers.logrecognition.family_processor_manager as fp_manager
 from app.clients.storage_service_client import get_storage_record_service
 from app.conf import Config
-from app.routers.conf import REQUIRED_ROLES_WRITE
+from ..common_parameters import REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
 

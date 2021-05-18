@@ -42,7 +42,7 @@ from app.bulk_persistence import MimeTypes
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
-from tests.unit.test_utils import assert_dict_contained, make_record
+from tests.unit.test_utils import assert_dict_contained, make_record, nope_logger_fixture
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
@@ -100,7 +100,7 @@ class TestHelper:
 
 
 @pytest.fixture
-def client():
+def client(nope_logger_fixture):
     with TemporaryDirectory() as tmpdir:
         async def storage_service_builder(*args, **kwargs):
             return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmpdir), 'p1', 'c1')
@@ -141,7 +141,7 @@ log_data = [
     pytest.param([[2.0, 10.1], [1.8, 20.1], [1.8, 20.1], [2.0, 30.1]], id="duplicate index"),
     pytest.param([[2.0, 10.1], [1.8, 20.1], [1.8, np.NaN], [2.0, 30.1]], id="duplicate index with nan"),
 ]
-log_data_orient = 'values'
+log_data_orient = 'split'
 
 
 def logs_write(client, test_data, nan_conversion):
@@ -153,8 +153,8 @@ def logs_write(client, test_data, nan_conversion):
     content = df
     if nan_conversion:
         content = content.fillna("NaN")
-
-    byte_stream = BytesIO(str.encode(content.to_json(orient=log_data_orient)))
+    json_content = content.to_json(orient=log_data_orient)
+    byte_stream = BytesIO(str.encode(json_content))
     # when WRITE ----------------------------------------------------------
     response = client.post(TestHelper.build_url(f'/logs/{log_id}/upload_data?orient=' + log_data_orient),
                           files={'file': ('test_file_data.json', byte_stream, 'application/json')},
@@ -183,8 +183,8 @@ def test_logs_write_then_read_data(client, test_data, nan_conversion):
     response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
-    data = response.json()
-    actual_df = pd.DataFrame(data).replace("NaN", np.NaN)
+    data = response.content
+    actual_df = pd.read_json(data, orient=log_data_orient).replace("NaN", np.NaN)
     pd.testing.assert_frame_equal(df, actual_df)
 
 
@@ -226,8 +226,8 @@ def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
     response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
-    data = response.json()
-    actual_df = pd.DataFrame(data).replace("NaN", np.NaN)
+    data = response.content
+    actual_df = pd.read_json(data, orient=log_data_orient).replace("NaN", np.NaN)
     pd.testing.assert_frame_equal(df, actual_df)
 
 
@@ -263,8 +263,8 @@ def test_logs_upload_parquet_read_json(client):
     response = client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
-    data = response.json()
-    actual_df = pd.DataFrame(data).replace("NaN", np.NaN)
+    data = response.content
+    actual_df = pd.read_json(data, orient=log_data_orient).replace("NaN", np.NaN)
     pd.testing.assert_frame_equal(df, actual_df)
 
 
@@ -280,23 +280,23 @@ def test_logs_write_twice_then_read_data(client, test_data, nan_conversion):
     initial_df_json = initial_df
     if nan_conversion:
         initial_df_json = initial_df_json.fillna("NaN")
-    initial_df_json = initial_df_json.to_json(orient='values')
+    initial_df_json = initial_df_json.to_json(orient='split')
 
     # when WRITE twice ----------------------------------------------------------
-    client.post(TestHelper.build_url('/logs/1337/data?orient=values'),
+    client.post(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
                initial_df_json,
                headers=TestHelper.BASE_HEADERS)
 
-    client.post(TestHelper.build_url('/logs/1337/data?orient=values'),
+    client.post(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
                initial_df_json,
                headers=TestHelper.BASE_HEADERS)
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url('/logs/1337/data?orient=values'), headers=TestHelper.BASE_HEADERS)
+    response = client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient), headers=TestHelper.BASE_HEADERS)
 
     assert response.status_code == 200
-    data = response.json()
-    actual_df = pd.DataFrame(data).replace("NaN", np.NaN)
+    data = response.content
+    actual_df = pd.read_json(data, orient=log_data_orient).replace("NaN", np.NaN)
     pd.testing.assert_frame_equal(initial_df, actual_df)
 
 
@@ -434,7 +434,7 @@ decimated_log_data = [
                  2.2, 2.6, 2,
                  id="data with one column, bulk data must have an index"),
 ]
-decimated_log_data_orient = 'values'
+decimated_log_data_orient = 'split'
 
 
 @pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
@@ -447,7 +447,7 @@ def test_decimated_logs(client, decimated_test_data, expected_result, start, sto
     content = decimated_test_data
     if nan_conversion:
         content = content.fillna("NaN")
-    content = content.to_json(orient='values')
+    content = content.to_json(orient='split')
 
     response = client.post(TestHelper.build_url('/logs/1337/data?orient=' + decimated_log_data_orient),
                           content,
@@ -468,13 +468,13 @@ def test_decimated_logs(client, decimated_test_data, expected_result, start, sto
         params.update({'start': start})
     if stop is not None:
         params.update({'stop': stop})
-    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=' + decimated_log_data_orient),
+    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'), #  + decimated_log_data_orient),
                           params=params,
                           headers=TestHelper.BASE_HEADERS)
-    data = response.json()
+    data = response.content
     if isinstance(expected_result, HTTPException):
         assert response.status_code == expected_result.status_code
     else:
         assert response.status_code == 200
-        actual_df = pd.DataFrame(data).replace("NaN", np.NaN)
+        actual_df = pd.read_json(data, orient="values").replace("NaN", np.NaN)
         pd.testing.assert_frame_equal(expected_result, actual_df)
