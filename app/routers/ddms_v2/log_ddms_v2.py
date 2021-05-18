@@ -43,9 +43,8 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.model.log_bulk import LogBulkHelper
 from app.model.model_curated import log
 from app.model.model_utils import from_record, to_record
-from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v2.persistence import Persistence
-from app.routers.ddms_v2.common_parameters import json_orient_parameter
+from app.routers.common_parameters import json_orient_parameter, REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx, load_schema_example
 
 
@@ -286,14 +285,14 @@ _log_dataframe_example = pd.DataFrame(
 async def write_log_data(
     request: Request,
     logid: str,
-    orient: str = Depends(json_orient_parameter),
+    orient: JSONOrient = Depends(json_orient_parameter),
     bulk_path: str = Depends(bulk_id_path_parameter),
     persistence: Persistence = Depends(get_persistence),
     ctx: Context = Depends(get_ctx),
 ) -> CreateUpdateRecordsResponse:
     content = await request.body()  # request.stream()
     df = DataframeSerializer.read_json(content, orient)
-    return  await _write_log_data(ctx, persistence, logid, bulk_path, df)
+    return await _write_log_data(ctx, persistence, logid, bulk_path, df)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
@@ -312,7 +311,7 @@ async def write_log_data(
 async def upload_log_data_file(
     logid: str,
     file: UploadFile = File(...),
-    orient: str = Depends(json_orient_parameter),
+    orient: JSONOrient = Depends(json_orient_parameter),
     bulk_path: str = Depends(bulk_id_path_parameter),
     persistence: Persistence = Depends(get_persistence),
     ctx: Context = Depends(get_ctx),
@@ -346,7 +345,7 @@ async def _get_log_data(
     persistence: Persistence,
     logid: str,
     version: int,
-    orient: str,
+    orient: JSONOrient,
     bulk_id_path: str = None,
 ):
 
@@ -401,7 +400,7 @@ async def _get_log_data(
             responses={status.HTTP_404_NOT_FOUND: {"description": "log not found"}})
 async def get_log_data(
     logid: str,
-    orient: str = Depends(json_orient_parameter),
+    orient: JSONOrient = Depends(json_orient_parameter),
     bulk_id_path: str = Depends(bulk_id_path_parameter),
     persistence: Persistence = Depends(get_persistence),
     ctx: Context = Depends(get_ctx),
@@ -484,7 +483,7 @@ async def get_log_data_statistics(logid: str,
 async def get_log_data_by_version(
     logid: str,
     version: int,
-    orient: str = Depends(json_orient_parameter),
+    orient: JSONOrient = Depends(json_orient_parameter),
     bulk_id_path: str = Depends(bulk_id_path_parameter),
     persistence: Persistence = Depends(get_persistence),
     ctx: Context = Depends(get_ctx),
@@ -520,7 +519,9 @@ async def get_log_decimated(
         quantiles: int = Query(None, description="Number of division desired"),
         start: float = Query(None, description="The start value for the log decimation"),
         stop: float = Query(None, description="The stop value for the log decimation"),
-        orient: str = Depends(json_orient_parameter),
+        orient: str = Query("values",
+                            description='response format JSON. Only "values" is allowed.',
+                            regex="values"),
         bulk_id_path: str = Depends(bulk_id_path_parameter),
         persistence: Persistence = Depends(get_persistence),
         ctx: Context = Depends(get_ctx)):

@@ -33,6 +33,7 @@ from .tests.fixtures import WDMS_Variables
 
 FILTER_IN_TAGS = set()
 FILTER_OUT_TAGS = set()
+TEST_ALPHA_FEATURE = False
 
 
 def pytest_addoption(parser):
@@ -51,6 +52,9 @@ def pytest_addoption(parser):
 
     parser.addoption('--insecure', action='store_true',
                      help='Disables SSL validations')
+
+    parser.addoption('--test-alpha-feature', action='store_true',
+                     help='Enable tests tagged with "alpha-feature"')
 
     parser.addoption(
         '--retry-on-error', default='',
@@ -123,6 +127,7 @@ def pytest_configure(config):
     set_environment_from_config(config, WDMS_Variables)
 
     config.addinivalue_line("markers", "tag: add tags to a test to extend filtering capability")
+    config.addinivalue_line("markers", "alpha_feature: mark a test against an alpha feature")
 
     if CmdLineSpecialVar.get_disable_ssl_validation(WDMS_Variables):
         # filter warning when disabling ssl validation in order to not be spammed by warning and still spot real onces
@@ -140,8 +145,14 @@ def pytest_configure(config):
         else:
             FILTER_IN_TAGS.add(tag.lower())
 
+    global TEST_ALPHA_FEATURE
+    TEST_ALPHA_FEATURE = config.getoption('test_alpha_feature', default=False)
+
 
 def pytest_runtest_setup(item):
+    if list(item.iter_markers(name="alpha_feature")) and not TEST_ALPHA_FEATURE:
+        pytest.skip('test on alpha feature disabled')
+
     if FILTER_IN_TAGS or FILTER_OUT_TAGS:
         item_tags = set()
         for mark in item.iter_markers(name="tag"):

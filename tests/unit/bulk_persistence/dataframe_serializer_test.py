@@ -41,7 +41,6 @@ dataframe_dict = {
             str(row_val): Reference_df[col_val].tolist()[count] for count, row_val in enumerate(Reference_df.index.tolist())
         } for col_val in Reference_df.columns.tolist()
     },
-    'values': Reference_df.values.tolist(),  # WARNING losing index and column info
     'records': [{c: v for c, v in zip(Reference_df.columns, row_values)} for row_values in Reference_df.values]
 }
 
@@ -57,7 +56,7 @@ def check_dataframe(df: pd.DataFrame):
     assert_dataframe_equals(df, Reference_df)
 
 
-@pytest.mark.parametrize("orient", list(JSONOrient.__iter__()))
+@pytest.mark.parametrize("orient", [o for o in JSONOrient])
 def test_schema(orient):
     assert DataframeSerializer.get_schema(orient)
 
@@ -68,10 +67,7 @@ def test_load_from_str_various_orient(data_dict, orient):
     dataframe_json = json.dumps(data_dict)
     print(dataframe_json)
     df = DataframeSerializer.read_json(dataframe_json, orient=orient)
-    if orient == 'values':
-        assert df.values.tolist() == Reference_df.values.tolist()
-    else:
-        check_dataframe(df)
+    check_dataframe(df)
 
 
 def test_load_from_path(temp_directory):

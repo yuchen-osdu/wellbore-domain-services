@@ -23,7 +23,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_curated import dipset
 from app.model.model_utils import from_record, to_record
 from app.model.entity_utils import Entity
-from app.routers.conf import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context, get_ctx, load_schema_example
 
 router = APIRouter()

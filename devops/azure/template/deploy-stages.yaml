@@ -93,3 +93,4 @@ stages:
                 cloudProvider:  ${{ provider.short_name }}
                 authenticationTemplate: ${{ environment.authenticationTemplate }}
                 authenticationTemplateParameters: ${{ environment.authenticationTemplateParameters }}
+                environmentName: ${{ environment.name }}

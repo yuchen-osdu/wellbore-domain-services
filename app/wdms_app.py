@@ -25,7 +25,7 @@ from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id
-from app.routers import probes, about
+from app.routers import probes, about, sessions
 from app.routers.ddms_v2 import (
     ddms_v2,
     wellbore_ddms_v2,
@@ -93,6 +93,9 @@ async def startup_event():
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
 
+    if Config.alpha_feature_enabled.value:
+        enable_alpha_feature()
+
 
 @base_app.on_event('shutdown')
 async def shutdown_event():
@@ -159,6 +162,26 @@ wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search']
 wdms_app.include_router(log_recognition.router, prefix='/log-recognition', tags=['log-recognition'], dependencies=[
     Depends(require_data_partition_id, use_cache=False),
     Depends(require_opendes_authorized_user, use_cache=False)])
+
+
+# ------------- add alpha feature
+def enable_alpha_feature():
+    """ must be called to enable and activate alpha feature"""
+    from app.in_dev.injector.dask_storage_injector import DaskStorageInjector
+
+    logger.get_logger().warning("Enabling alpha feature: chunking")
+
+    # register dask storage factory
+    DaskStorageInjector().configure(app_injector)
+
+    wdms_app.include_router(sessions.router, prefix='/ddms/v3/welllogs', tags=['ALPHA chunking'], dependencies=[
+        Depends(require_data_partition_id, use_cache=False),
+        Depends(require_opendes_authorized_user, use_cache=False)])
+
+    wdms_app.include_router(welllog_ddms_v3.router_bulk, prefix='/ddms/v3', tags=['ALPHA chunking'], dependencies=[
+        Depends(require_data_partition_id, use_cache=False),
+        Depends(require_opendes_authorized_user, use_cache=False)])
+
 
 # order is last executed first
 wdms_app.add_middleware(TracingMiddleware)
