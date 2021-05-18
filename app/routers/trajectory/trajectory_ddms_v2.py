@@ -261,7 +261,7 @@ async def post_traj_data(
 async def _get_trajectory_data(
     trajectoryid: str,
     version: int,
-    orient: str = Depends(trajectory_json_orient_parameter),
+    orient: str = Depends(json_orient_parameter),
     channels: Optional[List[str]] = Query(
             None, description="List of channels to get. If not provided, return all channels."
     ),
@@ -382,7 +382,7 @@ async def get_traj_data(
 async def get_trajectory_data_by_version(
     trajectoryid: str,
     version: int,
-    orient: str = Depends(trajectory_json_orient_parameter),
+    orient: str = Depends(json_orient_parameter),
     channels: Optional[List[str]] = Query(
             None, description="List of channels to get. If not provided, return all channels."
     ),
