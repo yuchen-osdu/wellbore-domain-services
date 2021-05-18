@@ -13,14 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# Stub out maven build here
-.maven:
-  variables:
-    MAVEN_REPO_PATH: "$CI_PROJECT_DIR/.m2/repository"
-  before_script:
-    - echo ---- ---- ---- MAVEN BUILD DISABLED FOR WELLBORE DMS ---- ---- ----
-
 variables:
   PIP_REQUIREMENTS: "frozenrequirements.txt requirements.txt requirements_dev.txt"
 
@@ -66,7 +58,7 @@ include:
   - local: "/devops/azure/azure-wellbore.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws.yml"
+    file: "cloud-providers/aws-global.yml"
 
 containerize:
   extends: .skipForTriggeringMergeRequests
