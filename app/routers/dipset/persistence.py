@@ -208,25 +208,25 @@ def series_to_dip(row: pd.Series):
 
     return Dip(
         reference=ValueWithUnit(unitKey="meter", value=row["reference"])
-        if row.get("reference") and not math.isnan(row["reference"])
+        if "reference" in row and not math.isnan(row["reference"])
         else None,
         azimuth=ValueWithUnit(unitKey="dega", value=row["azimuth"])
-        if row.get("azimuth") and not math.isnan(row["azimuth"])
+        if "azimuth" in row and not math.isnan(row["azimuth"])
         else None,
         inclination=ValueWithUnit(unitKey="dega", value=row["inclination"])
-        if row.get("inclination") and not math.isnan(row["inclination"])
+        if "inclination" in row and not math.isnan(row["inclination"])
         else None,
         quality=ValueWithUnit(unitKey="unitless", value=row["quality"])
-        if row.get("quality") and not math.isnan(row["quality"])
+        if "quality" in row and not math.isnan(row["quality"])
         else None,
         xCoordinate=ValueWithUnit(unitKey="meter", value=row["xCoordinate"])
-        if row.get("xCoordinate") and not math.isnan(row["xCoordinate"])
+        if "xCoordinate" in row and not math.isnan(row["xCoordinate"])
         else None,
         yCoordinate=ValueWithUnit(unitKey="meter", value=row["yCoordinate"])
-        if row.get("yCoordinate") and not math.isnan(row["yCoordinate"])
+        if "yCoordinate" in row and not math.isnan(row["yCoordinate"])
         else None,
         zCoordinate=ValueWithUnit(unitKey="meter", value=row["zCoordinate"])
-        if row.get("zCoordinate") and not math.isnan(row["zCoordinate"])
+        if "zCoordinate" in row and not math.isnan(row["zCoordinate"])
         else None,
         classification=row.get("classification"),
     )
