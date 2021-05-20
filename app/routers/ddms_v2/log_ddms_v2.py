@@ -354,16 +354,16 @@ async def _get_log_data(
 
         private method in order to  factorize GET /logs/{logid} and GET /logs/{logid}/version/{version}
         get the log record with the specified log id into the storage,
-        fetch the bulkd id in the record using bulkk_id_path if any
+        fetch the bulk id in the record using bulk_id_path if any
         read the bulk data and serialize it into a json.
 
-        param persistence: peristence instance used to read the data
+        param persistence: persistence instance used to read the data
         param logid: id of the log
         param version:  the version of the data log you want to have
         param orient:  get the log data in the given orient value
         param bulk_id_path: support of custom  bulk id path, if none use the standard
 
-        return json response with the bulkd data in the orient format
+        return json response with the bulk data in the orient format
     """
 
     # we may use an optimistic cache here
@@ -403,7 +403,7 @@ async def get_log_data(
     orient: JSONOrient = Depends(json_orient_parameter),
     bulk_id_path: str = Depends(bulk_id_path_parameter),
     persistence: Persistence = Depends(get_persistence),
-    ctx: Context = Depends(get_ctx),
+    ctx: Context = Depends(get_ctx)
 ):
     return await _get_log_data(
         ctx=ctx,
@@ -411,7 +411,7 @@ async def get_log_data(
         logid=logid,
         orient=orient,
         bulk_id_path=bulk_id_path,
-        version=None,
+        version=None
     )
 
 

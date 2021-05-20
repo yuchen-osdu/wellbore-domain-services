@@ -74,6 +74,7 @@ traj = {
 
 headers = { "data-partition-id": "DATA_PARTITION_ID" }
 
+prev_data = {"columns": ["col_100X"], "data": [[0], [1], [2]], 'index': [0, 1, 2]}
 
 
 @pytest.fixture
@@ -101,6 +102,35 @@ def client(nope_logger_fixture):
         yield TestClient(wdms_app)
 
         wdms_app.dependency_overrides = {}  # clean up
+
+@pytest.fixture
+def client_with_log(client):
+    # Create or update a log record
+    response = client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
+    assert response.status_code in range(200, 209), "Create or update log failed"
+
+    log_id = response.json()["recordIds"][0]
+
+    # add data to the log
+    response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data", params={"orient": "split"}, json=prev_data, headers=headers)
+    assert response.status_code in range(200, 209), "PUT log data failed"
+
+    # get data
+    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data", headers=headers)
+    assert response.status_code in range(200, 209), "GET log data by channels failed"
+    assert response.json() == prev_data, "GET log data  response json body should match  data for latest version"
+
+    # get versions
+    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions", headers=headers)
+    assert response.status_code == 200, "GET log data failed"
+
+    version_id = response.json()["versions"][0]
+
+    yield client, log_id, version_id
+
+    response = client.delete(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
+    assert response.status_code in range(200, 209), "Delete test log failed"
+
 
 
 @pytest.mark.parametrize("orient_value, data",
@@ -223,4 +253,30 @@ def test_get_data_orient_param_validation_negative(client, orient_value, data):
     # add data to the traj
     response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data,
                            headers=headers)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_log_version_data(client_with_log):
+    client, log_id, version_id = client_with_log
+
+    # get data for previous version
+    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", headers=headers)
+    assert response.status_code == 200, "GET data for previous version failed"
+    assert response.json() == prev_data, "response json body should match previous version data"
+
+
+@pytest.mark.parametrize("orient_value", ["split", "index", "columns", "records"])
+def test_log_version_data_orient_param_validation(client_with_log, orient_value):
+    client, log_id, version_id = client_with_log
+
+    # get data for previous version
+    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", params={"orient": orient_value}, headers=headers)
+    assert response.ok
+
+
+def test_log_version_data_orient_param_validation_negative(client_with_log):
+    client, log_id, version_id = client_with_log
+
+    # get data for previous version
+    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", params={"orient": "wrong"}, headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
