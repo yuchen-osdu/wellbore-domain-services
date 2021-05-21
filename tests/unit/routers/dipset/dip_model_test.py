@@ -160,3 +160,10 @@ def test_dip_model_quality_value_validation_negative(value):
             quality=ValueWithUnit(unitKey="unitless", value=value),
         )
 
+def test_dip_model_zero_values():
+        Dip(
+            reference=ValueWithUnit(unitKey="m", value=0),
+            azimuth=ValueWithUnit(unitKey="dega", value=0),
+            inclination=ValueWithUnit(unitKey="dega", value=0),
+            quality=ValueWithUnit(unitKey="unitless", value=0)
+        )

@@ -142,7 +142,7 @@ expected_dips = [
         },
         "azimuth": {
             "unitKey": "dega",
-            "value": 3.0
+            "value": 0
         },
         "inclination": {
             "unitKey": "dega",
