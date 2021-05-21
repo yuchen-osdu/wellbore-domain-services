@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends, Query, Request, HTTPException, Response,
 
 from pandas import DataFrame
 
-from odes_storage.models import CreateUpdateRecordsResponse, RecordVersions
+from odes_storage.models import CreateUpdateRecordsResponse, RecordVersions, Record
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_curated import (
@@ -47,15 +47,23 @@ async def get_persistence() -> Persistence:
     return Persistence()
 
 
-async def get_trajectory_record(ctx, trajectoryid: TrajectoryId) -> Trajectory:
-    storage_client = await get_storage_record_service(ctx)
-    return from_record(
-        Trajectory,
-        await storage_client.get_record(
-            id=trajectoryid, data_partition_id=ctx.partition_id
-        ),
-    )
+async def fetch_trajectory_record(ctx: Context, trajectoryid: TrajectoryId, version=None) -> Record:
+    """
+    :param ctx: context
+    :param trajectoryid: record identifier
+    :param version: trajectory version
+    :return: record
+    """
 
+    storage_client = await get_storage_record_service(ctx)
+    if version:
+        return await storage_client.get_record_version(
+                    id=trajectoryid, version=version, data_partition_id=ctx.partition_id
+                )
+    else:
+        return await storage_client.get_record(
+                    id=trajectoryid, data_partition_id=ctx.partition_id
+                )
 
 @router.get(
     "/trajectories/{trajectoryid}",
@@ -72,7 +80,8 @@ async def get_trajectory(
     trajectoryid: TrajectoryId, ctx: Context = Depends(get_ctx)
 ) -> Trajectory:
     # TODO add a check on the kind (*:wks:Trajectory:1.0.5)
-    return await get_trajectory_record(ctx, trajectoryid)
+    trajectory_record = await fetch_trajectory_record(ctx, trajectoryid)
+    return from_record(Trajectory, trajectory_record)
 
 
 @router.delete(
@@ -132,10 +141,7 @@ async def get_trajectory_versions(
 async def get_trajectory_version(
     trajectoryid: TrajectoryId, version: int, ctx: Context = Depends(get_ctx)
 ) -> Trajectory:
-    storage_client = await get_storage_record_service(ctx)
-    trajectory_record = await storage_client.get_record_version(
-        id=trajectoryid, version=version, data_partition_id=ctx.partition_id
-    )
+    trajectory_record = await fetch_trajectory_record(ctx, trajectoryid, version)
     return from_record(Trajectory, trajectory_record)
 
 
@@ -226,7 +232,8 @@ async def post_traj_data(
     content = await request.body()  # request.stream()
     df = DataframeSerializer.read_json(content, orient)
 
-    record = await get_trajectory_record(ctx, trajectoryid)
+    trajectory_record = await fetch_trajectory_record(ctx, trajectoryid)
+    record = from_record(Trajectory, trajectory_record)
 
     record.data.bulkURI = await persistence.write_bulk(ctx, df)
 
@@ -249,6 +256,52 @@ async def post_traj_data(
     )
 
     return record
+
+
+async def _get_trajectory_data(
+    trajectoryid: str,
+    version: int,
+    orient: str = Depends(json_orient_parameter),
+    channels: Optional[List[str]] = Query(
+            None, description="List of channels to get. If not provided, return all channels."
+    ),
+    ctx: Context = Depends(get_ctx),
+    persistence: Persistence = Depends(get_persistence)
+):
+
+    """
+        Get trajectory bulk data in format in the given orient value from trajectory id trajectoryid
+
+        private method in order to  factorize GET /trajectories/{trajectoryid} and GET /trajectories/{trajectoryid}/version/{version}
+        get the trajectory record with the specified trajectory id into the storage,
+        fetch the bulk id in the record using bulk_id_path if any
+        read the bulk data and serialize it into a json.
+
+
+        param trajectoryid: id of the trajectory
+        param version:  the version of the data trajectory you want to have
+        param orient:  get the trajectory data in the given orient value
+        param channels:
+        param persistence: persistence instance used to read the data
+
+        return json response with the bulk data in the orient format
+    """
+
+    # we may use an optimistic cache here
+    trajectory_record = await fetch_trajectory_record(ctx, trajectoryid, version)
+    record = from_record(Trajectory, trajectory_record)
+
+    try:
+        df = await persistence.read_bulk(ctx, record, channels)
+    except NoBulkException:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except UnknownChannelsException as key_error:  # unknown channels
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(key_error)) from key_error
+    except InvalidBulkException as ex:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex))
+
+    content = DataframeSerializer.to_json(df, orient=orient)
+    return Response(content=content, media_type=MimeTypes.JSON.type)
 
 
 @OpenApiHandler.set(
@@ -294,16 +347,54 @@ async def get_traj_data(
     ctx: Context = Depends(get_ctx),
     persistence: Persistence = Depends(get_persistence),
 ):
-    record = await get_trajectory_record(ctx, trajectoryid)
+    return await _get_trajectory_data(ctx=ctx,
+            persistence=persistence,
+            trajectoryid=trajectoryid,
+            orient=orient,
+            channels=channels,
+            version=None)
 
-    try:
-        df = await persistence.read_bulk(ctx, record, channels)
-    except NoBulkException:
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except UnknownChannelsException as key_error:  # unknown channels
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(key_error)) from key_error
-    except InvalidBulkException as ex:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex))
 
-    content = DataframeSerializer.to_json(df, orient=orient)
-    return Response(content=content, media_type=MimeTypes.JSON.type)
+@OpenApiHandler.set(
+    operation_id="get_trajectory_data_by_version",
+    responses=[
+        OpenApiResponse(
+            status=status.HTTP_200_OK,
+            description=
+            'Get trajectory bulk data in format in the given _orient_ value.'
+            '\nIt uses [Pandas.Dataframe json format]'
+            '(https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html)' +
+            '.\n Here\'re examples for data with {} rows and {} columns with different _orient_: '.format(
+                _trajectory_dataframe_example.shape[0],
+                _trajectory_dataframe_example.shape[1]) +
+            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializer.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
+                     for o in JSONOrient]),
+
+            name='GetTrajectoryDataResponse',
+            example=DataframeSerializer.to_json(_trajectory_dataframe_example, JSONOrient.split),
+            schema={'oneOf': [DataframeSerializer.get_schema(o) for o in JSONOrient]})
+    ])
+@router.get('/trajectories/{trajectoryid}/versions/{version}/data',
+            summary="Returns all data within the specified filters. Strongly consistent.",
+            description='return full bulk data. {}'.format(REQUIRED_ROLES_READ),
+            operation_id="get_trajectory_data_by_version",
+            responses={status.HTTP_404_NOT_FOUND: {"description": "trajectory not found"}})
+async def get_trajectory_data_by_version(
+    trajectoryid: str,
+    version: int,
+    orient: str = Depends(json_orient_parameter),
+    channels: Optional[List[str]] = Query(
+            None, description="List of channels to get. If not provided, return all channels."
+    ),
+    ctx: Context = Depends(get_ctx),
+    persistence: Persistence = Depends(get_persistence),
+):
+
+    return await _get_trajectory_data(
+        ctx=ctx,
+        persistence=persistence,
+        trajectoryid=trajectoryid,
+        orient=orient,
+        channels=channels,
+        version=version
+    )
