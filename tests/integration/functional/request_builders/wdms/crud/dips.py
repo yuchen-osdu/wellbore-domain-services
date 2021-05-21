@@ -92,7 +92,7 @@ def build_request_create_dips() -> RequestRunner:
     } ,
     {
         "reference": {"unitKey":"meter", "value":3000.0},
-        "azimuth":  {"unitKey":"dega", "value":3},
+        "azimuth":  {"unitKey":"dega", "value":0},
         "inclination":  {"unitKey":"dega", "value":1},
         "classification": "fracture"
     }   

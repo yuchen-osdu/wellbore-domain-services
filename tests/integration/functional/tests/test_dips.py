@@ -310,7 +310,7 @@ def test_insert_dips(get_env):
             },
             "azimuth": {
                 "unitKey": "dega",
-                "value": 3.0
+                "value": 0
             },
             "inclination": {
                 "unitKey": "dega",
@@ -436,7 +436,7 @@ def test_patch_dip(get_env):
             },
             "azimuth": {
                 "unitKey": "dega",
-                "value": 3.0
+                "value": 0
             },
             "inclination": {
                 "unitKey": "dega",
@@ -531,7 +531,7 @@ def test_delete_dip(get_env):
             },
             "azimuth": {
                 "unitKey": "dega",
-                "value": 3.0
+                "value": 0
             },
             "inclination": {
                 "unitKey": "dega",
