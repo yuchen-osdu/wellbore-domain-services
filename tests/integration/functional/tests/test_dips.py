@@ -310,7 +310,7 @@ def test_insert_dips(get_env):
             },
             "azimuth": {
                 "unitKey": "dega",
-                "value": 10
+                "value": 0
             },
             "inclination": {
                 "unitKey": "dega",
