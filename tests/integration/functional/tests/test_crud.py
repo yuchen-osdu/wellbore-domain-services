@@ -48,6 +48,14 @@ def test_crud_create_record(get_env, kind):
     assert len(resobj.recordIds) == 1
     get_env.set(f'{kind}_record_id', resobj.recordIds[0])  # stored the record id for the following tests
 
+@pytest.mark.tag('crud', 'smoke')
+@pytest.mark.parametrize(
+    'kind', [pytest.param(k, marks=pytest.mark.dependency(name=f'test_create_record_{k}')) for k in kind_list])
+def test_crud_create_record_check_versions(get_env, kind):
+    result = build_request(f'crud.{kind}.create_{kind}').call(get_env)
+    result.assert_ok()
+    resobj = result.get_response_obj()
+    assert len(resobj.recordIdVersions) == 1
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize('kind', param_kind_depend_on_create)

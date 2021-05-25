@@ -234,7 +234,9 @@ def test_traj_create_and_delete(client):
     response = client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
     assert response.ok
     data = response.json()
-    assert data == {'recordCount': 1, 'recordIds': [f'{trajectory_id}'], 'skippedRecordIds': None}
+    assert data['recordCount'] == 1
+    assert data['recordIds'] == [f'{trajectory_id}']
+    assert data['skippedRecordIds'] is None
 
     response = client.delete(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
     assert response.ok
