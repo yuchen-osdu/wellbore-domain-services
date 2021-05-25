@@ -36,6 +36,14 @@ def test_crud_create_record(with_wdms_env, kind):
     assert len(resobj.recordIds) == 1
     with_wdms_env.set(f'{kind}_record_id', resobj.recordIds[0])  # stored the record id for the following tests
 
+@pytest.mark.tag('crud', 'smoke')
+@pytest.mark.parametrize(
+    'kind', [pytest.param(k, marks=pytest.mark.dependency(name=f'test_create_record_{k}')) for k in kind_list])
+def test_crud_create_record_check_versions(with_wdms_env, kind):
+    result = build_request(f'crud.{kind}.create_{kind}').call(with_wdms_env)
+    result.assert_ok()
+    resobj = result.get_response_obj()
+    assert len(resobj.recordIdVersions) == 1
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize('kind', param_kind_depend_on_create)
@@ -99,7 +107,7 @@ def delfi_id(with_wdms_env, kind):
     result.assert_ok()
 
 
-@pytest.mark.tag('basic', 'crud', 'smoke')
+@pytest.mark.tag('crud', 'smoke')
 @pytest.mark.parametrize('kind', GETAS_PARAMS)
 def test_crud_get_as_record(delfi_id, kind, with_wdms_env):
     delfi_record_id = delfi_id
