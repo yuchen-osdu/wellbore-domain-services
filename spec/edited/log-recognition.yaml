@@ -181,6 +181,11 @@ components:
         recordCount:
           title: Recordcount
           type: integer
+        recordIdVersions:
+          title: Recordidversions
+          type: array
+          items:
+            type: string
         recordIds:
           title: Recordids
           type: array

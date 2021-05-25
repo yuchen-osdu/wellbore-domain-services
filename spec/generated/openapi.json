@@ -846,6 +846,13 @@
             "title": "Recordcount",
             "type": "integer"
           },
+          "recordIdVersions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recordidversions",
+            "type": "array"
+          },
           "recordIds": {
             "items": {
               "type": "string"
