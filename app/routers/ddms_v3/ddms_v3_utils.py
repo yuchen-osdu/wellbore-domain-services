@@ -1,11 +1,12 @@
 import re
-from typing import List, Set
+from typing import List, Set, Optional
 
 import pandas as pd
 from app.bulk_persistence import DataframeSerializer
 from app.bulk_persistence.tenant_provider import resolve_tenant
 from app.converter.converter_utils import ConverterUtils
 from app.bulk_persistence.dask.blob_storage import DaskBlobStorageBase
+from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
 from app.utils import Context
 from fastapi import HTTPException, Request, status
@@ -63,18 +64,7 @@ class DMSV3RouterUtils:
             return False, None
 
     @staticmethod
-    async def get_df_from_request(request: Request, orient: str) -> pd.DataFrame:
-        '''
-        TODO manage with MimeTypes class
-        '''
-        # try:
-        #     mime_type = MimeTypes.from_str(request.headers.get('Content-Type', ''))
-        # except ValueError:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="unknown content_type " +
-        #         request.headers.get('Content-Type', ''),
-        #     )
+    async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
 
         def try_read_parquet(parquet_data):
             try:
@@ -86,17 +76,17 @@ class DMSV3RouterUtils:
         ct = request.headers.get('Content-Type', '')
         if 'multipart/form-data' in ct:
             form: FormData = await request.form()
-            assert(len(form) == 1)
-            for _file_name, file in form.items(): #TODO can contains multiple files ?
-                if file.content_type.lower() == 'application/x-parquet':
+            assert (len(form) == 1)
+            for _file_name, file in form.items():  # TODO can contains multiple files ?
+                if MimeTypes.PARQUET.match(file.content_type):
                     return try_read_parquet(file.file)
 
-        if 'application/x-parquet' in ct:
+        if MimeTypes.PARQUET.match(ct):
             content = await request.body()  # request.stream()
             return try_read_parquet(content)
 
-        if 'application/json' in ct:
-            content = await request.json()  # request.stream()
+        if MimeTypes.JSON.match(ct):
+            content = await request.body()  # request.stream()
             try:
                 return DataframeSerializer.read_json(content, orient)
             except ValueError:
@@ -112,6 +102,7 @@ class DMSV3RouterUtils:
         tenant = await resolve_tenant(ctx.partition_id)
         builder = await ctx.app_injector.get(DaskBlobStorageBase)
         return await builder.build_dask_blob_storage(tenant)
+
 
 class DataFrameRender:
     @staticmethod
@@ -138,6 +129,7 @@ class DataFrameRender:
             m = pat2.search(to_find)
             if m:
                 r = range(*map(int, m['range'].split(':')))
+
                 def is_matching(c):
                     if c == to_find:
                         return True
@@ -158,12 +150,12 @@ class DataFrameRender:
 
         if params.offset:
             head_index = df.head(params.offset, npartitions=-1, compute=False).index
-            index = await DataFrameRender.compute(head_index) # TODO could be slow!
+            index = await DataFrameRender.compute(head_index)  # TODO could be slow!
             df = df.loc[~df.index.isin(index)]
 
         if params.limit and params.limit > 0:
             try:
-                df = df.head(params.limit, npartitions=-1, compute=False) # dask async
+                df = df.head(params.limit, npartitions=-1, compute=False)  # dask async
             except:
                 df = df.head(params.limit)
         return df
@@ -173,11 +165,11 @@ class DataFrameRender:
         if params.describe:
             return {
                 "numberOfRows": await DataFrameRender.get_size(df),
-                "columns" : [c for c in df.columns]
+                "columns": [c for c in df.columns]
             }
 
         pdf = await DataFrameRender.compute(df)
-        pdf.index.name = None # TODO
+        pdf.index.name = None  # TODO
 
         if 'application/x-parquet' in accept:
             return Response(pdf.to_parquet(engine="pyarrow"), media_type="application/x-parquet")
