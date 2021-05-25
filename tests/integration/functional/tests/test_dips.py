@@ -142,7 +142,7 @@ expected_dips = [
         },
         "azimuth": {
             "unitKey": "dega",
-            "value": 0
+            "value": 0.0
         },
         "inclination": {
             "unitKey": "dega",
@@ -310,7 +310,7 @@ def test_insert_dips(get_env):
             },
             "azimuth": {
                 "unitKey": "dega",
-                "value": 0
+                "value": 0.0
             },
             "inclination": {
                 "unitKey": "dega",
@@ -387,6 +387,10 @@ def test_patch_dip(get_env):
                 "unitKey": "dega",
                 "value": 12.0
             },
+            "quality": {
+                "unitKey": "unitless",
+                "value": 0.0
+            },
             "xCoordinate": {
                 "unitKey": "meter",
                 "value": 12.0
@@ -436,7 +440,7 @@ def test_patch_dip(get_env):
             },
             "azimuth": {
                 "unitKey": "dega",
-                "value": 0
+                "value": 0.0
             },
             "inclination": {
                 "unitKey": "dega",
@@ -468,7 +472,7 @@ def test_delete_dip(get_env):
     result = build_request_delete_dip().call(get_env)
     result.assert_ok()
 
-    assert result.get_response_obj() == [
+    assert result.response.json() == [
         {
             "reference": {
                 "unitKey": "meter",
@@ -481,6 +485,10 @@ def test_delete_dip(get_env):
             "inclination": {
                 "unitKey": "dega",
                 "value": 12.0
+            },
+            "quality": {
+                "unitKey": "unitless",
+                "value": 0.0
             },
             "xCoordinate": {
                 "unitKey": "meter",
@@ -531,7 +539,7 @@ def test_delete_dip(get_env):
             },
             "azimuth": {
                 "unitKey": "dega",
-                "value": 0
+                "value": 0.0
             },
             "inclination": {
                 "unitKey": "dega",
