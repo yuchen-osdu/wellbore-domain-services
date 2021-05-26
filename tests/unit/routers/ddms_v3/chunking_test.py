@@ -129,9 +129,9 @@ def setup_client(nope_logger_fixture, bob):
         wdms_app.dependency_overrides = {}  # clean up
 
 
-@pytest.mark.parametrize("header_content,body_keyword,create_func", [
-    ('application/x-parquet', 'data', lambda df: df.to_parquet(engine="pyarrow")),
-    ('application/json', 'json', lambda df: df.to_json(orient='split', date_format='iso')),
+@pytest.mark.parametrize("header_content,create_func", [
+    ('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
+    ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
 ])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
@@ -146,20 +146,19 @@ def setup_client(nope_logger_fixture, bob):
     ['date_MD', 'date_X'],
     ['MD', 'float_X', 'str_X', 'date_X']
 ])
-def test_send_all_data_once(setup_client, columns, header_content, body_keyword, create_func, accept_content):
+def test_send_all_data_once(setup_client, columns, header_content, create_func, accept_content):
     client, tmp_dir = setup_client
     record_id = _create_welllog(client, wellbore_url)
 
     initial_data_df = generate_df(columns, range(5, 13))
     data_to_send = create_func(initial_data_df)
     headers = {'content-type': header_content}
-    kwargs = {body_keyword: data_to_send}
 
     # todo: make below lines pass
     # get_response_no_data = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
     # assert get_response_no_data.status_code == 404
 
-    write_response = client.post(f'{wellbore_url}/{record_id}/data', **kwargs, headers=headers)
+    write_response = client.post(f'{wellbore_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
 
     get_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': accept_content})
@@ -200,7 +199,8 @@ def test_add_chunk_on_existing_log(setup_client):
 
     chunk_1 = generate_df(['MD', 'X'], range(20, 25))
     chunk1_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                  json=chunk_1.to_json(orient='split'))
+                                  data=chunk_1.to_json(orient='split'),
+                                  headers={'Content-Type': 'application/json'})
     assert chunk1_response.status_code == 200
 
     commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
@@ -222,7 +222,8 @@ def test_overwrite_data_by_chunk_append(setup_client):
     record_id = _create_welllog(client, wellbore_url)
 
     write_response = client.post(f'{wellbore_url}/{record_id}/data',
-                                 json=generate_df(['MD', 'X'], range(5)).to_json(orient='split'))
+                                 data=generate_df(['MD', 'X'], range(5)).to_json(orient='split'),
+                                 headers={'Content-Type': 'application/json'})
     assert write_response.status_code == 200
     get_response = client.get(f'{wellbore_url}/{record_id}/data')
     assert get_response.status_code == 200
@@ -237,12 +238,14 @@ def test_overwrite_data_by_chunk_append(setup_client):
 
     chunk_1 = generate_df(['MD', 'X'], range(5, 10))
     chunk1_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                  json=chunk_1.to_json(orient='split'))
+                                  data=chunk_1.to_json(orient='split'),
+                                  headers={'Content-Type': 'application/json'})
     assert chunk1_response.status_code == 200  # todo: should it be 204?
 
     chunk_2 = generate_df(['MD', 'X'], range(10, 15))
     chunk2_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                  json=chunk_2.to_json(orient='split'))
+                                  data=chunk_2.to_json(orient='split'),
+                                  headers={'Content-Type': 'application/json'})
     assert chunk2_response.status_code == 200
 
     commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
@@ -270,7 +273,8 @@ def _create_chunks(client, cols_ranges, record_id, session_mode='update', data_f
 
         if data_format == 'json':
             chunk_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                         json=_df_to_format(chunk_df, data_format))
+                                         data=_df_to_format(chunk_df, data_format),
+                                         headers={'Content-Type': 'application/json'})
         elif data_format == 'parquet':
             chunk_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
                                          data=_df_to_format(chunk_df, data_format),
@@ -388,7 +392,9 @@ def test_abandon_session_with_data_push_data_again(setup_client):
     session_id = session_response.json()['id']
 
     chunk_1 = generate_df(['MD', 'X'], range(5, 10))
-    client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data', json=chunk_1.to_json(orient='split'))
+    client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+                data=chunk_1.to_json(orient='split'),
+                headers={'Content-Type': 'application/json'})
 
     abort_session_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}',
                                           json={'state': 'abandon'})
@@ -397,7 +403,8 @@ def test_abandon_session_with_data_push_data_again(setup_client):
 
     chunk_2 = generate_df(['MD', 'X'], range(11, 20))
     chunk2_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                  json=chunk_2.to_json(orient='split'))
+                                  data=chunk_2.to_json(orient='split'),
+                                  headers={'Content-Type': 'application/json'})
     assert chunk2_response.status_code == 400
 
 
@@ -459,7 +466,9 @@ def test_valid_session_double_commit(setup_client):
     session_id = session_response.json()['id']
 
     chunk_1 = generate_df(['MD', 'X'], range(5, 10))
-    client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data', json=chunk_1.to_json(orient='split'))
+    client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+                data=chunk_1.to_json(orient='split'),
+                headers={'Content-Type': 'application/json'})
 
     abort_session_response_try1 = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'commit'})
