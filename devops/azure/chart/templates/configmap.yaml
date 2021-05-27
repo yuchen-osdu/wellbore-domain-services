@@ -23,6 +23,9 @@ data:
   USE_PARTITION_SERVICE: {{ .Values.configMap.data.usePartitionService }}
   AZ_LOGGER_LEVEL: {{ .Values.configMap.data.loggerLevel }}
   ENVIRONMENT_NAME: {{ .Values.configMap.data.environmentName }}
+  {{ if .Values.configMap.data.extensionModules }}
+  EXTENSION_MODULES: {{ .Values.configMap.data.extensionModules }}
+  {{ end }}
 kind: ConfigMap
 metadata:
   annotations:
