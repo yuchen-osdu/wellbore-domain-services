@@ -196,6 +196,3 @@ ibm-test:
 
 aws-test-python:
   allow_failure: true
-
-azure_test_py:
-  allow_failure: true
