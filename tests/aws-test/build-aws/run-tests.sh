@@ -24,7 +24,7 @@ AWS_COGNITO_USER=$ADMIN_USER
 client_id=$AWS_COGNITO_CLIENT_ID
 svc_url=$WELLBORE_DDMS_URL
 tenant='opendes'
-acl_domain='testing.com' 
+acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
 
 
@@ -45,7 +45,7 @@ mkdir test-reports
 
 cd integration
 
-acl_domain='testing.com' 
+acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
 
 python gen_postman_env.py --token $token --base_url $svc_url --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
