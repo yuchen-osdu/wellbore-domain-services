@@ -194,6 +194,9 @@ osdu-gcp-test-python:
 osdu-gcp-deploy:
   allow_failure: true
 
+ibm-deploy:
+  allow_failure: true
+
 # Allow failure on integration tests
 
 ibm-test:
