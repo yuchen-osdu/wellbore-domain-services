@@ -6,10 +6,9 @@ metadata:
   labels:
     {{- include "gcp.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: 80
+      targetPort: {{ .Values.service.port }}
       protocol: TCP
       name: http
   selector:

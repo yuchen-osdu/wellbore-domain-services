@@ -8,4 +8,3 @@ data:
 metadata:
   name: {{ .Values.configMap.name }}
   namespace: {{ .Values.namespace }}
-
