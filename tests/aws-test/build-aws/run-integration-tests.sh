@@ -18,7 +18,7 @@ svc_url=$WELLBORE_DDMS_URL
 tenant='opendes'
 acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
-svctoken=$(python tests/aws-test/build-aws/aws_jwt_client.py)
+svctoken=$(python3 tests/aws-test/build-aws/aws_jwt_client.py)
 
 cd tests/integration
 
