@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         {{- include "gcp.selectorLabels" . | nindent 8 }}
+      annotations:
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       volumes:
         - name: service-account-key
