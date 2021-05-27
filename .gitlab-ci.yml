@@ -60,6 +60,9 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
 
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws-python.yml"
+
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
@@ -159,6 +162,7 @@ osdu-gcp-test-python:
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   needs: ['osdu-gcp-deploy']
+  allow_failure: true
   only:
     variables:
       - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE == 'python'
@@ -183,3 +187,20 @@ osdu-gcp-test-python:
       --acl_domain $DOMAIN
       --legal_tag $OSDU_GCP_LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+
+
+# Allow failure on deployments
+
+osdu-gcp-deploy:
+  allow_failure: true
+
+ibm-deploy:
+  allow_failure: true
+
+# Allow failure on integration tests
+
+ibm-test:
+  allow_failure: true
+
+aws-test-python:
+  allow_failure: true
