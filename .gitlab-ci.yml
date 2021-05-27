@@ -189,24 +189,12 @@ osdu-gcp-test-python:
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
 
-# Override all deployments to allow failure
-
-osdu-gcp-deploy:
-  allow_failure: true
-
-ibm-deploy:
-  allow_failure: true
+# Allow failure on integration tests
 
 ibm-test:
   allow_failure: true
 
-aws-update-ecs:
-  allow_failure: true
-
 aws-test-python:
-  allow_failure: true
-
-azure_deploy:
   allow_failure: true
 
 azure_test_py:
