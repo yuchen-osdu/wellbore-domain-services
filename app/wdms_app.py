@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 
 from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
@@ -41,6 +42,9 @@ from app.routers.logrecognition import log_recognition
 from app.routers.search import search, fast_search
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import get_http_client_session, OpenApiHandler, get_wdms_temp_dir
+
+import importlib
+
 
 base_app = FastAPI()
 
@@ -189,3 +193,28 @@ wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
 
 # adding exception handling
 add_exception_handlers(wdms_app)
+
+# Load extensions [alpha version]
+discovered_extensions = []
+
+extension_modules = Config.extension_modules.value
+if extension_modules:
+    discovered_extensions = extension_modules.split(',')
+
+for name in discovered_extensions:
+    try:
+        print(f'Loading `{name}` extension')
+        module = importlib.import_module(name)
+        wdms_app.include_router(module.router, prefix=module.router_prefix, tags=module.router_tags,
+                                dependencies=[
+                                    Depends(require_data_partition_id, use_cache=False),
+                                    Depends(require_opendes_authorized_user, use_cache=False)])
+        print(f'\tDone. `{name}` loaded')
+    except AttributeError as error:
+        print(f'\tFailed to load `{name}` extension. Module not configured properly. {error}')
+    except ModuleNotFoundError as error:
+        print(f'\tFailed to load `{name}` extension. Module not found. {error}')
+    except ValueError as error:
+        print(f'\tFailed to load `{name}` extension. {error}')
+    except:
+        print(f'\tFailed to load `{name}` extension. {sys.exc_info()[0]}')
