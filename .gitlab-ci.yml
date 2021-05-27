@@ -28,7 +28,7 @@ variables:
   AWS_INT_TEST_TYPE: python
 
   OSDU_GCP_PROJECT_NAME: nice-etching-277309
-  OSDU_GCP_CLUSTER: wb
+  OSDU_GCP_CLUSTER: primary
   OSDU_GCP_ZONE: us-central1-c
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp/osdu-helm

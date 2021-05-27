@@ -7,7 +7,7 @@ data:
   SERVICE_HOST_SEARCH: https://os-search-attcrcktoa-uc.a.run.app/api/search
   SERVICE_HOST_STORAGE: https://os-storage-attcrcktoa-uc.a.run.app/api/storage
   # Custom variables
-  IMAGE_NAME: community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/gcp-trusted-gonrg-2066-release-wellbore-pipe-k8s
+  IMAGE_NAME: community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp-wellbore-ddms
   IMAGE_TAG: gcp-community
   HEALTH_URL: /api/os-wellbore-ddms/healthz
   API_URL: /api/os-wellbore-ddms
@@ -18,13 +18,13 @@ data:
 
 metadata:
   name: wellbore
-  namespace: wellbore
+  namespace: osdu
 ---
 kind: Secret
 apiVersion: v1
 metadata:
   name: wellbore
-  namespace: wellbore
+  namespace: osdu
 type: Opaque
 data:
   "key.json": ""
