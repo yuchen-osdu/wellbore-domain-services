@@ -183,6 +183,11 @@ class ConfigurationContainer:
         default='300',
         factory=lambda x: int(x))
 
+    extension_modules: EnvVar = EnvVar(
+        key='EXTENSION_MODULES',
+        description="""Comma separated list of extension module names to load.""",
+        default=None)
+
     _environment_dict: Dict = os.environ
 
     _contextual_loader: Callable = None
