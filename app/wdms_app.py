@@ -20,6 +20,7 @@ from app import __version__, __build_number__, __app_name__
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers
+from app.extensions import discoverer
 
 from app.helper import traces, logger
 from app.injector.app_injector import AppInjector
@@ -35,7 +36,8 @@ from app.routers.ddms_v2 import (
     log_ddms_v2,
     well_ddms_v2
 )
-from app.routers.ddms_v3 import wellbore_ddms_v3, well_ddms_v3, welllog_ddms_v3, wellbore_trajectory_ddms_v3, markerset_ddms_v3
+from app.routers.ddms_v3 import wellbore_ddms_v3, well_ddms_v3, welllog_ddms_v3, wellbore_trajectory_ddms_v3, \
+    markerset_ddms_v3
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.logrecognition import log_recognition
@@ -43,11 +45,8 @@ from app.routers.search import search, fast_search
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import get_http_client_session, OpenApiHandler, get_wdms_temp_dir
 
-import importlib
-
 
 base_app = FastAPI()
-
 
 # The sub application which contains all the routers
 wdms_app = FastAPI(title=__app_name__,
@@ -100,6 +99,8 @@ async def startup_event():
     if Config.alpha_feature_enabled.value:
         enable_alpha_feature()
 
+    add_extension_routers()
+
 
 @base_app.on_event('shutdown')
 async def shutdown_event():
@@ -113,6 +114,7 @@ async def shutdown_event():
         await storage_client.api_client.close()
 
     await get_http_client_session().close()
+
 
 wellbore_api_group_prefix = '/ddms/v2'
 
@@ -194,27 +196,22 @@ wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
 # adding exception handling
 add_exception_handlers(wdms_app)
 
-# Load extensions [alpha version]
-discovered_extensions = []
 
-extension_modules = Config.extension_modules.value
-if extension_modules:
-    discovered_extensions = extension_modules.split(',')
+# Load and add router extensions [alpha version]
+def add_extension_routers():
+    for router in discoverer.get_routers():
+        add_extension_router(router)
 
-for name in discovered_extensions:
+
+def add_extension_router(router):
+    log = logger.get_logger()
+    name = router.prefix
     try:
-        print(f'Loading `{name}` extension')
-        module = importlib.import_module(name)
-        wdms_app.include_router(module.router, prefix=module.router_prefix, tags=module.router_tags,
-                                dependencies=[
-                                    Depends(require_data_partition_id, use_cache=False),
-                                    Depends(require_opendes_authorized_user, use_cache=False)])
-        print(f'\tDone. `{name}` loaded')
-    except AttributeError as error:
-        print(f'\tFailed to load `{name}` extension. Module not configured properly. {error}')
-    except ModuleNotFoundError as error:
-        print(f'\tFailed to load `{name}` extension. Module not found. {error}')
+        log.info(f'Adding router family `{name}`')
+        wdms_app.include_router(router, dependencies=[Depends(require_data_partition_id, use_cache=False),
+                                                      Depends(require_opendes_authorized_user, use_cache=False)])
+        log.info(f'Done. `{name}` added')
     except ValueError as error:
-        print(f'\tFailed to load `{name}` extension. {error}')
+        log.warning(f'Failed to add `{name}` router. {error}')
     except:
-        print(f'\tFailed to load `{name}` extension. {sys.exc_info()[0]}')
+        log.warning(f'Failed to add `{name}` router. {sys.exc_info()[0]}')

@@ -21,13 +21,13 @@
           |- <router module name>.py
           |- __init__.py
 ```
-3. In `<router module name>.py` include the following global variables.
+3. In `<router module name>.py` include: 
 ```python
 from fastapi import APIRouter
 
 router = APIRouter()
-router_prefix = '<extension router prefix>'
-router_tags = ['<extension router tags>']
+router.prefix = '<extension router prefix>'
+router.tags = ['<extension router tags>']
 ```
 4. Include new service endpoints to `router` in `<router module name>.py`.
    - Use `@router.[get|post|delete|put|patch|...]` fastapi decorator to include new methods to the router
@@ -83,15 +83,15 @@ Loading `app.extensions.<extension package>.routers.<router module>` extension
 #### Troubleshooting
 ##### A. Wrong router module configuration
 
-Check step #3 above
+Check step 3 above
 ```shell
 Loading `app.extensions.{}.routers.{}` extension
 	Failed to load `app.extensions.{}.routers.{}` extension. 
-	Module not configured properly. module 'app.extensions.{}.routers.{}' has no attribute 'router_prefix'
+	Module not configured properly. module 'app.extensions.{}.routers.{}' has no attribute 'router'
 ```
 ##### B. Wrong module name
 
-Review steps #2 and #4 above
+Review steps 2 and 4 above
 ```shell
 Loading `app.extensions.{}.routers.{}` extension
 	Failed to load `app.extensions.{}.routers.{}` extension. 
@@ -100,8 +100,16 @@ Loading `app.extensions.{}.routers.{}` extension
 ```
 ##### C. Trailing comma in `EXTENSION_MODULES` list
 
-Review step #4 above, make sure there is no trailing comma in the `EXTENSION_MODULES` list.
+Review step 4 above, make sure there is no trailing comma in the `EXTENSION_MODULES` list.
 ```shell
 Loading `` extension
 	Failed to load `` extension. Empty module name
+```
+##### D. Empty router prefix or tags
+
+Check step 3 above
+```shell
+Loading `app.extensions.{}.routers.{}` extension
+	Failed to load `app.extensions.{}.routers.{}` extension. 
+	Module not configured properly. Router prefix cannot be empty.
 ```
