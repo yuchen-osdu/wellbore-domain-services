@@ -37,12 +37,16 @@ phases:
       - export ECR_TAG=`echo build.${BRANCH_NAME}.${CODEBUILD_BUILD_NUMBER}.${CODEBUILD_RESOLVED_SOURCE_VERSION} | cut -c 1-120`
       - export ECR_IMAGE=${ECR_REGISTRY}:${ECR_TAG}
       - export ECR_IMAGE_BRANCH_LATEST=${ECR_REGISTRY}:${BRANCH_NAME}
+      - export AWS_ACCOUNT_ID=`aws sts get-caller-identity | grep Account | cut -d':' -f 2 | cut -d'"' -f 2`
 
       - echo "Placeholder" >> ${OUTPUT_DIR}/build-info.json # touched so that the output directory has some content incase the build fails so that testing reports are uploaded
 
       - echo "Building integration testing assemblies and gathering artifacts..."
       - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh
       - ./tests/aws-test/build-aws/prepare-dist.sh
+
+      - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
+      - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
       - pip install -r ./frozenrequirements.txt
       - pip install -r ./requirements.txt
