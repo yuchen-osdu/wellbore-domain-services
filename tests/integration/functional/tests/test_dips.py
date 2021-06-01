@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import math
 
 import pytest
+
 from .fixtures import with_wdms_env
 from ..request_builders.wdms.crud.dips import *
 from jsonschema import validate
@@ -20,9 +22,9 @@ from jsonschema import validate
 from ..request_builders.wdms.crud.log import build_request_get_log
 
 new_parameters_env = {'authorityKind': 'slb',
-                      'prefix_data_entity_name': 'wdms_e2e_osdu' }
+                      'prefix_data_entity_name': 'wdms_e2e_osdu'}
 
-#it will only be run once
+#scope='module': it will be only run once
 @pytest.fixture(scope='module')
 def get_env_variables_with_authority_in_kind(with_wdms_env):
     env_with_authority_in_kind = with_wdms_env.copy()
@@ -44,6 +46,21 @@ def test_create_dipset(get_env):
     assert resobj.recordCount == 1
     assert len(resobj.recordIds) == 1
     get_env.set('dipsetId', resobj.recordIds[0])
+    print(get_env)
+
+@pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
+@pytest.mark.dependency(name="test_create_dipset_for_dips_simple")
+@pytest.mark.parametrize("dipset_id_name", ["missing_items", "item_value_zero", "item_value_nan"])
+def test_create_dipset_for_dips_simple(get_env, dipset_id_name):
+    prefix_data_entity_name = get_env.get("prefix_data_entity_name")
+    get_env.set("prefix_data_entity_name", prefix_data_entity_name + dipset_id_name)
+    result = build_request_create__dipset().call(get_env)
+    get_env.set("prefix_data_entity_name", prefix_data_entity_name)
+    result.assert_ok()
+    resobj = result.get_response_obj()
+    assert resobj.recordCount == 1
+    assert len(resobj.recordIds) == 1
+    get_env.set('dipsetId'+dipset_id_name, resobj.recordIds[0])
     print(get_env)
 
 @pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
@@ -167,6 +184,35 @@ expected_dips = [
     }
 ]
 
+expected_dips_with_value_zero = {
+    "reference": {"unitKey": "meter", "value": 1000.0},
+    "azimuth": {"unitKey": "dega", "value": 0.0},
+    "inclination": {"unitKey": "dega", "value": 12.0},
+    "quality": {"unitKey": "unitless", "value": 1.0},
+    "xCoordinate": {"unitKey": "meter", "value": 1.0},
+    "yCoordinate": {"unitKey": "meter", "value": 2.0},
+    "zCoordinate": {"unitKey": "meter", "value": 3.0},
+    "classification": "fracture"
+}
+
+expected_dips_with_value_nan = {
+    "reference": {"unitKey": "meter", "value": 1000.0},
+    "azimuth": {"unitKey": "dega", "value": 0.23},
+    "inclination": {"unitKey": "dega", "value": 12.0},
+    "quality": {"unitKey": "unitless", "value": math.nan},
+    "xCoordinate": {"unitKey": "meter", "value": 1.0},
+    "yCoordinate": {"unitKey": "meter", "value": 2.0},
+    "zCoordinate": {"unitKey": "meter", "value": 3.0},
+    "classification": "fracture"
+}
+
+expected_dips_with_missing_items = {
+    "reference": {"unitKey": "meter", "value": 1000.0},
+    "azimuth": {"unitKey": "dega", "value": 0.25},
+    "inclination": {"unitKey": "dega", "value": 12.0},
+    "quality": {"unitKey": "unitless", "value": 1.0},
+    "classification": "fracture"
+}
 
 @pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
 @pytest.mark.dependency(name="test_create_dips", depends=["test_create_dipset"])
@@ -175,6 +221,23 @@ def test_create_dips(get_env):
     result.assert_ok()
 
     assert result.response.json() == expected_dips
+
+
+@pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
+@pytest.mark.dependency(name="test_create_dips_simple", depends=["test_create_dipset_for_dips_simple"])
+@pytest.mark.parametrize("expected_dips_simple, dipset_id_name", [(expected_dips_with_value_zero, "item_value_zero"),
+                                                                  (expected_dips_with_value_nan, "item_value_nan"),
+                                                                  (expected_dips_with_missing_items, "missing_items")])
+def test_create_dips_simple(get_env, expected_dips_simple, dipset_id_name):
+    get_env.set("data_dips_simple", expected_dips_simple)
+    get_env.set('dipsetIdSimple', get_env.get('dipsetId'+dipset_id_name))
+    print(get_env.get('dipsetId'+dipset_id_name))
+    result = build_request_create_dips_simple().call(get_env)
+    result.assert_ok()
+    if dipset_id_name == "item_value_nan" and "quality" in expected_dips_simple:
+        del expected_dips_simple["quality"]
+    assert result.response.json() == [expected_dips_simple]
+
 
 @pytest.mark.tag('basic', 'crud', 'smoke', 'dip', 'bulk')
 @pytest.mark.dependency(name="test_create_dips", depends=["test_create_dipset"])

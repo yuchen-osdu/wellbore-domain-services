@@ -103,6 +103,24 @@ def build_request_create_dips() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_create_dips_simple() -> RequestRunner:
+    rq_proto = Request(
+        name='Create dips',
+        method='POST',
+        url='{{base_url}}/ddms/v2/dipsets/{{dipsetIdSimple}}/dips',
+        headers={
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload=r"""
+            [
+                {{data_dips_simple}}
+            ]
+        """
+    )
+    return RequestRunner(rq_proto)
+
 def build_request_create__dipset() -> RequestRunner:
     rq_proto = Request(
         name='Create  dipset',
