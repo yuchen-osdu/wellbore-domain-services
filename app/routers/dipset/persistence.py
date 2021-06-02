@@ -16,6 +16,7 @@ import math
 from typing import List, NamedTuple, Tuple, Union
 
 import pandas as pd
+import numpy as np
 from fastapi import HTTPException, status
 from odes_storage import UnexpectedResponse
 
@@ -208,25 +209,25 @@ def series_to_dip(row: pd.Series):
 
     return Dip(
         reference=ValueWithUnit(unitKey="meter", value=row["reference"])
-        if row["reference"] is not None and type(row["reference"]) in [int, float] and not math.isnan(row["reference"])
+        if row["reference"] is not None and type(row["reference"]) in [int, float, np.float64] and not math.isnan(row["reference"])
         else None,
         azimuth=ValueWithUnit(unitKey="dega", value=row["azimuth"])
-        if row["azimuth"] is not None and type(row["azimuth"]) in [int, float] and not math.isnan(row["azimuth"])
+        if row["azimuth"] is not None and type(row["azimuth"]) in [int, float, np.float64] and not math.isnan(row["azimuth"])
         else None,
         inclination=ValueWithUnit(unitKey="dega", value=row["inclination"])
-        if row["inclination"] is not None and type(row["inclination"]) in [int, float] and not math.isnan(row["inclination"])
+        if row["inclination"] is not None and type(row["inclination"]) in [int, float, np.float64] and not math.isnan(row["inclination"])
         else None,
         quality=ValueWithUnit(unitKey="unitless", value=row["quality"])
-        if row["quality"] is not None and type(row["quality"]) in [int, float] and not math.isnan(row["quality"])
+        if row["quality"] is not None and type(row["quality"]) in [int, float, np.float64] and not math.isnan(row["quality"])
         else None,
         xCoordinate=ValueWithUnit(unitKey="meter", value=row["xCoordinate"])
-        if row["xCoordinate"] is not None and type(row["xCoordinate"]) in [int, float] and not math.isnan(row["xCoordinate"])
+        if row["xCoordinate"] is not None and type(row["xCoordinate"]) in [int, float, np.float64] and not math.isnan(row["xCoordinate"])
         else None,
         yCoordinate=ValueWithUnit(unitKey="meter", value=row["yCoordinate"])
-        if row["yCoordinate"] is not None and type(row["yCoordinate"]) in [int, float] and not math.isnan(row["yCoordinate"])
+        if row["yCoordinate"] is not None and type(row["yCoordinate"]) in [int, float, np.float64] and not math.isnan(row["yCoordinate"])
         else None,
         zCoordinate=ValueWithUnit(unitKey="meter", value=row["zCoordinate"])
-        if row["zCoordinate"] is not None and type(row["zCoordinate"]) in [int, float] and not math.isnan(row["zCoordinate"])
+        if row["zCoordinate"] is not None and type(row["zCoordinate"]) in [int, float, np.float64] and not math.isnan(row["zCoordinate"])
         else None,
         classification=row.get("classification"),
     )
