@@ -111,19 +111,36 @@ def create_azure_logger(service_name):
      returns logger configured wrapped into ContextLoggerAdapter
     """
     config_integration.trace_integrations(['logging'])
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
 
-    ch = logging.StreamHandler(sys.stdout)
-    logger.addHandler(ch)
+    # stdout handler for direct logging output to stdout.
+    stdout_handler = logging.StreamHandler(sys.stdout)
 
+    #  AzurelogHandler for logging to azure appinsight
     key = Config.get('az_ai_instrumentation_key')
     logger_level = Config.get('az_logger_level')
-    handler = AzureLogHandler(connection_string=f'InstrumentationKey={key}')
-    handler.setLevel(logging.getLevelName(logger_level))
-    handler.add_telemetry_processor(rename_cloud_role_func(service_name))
-    logger.addHandler(handler)
+    az_handler = AzureLogHandler(connection_string=f'InstrumentationKey={key}')
+    az_handler.setLevel(logging.getLevelName(logger_level))
+    az_handler.add_telemetry_processor(rename_cloud_role_func(service_name))
 
+    # Acquire the logger for azure library
+    az_logger = logging.getLogger('azure')
+    az_logger.setLevel(logging.DEBUG)
+    az_logger.addHandler(stdout_handler)
+    az_logger.addHandler(az_handler)
+
+    # Acquire the logger for osdu-core-lib-python-azure
+    osdu_core_lib_logger = logging.getLogger('osdu_az.storage.blob_storage_az')
+    osdu_core_lib_logger.setLevel(logging.DEBUG)
+    osdu_core_lib_logger.addHandler(stdout_handler)
+    osdu_core_lib_logger.addHandler(az_handler)
+
+    # Acquire the logger for wdms
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(stdout_handler)
+    logger.addHandler(az_handler)
+
+    # return wdms logger with Context adapter
     return AzureContextLoggerAdapter(logger, extra=dict())
 
 
