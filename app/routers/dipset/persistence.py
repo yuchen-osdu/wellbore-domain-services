@@ -16,6 +16,7 @@ import math
 from typing import List, NamedTuple, Tuple, Union
 
 import pandas as pd
+import numpy as np
 from fastapi import HTTPException, status
 from odes_storage import UnexpectedResponse
 
@@ -202,32 +203,22 @@ def dip_to_series(dip: Dip) -> pd.Series:
     s = pd.Series(data)
     return s
 
+def _check_attributes(row: pd.Series, attribute_key: str, attribute_unit: str):
+    types_data = [int, float, np.int64, np.float64]
+    return (ValueWithUnit(unitKey=attribute_unit, value=row[attribute_key])
+            if type(row[attribute_key]) in types_data and not math.isnan(row[attribute_key])
+            else None)
 
 def series_to_dip(row: pd.Series):
     # TODO refactor, error prone
-
     return Dip(
-        reference=ValueWithUnit(unitKey="meter", value=row["reference"])
-        if "reference" in row and not math.isnan(row["reference"])
-        else None,
-        azimuth=ValueWithUnit(unitKey="dega", value=row["azimuth"])
-        if "azimuth" in row and not math.isnan(row["azimuth"])
-        else None,
-        inclination=ValueWithUnit(unitKey="dega", value=row["inclination"])
-        if "inclination" in row and not math.isnan(row["inclination"])
-        else None,
-        quality=ValueWithUnit(unitKey="unitless", value=row["quality"])
-        if "quality" in row and not math.isnan(row["quality"])
-        else None,
-        xCoordinate=ValueWithUnit(unitKey="meter", value=row["xCoordinate"])
-        if "xCoordinate" in row and not math.isnan(row["xCoordinate"])
-        else None,
-        yCoordinate=ValueWithUnit(unitKey="meter", value=row["yCoordinate"])
-        if "yCoordinate" in row and not math.isnan(row["yCoordinate"])
-        else None,
-        zCoordinate=ValueWithUnit(unitKey="meter", value=row["zCoordinate"])
-        if "zCoordinate" in row and not math.isnan(row["zCoordinate"])
-        else None,
+        reference=_check_attributes(row, "reference", "meter"),
+        azimuth=_check_attributes(row, "azimuth", "dega"),
+        inclination=_check_attributes(row, "inclination", "dega"),
+        quality=_check_attributes(row, "quality", "unitless"),
+        xCoordinate=_check_attributes(row, "xCoordinate", "meter"),
+        yCoordinate=_check_attributes(row, "yCoordinate", "meter"),
+        zCoordinate=_check_attributes(row, "zCoordinate", "meter"),
         classification=row.get("classification"),
     )
 
