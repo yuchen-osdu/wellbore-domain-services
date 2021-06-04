@@ -16,6 +16,8 @@ import asyncio
 import json
 from abc import ABC, abstractmethod
 from operator import attrgetter
+from functools import wraps
+from pyarrow.lib import ArrowException
 
 import dask
 import dask.dataframe as dd
@@ -31,6 +33,18 @@ from app.utils import capture_timings, get_wdms_temp_dir
 from dask.distributed import Client
 
 dask.config.set({'temporary_directory': get_wdms_temp_dir()})
+
+
+def handle_pyarrow_exceptions(target):
+    @wraps(target)
+    async def async_inner(*args, **kwargs):
+        try:
+            return await target(*args, **kwargs)
+        except ArrowException as e:
+            get_logger().exception(f"{target} raised exception")
+            raise BulkNotProcessable("Unable to process bulk")
+
+    return async_inner
 
 
 class DaskBlobStorageBase(ABC):
@@ -145,6 +159,7 @@ class DaskDriverBlobStorage:
         if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
             raise BulkNotProcessable("Index should be numeric or datetime")
 
+    @handle_pyarrow_exceptions
     async def save_blob(self, ddf: dd.DataFrame, bulk_id: str = None):
         """Write the data frame to the blob storage."""
         # TODO: The new bulk_id should contain information about the way we store the bulk
@@ -226,6 +241,7 @@ class DaskDriverBlobStorage:
 
     @capture_timings('session_commit')
     @with_trace('session_commit')
+    @handle_pyarrow_exceptions
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
         if from_bulk_id:

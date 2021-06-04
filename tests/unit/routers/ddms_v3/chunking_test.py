@@ -20,7 +20,6 @@ from app.utils import Context
 from app import conf
 
 import pandas as pd
-import numpy as np
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 
 
@@ -43,7 +42,7 @@ def _df_to_format(df, data_format):
     if data_format == 'parquet':
         return df.to_parquet(engine="pyarrow")
     elif data_format == 'json':
-        return df.to_json(orient='split')
+        return df.to_json(orient='split', date_format='iso')
     else:
         raise ValueError(f"Unknown content-type: '{data_format}'")
 
@@ -79,6 +78,15 @@ def _create_welllog(client, welllogs_url):
     assert response.status_code == 200
     record_id = response.json()["recordIds"][0]
     return record_id
+
+
+def _cast_datetime_to_datetime64_ns(result_df):
+    """  if datetime is detected, cast data column as datetime to ensure date values are valid  """
+    for name, col in result_df.items():
+        if name.startswith('date'):
+            result_df[name] = result_df[name].astype('datetime64[ns]')
+            
+    return result_df
 
 
 @pytest.fixture
@@ -129,7 +137,7 @@ def setup_client(nope_logger_fixture, bob):
         wdms_app.dependency_overrides = {}  # clean up
 
 
-@pytest.mark.parametrize("header_content,create_func", [
+@pytest.mark.parametrize("content_type_header,create_func", [
     ('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
     ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
 ])
@@ -142,17 +150,16 @@ def setup_client(nope_logger_fixture, bob):
     ['MD', 'X'],
     ['float_MD', 'float_X'],
     ['str_MD', 'str_X'],
-    ['MD', 'float_X', 'str_X'],
     ['date_MD', 'date_X'],
     ['MD', 'float_X', 'str_X', 'date_X']
 ])
-def test_send_all_data_once(setup_client, columns, header_content, create_func, accept_content):
+def test_send_all_data_once(setup_client, columns, content_type_header, create_func, accept_content):
     client, tmp_dir = setup_client
     record_id = _create_welllog(client, wellbore_url)
 
     initial_data_df = generate_df(columns, range(5, 13))
     data_to_send = create_func(initial_data_df)
-    headers = {'content-type': header_content}
+    headers = {'content-type': content_type_header}
 
     # todo: make below lines pass
     # get_response_no_data = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
@@ -165,13 +172,10 @@ def test_send_all_data_once(setup_client, columns, header_content, create_func, 
     assert get_response.status_code == 200
     result_df = _create_df_from_response(get_response)
 
-    if header_content.endswith('parquet') and accept_content.endswith('json'):
-        # in this case: written in parquet read and json, cast as datetime to ensure date values are valid.
-        for name, col in result_df.items():
-            if name.startswith('date'):
-                result_df[name] = result_df[name].astype('datetime64[ns]')
+    if content_type_header.endswith('parquet') and accept_content.endswith('json'):
+        result_df = _cast_datetime_to_datetime64_ns(result_df)
 
-    if header_content.endswith('json'):
+    if content_type_header.endswith('json'):
         initial_data_df = pd.read_json(data_to_send, orient='split')
 
     assert initial_data_df.index.dtype == result_df.index.dtype
@@ -183,88 +187,85 @@ def test_send_all_data_once(setup_client, columns, header_content, create_func, 
                                   )
 
 
-def test_add_chunk_on_existing_log(setup_client):
-    client, tmp_dir = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+@pytest.mark.parametrize("content_type_header, create_func", [
+    ('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
+    ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
+])
+@pytest.mark.parametrize("accept_content", [
+    'application/x-parquet',
+    # 'text/csv; charset=utf-8',
+    'application/json',
+])
+@pytest.mark.parametrize("columns", [
+    ['float_MD', 'float_X'],
+    ['str_MD', 'str_X'],
+    ['date_MD', 'date_X'],
+    ['TVD', 'float_X', 'str_X', 'date_X'],
+    ['MD', 'X'],
+    ['MD', 'float_X'],
 
-    initial_data_df = generate_df(['MD', 'X'], range(10)).to_parquet(engine="pyarrow")
-    headers = {'content-type': 'application/x-parquet'}
-
-    write_response = client.post(f'{wellbore_url}/{record_id}/data', data=initial_data_df, headers=headers)
-    assert write_response.status_code == 200
-
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'update'})
-    assert session_response.status_code == 200
-    session_id = session_response.json()['id']
-
-    chunk_1 = generate_df(['MD', 'X'], range(20, 25))
-    chunk1_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                  data=chunk_1.to_json(orient='split'),
-                                  headers={'Content-Type': 'application/json'})
-    assert chunk1_response.status_code == 200
-
-    commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
-    assert commit_response.status_code == 200
-
-    get_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
-    assert get_response.status_code == 200
-    df = _create_df_from_response(get_response)
-    assert df.shape == (15, 2)
-
-    assert df.index[0] == 0
-    assert df.index[-1] == chunk_1.index[-1], 'last index value should be the one from chunk1'
-
-
-def test_overwrite_data_by_chunk_append(setup_client):
+    # BELOW test cases FAIL with UPDATE mode:
+    # => If adding new column Date/String not starting at first index AND override an existing column
+    # ['MD', 'str_MD'],
+    # ['MD', 'date_X'],
+    # ['MD', 'float_X', 'str_X', 'date_X'],
+])
+@pytest.mark.parametrize("session_mode", [
+    'overwrite',
+    'update',
+])
+def test_overwrite_data_by_chunk_append(setup_client, columns, content_type_header, create_func,
+                                        accept_content, session_mode):
     """ Create session, append chunking with consecutive index, validate session """
 
     client, _ = setup_client
     record_id = _create_welllog(client, wellbore_url)
 
+    initial_df = generate_df(['MD', 'X'], range(5))
     write_response = client.post(f'{wellbore_url}/{record_id}/data',
-                                 data=generate_df(['MD', 'X'], range(5)).to_json(orient='split'),
+                                 data=initial_df.to_json(orient='split', date_format='iso'),
                                  headers={'Content-Type': 'application/json'})
+
     assert write_response.status_code == 200
     get_response = client.get(f'{wellbore_url}/{record_id}/data')
     assert get_response.status_code == 200
     initial_bulk_data = _create_df_from_response(get_response)
-    assert initial_bulk_data.shape == (5, 2), "existing bulk data should not be empty"
+    assert initial_bulk_data.shape == initial_df.shape, "existing bulk data should not be empty"
 
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'overwrite'})
-    assert session_response.status_code == 200
-    session_data = session_response.json()
-    assert 'id' in session_data
-    session_id = session_data['id']
+    data_format = 'json' if content_type_header.endswith('json') else 'parquet'
+    chunk_dfs = _create_chunks(client, record_id=record_id, session_mode=session_mode,
+                               data_format=data_format,
+                               cols_ranges=[(columns, range(5, 10)),
+                                            (columns, range(10, 15))])
 
-    chunk_1 = generate_df(['MD', 'X'], range(5, 10))
-    chunk1_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                  data=chunk_1.to_json(orient='split'),
-                                  headers={'Content-Type': 'application/json'})
-    assert chunk1_response.status_code == 200  # todo: should it be 204?
-
-    chunk_2 = generate_df(['MD', 'X'], range(10, 15))
-    chunk2_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                  data=chunk_2.to_json(orient='split'),
-                                  headers={'Content-Type': 'application/json'})
-    assert chunk2_response.status_code == 200
-
-    commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
-    assert commit_response.status_code == 200
-    assert commit_response.json()['state'] == SessionState.Committed
-
-    get_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
+    get_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': accept_content})
     assert get_response.status_code == 200
     df = _create_df_from_response(get_response)
 
-    expected = pd.concat([chunk_1, chunk_2], axis=0)
-    assert len(df.compare(expected)) == 0, "Already existing bulk data should be overwritten"
+    if session_mode == 'update':
+        chunk_dfs.insert(0, initial_df)
+
+    expected = pd.concat(chunk_dfs, axis=0)
+    df = _cast_datetime_to_datetime64_ns(df)
+
+    sorted_columns = sorted(columns)
+    df = df[sorted_columns]
+    expected = expected[sorted_columns]
+    pd.testing.assert_frame_equal(df, expected,
+                                  check_dtype=False,
+                                  check_column_type=False,
+                                  check_datetimelike_compat=True,
+                                  )
 
 
 def _create_chunks(client, cols_ranges, record_id, session_mode='update', data_format='json'):
     """ Create session, add chunks with given columns and index, validate the session """
 
     session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': session_mode})
-    session_id = session_response.json()['id']
+    assert session_response.status_code == 200
+    session_data = session_response.json()
+    assert 'id' in session_data
+    session_id = session_data['id']
     created_dfs = []
 
     for columns, ranges in cols_ranges:
@@ -272,21 +273,20 @@ def _create_chunks(client, cols_ranges, record_id, session_mode='update', data_f
         created_dfs.append(chunk_df)
 
         if data_format == 'json':
-            chunk_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                         data=_df_to_format(chunk_df, data_format),
-                                         headers={'Content-Type': 'application/json'})
+            headers = {'Content-Type': 'application/json'}
         elif data_format == 'parquet':
-            chunk_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
-                                         data=_df_to_format(chunk_df, data_format),
-                                         headers={'content-type': 'application/x-parquet'})
+            headers = {'content-type': 'application/x-parquet'}
         else:
             raise ValueError(f"Unknown content-type: '{data_format}'")
 
+        chunk_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+                                     data=_df_to_format(chunk_df, data_format),
+                                     headers=headers)
         assert chunk_response.status_code == 200  # todo: should it be 204?
 
     commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
-    assert commit_response.json()['state'] == SessionState.Committed
     assert commit_response.status_code == 200
+    assert commit_response.json()['state'] == SessionState.Committed
     return created_dfs
 
 
@@ -520,10 +520,33 @@ def test_creates_two_sessions_two_record_with_chunks(setup_client):
     assert list(other_df.columns) == ['Y', 'Z']
     assert other_df.shape == (10, 2)
 
+
+def test_session_sent_same_col_different_types(setup_client):
+    """ Create session, append chunking with overlapped index, validate session """
+    client, _ = setup_client
+    record_id = _create_welllog(client, wellbore_url)
+
+    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert session_response.status_code == 200
+    session_id = session_response.json()['id']
+
+    chunk_1 = generate_df(['MD', 'X'], range(10))
+    chunk_response_1 = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+                                   data=chunk_1.to_json(orient='split'),
+                                   headers={'Content-Type': 'application/json'})
+    assert chunk_response_1.status_code == 200
+
+    chunk_2 = generate_df(['float_MD', 'str_X'], range(10, 20))
+    chunk_2.rename(columns={'float_MD': 'MD', 'str_X': 'X'}, inplace=True)
+    chunk_response_2 = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+                                   data=chunk_2.to_json(orient='split'),
+                                   headers={'Content-Type': 'application/json'})
+    assert chunk_response_2.status_code == 200
+
+    commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    assert commit_response.status_code == 422
+
 # todo:
-#  - add chunks with overlapped index: DONE.
-#  - create several sessions at same time with chunks: DONE.
-#  - data values: datetime, string
 #  - concurrent sessions using fromVersion in Integrations tests
 #  - index: check if dataframe has an index
 #  - test timeout ?
