@@ -129,7 +129,7 @@ def create_azure_logger(service_name):
     az_logger.addHandler(az_handler)
 
     # Acquire the logger for osdu-core-lib-python-azure
-    osdu_core_lib_logger = logging.getLogger('osdu_az.storage.blob_storage_az')
+    osdu_core_lib_logger = logging.getLogger('osdu_az')
     osdu_core_lib_logger.setLevel(logging.DEBUG)
     osdu_core_lib_logger.addHandler(stdout_handler)
     osdu_core_lib_logger.addHandler(az_handler)
