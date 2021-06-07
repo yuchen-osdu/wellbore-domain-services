@@ -25,7 +25,7 @@
             }
         },
         "id": "{{datapartitionid}}:dipSet:myDipSet",
-        "kind": "{{datapartitionid}}:wks:dipSet:0.0.1",
+        "kind": "{{datapartitionid}}:wks:dipSet:1.0.0",
         "legal": {
             "legaltags": [
                 "{{legaltags}}"

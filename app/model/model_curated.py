@@ -1763,7 +1763,7 @@ class dipset(DDMSBaseModel, DDMSBaseRecord):
         None, description='The unique identifier of the dip set', title='Dip Set ID'
     )
     kind: Optional[str] = Field(
-        'osdu:wks:dipSet:0.0.1', description='Kind specification', title='Dip Set Kind'
+        'osdu:wks:dipSet:1.0.0', description='Kind specification', title='Dip Set Kind'
     )
     legal: Optional[Legal] = Field(
         None, description="The dip-set's legal tags", title='Legal Tags'
