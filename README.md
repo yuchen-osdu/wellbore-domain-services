@@ -116,7 +116,7 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 
 2. Choose storage option
 
-    Even if the service runs locally it still relies on osdu data ecosystem storage service `os-storage-dot-opendes.appspot.com/api/storage` to store documents and google blob store to store binary data (`bulk data`). It is possible to override this and use your local file system instead by setting the following environment variables:
+    Even if the service runs locally it still relies on osdu data ecosystem storage service to store documents and google blob store to store binary data (`bulk data`). It is possible to override this and use your local file system instead by setting the following environment variables:
 
     - `USE_INTERNAL_STORAGE_SERVICE_WITH_PATH` to store on a local folder instead of osdu ecosystem storage service.
     - `USE_LOCALFS_BLOB_STORAGE_WITH_PATH` to store on a local folder instead of google blob storage.
