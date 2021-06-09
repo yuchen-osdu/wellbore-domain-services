@@ -1,6 +1,6 @@
 # Introduction
 
-Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Universe (OSDU) is one of the several backend services that comprise Schlumberger's Exploration and Production (E&P) software ecosystem. It is a single, containerized service written in Python that provides an API for wellbore related data.
+Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Universe (OSDU) is one of the several backend services that comprise OSDU software ecosystem. It is a single, containerized service written in Python that provides an API for wellbore related data.
 
 [[_TOC_]]
 
