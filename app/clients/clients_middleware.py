@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from opencensus.trace.span import SpanKind
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from app import conf
 from app.utils import Context
@@ -75,7 +76,10 @@ async def client_middleware(request, call_next):
         if ctx.app_key:
             request.headers[conf.APP_KEY_HEADER_NAME] = ctx.app_key
 
-        result = await call_next(request)
-        span.add_attribute(utils.HTTP_STATUS_CODE, result.status_code)
+        try:
+            response = await call_next(request)
+            return response
 
-        return result
+        finally:
+            status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
+            span.add_attribute(utils.HTTP_STATUS_CODE, status)
