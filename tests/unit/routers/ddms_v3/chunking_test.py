@@ -10,6 +10,8 @@ import pytest
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
+from app.bulk_persistence.dask.blob_storage import (DaskBlobStorageBase, DaskBlobStorageLocal)
+
 from app.clients import StorageRecordServiceClient
 from app.persistence.sessions_storage import SessionsStorage, SessionState
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
@@ -47,10 +49,12 @@ def _df_to_format(df, data_format):
         raise ValueError(f"Unknown content-type: '{data_format}'")
 
 
-wellbore_url = '/ddms/v3/welllogs'
+welllogs_url = '/ddms/v3/welllogs'
+# todo: merge below url with the one above, once alpha is removed from router path
+alpha_chunking_url = '/alpha/ddms/v3/welllogs'
 
 
-def _create_welllog(client, welllogs_url):
+def _create_welllog(client):
     record = {
         "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
         "acl": {
@@ -99,10 +103,8 @@ def bob(nope_logger_fixture, monkeypatch):
 
 @pytest.fixture
 def setup_client(nope_logger_fixture, bob):
-    from app.wdms_app import wdms_app, enable_alpha_feature
+    from app.wdms_app import wdms_app
     from app.wdms_app import app_injector
-
-    enable_alpha_feature()
 
     with TemporaryDirectory() as tmp_dir:
         local_blob_storage = LocalFSBlobStorage(directory=tmp_dir)
@@ -119,6 +121,10 @@ def setup_client(nope_logger_fixture, bob):
         async def sessions_storage_builder(*args, **kwargs):
             return SessionsStorage(local_blob_storage)
 
+        async def dask_blob_storage_builder():
+            return DaskBlobStorageLocal(base_directory=tmp_dir)
+
+        app_injector.register(DaskBlobStorageBase, dask_blob_storage_builder)
         app_injector.register(BlobStorageBase, blob_storage_builder)
         app_injector.register(SessionsStorage, sessions_storage_builder)
         app_injector.register(StorageRecordServiceClient, storage_service_builder)
@@ -155,7 +161,7 @@ def setup_client(nope_logger_fixture, bob):
 ])
 def test_send_all_data_once(setup_client, columns, content_type_header, create_func, accept_content):
     client, tmp_dir = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
     initial_data_df = generate_df(columns, range(5, 13))
     data_to_send = create_func(initial_data_df)
@@ -165,10 +171,10 @@ def test_send_all_data_once(setup_client, columns, content_type_header, create_f
     # get_response_no_data = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
     # assert get_response_no_data.status_code == 404
 
-    write_response = client.post(f'{wellbore_url}/{record_id}/data', data=data_to_send, headers=headers)
+    write_response = client.post(f'{alpha_chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
 
-    get_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': accept_content})
+    get_response = client.get(f'{alpha_chunking_url}/{record_id}/data', headers={'accept': accept_content})
     assert get_response.status_code == 200
     result_df = _create_df_from_response(get_response)
 
@@ -219,15 +225,15 @@ def test_overwrite_data_by_chunk_append(setup_client, columns, content_type_head
     """ Create session, append chunking with consecutive index, validate session """
 
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
     initial_df = generate_df(['MD', 'X'], range(5))
-    write_response = client.post(f'{wellbore_url}/{record_id}/data',
+    write_response = client.post(f'{alpha_chunking_url}/{record_id}/data',
                                  data=initial_df.to_json(orient='split', date_format='iso'),
                                  headers={'Content-Type': 'application/json'})
 
     assert write_response.status_code == 200
-    get_response = client.get(f'{wellbore_url}/{record_id}/data')
+    get_response = client.get(f'{alpha_chunking_url}/{record_id}/data')
     assert get_response.status_code == 200
     initial_bulk_data = _create_df_from_response(get_response)
     assert initial_bulk_data.shape == initial_df.shape, "existing bulk data should not be empty"
@@ -238,7 +244,7 @@ def test_overwrite_data_by_chunk_append(setup_client, columns, content_type_head
                                cols_ranges=[(columns, range(5, 10)),
                                             (columns, range(10, 15))])
 
-    get_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': accept_content})
+    get_response = client.get(f'{alpha_chunking_url}/{record_id}/data', headers={'accept': accept_content})
     assert get_response.status_code == 200
     df = _create_df_from_response(get_response)
 
@@ -261,7 +267,7 @@ def test_overwrite_data_by_chunk_append(setup_client, columns, content_type_head
 def _create_chunks(client, cols_ranges, record_id, session_mode='update', data_format='json'):
     """ Create session, add chunks with given columns and index, validate the session """
 
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': session_mode})
+    session_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions', json={'mode': session_mode})
     assert session_response.status_code == 200
     session_data = session_response.json()
     assert 'id' in session_data
@@ -279,12 +285,12 @@ def _create_chunks(client, cols_ranges, record_id, session_mode='update', data_f
         else:
             raise ValueError(f"Unknown content-type: '{data_format}'")
 
-        chunk_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+        chunk_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}/data',
                                      data=_df_to_format(chunk_df, data_format),
                                      headers=headers)
         assert chunk_response.status_code == 200  # todo: should it be 204?
 
-    commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    commit_response = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
     assert commit_response.status_code == 200
     assert commit_response.json()['state'] == SessionState.Committed
     return created_dfs
@@ -300,13 +306,13 @@ def test_add_curve_by_chunk_different_cols(setup_client, data_format, accept_con
     """ Create session, append chunking with consecutive index, validate session """
 
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
     _create_chunks(client, record_id=record_id, data_format=data_format, cols_ranges=[(['MD', 'X'], range(5, 20)),
                                                                                       (['Y'], range(5, 20)),
                                                                                       (['Z'], range(5, 20))])
 
-    data_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': accept_content})
+    data_response = client.get(f'{alpha_chunking_url}/{record_id}/data', headers={'accept': accept_content})
     assert data_response.status_code == 200
     with_new_col = _create_df_from_response(data_response)
     # with_new_col = pd.DataFrame.from_dict(data_response.json())
@@ -324,13 +330,13 @@ def test_add_curve_by_chunk_same_cols(setup_client, data_format, accept_content)
     """ Create session, append chunking with consecutive index, validate session """
 
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
     _create_chunks(client, record_id=record_id, data_format=data_format, cols_ranges=[(['X'], range(10)),
                                                                                       (['X'], range(10, 20)),
                                                                                       (['X'], range(20, 30))])
 
-    data_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': accept_content})
+    data_response = client.get(f'{alpha_chunking_url}/{record_id}/data', headers={'accept': accept_content})
     assert data_response.status_code == 200
     with_new_col = _create_df_from_response(data_response)
     if accept_content == 'application/json':
@@ -346,13 +352,13 @@ def test_add_curve_by_chunk_same_cols_overlapped_index(setup_client):
     """ Create session, append chunking with consecutive index, validate session """
 
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
     chunk_dfs = _create_chunks(client, record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
                                                                          (['MD', 'X'], range(10, 30)),
                                                                          (['MD', 'X'], range(25, 40)),
                                                                          ])
-    get_response = client.get(f'{wellbore_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
+    get_response = client.get(f'{alpha_chunking_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
     assert get_response.status_code == 200
     result_df = _create_df_from_response(get_response)
 
@@ -366,7 +372,7 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client):
     """ Create session, append chunking with consecutive index, validate session """
 
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
     _create_chunks(client, record_id=record_id, cols_ranges=[(['MD', 'A'], range(5, 10)),
                                                              (['B'], range(8)),  # overlap left side
@@ -375,7 +381,7 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client):
                                                              (['E'], range(15)),  # overlap both side
                                                              ])
 
-    data_response = client.get(f'{wellbore_url}/{record_id}/data')
+    data_response = client.get(f'{alpha_chunking_url}/{record_id}/data')
     assert data_response.status_code == 200
     with_new_col = pd.DataFrame.from_dict(data_response.json())
     assert list(with_new_col.columns) == ['A', 'B', 'C', 'D', 'E', 'MD']
@@ -385,24 +391,24 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client):
 def test_abandon_session_with_data_push_data_again(setup_client):
     """ Create session, append chunking with consecutive index, abort sessions """
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'update'})
+    session_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert session_response.status_code == 200
     session_id = session_response.json()['id']
 
     chunk_1 = generate_df(['MD', 'X'], range(5, 10))
-    client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+    client.post(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}/data',
                 data=chunk_1.to_json(orient='split'),
                 headers={'Content-Type': 'application/json'})
 
-    abort_session_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}',
+    abort_session_response = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}',
                                           json={'state': 'abandon'})
     assert abort_session_response.status_code == 200
     assert abort_session_response.json()['state'] == SessionState.Abandoned
 
     chunk_2 = generate_df(['MD', 'X'], range(11, 20))
-    chunk2_response = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+    chunk2_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}/data',
                                   data=chunk_2.to_json(orient='split'),
                                   headers={'Content-Type': 'application/json'})
     assert chunk2_response.status_code == 400
@@ -411,47 +417,47 @@ def test_abandon_session_with_data_push_data_again(setup_client):
 def test_abandon_no_data_session(setup_client):
     """ Create session, append chunking with overlapped index, validate session """
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
-    commit_unknown_session_response = client.patch(f'{wellbore_url}/{record_id}/sessions/123456',
+    commit_unknown_session_response = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/123456',
                                                    json={'state': 'commit'})
     assert commit_unknown_session_response.status_code == 404
 
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'update'})
+    session_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert session_response.status_code == 200
     session_id = session_response.json()['id']
 
-    commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'abandon'})
+    commit_response = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'abandon'})
     assert commit_response.status_code == 200
 
 
 def test_session_commit_no_data(setup_client):
     """ Create session, append chunking with overlapped index, validate session """
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'update'})
+    session_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert session_response.status_code == 200
     session_id = session_response.json()['id']
 
-    commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    commit_response = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
     assert commit_response.status_code == 422  # todo: expected behavior ?
 
 
 def test_session_double_abandon(setup_client):
     """ Create session, append chunking with overlapped index, validate session """
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'update'})
+    session_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert session_response.status_code == 200
     session_id = session_response.json()['id']
 
-    abort_session_response_try1 = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}',
+    abort_session_response_try1 = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'abandon'})
     assert abort_session_response_try1.status_code == 200
 
-    abort_session_response_try2 = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}',
+    abort_session_response_try2 = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'abandon'})
     assert abort_session_response_try2.status_code == 409
 
@@ -459,22 +465,22 @@ def test_session_double_abandon(setup_client):
 def test_valid_session_double_commit(setup_client):
     """ Create session, append chunking with overlapped index, validate session """
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'update'})
+    session_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert session_response.status_code == 200
     session_id = session_response.json()['id']
 
     chunk_1 = generate_df(['MD', 'X'], range(5, 10))
-    client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+    client.post(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}/data',
                 data=chunk_1.to_json(orient='split'),
                 headers={'Content-Type': 'application/json'})
 
-    abort_session_response_try1 = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}',
+    abort_session_response_try1 = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'commit'})
     assert abort_session_response_try1.status_code == 200
 
-    abort_session_response_try2 = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}',
+    abort_session_response_try2 = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'commit'})
     assert abort_session_response_try2.status_code == 409
 
@@ -483,18 +489,18 @@ def test_session_unknown_record(setup_client):
     """ Create session, append chunking with overlapped index, validate session """
     client, _ = setup_client
 
-    session_response = client.post(f'{wellbore_url}/123456/sessions', json={'mode': 'update'})
+    session_response = client.post(f'{alpha_chunking_url}/123456/sessions', json={'mode': 'update'})
     assert session_response.status_code == 404
 
 
 def test_creates_two_sessions_one_record_with_chunks_different_format(setup_client):
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
     _create_chunks(client, record_id=record_id, data_format='json', cols_ranges=[(['X'], range(5, 20))])
     _create_chunks(client, record_id=record_id, data_format='parquet', cols_ranges=[(['Y'], range(5, 20)),
                                                                                     (['Z'], range(5, 20))])
-    data_response = client.get(f'{wellbore_url}/{record_id}/data')
+    data_response = client.get(f'{alpha_chunking_url}/{record_id}/data')
     assert data_response.status_code == 200
     df = _create_df_from_response(data_response)
     assert df.shape == (15, 3)
@@ -502,19 +508,19 @@ def test_creates_two_sessions_one_record_with_chunks_different_format(setup_clie
 
 def test_creates_two_sessions_two_record_with_chunks(setup_client):
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
-    another_record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
+    another_record_id = _create_welllog(client)
 
     _create_chunks(client, record_id=record_id, cols_ranges=[(['X'], range(5, 20))])
     _create_chunks(client, record_id=another_record_id, cols_ranges=[(['Y'], range(0, 10)),
                                                                      (['Z'], range(5, 10))])
-    data_response = client.get(f'{wellbore_url}/{record_id}/data')
+    data_response = client.get(f'{alpha_chunking_url}/{record_id}/data')
     assert data_response.status_code == 200
     df = _create_df_from_response(data_response)
     assert list(df.columns) == ['X']
     assert df.shape == (15, 1)
 
-    another_data_response = client.get(f'{wellbore_url}/{another_record_id}/data')
+    another_data_response = client.get(f'{alpha_chunking_url}/{another_record_id}/data')
     assert another_data_response.status_code == 200
     other_df = _create_df_from_response(another_data_response)
     assert list(other_df.columns) == ['Y', 'Z']
@@ -524,26 +530,26 @@ def test_creates_two_sessions_two_record_with_chunks(setup_client):
 def test_session_sent_same_col_different_types(setup_client):
     """ Create session, append chunking with overlapped index, validate session """
     client, _ = setup_client
-    record_id = _create_welllog(client, wellbore_url)
+    record_id = _create_welllog(client)
 
-    session_response = client.post(f'{wellbore_url}/{record_id}/sessions', json={'mode': 'update'})
+    session_response = client.post(f'{alpha_chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert session_response.status_code == 200
     session_id = session_response.json()['id']
 
     chunk_1 = generate_df(['MD', 'X'], range(10))
-    chunk_response_1 = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+    chunk_response_1 = client.post(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}/data',
                                    data=chunk_1.to_json(orient='split'),
                                    headers={'Content-Type': 'application/json'})
     assert chunk_response_1.status_code == 200
 
     chunk_2 = generate_df(['float_MD', 'str_X'], range(10, 20))
     chunk_2.rename(columns={'float_MD': 'MD', 'str_X': 'X'}, inplace=True)
-    chunk_response_2 = client.post(f'{wellbore_url}/{record_id}/sessions/{session_id}/data',
+    chunk_response_2 = client.post(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}/data',
                                    data=chunk_2.to_json(orient='split'),
                                    headers={'Content-Type': 'application/json'})
     assert chunk_response_2.status_code == 200
 
-    commit_response = client.patch(f'{wellbore_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    commit_response = client.patch(f'{alpha_chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
     assert commit_response.status_code == 422
 
 # todo:

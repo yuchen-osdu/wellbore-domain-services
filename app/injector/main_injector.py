@@ -13,20 +13,26 @@
 # limitations under the License.
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
+
 from app.conf import *
+from app.helper.logger import get_logger
+
 from .app_injector import AppInjector, AppInjectorModule, WithLifeTime
 
 from app.injector.az_injector import AzureInjector
 from app.injector.aws_injector import AwsInjector
 from app.injector.gcp_injector import GCPInjector
+from app.injector.ibm_injector import IBMInjector
+
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.clients.search_service_client import SearchServiceClient
 from app.clients import make_search_client, make_storage_record_client
 from app.persistence.sessions_storage import SessionsStorage
-from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
-from app.helper.logger import get_logger
-from app.injector.ibm_injector import IBMInjector
+
+from app.bulk_persistence.dask.blob_storage import (DaskBlobStorageBase,
+                                                    DaskBlobStorageLocal)
 
 
 class MainInjector(AppInjectorModule):
@@ -93,6 +99,12 @@ class MainInjector(AppInjectorModule):
 
                 logger.warning(f'overriding blob storage to use local fs on path ' + blob_storage_localfs)
                 app_injector.register(BlobStorageBase, _blob_storage_builder)
+
+                async def _dask_blob_storage_builder():
+                    return DaskBlobStorageLocal(base_directory=blob_storage_localfs)
+
+                app_injector.register(DaskBlobStorageBase, _dask_blob_storage_builder)
+                logger.warning(f'overriding DASK blob storage to use local fs on path ' + blob_storage_localfs)
 
 
     @staticmethod

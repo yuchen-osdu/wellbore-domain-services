@@ -51,13 +51,12 @@ def read_parquet(parquet_bytes):
     return pd.read_parquet(f)
 
 
-WELLLOG_URL_PREFIX = 'ddms/v3/welllogs'
+WELLLOG_URL_PREFIX = 'alpha/ddms/v3/welllogs'
 
 
 # todo get data json
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.alpha_feature
 def test_send_one_chunk_without_session(with_wdms_env, with_welllog):
     record_id = with_welllog
 
@@ -77,7 +76,6 @@ def test_send_one_chunk_without_session(with_wdms_env, with_welllog):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.alpha_feature
 def test_send_one_chunk_with_session_commit(with_wdms_env, with_welllog):
     record_id = with_welllog
 
@@ -111,7 +109,6 @@ def test_send_one_chunk_with_session_commit(with_wdms_env, with_welllog):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.alpha_feature
 def test_send_multiple_chunks_with_session_commit(with_wdms_env, with_welllog):
     record_id = with_welllog
     
@@ -154,7 +151,6 @@ def test_send_multiple_chunks_with_session_commit(with_wdms_env, with_welllog):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.alpha_feature
 def test_get_data_with_ofset_filter(with_wdms_env, with_welllog):
     record_id = with_welllog
 
@@ -204,7 +200,6 @@ def test_get_data_with_ofset_filter(with_wdms_env, with_welllog):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.alpha_feature
 def test_get_data_with_column_filter(with_wdms_env, with_welllog):
     record_id = with_welllog
 
@@ -233,7 +228,6 @@ def test_get_data_with_column_filter(with_wdms_env, with_welllog):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.alpha_feature
 def test_get_data_with_limit_filter(with_wdms_env, with_welllog):
     record_id = with_welllog
 
@@ -280,7 +274,6 @@ def test_get_data_with_limit_filter(with_wdms_env, with_welllog):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.alpha_feature
 def test_get_data_with_limit_and_offset_filter(with_wdms_env, with_welllog):
     record_id = with_welllog
 
