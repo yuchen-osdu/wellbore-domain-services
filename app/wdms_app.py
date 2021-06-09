@@ -45,7 +45,6 @@ from app.routers.search import search, fast_search
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import get_http_client_session, OpenApiHandler, get_wdms_temp_dir
 
-
 base_app = FastAPI()
 
 # The sub application which contains all the routers
@@ -170,23 +169,20 @@ wdms_app.include_router(log_recognition.router, prefix='/log-recognition', tags=
     Depends(require_opendes_authorized_user, use_cache=False)])
 
 
+dependencies = [Depends(require_data_partition_id, use_cache=False),
+                Depends(require_opendes_authorized_user, use_cache=False)]
+tags = ['ALPHA feature: bulk data chunking']
+wdms_app.include_router(sessions.router, prefix='/alpha/ddms/v3/welllogs', tags=tags, dependencies=dependencies)
+wdms_app.include_router(welllog_ddms_v3.router_bulk, prefix='/alpha/ddms/v3', tags=tags, dependencies=dependencies)
+
+
 # ------------- add alpha feature
 def enable_alpha_feature():
     """ must be called to enable and activate alpha feature"""
-    from app.in_dev.injector.dask_storage_injector import DaskStorageInjector
-
     logger.get_logger().warning("Enabling alpha feature: chunking")
 
-    # register dask storage factory
-    DaskStorageInjector().configure(app_injector)
-
-    wdms_app.include_router(sessions.router, prefix='/ddms/v3/welllogs', tags=['ALPHA chunking'], dependencies=[
-        Depends(require_data_partition_id, use_cache=False),
-        Depends(require_opendes_authorized_user, use_cache=False)])
-
-    wdms_app.include_router(welllog_ddms_v3.router_bulk, prefix='/ddms/v3', tags=['ALPHA chunking'], dependencies=[
-        Depends(require_data_partition_id, use_cache=False),
-        Depends(require_opendes_authorized_user, use_cache=False)])
+    # include alpha routers down below #
+    pass
 
 
 # order is last executed first

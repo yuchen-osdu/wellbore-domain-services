@@ -24,7 +24,7 @@ from ..request_builders.wdms.session import (
     build_list_session)
 
 
-SESSION_URL_PREFIX = 'ddms/v3/welllogs'
+SESSION_URL_PREFIX = 'alpha/ddms/v3/welllogs'
 
 
 @pytest.fixture
@@ -50,7 +50,6 @@ def create_session(env, record_id, meta=None):
 
 
 @pytest.mark.tag('session', 'smoke', 'chunking')
-@pytest.mark.alpha_feature
 def test_create_get_session(with_wdms_env, with_welllog):
     record_id = with_welllog
     session_obj = create_session(with_wdms_env, record_id, meta={'custom': 'from_e2e'})
@@ -70,7 +69,6 @@ def test_create_get_session(with_wdms_env, with_welllog):
 
 
 @pytest.mark.tag('session', 'smoke', 'chunking')
-@pytest.mark.alpha_feature
 def test_list_session(with_wdms_env, with_welllog):
     r_id = with_welllog
 

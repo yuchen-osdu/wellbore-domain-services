@@ -14,12 +14,16 @@
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu_aws.storage.storage_aws import AwsStorage
+
+from app.bulk_persistence.dask.blob_storage import DaskBlobStorageBase
 from .app_injector import AppInjector, AppInjectorModule
 from app.conf import Config
+
 
 class AwsInjector(AppInjectorModule):
     def configure(self, app_injector: AppInjector):
         app_injector.register(BlobStorageBase, AwsInjector.build_aws_storage)
+        app_injector.register(DaskBlobStorageBase, AwsInjector.build_aws_dask_blob_storage)
 
     @staticmethod
     async def build_aws_storage() -> BlobStorageBase:
@@ -27,3 +31,7 @@ class AwsInjector(AppInjectorModule):
             session=None,
             service_account_file=f'{Config.aws_region.value}$${Config.aws_env.value}'
         )
+
+    @staticmethod
+    async def build_aws_dask_blob_storage() -> DaskBlobStorageBase:
+        raise NotImplementedError()

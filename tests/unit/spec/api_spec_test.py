@@ -38,8 +38,6 @@ def client(ctx_fixture):
     wdms_app.dependency_overrides = {}
 
 
-# TODO reactivate once feature chunking is released
-@pytest.mark.skip(reason="TEMPORARY due to toggle on/off alpha feature")
 def test_api_spec(client):
     # get the openapi spec
     response = client.get("/openapi.json")
