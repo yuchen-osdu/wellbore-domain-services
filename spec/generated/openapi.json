@@ -5573,7 +5573,7 @@
             "type": "string"
           },
           "kind": {
-            "default": "osdu:wks:dipSet:0.0.1",
+            "default": "osdu:wks:dipSet:1.0.0",
             "description": "Kind specification",
             "title": "Dip Set Kind",
             "type": "string"
@@ -10813,7 +10813,7 @@
                       }
                     },
                     "id": "{{datapartitionid}}:dipSet:myDipSet",
-                    "kind": "{{datapartitionid}}:wks:dipSet:0.0.1",
+                    "kind": "{{datapartitionid}}:wks:dipSet:1.0.0",
                     "legal": {
                       "legaltags": [
                         "{{legaltags}}"
