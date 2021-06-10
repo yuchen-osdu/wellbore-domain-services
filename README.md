@@ -1,6 +1,6 @@
 # Introduction
 
-Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is one of the several backend services that comprise Schlumberger's Exploration and Production (E&P) software ecosystem. It is a single, containerized service written in Python that provides an API for wellbore related data.
+Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Universe (OSDU) is one of the several backend services that comprise OSDU software ecosystem. It is a single, containerized service written in Python that provides an API for wellbore related data.
 
 [[_TOC_]]
 
@@ -36,7 +36,7 @@ Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is
 
 ### Additional Dependencies
 
-- [uvicorn](https://www.uvicorn.org/) used as ASGI server to run WDMS app
+- [uvicorn](https://www.uvicorn.org/) used as ASGI server to run Wellbore-DDMS app
 - [cachetools](https://pypi.org/project/cachetools/)
 - [pyjwt](https://pypi.org/project/PyJWT/) and [cryptography](https://pypi.org/project/cryptography/) for auth purposes
 - [pandas](https://pandas.pydata.org/) and [numpy](https://numpy.org/) for data manipulation
@@ -116,7 +116,7 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 
 2. Choose storage option
 
-    Even if the service runs locally it still relies on osdu data ecosystem storage service `os-storage-dot-opendes.appspot.com/api/storage` to store documents and google blob store to store binary data (`bulk data`). It is possible to override this and use your local file system instead by setting the following environment variables:
+    Even if the service runs locally it still relies on osdu data ecosystem storage service to store documents and google blob store to store binary data (`bulk data`). It is possible to override this and use your local file system instead by setting the following environment variables:
 
     - `USE_INTERNAL_STORAGE_SERVICE_WITH_PATH` to store on a local folder instead of osdu ecosystem storage service.
     - `USE_LOCALFS_BLOB_STORAGE_WITH_PATH` to store on a local folder instead of google blob storage.
@@ -176,75 +176,99 @@ As default, all Core Services endpoint values are set to `None` in `app/conf.py`
 
 ### Create a log record
 
-To create a `log` record, below is a payload sample for the PUT `/ddms/v2/logs` API. The response will contain an id you can use on the `/ddms/v2/logs/{logid}/data` to create some bulk data.
+To create a `WellLog` record, below is a payload sample for the POST `/ddms/v3/welllogs` API. The response will contain an id you can use to create some bulk data.
 
-- GCP
-
-  ```json
-  [{
-          "data": {
-              "log": {
-                  "family": "Gamma Ray",
-                  "familyType": "Gamma Ray",
-                  "format": "float64",
-                  "mnemonic": "GR",
-                  "name": "GAMM",
-                  "unitKey": "gAPI"
-              }
-          },
-          "kind": "opendes:osdu:log:1.0.5",
-          "namespace": "opendes:osdu",
-          "legal": {
-              "legaltags": [
-                  "opendes-public-usa-dataset-1"
-              ],
-              "otherRelevantDataCountries": [
-                  "US"
-              ],
-              "status": "compliant"
-          },
-          "acl": {
-              "viewers": [
-                  "data.default.viewers@opendes.p4d.cloud.slb-ds.com"
-              ],
-              "owners": [
-                  "data.default.owners@opendes.p4d.cloud.slb-ds.com"
-              ]
-          },
-          "type": "log"
+```json
+[
+  {
+    "acl": {
+      "viewers": [
+        "data.default.viewers@{{datapartitionid}}.{{domain}}"
+      ],
+      "owners": [
+        "data.default.owners@{{datapartitionid}}.{{domain}}"
+      ]
+    },
+    "data": {
+      "Curves": [
+        {
+          "CurveID": "GR_ID",
+          "Mnemonic": "GR",
+          "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+          "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:"
+        },
+        {
+          "CurveID": "POR_ID",
+          "Mnemonic": "NPOR",
+          "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+          "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:"
+        },
+        {
+          "CurveID": "Bulk Density",
+          "Mnemonic": "RHOB",
+          "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+          "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:BulkDensity:"
+        }
+      ],
+      "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
+      "CreationDateTime": "2013-03-22T11:16:03Z",
+      "VerticalMeasurement": {
+        "VerticalMeasurement": 2680.5,
+        "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
+        "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:ft:"
+      },
+      "TopMeasuredDepth": 12345.6,
+      "BottomMeasuredDepth": 13856.25,
+      "Name": "{{welllogName}}",
+      "ExtensionProperties": {
+        "step": {
+          "unitKey": "ft",
+          "value": 0.1
+        },
+        "dateModified": "2013-03-22T11:16:03Z"
       }
-  ]
-  ```
-
-- MVP
-
-  ```json
-  [
+    },
+    "id": "{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
+    "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
+    "legal": {
+      "legaltags": [
+        "{{legaltags}}"
+      ],
+      "otherRelevantDataCountries": [
+        "US",
+        "FR"
+      ]
+    },
+    "meta": [
       {
-          "acl": {
-              "owners": [
-                  "data.default.owners@opendes.contoso.com"
-              ],
-              "viewers": [
-                  "data.default.viewers@opendes.contoso.com"
-              ]
-          },
-          "data": {
-              "name": "wdms_e2e_log"
-          },
-          "kind": "opendes:wks:log:1.0.5",
-          "legal": {
-              "legaltags": [
-                  "opendes-storage-1603197111615"
-              ],
-              "otherRelevantDataCountries": [
-                  "US",
-                  "FR"
-              ]
-          }
+        "kind": "Unit",
+        "name": "ft",
+        "persistableReference": "{\"scaleOffset\":{\"scale\":0.3048,\"offset\":0.0},\"symbol\":\"ft\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+        "propertyNames": [
+          "stop.value",
+          "elevationReference.elevationFromMsl.value",
+          "start.value",
+          "step.value",
+          "reference.unitKey"
+        ],
+        "propertyValues": [
+          "ft"
+        ]
+      },
+      {
+        "kind": "DateTime",
+        "name": "datetime",
+        "persistableReference": "{\"format\":\"yyyy-MM-ddTHH:mm:ssZ\",\"timeZone\":\"UTC\",\"type\":\"DTM\"}",
+        "propertyNames": [
+          "dateModified",
+          "dateCreated"
+        ]
       }
-  ]
-  ```
+    ]
+  }
+]
+```
+
 
 ### Run with Uvicorn
 
