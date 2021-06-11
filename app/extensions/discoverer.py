@@ -34,6 +34,11 @@ def load_extension(name):
         log.info(f'Loading `{name}` extension')
         module = importlib.import_module(name)
 
+        can_run, message = module.can_run()
+        if not can_run:
+            log.info(f'Skipped `{name}`. {message}')
+            return
+
         router = module.router
         if not router.prefix:
             raise AttributeError('Router prefix cannot be empty')
@@ -49,5 +54,7 @@ def load_extension(name):
         log.warning(f'Failed to load `{name}` extension. Module not found. {error}')
     except ValueError as error:
         log.warning(f'Failed to load `{name}` extension. {error}')
+    except NameError as error:
+        log.warning(f'Failed to load `{name}` extension. Missing module configuration. {error}')
     except:
         log.warning(f'Failed to load `{name}` extension. {sys.exc_info()[0]}')

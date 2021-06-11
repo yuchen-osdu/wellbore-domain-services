@@ -28,6 +28,11 @@ from fastapi import APIRouter
 router = APIRouter()
 router.prefix = '<extension router prefix>'
 router.tags = ['<extension router tags>']
+
+def can_run() -> (bool, str):
+    # Include the extension router specific checks if applicable.     
+    # WDMS main app will skip loading the extension module routers if it returns False. 
+    return True
 ```
 4. Include new service endpoints to `router` in `<router module name>.py`.
    - Use `@router.[get|post|delete|put|patch|...]` fastapi decorator to include new methods to the router
