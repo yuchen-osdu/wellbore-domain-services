@@ -45,7 +45,7 @@ from app.model.model_utils import from_record, to_record
 from app.routers.ddms_v2.persistence import Persistence
 from app.routers.common_parameters import json_orient_parameter, REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx, load_schema_example
-from app.record_utils import fetch_record
+from app.record_utils import fetch_record, update_records
 
 
 router = APIRouter()
@@ -53,20 +53,6 @@ router = APIRouter()
 
 async def get_persistence() -> Persistence:
     return Persistence()
-
-
-async def update_records(ctx: Context, records: List[BaseModel]) -> CreateUpdateRecordsResponse:
-    """
-    :param ctx: context
-    :param records: list of record in dict or pydantic format
-    :return: id of the record
-    """
-    storage_client = await get_storage_record_service(ctx)
-    # record_dict_list = [r.dict(exclude_unset=True) if isinstance(r, BaseModel) else r for r in records]
-    # just assume it works
-    return await storage_client.create_or_update_records(
-        record=records, data_partition_id=ctx.partition_id
-    )
 
 
 # ---------------------------------------------------------------------------------------------------------------------

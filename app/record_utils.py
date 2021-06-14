@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List, Optional
+
 from app.utils import Context
 from app.clients.storage_service_client import get_storage_record_service
 
-from odes_storage.models import Record
-
-
+from odes_storage.models import (
+    CreateUpdateRecordsResponse,
+    Record
+)
+from pydantic import BaseModel
 
 
 async def fetch_record(ctx: Context, record_id: str, version=None) -> Record:
@@ -40,5 +44,19 @@ async def fetch_record(ctx: Context, record_id: str, version=None) -> Record:
             id=record_id,
             data_partition_id=ctx.partition_id,
         )
+
+
+async def update_records(ctx: Context, records: List[BaseModel]) -> CreateUpdateRecordsResponse:
+    """
+    :param ctx: context
+    :param records: list of record in dict or pydantic format
+    :return: id of the record
+    """
+    storage_client = await get_storage_record_service(ctx)
+    # record_dict_list = [r.dict(exclude_unset=True) if isinstance(r, BaseModel) else r for r in records]
+    # just assume it works
+    return await storage_client.create_or_update_records(
+        record=records, data_partition_id=ctx.partition_id
+    )
 
 
