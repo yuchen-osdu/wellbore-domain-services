@@ -76,6 +76,7 @@ async def client_middleware(request, call_next):
         if ctx.app_key:
             request.headers[conf.APP_KEY_HEADER_NAME] = ctx.app_key
 
+        response = None
         try:
             response = await call_next(request)
             return response
