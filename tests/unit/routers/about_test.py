@@ -14,7 +14,7 @@
 
 from fastapi.testclient import TestClient
 import pytest
-from app.wdms_app import wdms_app, wellbore_api_group_prefix
+from app.wdms_app import wdms_app, DDMS_V2_PATH
 from app.auth.auth import require_opendes_authorized_user
 from app.helper import traces
 from app.conf import Config
@@ -43,7 +43,7 @@ def client_with_authenticated_user():
 
 
 def build_url(path: str):
-    return wellbore_api_group_prefix + path
+    return DDMS_V2_PATH + path
 
 
 def test_about_contains_build_n_version(client):

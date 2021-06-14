@@ -36,12 +36,17 @@ from app.routers.ddms_v2 import (
     log_ddms_v2,
     well_ddms_v2
 )
-from app.routers.ddms_v3 import wellbore_ddms_v3, well_ddms_v3, welllog_ddms_v3, wellbore_trajectory_ddms_v3, \
-    markerset_ddms_v3
+from app.routers.ddms_v3 import (
+    wellbore_ddms_v3,
+    well_ddms_v3,
+    welllog_ddms_v3,
+    wellbore_trajectory_ddms_v3,
+    markerset_ddms_v3)
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.logrecognition import log_recognition
 from app.routers.search import search, fast_search
+from app.routers.ddms_v3 import bulk_v3
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import get_http_client_session, OpenApiHandler, get_wdms_temp_dir
 
@@ -115,10 +120,13 @@ async def shutdown_event():
     await get_http_client_session().close()
 
 
-wellbore_api_group_prefix = '/ddms/v2'
+DDMS_V2_PATH = '/ddms/v2'
+DDMS_V3_PATH = '/ddms/v3'
+ALPHA_APIS_PREFIX = '/alpha'
+
 
 wdms_app.include_router(probes.router)
-wdms_app.include_router(about.router, prefix=wellbore_api_group_prefix)
+wdms_app.include_router(about.router, prefix=DDMS_V2_PATH)
 
 ddms_v2_routes_groups = [
     (ddms_v2, "Wellbore DDMS"),
@@ -133,7 +141,7 @@ ddms_v2_routes_groups = [
 ]
 for ddms_v2_routes_group in ddms_v2_routes_groups:
     wdms_app.include_router(ddms_v2_routes_group[0].router,
-                            prefix=wellbore_api_group_prefix,
+                            prefix=DDMS_V2_PATH,
                             tags=[ddms_v2_routes_group[1]],
                             dependencies=[
                                 Depends(require_opendes_authorized_user, use_cache=False),
@@ -149,7 +157,7 @@ ddms_v3_routes_groups = [
 ]
 for ddms_v3_routes_group in ddms_v3_routes_groups:
     wdms_app.include_router(ddms_v3_routes_group[0].router,
-                            prefix='/ddms/v3',
+                            prefix=DDMS_V3_PATH,
                             tags=[ddms_v3_routes_group[1]],
                             dependencies=[
                                 Depends(require_opendes_authorized_user, use_cache=False),
@@ -171,18 +179,36 @@ wdms_app.include_router(log_recognition.router, prefix='/log-recognition', tags=
 
 dependencies = [Depends(require_data_partition_id, use_cache=False),
                 Depends(require_opendes_authorized_user, use_cache=False)]
+
+
 tags = ['ALPHA feature: bulk data chunking']
-wdms_app.include_router(sessions.router, prefix='/alpha/ddms/v3/welllogs', tags=tags, dependencies=dependencies)
-wdms_app.include_router(welllog_ddms_v3.router_bulk, prefix='/alpha/ddms/v3', tags=tags, dependencies=dependencies)
 
+# welllog bulk v3 APIs
+wdms_app.include_router(
+    sessions.router,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
+    tags=tags, dependencies=dependencies)
+wdms_app.include_router(
+    bulk_v3.router_bulk,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
+    tags=tags, dependencies=dependencies)
 
-# ------------- add alpha feature
+# wellbore trajectory bulk v3 APIs
+wdms_app.include_router(
+    sessions.router,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
+    tags=tags, dependencies=dependencies)
+wdms_app.include_router(
+    bulk_v3.router_bulk,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
+    tags=tags, dependencies=dependencies)
+
+# ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs
 def enable_alpha_feature():
     """ must be called to enable and activate alpha feature"""
     logger.get_logger().warning("Enabling alpha feature: chunking")
 
     # include alpha routers down below #
-    pass
 
 
 # order is last executed first
