@@ -21,9 +21,9 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_chunking import GetDataParams
 from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import WellLog
-from app.routers.ddms_v2.log_ddms_v2 import fetch_record  # TODO fetch recod should be moved in common utils
 from app.routers.ddms_v3.ddms_v3_utils import DataFrameRender, DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx, load_schema_example
+from app.record_utils import fetch_record
 from fastapi import (APIRouter, Body, Depends, HTTPException, Request,
                      Response, status)
 from odes_storage.models import (CreateUpdateRecordsResponse, List,
