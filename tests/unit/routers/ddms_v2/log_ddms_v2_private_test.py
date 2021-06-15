@@ -22,9 +22,7 @@ from pandas.util.testing import assert_frame_equal
 
 from fastapi import Header
 
-from app.routers.ddms_v2.log_ddms_v2 import (fetch_record,
-                                             update_records,
-                                             _write_log_data,
+from app.routers.ddms_v2.log_ddms_v2 import (_write_log_data,
                                              get_persistence,
                                              _get_log_data)
 
@@ -35,6 +33,7 @@ from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.wdms_app import wdms_app, app_injector
 from app.utils import Context
+from app.record_utils import fetch_record, update_records
 from tests.unit.test_utils import create_mock_class, nope_logger_fixture, ctx_fixture
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record
