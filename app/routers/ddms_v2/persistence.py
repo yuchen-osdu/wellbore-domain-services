@@ -31,7 +31,8 @@ class Persistence:
         record: Record,
         bulk_id_path: str,
     ) -> pd.DataFrame:
-        bulk_id = LogBulkHelper.get_bulk_id(record, bulk_id_path)
+        bulk_id, _prefix = LogBulkHelper.get_bulk_id(record, bulk_id_path)
+        # TODO use prefix to know how to read the bulk
         if bulk_id is None:
             return pd.DataFrame()
 

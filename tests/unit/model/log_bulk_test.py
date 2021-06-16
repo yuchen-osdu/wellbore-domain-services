@@ -49,7 +49,7 @@ def test_update_bulk_id_on_not_valid_data_should_throw(basic_record):
 
 
 def test_get_update_bulk_id(record_with_bulkURI):
-    assert LogBulkHelper.get_bulk_id(record_with_bulkURI) == record_with_bulkURI.data['log']['bulkURI']
+    assert LogBulkHelper.get_bulk_id(record_with_bulkURI)[0] == record_with_bulkURI.data['log']['bulkURI']
 
 
 def test_update_bulk_id_on_empty_record(basic_record):
@@ -59,8 +59,4 @@ def test_update_bulk_id_on_empty_record(basic_record):
 
 
 def test_get_bulk_id_on_empty_record(basic_record):
-    assert LogBulkHelper.get_bulk_id(basic_record) is None
-
-
-
-
+    assert LogBulkHelper.get_bulk_id(basic_record) == (None, None)

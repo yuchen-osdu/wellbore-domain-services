@@ -13,24 +13,33 @@
 # limitations under the License.
 
 import asyncio
+import base64
+import hashlib
 import json
+import time
 from abc import ABC, abstractmethod
-from operator import attrgetter
+from contextlib import suppress
 from functools import wraps
+from logging import getLogger
+from operator import attrgetter
+
+import fsspec
+import pandas as pd
+from app.bulk_persistence import BulkId
+from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
+from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
+                                             do_merge, set_index,
+                                             worker_capture_timing_handlers)
+from app.conf import Config
+from app.helper.logger import get_logger, init_logger
+from app.helper.traces import with_trace
+from app.persistence.sessions_storage import Session
+from app.utils import capture_timings, get_wdms_temp_dir
 from pyarrow.lib import ArrowException
 
 import dask
 import dask.dataframe as dd
-import fsspec
-import pandas as pd
-from app.bulk_persistence import BulkId
-from app.bulk_persistence.dask.errors import BulkNotProcessable, BulkNotFound
-from app.bulk_persistence.dask.utils import SessionFileMeta, set_index, do_merge, by_pairs
-from app.helper.logger import get_logger
-from app.helper.traces import with_trace
-from app.persistence.sessions_storage import Session
-from app.utils import capture_timings, get_wdms_temp_dir
-from dask.distributed import Client
+from dask.distributed import Client, WorkerPlugin
 
 dask.config.set({'temporary_directory': get_wdms_temp_dir()})
 
@@ -53,6 +62,22 @@ class DaskBlobStorageBase(ABC):
         raise NotImplementedError('DaskBlobStorageBase.build_dask_blob_storage')
 
 
+class DefaultWorkerPlugin(WorkerPlugin):
+    def __init__(self, logger=None) -> None:
+        global _LOGGER
+        _LOGGER = logger
+        get_logger().debug("WorkerPlugin initialised")
+        #init_logger(service_name=Config.service_name.value)
+        super().__init__()
+
+    def setup(self, worker):
+        self.worker = worker
+
+    def transition(self, key, start, finish, *args, **kwargs):
+        if finish == 'error':
+            exc = self.worker.exceptions[key]
+            getLogger().error("Task '%s' has failed with exception: %s" % (key, str(exc)))
+
 class DaskBlobStorageLocal(DaskBlobStorageBase):
     """Instantiate a DaskDriverBlobStorage with a local file system."""
 
@@ -64,8 +89,12 @@ class DaskBlobStorageLocal(DaskBlobStorageBase):
         _dask = DaskDriverBlobStorage(protocol='file',
                                       base_directory=base_directory,
                                       storage_options={'auto_mkdir': True})
-        await _dask.init_client()  # TODO should not be init here
-        get_logger().debug(f"DASK_CLIENT: {_dask.client}")
+        if await _dask.init_client():
+            await DaskDriverBlobStorage.client.register_worker_plugin(DefaultWorkerPlugin,
+                                                                      name="LocalWorkerPlugin",
+                                                                      logger=get_logger())
+
+        get_logger().debug(f"Dask client : {_dask.client}")
         return _dask
 
 
@@ -99,41 +128,50 @@ class DaskDriverBlobStorage:
 
     def _get_base_directory(self, protocol=True):
         return f'{self._protocol}://{self._base_directory}' if protocol else self._base_directory
-
-    def _get_blob_path(self, bulk_id, protocol=True) -> str:
+        
+    @staticmethod
+    def _encode_record_id(record_id: str) -> str:
+        record_id_b64 = base64.b64encode(record_id.encode()).decode()
+        return record_id_b64.rstrip('=') # remove padding chars ('=')
+        
+    def _get_blob_path(self, record_id, bulk_id, protocol=True) -> str:
         """Return the bulk path from the bulk_id."""
-        return f'{self._get_base_directory(protocol)}/{bulk_id}'
+        record_id_b64 = self._encode_record_id(record_id)
+        return f'{self._get_base_directory(protocol)}/{record_id_b64}/bulk/{bulk_id}/data'
 
     def _build_path_from_session(self, session: Session, protocol=True) -> str:
         """Return the session path."""
-        return f'{self._get_base_directory(protocol)}/session-{session.id}'
+        record_id_b64 = self._encode_record_id(session.recordId)
+        return f'{self._get_base_directory(protocol)}/{record_id_b64}/session/{session.id}/data'
 
     def _load(self, path, **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
         path : string or list
         **kwargs: dict (of dicts) Passthrough key-word arguments for read backend.
         """
+        get_logger().debug(f"loading bulk : {path}")
         return self.client.submit(dd.read_parquet, path, engine='pyarrow-dataset',
                                   storage_options=self._storage_options,
                                   **kwargs)
 
-    def _load_bulk(self, bulk_id) -> dd.DataFrame:
+    def _load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version.
-        returns a future<dd.DataFrame>
+        returns a Future<dd.DataFrame>
         """
-        return self._load(self._get_blob_path(bulk_id))
+        return self._load(self._get_blob_path(record_id, bulk_id))
 
-    async def load_bulk(self, bulk_id) -> dd.DataFrame:
+    @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
+    async def load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version."""
         try:
-            return await self._load_bulk(bulk_id)
+            return await self._load_bulk(record_id, bulk_id)
         except OSError:
-            raise BulkNotFound(bulk_id)  # TODO proper exception
+            raise BulkNotFound(record_id, bulk_id)  # TODO proper exception
 
     def _save_with_dask(self, path, ddf):
         """Save the dataframe to a parquet file(s).
-        ddf: dd.DataFrame or future<dd.DataFrame>
-        returns a future<None>
+        ddf: dd.DataFrame or Future<dd.DataFrame>
+        returns a Future<None>
         Note:
             we should be able to change or support other format easily ?
         """
@@ -143,10 +181,12 @@ class DaskDriverBlobStorage:
 
     def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
-        pdf: pd.DataFrame or future<pd.DataFrame>
-        returns a future<None>
+        pdf: pd.DataFrame or Future<pd.DataFrame>
+        returns a Future<None>
         """
-        return self.client.submit(pdf.to_parquet, path, storage_options=self._storage_options)
+        return self.client.submit(pdf.to_parquet, path,
+                                  engine='pyarrow',
+                                  storage_options=self._storage_options)
 
     def _check_incoming_chunk(self, df):
         # TODO should we test if is_monotonic?, unique ?
@@ -160,7 +200,8 @@ class DaskDriverBlobStorage:
             raise BulkNotProcessable("Index should be numeric or datetime")
 
     @handle_pyarrow_exceptions
-    async def save_blob(self, ddf: dd.DataFrame, bulk_id: str = None):
+    @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
+    async def save_blob(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
         # TODO: The new bulk_id should contain information about the way we store the bulk
         # In the future, if we change the way we store chunk it could be useful to deduce it from the bulk_uri
@@ -170,19 +211,16 @@ class DaskDriverBlobStorage:
             self._check_incoming_chunk(ddf)
             ddf = dd.from_pandas(ddf, npartitions=1)
 
-        path = self._get_blob_path(bulk_id)
+        path = self._get_blob_path(record_id, bulk_id)
         try:
             await self._save_with_dask(path, ddf)
         except OSError:
-            raise BulkNotFound(bulk_id)  # TODO proper exception
+            raise BulkNotFound(record_id, bulk_id)  # TODO proper exception
         return bulk_id
 
     @capture_timings('session_add_chunk')
     @with_trace('session_add_chunk')
     async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
-        import hashlib
-        import time
-
         self._check_incoming_chunk(pdf)
 
         # sort column by names
@@ -214,7 +252,10 @@ class DaskDriverBlobStorage:
     @with_trace('get_session_parquet_files')
     def get_session_parquet_files(self, session):
         session_path = self._build_path_from_session(session, protocol=False)
-        return self._fs.glob(f'{session_path}/*.parquet')
+        with suppress(FileNotFoundError):
+            session_files = [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
+            return session_files
+        return []
 
     def _get_next_files_list(self, session: Session):
         """Group session files in lists of files that can be read directly with dask
@@ -245,14 +286,14 @@ class DaskDriverBlobStorage:
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
         if from_bulk_id:
-            dfs.insert(0, self._load_bulk(from_bulk_id))
+            dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
 
         if not dfs:
             raise BulkNotProcessable("No data to commit")
 
-        dfs = [self.client.submit(set_index, df1) for df1 in dfs]
+        dfs = self.client.map(set_index, dfs)
 
         while len(dfs) > 1:
             dfs = [self.client.submit(do_merge, a, b) for a, b in by_pairs(dfs)]
 
-        return await self.save_blob(dfs[0])
+        return await self.save_blob(dfs[0], record_id=session.recordId)

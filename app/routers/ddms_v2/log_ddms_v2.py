@@ -410,7 +410,7 @@ async def get_log_data_statistics(logid: str,
     # we may use an optimistic cache here
     log_record = await fetch_record(ctx, logid)  # use dict to support the custom path
 
-    bulk_id = LogBulkHelper.get_bulk_id(log_record, bulk_id_path)
+    bulk_id, _prefix = LogBulkHelper.get_bulk_id(log_record, bulk_id_path)
     if bulk_id is None:
         content = '{}'  # no bulk
     else:

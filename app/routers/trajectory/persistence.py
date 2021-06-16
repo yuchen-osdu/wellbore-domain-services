@@ -46,7 +46,9 @@ class Persistence:
             raise NoBulkException
 
         try:
-            df = await get_dataframe(ctx, BulkId.bulk_urn_decode(record.data.bulkURI))
+            bulkid, _prefix = BulkId.bulk_urn_decode(record.data.bulkURI)
+            # TODO use prefix to know how to read the bulk
+            df = await get_dataframe(ctx, bulkid)
         except Exception as ex:
             raise InvalidBulkException(ex)
 

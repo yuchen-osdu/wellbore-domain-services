@@ -25,8 +25,8 @@ class BulkError(Exception):
 class BulkNotFound(BulkError):
     http_status = status.HTTP_404_NOT_FOUND
 
-    def __init__(self, bulk_id):
-        self.message = f'bulk {bulk_id} not found'
+    def __init__(self, record_id, bulk_id):
+        self.message = f'bulk {bulk_id} for record {record_id} not found'
 
 
 class BulkNotProcessable(BulkError):

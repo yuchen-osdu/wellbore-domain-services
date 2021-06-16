@@ -294,7 +294,9 @@ async def read_dipset_data(ctx, ds: Union[dipset, str]) -> Tuple[dipset, pd.Data
         return my_dipset, pd.DataFrame()
 
     # Fetch data
-    df = await get_dataframe(ctx, BulkId.bulk_urn_decode(my_dipset.data.bulkURI))
+    bulk_uri, _prefix = BulkId.bulk_urn_decode(my_dipset.data.bulkURI)
+    # TODO use prefix to know how to read the bulk 
+    df = await get_dataframe(ctx, bulk_uri)
 
     return my_dipset, df
 
