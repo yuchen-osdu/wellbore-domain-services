@@ -92,6 +92,10 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(attribute_key="request.header Content-type",
                                              attribute_value=request_content_type)
 
+        request_content_length = request.headers.get("Content-Length")
+        tracer.add_attribute_to_current_span(attribute_key="request.header Content-length",
+                                             attribute_value=request_content_length)
+
     @staticmethod
     def _after_request(request: Request, response: Response, tracer):
 
@@ -105,10 +109,6 @@ class TracingMiddleware(BaseHTTPMiddleware):
         response_content_type = response.headers.get("Content-type")
         tracer.add_attribute_to_current_span(attribute_key="response.header Content-type",
                                              attribute_value=response_content_type)
-
-        request_content_length = request.headers.get("Content-Length")
-        tracer.add_attribute_to_current_span(attribute_key="request.header Content-length",
-                                             attribute_value=request_content_length)
 
         response_content_length = response.headers.get("Content-Length")
         tracer.add_attribute_to_current_span(attribute_key="response.header Content-length",
