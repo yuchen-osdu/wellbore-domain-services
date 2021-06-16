@@ -25,10 +25,8 @@ class DaskBlobStorageGoogle(DaskBlobStorageBase):
         token = await gcp_store._get_access_token(tenant.project_id, tenant.bucket_name)
         storage_options = {'token': token}
 
-        base_directory = f'{tenant.bucket_name}/dask_data' # TODO remove dask_data
-
         _dask = DaskDriverBlobStorage(protocol='gs',
-                                      base_directory=base_directory,
+                                      base_directory=tenant.bucket_name,
                                       storage_options=storage_options)
         await _dask.init_client()
         return _dask

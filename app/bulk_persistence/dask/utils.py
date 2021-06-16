@@ -15,7 +15,24 @@
 import json
 import os
 from itertools import zip_longest
+from logging import INFO
 
+from app.helper.logger import get_logger
+from app.utils import capture_timings
+
+
+def worker_make_log_captured_timing_handler(level=INFO):
+    """log captured timing from the worker subprocess (no access to context)"""
+    def log_captured_timing(tag, wall, cpu):
+        logger = get_logger()
+        if logger:
+            logger.debug(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
+    return log_captured_timing
+
+
+worker_capture_timing_handlers = [worker_make_log_captured_timing_handler(INFO)]
+
+##
 
 def share_items(seq1, seq2):
     """Returns True if seq1 contains common items with seq2."""
@@ -53,15 +70,17 @@ class SessionFileMeta:
         return share_items(self.columns, other.columns)
 
 
+@capture_timings("set_index", handlers=worker_capture_timing_handlers)
 def set_index(ddf):  # TODO
     """Set index of the dask dataFrame only if needed."""
     if not ddf.known_divisions or '_idx' not in ddf:
         ddf['_idx'] = ddf.index  # Why ?
         ddf['_idx'] = ddf['_idx'].astype(ddf.index.dtype)
-        return ddf.set_index('_idx')
+        return ddf.set_index('_idx', sorted=True)
     return ddf
 
 
+@capture_timings("do_merge", handlers=worker_capture_timing_handlers)
 def do_merge(df1, df2):
     """Combine the 2 dask dataframe. Updates df1 with df2 values if overlap."""
     if df2 is None:
@@ -70,5 +89,6 @@ def do_merge(df1, df2):
     if share_items(df1.columns, df2.columns):
         ddf = df2.combine_first(df1)
     else:
-        ddf = df2.join(df1, how='outer')  # join seems faster when there no columns in common
+        ddf = df1.join(df2, how='outer')  # join seems faster when there no columns in common
+
     return ddf[sorted(ddf.columns)]

@@ -16,7 +16,7 @@ import asyncio
 
 from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.blob_storage import DaskDriverBlobStorage
-from app.bulk_persistence.dask.errors import BulkError
+from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_chunking import GetDataParams
 from app.model.model_utils import from_record, to_record
@@ -177,7 +177,7 @@ async def post_data(welllog_id: str,
                     ):
     async def save_blob():
         df = await DMSV3RouterUtils.get_df_from_request(request, orient)
-        return await dask_blob_storage.save_blob(df)
+        return await dask_blob_storage.save_blob(df, welllog_id)
 
     record, bulk_id = await asyncio.gather(
         fetch_record(ctx, welllog_id),
@@ -223,7 +223,7 @@ def set_bulk_uri(record, bulk_urn):
 
 
 async def update_record(ctx: Context, bulk_id, record):
-    bulk_urn = BulkId.bulk_urn_encode(bulk_id) # TODO should BulkId be different from v2 and v3
+    bulk_urn = BulkId.bulk_urn_encode(bulk_id, "wdms-1")
     set_bulk_uri(record, bulk_urn)
 
     # push new version on the storage
@@ -256,12 +256,16 @@ async def get_data_version(
     dask_blob_storage: DaskDriverBlobStorage = Depends(DMSV3RouterUtils.with_dask_blob_storage),
 ):
     record = await fetch_record(ctx, welllog_id, version)
-    bulk_id = BulkId.bulk_urn_decode(get_bulk_uri(record))
-    df = await dask_blob_storage.load_bulk(bulk_id)
-    df = await DataFrameRender.process_params(df, ctrl_p)
+    bulk_id, prefix = BulkId.bulk_urn_decode(get_bulk_uri(record))
+    try:
+        if prefix != 'wdms-1':
+            raise BulkNotFound(record_id=welllog_id, bulk_id=bulk_id)
+        df = await dask_blob_storage.load_bulk(welllog_id, bulk_id)
+        df = await DataFrameRender.process_params(df, ctrl_p)
 
-    return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
-
+        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
+    except BulkError as ex:
+        ex.raise_as_http()
 
 @router_bulk.get(
     "/welllogs/{welllog_id}/data",
@@ -316,13 +320,13 @@ async def complete_welllog_session(
                 previous_bulk_uri = None
                 bulk_urn = get_bulk_uri(record)
                 if i_session.session.mode == SessionUpdateMode.Update and bulk_urn is not None:
-                    previous_bulk_uri = BulkId.bulk_urn_decode(bulk_urn)
+                    previous_bulk_uri, _prefix = BulkId.bulk_urn_decode(bulk_urn)
 
                 new_bulk_uri = await dask_blob_storage.session_commit(i_session.session, previous_bulk_uri)
                 # ==============>
                 # ==============> UPDATE WELLLOG META DATA HERE (baseDepth, ...) <==============
                 # ==============>
-                await update_record(ctx, BulkId.bulk_urn_encode(new_bulk_uri), record)
+                await update_record(ctx, new_bulk_uri, record)
 
             i_session = commit_guard.session
             i_session.session.meta = i_session.session.meta or {}

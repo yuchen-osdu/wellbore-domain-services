@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from jsonpath_ng import parse as parse_jsonpath
 from jsonpath_ng.jsonpath import Parent as JsonParent
@@ -45,7 +45,7 @@ class LogBulkHelper:
             .get("log", {})
             .get("bulkURI", None)
         )
-        return BulkId.bulk_urn_decode(bulk_uri) if bulk_uri else None
+        return BulkId.bulk_urn_decode(bulk_uri) if bulk_uri else (None, None)
 
     @classmethod
     def update_bulk_id(
@@ -77,7 +77,7 @@ class LogBulkHelper:
     @classmethod
     def get_bulk_id(
         cls, record: Record, custom_bulk_id_path: Optional[str] = None
-    ) -> Optional[str]:
+    ) -> Tuple[Optional[str], Optional[str]]:
         """
         :param record:
         :param custom_bulk_id_path: !! incompatible with log model
@@ -88,8 +88,7 @@ class LogBulkHelper:
 
         record_dict = {"data": record.data}
         matches = parse_jsonpath(custom_bulk_id_path).find(record_dict)
-        return (
-            BulkId.bulk_urn_decode(matches[0].value)
-            if len(matches) > 0
-            else None
-        )
+        if len(matches) > 0:
+            return BulkId.bulk_urn_decode(matches[0].value)
+        return None, None
+        

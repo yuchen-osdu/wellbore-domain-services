@@ -84,21 +84,26 @@ async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
 async def test_save_blob_with_bulk_id(dask_storage: DaskDriverBlobStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     bulk_id = 'abcdef'
-    bulk_id_returned = await dask_storage.save_blob(df_ref, bulk_id=bulk_id)
+    record_id='test_save_blob_with_bulk_id_record_id'
+    bulk_id_returned = await dask_storage.save_blob(df_ref, record_id=record_id, bulk_id=bulk_id)
     assert bulk_id == bulk_id_returned
 
-    df = await dask_storage.load_bulk(bulk_id)
+    df = await dask_storage.load_bulk(record_id=record_id, bulk_id=bulk_id)
     await compare_frame(df_ref, df)
 
 
 @pytest.mark.asyncio
 async def test_save_blob(dask_storage: DaskDriverBlobStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
-    bulk_id = await dask_storage.save_blob(df_ref)
+    record_id='test_save_blob_record_id'
+    bulk_id = await dask_storage.save_blob(df_ref, record_id=record_id)
     assert bulk_id
 
-    df = await dask_storage.load_bulk(bulk_id)
+    df = await dask_storage.load_bulk(record_id=record_id, bulk_id=bulk_id)
     await compare_frame(df_ref, df)
+
+    with pytest.raises(BulkNotFound):
+        await dask_storage.load_bulk(record_id="bad_record", bulk_id=bulk_id)
 
 
 @pytest.mark.asyncio
@@ -111,7 +116,7 @@ async def test_session_append_rows(test_session, dask_storage: DaskDriverBlobSto
     bulk_id = await dask_storage.session_commit(test_session)
     assert bulk_id
 
-    ddf = await dask_storage.load_bulk(bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
 
@@ -125,7 +130,7 @@ async def test_session_append_columns(test_session, dask_storage: DaskDriverBlob
     bulk_id = await dask_storage.session_commit(test_session)
     assert bulk_id
 
-    ddf = await dask_storage.load_bulk(bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
 
@@ -133,7 +138,7 @@ async def test_session_append_columns(test_session, dask_storage: DaskDriverBlob
 async def test_session_update_add_new_rows(test_session, dask_storage: DaskDriverBlobStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
-    bulk_id = await dask_storage.save_blob(df_ref.iloc[:100])
+    bulk_id = await dask_storage.save_blob(df_ref.iloc[:100], record_id=test_session.recordId)
 
     for idx in range(100, 1000, 100):
         df = df_ref.iloc[idx:idx+100]
@@ -142,7 +147,7 @@ async def test_session_update_add_new_rows(test_session, dask_storage: DaskDrive
     new_bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
     assert bulk_id != new_bulk_id
 
-    ddf = await dask_storage.load_bulk(new_bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, new_bulk_id)
     await compare_frame(df_ref, ddf)
 
 
@@ -150,7 +155,7 @@ async def test_session_update_add_new_rows(test_session, dask_storage: DaskDrive
 async def test_session_update_add_new_columns(test_session, dask_storage: DaskDriverBlobStorage):
     df_ref = generate_df(['A', 'floatB', 'strC'], range(1000))
     
-    bulk_id = await dask_storage.save_blob(df_ref[['A']])
+    bulk_id = await dask_storage.save_blob(df_ref[['A']], record_id=test_session.recordId)
 
     for c in ['floatB', 'strC']:
         df = df_ref[[c]]
@@ -159,7 +164,8 @@ async def test_session_update_add_new_columns(test_session, dask_storage: DaskDr
     new_bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
     assert bulk_id != new_bulk_id
 
-    ddf = await dask_storage.load_bulk(new_bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, new_bulk_id)
+    await compare_frame(df_ref, ddf)
     await compare_frame(df_ref, ddf)
 
 
@@ -171,20 +177,20 @@ async def test_session_empty_chunk(test_session, dask_storage: DaskDriverBlobSto
         await dask_storage.session_add_chunk(test_session, df_ref)
 
     with pytest.raises(BulkNotProcessable):
-        await dask_storage.save_blob(df_ref)
+        await dask_storage.save_blob(df_ref, record_id=test_session.recordId)
 
 
 @pytest.mark.asyncio
 async def test_session_empty_session(dask_storage: DaskDriverBlobStorage):
     with pytest.raises(BulkNotFound):
-        await dask_storage.load_bulk("bad_id")
+        await dask_storage.load_bulk(record_id="123", bulk_id="bad_id")
 
 
 @pytest.mark.asyncio
 async def test_session_update_ovelap(test_session, dask_storage: DaskDriverBlobStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
-    bulk_id = await dask_storage.save_blob(df_ref)
+    bulk_id = await dask_storage.save_blob(df_ref, record_id=test_session.recordId)
     
     # update A and B value for index > 500
     df_ref.loc[df_ref.index > 500, ['A']] = 1
@@ -200,7 +206,7 @@ async def test_session_update_ovelap(test_session, dask_storage: DaskDriverBlobS
     new_bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
     assert bulk_id != new_bulk_id
 
-    ddf = await dask_storage.load_bulk(new_bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, new_bulk_id)
     await compare_frame(df_ref, ddf)
 
 
@@ -208,7 +214,7 @@ async def test_session_update_ovelap(test_session, dask_storage: DaskDriverBlobS
 async def test_session_update_ovelap_by_column(test_session, dask_storage: DaskDriverBlobStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
-    bulk_id = await dask_storage.save_blob(df_ref)
+    bulk_id = await dask_storage.save_blob(df_ref, record_id=test_session.recordId)
     
     # update A and B values for index > 500
     df_ref.loc[df_ref.index > 500, ['A']] = 1
@@ -222,7 +228,7 @@ async def test_session_update_ovelap_by_column(test_session, dask_storage: DaskD
     new_bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
     assert bulk_id != new_bulk_id
 
-    ddf = await dask_storage.load_bulk(new_bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, new_bulk_id)
     await compare_frame(df_ref, ddf)
 
 
@@ -237,8 +243,8 @@ async def test_all_type(test_session, dask_storage: DaskDriverBlobStorage):
     df_ref = generate_df(['dateD', 'floatB', 'intA', 'strC'], range(5))
 
     # test without session
-    bulk_id = await dask_storage.save_blob(df_ref)
-    ddf = await dask_storage.load_bulk(bulk_id)
+    bulk_id = await dask_storage.save_blob(df_ref, record_id=test_session.recordId)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
     # test with session and chunks
@@ -246,7 +252,7 @@ async def test_all_type(test_session, dask_storage: DaskDriverBlobStorage):
         await dask_storage.session_add_chunk(test_session, df_ref[[c]])
     bulk_id = await dask_storage.session_commit(test_session)
 
-    ddf = await dask_storage.load_bulk(bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
 
@@ -260,14 +266,14 @@ async def test_index_float(test_session, dask_storage: DaskDriverBlobStorage):
     bulk_id = await dask_storage.session_commit(test_session)
     assert bulk_id
 
-    ddf = await dask_storage.load_bulk(bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
     df_ref = df_ref.join(generate_df(['D'], index=np.arange(0,5, 0.25)), how="outer")
     await dask_storage.session_add_chunk(test_session, df_ref[['D']])
     bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
 
-    ddf = await dask_storage.load_bulk(bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
 
@@ -277,7 +283,7 @@ async def test_index_str(test_session, dask_storage: DaskDriverBlobStorage):
 
     # without session
     with pytest.raises(BulkNotProcessable):
-        await dask_storage.save_blob(df_ref)
+        await dask_storage.save_blob(df_ref, record_id=test_session.recordId)
 
     # with session
     with pytest.raises(BulkNotProcessable):
@@ -294,7 +300,7 @@ async def test_index_time(test_session, dask_storage: DaskDriverBlobStorage):
     bulk_id = await dask_storage.session_commit(test_session)
     assert bulk_id
 
-    ddf = await dask_storage.load_bulk(bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
     D = generate_df(['D'], index=pd.date_range("2021-01-01", periods=30, freq="30s"))
@@ -302,7 +308,7 @@ async def test_index_time(test_session, dask_storage: DaskDriverBlobStorage):
     await dask_storage.session_add_chunk(test_session, df_ref[['D']])
     bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
 
-    ddf = await dask_storage.load_bulk(bulk_id)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
 
@@ -312,7 +318,7 @@ async def test_duplicate_index(test_session, dask_storage: DaskDriverBlobStorage
 
     # without session
     with pytest.raises(BulkNotProcessable):
-        await dask_storage.save_blob(df_ref)
+        await dask_storage.save_blob(df_ref, record_id=test_session.recordId)
 
     # with session
     with pytest.raises(BulkNotProcessable):
