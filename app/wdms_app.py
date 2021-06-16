@@ -47,7 +47,6 @@ from app.routers.ddms_v3 import (
     markerset_ddms_v3)
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
-from app.routers.logrecognition import log_recognition
 from app.routers.search import search, fast_search, search_v3, fast_search_v3
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import (
