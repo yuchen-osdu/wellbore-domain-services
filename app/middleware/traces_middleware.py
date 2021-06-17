@@ -88,17 +88,32 @@ class TracingMiddleware(BaseHTTPMiddleware):
             attribute_key=conf.CORRELATION_ID_HEADER_NAME,
             attribute_value=correlation_id)
 
-    @staticmethod
-    def _after_successful_request(response: Response, tracer):
-        tracer.add_attribute_to_current_span(
-            attribute_key=utils.HTTP_STATUS_CODE,
-            attribute_value=response.status_code)
+        request_content_type = request.headers.get("Content-type")
+        tracer.add_attribute_to_current_span(attribute_key="request.header Content-type",
+                                             attribute_value=request_content_type)
+
+        request_content_length = request.headers.get("Content-Length")
+        tracer.add_attribute_to_current_span(attribute_key="request.header Content-length",
+                                             attribute_value=request_content_length)
 
     @staticmethod
-    def _after_request(request, tracer):
-        tracer.add_attribute_to_current_span(
-            attribute_key=utils.HTTP_ROUTE,
-            attribute_value=TracingMiddleware._retrieve_raw_path(request))
+    def _after_request(request: Request, response: Response, tracer):
+
+        status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
+        tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_STATUS_CODE,
+                                             attribute_value=status)
+
+        tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_ROUTE,
+                                             attribute_value=TracingMiddleware._retrieve_raw_path(request))
+
+        if response:
+            response_content_type = response.headers.get("Content-type")
+            tracer.add_attribute_to_current_span(attribute_key="response.header Content-type",
+                                                 attribute_value=response_content_type)
+
+            response_content_length = response.headers.get("Content-Length")
+            tracer.add_attribute_to_current_span(attribute_key="response.header Content-length",
+                                                 attribute_value=response_content_length)
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:
 
@@ -121,10 +136,8 @@ class TracingMiddleware(BaseHTTPMiddleware):
             response = None
             try:
                 response = await call_next(request)
-                self._after_successful_request(response, tracer)
                 return response
-
             finally:
                 status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
                 ctx.logger.info(utils.process_message(request, status))
-                self._after_request(request, tracer)
+                self._after_request(request, response, tracer)
