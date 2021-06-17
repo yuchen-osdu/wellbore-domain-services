@@ -106,13 +106,14 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_ROUTE,
                                              attribute_value=TracingMiddleware._retrieve_raw_path(request))
 
-        response_content_type = response.headers.get("Content-type")
-        tracer.add_attribute_to_current_span(attribute_key="response.header Content-type",
-                                             attribute_value=response_content_type)
+        if response:
+            response_content_type = response.headers.get("Content-type")
+            tracer.add_attribute_to_current_span(attribute_key="response.header Content-type",
+                                                 attribute_value=response_content_type)
 
-        response_content_length = response.headers.get("Content-Length")
-        tracer.add_attribute_to_current_span(attribute_key="response.header Content-length",
-                                             attribute_value=response_content_length)
+            response_content_length = response.headers.get("Content-Length")
+            tracer.add_attribute_to_current_span(attribute_key="response.header Content-length",
+                                                 attribute_value=response_content_length)
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:
 
@@ -132,6 +133,7 @@ class TracingMiddleware(BaseHTTPMiddleware):
             self._before_request(request, tracer)
             ctx.logger.debug(f'Request start: {request.method} {request.url}')
 
+            response = None
             try:
                 response = await call_next(request)
                 return response
