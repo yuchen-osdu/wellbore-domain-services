@@ -47,6 +47,10 @@ from ..sessions import (SessionInternal, UpdateSessionState,
 router_bulk = APIRouter()  # router dedicated to bulk APIs
 
 
+BULK_URN_PREFIX_VERSION = "wdms-1"
+BULK_URI_FIELD = "bulkURI"
+
+
 async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
 
     def try_read_parquet(parquet_data):
@@ -154,25 +158,25 @@ class DataFrameRender:
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO
 
-        if 'application/x-parquet' in accept:
-            return Response(pdf.to_parquet(engine="pyarrow"), media_type="application/x-parquet")
+        if MimeTypes.PARQUET.type in accept:
+            return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
 
-        if 'text/csv' in accept:
-            return Response(pdf.to_csv(), media_type="text/csv")
+        if MimeTypes.CSV.type in accept:
+            return Response(pdf.to_csv(), media_type=MimeTypes.CSV.type)
 
-        return Response(pdf.to_json(index=True, date_format='iso'), media_type="application/json")
+        return Response(pdf.to_json(index=True, date_format='iso'), media_type=MimeTypes.JSON.type)
 
 
 def get_bulk_uri(record):
-    return record.data.get('ExtensionProperties', {}).get('wdms', {}).get('bulkURI', None)
+    return record.data.get('ExtensionProperties', {}).get('wdms', {}).get(BULK_URI_FIELD, None)
 
 
 def set_bulk_uri(record, bulk_urn):
-    return record.data.update({'ExtensionProperties': {'wdms': {'bulkURI': bulk_urn}}})
+    return record.data.update({'ExtensionProperties': {'wdms': {BULK_URI_FIELD: bulk_urn}}})
 
 
-async def update_record(ctx: Context, bulk_id, record):
-    bulk_urn = BulkId.bulk_urn_encode(bulk_id, "wdms-1")
+async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record):
+    bulk_urn = BulkId.bulk_urn_encode(bulk_id, BULK_URN_PREFIX_VERSION)
     set_bulk_uri(record, bulk_urn)
 
     # push new version on the storage
@@ -212,7 +216,7 @@ async def post_data(record_id: str,
         fetch_record(ctx, record_id),
         save_blob()
     )
-    return await update_record(ctx=ctx, bulk_id=bulk_id, record=record)
+    return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record)
 
 
 @OpenApiHandler.set(operation_id="post_chunk_data", request_body=REQUEST_DATA_BODY_SCHEMA)
@@ -254,9 +258,9 @@ async def post_chunk_data(record_id: str,
     responses={
         404: {},
         200: {"content": {
-            "application/json": {},
-            "application/x-parquet": {},
-            "text/csv": {},
+            MimeTypes.JSON.type: {},
+            MimeTypes.PARQUET.type: {},
+            MimeTypes.CSV.type: {},
         }}
     }
 )
@@ -270,7 +274,7 @@ async def get_data_version(
     record = await fetch_record(ctx, record_id, version)
     bulk_id, prefix = BulkId.bulk_urn_decode(get_bulk_uri(record))
     try:
-        if prefix != 'wdms-1':
+        if prefix != BULK_URN_PREFIX_VERSION:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
         df = await dask_blob_storage.load_bulk(record_id, bulk_id)
         df = await DataFrameRender.process_params(df, ctrl_p)
@@ -290,9 +294,9 @@ async def get_data_version(
     responses={
         404: {},
         200: {"content": {
-            "application/json": {},
-            "application/x-parquet": {},
-            "text/csv": {},
+            MimeTypes.JSON.type: {},
+            MimeTypes.PARQUET.type: {},
+            MimeTypes.CSV.type: {},
         }}
     }
 )
@@ -340,7 +344,7 @@ async def complete_session(
                 # ==============>
                 # ==============> UPDATE WELLLOG META DATA HERE (baseDepth, ...) <==============
                 # ==============>
-                await update_record(ctx, new_bulk_uri, record)
+                await set_bulk_field_and_send_record(ctx, new_bulk_uri, record)
 
             i_session = commit_guard.session
             i_session.session.meta = i_session.session.meta or {}
