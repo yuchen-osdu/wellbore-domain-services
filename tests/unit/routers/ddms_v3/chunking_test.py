@@ -423,7 +423,7 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client, entity_type):
                                                              (['E'], range(15)),  # overlap both side
                                                              ])
 
-    data_response = client.get(f'{chunking_url}/{record_id}/data')
+    data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'Accept': 'application/json'})
     assert data_response.status_code == 200
     with_new_col = pd.DataFrame.from_dict(data_response.json())
     assert list(with_new_col.columns) == ['A', 'B', 'C', 'D', 'E', 'MD']

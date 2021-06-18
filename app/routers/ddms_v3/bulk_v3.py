@@ -14,35 +14,31 @@
 
 import asyncio
 from typing import List, Set, Optional
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
-from starlette.datastructures import FormData
 import pandas as pd
 
-from app.bulk_persistence import DataframeSerializer
+from app.bulk_persistence import DataframeSerializer, JSONOrient
 from app.bulk_persistence.tenant_provider import resolve_tenant
 from app.bulk_persistence.bulk_id import BulkId
-from app.bulk_persistence.dask.blob_storage import DaskDriverBlobStorage
+from app.bulk_persistence.dask.blob_storage import DaskDriverBlobStorage, DaskBlobStorageBase
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 from app.clients.storage_service_client import get_storage_record_service
 from app.record_utils import fetch_record
-from app.bulk_persistence.dask.blob_storage import DaskBlobStorageBase
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
 from app.utils import Context, OpenApiHandler, get_ctx
-
-from ...bulk_persistence import JSONOrient
-from ...persistence.sessions_storage import (Session, SessionException,
-                                             SessionState, SessionUpdateMode)
-from ..common_parameters import (
+from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
+from app.routers.common_parameters import (
     REQUEST_DATA_BODY_SCHEMA,
     REQUIRED_ROLES_READ,
     REQUIRED_ROLES_WRITE,
     json_orient_parameter)
-from ..sessions import (SessionInternal, UpdateSessionState,
-                        UpdateSessionStateValue, WithSessionStorages,
-                        get_session_dependencies)
+from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSessionStateValue,
+                                  WithSessionStorages, get_session_dependencies)
+
 
 router_bulk = APIRouter()  # router dedicated to bulk APIs
 
@@ -52,25 +48,16 @@ BULK_URI_FIELD = "bulkURI"
 
 
 async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
+    """ extract dataframe from request """
 
-    def try_read_parquet(parquet_data):
+    ct = request.headers.get('Content-Type', '')
+    if MimeTypes.PARQUET.match(ct):
+        content = await request.body()  # request.stream()
         try:
-            return DataframeSerializer.read_parquet(parquet_data)
+            return DataframeSerializer.read_parquet(content)
         except OSError as err:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail=f'{err}')  # TODO
-
-    ct = request.headers.get('Content-Type', '')
-    if 'multipart/form-data' in ct:
-        form: FormData = await request.form()
-        assert (len(form) == 1)
-        for _file_name, file in form.items():  # TODO can contains multiple files ?
-            if MimeTypes.PARQUET.match(file.content_type):
-                return try_read_parquet(file.file)
-
-    if MimeTypes.PARQUET.match(ct):
-        content = await request.body()  # request.stream()
-        return try_read_parquet(content)
 
     if MimeTypes.JSON.match(ct):
         content = await request.body()  # request.stream()
@@ -106,25 +93,25 @@ class DataFrameRender:
         driver = await with_dask_blob_storage()
         return await driver.client.submit(lambda: len(df.index))
 
+    re_1D_curve_selection = re.compile(r'\[(?P<index>[0-9]+)\]$')
+    re_2D_curve_selection = re.compile(r'\[(?P<range>[0-9]+:[0-9]+)\]$')
+
     @staticmethod
-    def get_matching_column(selection: List[str], cols: Set[str]):
-        import re
-        pat = re.compile(r'\[(?P<index>[0-9]+)\]$')
-        pat2 = re.compile(r'\[(?P<range>[0-9]+:[0-9]+)\]$')
+    def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
         selected = set()
         for to_find in selection:
-            m = pat2.search(to_find)
+            m = DataFrameRender.re_2D_curve_selection.search(to_find)
             if m:
                 r = range(*map(int, m['range'].split(':')))
 
                 def is_matching(c):
                     if c == to_find:
                         return True
-                    i = pat.search(c)
+                    i = DataFrameRender.re_1D_curve_selection.search(c)
                     return i and int(i['index']) in r
             else:
                 def is_matching(c):
-                    return c == to_find or to_find == pat.sub('', c)
+                    return c == to_find or to_find == DataFrameRender.re_1D_curve_selection.sub('', c)
             selected.update(filter(is_matching, cols.difference(selected)))
         return list(selected)
 
@@ -158,13 +145,17 @@ class DataFrameRender:
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO
 
-        if MimeTypes.PARQUET.type in accept:
+        if not accept or MimeTypes.PARQUET.type in accept:
             return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
+
+        if MimeTypes.JSON.type in accept:
+            return Response(pdf.to_json(index=True, date_format='iso'), media_type=MimeTypes.JSON.type)
 
         if MimeTypes.CSV.type in accept:
             return Response(pdf.to_csv(), media_type=MimeTypes.CSV.type)
 
-        return Response(pdf.to_json(index=True, date_format='iso'), media_type=MimeTypes.JSON.type)
+        # in any other case => Parquet anyway?
+        return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
 
 
 def get_bulk_uri(record):
@@ -253,6 +244,8 @@ async def post_chunk_data(record_id: str,
     summary='Returns data of the specified version.',
     description='Returns the data of a specific version according to the specified query parameters.'
     ' Multiple media types response are available ("application/json", text/csv", "application/x-parquet")'
+    ' The desired format can be specify in "Accept" header. The default is Parquet.'
+    ' When bulk statistics are requested using "describe" parameter, the response is always provided in JSON'
     + REQUIRED_ROLES_READ,
     # response_model=RecordData,
     responses={
@@ -288,7 +281,9 @@ async def get_data_version(
     "/{record_id}/data",
     summary='Returns the data according to the specified query parameters.',
     description='Returns the data according to the specified query parameters.'
-    ' Multiple media types response are available ("application/json", text/csv", "application/x-parquet")'
+    ' Multiple media types response are available ("application/json", text/csv", "application/x-parquet").'
+    ' The desired format can be specify in "Accept" header. The default is Parquet.'
+    ' When bulk statistics are requested using "describe" parameter, the response is always provided in JSON.'
     + REQUIRED_ROLES_READ,
     # response_model=Union[RecordData, Dict],
     responses={
