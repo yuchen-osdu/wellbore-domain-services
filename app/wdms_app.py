@@ -203,6 +203,16 @@ wdms_app.include_router(
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
     tags=tags, dependencies=dependencies)
 
+# log bulk v2 APIs
+wdms_app.include_router(
+    sessions.router,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + "/logs",
+    tags=tags, dependencies=dependencies)
+wdms_app.include_router(
+    log_ddms_v2.router_bulk,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH,
+    tags=tags, dependencies=dependencies)
+
 # ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs
 def enable_alpha_feature():
     """ must be called to enable and activate alpha feature"""
