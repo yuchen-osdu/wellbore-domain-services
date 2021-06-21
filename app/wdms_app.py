@@ -206,11 +206,11 @@ wdms_app.include_router(
 # log bulk v2 APIs
 wdms_app.include_router(
     sessions.router,
-    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + "/logs",
+    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=tags, dependencies=dependencies)
 wdms_app.include_router(
-    log_ddms_v2.router_bulk,
-    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH,
+    bulk_utils.router_bulk,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=tags, dependencies=dependencies)
 
 # ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs
