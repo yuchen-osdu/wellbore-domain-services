@@ -15,11 +15,11 @@
 from ....request_runner import RequestRunner, Request
 
 
-def build_request_delete_osdu_wellboretrajectory() -> RequestRunner:
+def build_request_delete_osdu_wellboretrajectory(record_id='{{osdu_wellboretrajectory_record_id}}') -> RequestRunner:
     rq_proto = Request(
         name="Delete wellboretrajectory",
         method="DELETE",
-        url="{{base_url}}/ddms/v3/wellboretrajectories/{{osdu_wellboretrajectory_record_id}}",
+        url="{{base_url}}/ddms/v3/wellboretrajectories/" + record_id,
         headers={
             "accept": "application/json",
             "data-partition-id": "{{data_partition}}",
@@ -75,7 +75,12 @@ def build_request_get_versions_of_osdu_wellboretrajectory() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_create_osdu_wellboretrajectory() -> RequestRunner:
+def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True) -> RequestRunner:
+    if b_use_fixed_id:
+        id_field = '"id": "{{data_partition}}:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",'
+    else:
+        id_field = ''
+
     rq_proto = Request(
         name="Create OSDU wellboretrajectory",
         method="POST",
@@ -86,9 +91,8 @@ def build_request_create_osdu_wellboretrajectory() -> RequestRunner:
             "Connection": "{{header_connection}}",
             "Authorization": "Bearer {{token}}",
         },
-        payload=r"""[{
+        payload='[{' + id_field + r"""
   "acl": {{record_acl}}, "legal": {{record_legal}},
-  "id": "{{data_partition}}:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",
   "kind": "{{osduWellboreTrajectoryKind}}",
   "tags": {
     "NameOfKey": "String value"

@@ -8241,6 +8241,864 @@
   },
   "openapi": "3.0.2",
   "paths": {
+    "/alpha/ddms/v3/wellboretrajectories/{record_id}/data": {
+      "get": {
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "get_data_alpha_ddms_v3_wellboretrajectories__record_id__data_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The number of rows that are to be skipped and not included in the result.",
+            "example": 5,
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "description": "The number of rows that are to be skipped and not included in the result.",
+              "minimum": 0.0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The maximum number of rows to be returned.",
+            "example": 100,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "description": "The maximum number of rows to be returned.",
+              "minimum": 1.0,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filters curves. List of curves to be returned.",
+            "example": "MD,GR",
+            "in": "query",
+            "name": "curves",
+            "required": false,
+            "schema": {
+              "description": "Filters curves. List of curves to be returned.",
+              "title": "Curves",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+            "example": "false",
+            "in": "query",
+            "name": "describe",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+              "title": "Describe",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/x-parquet": {},
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Returns the data according to the specified query parameters.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      },
+      "post": {
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "write_record_data",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Writes data as a whole bulk, creates a new version.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      }
+    },
+    "/alpha/ddms/v3/wellboretrajectories/{record_id}/sessions": {
+      "get": {
+        "operationId": "list_session_alpha_ddms_v3_wellboretrajectories__record_id__sessions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Session"
+                  },
+                  "title": "Response List Session Alpha Ddms V3 Wellboretrajectories  Record Id  Sessions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "list session of the given record.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      },
+      "post": {
+        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
+        "operationId": "create_session_alpha_ddms_v3_wellboretrajectories__record_id__sessions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDataSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create a new session on the given record for writing bulk data.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      }
+    },
+    "/alpha/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}": {
+      "get": {
+        "operationId": "get_session_alpha_ddms_v3_wellboretrajectories__record_id__sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "get session.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      },
+      "patch": {
+        "operationId": "complete_session_alpha_ddms_v3_wellboretrajectories__record_id__sessions__session_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSessionState"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update a session, either commit or abandon.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      }
+    },
+    "/alpha/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data": {
+      "post": {
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_chunk_data",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send a data chunk. Session must be complete/commit once all chunks are sent.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      }
+    },
+    "/alpha/ddms/v3/wellboretrajectories/{record_id}/versions/{version}/data": {
+      "get": {
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "get_data_version_alpha_ddms_v3_wellboretrajectories__record_id__versions__version__data_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The number of rows that are to be skipped and not included in the result.",
+            "example": 5,
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "description": "The number of rows that are to be skipped and not included in the result.",
+              "minimum": 0.0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The maximum number of rows to be returned.",
+            "example": 100,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "description": "The maximum number of rows to be returned.",
+              "minimum": 1.0,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filters curves. List of curves to be returned.",
+            "example": "MD,GR",
+            "in": "query",
+            "name": "curves",
+            "required": false,
+            "schema": {
+              "description": "Filters curves. List of curves to be returned.",
+              "title": "Curves",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+            "example": "false",
+            "in": "query",
+            "name": "describe",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+              "title": "Describe",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/x-parquet": {},
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Returns data of the specified version.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      }
+    },
+    "/alpha/ddms/v3/welllogs/{record_id}/data": {
+      "get": {
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "get_data_alpha_ddms_v3_welllogs__record_id__data_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The number of rows that are to be skipped and not included in the result.",
+            "example": 5,
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "description": "The number of rows that are to be skipped and not included in the result.",
+              "minimum": 0.0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The maximum number of rows to be returned.",
+            "example": 100,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "description": "The maximum number of rows to be returned.",
+              "minimum": 1.0,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filters curves. List of curves to be returned.",
+            "example": "MD,GR",
+            "in": "query",
+            "name": "curves",
+            "required": false,
+            "schema": {
+              "description": "Filters curves. List of curves to be returned.",
+              "title": "Curves",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+            "example": "false",
+            "in": "query",
+            "name": "describe",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+              "title": "Describe",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/x-parquet": {},
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Returns the data according to the specified query parameters.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      },
+      "post": {
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "write_record_data",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Writes data as a whole bulk, creates a new version.",
+        "tags": [
+          "ALPHA feature: bulk data chunking"
+        ]
+      }
+    },
     "/alpha/ddms/v3/welllogs/{record_id}/sessions": {
       "get": {
         "operationId": "list_session_alpha_ddms_v3_welllogs__record_id__sessions_get",
@@ -8437,206 +9295,16 @@
         "tags": [
           "ALPHA feature: bulk data chunking"
         ]
-      }
-    },
-    "/alpha/ddms/v3/welllogs/{welllog_id}/data": {
-      "get": {
-        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\")",
-        "operationId": "get_data_alpha_ddms_v3_welllogs__welllog_id__data_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "welllog_id",
-            "required": true,
-            "schema": {
-              "title": "Welllog Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "The number of rows that are to be skipped and not included in the result.",
-            "example": 5,
-            "in": "query",
-            "name": "offset",
-            "required": false,
-            "schema": {
-              "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
-              "title": "Offset",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "The maximum number of rows to be returned.",
-            "example": 100,
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
-              "title": "Limit",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "Filters curves. List of curves to be returned.",
-            "example": "MD,GR",
-            "in": "query",
-            "name": "curves",
-            "required": false,
-            "schema": {
-              "description": "Filters curves. List of curves to be returned.",
-              "title": "Curves",
-              "type": "string"
-            }
-          },
-          {
-            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-            "example": "false",
-            "in": "query",
-            "name": "describe",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-              "title": "Describe",
-              "type": "boolean"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              },
-              "application/x-parquet": {},
-              "text/csv": {}
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Returns the data according to the specified query parameters.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
       },
-      "post": {
-        "description": "Writes data to the wellLog | logSet | log (atomic). It creates a new version. Payload is expected to contain the entire bulk which will replace as latest version any previous bulk. Previous bulk versions are accessible via the get bulk data version API.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.",
-        "operationId": "write_record_data",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "welllog_id",
-            "required": true,
-            "schema": {
-              "title": "Welllog Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Writes data as a whole bulk, creates a new version.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/welllogs/{welllog_id}/sessions/{session_id}": {
       "patch": {
-        "operationId": "complete_welllog_session_alpha_ddms_v3_welllogs__welllog_id__sessions__session_id__patch",
+        "operationId": "complete_session_alpha_ddms_v3_welllogs__record_id__sessions__session_id__patch",
         "parameters": [
           {
             "in": "path",
-            "name": "welllog_id",
+            "name": "record_id",
             "required": true,
             "schema": {
-              "title": "Welllog Id",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -8705,17 +9373,17 @@
         ]
       }
     },
-    "/alpha/ddms/v3/welllogs/{welllog_id}/sessions/{session_id}/data": {
+    "/alpha/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data": {
       "post": {
-        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.",
-        "operationId": "post_welllog_chunk_data",
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_chunk_data",
         "parameters": [
           {
             "in": "path",
-            "name": "welllog_id",
+            "name": "record_id",
             "required": true,
             "schema": {
-              "title": "Welllog Id",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -8807,17 +9475,17 @@
         ]
       }
     },
-    "/alpha/ddms/v3/welllogs/{welllog_id}/versions/{version}/data": {
+    "/alpha/ddms/v3/welllogs/{record_id}/versions/{version}/data": {
       "get": {
-        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\")",
-        "operationId": "get_data_version_alpha_ddms_v3_welllogs__welllog_id__versions__version__data_get",
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "get_data_version_alpha_ddms_v3_welllogs__record_id__versions__version__data_get",
         "parameters": [
           {
             "in": "path",
-            "name": "welllog_id",
+            "name": "record_id",
             "required": true,
             "schema": {
-              "title": "Welllog Id",
+              "title": "Record Id",
               "type": "string"
             }
           },

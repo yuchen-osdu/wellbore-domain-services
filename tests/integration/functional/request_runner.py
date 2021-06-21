@@ -152,11 +152,12 @@ class RequestRunner:
         self.runs: List[RunResult] = []
         self._no_env = Variables()
 
-    def call(self, env: Variables = None, headers=None, *, assert_status=None, **kwargs) -> RunResult:
+    def call(self, env: Variables = None, headers=None, *, assert_status=None, params=None, **kwargs) -> RunResult:
         """
         :param env: variables to use and substituted in the request
         :param headers: additional headers to set, will update and replace the ones in the original if same
         :param assert_status: If not None, will assert the http status code is the one provided
+        :param params: optional Dictionary or bytes to be sent in the query
         :param kwargs: any variables to set for this call only, with override the one in 'env' parameter.
         :return: RunResult, contains both request and response objects
         """
@@ -167,7 +168,7 @@ class RequestRunner:
         error_for_retry = CmdLineSpecialVar.get_retry_on_error(env) or []
         nb_attempt = 4
         for _ in range(nb_attempt):
-            result = self._inner_call(env, headers)
+            result = self._inner_call(env, headers, params)
             if result.response.status_code in error_for_retry and result.response.status_code >= 500:
                 from time import sleep
                 warnings.warn(UserWarning(f'{result.response.status_code} returned from ' + result.response.url))
@@ -195,7 +196,7 @@ class RequestRunner:
         # resolve from environment
         return env.resolve(result_hrd)
 
-    def _inner_call(self, env: Variables = None, headers=None) -> RunResult:
+    def _inner_call(self, env: Variables = None, headers=None, params=None) -> RunResult:
         env = env or self._no_env
         rq = Request(method=self.request_prototype.method,
                      url=env.resolve(self.request_prototype.url))
@@ -217,7 +218,12 @@ class RequestRunner:
 
         if isinstance(rq.payload, dict):
             rq.payload = json.dumps(rq.payload)
-        response = requests.request(rq.method, rq.url, data=rq.payload, headers=rq.headers, timeout=timeout, verify=verify)
+        response = requests.request(rq.method, rq.url,
+                                    data=rq.payload,
+                                    headers=rq.headers,
+                                    timeout=timeout,
+                                    verify=verify,
+                                    params=params)
         rq.headers = response.request.headers
         result = RunResult(start_ts=start_ts, end_ts=datetime.now(), request=rq, response=response)
 

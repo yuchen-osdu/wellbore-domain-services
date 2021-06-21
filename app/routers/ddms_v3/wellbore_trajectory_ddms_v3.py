@@ -12,28 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Response, status, Body
+from fastapi import APIRouter, Depends, Response, status
 
-
-from app.clients.storage_service_client import get_storage_record_service
 from odes_storage.models import (
     CreateUpdateRecordsResponse,
     List,
     RecordVersions,
 )
+
+from app.clients.storage_service_client import get_storage_record_service
 from app.model.osdu_model import WellboreTrajectory
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
-from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
-
 
 router = APIRouter()
 
+WELLBORE_TRAJECTORIES_API_BASE_PATH = '/wellboretrajectories'
+
 
 @router.get(
-    "/wellboretrajectories/{wellboretrajectoryid}",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}",
     response_model=WellboreTrajectory,
     response_model_exclude_unset=True,
     summary="Get the WellboreTrajectory using osdu schema",
@@ -54,7 +54,7 @@ async def get_wellbore_trajectory_osdu(
 
 
 @router.delete(
-    "/wellboretrajectories/{wellboretrajectoryid}",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}",
     summary="Delete the wellboreTrajectory. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
     description="{}".format(REQUIRED_ROLES_WRITE),
@@ -76,7 +76,7 @@ async def del_osdu_wellboreTrajectory(wellboretrajectoryid: str, ctx: Context = 
 
 
 @router.get(
-    "/wellboretrajectories/{wellboretrajectoryid}/versions",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the WellboreTrajectory",
     description="{}".format(REQUIRED_ROLES_READ),
@@ -95,7 +95,7 @@ async def get_osdu_wellboreTrajectory_versions(
 
 
 @router.get(
-    "/wellboretrajectories/{wellboretrajectoryid}/versions/{version}",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}/versions/{version}",
     response_model=WellboreTrajectory,
     summary="Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory schema",
     description=""""Get the WellboreTrajectory object using its **id**. {}""".format(REQUIRED_ROLES_READ),
@@ -116,7 +116,7 @@ async def get_osdu_wellboreTrajectory_version(
 
 
 @router.post(
-    "/wellboretrajectories",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH,
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the WellboreTrajectories using osdu schema",
     description="{}".format(REQUIRED_ROLES_WRITE),

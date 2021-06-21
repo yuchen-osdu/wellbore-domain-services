@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import io
+from enum import Enum
+from contextlib import contextmanager
 import random
 
 import httpx
@@ -21,9 +23,17 @@ import numpy.testing as npt
 import pandas as pd
 import pytest
 
-from ..request_builders.wdms.session import build_delete_session
 from .fixtures import with_wdms_env
-from .test_session import SESSION_URL_PREFIX, create_session, with_welllog
+from ..request_builders.wdms.session import build_delete_session
+from ..request_runner import RequestRunner, Request
+
+from ..request_builders.wdms.crud.osdu_welllog import (
+    build_request_create_osdu_welllog,
+    build_request_delete_osdu_welllog)
+
+from ..request_builders.wdms.crud.osdu_wellboretrajectory import (
+    build_request_create_osdu_wellboretrajectory,
+    build_request_delete_osdu_wellboretrajectory)
 
 
 def generate_df(columns, index):
@@ -34,294 +44,337 @@ def generate_df(columns, index):
     return df
 
 
-def get_client(with_wdms_env):
-    return httpx.Client(
-        base_url=with_wdms_env.get('base_url'),
-        verify=False,
+class EntityType(str, Enum):
+    well_log = "welllogs"
+    wellbore_trajectory = "wellboretrajectories"
+
+
+def build_base_url(entity_type: EntityType) -> str:
+    return '{{base_url}}/alpha/ddms/v3/' + entity_type.value
+
+
+@contextmanager
+def create_record(env, entity_type: EntityType):
+    if entity_type == EntityType.well_log:
+        result = build_request_create_osdu_welllog(False).call(env)
+    elif entity_type == EntityType.wellbore_trajectory:
+        result = build_request_create_osdu_wellboretrajectory(False).call(env)
+    else:
+        raise RuntimeError()
+
+    result.assert_ok()
+    resobj = result.get_response_obj()
+    assert len(resobj.recordIds) == 1
+
+    # TODO: when we have the version in the response must return as well
+    record_id = resobj.recordIds[0]
+
+    yield record_id
+
+    # actually
+    if entity_type == EntityType.well_log:
+        build_request_delete_osdu_welllog(record_id).call(env)
+    elif entity_type == EntityType.wellbore_trajectory:
+        build_request_delete_osdu_wellboretrajectory(record_id).call(env)
+
+
+def build_request(name, method, url, *, payload=None, headers=None) -> RequestRunner:
+    rq_proto = Request(
+        name=name,
+        method=method,
+        url=url,
         headers={
-            "data-partition-id": with_wdms_env.get('data_partition'),
-            "Authorization": f"Bearer {with_wdms_env.get('token')}",
+            "data-partition-id": "{{data_partition}}",
+            "Connection": "{{header_connection}}",
+            "Authorization": "Bearer {{token}}",
         },
-        timeout=120
+        payload=payload,
     )
 
+    if headers:
+        rq_proto.headers.update(headers)
 
-def read_parquet(parquet_bytes):
-    f = io.BytesIO(parquet_bytes)
-    f.seek(0)
-    return pd.read_parquet(f)
+    return RequestRunner(rq_proto)
+
+
+def build_request_post_data(entity_type: EntityType, record_id: str, payload) -> RequestRunner:
+    url = build_base_url(entity_type) + f'/{record_id}/data'
+    return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
+
+
+def build_request_post_chunk(entity_type: EntityType, record_id: str, session_id: str, payload) -> RequestRunner:
+    url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}/data'
+    return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
+
+
+def build_request_get_data(entity_type: EntityType, record_id: str) -> RequestRunner:
+    url = build_base_url(entity_type) + f'/{record_id}/data'
+    return build_request(f'{entity_type} get data', 'GET', url)
+
+
+def create_session(env, entity_type: EntityType, record_id: str, overwrite: bool) -> str:
+    url = build_base_url(entity_type) + f'/{record_id}/sessions'
+    runner = build_request(f'create {entity_type} session', 'POST', url,
+                           payload={'mode': 'overwrite' if overwrite else 'update'})
+    return runner.call(env, assert_status=200).get_response_obj().id
+
+
+def complete_session(env, entity_type: EntityType, record_id: str, session_id: str, commit: bool):
+    state = "commit" if commit else "abandon"
+    url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}'
+    runner = build_request(f'{state} session', 'PATCH', url, payload={'state': state})
+    runner.call(env).assert_ok()
+
+
+class ParquetSerializer:
+    mime_type = 'application/x-parquet'
+
+    def read(self, parquet_bytes):
+        f = io.BytesIO(parquet_bytes)
+        f.seek(0)
+        return pd.read_parquet(f)
+
+    def dump(self, df):
+        return df.to_parquet(engine="pyarrow")
+
+
+class JsonSerializer:
+    mime_type = 'application/json'
+
+    # TODO There's an inconsistency in service, cannot specify orient in json and default is 'columns'
+    #  (which different from legacy which is 'split')
+    def read(self, json_content):
+        return pd.read_json(json_content, orient='columns')
+
+    def dump(self, df):
+        return df.to_json(orient='split')
 
 
 WELLLOG_URL_PREFIX = 'alpha/ddms/v3/welllogs'
 
 
-# todo get data json
-
 @pytest.mark.tag('chunking', 'smoke')
-def test_send_one_chunk_without_session(with_wdms_env, with_welllog):
-    record_id = with_welllog
-    data_url = f'/{WELLLOG_URL_PREFIX}/{record_id}/data'
+@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
+def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
 
-    # Send data in parquet format
-    data = generate_df(['MD', 'X'], range(8))
-    data_to_send = data.to_parquet(engine="pyarrow")
-    headers = {
-        'content-type': 'application/x-parquet',
-        "Accept": 'application/x-parquet'
-    }
-    with get_client(with_wdms_env) as client:
-        res = client.post(data_url, content=data_to_send, headers=headers)
-        assert res.status_code == httpx.codes.OK
-        res = client.get(data_url, headers=headers)
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data, read_parquet(res.content))
+    with create_record(with_wdms_env, entity_type) as record_id:
+        data = generate_df(['MD', 'X'], range(8))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+        result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
+        # check type set to false since in Json dType is lost so int32 can become int64
 
 
 @pytest.mark.tag('chunking', 'smoke')
-def test_send_one_chunk_with_session_commit(with_wdms_env, with_welllog):
-    record_id = with_welllog
+@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
+def test_send_one_chunk_with_session_commit(with_wdms_env, entity_type, serializer):
 
-    # Send data in parquet format
-    data = generate_df(['MD', 'X'], range(8))
-    data_to_send = data.to_parquet(engine="pyarrow")
-    headers = {
-        'content-type': 'application/x-parquet',
-        "Accept": 'application/x-parquet'
-    }
+    with create_record(with_wdms_env, entity_type) as record_id:
+        expected = generate_df(['MD', 'X'], range(8))
 
-    with get_client(with_wdms_env) as client:
-        # create an update session
-        res = client.post(f'/{WELLLOG_URL_PREFIX}/{record_id}/sessions', json={'mode': 'overwrite'})
-        assert res.status_code == httpx.codes.OK, f'{res.request.method} : {res.url} -> {res.status_code}'
-        session = res.json()
-        session_id = session['id']
+        # create session
+        session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
+
+        # post chunk
+        build_request_post_chunk(
+            entity_type, record_id, session_id, serializer.dump(expected)
+        ).call(
+            with_wdms_env, headers={'Content-Type': serializer.mime_type},
+        ).assert_ok()
+
+        # commit session
+        complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
+
+        # then read and check expected
+        result = build_request_get_data(
+            entity_type, record_id
+        ).call(
+            with_wdms_env, headers={'Accept': serializer.mime_type}, assert_status=200
+        )
+        pd.testing.assert_frame_equal(expected, serializer.read(result.response.content), check_dtype=False)
+        # check type set to false since in Json dType is lost so int32 can become int64
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize("shuffle", [False])  # [False, True]
+def test_send_multiple_chunks_with_session_commit(with_wdms_env, shuffle):
+    # well log on parquet
+    entity_type = EntityType.well_log
+    serializer = ParquetSerializer()
+
+    with create_record(with_wdms_env, entity_type) as record_id:
+        data = generate_df(['MD', 'X', 'Y', 'Z'], range(1000))
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        # create session
+        session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
 
         # post a chunk
-        res = client.post(f'/{WELLLOG_URL_PREFIX}/{record_id}/sessions/{session_id}/data', content=data_to_send, headers=headers)
-        assert res.status_code == httpx.codes.OK
-
-        res = client.patch(f'/{WELLLOG_URL_PREFIX}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
-        assert res.status_code == httpx.codes.OK
-
-        # get and check chunk
-        res = client.get(f'/{WELLLOG_URL_PREFIX}/{record_id}/data', headers=headers)
-        assert res.status_code == httpx.codes.OK
-        cmp_data = read_parquet(res.content)
-        pd.testing.assert_frame_equal(data, cmp_data)
-
-
-@pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize("shuffle", [False, True])
-def test_send_multiple_chunks_with_session_commit(with_wdms_env, with_welllog, shuffle):
-    record_id = with_welllog
-    
-    # Send data in parquet format
-    data = generate_df(['MD', 'X', 'Y', 'Z'], range(1000))
-    headers={
-        'content-type':'application/x-parquet',
-        "Accept": 'application/x-parquet'
-    }
-
-    with get_client(with_wdms_env) as client:
-        # create an update session
-        res = client.post(f'/{WELLLOG_URL_PREFIX}/{record_id}/sessions', json={'mode': 'overwrite'})
-        assert res.status_code == httpx.codes.OK, f'{res.request.method} : {res.url} -> {res.status_code}'
-        session = res.json()
-        session_id = session['id']
-
-        # post a chunk
-        chunks = [data.iloc[idx:idx+100].to_parquet(engine="pyarrow") for idx in range(0, 1000, 100)]
+        chunks = [data.iloc[idx:idx + 100].to_parquet(engine="pyarrow") for idx in range(0, 1000, 100)]
         if shuffle:
-            random.shuffle(chunks) # chunk order should not mattter 
+            random.shuffle(chunks)  # chunk order should not matter
+
         for chunk in chunks:
-            res = client.post(f'/{WELLLOG_URL_PREFIX}/{record_id}/sessions/{session_id}/data', content=chunk, headers=headers)
-            assert res.status_code == httpx.codes.OK
+            build_request_post_chunk(
+                entity_type, record_id, session_id, chunk
+            ).call(
+                with_wdms_env, headers=headers,
+            ).assert_ok()
 
-        res = client.patch(f'/{WELLLOG_URL_PREFIX}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
-        assert res.status_code == httpx.codes.OK
+        # commit session
+        complete_session(with_wdms_env, entity_type, record_id, session_id, True)
 
-        # get and check chunk
-        res = client.get(f'/{WELLLOG_URL_PREFIX}/{record_id}/data', headers=headers)
-        assert res.status_code == httpx.codes.OK
-        cmp_data = read_parquet(res.content)
-        pd.testing.assert_frame_equal(data, cmp_data)
+        # check full dataframe
+        result = build_request_get_data(
+            entity_type, record_id
+        ).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data, serializer.read(result.response.content))
 
-        # get and check per columns
+        # check per columns
         for col in data.columns:
-            res = client.get(f'/{WELLLOG_URL_PREFIX}/{record_id}/data', params={'curves': col}, headers=headers)
-            assert res.status_code == httpx.codes.OK
-            cmp_data = read_parquet(res.content)
+            result = build_request_get_data(
+                entity_type, record_id
+            ).call(with_wdms_env, headers=headers, params={'curves': col}, assert_status=200)
+            cmp_data = serializer.read(result.response.content)
             assert cmp_data.columns == [col]
             npt.assert_array_almost_equal(data[col], cmp_data[col])
 
 
 @pytest.mark.tag('chunking', 'smoke')
-def test_get_data_with_offset_filter(with_wdms_env, with_welllog):
-    record_id = with_welllog
-    data_url = f'/{WELLLOG_URL_PREFIX}/{record_id}/data'
+def test_get_data_with_offset_filter(with_wdms_env):
+    # well log on parquet
+    entity_type = EntityType.well_log
+    serializer = ParquetSerializer()
 
-    # Send data in parquet format
-    size = 100
-    data = generate_df(['MD', 'X'], range(size))
-    data_to_send = data.to_parquet(engine="pyarrow")
-    headers = {
-        'content-type': 'application/x-parquet',
-        "Accept": 'application/x-parquet'
-    }
-    with get_client(with_wdms_env) as client:
-        # send data
-        res = client.post(data_url, content=data_to_send, headers=headers)
-        assert res.status_code == httpx.codes.OK
+    with create_record(with_wdms_env, entity_type) as record_id:
+        size = 100
+        data = generate_df(['MD', 'X'], range(size))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
-        # read data
-        res = client.get(data_url, headers=headers, params={"offset": 0})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data, read_parquet(res.content))
-        
-        res = client.get(data_url, headers=headers, params={"offset": "0"})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data, read_parquet(res.content))
+        # post data
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
 
-        res = client.get(data_url, headers=headers, params={"offset": 1})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.tail(size-1), read_parquet(res.content))
+        validation_list = [  # tuple (params, expected_status, expected data)
+            ({"offset": 0}, 200, data),
+            ({"offset": "0"}, 200, data),
+            ({"offset": 1}, 200, data.tail(size - 1)),
+            ({"offset": int(size / 2)}, 200, data.tail(int(size / 2))),
+            ({"offset": size - 1}, 200, data.tail(1)),
+            ({"offset": 1, "curves": "X"}, 200, data[['X']].tail(size - 1)),
+            # if offset >= number of rows, returns an empty dataFrame with columns
+            ({"offset": size}, 200, data.tail(0)),
+            ({"offset": size + 50}, 200, data.tail(0)),
+            # invalid offset
+            ({"offset": -2}, 422, None),
+            ({"offset": "false"}, 422, None)
+        ]
 
-        res = client.get(data_url, headers=headers, params={"offset": int(size/2)})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.tail(int(size/2)), read_parquet(res.content))
+        for (params, expected_status, expected_data) in validation_list:
+            r = build_request_get_data(
+                entity_type, record_id
+            ).call(with_wdms_env, headers=headers, params=params, assert_status=expected_status)
 
-        res = client.get(data_url, headers=headers, params={"offset": size-1})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.tail(1), read_parquet(res.content))
-
-        # with column filter
-        res = client.get(data_url, headers=headers, params={"offset": 1, "curves": "X"})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data[['X']].tail(size-1), read_parquet(res.content))
-
-        # if offset >= number of rows, returns an empty dataFrame with columns
-        res = client.get(data_url, headers=headers, params={"offset": size})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.tail(0), read_parquet(res.content))
-        res = client.get(data_url, headers=headers, params={"offset": size + 50})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.tail(0), read_parquet(res.content))
-
-        res = client.get(data_url, headers=headers, params={"offset": -2})
-        assert res.status_code == httpx.codes.UNPROCESSABLE_ENTITY
-        res = client.get(data_url, headers=headers, params={"offset": "false"})
-        assert res.status_code == httpx.codes.UNPROCESSABLE_ENTITY
+            if r.ok:
+                pd.testing.assert_frame_equal(expected_data, serializer.read(r.response.content))
 
 
 @pytest.mark.tag('chunking', 'smoke')
-def test_get_data_with_column_filter(with_wdms_env, with_welllog):
-    record_id = with_welllog
-    data_url = f'/{WELLLOG_URL_PREFIX}/{record_id}/data'
+def test_get_data_with_column_filter(with_wdms_env):
+    # well log on parquet
+    entity_type = EntityType.well_log
+    serializer = ParquetSerializer()
 
-    # Send data in parquet format
-    size = 100
-    data = generate_df(['MD', 'X', 'Y', 'Z'], range(size))
-    data_to_send = data.to_parquet(engine="pyarrow")
-    headers = {
-        'content-type': 'application/x-parquet',
-        "Accept": 'application/x-parquet'
-    }
-    with get_client(with_wdms_env) as client:
-        # send data
-        res = client.post(data_url, content=data_to_send, headers=headers)
-        assert res.status_code == httpx.codes.OK
+    with create_record(with_wdms_env, entity_type) as record_id:
+        size = 100
+        data = generate_df(['MD', 'X', 'Y', 'Z'], range(size))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
-        res = client.get(data_url, headers=headers, params={"curves": "MD"})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data[['MD']], read_parquet(res.content))
+        # post data
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
 
-        res = client.get(data_url, headers=headers, params={"curves": "X, Y, Z"})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data[['X', 'Y', 'Z']], read_parquet(res.content))
+        validation_list = [  # tuple (params, expected_status, expected data)
+            ({"curves": "MD"}, 200, data[['MD']]),
+            ({"curves": "X, Y, Z"}, 200, data[['X', 'Y', 'Z']]),
+            ({"curves": "W, X"}, 200, data[['X']])
+        ]
 
-        "ignore with non existing column"
-        res = client.get(data_url, headers=headers, params={"curves": "W, X"})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data[['X']], read_parquet(res.content))
+        for (params, expected_status, expected_data) in validation_list:
+            r = build_request_get_data(
+                entity_type, record_id
+            ).call(with_wdms_env, headers=headers, params=params, assert_status=expected_status)
+
+            if r.ok:
+                pd.testing.assert_frame_equal(expected_data, serializer.read(r.response.content))
 
 
 @pytest.mark.tag('chunking', 'smoke')
-def test_get_data_with_limit_filter(with_wdms_env, with_welllog):
-    record_id = with_welllog
-    data_url = f'/{WELLLOG_URL_PREFIX}/{record_id}/data'
+def test_get_data_with_limit_filter(with_wdms_env):
+    # well log on parquet
+    entity_type = EntityType.well_log
+    serializer = ParquetSerializer()
 
-    # Send data in parquet format
-    size = 100
-    data = generate_df(['MD', 'X'], range(size))
-    data_to_send = data.to_parquet(engine="pyarrow")
-    headers = {
-        'content-type': 'application/x-parquet',
-        "Accept": 'application/x-parquet'
-    }
-    with get_client(with_wdms_env) as client:
-        # send data
-        res = client.post(data_url, content=data_to_send, headers=headers)
-        assert res.status_code == httpx.codes.OK
+    with create_record(with_wdms_env, entity_type) as record_id:
+        size = 100
+        data = generate_df(['MD', 'X'], range(size))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
-        # read data
-        res = client.get(data_url, headers=headers, params={"limit": 0})
-        assert res.status_code == httpx.codes.UNPROCESSABLE_ENTITY
-        res = client.get(data_url, headers=headers, params={"limit": -2})
-        assert res.status_code == httpx.codes.UNPROCESSABLE_ENTITY
+        # post data
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
 
-        res = client.get(data_url, headers=headers, params={"limit": 1})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.head(1), read_parquet(res.content))
+        validation_list = [  # tuple (params, expected_status, expected data)
+            ({"limit": 1}, 200, data.head(1)),
+            ({"limit": 50}, 200, data.head(50)),
+            ({"limit": 99}, 200, data.head(99)),
+            ({"limit": "3"}, 200, data.head(3)),
+            ({"limit": 50, "curves": "X"}, 200, data[['X']].head(50)),
+            ({"limit": 100}, 200, data),
+            ({"limit": 150}, 200, data),
+            # invalid limit
+            ({"limit": 0}, 422, None),
+            ({"limit": -2}, 422, None)
+        ]
 
-        res = client.get(data_url, headers=headers, params={"limit": 50})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.head(50), read_parquet(res.content))
+        for (params, expected_status, expected_data) in validation_list:
+            r = build_request_get_data(
+                entity_type, record_id
+            ).call(with_wdms_env, headers=headers, params=params, assert_status=expected_status)
 
-        res = client.get(data_url, headers=headers, params={"limit": 99})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.head(99), read_parquet(res.content))
-
-        res = client.get(data_url, headers=headers, params={"limit": "3"})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.head(3), read_parquet(res.content))
-
-        # with column filter
-        res = client.get(data_url, headers=headers, params={"limit": 50, "curves": "X"})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data[['X']].head(50), read_parquet(res.content))
-
-        # if limit >= number of rows, returns all rows
-        res = client.get(data_url, headers=headers, params={"limit": 100})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data, read_parquet(res.content))
-        res = client.get(data_url, headers=headers, params={"limit": 150})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data, read_parquet(res.content))
+            if r.ok:
+                pd.testing.assert_frame_equal(expected_data, serializer.read(r.response.content))
 
 
 @pytest.mark.tag('chunking', 'smoke')
-def test_get_data_with_limit_and_offset_filter(with_wdms_env, with_welllog):
-    record_id = with_welllog
-    data_url = f'/{WELLLOG_URL_PREFIX}/{record_id}/data'
+@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
+    serializer = ParquetSerializer()
 
-    # Send data in parquet format
-    size = 100
-    data = generate_df(['MD', 'X'], range(size))
-    data_to_send = data.to_parquet(engine="pyarrow")
-    headers = {
-        'content-type': 'application/x-parquet',
-        "Accept": 'application/x-parquet'
-    }
-    with get_client(with_wdms_env) as client:
-        # send data
-        res = client.post(data_url, content=data_to_send, headers=headers)
-        assert res.status_code == httpx.codes.OK
+    with create_record(with_wdms_env, entity_type) as record_id:
+        size = 100
+        data = generate_df(['MD', 'X'], range(size))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
-        # read data
-        res = client.get(data_url, headers=headers, params={"limit": 5, "offset": 2})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.tail(size-2).head(5), read_parquet(res.content))
+        # post data
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
 
-        res = client.get(data_url, headers=headers, params={"limit": 5, "offset": size-2})
-        assert res.status_code == httpx.codes.OK
-        pd.testing.assert_frame_equal(data.tail(size-(size-2)).head(5), read_parquet(res.content))
+        validation_list = [  # tuple (params, expected_status, expected data)
+            ({"limit": 5, "offset": 2}, 200, data.tail(size-2).head(5)),
+            ({"limit": 5, "offset": size-2}, 200, data.tail(size-(size-2)).head(5))
+        ]
+
+        for (params, expected_status, expected_data) in validation_list:
+            r = build_request_get_data(
+                entity_type, record_id
+            ).call(with_wdms_env, headers=headers, params=params, assert_status=expected_status)
+
+            if r.ok:
+                pd.testing.assert_frame_equal(expected_data, serializer.read(r.response.content))
