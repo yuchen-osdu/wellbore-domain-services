@@ -47,6 +47,7 @@ hiredis==2.0.0
 httpcore==0.13.3
 httpx==0.18.1
 idna==2.10
+importlib-metadata==3.10.1
 iniconfig==1.1.1
 isodate==0.6.0
 jmespath==0.10.0
@@ -118,3 +119,4 @@ uvicorn==0.14.0
 xmltodict==0.11.0
 yarl==1.6.3
 zict==2.0.0
+zipp==3.4.1

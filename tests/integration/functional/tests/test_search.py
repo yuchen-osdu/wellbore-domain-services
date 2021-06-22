@@ -60,7 +60,7 @@ def test_setup_for_search(get_env):
 
     query_result = query_for_record_set_available(env)
     nb_record = len(query_result.results)
-
+    #set env if found
     if nb_record == 0:
         # create one wellbore
         record_id = build_request_seach_tests_setup_create_wellbore().call(

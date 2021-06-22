@@ -376,7 +376,7 @@ def build_request_create_osdu_wellboremarkerset() -> RequestRunner:
 
 def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
     ref = {
-        "kind": "osdu:wks:work-product-component--wellboremarkerset:1.0.0",
+        "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
         "acl": {
             "owners": [
                 "someone@company.com"
@@ -680,7 +680,7 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
     del ref["modifyUser"]
     del ref["modifyTime"]
     # Add mandatory fields
-    ref["kind"] = "opendes:wks:master-data--wellboremarkerset:1.0.0"
+    ref["kind"] = "opendes:wks:master-data--WellboreMarkerSet:1.0.0"
     ref["acl"] = {
         "owners": ["data.default.owners@opendes.p4d.cloud.slb-ds.com"],
         "viewers": ["data.default.viewers@opendes.p4d.cloud.slb-ds.com"],

@@ -47,6 +47,22 @@ def build_request_search_markers_by_wellbore_id() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_search_markersets_by_wellbore_id() -> RequestRunner:
+    rq_proto = Request(
+        name='search markersets by wellbore id',
+        method='POST',
+        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/{{setup_search_osdu_wellbore_id}}/wellboremarkersets',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload='{ "query": "" }'
+    )
+    return RequestRunner(rq_proto)
+
+
 def build_request_search_wellbores_by_geo_polygon() -> RequestRunner:
     rq_proto = Request(
         name='search wellbores by geo polygon',
@@ -62,17 +78,58 @@ def build_request_search_wellbores_by_geo_polygon() -> RequestRunner:
         {
             "points": [
                    {
-                        "latitude": 46,
-                        "longitude": -101
+                        "latitude": -21,
+                        "longitude": 70
                     },
                     {
-                        "latitude": 49,
-                        "longitude": -102
+                        "latitude": -20,
+                        "longitude": 65
                     },
                     {
-                        "latitude": 45,
-                        "longitude": -105
+                        "latitude": -22,
+                        "longitude": 70
                     }
+              ],
+               "query": {
+                         "query": ""
+                        }
+           }
+                """
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_search_osdu_wellbores_by_geo_polygon() -> RequestRunner:
+    rq_proto = Request(
+        name='search wellbores by geo polygon',
+        method='POST',
+        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/bygeopolygon',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload=r"""
+        {
+            "points": [
+                   {
+                        "latitude": -20,
+                        "longitude": 71
+                    },
+                    {
+                        "latitude": -22,
+                        "longitude": 71
+                    },
+                    {
+                        "latitude": -22,
+                        "longitude": 73
+                    }
+,
+                    {
+                        "latitude": -20,
+                        "longitude": 71
+                    }                    
               ],
                "query": {
                          "query": ""
@@ -104,6 +161,22 @@ def build_request_search_logset_by_wellbores_attribute() -> RequestRunner:
         name='search logset by wellbores attribute',
         method='POST',
         url='{{base_url}}/ddms/{{search_query_type}}/wellbores/data.state:"North Dakota"/logsets',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload='{ "query": "" }'
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_search_welllogs_by_wellbores_attribute() -> RequestRunner:
+    rq_proto = Request(
+        name='search logset by wellbores attribute',
+        method='POST',
+        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbore/data.DefaultVerticalMeasurementID:"KB"/welllogs',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -147,11 +220,43 @@ def build_request_search_wellbores_by_bounding_box() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_search_osdu_wellbores_by_bounding_box() -> RequestRunner:
+    rq_proto = Request(
+        name='search wellbores by bounding box',
+        method='POST',
+        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/byboundingbox?latitude_top_left=-20&longitude_top_left=71&latitude_bottom_right=-22&longitude_bottom_right=73',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload='{ "query": "" }'
+    )
+    return RequestRunner(rq_proto)
+
+
 def build_request_search_wellbores_by_distance() -> RequestRunner:
     rq_proto = Request(
         name='search wellbores by distance',
         method='POST',
         url='{{base_url}}/ddms/{{search_query_type}}/wellbores/bydistance?latitude=46.8&longitude=-103.2&distance=15000',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload='{ "query": "" }'
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_search_osdu_wellbores_by_distance() -> RequestRunner:
+    rq_proto = Request(
+        name='search wellbores by distance',
+        method='POST',
+        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/bydistance?latitude=-21.5399&longitude=72.4635&distance=100',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -193,6 +298,23 @@ def build_request_search_logset_by_wellbore_id() -> RequestRunner:
         payload='{ "query": "" }'
     )
     return RequestRunner(rq_proto)
+
+
+def build_request_search_welllogs_by_wellbore_id() -> RequestRunner:
+    rq_proto = Request(
+        name='search logset by wellbore id',
+        method='POST',
+        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/{{setup_search_osdu_wellbore_id}}/welllogs',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload='{ "query": "" }'
+    )
+    return RequestRunner(rq_proto)
+
 
 
 def build_request_search_wellbores() -> RequestRunner:
