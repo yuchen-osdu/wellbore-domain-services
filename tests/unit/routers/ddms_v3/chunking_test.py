@@ -1,4 +1,6 @@
 import io
+
+from app.bulk_persistence.dask.errors import BulkNotFound
 from tests.unit.test_utils import nope_logger_fixture
 
 from tempfile import TemporaryDirectory
@@ -46,12 +48,18 @@ Definitions = {
             "BaseDepthMeasuredDepth": 12345.6,
             "VerticalMeasurement": {"VerticalMeasurement": 12345.6}
         }
+    },
+    'Log': {
+        'base_url': '/ddms/v2/logs',
+        'chunking_url': '/alpha/ddms/v2/logs',  # TODO: update when no longer alpha
+        'kind': 'osdu:wks:log:1.0.5',
+        'record_data': {
+            "name": "myLog_name"
+        }
     }
 }
 
-
-EntityTypeParams = ['WellLog', 'WellboreTrajectory']
-
+EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log']
 
 def _create_df_from_response(response):
     f = io.BytesIO(response.content)
@@ -193,9 +201,9 @@ def test_send_all_data_once(setup_client,
     initial_data_df = generate_df(columns, range(5, 13))
     data_to_send = create_func(initial_data_df)
     headers = {'content-type': content_type_header}
-
-    get_response_no_data = client.get(f'{Definitions[entity_type]["base_url"]}/{record_id}/data', headers=headers)
-    assert get_response_no_data.status_code == 404
+    # test no data
+    with pytest.raises(BulkNotFound):
+        client.get(f'{Definitions[entity_type]["chunking_url"]}/{record_id}/data', headers=headers)
 
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
