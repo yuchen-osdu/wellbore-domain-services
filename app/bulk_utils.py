@@ -30,6 +30,7 @@ from app.record_utils import fetch_record
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
 from app.utils import Context, OpenApiHandler, get_ctx
+from app.routers.ddms_v2.persistence import Persistence
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
     REQUEST_DATA_BODY_SCHEMA,
@@ -158,7 +159,7 @@ class DataFrameRender:
         return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
 
 
-def get_bulk_uri(record):
+def get_bulk_uri_osdu(record):
     return record.data.get('ExtensionProperties', {}).get('wdms', {}).get(BULK_URI_FIELD, None)
 
 
@@ -265,12 +266,19 @@ async def get_data_version(
     dask_blob_storage: DaskDriverBlobStorage = Depends(with_dask_blob_storage),
 ):
     record = await fetch_record(ctx, record_id, version)
-    bulk_id, prefix = BulkId.bulk_urn_decode(get_bulk_uri(record))
+    bulk_urn = get_bulk_uri_osdu(record)
+    if bulk_urn is not None:
+        bulk_id, prefix = BulkId.bulk_urn_decode(bulk_urn)
+    else: # fallback on ddms_v2 Persistence for wks:log schema
+        bulk_id, prefix = (None, None)
     try:
-        if prefix != BULK_URN_PREFIX_VERSION:
+        if prefix == BULK_URN_PREFIX_VERSION:
+            df = await dask_blob_storage.load_bulk(record_id, bulk_id)
+            df = await DataFrameRender.process_params(df, ctrl_p)
+        elif prefix is None:
+            df = await Persistence.read_bulk(ctx, record, None)
+        else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
-        df = await dask_blob_storage.load_bulk(record_id, bulk_id)
-        df = await DataFrameRender.process_params(df, ctrl_p)
 
         return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
     except BulkError as ex:
@@ -331,7 +339,7 @@ async def complete_session(
 
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
                 previous_bulk_uri = None
-                bulk_urn = get_bulk_uri(record)
+                bulk_urn = get_bulk_uri_osdu(record)
                 if i_session.session.mode == SessionUpdateMode.Update and bulk_urn is not None:
                     previous_bulk_uri, _prefix = BulkId.bulk_urn_decode(bulk_urn)
 
