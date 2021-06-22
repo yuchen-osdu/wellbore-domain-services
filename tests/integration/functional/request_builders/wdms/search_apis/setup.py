@@ -200,6 +200,92 @@ def build_request_seach_tests_setup_create_logsets() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_seach_tests_setup_create_osdu_welllogs() -> RequestRunner:
+    rq_proto = Request(
+        name='seach_tests_setup_create_osdu_welllog',
+        method='POST',
+        url='{{base_url}}/ddms/v3/welllogs',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload=r"""
+[
+{
+  "acl": {{record_acl}}, "legal": {{record_legal}},
+  "kind": "{{osduWellLogKind}}",
+  "data": {
+    "WellboreID": "{{setup_search_osdu_wellbore_id}}:",  
+    "Name": "wdms_e2e_search_record_v{{search_record_version}}",
+    "Curves": [{
+        "CurveID": "Example CurveID",
+        "DateStamp": "2020-02-13T09:13:15.55Z",
+        "CurveVersion": "Example CurveVersion",
+        "CurveQuality": "Example CurveQuality",
+        "InterpreterName": "Example InterpreterName",
+        "IsProcessed": true,
+        "NullValue": true,
+        "DepthCoding": "REGULAR",
+        "Interpolate": true,
+        "TopDepth": 12345.6,
+        "BaseDepth": 12345.6,
+        "DepthUnit": "namespace:reference-data--UnitOfMeasure:m:",
+        "CurveUnit": "namespace:reference-data--UnitOfMeasure:m:",
+        "Mnemonic": "Example Mnemonic",
+        "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
+        "LogCurveBusinessValueID": "namespace:reference-data--LogCurveBusinessValue:SomeUniqueLogCurveBusinessValueID:",
+        "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
+        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
+        "VerticalMeasurement": {
+          "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+          "VerticalMeasurement": 12345.6,
+          "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+          "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
+          "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
+          "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+          "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-123456:",
+          "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+          "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+          "VerticalReferenceID": "Example VerticalReferenceID",
+          "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"    
+    }
+  }], 
+  "meta": [
+    {
+      "kind": "Unit", 
+      "name": "ft", 
+      "persistableReference": "{\"scaleOffset\":{\"scale\":0.3048,\"offset\":0.0},\"symbol\":\"ft\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}", 
+      "propertyNames": [
+        "stop.value", 
+        "elevationReference.elevationFromMsl.value", 
+        "start.value", 
+        "step.value", 
+        "reference.unitKey"
+      ], 
+      "propertyValues": [
+        "ft"
+      ]
+    }, 
+    {
+      "kind": "DateTime", 
+      "name": "datetime", 
+      "persistableReference": "{\"format\":\"yyyy-MM-ddTHH:mm:ssZ\",\"timeZone\":\"UTC\",\"type\":\"DTM\"}", 
+      "propertyNames": [
+        "dateModified", 
+        "dateCreated"
+      ]
+    }
+  ]
+}
+}
+]
+"""
+    )
+    return RequestRunner(rq_proto)
+
+
 def build_request_seach_tests_setup_create_record_refs() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_record_refs',
@@ -533,6 +619,222 @@ def build_request_seach_tests_setup_create_wellbore() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_seach_tests_setup_create_osdu_wellbore() -> RequestRunner:
+    rq_proto = Request(
+        name='seach_tests_setup_create_osdu_wellbore',
+        method='POST',
+        url='{{base_url}}/ddms/v3/wellbores',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload=r"""
+[
+{
+ "data": {
+  "FacilityTypeID": "slb-osdu-dev-des-prod-testing:reference-data--FacilityType:Wellbore:",
+  "CurrentOperatorID": "slb-osdu-dev-des-prod-testing:master-data--Organisation:KOTUKU%20CONSOLIDATED%20OIL%20CO:",
+  "FacilityName": "wdms_e2e_search_refs_v{{search_record_version}}",
+  "FacilityNameAliases": [
+   {
+    "AliasName": "08042021110609",
+    "AliasNameTypeID": "slb-osdu-dev-des-prod-testing:reference-data--AliasNameType:UniqueIdentifier:"
+   },
+   {
+    "AliasName": "SLB",
+    "AliasNameTypeID": "slb-osdu-dev-des-prod-testing:reference-data--AliasNameType:RegulatoryIdentifier:"
+   },
+   {
+    "AliasName": "operator5",
+    "AliasNameTypeID": "slb-osdu-dev-des-prod-testing:reference-data--AliasNameType:IndustryName:"
+   }
+  ],
+  "FacilityEvents": [
+   {
+    "FacilityEventTypeID": "slb-osdu-dev-des-prod-testing:reference-data--FacilityEventType:Spud:",
+    "EffectiveDateTime": "1909-01-01T00:00:00"
+   }
+  ],
+  "GeoContexts": [
+   {
+    "GeoPoliticalEntityID": "slb-osdu-dev-des-prod-testing:master-data--GeoPoliticalEntity:Germany:",
+    "GeoTypeID": "slb-osdu-dev-des-prod-testing:reference-data--GeoPoliticalEntityType:Country:"
+   },
+   {
+    "GeoPoliticalEntityID": "slb-osdu-dev-des-prod-testing:master-data--GeoPoliticalEntity::"
+   },
+   {
+    "GeoPoliticalEntityID": "slb-osdu-dev-des-prod-testing:master-data--GeoPoliticalEntity:New%20South%20Wales:",
+    "GeoTypeID": "slb-osdu-dev-des-prod-testing:reference-data--GeoPoliticalEntityType:State:"
+   }
+  ],
+  "SpatialLocation": {
+   "AsIngestedCoordinates": {
+    "type": "AnyCrsFeatureCollection",
+    "CoordinateReferenceSystemID": "slb-osdu-dev-des-prod-testing:reference-data--CoordinateReferenceSystem:GCS_WGS_1984:",
+    "persistableReferenceCrs": "{\"wkt\":\"GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433],AUTHORITY[\"EPSG\",4326]]\",\"ver\":\"PE_10_3_1\",\"name\":\"GCS_WGS_1984\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"4326\"},\"type\":\"LBC\"}",
+    "persistableReferenceVerticalCrs": "{\"wkt\":\"GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433],AUTHORITY[\"EPSG\",4326]]\",\"ver\":\"PE_10_3_1\",\"name\":\"GCS_WGS_1984\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"4326\"},\"type\":\"LBC\"}",
+    "persistableReferenceUnitZ": "m",
+    "features": [
+     {
+      "type": "AnyCrsFeature",
+      "geometry": {
+       "type": "AnyCrsPoint",
+       "coordinates": [
+        -21.5399,
+        215.21
+       ]
+      }
+     }
+    ]
+   },
+   "Wgs84Coordinates": {
+    "type": "FeatureCollection",
+    "features": [
+     {
+      "type": "Feature",
+      "geometry": {
+       "type": "Point",
+       "coordinates": [
+        72.4635,
+        -21.5399
+       ]
+      }
+     }
+    ]
+   },
+   "SpatialGeometryTypeID": "slb-osdu-dev-des-prod-testing:reference-data--SpatialGeometryType:Point:"
+  },
+  "VerticalMeasurements": [
+   {
+    "VerticalMeasurement": 264.21,
+    "VerticalMeasurementTypeID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementType:KB:",
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:ELEV:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "KB"
+   },
+   {
+    "VerticalMeasurement": 34.0,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:MD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth MD"
+   },
+   {
+    "VerticalMeasurement": 77.25,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:MD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth Driller MD"
+   },
+   {
+    "VerticalMeasurement": 67.25,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:MD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth Planned MD"
+   },
+   {
+    "VerticalMeasurement": 78.24,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:MD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth Sub Sea Planned MD"
+   },
+   {
+    "VerticalMeasurement": 87.25,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:MD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth Projected MD"
+   },
+   {
+    "VerticalMeasurement": 73.25,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:TVD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth TVD"
+   },
+   {
+    "VerticalMeasurement": 45.89,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:TVD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth Driller TVD"
+   },
+   {
+    "VerticalMeasurement": 57.93,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:TVD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth Planned TVD"
+   },
+   {
+    "VerticalMeasurement": 64.21,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:TVD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Total Depth Sub Sea Planned TVD"
+   },
+   {
+    "VerticalMeasurement": 264.21,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:ELEV:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Well Head Elevation"
+   },
+   {
+    "VerticalMeasurement": 58.25,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:MD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Kick-off Depth MD"
+   },
+   {
+    "VerticalMeasurement": 47.25,
+    "VerticalMeasurementPathID": "slb-osdu-dev-des-prod-testing:reference-data--VerticalMeasurementPath:TVD:",
+    "VerticalMeasurementUnitOfMeasureID": "slb-osdu-dev-des-prod-testing:reference-data--UnitOfMeasure:m:",
+    "VerticalMeasurementID": "Kick-off Depth TVD"
+   }
+  ],
+  "DefaultVerticalMeasurementID": "KB",
+  "ExtensionProperties": {
+   }
+  },
+ "meta": [
+  {
+   "kind": "CRS",
+   "name": "GCS_WGS_1984",
+   "persistableReference": "{\"wkt\":\"GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433],AUTHORITY[\"EPSG\",4326]]\",\"ver\":\"PE_10_3_1\",\"name\":\"GCS_WGS_1984\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"4326\"},\"type\":\"LBC\"}",
+   "propertyNames": [
+    "wellHeadWgs84.longitude",
+    "wellHeadWgs84.latitude",
+    "wellHeadGeographic.longitude",
+    "wellHeadGeographic.latitude"
+   ]
+  },
+  {
+   "kind": "DateTime",
+   "name": "datetime",
+   "persistableReference": "{\"type\": \"DTM\", \"format\": \"yyyy-MM-dd\", \"timeZone\": \"UTC\"}",
+   "propertyNames": [
+    "spudDate"
+   ]
+  },
+  {
+   "kind": "Unit",
+   "name": "m",
+   "persistableReference": "{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"L\",\"type\":\"UM\"},\"type\":\"USO\"}",
+   "propertyNames": [
+    "elevationReference.elevationFromMsl.value",
+    "wellHeadElevation.value",
+    "wellHeadGeographic.elevationFromMsl.value",
+    "totalDepthMd.value"
+   ]
+  }
+ ],
+ "version": 1623075680181059,
+ "kind": "{{osduWellboreKind}}",
+ "acl": {{record_acl}}, 
+ "legal": {{record_legal}} 
+}
+]
+"""
+    )
+    return RequestRunner(rq_proto)
+
+
 def build_request_seach_tests_setup_create_markers() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_markers',
@@ -567,6 +869,51 @@ def build_request_seach_tests_setup_create_markers() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_seach_tests_setup_create_osdu_markersets() -> RequestRunner:
+    rq_proto = Request(
+        name='seach_tests_setup_create_osdu_markersets',
+        method='POST',
+        url='{{base_url}}/ddms/v3/wellboremarkersets',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload=r"""
+[
+{
+  "acl": {{record_acl}}, "legal": {{record_legal}},
+  "kind": "{{osduWellboreMarkerSetKind}}",
+  "data": {
+    "Name": "wdms_e2e_search_record_v{{search_record_version}}",
+    "WellboreID": "{{setup_search_osdu_wellbore_id}}:",
+      "Markers": [
+        {
+          "MarkerName": "Example MarkerName",
+          "MarkerMeasuredDepth": 12345.6,
+          "MarkerDate": "2020-02-13T09:13:15.55Z",
+          "MarkerObservationNumber": 12345.6,
+          "MarkerInterpreter": "Example MarkerInterpreter",
+          "MarkerTypeID": "namespace:reference-data--MarkerType:BioStratigraphy:",
+          "FeatureTypeID": "namespace:reference-data--FeatureType:Base:",
+          "FeatureName": "Example FeatureName",
+          "PositiveVerticalDelta": 12345.6,
+          "NegativeVerticalDelta": 12345.6,
+          "SurfaceDipAngle": 12345.6,
+          "SurfaceDipAzimuth": 12345.6,
+          "Missing": "Example Missing",
+          "GeologicalAge": "Example GeologicalAge"
+        }
+      ]    
+    }
+}
+]
+"""
+    )
+    return RequestRunner(rq_proto)
+
+
 def build_request_seach_tests_setup_start() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_start',
@@ -583,6 +930,32 @@ def build_request_seach_tests_setup_start() -> RequestRunner:
     "kind": "{{logSetKind}}",
     "query": "data.name:\"wdms_e2e_search_refs_v{{search_record_version}}\"",
     "returnedFields": ["id", "data.channelNames"]
+}
+
+"""
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_osdu_seach_tests_setup_start() -> RequestRunner:
+    rq_proto = Request(
+        name='seach_tests_setup_start',
+        method='POST',
+        url='{{base_url}}/ddms/query',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        # "kind": "{{osduWellboreKind}}",
+        #         "query": "data.FacilityName:\"wdms_e2e_search_refs_v{{search_record_version}}\"",
+
+    payload=r"""
+{
+    "kind": "{{osduWellLogKind}}",
+    "query": "data.Name:\"wdms_e2e_search_record_v{{search_record_version}}\" AND _exists_:data.WellboreID",
+    "returnedFields": ["id", "data.WellboreID"]
 }
 
 """
