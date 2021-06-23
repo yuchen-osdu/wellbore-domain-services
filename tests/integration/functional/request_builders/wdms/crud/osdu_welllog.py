@@ -360,6 +360,19 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True) -> RequestRunner:
     "DrillingFluidProperty": "Example DrillingFluidProperty",
     "HoleTypeLogging": "OPENHOLE",
     "VerticalMeasurementID": "Example VerticalMeasurementID",
+        "VerticalMeasurement": {
+          "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+          "VerticalMeasurement": 12345.6,
+          "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
+          "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
+          "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
+          "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+          "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+          "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+          "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+          "VerticalReferenceID": "Example VerticalReferenceID",
+          "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+    },
     "Curves": [
       {
         "CurveID": "Example CurveID",
@@ -379,20 +392,7 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True) -> RequestRunner:
         "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
         "LogCurveBusinessValueID": "namespace:reference-data--LogCurveBusinessValue:SomeUniqueLogCurveBusinessValueID:",
         "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
-        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
-        "VerticalMeasurement": {
-          "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
-          "VerticalMeasurement": 12345.6,
-          "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
-          "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
-          "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
-          "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
-          "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
-          "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
-          "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
-          "VerticalReferenceID": "Example VerticalReferenceID",
-          "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
-        }
+        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:"
       }
     ],
     "ExtensionProperties": {}
@@ -688,6 +688,19 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
     "DrillingFluidProperty": "Example DrillingFluidProperty",
     "HoleTypeLogging": "OPENHOLE",
     "VerticalMeasurementID": "Example VerticalMeasurementID",
+    "VerticalMeasurement": {
+        "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+        "VerticalMeasurement": 12345.6,
+        "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
+        "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
+        "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
+        "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+        "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+        "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+        "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+        "VerticalReferenceID": "Example VerticalReferenceID",
+        "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+    },
     "Curves": [
       {
         "CurveID": "Example CurveID",
@@ -707,20 +720,7 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
         "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
         "LogCurveBusinessValueID": "namespace:reference-data--LogCurveBusinessValue:SomeUniqueLogCurveBusinessValueID:",
         "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
-        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
-        "VerticalMeasurement": {
-          "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
-          "VerticalMeasurement": 12345.6,
-          "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
-          "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
-          "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
-          "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
-          "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
-          "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
-          "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
-          "VerticalReferenceID": "Example VerticalReferenceID",
-          "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
-        }
+        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:"
       }
     ],
     "ExtensionProperties": {}
