@@ -186,7 +186,7 @@ class ConfigurationContainer:
     modules: EnvVar = EnvVar(
         key='MODULES',
         description="""Comma separated list of module names to load.""",
-        default="") # Add modules to the list once they are refactored, so that they are included
+        default="app.modules.log_recognition.routers.log_recognition") # Add modules to the list once they are refactored, so that they are included
 
     _environment_dict: Dict = os.environ
 
