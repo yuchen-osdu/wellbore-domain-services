@@ -21,9 +21,8 @@ from fastapi.responses import Response
 import pandas as pd
 
 from app.bulk_persistence import DataframeSerializer, JSONOrient
-from app.bulk_persistence.tenant_provider import resolve_tenant
 from app.bulk_persistence.bulk_id import BulkId
-from app.bulk_persistence.dask.blob_storage import DaskDriverBlobStorage, DaskBlobStorageBase
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 from app.clients.storage_service_client import get_storage_record_service
 from app.record_utils import fetch_record
@@ -71,11 +70,9 @@ async def get_df_from_request(request: Request, orient: Optional[str] = None) ->
                         detail=f'Invalid content-type, "{ct}" is not supported')
 
 
-async def with_dask_blob_storage() -> DaskBlobStorageBase:
+async def with_dask_blob_storage() -> DaskBulkStorage:
     ctx = Context.current()
-    tenant = await resolve_tenant(ctx.partition_id)
-    builder = await ctx.app_injector.get(DaskBlobStorageBase)
-    return await builder.build_dask_blob_storage(tenant)
+    return await ctx.app_injector.get(DaskBulkStorage)
 
 
 class DataFrameRender:
@@ -197,7 +194,7 @@ async def post_data(record_id: str,
                     request: Request,
                     orient: JSONOrient = Depends(json_orient_parameter),
                     ctx: Context = Depends(get_ctx),
-                    dask_blob_storage: DaskDriverBlobStorage = Depends(with_dask_blob_storage),
+                    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                     ):
     async def save_blob():
         df = await get_df_from_request(request, orient)
@@ -227,7 +224,7 @@ async def post_chunk_data(record_id: str,
                           request: Request,
                           orient: JSONOrient = Depends(json_orient_parameter),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
-                          dask_blob_storage: DaskDriverBlobStorage = Depends(with_dask_blob_storage),
+                          dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           ):
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
@@ -262,7 +259,7 @@ async def get_data_version(
     request: Request,
     ctrl_p: GetDataParams = Depends(),
     ctx: Context = Depends(get_ctx),
-    dask_blob_storage: DaskDriverBlobStorage = Depends(with_dask_blob_storage),
+    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
 ):
     record = await fetch_record(ctx, record_id, version)
     bulk_id, prefix = BulkId.bulk_urn_decode(get_bulk_uri(record))
@@ -300,7 +297,7 @@ async def get_data(
     request: Request,
     ctrl_p: GetDataParams = Depends(),
     ctx: Context = Depends(get_ctx),
-    dask_blob_storage: DaskDriverBlobStorage = Depends(with_dask_blob_storage),
+    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
 ):
     return await get_data_version(record_id, None, request, ctrl_p, ctx, dask_blob_storage)
 
@@ -315,7 +312,7 @@ async def complete_session(
     session_id: str,
     update_request: UpdateSessionState,
     with_session: WithSessionStorages = Depends(get_session_dependencies),
-    dask_blob_storage: DaskDriverBlobStorage = Depends(with_dask_blob_storage),
+    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     ctx: Context = Depends(get_ctx),
 ) -> Session:
     tenant = with_session.tenant

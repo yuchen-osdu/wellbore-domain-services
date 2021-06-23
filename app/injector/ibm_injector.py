@@ -5,13 +5,13 @@ from app.utils import get_http_client_session
 from app.utils import Context
 from .app_injector import AppInjector, AppInjectorModule
 from app.bulk_persistence import resolve_tenant
-from app.bulk_persistence.dask.blob_storage import DaskBlobStorageBase
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 
 
 class IBMInjector(AppInjectorModule):
     def configure(self, app_injector: AppInjector):
         app_injector.register(BlobStorageBase, IBMInjector.build_ibm_blob_storage)
-        app_injector.register(DaskBlobStorageBase, IBMInjector.build_ibm_dask_blob_storage)
+        app_injector.register(DaskBulkStorage, IBMInjector.build_ibm_dask_blob_storage)
 
     @staticmethod
     async def build_ibm_blob_storage(*args, **kwargs) -> BlobStorageBase:
@@ -24,5 +24,5 @@ class IBMInjector(AppInjectorModule):
         )
 
     @staticmethod
-    async def build_ibm_dask_blob_storage() -> DaskBlobStorageBase:
+    async def build_ibm_dask_blob_storage() -> DaskBulkStorage:
         raise NotImplementedError()

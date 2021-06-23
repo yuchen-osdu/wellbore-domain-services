@@ -31,8 +31,7 @@ from app.clients.search_service_client import SearchServiceClient
 from app.clients import make_search_client, make_storage_record_client
 from app.persistence.sessions_storage import SessionsStorage
 
-from app.bulk_persistence.dask.blob_storage import (DaskBlobStorageBase,
-                                                    DaskBlobStorageLocal)
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
 
 
 class MainInjector(AppInjectorModule):
@@ -100,10 +99,10 @@ class MainInjector(AppInjectorModule):
                 logger.warning(f'overriding blob storage to use local fs on path ' + blob_storage_localfs)
                 app_injector.register(BlobStorageBase, _blob_storage_builder)
 
-                async def _dask_blob_storage_builder():
-                    return DaskBlobStorageLocal(base_directory=blob_storage_localfs)
+                async def _dask_blob_storage_builder() -> DaskBulkStorage:
+                    return await make_local_dask_bulk_storage(base_directory=blob_storage_localfs)
 
-                app_injector.register(DaskBlobStorageBase, _dask_blob_storage_builder)
+                app_injector.register(DaskBulkStorage, _dask_blob_storage_builder)
                 logger.warning(f'overriding DASK blob storage to use local fs on path ' + blob_storage_localfs)
 
 

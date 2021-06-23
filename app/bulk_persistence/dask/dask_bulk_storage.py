@@ -17,11 +17,11 @@ import base64
 import hashlib
 import json
 import time
-from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import wraps
 from logging import getLogger
 from operator import attrgetter
+from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
 import fsspec
 import pandas as pd
@@ -30,8 +30,7 @@ from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
                                              do_merge, set_index,
                                              worker_capture_timing_handlers)
-from app.conf import Config
-from app.helper.logger import get_logger, init_logger
+from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import capture_timings, get_wdms_temp_dir
@@ -39,7 +38,7 @@ from pyarrow.lib import ArrowException
 
 import dask
 import dask.dataframe as dd
-from dask.distributed import Client, WorkerPlugin
+from dask.distributed import Client as DaskDistributedClient, WorkerPlugin
 
 dask.config.set({'temporary_directory': get_wdms_temp_dir()})
 
@@ -49,100 +48,99 @@ def handle_pyarrow_exceptions(target):
     async def async_inner(*args, **kwargs):
         try:
             return await target(*args, **kwargs)
-        except ArrowException as e:
+        except ArrowException:
             get_logger().exception(f"{target} raised exception")
             raise BulkNotProcessable("Unable to process bulk")
 
     return async_inner
 
 
-class DaskBlobStorageBase(ABC):
-    @abstractmethod
-    async def build_dask_blob_storage(self, tenant):
-        raise NotImplementedError('DaskBlobStorageBase.build_dask_blob_storage')
-
-
 class DefaultWorkerPlugin(WorkerPlugin):
-    def __init__(self, logger=None) -> None:
+    def __init__(self, logger=None, register_fsspec_implementation=None) -> None:
         global _LOGGER
         _LOGGER = logger
+        self._register_fsspec_implementation = register_fsspec_implementation
         get_logger().debug("WorkerPlugin initialised")
-        #init_logger(service_name=Config.service_name.value)
         super().__init__()
 
     def setup(self, worker):
         self.worker = worker
+        if self._register_fsspec_implementation:
+            self._register_fsspec_implementation()
 
     def transition(self, key, start, finish, *args, **kwargs):
         if finish == 'error':
             exc = self.worker.exceptions[key]
-            getLogger().error("Task '%s' has failed with exception: %s" % (key, str(exc)))
+            getLogger().exception("Task '%s' has failed with exception: %s" % (key, str(exc)))
 
-class DaskBlobStorageLocal(DaskBlobStorageBase):
-    """Instantiate a DaskDriverBlobStorage with a local file system."""
-
-    def __init__(self, base_directory) -> None:
-        self._base_directory = base_directory
-
-    async def build_dask_blob_storage(self, tenant):
-        base_directory = f'{self._base_directory}/{tenant.data_partition_id}'
-        _dask = DaskDriverBlobStorage(protocol='file',
-                                      base_directory=base_directory,
-                                      storage_options={'auto_mkdir': True})
-        if await _dask.init_client():
-            await DaskDriverBlobStorage.client.register_worker_plugin(DefaultWorkerPlugin,
-                                                                      name="LocalWorkerPlugin",
-                                                                      logger=get_logger())
-
-        get_logger().debug(f"Dask client : {_dask.client}")
-        return _dask
-
-
-class DaskDriverBlobStorage:
+class DaskBulkStorage:
     client = None
-    lock_client = None
+    """ Dask client """
 
-    def __init__(self, protocol, base_directory, storage_options) -> None:
-        if DaskDriverBlobStorage.lock_client is None:
-            DaskDriverBlobStorage.lock_client = asyncio.Lock()
-        self._storage_options = storage_options
-        self._protocol = protocol
-        self._base_directory = base_directory
-        self._fs = fsspec.filesystem(protocol, **self._storage_options)
+    lock_client = asyncio.Lock()
+    """ used to ensure  """
 
-    @staticmethod
-    async def close():
-        async with DaskDriverBlobStorage.lock_client:
-            if DaskDriverBlobStorage.client:
-                await DaskDriverBlobStorage.client.close()  # or shutdown
-                DaskDriverBlobStorage.client = None
-
-    @staticmethod
-    async def init_client():
-        async with DaskDriverBlobStorage.lock_client:
-            """Initialise the dask client. Returns False if client was already initialized"""
-            if not DaskDriverBlobStorage.client:
-                DaskDriverBlobStorage.client = await Client(asynchronous=True, processes=True)
-                return True
-        return False
-
-    def _get_base_directory(self, protocol=True):
-        return f'{self._protocol}://{self._base_directory}' if protocol else self._base_directory
+    def __init__(self):
+        """ use `create` to create instance """
+        self._parameters = None
+        self._fs = None
         
+    @classmethod
+    async def create(cls, parameters: DaskStorageParameters, dask_client=None) -> 'DaskBulkStorage':
+        instance = cls()
+        instance._parameters = parameters
+
+        # Initialise the dask client.
+        async with DaskBulkStorage.lock_client:
+            if not DaskBulkStorage.client:
+                DaskBulkStorage.client = dask_client or await DaskDistributedClient(asynchronous=True, processes=True)
+                
+                if parameters.register_fsspec_implementation:
+                    parameters.register_fsspec_implementation()
+
+                await DaskBulkStorage.client.register_worker_plugin(
+                    DefaultWorkerPlugin,
+                    name="LoggerWorkerPlugin",
+                    logger=get_logger(),
+                    register_fsspec_implementation=parameters.register_fsspec_implementation)
+                    
+                get_logger().debug(f"dask client initialized : {DaskBulkStorage.client}")
+
+        instance._fs = fsspec.filesystem(parameters.protocol, **parameters.storage_options)
+        return instance
+
+    @property
+    def protocol(self) -> str:
+        return self._parameters.protocol
+
+    @property
+    def base_directory(self) -> str:
+        return self._parameters.base_directory
+
+    @staticmethod
+    async def close():  # TODO check for the needs, currently not usage
+        async with DaskBulkStorage.lock_client:
+            if DaskBulkStorage.client:
+                await DaskBulkStorage.client.close()  # or shutdown
+                DaskBulkStorage.client = None
+
     @staticmethod
     def _encode_record_id(record_id: str) -> str:
         record_id_b64 = base64.b64encode(record_id.encode()).decode()
         return record_id_b64.rstrip('=') # remove padding chars ('=')
-        
-    def _get_blob_path(self, record_id, bulk_id, protocol=True) -> str:
+
+    def _get_base_directory(self, protocol=True):
+        return f'{self.protocol}://{self.base_directory}' if protocol else self.base_directory
+
+    def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
         """Return the bulk path from the bulk_id."""
         record_id_b64 = self._encode_record_id(record_id)
-        return f'{self._get_base_directory(protocol)}/{record_id_b64}/bulk/{bulk_id}/data'
+        return f'{self._get_base_directory(with_protocol)}/{record_id_b64}/bulk/{bulk_id}/data'
 
-    def _build_path_from_session(self, session: Session, protocol=True) -> str:
+    def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
         """Return the session path."""
         record_id_b64 = self._encode_record_id(session.recordId)
-        return f'{self._get_base_directory(protocol)}/{record_id_b64}/session/{session.id}/data'
+        return f'{self._get_base_directory(with_protocol)}/{record_id_b64}/session/{session.id}/data'
 
     def _load(self, path, **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
@@ -151,7 +149,7 @@ class DaskDriverBlobStorage:
         """
         get_logger().debug(f"loading bulk : {path}")
         return self.client.submit(dd.read_parquet, path, engine='pyarrow-dataset',
-                                  storage_options=self._storage_options,
+                                  storage_options=self._parameters.storage_options,
                                   **kwargs)
 
     def _load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
@@ -177,7 +175,7 @@ class DaskDriverBlobStorage:
         """
         return self.client.submit(dd.to_parquet, ddf, path, schema="infer",
                                   engine='pyarrow',
-                                  storage_options=self._storage_options)
+                                  storage_options=self._parameters.storage_options)
 
     def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
@@ -186,7 +184,7 @@ class DaskDriverBlobStorage:
         """
         return self.client.submit(pdf.to_parquet, path,
                                   engine='pyarrow',
-                                  storage_options=self._storage_options)
+                                  storage_options=self._parameters.storage_options)
 
     def _check_incoming_chunk(self, df):
         # TODO should we test if is_monotonic?, unique ?
@@ -236,7 +234,7 @@ class DaskDriverBlobStorage:
         t = round(time.time() * 1000)
         filename = f'{idx_range}_{t}.{shape}'
 
-        session_path_wo_protocol = self._build_path_from_session(session, protocol=False)
+        session_path_wo_protocol = self._build_path_from_session(session, with_protocol=False)
         self._fs.mkdirs(session_path_wo_protocol, exist_ok=True)
         with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
             json.dump({"columns": list(pdf)}, outfile)
@@ -245,13 +243,15 @@ class DaskDriverBlobStorage:
         # we may want to be async if the dataFrame is big
         session_path = self._build_path_from_session(session)
         # await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
+
+        # TODO: Warning this is a sync CPU bound operation
         pdf.to_parquet(f'{session_path}/{filename}.parquet', index=True,
-                       storage_options=self._storage_options, engine='pyarrow')
+                       storage_options=self._parameters.storage_options, engine='pyarrow')
 
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
     def get_session_parquet_files(self, session):
-        session_path = self._build_path_from_session(session, protocol=False)
+        session_path = self._build_path_from_session(session, with_protocol=False)
         with suppress(FileNotFoundError):
             session_files = [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
             return session_files
@@ -259,26 +259,26 @@ class DaskDriverBlobStorage:
 
     def _get_next_files_list(self, session: Session):
         """Group session files in lists of files that can be read directly with dask
-        File can be groupped if they have the same columns (shape) and no overlap of indexes
+        File can be grouped if they have the same columns (shape) and no overlap of indexes
         """
         session_files = [SessionFileMeta(self._fs, f) for f in self.get_session_parquet_files(session)]
         session_files = sorted(session_files, key=attrgetter('time'))
         while len(session_files) > 0:
             first = session_files.pop(0)
-            L = [first]
+            file_list = [first]
             i = 0
             while i < len(session_files):
                 f2 = session_files[i]
                 if first.shape == f2.shape:
-                    if any(f2.overlap(f) for f in L):
+                    if any(f2.overlap(f) for f in file_list):
                         break
-                    L.append(session_files.pop(i))
+                    file_list.append(session_files.pop(i))
                 elif first.has_common_columns(f2):
                     break
                 else:
                     i = i + 1
 
-            yield [f'{self._protocol}://{file.path}' for file in L]
+            yield [f'{self.protocol}://{file.path}' for file in file_list]
 
     @capture_timings('session_commit')
     @with_trace('session_commit')
@@ -297,3 +297,10 @@ class DaskDriverBlobStorage:
             dfs = [self.client.submit(do_merge, a, b) for a, b in by_pairs(dfs)]
 
         return await self.save_blob(dfs[0], record_id=session.recordId)
+	
+
+async def make_local_dask_bulk_storage(base_directory: str) -> DaskBulkStorage:
+    params = DaskStorageParameters(protocol='file',
+                                   base_directory=base_directory,
+                                   storage_options={'auto_mkdir': True})
+    return await DaskBulkStorage.create(params)
