@@ -69,19 +69,19 @@ async def query_request_with_spatial_filter(query_type: str, spatial_filter: Spa
 
 def query_spatial_filter_builder(spacial_filter_type: str, latitude1: str = None, longitude1: float = None,
                                  latitude2: str = None, longitude2: float = None, distance: int = None,
-                                 points: List[Point] = None):
+                                 points: List[Point] = None, geo_field: str = crs_format):
     if spacial_filter_type == "bydistance":
         point = Point(latitude=latitude1, longitude=longitude1)
         by_distance = ByDistance(distance=distance, point=point)
-        spatial_filter = SpatialFilter(field=crs_format, byDistance=by_distance)
+        spatial_filter = SpatialFilter(field=geo_field, byDistance=by_distance)
     if spacial_filter_type == "byboundingbox":
         point_top_left = Point(latitude=latitude1, longitude=longitude1)
         point_bottom_right = Point(latitude=latitude2, longitude=longitude2)
         by_bounding_box = ByBoundingBox(topLeft=point_top_left, bottomRight=point_bottom_right)
-        spatial_filter = SpatialFilter(field=crs_format, byBoundingBox=by_bounding_box)
+        spatial_filter = SpatialFilter(field=geo_field, byBoundingBox=by_bounding_box)
     if spacial_filter_type == "bygeopolygon":
         by_geo_polygon = ByGeoPolygon(points=points)
-        spatial_filter = SpatialFilter(field=crs_format, byGeoPolygon=by_geo_polygon)
+        spatial_filter = SpatialFilter(field=geo_field, byGeoPolygon=by_geo_polygon)
     return spatial_filter
 
 
@@ -135,7 +135,6 @@ async def basic_query_request(query_type: str, kind: str, ctx: Context, query: s
         search_service=client,
         data_partition_id=ctx.partition_id,
         query_request=query_request)
-
 
 async def basic_query_request_with_cursor(query_type: str, kind: str, ctx: Context, query: str = None):
     returned_fields = query_type_returned_fields(query_type)

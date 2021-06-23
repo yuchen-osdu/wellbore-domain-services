@@ -46,7 +46,7 @@ from app.routers.ddms_v3 import (
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.logrecognition import log_recognition
-from app.routers.search import search, fast_search
+from app.routers.search import search, fast_search, search_v3, fast_search_v3
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import get_http_client_session, OpenApiHandler, get_wdms_temp_dir
 
@@ -171,6 +171,16 @@ wdms_app.include_router(search.router, prefix='/ddms', tags=['search'], dependen
 wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search'], dependencies=[
     Depends(require_data_partition_id, use_cache=False),
     Depends(require_opendes_authorized_user, use_cache=False)])
+
+wdms_app.include_router(search_v3.router, prefix='/ddms/v3', tags=['search'], dependencies=[
+    Depends(require_data_partition_id, use_cache=False),
+    Depends(require_opendes_authorized_user, use_cache=False)
+])
+
+wdms_app.include_router(fast_search_v3.router, prefix='/ddms/v3', tags=['fast-search'], dependencies=[
+    Depends(require_data_partition_id, use_cache=False),
+    Depends(require_opendes_authorized_user, use_cache=False)
+])
 
 wdms_app.include_router(log_recognition.router, prefix='/log-recognition', tags=['log-recognition'], dependencies=[
     Depends(require_data_partition_id, use_cache=False),

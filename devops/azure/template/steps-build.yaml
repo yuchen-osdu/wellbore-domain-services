@@ -13,14 +13,24 @@
 # limitations under the License.
 
 parameters:
-# The following parameters allow to inject a template to perform post build tasks
-# such as pushing the generated docker manifest to some central shared container repositories
-  - name: postBuildTemplate
-    type: string
-    default: ""
-  - name: postBuildTemplateParameters
+# The following parameter allows injecting additional templates to perform post build tasks
+# such as pushing the generated docker manifest to some central shared container repositories.
+# E.g.:
+# postBuildTemplates
+# - template: <template-1 full name>.yaml
+#   parameters:
+#     <parameter name>: <parameter value>
+#     <parameter name>: <parameter value>
+#     ...
+# - template: <template-2 full name>.yaml
+#   parameters:
+#     <parameter name>: <parameter value>
+#     <parameter name>: <parameter value>
+#     ...
+  - name: postBuildTemplates
     type: object
-    default: {}
+    default: []
+
 
 steps:
 - template: steps-define-variables.yaml
@@ -71,10 +81,9 @@ steps:
                    --build-arg commit_branch=$(Build.SourceBranch)
 
 
-# This template is injected by parameters
-# and will generate the $(token) variable
-- template: ${{ parameters.postBuildTemplate }}
-  parameters: 
-    ${{ each parameter in parameters.postBuildTemplateParameters }}:
-      ${{ parameter.key}}: ${{ parameter.value}}
+- ${{ each postBuildTemplate in parameters.postBuildTemplates }}:
+  - template: ${{ postBuildTemplate.template }}
+    parameters:
+      ${{ each parameter in postBuildTemplate.parameters }}:
+        ${{ parameter.key }}: ${{ parameter.value }}
 

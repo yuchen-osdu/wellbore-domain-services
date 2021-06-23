@@ -88,6 +88,7 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True) -> RequestRunner:
         url="{{base_url}}/ddms/v3/welllogs",
         headers={
             "accept": "application/json",
+            "Content-Type": 'application/json',
             "data-partition-id": "{{data_partition}}",
             "Connection": "{{header_connection}}",
             "Authorization": "Bearer {{token}}",

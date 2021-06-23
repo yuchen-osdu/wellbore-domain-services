@@ -10,7 +10,7 @@ import pytest
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
-from app.bulk_persistence.dask.blob_storage import (DaskBlobStorageBase, DaskBlobStorageLocal)
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
 
 from app.clients import StorageRecordServiceClient
 from app.persistence.sessions_storage import SessionsStorage, SessionState
@@ -141,10 +141,10 @@ def setup_client(nope_logger_fixture, bob):
         async def sessions_storage_builder(*args, **kwargs):
             return SessionsStorage(local_blob_storage)
 
-        async def dask_blob_storage_builder():
-            return DaskBlobStorageLocal(base_directory=tmp_dir)
+        async def dask_blob_storage_builder() -> DaskBulkStorage:
+            return await make_local_dask_bulk_storage(base_directory=tmp_dir)
 
-        app_injector.register(DaskBlobStorageBase, dask_blob_storage_builder)
+        app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
         app_injector.register(BlobStorageBase, blob_storage_builder)
         app_injector.register(SessionsStorage, sessions_storage_builder)
         app_injector.register(StorageRecordServiceClient, storage_service_builder)

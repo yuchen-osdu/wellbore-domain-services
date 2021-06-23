@@ -21,6 +21,7 @@ def build_request_get_dipset() -> RequestRunner:
         method='GET',
         url='{{base_url}}/ddms/v2/dipsets/{{dipsetId}}',
         headers={
+            'Content-Type': 'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
             'Authorization': 'Bearer {{token}}',
@@ -63,6 +64,7 @@ def build_request_create_dips() -> RequestRunner:
         method='POST',
         url='{{base_url}}/ddms/v2/dipsets/{{dipsetId}}/dips',
         headers={
+            'Content-Type': 'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
             'Authorization': 'Bearer {{token}}',
@@ -109,6 +111,7 @@ def build_request_create_dips_simple() -> RequestRunner:
         method='POST',
         url='{{base_url}}/ddms/v2/dipsets/{{dipsetIdSimple}}/dips',
         headers={
+            'Content-Type': 'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
             'Authorization': 'Bearer {{token}}',
@@ -127,6 +130,7 @@ def build_request_create__dipset() -> RequestRunner:
         method='POST',
         url='{{base_url}}/ddms/v2/dipsets',
         headers={
+            'Content-Type': 'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
             'Authorization': 'Bearer {{token}}',
@@ -150,6 +154,7 @@ def build_request_insert_dips() -> RequestRunner:
         method='POST',
         url='{{base_url}}/ddms/v2/dipsets/{{dipsetId}}/dips/insert',
         headers={
+            'Content-Type': 'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
             'Authorization': 'Bearer {{token}}',
@@ -209,6 +214,7 @@ def build_request_patch_dip() -> RequestRunner:
         method='PATCH',
         url='{{base_url}}/ddms/v2/dipsets/{{dipsetId}}/dips/0?=',
         headers={
+            'Content-Type':'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
             'Authorization': 'Bearer {{token}}',

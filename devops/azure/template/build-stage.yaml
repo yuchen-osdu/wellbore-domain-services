@@ -13,14 +13,12 @@
 # limitations under the License.
 
 parameters:
-# The following parameters allow to inject a template perform post build tasks
-# such as pushing the generated docker manifest to some central shared container repositories
-  - name: postBuildTemplate
-    type: string
-    default: ""
-  - name: postBuildTemplateParameters
+# The following parameter allows injecting additional templates to perform post build tasks
+# such as pushing the generated docker manifest to some central shared container repositories.
+  - name: postBuildTemplates
     type: object
-    default: {}
+    default: []
+
 
 stages:
   - stage: build
@@ -28,7 +26,7 @@ stages:
       - job: unit_test_version3_7
         steps:
           - template: steps-unit-tests.yaml
-            parameters: 
+            parameters:
               python_version: '3.7'
       - job: unit_test_version3_8
         steps:
@@ -39,12 +37,11 @@ stages:
       - job: build
         dependsOn:
         - unit_test_version3_7
-        - unit_test_version3_8 
+        - unit_test_version3_8
         steps:
           - template: steps-build.yaml
             parameters:
-              postBuildTemplate: ${{ parameters.postBuildTemplate }}
-              postBuildTemplateParameters: ${{ parameters.postBuildTemplateParameters }}
+              postBuildTemplates: ${{ parameters.postBuildTemplates }}
       - job: setupVariables
         steps:
           - task: Bash@3
