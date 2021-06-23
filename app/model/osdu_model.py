@@ -1097,11 +1097,6 @@ class Curve(DDMSBaseModel):
         None,
         description='The SRN of the Log Curve Family - which is the detailed Geological Physical Quantity Measured - such as neutron porosity',
     )
-    VerticalMeasurement: Optional[AbstractFacilityVerticalMeasurement100] = Field(
-        None,
-        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for the logged depths.',
-    )
-
 
 class WellData(AbstractCommonResources100, AbstractMaster100, AbstractFacility100):
     DefaultVerticalMeasurementID: Optional[str] = Field(
@@ -1425,7 +1420,11 @@ class WellLogData(
     )
     VerticalMeasurementID: Optional[str] = Field(
         None,
-        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths.',
+        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths. Either VerticalMeasurementID or VerticalMeasurement are populated.',
+    )
+    VerticalMeasurement: Optional[AbstractFacilityVerticalMeasurement100] = Field(
+        None,
+        description='The vertical measurement reference for the log curves, which defines the vertical reference datum for the logged depths. Either VerticalMeasurement or VerticalMeasurementID are populated.',
     )
     Curves: Optional[List[Curve]] = None
     ExtensionProperties: Optional[Dict[str, Any]] = None
