@@ -107,6 +107,7 @@ def build_request_create_trajectory() -> RequestRunner:
         url='{{base_url}}/ddms/v2/trajectories',
         headers={
             'accept': 'application/json',
+            'Content-Type': 'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
             'Authorization': 'Bearer {{token}}',

@@ -87,6 +87,7 @@ def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True) -> Request
         url="{{base_url}}/ddms/v3/wellboretrajectories",
         headers={
             "accept": "application/json",
+            'Content-Type': 'application/json',
             "data-partition-id": "{{data_partition}}",
             "Connection": "{{header_connection}}",
             "Authorization": "Bearer {{token}}",

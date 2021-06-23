@@ -21,6 +21,7 @@ def build_request_get_record_check_for_extra_fields() -> RequestRunner:
         method='GET',
         url='{{base_url}}/ddms/v2/{{base_url_entity}}/{{record_id}}',
         headers={
+            'Content-Type': 'application/json',
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
@@ -51,6 +52,7 @@ def build_request_create_log_with_extra_fields() -> RequestRunner:
         method='POST',
         url='{{base_url}}/ddms/v2/logs',
         headers={
+            'Content-Type': 'application/json',
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
             'Connection': '{{header_connection}}',
