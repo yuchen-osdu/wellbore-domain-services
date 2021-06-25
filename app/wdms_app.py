@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
+from os import getpid
+import asyncio
+from time import sleep
 
 from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
@@ -48,7 +51,12 @@ from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.logrecognition import log_recognition
 from app.routers.search import search, fast_search, search_v3, fast_search_v3
 from app.clients import StorageRecordServiceClient, SearchServiceClient
-from app.utils import get_http_client_session, OpenApiHandler, get_wdms_temp_dir
+from app.utils import (
+    get_http_client_session,
+    OpenApiHandler,
+    get_wdms_temp_dir,
+    get_pool_executor,
+    POOL_EXECUTOR_MAX_WORKER)
 
 base_app = FastAPI()
 
@@ -90,6 +98,12 @@ def hide_router_modules(modules):
             rte.include_in_schema = False
 
 
+def executor_startup_task():
+    """ This is a dummy task used to startup executors"""
+    print(f"process {getpid()} started")
+    sleep(0.2)  # to keep executor "busy"
+
+
 @base_app.on_event("startup")
 async def startup_event():
     service_name = Config.service_name.value
@@ -99,6 +113,15 @@ async def startup_event():
     print('using temporary directory:', get_wdms_temp_dir())
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
+
+    # init executor pool
+    logger.get_logger().info("Startup process pool executor")
+
+    # force to adjust process count now instead of on first demand
+    pool = get_pool_executor()
+    loop = asyncio.get_running_loop()
+    futures = [loop.run_in_executor(pool, executor_startup_task) for _ in range(POOL_EXECUTOR_MAX_WORKER)]
+    await asyncio.gather(*futures)
 
     if Config.alpha_feature_enabled.value:
         enable_alpha_feature()

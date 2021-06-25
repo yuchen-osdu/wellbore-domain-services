@@ -15,12 +15,13 @@
 import asyncio
 from typing import List, Set, Optional
 import re
+from contextlib import suppress
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
 import pandas as pd
 
-from app.bulk_persistence import DataframeSerializer, JSONOrient
+from app.bulk_persistence import DataframeSerializerAsync, JSONOrient
 from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
@@ -54,7 +55,7 @@ async def get_df_from_request(request: Request, orient: Optional[str] = None) ->
     if MimeTypes.PARQUET.match(ct):
         content = await request.body()  # request.stream()
         try:
-            return DataframeSerializer.read_parquet(content)
+            return await DataframeSerializerAsync().read_parquet(content)
         except OSError as err:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail=f'{err}')  # TODO
@@ -62,7 +63,7 @@ async def get_df_from_request(request: Request, orient: Optional[str] = None) ->
     if MimeTypes.JSON.match(ct):
         content = await request.body()  # request.stream()
         try:
-            return DataframeSerializer.read_json(content, orient)
+            return await DataframeSerializerAsync().read_json(content, orient)
         except ValueError:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail='invalid body')  # TODO
@@ -91,26 +92,33 @@ class DataFrameRender:
         driver = await with_dask_blob_storage()
         return await driver.client.submit(lambda: len(df.index))
 
-    re_1D_curve_selection = re.compile(r'\[(?P<index>[0-9]+)\]$')
-    re_2D_curve_selection = re.compile(r'\[(?P<range>[0-9]+:[0-9]+)\]$')
 
+    re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
+
+    @staticmethod
+    def _col_matching(sel, col):
+        if sel == col:  # exact match
+            return True
+        m_col = DataFrameRender.re_array_selection.match(col)
+        if not m_col:  # if the column doesn't have an array pattern (col[*])
+            return False
+        # compare selection with curve name without array suffix [*]
+        if sel == m_col['name']:  # if selection is 'c', c[*] should match
+            return True
+        # range selection use cases c[0:2] should match c[0], c[1] and c[2]
+        m_sel = DataFrameRender.re_array_selection.match(sel)
+        if m_sel and m_sel['stop']: 
+            with suppress(ValueError):  # suppress int conversion exceptions
+                if int(m_sel['start']) <=  int(m_col['start']) <= int(m_sel['stop']):
+                    return True
+        return False
+    
     @staticmethod
     def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
         selected = set()
-        for to_find in selection:
-            m = DataFrameRender.re_2D_curve_selection.search(to_find)
-            if m:
-                r = range(*map(int, m['range'].split(':')))
-
-                def is_matching(c):
-                    if c == to_find:
-                        return True
-                    i = DataFrameRender.re_1D_curve_selection.search(c)
-                    return i and int(i['index']) in r
-            else:
-                def is_matching(c):
-                    return c == to_find or to_find == DataFrameRender.re_1D_curve_selection.sub('', c)
-            selected.update(filter(is_matching, cols.difference(selected)))
+        for sel in selection:
+            selected.update(filter(lambda col: DataFrameRender._col_matching(sel, col),
+                                   cols.difference(selected)))
         return list(selected)
 
     @staticmethod
