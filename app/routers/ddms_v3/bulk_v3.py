@@ -21,7 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
 import pandas as pd
 
-from app.bulk_persistence import DataframeSerializer, JSONOrient
+from app.bulk_persistence import DataframeSerializerAsync, JSONOrient
 from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
@@ -54,7 +54,7 @@ async def get_df_from_request(request: Request, orient: Optional[str] = None) ->
     if MimeTypes.PARQUET.match(ct):
         content = await request.body()  # request.stream()
         try:
-            return DataframeSerializer.read_parquet(content)
+            return await DataframeSerializerAsync().read_parquet(content)
         except OSError as err:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail=f'{err}')  # TODO
@@ -62,7 +62,7 @@ async def get_df_from_request(request: Request, orient: Optional[str] = None) ->
     if MimeTypes.JSON.match(ct):
         content = await request.body()  # request.stream()
         try:
-            return DataframeSerializer.read_json(content, orient)
+            return await DataframeSerializerAsync().read_json(content, orient)
         except ValueError:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail='invalid body')  # TODO

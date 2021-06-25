@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.bulk_persistence.dataframe_serializer import DataframeSerializer, JSONOrient
+from app.bulk_persistence.dataframe_serializer import (DataframeSerializerSync,
+                                                       DataframeSerializerAsync,
+                                                       JSONOrient)
 from tests.unit.test_utils import temp_directory
 import pandas as pd
 import json
@@ -58,7 +60,7 @@ def check_dataframe(df: pd.DataFrame):
 
 @pytest.mark.parametrize("orient", [o for o in JSONOrient])
 def test_schema(orient):
-    assert DataframeSerializer.get_schema(orient)
+    assert DataframeSerializerSync.get_schema(orient)
 
 
 @pytest.mark.parametrize("data_dict,orient", [(d, o) for o, d in dataframe_dict.items()])
@@ -66,7 +68,7 @@ def test_load_from_str_various_orient(data_dict, orient):
     print(orient)
     dataframe_json = json.dumps(data_dict)
     print(dataframe_json)
-    df = DataframeSerializer.read_json(dataframe_json, orient=orient)
+    df = DataframeSerializerSync.read_json(dataframe_json, orient=orient)
     check_dataframe(df)
 
 
@@ -77,7 +79,7 @@ def test_load_from_path(temp_directory):
     with open(path, 'w') as file:
         json.dump(data_dict, file)
 
-    df = DataframeSerializer.read_json(path, orient=orient)
+    df = DataframeSerializerSync.read_json(path, orient=orient)
     check_dataframe(df)
 
 
@@ -89,7 +91,7 @@ def test_load_from_file_like(temp_directory):
         json.dump(data_dict, file)
 
     with open(path, 'r') as file:
-        df = DataframeSerializer.read_json(file, orient=orient)
+        df = DataframeSerializerSync.read_json(file, orient=orient)
         check_dataframe(df)
 
 
@@ -98,12 +100,12 @@ def test_load_parquet_from_file_like(temp_directory):
     Reference_df.to_parquet(path)
 
     with open(path, 'rb') as file:
-        df = DataframeSerializer.read_parquet(file)
+        df = DataframeSerializerSync.read_parquet(file)
         check_dataframe(df)
 
     buffer = BytesIO()
     Reference_df.to_parquet(buffer)
-    df = DataframeSerializer.read_parquet(buffer)
+    df = DataframeSerializerSync.read_parquet(buffer)
     check_dataframe(df)
 
 
@@ -115,7 +117,7 @@ def test_load_parquet_from_spooled_file():
     frame = pd.DataFrame([1], columns=['r'])
     frame.to_parquet(spooled_file)
     assert not spooled_file._rolled  # ensure on buffer mode
-    df = DataframeSerializer.read_parquet(spooled_file)
+    df = DataframeSerializerSync.read_parquet(spooled_file)
     assert df.equals(frame)
 
     # bigger one
@@ -123,15 +125,29 @@ def test_load_parquet_from_spooled_file():
     frame = pd.DataFrame(list(range(max_size)), columns=['r'])
     frame.to_parquet(spooled_file)
     assert spooled_file._rolled  # ensure on file mode
-    df = DataframeSerializer.read_parquet(spooled_file)
+    df = DataframeSerializerSync.read_parquet(spooled_file)
     assert df.equals(frame)
 
 
 @pytest.mark.parametrize("data_dict,orient", [(d, o) for o, d in dataframe_dict.items()])
 def test_to_json_str_various_orient(data_dict, orient):
-    result = DataframeSerializer.to_json(Reference_df, orient=orient)
+    result = DataframeSerializerSync.to_json(Reference_df, orient=orient)
     actual_dict = json.loads(result)
     assert actual_dict == data_dict
+
+
+@pytest.mark.asyncio
+async def test_back_forth_async_serializer():
+    import concurrent.futures
+    executor = concurrent.futures.ThreadPoolExecutor(1)
+    serializer = DataframeSerializerAsync(executor)
+
+    as_json = await serializer.to_json(Reference_df, orient='split')
+    df = DataframeSerializerSync.read_json(as_json, orient='split')
+    check_dataframe(df)
+
+    df = await serializer.read_json(as_json, orient='split')
+    check_dataframe(df)
 
 
 def test_to_json_to_path(temp_directory):
@@ -139,7 +155,7 @@ def test_to_json_to_path(temp_directory):
     data_dict = dataframe_dict[orient]
     path = temp_directory + CONSTANT_DATA_JSON
 
-    result = DataframeSerializer.to_json(Reference_df, path_or_buf=path, orient=orient)
+    result = DataframeSerializerSync.to_json(Reference_df, path_or_buf=path, orient=orient)
     assert result is None
 
     with open(path, 'r') as file:
@@ -153,7 +169,7 @@ def test_to_json_to_file(temp_directory):
     path = temp_directory + CONSTANT_DATA_JSON
 
     with open(path, 'w') as file:
-        result = DataframeSerializer.to_json(Reference_df, path_or_buf=file, orient=orient)
+        result = DataframeSerializerSync.to_json(Reference_df, path_or_buf=file, orient=orient)
     assert result is None
 
     with open(path, 'r') as file:
@@ -165,7 +181,7 @@ def test_to_json_to_file_like():
     orient = 'split'
     data_dict = dataframe_dict[orient]
     str_buf = StringIO()
-    result = DataframeSerializer.to_json(Reference_df, path_or_buf=str_buf, orient=orient)
+    result = DataframeSerializerSync.to_json(Reference_df, path_or_buf=str_buf, orient=orient)
     assert result is None
 
     str_buf.seek(0)

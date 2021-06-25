@@ -34,11 +34,17 @@ def get_http_client_session(key: str = 'GLOBAL'):
     return ClientSession(json_serialize=json.dumps)
 
 
+POOL_EXECUTOR_MAX_WORKER = 4
+
+
 def get_pool_executor():
+    if get_pool_executor._pool is None:
+        get_pool_executor._pool = concurrent.futures.ProcessPoolExecutor(POOL_EXECUTOR_MAX_WORKER)
+
     return get_pool_executor._pool
 
 
-get_pool_executor._pool = concurrent.futures.ThreadPoolExecutor()
+get_pool_executor._pool = None
 
 
 def _setup_temp_dir() -> str:
