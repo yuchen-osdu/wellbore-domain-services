@@ -37,7 +37,7 @@ from odes_storage.models import (
 )
 from pydantic import BaseModel, Field
 
-from app.bulk_persistence import DataframeSerializer, JSONOrient, MimeTypes, get_dataframe
+from app.bulk_persistence import DataframeSerializerAsync, DataframeSerializerSync, JSONOrient, MimeTypes, get_dataframe
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.log_bulk import LogBulkHelper
 from app.model.model_curated import log
@@ -223,7 +223,7 @@ _log_dataframe_example = pd.DataFrame(
             '.\n Here\'re examples for data with {} rows and {} columns with different _orient_: '.format(
                 _log_dataframe_example.shape[0],
                 _log_dataframe_example.shape[1]) +
-            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializer.to_json(_log_dataframe_example, o)}`<br/>&nbsp;'
+            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializerSync.to_json(_log_dataframe_example, o)}`<br/>&nbsp;'
                      for o in JSONOrient]),
         # put examples here because of bug in swagger UI to properly render multiple examples
         'required': True,
@@ -232,9 +232,9 @@ _log_dataframe_example = pd.DataFrame(
                 'schema': {
                     # swagger UI bug, so single example here
                     'example': json.loads(
-                        DataframeSerializer.to_json(_log_dataframe_example, JSONOrient.split)
+                        DataframeSerializerSync.to_json(_log_dataframe_example, JSONOrient.split)
                     ),
-                    'oneOf': [DataframeSerializer.get_schema(o) for o in JSONOrient]
+                    'oneOf': [DataframeSerializerSync.get_schema(o) for o in JSONOrient]
                 }
             }
         }
@@ -255,7 +255,7 @@ async def write_log_data(
     ctx: Context = Depends(get_ctx),
 ) -> CreateUpdateRecordsResponse:
     content = await request.body()  # request.stream()
-    df = DataframeSerializer.read_json(content, orient)
+    df = await DataframeSerializerAsync().read_json(content, orient)
     return await _write_log_data(ctx, persistence, logid, bulk_path, df)
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -291,10 +291,10 @@ async def upload_log_data_file(
     if mime_type == MimeTypes.JSON:
         # TODO for now the entire content is read at once, can chunk it instead I guess
         content: bytes = await file.read()
-        df = DataframeSerializer.read_json(content, orient)
+        df = await DataframeSerializerAsync().read_json(content, orient)
     elif mime_type == MimeTypes.PARQUET:
         try:
-            df = DataframeSerializer.read_parquet(file.file)
+            df = await DataframeSerializerAsync().read_parquet(file.file)
         except Exception as e:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail='invalid data: ' + e.message if hasattr(e, 'message') else 'unknown error')
@@ -334,7 +334,7 @@ async def _get_log_data(
     log_record = await fetch_record(ctx, logid, version)
 
     df = await persistence.read_bulk(ctx, log_record, bulk_id_path)
-    content = DataframeSerializer.to_json(df, orient=orient)
+    content = await DataframeSerializerAsync().to_json(df, orient=orient)
     return Response(content=content, media_type=MimeTypes.JSON.type) #  content is already jsonified no need to use JSONResponse
 
 
@@ -350,12 +350,12 @@ async def _get_log_data(
             '.\n Here\'re examples for data with {} rows and {} columns with different _orient_: '.format(
                 _log_dataframe_example.shape[0],
                 _log_dataframe_example.shape[1]) +
-            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializer.to_json(_log_dataframe_example, o)}`<br/>&nbsp;'
+            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializerSync.to_json(_log_dataframe_example, o)}`<br/>&nbsp;'
                      for o in JSONOrient]),
 
             name='GetLogDataResponse',
-            example=DataframeSerializer.to_json(_log_dataframe_example, JSONOrient.split),
-            schema={'oneOf': [DataframeSerializer.get_schema(o) for o in JSONOrient]})
+            example=DataframeSerializerSync.to_json(_log_dataframe_example, JSONOrient.split),
+            schema={'oneOf': [DataframeSerializerSync.get_schema(o) for o in JSONOrient]})
     ])
 @router.get('/logs/{logid}/data',
             summary="Returns all data within the specified filters. Strongly consistent.",
@@ -432,12 +432,12 @@ async def get_log_data_statistics(logid: str,
             '.\n Here\'re examples for data with {} rows and {} columns with different _orient_: '.format(
                 _log_dataframe_example.shape[0],
                 _log_dataframe_example.shape[1]) +
-            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializer.to_json(_log_dataframe_example, o)}`<br/>&nbsp;'
+            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializerSync.to_json(_log_dataframe_example, o)}`<br/>&nbsp;'
                      for o in JSONOrient]),
 
             name='GetLogDataResponse',
-            example=DataframeSerializer.to_json(_log_dataframe_example, JSONOrient.split),
-            schema={'oneOf': [DataframeSerializer.get_schema(o) for o in JSONOrient]})
+            example=DataframeSerializerSync.to_json(_log_dataframe_example, JSONOrient.split),
+            schema={'oneOf': [DataframeSerializerSync.get_schema(o) for o in JSONOrient]})
     ])
 @router.get('/logs/{logid}/versions/{version}/data',
             summary="Returns all data within the specified filters. Strongly consistent.",

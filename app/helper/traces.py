@@ -23,7 +23,7 @@ from opencensus.trace.span import SpanKind
 
 from app.conf import Config
 from app.helper.utils import rename_cloud_role_func, COMPONENT
-from app.utils import Context
+from app.utils import get_or_create_ctx
 
 """
 How to add specific span in a method
@@ -115,11 +115,11 @@ def with_trace(label: str, span_kind=SpanKind.CLIENT):
 
             @wraps(target)
             async def async_inner(*args, **kwargs):
-                tracer = Context.current().tracer
+                tracer = get_or_create_ctx().tracer
                 if tracer is None:
                     return await target(*args, **kwargs)
 
-                with Context.current().tracer.span(name=label) as span:
+                with tracer.span(name=label) as span:
                     span.span_kind = span_kind
                     return await target(*args, **kwargs)
 
@@ -127,11 +127,11 @@ def with_trace(label: str, span_kind=SpanKind.CLIENT):
 
         @wraps(target)
         def sync_inner(*args, **kwargs):
-            tracer = Context.current().tracer
+            tracer = get_or_create_ctx().tracer
             if tracer is None:
                 return target(*args, **kwargs)
 
-            with Context.current().tracer.span(name=label) as span:
+            with tracer.span(name=label) as span:
                 span.span_kind = span_kind
                 return target(*args, **kwargs)
 

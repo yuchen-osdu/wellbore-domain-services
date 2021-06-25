@@ -29,7 +29,8 @@ from app.model.model_curated import (
 from app.routers.common_parameters import json_orient_parameter, REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.model.model_utils import from_record, to_record
 from app.routers.trajectory.persistence import Persistence
-from app.bulk_persistence import (DataframeSerializer,
+from app.bulk_persistence import (DataframeSerializerSync,
+                                  DataframeSerializerAsync,
                                   JSONOrient,
                                   MimeTypes,
                                   NoBulkException,
@@ -191,7 +192,7 @@ _trajectory_dataframe_example = DataFrame([
                 _trajectory_dataframe_example.shape[0],
                 _trajectory_dataframe_example.shape[1],
                 ', '.join(_trajectory_dataframe_example.columns.tolist())) +
-            ''.join([f'\n* {o}: <br/>`{DataframeSerializer.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
+            ''.join([f'\n* {o}: <br/>`{DataframeSerializerSync.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
                      for o in JSONOrient]),
         # put examples here because of bug in swagger UI to properly render multiple examples
         "required": True,
@@ -199,12 +200,12 @@ _trajectory_dataframe_example = DataFrame([
             MimeTypes.JSON.type: {
                 "schema": {
                     # swagger UI bug, so single example here
-                    "example": DataframeSerializer.to_json(
+                    "example": DataframeSerializerSync.to_json(
                         _trajectory_dataframe_example,
                         JSONOrient.split
                     ),
                     "oneOf": [
-                        DataframeSerializer.get_schema(o) for o in JSONOrient
+                        DataframeSerializerSync.get_schema(o) for o in JSONOrient
                     ],
                 }
             }
@@ -230,7 +231,7 @@ async def post_traj_data(
     persistence: Persistence = Depends(get_persistence)) -> CreateUpdateRecordsResponse:
 
     content = await request.body()  # request.stream()
-    df = DataframeSerializer.read_json(content, orient)
+    df = await DataframeSerializerAsync().read_json(content, orient)
 
     trajectory_record = await fetch_trajectory_record(ctx, trajectoryid)
     record = from_record(Trajectory, trajectory_record)
@@ -300,7 +301,7 @@ async def _get_trajectory_data(
     except InvalidBulkException as ex:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex))
 
-    content = DataframeSerializer.to_json(df, orient=orient)
+    content = await DataframeSerializerAsync().to_json(df, orient=orient)
     return Response(content=content, media_type=MimeTypes.JSON.type)
 
 
@@ -316,12 +317,12 @@ async def _get_trajectory_data(
             '.\n Here\'re examples for data with {} rows for channels {} with different _orient_: '.format(
                 _trajectory_dataframe_example.shape[0],
                 ', '.join(_trajectory_dataframe_example.columns.tolist())) +
-            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializer.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
+            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializerSync.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
                      for o in JSONOrient]),
             name="GetLogDataResponse",
-            example=DataframeSerializer.to_json(_trajectory_dataframe_example, JSONOrient.split),
+            example=DataframeSerializerSync.to_json(_trajectory_dataframe_example, JSONOrient.split),
             schema={
-                "oneOf": [DataframeSerializer.get_schema(o) for o in JSONOrient]
+                "oneOf": [DataframeSerializerSync.get_schema(o) for o in JSONOrient]
             },
         )
     ],
@@ -367,12 +368,12 @@ async def get_traj_data(
             '.\n Here\'re examples for data with {} rows and {} columns with different _orient_: '.format(
                 _trajectory_dataframe_example.shape[0],
                 _trajectory_dataframe_example.shape[1]) +
-            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializer.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
+            ''.join([f'\n* {o.value}:  <br/>`{DataframeSerializerSync.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
                      for o in JSONOrient]),
 
             name='GetTrajectoryDataResponse',
-            example=DataframeSerializer.to_json(_trajectory_dataframe_example, JSONOrient.split),
-            schema={'oneOf': [DataframeSerializer.get_schema(o) for o in JSONOrient]})
+            example=DataframeSerializerSync.to_json(_trajectory_dataframe_example, JSONOrient.split),
+            schema={'oneOf': [DataframeSerializerSync.get_schema(o) for o in JSONOrient]})
     ])
 @router.get('/trajectories/{trajectoryid}/versions/{version}/data',
             summary="Returns all data within the specified filters. Strongly consistent.",

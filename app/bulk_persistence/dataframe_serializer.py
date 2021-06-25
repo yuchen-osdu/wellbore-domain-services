@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import asyncio
 from io import BytesIO
 from typing import Union, AnyStr, IO, Optional, List
 
@@ -24,9 +25,11 @@ from pandas import DataFrame as DataframeClass
 
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes
+from app.utils import get_pool_executor
+from ..helper.traces import with_trace
 
 
-class DataframeSerializer:
+class DataframeSerializerSync:
     """
     the goal is to encapsulate to (de)serialized dataframe from/to various format
     then provide unified the way to handle various topics float/double precision, compression etc...
@@ -82,7 +85,7 @@ class DataframeSerializer:
         return df.fillna("NaN").to_json(path_or_buf=path_or_buf, orient=orient.value)
 
     @classmethod
-    def read_parquet(cls, data) -> 'DataframeSerializer.DataframeClass':
+    def read_parquet(cls, data) -> 'DataframeSerializerAsync.DataframeClass':
         """
         :param data: bytes, path object or file-like object
         :return: dataframe
@@ -94,7 +97,7 @@ class DataframeSerializer:
         return pd.read_parquet(data)
 
     @classmethod
-    def read_json(cls, data, orient: Union[str, JSONOrient]) -> 'DataframeSerializer.DataframeClass':
+    def read_json(cls, data, orient: Union[str, JSONOrient]) -> 'DataframeSerializerAsync.DataframeClass':
         """
         :param data: bytes str content (valid JSON str), path object or file-like object
         :param orient:
@@ -103,3 +106,29 @@ class DataframeSerializer:
         orient = JSONOrient.get(orient)
 
         return pd.read_json(path_or_buf=data, orient=orient.value).replace("NaN", np.NaN)
+
+
+class DataframeSerializerAsync:
+    def __init__(self, pool_executor=get_pool_executor()):
+        self.executor = pool_executor
+
+    @with_trace("JSON bulk serialization")
+    async def to_json(self,
+                      df: DataframeClass,
+                      orient: Union[str, JSONOrient] = JSONOrient.split,
+                      path_or_buf: Optional[Union[str, Path, IO[AnyStr]]] = None) -> Optional[str]:
+        return await asyncio.get_event_loop().run_in_executor(
+            self.executor, DataframeSerializerSync.to_json, df, orient, path_or_buf
+        )
+
+    @with_trace("Parquet bulk deserialization")
+    async def read_parquet(self, data) -> DataframeClass:
+        return await asyncio.get_event_loop().run_in_executor(
+            self.executor, DataframeSerializerSync.read_parquet, data
+        )
+
+    @with_trace("Parquet JSON deserialization")
+    async def read_json(self, data, orient: Union[str, JSONOrient]) -> DataframeClass:
+        return await asyncio.get_event_loop().run_in_executor(
+            self.executor, DataframeSerializerSync.read_json, data, orient
+        )
