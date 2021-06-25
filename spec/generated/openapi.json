@@ -40,6 +40,7 @@
         "type": "object"
       },
       "AbstractAccessControlList100": {
+        "additionalProperties": false,
         "description": "The access control tags associated with this entity.",
         "properties": {
           "owners": {
@@ -67,6 +68,7 @@
         "type": "object"
       },
       "AbstractAliasNames100": {
+        "additionalProperties": false,
         "description": "A list of alternative names for an object.  The preferred name is in a separate, scalar property.  It may or may not be repeated in the alias list, though a best practice is to include it if the list is present, but to omit the list if there are no other names.  Note that the abstract entity is an array so the $ref to it is a simple property reference.",
         "properties": {
           "AliasName": {
@@ -103,6 +105,7 @@
         "type": "object"
       },
       "AbstractAnyCrsFeatureCollection100": {
+        "additionalProperties": false,
         "description": "The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the OperationsApplied can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
         "properties": {
           "CoordinateReferenceSystemID": {
@@ -165,6 +168,7 @@
         "type": "object"
       },
       "AbstractFacilityEvent100": {
+        "additionalProperties": false,
         "description": "A significant occurrence in the life of a facility, which often changes its state, or the state of one of its components. It can describe a point-in-time (event) or a time interval of a specific type (FacilityEventType).",
         "properties": {
           "EffectiveDateTime": {
@@ -190,6 +194,7 @@
         "type": "object"
       },
       "AbstractFacilityOperator100": {
+        "additionalProperties": false,
         "description": "The organisation that was responsible for a facility at some point in time.",
         "properties": {
           "EffectiveDateTime": {
@@ -220,6 +225,7 @@
         "type": "object"
       },
       "AbstractFacilitySpecification100": {
+        "additionalProperties": false,
         "description": "A property, characteristic, or attribute about a facility that is not described explicitly elsewhere.",
         "properties": {
           "EffectiveDateTime": {
@@ -272,6 +278,7 @@
         "type": "object"
       },
       "AbstractFacilityState100": {
+        "additionalProperties": false,
         "description": "The life cycle status of a facility at some point in time.",
         "properties": {
           "EffectiveDateTime": {
@@ -297,6 +304,7 @@
         "type": "object"
       },
       "AbstractFacilityVerticalMeasurement100": {
+        "additionalProperties": false,
         "description": "A location along a wellbore, _usually_ associated with some aspect of the drilling of the wellbore, but not with any intersecting _subsurface_ natural surfaces.",
         "properties": {
           "EffectiveDateTime": {
@@ -367,6 +375,7 @@
         "type": "object"
       },
       "AbstractFeatureCollection100": {
+        "additionalProperties": false,
         "description": "The normalized coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon) based on WGS 84 (EPSG:4326 for 2-dimensional coordinates, EPSG:4326 + EPSG:5714 (MSL) for 3-dimensional coordinates). This derived coordinate representation is intended for global discoverability only. The schema of this substructure is identical to the GeoJSON FeatureCollection https://geojson.org/schema/FeatureCollection.json. The coordinate sequence follows GeoJSON standard, i.e. longitude, latitude {, height}",
         "properties": {
           "bbox": {
@@ -396,6 +405,7 @@
         "type": "object"
       },
       "AbstractLegalParentList100": {
+        "additionalProperties": false,
         "description": "The links to data, which constitute the inputs.",
         "properties": {
           "parents": {
@@ -412,6 +422,7 @@
         "type": "object"
       },
       "AbstractLegalTags100": {
+        "additionalProperties": false,
         "description": "The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
         "properties": {
           "legaltags": {
@@ -445,6 +456,7 @@
         "type": "object"
       },
       "AbstractSpatialLocation100": {
+        "additionalProperties": false,
         "description": "The spatial location information such as coordinates, CRS information (left empty when not appropriate).",
         "properties": {
           "AppliedOperations": {
@@ -531,6 +543,7 @@
         "type": "object"
       },
       "AbstractWellboreDrillingReason100": {
+        "additionalProperties": false,
         "description": "Purpose for drilling a wellbore, which often is an indication of the level of risk.",
         "properties": {
           "DrillingReasonTypeID": {
@@ -570,6 +583,8 @@
         "type": "object"
       },
       "Artefact": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "ResourceID": {
             "description": "The SRN which identifies this OSDU Artefact resource.",
@@ -791,51 +806,71 @@
         "type": "object"
       },
       "Coordinate": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate",
         "type": "array"
       },
       "Coordinate1": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate1",
         "type": "array"
       },
       "Coordinate2": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate2",
         "type": "array"
       },
       "Coordinate3": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate3",
         "type": "array"
       },
       "Coordinate4": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate4",
         "type": "array"
       },
       "Coordinate5": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate5",
         "type": "array"
       },
       "Coordinate6": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate6",
         "type": "array"
       },
       "Coordinate7": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate7",
         "type": "array"
       },
       "Coordinate8": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate8",
         "type": "array"
       },
       "Coordinate9": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "items": {},
         "title": "Coordinate9",
         "type": "array"
@@ -931,6 +966,8 @@
         "type": "object"
       },
       "Curve": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "BaseDepth": {
             "description": "Base Depth",
@@ -1029,15 +1066,6 @@
             "description": "Top Depth",
             "title": "Topdepth",
             "type": "number"
-          },
-          "VerticalMeasurement": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AbstractFacilityVerticalMeasurement100"
-              }
-            ],
-            "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for the logged depths.",
-            "title": "Verticalmeasurement"
           }
         },
         "title": "Curve",
@@ -1075,6 +1103,7 @@
         "title": "DataType_2"
       },
       "Dataset": {
+        "additionalProperties": false,
         "description": "The SRN which identifies this OSDU File resource.",
         "pattern": "^[\\w\\-\\.]+:dataset\\-\\-[\\w\\-\\.]+:[\\w\\-\\.\\:\\%]+:[0-9]*$",
         "title": "Dataset",
@@ -1204,6 +1233,8 @@
         "title": "DirectionWell"
       },
       "Feature": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1254,6 +1285,8 @@
         "type": "object"
       },
       "Feature1": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1640,6 +1673,8 @@
         "type": "object"
       },
       "GeometryItem": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1669,6 +1704,8 @@
         "type": "object"
       },
       "GeometryItem1": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1698,6 +1735,8 @@
         "type": "object"
       },
       "GeometryItem10": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1726,6 +1765,8 @@
         "type": "object"
       },
       "GeometryItem11": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1754,6 +1795,8 @@
         "type": "object"
       },
       "GeometryItem12": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1785,6 +1828,8 @@
         "type": "object"
       },
       "GeometryItem13": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1811,6 +1856,8 @@
         "type": "object"
       },
       "GeometryItem2": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1839,6 +1886,8 @@
         "type": "object"
       },
       "GeometryItem3": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1867,6 +1916,8 @@
         "type": "object"
       },
       "GeometryItem4": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1895,6 +1946,8 @@
         "type": "object"
       },
       "GeometryItem5": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1926,6 +1979,8 @@
         "type": "object"
       },
       "GeometryItem6": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1952,6 +2007,8 @@
         "type": "object"
       },
       "GeometryItem7": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -1981,6 +2038,8 @@
         "type": "object"
       },
       "GeometryItem8": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -2010,6 +2069,8 @@
         "type": "object"
       },
       "GeometryItem9": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "bbox": {
             "items": {
@@ -2345,6 +2406,8 @@
         "type": "string"
       },
       "LineageAssertion": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "ID": {
             "description": "The object reference identifying the DIRECT, INDIRECT, REFERENCE dependency.",
@@ -2369,6 +2432,7 @@
         "type": "object"
       },
       "LogServiceDateInterval": {
+        "additionalProperties": false,
         "description": "An interval built from two nested values : StartDate and EndDate. It applies to the whole log services and may apply to composite logs as [start of the first run job] and [end of the last run job]Log Service Date",
         "properties": {
           "EndDate": {
@@ -2409,6 +2473,8 @@
         "type": "object"
       },
       "Marker": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "FeatureName": {
             "description": "Name of the feature the marker is characterizing",
@@ -2538,16 +2604,22 @@
         "type": "object"
       },
       "OtherRelevantDataCountry": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "pattern": "^[A-Z]{2}$",
         "title": "OtherRelevantDataCountry",
         "type": "string"
       },
       "Owner": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "pattern": "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$",
         "title": "Owner",
         "type": "string"
       },
       "Parent": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.\\:\\%]+:[0-9]+$",
         "title": "Parent",
         "type": "string"
@@ -2763,6 +2835,8 @@
         "title": "ReferenceType"
       },
       "ResourceHostRegionID": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-OSDURegion:[\\w\\-\\.\\:\\%]+:[0-9]*$",
         "title": "ResourceHostRegionID",
         "type": "string"
@@ -3373,6 +3447,7 @@
         "type": "object"
       },
       "VerticalMeasurement": {
+        "additionalProperties": false,
         "description": "A location along a wellbore, _usually_ associated with some aspect of the drilling of the wellbore, but not with any intersecting _subsurface_ natural surfaces.",
         "properties": {
           "EffectiveDateTime": {
@@ -3448,11 +3523,14 @@
         "type": "object"
       },
       "Viewer": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "pattern": "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$",
         "title": "Viewer",
         "type": "string"
       },
       "Well": {
+        "additionalProperties": false,
         "description": "The origin of a set of wellbores.",
         "properties": {
           "acl": {
@@ -3558,6 +3636,7 @@
         "type": "object"
       },
       "WellBoreData": {
+        "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
           "CurrentOperatorID": {
@@ -3799,6 +3878,7 @@
         "type": "object"
       },
       "WellData": {
+        "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
           "CurrentOperatorID": {
@@ -3995,6 +4075,8 @@
         "title": "WellLocationType"
       },
       "WellLog": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "acl": {
             "allOf": [
@@ -4099,6 +4181,7 @@
         "type": "object"
       },
       "WellLogData": {
+        "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
           "ActivityType": {
@@ -4338,8 +4421,17 @@
             "title": "Top Measured Depth",
             "type": "number"
           },
+          "VerticalMeasurement": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractFacilityVerticalMeasurement100"
+              }
+            ],
+            "description": "The vertical measurement reference for the log curves, which defines the vertical reference datum for the logged depths. Either VerticalMeasurement or VerticalMeasurementID are populated.",
+            "title": "Verticalmeasurement"
+          },
           "VerticalMeasurementID": {
-            "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths.",
+            "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths. Either VerticalMeasurementID or VerticalMeasurement are populated.",
             "title": "Verticalmeasurementid",
             "type": "string"
           },
@@ -4427,6 +4519,7 @@
         "title": "WellType"
       },
       "Wellbore": {
+        "additionalProperties": false,
         "description": "A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.",
         "properties": {
           "acl": {
@@ -4532,6 +4625,7 @@
         "type": "object"
       },
       "WellboreMarkerSet": {
+        "additionalProperties": false,
         "description": "Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.",
         "properties": {
           "acl": {
@@ -4637,6 +4731,7 @@
         "type": "object"
       },
       "WellboreMarkerSetData": {
+        "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
           "Artefacts": {
@@ -4869,6 +4964,7 @@
         "title": "WellboreStatus"
       },
       "WellboreTrajectory": {
+        "additionalProperties": false,
         "description": "Work Product Component describing an individual instance of a wellbore trajectory data object. Also called a deviation survey, wellbore trajectory is data that is used to calculate the position and spatial uncertainty of a planned or actual wellbore in 2-dimensional and 3-dimensional space.",
         "properties": {
           "acl": {
@@ -4974,6 +5070,7 @@
         "type": "object"
       },
       "WellboreTrajectoryData": {
+        "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
           "AcquisitionDate": {
