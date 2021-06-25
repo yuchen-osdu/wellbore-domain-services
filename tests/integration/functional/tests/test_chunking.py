@@ -116,14 +116,14 @@ def create_session(env, entity_type: EntityType, record_id: str, overwrite: bool
     url = build_base_url(entity_type) + f'/{record_id}/sessions'
     runner = build_request(f'create {entity_type} session', 'POST', url,
                            payload={'mode': 'overwrite' if overwrite else 'update'})
-    return runner.call(env, assert_status=200).get_response_obj().id
+    return runner.call(env, assert_status=200, headers={"Content-Type": "application/json"}).get_response_obj().id
 
 
 def complete_session(env, entity_type: EntityType, record_id: str, session_id: str, commit: bool):
     state = "commit" if commit else "abandon"
     url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}'
     runner = build_request(f'{state} session', 'PATCH', url, payload={'state': state})
-    runner.call(env).assert_ok()
+    runner.call(env, headers={"Content-Type": "application/json"}).assert_ok()
 
 
 class ParquetSerializer:
@@ -293,7 +293,7 @@ def test_get_data_with_column_filter(with_wdms_env):
 
     with create_record(with_wdms_env, entity_type) as record_id:
         size = 100
-        data = generate_df(['MD', 'X', 'Y', 'Z'], range(size))
+        data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -303,7 +303,10 @@ def test_get_data_with_column_filter(with_wdms_env):
         validation_list = [  # tuple (params, expected_status, expected data)
             ({"curves": "MD"}, 200, data[['MD']]),
             ({"curves": "X, Y, Z"}, 200, data[['X', 'Y', 'Z']]),
-            ({"curves": "W, X"}, 200, data[['X']])
+            ({"curves": "W, X"}, 200, data[['X']]),
+            ({"curves": "2D[0]"}, 200, data[['2D[0]']]),
+            ({"curves": "2D[0:1]"}, 200, data[['2D[0]', '2D[1]']]),
+            ({"curves": "2D"}, 200, data[['2D[0]', '2D[1]', '2D[2]']]),
         ]
 
         for (params, expected_status, expected_data) in validation_list:
