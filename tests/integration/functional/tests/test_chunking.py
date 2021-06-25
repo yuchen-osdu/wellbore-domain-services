@@ -17,7 +17,6 @@ from enum import Enum
 from contextlib import contextmanager
 import random
 
-import httpx
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
@@ -381,3 +380,83 @@ def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
 
             if r.ok:
                 pd.testing.assert_frame_equal(expected_data, serializer.read(r.response.content))
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
+def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
+
+    with create_record(with_wdms_env, entity_type) as record_id:
+        # create session
+        sessions = [{
+            'id': create_session(with_wdms_env, entity_type, record_id, True),
+            'df': generate_df(['MD', 'X'], range(8))
+        } for _i in range(5)]  # mode overwrite
+
+        for session in sessions:
+            session_id = session['id']
+            expected = session['df']
+            # post chunk
+            build_request_post_chunk(entity_type, record_id, session_id, serializer.dump(expected)).call(
+                with_wdms_env, headers={'Content-Type': serializer.mime_type},).assert_ok()
+
+        random.shuffle(sessions) 
+
+        for session in sessions:
+            session_id = session['id']
+            expected = session['df']
+
+            # commit session
+            complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
+
+            # then read and check expected
+            result = build_request_get_data(entity_type, record_id).call(
+                with_wdms_env, headers={'Accept': serializer.mime_type}, assert_status=200)
+
+            pd.testing.assert_frame_equal(
+                expected, serializer.read(result.response.content), check_dtype=False)
+            # check type set to false since in Json dType is lost so int32 can become int64
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
+def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
+
+    with create_record(with_wdms_env, entity_type) as record_id:
+        # post data
+        data = generate_df(['MD', 'X'], range(10))
+        data_to_send = serializer.dump(data)
+        build_request_post_data(entity_type, record_id, data_to_send).call(
+            with_wdms_env, headers={'Content-Type': serializer.mime_type}).assert_ok()
+
+        # create session
+        sessions = [{
+            'id': create_session(with_wdms_env, entity_type, record_id, False),
+            'df': generate_df(['MD', 'X'], range(10, 20))
+        } for _i in range(5)]  # mode overwrite
+
+        for session in sessions:
+            session_id = session['id']
+            expected = session['df']
+            # post chunk
+            build_request_post_chunk(entity_type, record_id, session_id, serializer.dump(expected)).call(
+                with_wdms_env, headers={'Content-Type': serializer.mime_type},).assert_ok()
+
+        random.shuffle(sessions) 
+
+        for session in sessions:
+            session_id = session['id']
+            expected = pd.concat([data, session['df']])
+
+            # commit session
+            complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
+
+            # then read and check expected
+            result = build_request_get_data(entity_type, record_id).call(
+                with_wdms_env, headers={'Accept': serializer.mime_type}, assert_status=200)
+
+            pd.testing.assert_frame_equal(
+                expected, serializer.read(result.response.content), check_dtype=False)
+            # check type set to false since in Json dType is lost so int32 can become int64
