@@ -22,6 +22,7 @@ from fastapi.testclient import TestClient
 from fastapi import Header, status
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record
+
 from app.model.osdu_model import Wellbore, Well
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 
