@@ -19,3 +19,21 @@ import uuid
 def test_bulk_id_is_an_uuid():
     uuid.UUID(BulkId.new_bulk_id())
 
+# urn decode test
+def test_decode_urn_no_prefix():
+    uuid, prefix = BulkId.bulk_urn_decode("urn:uuid:489768d2-eee1-4a8f-ae95-7b0c30b0dcd8")
+    assert uuid == "489768d2-eee1-4a8f-ae95-7b0c30b0dcd8"
+    assert prefix is None
+
+def test_decode_urn_with_prefix():
+    uuid, prefix = BulkId.bulk_urn_decode("urn:myprefix:uuid:489768d2-eee1-4a8f-ae95-7b0c30b0dcd8")
+    assert uuid == "489768d2-eee1-4a8f-ae95-7b0c30b0dcd8"
+    assert prefix == 'myprefix'
+
+def test_decode_urn_none():
+    uuid = None
+    try:
+        uuid, prefix = BulkId.bulk_urn_decode(None)
+    except ValueError:
+        pass
+    assert uuid is None
