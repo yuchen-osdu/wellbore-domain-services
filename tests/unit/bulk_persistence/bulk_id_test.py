@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pytest
 
 from app.bulk_persistence import BulkId
 import uuid
@@ -31,9 +32,5 @@ def test_decode_urn_with_prefix():
     assert prefix == 'myprefix'
 
 def test_decode_urn_none():
-    uuid = None
-    try:
+    with pytest.raises(ValueError):
         uuid, prefix = BulkId.bulk_urn_decode(None)
-    except ValueError:
-        pass
-    assert uuid is None
