@@ -271,10 +271,10 @@ async def get_data_version(
 ):
     record = await fetch_record(ctx, record_id, version)
     bulk_uri = get_bulk_uri(record)
-    if bulk_uri is None:
-        raise BulkNotFound(record_id=record_id, bulk_id=None)
-    bulk_id, prefix = BulkId.bulk_urn_decode(bulk_uri)
     try:
+        if bulk_uri is None:
+            raise BulkNotFound(record_id=record_id, bulk_id=None)
+        bulk_id, prefix = BulkId.bulk_urn_decode(bulk_uri)
         if prefix != BULK_URN_PREFIX_VERSION:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
         df = await dask_blob_storage.load_bulk(record_id, bulk_id)
