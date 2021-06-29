@@ -29,6 +29,7 @@ from tests.unit.persistence.dask_blob_storage_test import generate_df
 
 Definitions = {
     'WellLog': {
+        'api_version': 'v3',
         'base_url': '/ddms/v3/welllogs',
         'chunking_url': '/alpha/ddms/v3/welllogs',  # TODO: update when no longer alpha
         'kind': 'osdu:wks:work-product-component--WellLog:1.0.0',
@@ -39,6 +40,7 @@ Definitions = {
     },
 
     'WellboreTrajectory': {
+        'api_version': 'v3',
         'base_url': '/ddms/v3/wellboretrajectories',
         'chunking_url': '/alpha/ddms/v3/wellboretrajectories',  # TODO: update when no longer alpha
         'kind': 'osdu:wks:work-product-component--WellboreTrajectory:1.0.0',
@@ -50,6 +52,7 @@ Definitions = {
         }
     },
     'Log': {
+        'api_version': 'v2',
         'base_url': '/ddms/v2/logs',
         'chunking_url': '/alpha/ddms/v2/logs',  # TODO: update when no longer alpha
         'kind': 'osdu:wks:log:1.0.5',
@@ -201,9 +204,9 @@ def test_send_all_data_once(setup_client,
     initial_data_df = generate_df(columns, range(5, 13))
     data_to_send = create_func(initial_data_df)
     headers = {'content-type': content_type_header}
-    # test no data
-    with pytest.raises(BulkNotFound):
-        client.get(f'{Definitions[entity_type]["chunking_url"]}/{record_id}/data', headers=headers)
+
+    get_response_no_data = client.get(f'{chunking_url}/{record_id}/data', headers=headers)
+    assert get_response_no_data.status_code == 404
 
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
