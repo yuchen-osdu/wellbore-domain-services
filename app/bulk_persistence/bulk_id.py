@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import uuid
-from typing import Tuple
+from typing import Tuple, Optional
 
 
 class BulkId:
@@ -30,7 +30,9 @@ class BulkId:
 
     # Returns a tuple (<uuid> : str, <prefix> : str)
     @classmethod
-    def bulk_urn_decode(cls, urn: str) -> Tuple[str, str]:
+    def bulk_urn_decode(cls, urn: str) -> Tuple[str, Optional[str]]:
+        if urn is None:
+            raise ValueError('attempted to decode empty urn')
         parts = urn.split(":")
         if len(parts) < 4:
             return str(uuid.UUID(urn)), None

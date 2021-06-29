@@ -22,7 +22,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra, Field, constr
-
+from .model_curated import DDMSBaseModel
 
 class Tags(BaseModel):
     class Config:
@@ -31,7 +31,7 @@ class Tags(BaseModel):
     __root__: str
 
 
-class LogServiceDateInterval(BaseModel):
+class LogServiceDateInterval(DDMSBaseModel):
     """
     An interval built from two nested values : StartDate and EndDate. It applies to the whole log services and may apply to composite logs as [start of the first run job] and [end of the last run job]Log Service Date
     """
@@ -40,7 +40,7 @@ class LogServiceDateInterval(BaseModel):
     EndDate: Optional[datetime] = None
 
 
-class Owner(BaseModel):
+class Owner(DDMSBaseModel):
     __root__: constr(
         regex=r'^[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$'
     )
@@ -50,7 +50,7 @@ class Viewer(Owner):
     pass
 
 
-class AbstractAccessControlList100(BaseModel):
+class AbstractAccessControlList100(DDMSBaseModel):
     """
     The access control tags associated with this entity.
     """
@@ -67,7 +67,7 @@ class AbstractAccessControlList100(BaseModel):
     )
 
 
-class AbstractAliasNames100(BaseModel):
+class AbstractAliasNames100(DDMSBaseModel):
     """
     A list of alternative names for an object.  The preferred name is in a separate, scalar property.  It may or may not be repeated in the alias list, though a best practice is to include it if the list is present, but to omit the list if there are no other names.  Note that the abstract entity is an array so the $ref to it is a simple property reference.
     """
@@ -109,7 +109,7 @@ class Type2(Enum):
     AnyCrsPoint = 'AnyCrsPoint'
 
 
-class GeometryItem(BaseModel):
+class GeometryItem(DDMSBaseModel):
     type: Type2
     coordinates: List[float] = Field(..., min_items=2)
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -119,11 +119,11 @@ class Type3(Enum):
     AnyCrsLineString = 'AnyCrsLineString'
 
 
-class Coordinate(BaseModel):
+class Coordinate(DDMSBaseModel):
     __root__: List[Any]
 
 
-class GeometryItem1(BaseModel):
+class GeometryItem1(DDMSBaseModel):
     type: Type3
     coordinates: List[Coordinate] = Field(..., min_items=2)
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -137,7 +137,7 @@ class Coordinate1(Coordinate):
     pass
 
 
-class GeometryItem2(BaseModel):
+class GeometryItem2(DDMSBaseModel):
     type: Type4
     coordinates: List[Coordinate1]
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -151,7 +151,7 @@ class Coordinate2(Coordinate):
     pass
 
 
-class GeometryItem3(BaseModel):
+class GeometryItem3(DDMSBaseModel):
     type: Type5
     coordinates: List[Coordinate2]
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -165,7 +165,7 @@ class Coordinate3(Coordinate):
     pass
 
 
-class GeometryItem4(BaseModel):
+class GeometryItem4(DDMSBaseModel):
     type: Type6
     coordinates: List[Coordinate3]
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -179,7 +179,7 @@ class Coordinate4(Coordinate):
     pass
 
 
-class GeometryItem5(BaseModel):
+class GeometryItem5(DDMSBaseModel):
     type: Type7
     coordinates: List[List[Coordinate4]]
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -189,13 +189,13 @@ class Type8(Enum):
     AnyCrsGeometryCollection = 'AnyCrsGeometryCollection'
 
 
-class GeometryItem6(BaseModel):
+class GeometryItem6(DDMSBaseModel):
     type: Type8
     geometries: List[Any]
     bbox: Optional[List[float]] = Field(None, min_items=4)
 
 
-class Feature(BaseModel):
+class Feature(DDMSBaseModel):
     type: Type1
     properties: Optional[Dict[str, Any]]
     geometry: Optional[
@@ -212,7 +212,7 @@ class Feature(BaseModel):
     bbox: Optional[List[float]] = Field(None, min_items=4)
 
 
-class AbstractAnyCrsFeatureCollection100(BaseModel):
+class AbstractAnyCrsFeatureCollection100(DDMSBaseModel):
     """
     The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the OperationsApplied can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.
     """
@@ -260,13 +260,13 @@ class AbstractAnyCrsFeatureCollection100(BaseModel):
     bbox: Optional[List[float]] = Field(None, min_items=4)
 
 
-class ResourceHostRegionID(BaseModel):
+class ResourceHostRegionID(DDMSBaseModel):
     __root__: constr(
         regex=r'^[\w\-\.]+:reference-data\-\-OSDURegion:[\w\-\.\:\%]+:[0-9]*$'
     )
 
 
-class AbstractCommonResources100(BaseModel):
+class AbstractCommonResources100(DDMSBaseModel):
     """
     Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.
     """
@@ -324,7 +324,7 @@ class AbstractCommonResources100(BaseModel):
     )
 
 
-class AbstractFacilityEvent100(BaseModel):
+class AbstractFacilityEvent100(DDMSBaseModel):
     """
     A significant occurrence in the life of a facility, which often changes its state, or the state of one of its components. It can describe a point-in-time (event) or a time interval of a specific type (FacilityEventType).
     """
@@ -347,7 +347,7 @@ class AbstractFacilityEvent100(BaseModel):
     )
 
 
-class AbstractFacilityOperator100(BaseModel):
+class AbstractFacilityOperator100(DDMSBaseModel):
     """
     The organisation that was responsible for a facility at some point in time.
     """
@@ -373,7 +373,7 @@ class AbstractFacilityOperator100(BaseModel):
     )
 
 
-class AbstractFacilitySpecification100(BaseModel):
+class AbstractFacilitySpecification100(DDMSBaseModel):
     """
     A property, characteristic, or attribute about a facility that is not described explicitly elsewhere.
     """
@@ -409,7 +409,7 @@ class AbstractFacilitySpecification100(BaseModel):
     ] = Field(None, description='Parameter type of property or characteristic.')
 
 
-class AbstractFacilityState100(BaseModel):
+class AbstractFacilityState100(DDMSBaseModel):
     """
     The life cycle status of a facility at some point in time.
     """
@@ -431,7 +431,7 @@ class AbstractFacilityState100(BaseModel):
     )
 
 
-class AbstractFacilityVerticalMeasurement100(BaseModel):
+class AbstractFacilityVerticalMeasurement100(DDMSBaseModel):
     """
     A location along a wellbore, _usually_ associated with some aspect of the drilling of the wellbore, but not with any intersecting _subsurface_ natural surfaces.
     """
@@ -511,7 +511,7 @@ class Type11(Enum):
     Point = 'Point'
 
 
-class GeometryItem7(BaseModel):
+class GeometryItem7(DDMSBaseModel):
     type: Type11
     coordinates: List[float] = Field(..., min_items=2)
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -525,7 +525,7 @@ class Coordinate5(Coordinate):
     pass
 
 
-class GeometryItem8(BaseModel):
+class GeometryItem8(DDMSBaseModel):
     type: Type12
     coordinates: List[Coordinate5] = Field(..., min_items=2)
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -539,7 +539,7 @@ class Coordinate6(Coordinate):
     pass
 
 
-class GeometryItem9(BaseModel):
+class GeometryItem9(DDMSBaseModel):
     type: Type13
     coordinates: List[Coordinate6]
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -553,7 +553,7 @@ class Coordinate7(Coordinate):
     pass
 
 
-class GeometryItem10(BaseModel):
+class GeometryItem10(DDMSBaseModel):
     type: Type14
     coordinates: List[Coordinate7]
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -567,7 +567,7 @@ class Coordinate8(Coordinate):
     pass
 
 
-class GeometryItem11(BaseModel):
+class GeometryItem11(DDMSBaseModel):
     type: Type15
     coordinates: List[Coordinate8]
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -581,7 +581,7 @@ class Coordinate9(Coordinate):
     pass
 
 
-class GeometryItem12(BaseModel):
+class GeometryItem12(DDMSBaseModel):
     type: Type16
     coordinates: List[List[Coordinate9]]
     bbox: Optional[List[float]] = Field(None, min_items=4)
@@ -591,13 +591,13 @@ class Type17(Enum):
     GeometryCollection = 'GeometryCollection'
 
 
-class GeometryItem13(BaseModel):
+class GeometryItem13(DDMSBaseModel):
     type: Type17
     geometries: List[Any]
     bbox: Optional[List[float]] = Field(None, min_items=4)
 
 
-class Feature1(BaseModel):
+class Feature1(DDMSBaseModel):
     type: Type10
     properties: Optional[Dict[str, Any]]
     geometry: Optional[
@@ -614,7 +614,7 @@ class Feature1(BaseModel):
     bbox: Optional[List[float]] = Field(None, min_items=4)
 
 
-class AbstractFeatureCollection100(BaseModel):
+class AbstractFeatureCollection100(DDMSBaseModel):
     """
     The normalized coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon) based on WGS 84 (EPSG:4326 for 2-dimensional coordinates, EPSG:4326 + EPSG:5714 (MSL) for 3-dimensional coordinates). This derived coordinate representation is intended for global discoverability only. The schema of this substructure is identical to the GeoJSON FeatureCollection https://geojson.org/schema/FeatureCollection.json. The coordinate sequence follows GeoJSON standard, i.e. longitude, latitude {, height}
     """
@@ -624,7 +624,7 @@ class AbstractFeatureCollection100(BaseModel):
     bbox: Optional[List[float]] = Field(None, min_items=4)
 
 
-class AbstractGeoBasinContext100(BaseModel):
+class AbstractGeoBasinContext100(DDMSBaseModel):
     """
     A single, typed basin entity reference, which is 'abstracted' to AbstractGeoContext and then aggregated by GeoContexts properties.
     """
@@ -640,7 +640,7 @@ class AbstractGeoBasinContext100(BaseModel):
     )
 
 
-class AbstractGeoFieldContext100(BaseModel):
+class AbstractGeoFieldContext100(DDMSBaseModel):
     """
     A single, typed field entity reference, which is 'abstracted' to AbstractGeoContext and then aggregated by GeoContexts properties.
     """
@@ -653,7 +653,7 @@ class AbstractGeoFieldContext100(BaseModel):
     )
 
 
-class AbstractGeoPlayContext100(BaseModel):
+class AbstractGeoPlayContext100(DDMSBaseModel):
     """
     A single, typed Play entity reference, which is 'abstracted' to AbstractGeoContext and then aggregated by GeoContexts properties.
     """
@@ -669,7 +669,7 @@ class AbstractGeoPlayContext100(BaseModel):
     )
 
 
-class AbstractGeoPoliticalContext100(BaseModel):
+class AbstractGeoPoliticalContext100(DDMSBaseModel):
     """
     A single, typed geo-political entity reference, which is 'abstracted' to AbstractGeoContext and then aggregated by GeoContexts properties.
     """
@@ -689,7 +689,7 @@ class AbstractGeoPoliticalContext100(BaseModel):
     )
 
 
-class AbstractGeoProspectContext100(BaseModel):
+class AbstractGeoProspectContext100(DDMSBaseModel):
     """
     A single, typed Prospect entity reference, which is 'abstracted' to AbstractGeoContext and then aggregated by GeoContexts properties.
     """
@@ -705,11 +705,11 @@ class AbstractGeoProspectContext100(BaseModel):
     )
 
 
-class Parent(BaseModel):
+class Parent(DDMSBaseModel):
     __root__: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.\:\%]+:[0-9]+$')
 
 
-class AbstractLegalParentList100(BaseModel):
+class AbstractLegalParentList100(DDMSBaseModel):
     """
     The links to data, which constitute the inputs.
     """
@@ -722,11 +722,11 @@ class AbstractLegalParentList100(BaseModel):
     )
 
 
-class OtherRelevantDataCountry(BaseModel):
+class OtherRelevantDataCountry(DDMSBaseModel):
     __root__: constr(regex=r'^[A-Z]{2}$')
 
 
-class AbstractLegalTags100(BaseModel):
+class AbstractLegalTags100(DDMSBaseModel):
     """
     The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.
     """
@@ -748,7 +748,7 @@ class AbstractLegalTags100(BaseModel):
     )
 
 
-class AbstractSpatialLocation100(BaseModel):
+class AbstractSpatialLocation100(DDMSBaseModel):
     """
     The spatial location information such as coordinates, CRS information (left empty when not appropriate).
     """
@@ -818,13 +818,13 @@ class AbstractSpatialLocation100(BaseModel):
     )
 
 
-class Dataset(BaseModel):
+class Dataset(DDMSBaseModel):
     __root__: constr(
         regex=r'^[\w\-\.]+:dataset\-\-[\w\-\.]+:[\w\-\.\:\%]+:[0-9]*$'
     ) = Field(..., description='The SRN which identifies this OSDU File resource.')
 
 
-class Artefact(BaseModel):
+class Artefact(DDMSBaseModel):
     RoleID: Optional[
         constr(regex=r'^[\w\-\.]+:reference-data\-\-ArtefactRole:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(None, description="The SRN of this artefact's role.")
@@ -839,7 +839,7 @@ class Artefact(BaseModel):
     ] = Field(None, description='The SRN which identifies this OSDU Artefact resource.')
 
 
-class AbstractWellboreDrillingReason100(BaseModel):
+class AbstractWellboreDrillingReason100(DDMSBaseModel):
     """
     Purpose for drilling a wellbore, which often is an indication of the level of risk.
     """
@@ -860,7 +860,7 @@ class AbstractWellboreDrillingReason100(BaseModel):
     )
 
 
-class AbstractFacility100(BaseModel):
+class AbstractFacility100(DDMSBaseModel):
     FacilityID: Optional[str] = Field(
         None, description='A system-specified unique identifier of a Facility.'
     )
@@ -916,7 +916,7 @@ class AbstractFacility100(BaseModel):
     )
 
 
-class AbstractMaster100(BaseModel):
+class AbstractMaster100(DDMSBaseModel):
     """
     Properties shared with all master-data schema instances.
     """
@@ -946,7 +946,7 @@ class VerticalMeasurement(AbstractFacilityVerticalMeasurement100):
     )
 
 
-class AbstractWPCGroupType100(BaseModel):
+class AbstractWPCGroupType100(DDMSBaseModel):
     """
     Generic reference object containing the universal group-type properties of a Work Product Component for inclusion in data type specific Work Product Component objects
     """
@@ -966,7 +966,7 @@ class AbstractWPCGroupType100(BaseModel):
     )
 
 
-class LineageAssertion(BaseModel):
+class LineageAssertion(DDMSBaseModel):
     ID: Optional[
         constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
@@ -983,7 +983,7 @@ class LineageAssertion(BaseModel):
     )
 
 
-class AbstractWorkProductComponent100(BaseModel):
+class AbstractWorkProductComponent100(DDMSBaseModel):
     """
     Generic reference object containing the universal properties of a Work Product Component for inclusion in data type specific Work Product Component objects
     """
@@ -1031,7 +1031,7 @@ class AbstractWorkProductComponent100(BaseModel):
     )
 
 
-class Curve(BaseModel):
+class Curve(DDMSBaseModel):
     CurveID: Optional[str] = Field(None, description='The ID of the Well Log Curve')
     DateStamp: Optional[datetime] = Field(
         None, description='Date curve was created in the database'
@@ -1097,11 +1097,6 @@ class Curve(BaseModel):
         None,
         description='The SRN of the Log Curve Family - which is the detailed Geological Physical Quantity Measured - such as neutron porosity',
     )
-    VerticalMeasurement: Optional[AbstractFacilityVerticalMeasurement100] = Field(
-        None,
-        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for the logged depths.',
-    )
-
 
 class WellData(AbstractCommonResources100, AbstractMaster100, AbstractFacility100):
     DefaultVerticalMeasurementID: Optional[str] = Field(
@@ -1131,7 +1126,7 @@ class WellData(AbstractCommonResources100, AbstractMaster100, AbstractFacility10
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
 
-class Well(BaseModel):
+class Well(DDMSBaseModel):
     """
     The origin of a set of wellbores.
     """
@@ -1272,7 +1267,7 @@ class WellBoreData(AbstractCommonResources100, AbstractMaster100, AbstractFacili
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
 
-class Wellbore(BaseModel):
+class Wellbore(DDMSBaseModel):
     """
     A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.
     """
@@ -1425,13 +1420,17 @@ class WellLogData(
     )
     VerticalMeasurementID: Optional[str] = Field(
         None,
-        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths.',
+        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths. Either VerticalMeasurementID or VerticalMeasurement are populated.',
+    )
+    VerticalMeasurement: Optional[AbstractFacilityVerticalMeasurement100] = Field(
+        None,
+        description='The vertical measurement reference for the log curves, which defines the vertical reference datum for the logged depths. Either VerticalMeasurement or VerticalMeasurementID are populated.',
     )
     Curves: Optional[List[Curve]] = None
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
 
-class WellLog(BaseModel):
+class WellLog(DDMSBaseModel):
     id: Optional[
         constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')
     ] = Field(
@@ -1503,6 +1502,37 @@ class WellLog(BaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellLogData] = None
+
+
+class AvailableTrajectoryStationProperty(DDMSBaseModel):
+    """
+    A set of properties describing a trajectory station property which is available for this instance of a WellboreTrajectory.
+    """
+
+    TrajectoryStationPropertyTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-TrajectoryStationPropertyType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The reference to a trajectory station property type - of if interpreted as channels, the curve or channel name type, identifying e.g. MD, Inclination, Azimuth. This is a relationship to a reference-data--TrajectoryStationPropertyType record id.',
+        example='partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:',
+        title='Trajectory Station Property Type ID',
+    )
+    StationPropertyUnitID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Unit of Measure for the station properties of type TrajectoryStationPropertyType.',
+        example='partition-id:reference-data--UnitOfMeasure:dega:',
+        title='Station Property Unit ID',
+    )
+    Name: Optional[str] = Field(
+        None,
+        description='The name of the curve (e.g. column in a CSV document) as originally found. If absent The name of the TrajectoryCurveType is intended to be used.',
+        example='AzimuthTN',
+        title='Name',
+    )
 
 
 class WellboreTrajectoryData(
@@ -1619,8 +1649,7 @@ class WellboreTrajectoryData(
     )
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
-
-class WellboreTrajectory(BaseModel):
+class WellboreTrajectory(DDMSBaseModel):
     """
     Work Product Component describing an individual instance of a wellbore trajectory data object. Also called a deviation survey, wellbore trajectory is data that is used to calculate the position and spatial uncertainty of a planned or actual wellbore in 2-dimensional and 3-dimensional space.
     """
@@ -1700,7 +1729,7 @@ class WellboreTrajectory(BaseModel):
     data: Optional[WellboreTrajectoryData] = None
 
 
-class Marker(BaseModel):
+class Marker(DDMSBaseModel):
     MarkerName: Optional[str] = Field(None, description='Name of the Marker')
     MarkerMeasuredDepth: Optional[float] = Field(
         None, description='The depth at which the Marker was noted.'
@@ -1768,7 +1797,7 @@ class WellboreMarkerSetData(
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
 
-class WellboreMarkerSet(BaseModel):
+class WellboreMarkerSet(DDMSBaseModel):
     """
     Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.
     """

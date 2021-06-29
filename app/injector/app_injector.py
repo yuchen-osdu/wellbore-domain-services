@@ -31,7 +31,7 @@ class WithLifeTime:
             :param builder_fn: input factory function/callable that builds an object.
             :return: returns a callable that returns an object
             """
-            raise NotImplemented()
+            raise NotImplementedError()
 
     class Transient(Base):
         """ Transient lifetime: a new object is created each time """

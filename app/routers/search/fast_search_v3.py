@@ -20,7 +20,7 @@ from .search_v3 import (
     SearchQuery,
     query_type,
     basic_query_request,
-    added_query,
+    added_relationships_query,
     query_request_with_specific_attribute,
     OSDU_WELLBORE_KIND,
     OSDU_WELLLOG_KIND,
@@ -52,7 +52,7 @@ async def fastquery_wellbores(body: SearchQuery = None, ctx: Context = Depends(g
              response_model=CursorQueryResponse)
 async def fastquery_welllogs_bywellbore(wellbore_id: str, body: SearchQuery = None,
                 ctx: Context = Depends(get_ctx)):
-    query = added_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
+    query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
     return await basic_query_request(query_type, OSDU_WELLLOG_KIND, ctx, query)
 
 
@@ -77,5 +77,5 @@ async def fastquery_welllogs_bywellboreattribute(wellbore_attribute: str, body: 
              response_model=CursorQueryResponse)
 async def fastquery_markers_bywellbore(wellbore_id: str, body: SearchQuery = None,
                 ctx: Context = Depends(get_ctx)):
-    query = added_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
+    query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
     return await basic_query_request(query_type, OSDU_WELLBOREMARKERSET_KIND, ctx, query)
