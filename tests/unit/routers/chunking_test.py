@@ -230,6 +230,63 @@ def test_send_all_data_once(setup_client,
                                   )
 
 
+@pytest.mark.parametrize("entity_type", [entity for entity in EntityTypeParams if Definitions[entity]['api_version'] == "v2"])
+@pytest.mark.parametrize("content_type_header,create_func", [
+    #('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
+    ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
+])
+@pytest.mark.parametrize("accept_content", [
+    # 'application/x-parquet',
+    # 'text/csv; charset=utf-8',
+    'application/json',
+])
+@pytest.mark.parametrize("columns", [
+    ['MD', 'X'],
+    ['float_MD', 'float_X'],
+    ['str_MD', 'str_X'],
+    ['date_MD', 'date_X'],
+    ['MD', 'float_X', 'str_X', 'date_X']
+])
+def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
+                            entity_type,
+                            columns,
+                            content_type_header,
+                            create_func,
+                            accept_content):
+    client, tmp_dir = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+    base_url = Definitions[entity_type]['base_url']
+
+    initial_data_df = generate_df(columns, range(5, 13))
+    data_to_send = create_func(initial_data_df)
+    headers = {'content-type': content_type_header}
+
+    get_response_no_data = client.get(f'{chunking_url}/{record_id}/data', headers=headers)
+    assert get_response_no_data.status_code == 404
+
+    write_response = client.post(f'{base_url}/{record_id}/data', data=data_to_send, headers=headers)
+    assert write_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
+    assert get_response.status_code == 200
+    result_df = _create_df_from_response(get_response)
+
+    if content_type_header.endswith('parquet') and accept_content.endswith('json'):
+        result_df = _cast_datetime_to_datetime64_ns(result_df)
+
+    if content_type_header.endswith('json'):
+        initial_data_df = pd.read_json(data_to_send, orient='split')
+
+    assert initial_data_df.index.dtype == result_df.index.dtype
+    assert initial_data_df.shape == result_df.shape
+    pd.testing.assert_frame_equal(initial_data_df, result_df,
+                                  check_dtype=False,
+                                  check_column_type=False,
+                                  check_datetimelike_compat=True,
+                                  )
+
+
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("content_type_header, create_func", [
     ('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
