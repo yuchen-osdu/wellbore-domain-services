@@ -21,7 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
 import pandas as pd
 
-from app.bulk_persistence import DataframeSerializerAsync, JSONOrient
+from app.bulk_persistence import DataframeSerializerAsync, JSONOrient, get_dataframe
 from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
@@ -29,8 +29,8 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.record_utils import fetch_record
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
+from app.model.log_bulk import LogBulkHelper
 from app.utils import Context, OpenApiHandler, get_ctx
-from app.routers.ddms_v2.persistence import Persistence
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
     REQUEST_DATA_BODY_SCHEMA,
@@ -275,13 +275,15 @@ async def get_data_version(
     if bulk_urn is not None:
         bulk_id, prefix = BulkId.bulk_urn_decode(bulk_urn)
     else: # fallback on ddms_v2 Persistence for wks:log schema
-        bulk_id, prefix = (None, None)
+        bulk_id, prefix = LogBulkHelper.get_bulk_id(record, None)
     try:
+        if bulk_id is None:
+            raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
             df = await dask_blob_storage.load_bulk(record_id, bulk_id)
             df = await DataFrameRender.process_params(df, ctrl_p)
         elif prefix is None:
-            df = await Persistence.read_bulk(ctx, record, None)
+            df = await get_dataframe(ctx, bulk_id)
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
