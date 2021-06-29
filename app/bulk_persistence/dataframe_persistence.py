@@ -28,6 +28,7 @@ from .blob_storage import (
 from .bulk_id import BulkId
 from .mime_types import MimeTypes
 from .tenant_provider import resolve_tenant
+from ..helper.traces import with_trace
 
 
 async def create_and_store_dataframe(ctx: Context, df: pd.DataFrame) -> str:
@@ -48,12 +49,13 @@ async def create_and_store_dataframe(ctx: Context, df: pd.DataFrame) -> str:
         return bulkblob.id
 
 
+@with_trace('get_dataframe')
 async def get_dataframe(ctx: Context, bulk_id: str) -> pd.DataFrame:
     """ fetch bulk from a blob storage, provide column major """
     tenant = await resolve_tenant(ctx.partition_id)
     storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
 
-    bytes_data = await storage.download(tenant,  bulk_id)
+    bytes_data = await storage.download(tenant, bulk_id)
     # for now use fix parquet format saving one call
     # meta_data = await storage.download_metadata(tenant.project_id, tenant.bucket_name, bulk_id)
     # content_type = meta_data.metadata["content_type"]
