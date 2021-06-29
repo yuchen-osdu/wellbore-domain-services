@@ -281,12 +281,11 @@ async def get_data_version(
             raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
             df = await dask_blob_storage.load_bulk(record_id, bulk_id)
-            df = await DataFrameRender.process_params(df, ctrl_p)
         elif prefix is None:
             df = await get_dataframe(ctx, bulk_id)
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
-
+        df = await DataFrameRender.process_params(df, ctrl_p)
         return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
     except BulkError as ex:
         ex.raise_as_http()
