@@ -414,7 +414,7 @@ def test_post_records_successful(client, base_url, record_obj):
 
     with mock.patch.object(StorageRecordServiceClientMock, 'create_or_update_records', moc_create_or_update_records):
         # when
-        response = client.post(base_url, data=json.dumps(record_dict_list))
+        response = client.post(base_url, data=json.dumps(record_dict_list), headers={'content-type': 'application/json'})
 
         # then
         assert response.status_code == status.HTTP_200_OK
