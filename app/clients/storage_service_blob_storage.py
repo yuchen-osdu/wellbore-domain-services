@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from asyncio import iscoroutinefunction, gather
 import uuid
-from fastapi import FastAPI, HTTPException, status
-from osdu.core.api.storage.tenant import Tenant
+from asyncio import gather, iscoroutinefunction
 
+from app.model import model_utils
+from fastapi import FastAPI, HTTPException, status
 from odes_storage.models import *
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
-
-from app.model import model_utils
+from osdu.core.api.storage.tenant import Tenant
+from ulid import ULID
 
 
 async def no_check_appkey_token(appkey, token):
@@ -60,11 +60,32 @@ class StorageRecordServiceBlobStorage:
         self._container: str = container
         self._auth_check = auth_check_coro
 
-    def _build_record_path(self, id: str, data_partition: str):
-        return f'{data_partition or "global"}_r_{id.replace(":", "_")}'
+
+    @staticmethod
+    def _get_record_folder(id: str, data_partition: str):
+        encoded_id = hash(id)
+        folder = f'{data_partition or "global"}_r_{encoded_id}'
+        return folder
+
+    async def _get_all_version_object(self, id: str, data_partition: str):
+        folder = self._get_record_folder(id, data_partition)
+        tenant = Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition)
+        return sorted(await self._storage.list_objects(tenant=tenant, prefix=folder))
+
+    async def _build_record_path(self, id: str, data_partition: str, version=None):
+        folder = self._get_record_folder(id, data_partition)
+        if version:
+            return f'{folder}/{version}'
+        objects = await self._get_all_version_object(id, data_partition)
+        return objects[-1] if objects else None
 
     async def _check_auth(self, appkey=None, token=None):
         await self._auth_check(appkey, token)
+
+    @staticmethod
+    def _get_new_id_for_record(record: Record):
+        kind = record.kind.split(':')
+        return ':'.join((kind[0], kind[2], uuid.uuid4().hex))
 
     async def create_or_update_records(self,
                                        record: List[Record] = None,
@@ -77,12 +98,12 @@ class StorageRecordServiceBlobStorage:
         # insert id if new record
         for rec in record_list:
             if rec.id is None:
-                rec.id = str(uuid.uuid4())
-
+                rec.id = self._get_new_id_for_record(rec)# str(uuid.uuid4())
+            rec.version = int(ULID())  # generate new version -> ulid is sorted that helps us to know the latest version
         await gather(*[
             self._storage.upload(
                 Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
-                self._build_record_path(record.id, data_partition_id),
+                await self._build_record_path(record.id, data_partition_id, version=rec.version),
                 model_utils.record_to_json(record),
                 content_type='application/json')
             for record in record_list
@@ -93,14 +114,17 @@ class StorageRecordServiceBlobStorage:
                                            recordIds=[record.id for record in record_list],
                                            skipped_record_ids=[])
 
-    async def get_record(self,
+    async def get_record_version(self,
                          id: str,
+                         version: int,
                          data_partition_id: str = None,
                          appkey: str = None,
                          token: str = None) -> Record:
         await self._check_auth(appkey, token)
-        object_name = self._build_record_path(id, data_partition_id)
         try:
+            object_name = await self._build_record_path(id, data_partition_id, version=version)
+            if object_name is None:
+                raise ResourceNotFoundException("Item not found")
             bin_data = await self._storage.download(
                 Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
                 object_name)
@@ -114,17 +138,18 @@ class StorageRecordServiceBlobStorage:
                                       appkey: str = None,
                                       token: str = None) -> RecordVersions:
         # only one version /latest is supported
-        return RecordVersions(recordId=id, versions=[0])
+        objects = await self._get_all_version_object(id, data_partition_id)
+        versions = [o.split('/')[-1] for o in objects]
+        return RecordVersions(recordId=id, versions=versions)
 
-    async def get_record_version(self,
-                                 id: str,
-                                 version: int,
-                                 data_partition_id: str = None,
-                                 attribute: List[str] = None,
-                                 appkey: str = None,
-                                 token: str = None) -> Record:
-        # always return the latest
-        return await self.get_record(id, data_partition_id, appkey, token)
+    async def get_record(self,
+                         id: str,
+                         data_partition_id: str = None,
+                         attribute: List[str] = None,
+                         appkey: str = None,
+                         token: str = None) -> Record:
+        # return the latest
+        return await self.get_record_version(id, None, data_partition_id, appkey, token)
 
     async def delete_record(self,
                             id: str,
@@ -132,13 +157,13 @@ class StorageRecordServiceBlobStorage:
                             appkey: str = None,
                             token: str = None) -> None:
         await self._check_auth(appkey, token)
-        object_name = self._build_record_path(id, data_partition_id)
-        try:
-            await self._storage.delete(
-                Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
-                object_name)
-        except FileNotFoundError:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        for object_name in await self._get_all_version_object(id, data_partition_id):
+            try:
+                await self._storage.delete(
+                    Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
+                    object_name)
+            except FileNotFoundError:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
     async def get_schema(self, kind, data_partition_id=None, appkey=None, token=None, *args, **kwargs):
         raise NotImplementedError('StorageServiceBlobStorage.get_schema')

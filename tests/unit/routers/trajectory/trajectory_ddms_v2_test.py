@@ -124,7 +124,7 @@ def client_with_log(client):
     response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions", headers=headers)
     assert response.status_code == 200, "GET log data failed"
 
-    version_id = response.json()["versions"][0]
+    version_id = response.json()["versions"][1]
 
     yield client, log_id, version_id
 
