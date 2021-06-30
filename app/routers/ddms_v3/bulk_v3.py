@@ -47,6 +47,12 @@ BULK_URN_PREFIX_VERSION = "wdms-1"
 BULK_URI_FIELD = "bulkURI"
 
 
+def _check_df_columns_type(df: pd.DataFrame):
+    if any([type(t) is not str for t in df.dtypes]):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f'All columns type should be string')
+
+
 async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
     """ extract dataframe from request """
 
@@ -206,6 +212,7 @@ async def post_data(record_id: str,
                     ):
     async def save_blob():
         df = await get_df_from_request(request, orient)
+        _check_df_columns_type(df)
         return await dask_blob_storage.save_blob(df, record_id)
 
     record, bulk_id = await asyncio.gather(
@@ -241,6 +248,7 @@ async def post_chunk_data(record_id: str,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
     df = await get_df_from_request(request, orient)
+    _check_df_columns_type(df)
     await dask_blob_storage.session_add_chunk(i_session.session, df)
 
 
