@@ -21,7 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
 import pandas as pd
 
-from app.bulk_persistence import DataframeSerializerAsync, JSONOrient
+from app.bulk_persistence import DataframeSerializerAsync, JSONOrient, get_dataframe
 from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
@@ -29,6 +29,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.record_utils import fetch_record
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
+from app.model.log_bulk import LogBulkHelper
 from app.utils import Context, OpenApiHandler, get_ctx
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
@@ -163,7 +164,7 @@ class DataFrameRender:
         return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
 
 
-def get_bulk_uri(record):
+def get_bulk_uri_osdu(record):
     return record.data.get('ExtensionProperties', {}).get('wdms', {}).get(BULK_URI_FIELD, None)
 
 
@@ -270,16 +271,21 @@ async def get_data_version(
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
 ):
     record = await fetch_record(ctx, record_id, version)
-    bulk_uri = get_bulk_uri(record)
+    bulk_urn = get_bulk_uri_osdu(record)
+    if bulk_urn is not None:
+        bulk_id, prefix = BulkId.bulk_urn_decode(bulk_urn)
+    else: # fallback on ddms_v2 Persistence for wks:log schema
+        bulk_id, prefix = LogBulkHelper.get_bulk_id(record, None)
     try:
-        if bulk_uri is None:
+        if bulk_id is None:
             raise BulkNotFound(record_id=record_id, bulk_id=None)
-        bulk_id, prefix = BulkId.bulk_urn_decode(bulk_uri)
-        if prefix != BULK_URN_PREFIX_VERSION:
+        if prefix == BULK_URN_PREFIX_VERSION:
+            df = await dask_blob_storage.load_bulk(record_id, bulk_id)
+        elif prefix is None:
+            df = await get_dataframe(ctx, bulk_id)
+        else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
-        df = await dask_blob_storage.load_bulk(record_id, bulk_id)
         df = await DataFrameRender.process_params(df, ctrl_p)
-
         return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
     except BulkError as ex:
         ex.raise_as_http()
@@ -339,7 +345,7 @@ async def complete_session(
 
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
                 previous_bulk_uri = None
-                bulk_urn = get_bulk_uri(record)
+                bulk_urn = get_bulk_uri_osdu(record)
                 if i_session.session.mode == SessionUpdateMode.Update and bulk_urn is not None:
                     previous_bulk_uri, _prefix = BulkId.bulk_urn_decode(bulk_urn)
 

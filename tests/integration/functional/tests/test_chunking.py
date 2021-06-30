@@ -23,6 +23,7 @@ import pandas as pd
 import pytest
 
 from .fixtures import with_wdms_env
+from ..request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log
 from ..request_builders.wdms.session import build_delete_session
 from ..request_runner import RequestRunner, Request
 
@@ -46,10 +47,15 @@ def generate_df(columns, index):
 class EntityType(str, Enum):
     well_log = "welllogs"
     wellbore_trajectory = "wellboretrajectories"
+    log = "logs"
 
 
 def build_base_url(entity_type: EntityType) -> str:
-    return '{{base_url}}/alpha/ddms/v3/' + entity_type.value
+    if entity_type == 'logs':
+        version = 'v2'
+    else:
+        version = 'v3'
+    return '{{base_url}}/alpha/ddms/' + version + '/' + entity_type.value
 
 
 @contextmanager
@@ -58,6 +64,8 @@ def create_record(env, entity_type: EntityType):
         result = build_request_create_osdu_welllog(False).call(env)
     elif entity_type == EntityType.wellbore_trajectory:
         result = build_request_create_osdu_wellboretrajectory(False).call(env)
+    elif entity_type == EntityType.log:
+        result = build_request_create_log().call(env)
     else:
         raise RuntimeError()
 
@@ -75,6 +83,9 @@ def create_record(env, entity_type: EntityType):
         build_request_delete_osdu_welllog(record_id).call(env)
     elif entity_type == EntityType.wellbore_trajectory:
         build_request_delete_osdu_wellboretrajectory(record_id).call(env)
+    elif entity_type == EntityType.log:
+        env.set('log_record_id', record_id)
+        build_request_delete_log().call(env)
 
 
 def build_request(name, method, url, *, payload=None, headers=None) -> RequestRunner:
@@ -153,7 +164,7 @@ WELLLOG_URL_PREFIX = 'alpha/ddms/v3/welllogs'
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory, EntityType.log])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
 
@@ -170,7 +181,7 @@ def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory, EntityType.log])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_with_session_commit(with_wdms_env, entity_type, serializer):
 
@@ -355,7 +366,7 @@ def test_get_data_with_limit_filter(with_wdms_env):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory, EntityType.log])
 def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
     serializer = ParquetSerializer()
 

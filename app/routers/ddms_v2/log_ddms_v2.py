@@ -50,6 +50,7 @@ from app.record_utils import fetch_record, update_records
 
 router = APIRouter()
 
+LOGS_API_BASE_PATH = '/logs'
 
 async def get_persistence() -> Persistence:
     return Persistence()
