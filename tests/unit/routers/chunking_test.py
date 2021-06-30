@@ -230,14 +230,12 @@ def test_send_all_data_once(setup_client,
                                   )
 
 
-@pytest.mark.parametrize("entity_type", [entity for entity in EntityTypeParams if Definitions[entity]['api_version'] == "v2"])
+@pytest.mark.parametrize("entity_type",
+                         [entity for entity in EntityTypeParams if Definitions[entity]['api_version'] == "v2"])
 @pytest.mark.parametrize("content_type_header,create_func", [
-    #('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
     ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
 ])
 @pytest.mark.parametrize("accept_content", [
-    # 'application/x-parquet',
-    # 'text/csv; charset=utf-8',
     'application/json',
 ])
 @pytest.mark.parametrize("columns", [
@@ -271,9 +269,6 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
     get_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
     assert get_response.status_code == 200
     result_df = _create_df_from_response(get_response)
-
-    if content_type_header.endswith('parquet') and accept_content.endswith('json'):
-        result_df = _cast_datetime_to_datetime64_ns(result_df)
 
     if content_type_header.endswith('json'):
         initial_data_df = pd.read_json(data_to_send, orient='split')
