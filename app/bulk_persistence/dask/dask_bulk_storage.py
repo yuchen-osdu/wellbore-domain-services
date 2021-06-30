@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import asyncio
-import base64
 import hashlib
 import json
 import time
@@ -73,6 +72,7 @@ class DefaultWorkerPlugin(WorkerPlugin):
             exc = self.worker.exceptions[key]
             getLogger().exception("Task '%s' has failed with exception: %s" % (key, str(exc)))
 
+
 class DaskBulkStorage:
     client = None
     """ Dask client """
@@ -124,23 +124,21 @@ class DaskBulkStorage:
                 await DaskBulkStorage.client.close()  # or shutdown
                 DaskBulkStorage.client = None
 
-    @staticmethod
-    def _encode_record_id(record_id: str) -> str:
-        record_id_b64 = base64.b64encode(record_id.encode()).decode()
-        return record_id_b64.rstrip('=') # remove padding chars ('=')
+    def _encode_record_id(self, record_id: str) -> str:
+        return hashlib.sha1(record_id.encode()).hexdigest()
 
     def _get_base_directory(self, protocol=True):
         return f'{self.protocol}://{self.base_directory}' if protocol else self.base_directory
 
     def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
         """Return the bulk path from the bulk_id."""
-        record_id_b64 = self._encode_record_id(record_id)
-        return f'{self._get_base_directory(with_protocol)}/{record_id_b64}/bulk/{bulk_id}/data'
+        encoded_id = self._encode_record_id(record_id)
+        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/bulk/{bulk_id}/data'
 
     def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
         """Return the session path."""
-        record_id_b64 = self._encode_record_id(session.recordId)
-        return f'{self._get_base_directory(with_protocol)}/{record_id_b64}/session/{session.id}/data'
+        encoded_id = self._encode_record_id(session.recordId)
+        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/session/{session.id}/data'
 
     def _load(self, path, **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
@@ -230,7 +228,7 @@ class DaskBulkStorage:
         if isinstance(pdf.index, pd.DatetimeIndex):
             first_idx, last_idx = pdf.index[0].value, pdf.index[-1].value
         idx_range = f'{first_idx}_{last_idx}'
-        shape = hashlib.sha256('_'.join(map(str, pdf)).encode()).hexdigest()
+        shape = hashlib.sha1('_'.join(map(str, pdf)).encode()).hexdigest()
         t = round(time.time() * 1000)
         filename = f'{idx_range}_{t}.{shape}'
 
