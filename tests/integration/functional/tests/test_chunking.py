@@ -45,18 +45,18 @@ def generate_df(columns, index):
 
 
 class EntityType(str, Enum):
-    well_log = "welllogs"
-    wellbore_trajectory = "wellboretrajectories"
-    log = "logs"
+    well_log = {"entity": "welllogs", "version": "v3"}
+    wellbore_trajectory = {"entity": "wellboretrajectories", "version": "v3"}
+    log = {"entity": "logs", "version": "v2"}
 
 
 def build_base_url(entity_type: EntityType) -> str:
-    if entity_type == 'logs':
-        version = 'v2'
-    else:
-        version = 'v3'
-    return '{{base_url}}/alpha/ddms/' + version + '/' + entity_type.value
+    entity_type_dict = eval(entity_type.value)
+    return '{{base_url}}/alpha/ddms/' + entity_type_dict["version"] + '/' + entity_type_dict["entity"]
 
+def build_base_url_without_chunking(entity_type: EntityType) -> str:
+    entity_type_dict = eval(entity_type.value)
+    return '{{base_url}}/ddms/v2/' + entity_type_dict["entity"]
 
 @contextmanager
 def create_record(env, entity_type: EntityType):
@@ -110,7 +110,6 @@ def build_request(name, method, url, *, payload=None, headers=None) -> RequestRu
 def build_request_post_data(entity_type: EntityType, record_id: str, payload) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
-
 
 def build_request_post_chunk(entity_type: EntityType, record_id: str, session_id: str, payload) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}/data'
@@ -167,7 +166,6 @@ WELLLOG_URL_PREFIX = 'alpha/ddms/v3/welllogs'
 @pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory, EntityType.log])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
-
     with create_record(with_wdms_env, entity_type) as record_id:
         data = generate_df(['MD', 'X'], range(8))
         data_to_send = serializer.dump(data)
