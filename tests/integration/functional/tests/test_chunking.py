@@ -54,9 +54,9 @@ def build_base_url(entity_type: EntityType) -> str:
     entity_type_dict = eval(entity_type.value)
     return '{{base_url}}/alpha/ddms/' + entity_type_dict["version"] + '/' + entity_type_dict["entity"]
 
-def build_base_url_without_chunking(entity_type: EntityType) -> str:
+def build_base_url_without_dask(entity_type: EntityType) -> str:
     entity_type_dict = eval(entity_type.value)
-    return '{{base_url}}/ddms/v2/' + entity_type_dict["entity"]
+    return '{{base_url}}/ddms/' + entity_type_dict["version"] + '/' + entity_type_dict["entity"]
 
 @contextmanager
 def create_record(env, entity_type: EntityType):
@@ -111,10 +111,13 @@ def build_request_post_data(entity_type: EntityType, record_id: str, payload) ->
     url = build_base_url(entity_type) + f'/{record_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
+def build_request_post_data_without_dask(entity_type: EntityType, record_id: str, payload) -> RequestRunner:
+    url = build_base_url_without_dask(entity_type) + f'/{record_id}/data'
+    return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
+
 def build_request_post_chunk(entity_type: EntityType, record_id: str, session_id: str, payload) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
-
 
 def build_request_get_data(entity_type: EntityType, record_id: str) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/data'
@@ -469,3 +472,20 @@ def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_
             pd.testing.assert_frame_equal(
                 expected, serializer.read(result.response.content), check_dtype=False)
             # check type set to false since in Json dType is lost so int32 can become int64
+
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', [EntityType.log])
+@pytest.mark.parametrize('serializer', [JsonSerializer()])
+def test_get_data_from_record_data_without_dask(with_wdms_env, entity_type, serializer):
+    with create_record(with_wdms_env, entity_type) as record_id:
+        data = generate_df(['MD', 'X'], range(8))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        build_request_post_data_without_dask(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+        result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
+        # check type set to false since in Json dType is lost so int32 can become int64
