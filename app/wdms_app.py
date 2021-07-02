@@ -20,6 +20,7 @@ from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
 
 from app import __version__, __build_number__, __app_name__
+from app import bulk_utils
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers
@@ -49,7 +50,6 @@ from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.logrecognition import log_recognition
 from app.routers.search import search, fast_search, search_v3, fast_search_v3
-from app.routers.ddms_v3 import bulk_v3
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import (
     get_http_client_session,
@@ -222,7 +222,7 @@ wdms_app.include_router(
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
     tags=tags, dependencies=dependencies)
 wdms_app.include_router(
-    bulk_v3.router_bulk,
+    bulk_utils.router_bulk,
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
     tags=tags, dependencies=dependencies)
 
@@ -232,8 +232,18 @@ wdms_app.include_router(
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
     tags=tags, dependencies=dependencies)
 wdms_app.include_router(
-    bulk_v3.router_bulk,
+    bulk_utils.router_bulk,
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
+    tags=tags, dependencies=dependencies)
+
+# log bulk v2 APIs
+wdms_app.include_router(
+    sessions.router,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
+    tags=tags, dependencies=dependencies)
+wdms_app.include_router(
+    bulk_utils.router_bulk,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=tags, dependencies=dependencies)
 
 # ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs

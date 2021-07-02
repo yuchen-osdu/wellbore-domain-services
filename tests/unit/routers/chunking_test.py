@@ -28,6 +28,7 @@ from tests.unit.test_utils import nope_logger_fixture
 
 Definitions = {
     'WellLog': {
+        'api_version': 'v3',
         'base_url': '/ddms/v3/welllogs',
         'chunking_url': '/alpha/ddms/v3/welllogs',  # TODO: update when no longer alpha
         'kind': 'osdu:wks:work-product-component--WellLog:1.0.0',
@@ -38,6 +39,7 @@ Definitions = {
     },
 
     'WellboreTrajectory': {
+        'api_version': 'v3',
         'base_url': '/ddms/v3/wellboretrajectories',
         'chunking_url': '/alpha/ddms/v3/wellboretrajectories',  # TODO: update when no longer alpha
         'kind': 'osdu:wks:work-product-component--WellboreTrajectory:1.0.0',
@@ -47,12 +49,19 @@ Definitions = {
             "BaseDepthMeasuredDepth": 12345.6,
             "VerticalMeasurement": {"VerticalMeasurement": 12345.6}
         }
+    },
+    'Log': {
+        'api_version': 'v2',
+        'base_url': '/ddms/v2/logs',
+        'chunking_url': '/alpha/ddms/v2/logs',  # TODO: update when no longer alpha
+        'kind': 'osdu:wks:log:1.0.5',
+        'record_data': {
+            "name": "myLog_name"
+        }
     }
 }
 
-
-EntityTypeParams = ['WellLog', 'WellboreTrajectory']
-
+EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log']
 
 def _create_df_from_response(response):
     f = io.BytesIO(response.content)
@@ -194,7 +203,7 @@ def test_send_all_data_once(setup_client,
     data_to_send = create_func(initial_data_df)
     headers = {'content-type': content_type_header}
 
-    get_response_no_data = client.get(f'{Definitions[entity_type]["base_url"]}/{record_id}/data', headers=headers)
+    get_response_no_data = client.get(f'{chunking_url}/{record_id}/data', headers=headers)
     assert get_response_no_data.status_code == 404
 
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
@@ -206,6 +215,58 @@ def test_send_all_data_once(setup_client,
 
     if content_type_header.endswith('parquet') and accept_content.endswith('json'):
         result_df = _cast_datetime_to_datetime64_ns(result_df)
+
+    if content_type_header.endswith('json'):
+        initial_data_df = pd.read_json(data_to_send, orient='split')
+
+    assert initial_data_df.index.dtype == result_df.index.dtype
+    assert initial_data_df.shape == result_df.shape
+    pd.testing.assert_frame_equal(initial_data_df, result_df,
+                                  check_dtype=False,
+                                  check_column_type=False,
+                                  check_datetimelike_compat=True,
+                                  )
+
+
+@pytest.mark.parametrize("entity_type",
+                         [entity for entity in EntityTypeParams if Definitions[entity]['api_version'] == "v2"])
+@pytest.mark.parametrize("content_type_header,create_func", [
+    ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
+])
+@pytest.mark.parametrize("accept_content", [
+    'application/json',
+])
+@pytest.mark.parametrize("columns", [
+    ['MD', 'X'],
+    ['float_MD', 'float_X'],
+    ['str_MD', 'str_X'],
+    ['date_MD', 'date_X'],
+    ['MD', 'float_X', 'str_X', 'date_X']
+])
+def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
+                            entity_type,
+                            columns,
+                            content_type_header,
+                            create_func,
+                            accept_content):
+    client, tmp_dir = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+    base_url = Definitions[entity_type]['base_url']
+
+    initial_data_df = generate_df(columns, range(5, 13))
+    data_to_send = create_func(initial_data_df)
+    headers = {'content-type': content_type_header}
+
+    get_response_no_data = client.get(f'{chunking_url}/{record_id}/data', headers=headers)
+    assert get_response_no_data.status_code == 404
+
+    write_response = client.post(f'{base_url}/{record_id}/data', data=data_to_send, headers=headers)
+    assert write_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
+    assert get_response.status_code == 200
+    result_df = _create_df_from_response(get_response)
 
     if content_type_header.endswith('json'):
         initial_data_df = pd.read_json(data_to_send, orient='split')
@@ -236,12 +297,12 @@ def test_send_all_data_once(setup_client,
     ['TVD', 'float_X', 'str_X', 'date_X'],
     ['MD', 'X'],
     ['MD', 'float_X'],
+    ['MD', 'str_MD'],
 
     # BELOW test cases FAIL with UPDATE mode:
     # => If adding new column Date/String not starting at first index AND override an existing column
-    # ['MD', 'str_MD'],
-    # ['MD', 'date_X'],
-    # ['MD', 'float_X', 'str_X', 'date_X'],
+    #['MD', 'date_X'],
+    #['MD', 'float_X', 'str_X', 'date_X'],
 ])
 @pytest.mark.parametrize("session_mode", [
     'overwrite',

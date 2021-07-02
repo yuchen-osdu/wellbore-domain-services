@@ -131,7 +131,7 @@ def test_post_records_successful(client):
             test_Wellbores = json.load(f)
         Wellbore.parse_obj(test_Wellbores[0])
         # when
-        response = client.post(base_url, data=json.dumps(test_Wellbores))
+        response = client.post(base_url, data=json.dumps(test_Wellbores), headers={'content-type' : 'application/json'})
 
         # then
         assert response.status_code == status.HTTP_200_OK
