@@ -170,9 +170,9 @@ class DaskBulkStorage:
         returns a Future<None>
         Note:
             we should be able to change or support other format easily ?
+            schema={} instead of 'infer' fixes wrong inference for columns of type string starting with nan values
         """
-        return self.client.submit(dd.to_parquet, ddf, path, schema="infer",
-                                  engine='pyarrow',
+        return self.client.submit(dd.to_parquet, ddf, path, schema={}, engine='pyarrow',
                                   storage_options=self._parameters.storage_options)
 
     def _save_with_pandas(self, path, pdf: dd.DataFrame):
