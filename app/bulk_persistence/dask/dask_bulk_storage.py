@@ -157,6 +157,7 @@ class DaskBulkStorage:
         return self._load(self._get_blob_path(record_id, bulk_id))
 
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
+    @with_trace('load_bulk')
     async def load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version."""
         try:

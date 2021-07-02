@@ -39,7 +39,7 @@ from app.routers.common_parameters import (
     json_orient_parameter)
 from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSessionStateValue,
                                   WithSessionStorages, get_session_dependencies)
-
+from app.helper.traces import with_trace
 
 router_bulk = APIRouter()  # router dedicated to bulk APIs
 
@@ -48,6 +48,7 @@ BULK_URN_PREFIX_VERSION = "wdms-1"
 BULK_URI_FIELD = "bulkURI"
 
 
+@with_trace("get_df_from_request")
 async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
     """ extract dataframe from request """
 
@@ -122,6 +123,7 @@ class DataFrameRender:
         return list(selected)
 
     @staticmethod
+    @with_trace('process_params')
     async def process_params(df, params: GetDataParams):
         if params.curves:
             selection = list(map(str.strip, params.curves.split(',')))
@@ -141,6 +143,7 @@ class DataFrameRender:
         return df
 
     @staticmethod
+    @with_trace('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None):
         if params.describe:
             return {
@@ -205,6 +208,7 @@ async def post_data(record_id: str,
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                     ):
+    @with_trace("save_blob")
     async def save_blob():
         df = await get_df_from_request(request, orient)
         return await dask_blob_storage.save_blob(df, record_id)
@@ -274,17 +278,21 @@ async def get_data_version(
     bulk_urn = get_bulk_uri_osdu(record)
     if bulk_urn is not None:
         bulk_id, prefix = BulkId.bulk_urn_decode(bulk_urn)
-    else: # fallback on ddms_v2 Persistence for wks:log schema
+    else:
+        # fallback on ddms_v2 Persistence for wks:log schema
         bulk_id, prefix = LogBulkHelper.get_bulk_id(record, None)
+
+    if bulk_id is None:
+        raise BulkNotFound(record_id=record_id, bulk_id=None)
+
     try:
-        if bulk_id is None:
-            raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
             df = await dask_blob_storage.load_bulk(record_id, bulk_id)
         elif prefix is None:
             df = await get_dataframe(ctx, bulk_id)
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
+
         df = await DataFrameRender.process_params(df, ctrl_p)
         return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
     except BulkError as ex:
