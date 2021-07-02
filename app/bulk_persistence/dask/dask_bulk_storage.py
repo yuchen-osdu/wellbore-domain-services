@@ -104,7 +104,7 @@ class DaskBulkStorage:
                     logger=get_logger(),
                     register_fsspec_implementation=parameters.register_fsspec_implementation)
                     
-                get_logger().debug(f"dask client initialized : {DaskBulkStorage.client}")
+                get_logger().info(f"Distributed Dask client initialized : {DaskBulkStorage.client}")
 
         instance._fs = fsspec.filesystem(parameters.protocol, **parameters.storage_options)
         return instance
