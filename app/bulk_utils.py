@@ -282,10 +282,9 @@ async def get_data_version(
         # fallback on ddms_v2 Persistence for wks:log schema
         bulk_id, prefix = LogBulkHelper.get_bulk_id(record, None)
 
-    if bulk_id is None:
-        raise BulkNotFound(record_id=record_id, bulk_id=None)
-
     try:
+        if bulk_id is None:
+            raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
             df = await dask_blob_storage.load_bulk(record_id, bulk_id)
         elif prefix is None:
