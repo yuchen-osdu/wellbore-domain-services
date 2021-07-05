@@ -49,7 +49,7 @@ BULK_URI_FIELD = "bulkURI"
 
 
 def _check_df_columns_type(df: pd.DataFrame):
-    if any([type(t) is not str for t in df.dtypes]):
+    if any((type(t) is not str for t in df.columns)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail=f'All columns type should be string')
 
