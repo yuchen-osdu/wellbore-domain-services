@@ -299,12 +299,12 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
     ['TVD', 'float_X', 'str_X', 'date_X'],
     ['MD', 'X'],
     ['MD', 'float_X'],
+    ['MD', 'str_MD'],
 
     # BELOW test cases FAIL with UPDATE mode:
     # => If adding new column Date/String not starting at first index AND override an existing column
-    # ['MD', 'str_MD'],
-    # ['MD', 'date_X'],
-    # ['MD', 'float_X', 'str_X', 'date_X'],
+    #['MD', 'date_X'],
+    #['MD', 'float_X', 'str_X', 'date_X'],
 ])
 @pytest.mark.parametrize("session_mode", [
     'overwrite',
