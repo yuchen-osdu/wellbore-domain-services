@@ -63,6 +63,7 @@ Definitions = {
 
 EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log']
 
+
 def _create_df_from_response(response):
     f = io.BytesIO(response.content)
     f.seek(0)
@@ -684,27 +685,32 @@ def _df_to_pyarrow_parquet(df_data: pd.DataFrame):
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
+@pytest.mark.parametrize("columns_type", [
+    [int(42), float(-42)],
+    [int(42), float(-42), str('forty two')]
+])
 @pytest.mark.parametrize("content_type_header,create_func", [
     ('application/x-parquet', lambda df: _df_to_pyarrow_parquet(df)),
     ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
 ])
-def test_session_chunk_int(setup_client, entity_type, content_type_header, create_func):
+def test_session_chunk_int(setup_client, entity_type, content_type_header, create_func, columns_type):
     client, _ = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    json_data = {
-        int(42): [np.random.rand(10) for _ in range(10)],
-        float(-42): [np.random.rand(10) for _ in range(10)],
-        str('84'): [np.random.rand(10) for _ in range(10)],
-    }
+    json_data = {t: np.random.rand(10) for t in columns_type}
     df_data = pd.DataFrame(json_data)
     data_to_send = create_func(df_data)
 
     headers = {'content-type': content_type_header}
 
+    expected_code = 422
+    if content_type_header.endswith('parquet') and any((type(c) is str for c in columns_type)):
+        # there is a side effect with parquet format, if at least one col is str, then all cols are casted into str
+        expected_code = 200
+
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
-    assert write_response.status_code == 422
+    assert write_response.status_code == expected_code
 
     session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert session_response.status_code == 200
@@ -713,7 +719,7 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     chunk_response_1 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
                                    data=data_to_send,
                                    headers=headers)
-    assert chunk_response_1.status_code == 422
+    assert chunk_response_1.status_code == expected_code
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
