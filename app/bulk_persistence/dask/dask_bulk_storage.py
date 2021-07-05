@@ -69,8 +69,7 @@ class DefaultWorkerPlugin(WorkerPlugin):
 
     def transition(self, key, start, finish, *args, **kwargs):
         if finish == 'error':
-            exc = self.worker.exceptions[key]
-            getLogger().exception("Task '%s' has failed with exception: %s" % (key, str(exc)))
+            getLogger().exception(f"DefaultWorkerPlugin: Task '{key}' has failed")
 
 
 class DaskBulkStorage:
