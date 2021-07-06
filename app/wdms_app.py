@@ -229,7 +229,6 @@ dependencies = [Depends(require_data_partition_id, use_cache=False),
 tags = ['ALPHA feature: bulk data chunking']
 
 # welllog bulk v3 APIs
-bulk_utils.bulk_context = "welllog"
 wdms_app.include_router(
     sessions.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
@@ -240,7 +239,6 @@ wdms_app.include_router(
     tags=tags, dependencies=dependencies)
 
 # wellbore trajectory bulk v3 APIs
-bulk_utils.bulk_context = "wellbore"
 wdms_app.include_router(
     sessions.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
@@ -251,7 +249,6 @@ wdms_app.include_router(
     tags=tags, dependencies=dependencies)
 
 # log bulk v2 APIs
-bulk_utils.bulk_context = "log"
 wdms_app.include_router(
     sessions.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
