@@ -8453,7 +8453,7 @@
       },
       "post": {
         "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "write_record_data",
+        "operationId": "post_data_alpha_ddms_v2_logs__record_id__data_post",
         "parameters": [
           {
             "in": "path",
@@ -8803,7 +8803,7 @@
     "/alpha/ddms/v2/logs/{record_id}/sessions/{session_id}/data": {
       "post": {
         "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "post_chunk_data",
+        "operationId": "post_chunk_data_alpha_ddms_v2_logs__record_id__sessions__session_id__data_post",
         "parameters": [
           {
             "in": "path",
@@ -9123,7 +9123,7 @@
       },
       "post": {
         "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "write_record_data",
+        "operationId": "post_data_alpha_ddms_v3_wellboretrajectories__record_id__data_post",
         "parameters": [
           {
             "in": "path",
@@ -9473,7 +9473,7 @@
     "/alpha/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data": {
       "post": {
         "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "post_chunk_data",
+        "operationId": "post_chunk_data_alpha_ddms_v3_wellboretrajectories__record_id__sessions__session_id__data_post",
         "parameters": [
           {
             "in": "path",
@@ -9793,7 +9793,7 @@
       },
       "post": {
         "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "write_record_data",
+        "operationId": "post_data_alpha_ddms_v3_welllogs__record_id__data_post",
         "parameters": [
           {
             "in": "path",
@@ -9832,6 +9832,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              }
+            },
+            "application/x-parquet": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},\"1\":{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},\"2\":{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},\"3\":{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},\"4\":{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}]`<br/>&nbsp;",
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -10143,7 +10160,7 @@
     "/alpha/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data": {
       "post": {
         "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "post_chunk_data",
+        "operationId": "post_chunk_data_alpha_ddms_v3_welllogs__record_id__sessions__session_id__data_post",
         "parameters": [
           {
             "in": "path",

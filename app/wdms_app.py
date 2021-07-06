@@ -143,6 +143,18 @@ async def shutdown_event():
     await get_http_client_session().close()
 
 
+def fix_duplicated_ids():
+    # Ensure all operation_id are uniques
+    from fastapi.routing import APIRoute
+    for route in wdms_app.routes:
+        if isinstance(route, APIRoute):
+            if route.operation_id in bulk_utils.OPERATION_IDS.values():  # All route with possible duplicate
+                new_operation_id = route.unique_id
+                if route.operation_id in OpenApiHandler._handlers:
+                    OpenApiHandler._handlers[new_operation_id] = OpenApiHandler._handlers.pop(route.operation_id)
+                route.operation_id = route.unique_id
+
+
 DDMS_V2_PATH = '/ddms/v2'
 DDMS_V3_PATH = '/ddms/v3'
 ALPHA_APIS_PREFIX = '/alpha'
@@ -217,6 +229,7 @@ dependencies = [Depends(require_data_partition_id, use_cache=False),
 tags = ['ALPHA feature: bulk data chunking']
 
 # welllog bulk v3 APIs
+bulk_utils.bulk_context = "welllog"
 wdms_app.include_router(
     sessions.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
@@ -227,6 +240,7 @@ wdms_app.include_router(
     tags=tags, dependencies=dependencies)
 
 # wellbore trajectory bulk v3 APIs
+bulk_utils.bulk_context = "wellbore"
 wdms_app.include_router(
     sessions.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
@@ -237,6 +251,7 @@ wdms_app.include_router(
     tags=tags, dependencies=dependencies)
 
 # log bulk v2 APIs
+bulk_utils.bulk_context = "log"
 wdms_app.include_router(
     sessions.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
@@ -245,6 +260,10 @@ wdms_app.include_router(
     bulk_utils.router_bulk,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=tags, dependencies=dependencies)
+
+#The multiple instanciation of bulk_utils router create some duplicates operation_id
+fix_duplicated_ids()
+
 
 # ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs
 def enable_alpha_feature():

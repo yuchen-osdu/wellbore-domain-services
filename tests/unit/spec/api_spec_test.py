@@ -55,3 +55,25 @@ def test_api_spec(client):
             specfile.write(openapi_text)
         # assert error
         assert False, f"{OPENAPI_PATH} has changed, commit the updated file"
+
+
+def test_api_spec_for_duplicates(client):
+    # get the openapi spec
+    response = client.get("/openapi.json")
+    assert response.status_code == 200
+    openapi_json = response.json()
+    # Check operationId for all paths are different
+    # structure is
+    # root
+    #   + paths
+    #       + url for instance "/alpha/ddms/v2/logs/{record_id}/data"
+    #           + method for instance get, post, ...
+    #               + operationId
+    path_dict = openapi_json.get("paths", None)
+    operation_id_set = set()
+    assert path_dict is not None
+    for url, url_dict in path_dict.items():
+        for method, method_dict in url_dict.items():
+            operation_id = method_dict.get("operationId", None)
+            assert operation_id not in operation_id_set, f"{method}:{url} {operation_id} already defined"
+            operation_id_set.add(operation_id)
