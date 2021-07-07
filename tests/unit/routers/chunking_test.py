@@ -1,13 +1,13 @@
 import io
-
-from app.bulk_persistence.dask.errors import BulkNotFound
-from tests.unit.test_utils import nope_logger_fixture
-
 from tempfile import TemporaryDirectory
 
 from fastapi import Header
 from fastapi.testclient import TestClient
 import pytest
+import numpy as np
+import pandas as pd
+import pyarrow.parquet as pq
+import pyarrow as pa
 
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -23,9 +23,8 @@ from app.helper import traces
 from app.utils import Context
 from app import conf
 
-import pandas as pd
 from tests.unit.persistence.dask_blob_storage_test import generate_df
-
+from tests.unit.test_utils import nope_logger_fixture
 
 Definitions = {
     'WellLog': {
@@ -63,6 +62,7 @@ Definitions = {
 }
 
 EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log']
+
 
 def _create_df_from_response(response):
     f = io.BytesIO(response.content)
@@ -181,7 +181,6 @@ def setup_client(nope_logger_fixture, bob):
 ])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    # 'text/csv; charset=utf-8',
     'application/json',
 ])
 @pytest.mark.parametrize("columns", [
@@ -674,6 +673,53 @@ def test_session_sent_same_col_different_types(setup_client, entity_type):
 
     commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
     assert commit_response.status_code == 422
+
+
+def _df_to_pyarrow_parquet(df_data: pd.DataFrame):
+    """ Return a buffer containing parquet format file from the given dataframe """
+
+    table = pa.Table.from_pandas(df=df_data)
+    buf = pa.BufferOutputStream()
+    pq.write_table(table, buf)
+    return buf.getvalue().to_pybytes()
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+@pytest.mark.parametrize("columns_type", [
+    [int(42), float(-42)],
+    [int(42), float(-42), str('forty two')]
+])
+@pytest.mark.parametrize("content_type_header,create_func", [
+    ('application/x-parquet', lambda df: _df_to_pyarrow_parquet(df)),
+    ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
+])
+def test_session_chunk_int(setup_client, entity_type, content_type_header, create_func, columns_type):
+    client, _ = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    json_data = {t: np.random.rand(10) for t in columns_type}
+    df_data = pd.DataFrame(json_data)
+    data_to_send = create_func(df_data)
+
+    headers = {'content-type': content_type_header}
+
+    expected_code = 422
+    if content_type_header.endswith('parquet') and any((type(c) is str for c in columns_type)):
+        # there is a side effect with parquet format, if at least one col is str, then all cols are casted into str
+        expected_code = 200
+
+    write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
+    assert write_response.status_code == expected_code
+
+    session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert session_response.status_code == 200
+    session_id = session_response.json()['id']
+
+    chunk_response_1 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   data=data_to_send,
+                                   headers=headers)
+    assert chunk_response_1.status_code == expected_code
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
