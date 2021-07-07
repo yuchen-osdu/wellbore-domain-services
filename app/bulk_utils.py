@@ -326,33 +326,6 @@ async def get_data(
     return await get_data_version(record_id, None, request, ctrl_p, ctx, dask_blob_storage)
 
 
-
-
-
-
-"""
-#################################################################
-TEST METHODE - TO BE REMOVE AFTER USAGE
-#################################################################
-"""
-# @router_bulk.post("/test")
-# async def bob(
-#     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-# ):
-#     before = True
-#     response = await dask_blob_storage.test_method_in_dask()
-#     after = True
-#     return {'value': response}
-"""
-#################################################################
-TEST METHODE - TO BE REMOVE AFTER USAGE
-#################################################################
-"""
-
-
-
-
-
 @router_bulk.patch(
     "/{record_id}/sessions/{session_id}",
     summary='Update a session, either commit or abandon.',

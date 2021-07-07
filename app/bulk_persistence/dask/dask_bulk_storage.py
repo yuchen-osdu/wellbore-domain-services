@@ -313,33 +313,11 @@ class DaskBulkStorage:
         if not dfs:
             raise BulkNotProcessable("No data to commit")
 
-        dfs = self.client.map(wrap_trace_process,
-                              dfs,
-                              target_func=set_index,
-                              span_context=get_ctx().tracer.span_context,
-                              )
-
+        dfs = self._map_with_trace(set_index, dfs)
         while len(dfs) > 1:
             dfs = [self._submit_with_trace(do_merge, a, b) for a, b in by_pairs(dfs)]
 
         return await self.save_blob(dfs[0], record_id=session.recordId)
-
-    def _test_method_2(self, future):
-        time.sleep(2)
-
-        result = future.result()
-        return result + 42
-
-    async def test_method_in_dask(self) -> dd.DataFrame:
-        # fut1 = self._submit_with_trace(self._test_method_2, 0)
-        # fut2 = self._submit_with_trace(self._test_method_2, fut1)
-        # responses = await fut2
-        # return responses
-        return await self._submit_with_trace(dd.to_parquet,
-                                             None, "42",
-                                             schema="infer",
-                                             engine='pyarrow',
-                                             storage_options=self._parameters.storage_options)
 
 
 async def make_local_dask_bulk_storage(base_directory: str) -> DaskBulkStorage:
