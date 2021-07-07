@@ -13,11 +13,14 @@
 # limitations under the License.
 
 import pytest
-from tempfile import TemporaryDirectory
-from odes_storage.models import Record, StorageAcl, Legal
 import mock
 import asyncio
+from tempfile import TemporaryDirectory
+from opencensus.trace.span_context import SpanContext
 from contextlib import contextmanager
+
+from odes_storage.models import Record, StorageAcl, Legal
+
 from app.model.model_utils import record_to_dict
 from app.utils import get_or_create_ctx
 
@@ -29,10 +32,13 @@ def from_env(key, default=None):
     return result
 
 
+
 @pytest.fixture()
 def ctx_fixture():
     """ Create context with a fake tracer in it """
-    ctx = get_or_create_ctx().set_current_with_value(tracer=mock.MagicMock(), logger=NopeLogger())
+    mock_mock = mock.MagicMock()
+    mock_mock.span_context = SpanContext(trace_id="trace-id", span_id="span_id")
+    ctx = get_or_create_ctx().set_current_with_value(tracer=mock_mock, logger=NopeLogger())
     yield ctx
 
 
