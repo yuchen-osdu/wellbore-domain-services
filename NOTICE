@@ -12,6 +12,7 @@ The following software have components provided under the terms of this license:
 - boto3 (from https://github.com/boto/boto3)
 - botocore (from https://github.com/boto/botocore)
 - coverage (from https://coverage.readthedocs.io)
+- cryptography (from https://github.com/pyca/cryptography)
 - google-api-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
@@ -55,14 +56,16 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- decorator (from https://github.com/micheles/decorator)
+- colorama (from https://github.com/tartley/colorama)
 - grpcio (from http://www.grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
 - numpy (from http://www.numpy.org)
 - packaging (from https://github.com/pypa/packaging)
+- ply (from http://www.dabeaz.com/ply/)
 - pyasn1 (from http://sourceforge.net/projects/pyasn1/)
 - pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
+- pycparser (from https://github.com/eliben/pycparser)
 - tblib (from https://github.com/ionelmc/python-tblib)
 
 ========================================================================
@@ -76,6 +79,7 @@ The following software have components provided under the terms of this license:
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - colorama (from https://github.com/tartley/colorama)
+- cryptography (from https://github.com/pyca/cryptography)
 - dask (from http://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
 - distributed (from https://distributed.readthedocs.io/en/latest/)
@@ -87,20 +91,26 @@ The following software have components provided under the terms of this license:
 - httpx (from https://github.com/encode/httpx)
 - idna (from https://github.com/kjd/idna)
 - isodate (from http://cheeseshop.python.org/pypi/isodate)
+- locket (from http://github.com/mwilliamson/locket.py)
+- mock (from https://github.com/testing-cabal/mock)
 - numpy (from http://www.numpy.org)
 - oauthlib (from https://github.com/idan/oauthlib)
+- packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
 - pyarrow (from https://arrow.apache.org/)
+- pyasn1 (from http://sourceforge.net/projects/pyasn1/)
+- pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
 - pycparser (from https://github.com/eliben/pycparser)
-- pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
 - python-dateutil (from https://dateutil.readthedocs.org)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
+- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 - starlette (from https://github.com/encode/starlette)
+- tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn)
 - zict (from http://github.com/dask/zict/)
@@ -111,26 +121,19 @@ CC-BY-4.0
 The following software have components provided under the terms of this license:
 
 - adlfs (from https://github.com/hayesgb/adlfs/)
+- dask (from http://github.com/dask/dask/)
+- distributed (from https://distributed.readthedocs.io/en/latest/)
 - fsspec (from http://github.com/intake/filesystem_spec)
 - gcsfs (from https://github.com/dask/gcsfs)
 - pandas (from http://pandas.pydata.org)
+- partd (from http://github.com/dask/partd/)
+- toolz (from http://github.com/pytoolz/toolz/)
 
 ========================================================================
-CC0-1.0
-========================================================================
-The following software have components provided under the terms of this license:
-
-- dask (from http://github.com/dask/dask/)
-- distributed (from https://distributed.readthedocs.io/en/latest/)
-- numpy (from http://www.numpy.org)
-
-========================================================================
-DOC
+CC-BY-SA-3.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- dask (from http://github.com/dask/dask/)
-- distributed (from https://distributed.readthedocs.io/en/latest/)
 - numpy (from http://www.numpy.org)
 
 ========================================================================
@@ -138,6 +141,7 @@ GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- coverage (from https://coverage.readthedocs.io)
 - grpcio (from http://www.grpc.io)
 
 ========================================================================
@@ -146,28 +150,22 @@ GPL-2.0-or-later
 The following software have components provided under the terms of this license:
 
 - grpcio (from http://www.grpc.io)
-- pyparsing (from http://pyparsing.wikispaces.com/)
 
 ========================================================================
 GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- coverage (from https://coverage.readthedocs.io)
 - grpcio (from http://www.grpc.io)
-
-========================================================================
-GPL-3.0-or-later
-========================================================================
-The following software have components provided under the terms of this license:
-
 - pyparsing (from http://pyparsing.wikispaces.com/)
+- rfc3986 (from https://rfc3986.readthedocs.org)
 
 ========================================================================
 ISC
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- click (from http://github.com/mitsuhiko/click)
 - grpcio (from http://www.grpc.io)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 
@@ -191,6 +189,21 @@ LGPL-2.1-only
 The following software have components provided under the terms of this license:
 
 - chardet (from https://github.com/chardet/chardet)
+
+========================================================================
+LGPL-2.1-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- chardet (from https://github.com/chardet/chardet)
+
+========================================================================
+LGPL-3.0-only
+========================================================================
+The following software have components provided under the terms of this license:
+
+- chardet (from https://github.com/chardet/chardet)
+- pycparser (from https://github.com/eliben/pycparser)
 
 ========================================================================
 MIT
@@ -218,7 +231,6 @@ The following software have components provided under the terms of this license:
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi (from http://cffi.readthedocs.org)
 - coverage (from https://coverage.readthedocs.io)
-- distributed (from https://distributed.readthedocs.io/en/latest/)
 - fastapi (from https://github.com/tiangolo/fastapi)
 - grpcio (from http://www.grpc.io)
 - h11 (from https://github.com/python-hyper/h11)
@@ -226,6 +238,7 @@ The following software have components provided under the terms of this license:
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema (from http://github.com/Julian/jsonschema)
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
+- msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - munch (from http://github.com/Infinidat/munch)
 - numpy (from http://www.numpy.org)
@@ -243,6 +256,7 @@ The following software have components provided under the terms of this license:
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - python-ulid (from https://github.com/mdomke/python-ulid)
 - pytz (from http://pythonhosted.org/pytz)
+- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 - six (from http://pypi.python.org/pypi/six/)
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from http://www.structlog.org/)
@@ -250,13 +264,6 @@ The following software have components provided under the terms of this license:
 - urllib3 (from https://urllib3.readthedocs.io/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)
-
-========================================================================
-MIT-CMU
-========================================================================
-The following software have components provided under the terms of this license:
-
-- pyparsing (from http://pyparsing.wikispaces.com/)
 
 ========================================================================
 MPL-2.0
@@ -267,6 +274,13 @@ The following software have components provided under the terms of this license:
 
 ========================================================================
 NCSA
+========================================================================
+The following software have components provided under the terms of this license:
+
+- numpy (from http://www.numpy.org)
+
+========================================================================
+OPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
@@ -285,9 +299,18 @@ Python-2.0
 The following software have components provided under the terms of this license:
 
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
+- coverage (from https://coverage.readthedocs.io)
+- distributed (from https://distributed.readthedocs.io/en/latest/)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python)
+- google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
+- numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
+- ply (from http://www.dabeaz.com/ply/)
 - portalocker (from https://github.com/WoLpH/portalocker)
+- python-dateutil (from https://dateutil.readthedocs.org)
+- pytz (from http://pythonhosted.org/pytz)
+- rsa (from https://stuvel.eu/rsa)
+- sniffio (from https://github.com/python-trio/sniffio)
 - typing-extensions (from https://github.com/python/typing)
 - urllib3 (from https://urllib3.readthedocs.io/)
 
@@ -313,11 +336,19 @@ The following software have components provided under the terms of this license:
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 
 ========================================================================
+ZPL-2.1
+========================================================================
+The following software have components provided under the terms of this license:
+
+- pytz (from http://pythonhosted.org/pytz)
+
+========================================================================
 Zlib
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - grpcio (from http://www.grpc.io)
+- numpy (from http://www.numpy.org)
 
 ========================================================================
 public-domain
@@ -326,7 +357,9 @@ The following software have components provided under the terms of this license:
 
 - botocore (from https://github.com/boto/botocore)
 - grpcio (from http://www.grpc.io)
+- numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
+- py (from http://pylib.readthedocs.org/)
 - pytz (from http://pythonhosted.org/pytz)
 
 
