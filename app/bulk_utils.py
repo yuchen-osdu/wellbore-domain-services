@@ -335,14 +335,14 @@ async def get_data(
 TEST METHODE - TO BE REMOVE AFTER USAGE
 #################################################################
 """
-@router_bulk.post("/test")
-async def bob(
-    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-):
-    before = True
-    response = await dask_blob_storage.test_method_in_dask()
-    after = True
-    return {'value': response}
+# @router_bulk.post("/test")
+# async def bob(
+#     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+# ):
+#     before = True
+#     response = await dask_blob_storage.test_method_in_dask()
+#     after = True
+#     return {'value': response}
 """
 #################################################################
 TEST METHODE - TO BE REMOVE AFTER USAGE
