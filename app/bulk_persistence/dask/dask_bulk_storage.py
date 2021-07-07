@@ -189,12 +189,13 @@ class DaskBulkStorage:
         returns a Future<None>
         Note:
             we should be able to change or support other format easily ?
+            schema={} instead of 'infer' fixes wrong inference for columns of type string starting with nan values
         """
         return self.client.submit(wrap_trace_process,
                                   dd.to_parquet,
                                   get_ctx().tracer.span_context,
                                   ddf, path,
-                                  schema="infer",
+                                  schema={},
                                   engine='pyarrow',
                                   storage_options=self._parameters.storage_options)
 

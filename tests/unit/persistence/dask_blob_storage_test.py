@@ -165,6 +165,23 @@ async def test_session_update_add_new_columns(test_session, dask_storage: DaskBu
 
     ddf = await dask_storage.load_bulk(test_session.recordId, new_bulk_id)
     await compare_frame(df_ref, ddf)
+
+
+@pytest.mark.asyncio
+async def test_session_update_add_new_columns_shifted(test_session, dask_storage: DaskBulkStorage):
+    A = generate_df(['A'], range(100))
+    C = generate_df(['A', 'strC'], index=range(100, 200))
+    df_ref = pd.concat([A,C])
+    
+    bulk_id = await dask_storage.save_blob(A, record_id=test_session.recordId)
+
+    #await dask_storage.session_add_chunk(test_session, B)
+    await dask_storage.session_add_chunk(test_session, C)
+
+    new_bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
+    assert bulk_id != new_bulk_id
+
+    ddf = await dask_storage.load_bulk(test_session.recordId, new_bulk_id)
     await compare_frame(df_ref, ddf)
 
 
