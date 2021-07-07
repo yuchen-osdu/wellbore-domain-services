@@ -143,7 +143,7 @@ async def shutdown_event():
     await get_http_client_session().close()
 
 
-def fix_duplicated_ids():
+def update_operation_ids():
     # Ensure all operation_id are uniques
     from fastapi.routing import APIRoute
     for route in wdms_app.routes:
@@ -259,7 +259,7 @@ wdms_app.include_router(
     tags=tags, dependencies=dependencies)
 
 #The multiple instanciation of bulk_utils router create some duplicates operation_id
-fix_duplicated_ids()
+update_operation_ids()
 
 
 # ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs
