@@ -26,7 +26,6 @@ from app import conf
 import pandas as pd
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 
-
 Definitions = {
     'WellLog': {
         'api_version': 'v3',
@@ -63,6 +62,7 @@ Definitions = {
 }
 
 EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log']
+
 
 def _create_df_from_response(response):
     f = io.BytesIO(response.content)
@@ -118,12 +118,12 @@ def _cast_datetime_to_datetime64_ns(result_df):
     for name, col in result_df.items():
         if name.startswith('date'):
             result_df[name] = result_df[name].astype('datetime64[ns]')
-            
+
     return result_df
 
 
 @pytest.fixture
-def bob(nope_logger_fixture, monkeypatch):
+def init_fixtures(nope_logger_fixture, monkeypatch):
     with TemporaryDirectory() as tmp_dir:
         monkeypatch.setenv(name='USE_LOCALFS_BLOB_STORAGE_WITH_PATH', value=tmp_dir)
         conf.Config = conf.ConfigurationContainer.with_load_all()
@@ -131,7 +131,7 @@ def bob(nope_logger_fixture, monkeypatch):
 
 
 @pytest.fixture
-def setup_client(nope_logger_fixture, bob):
+def setup_client(init_fixtures):
     from app.wdms_app import wdms_app, enable_alpha_feature
     from app.wdms_app import app_injector
 
@@ -246,11 +246,11 @@ def test_send_all_data_once(setup_client,
     ['MD', 'float_X', 'str_X', 'date_X']
 ])
 def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
-                            entity_type,
-                            columns,
-                            content_type_header,
-                            create_func,
-                            accept_content):
+                                                     entity_type,
+                                                     columns,
+                                                     content_type_header,
+                                                     create_func,
+                                                     accept_content):
     client, tmp_dir = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -303,8 +303,8 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
 
     # BELOW test cases FAIL with UPDATE mode:
     # => If adding new column Date/String not starting at first index AND override an existing column
-    #['MD', 'date_X'],
-    #['MD', 'float_X', 'str_X', 'date_X'],
+    # ['MD', 'date_X'],
+    # ['MD', 'float_X', 'str_X', 'date_X'],
 ])
 @pytest.mark.parametrize("session_mode", [
     'overwrite',
@@ -480,11 +480,11 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client, entity_type):
     chunking_url = Definitions[entity_type]['chunking_url']
 
     _create_chunks(client, entity_type, record_id=record_id, cols_ranges=[(['MD', 'A'], range(5, 10)),
-                                                             (['B'], range(8)),  # overlap left side
-                                                             (['C'], range(8, 15)),  # overlap left side
-                                                             (['D'], range(6, 8)),  # within
-                                                             (['E'], range(15)),  # overlap both side
-                                                             ])
+                                                                          (['B'], range(8)),  # overlap left side
+                                                                          (['C'], range(8, 15)),  # overlap left side
+                                                                          (['D'], range(6, 8)),  # within
+                                                                          (['E'], range(15)),  # overlap both side
+                                                                          ])
 
     data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'Accept': 'application/json'})
     assert data_response.status_code == 200
@@ -618,7 +618,7 @@ def test_creates_two_sessions_one_record_with_chunks_different_format(setup_clie
 
     _create_chunks(client, entity_type, record_id=record_id, data_format='json', cols_ranges=[(['X'], range(5, 20))])
     _create_chunks(client, entity_type, record_id=record_id, data_format='parquet', cols_ranges=[(['Y'], range(5, 20)),
-                                                                                    (['Z'], range(5, 20))])
+                                                                                                 (['Z'], range(5, 20))])
     data_response = client.get(f'{chunking_url}/{record_id}/data')
     assert data_response.status_code == 200
     df = _create_df_from_response(data_response)
@@ -634,7 +634,7 @@ def test_creates_two_sessions_two_record_with_chunks(setup_client, entity_type):
 
     _create_chunks(client, entity_type, record_id=record_id, cols_ranges=[(['X'], range(5, 20))])
     _create_chunks(client, entity_type, record_id=another_record_id, cols_ranges=[(['Y'], range(0, 10)),
-                                                                     (['Z'], range(5, 10))])
+                                                                                  (['Z'], range(5, 10))])
     data_response = client.get(f'{chunking_url}/{record_id}/data')
     assert data_response.status_code == 200
     df = _create_df_from_response(data_response)

@@ -18,7 +18,6 @@ import json
 import time
 from contextlib import suppress
 from functools import wraps
-from logging import getLogger
 from operator import attrgetter
 import fsspec
 import pandas as pd
@@ -151,13 +150,10 @@ class DaskBulkStorage:
         **kwargs: dict (of dicts) Passthrough key-word arguments for read backend.
         """
         get_logger().debug(f"loading bulk : {path}")
-        return self.client.submit(wrap_trace_process,
-                                  dd.read_parquet,
-                                  get_ctx().tracer.span_context,
-                                  path,
-                                  engine='pyarrow-dataset',
-                                  storage_options=self._parameters.storage_options,
-                                  **kwargs)
+        return self._submit_with_trace(dd.read_parquet, path,
+                                       engine='pyarrow-dataset',
+                                       storage_options=self._parameters.storage_options,
+                                       **kwargs)
 
     def _load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version.
@@ -169,10 +165,17 @@ class DaskBulkStorage:
         """
              Submit given target_func to Distributed Dask workers and add tracing required stuff
         """
-        return self.client.submit(wrap_trace_process,
-                                        target_func,
-                                        get_ctx().tracer.span_context,
-                                        *args, **kwargs)
+        kwargs['span_context'] = get_ctx().tracer.span_context
+        kwargs['target_func'] = target_func
+        return self.client.submit(wrap_trace_process, *args, **kwargs)
+
+    def _map_with_trace(self, target_func, *args, **kwargs):
+        """
+             Submit given target_func to Distributed Dask workers and add tracing required stuff
+        """
+        kwargs['span_context'] = get_ctx().tracer.span_context
+        kwargs['target_func'] = target_func
+        return self.client.map(wrap_trace_process, *args, **kwargs)
 
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
     @with_trace('load_bulk')
@@ -191,27 +194,19 @@ class DaskBulkStorage:
             we should be able to change or support other format easily ?
             schema={} instead of 'infer' fixes wrong inference for columns of type string starting with nan values
         """
-        return self.client.submit(wrap_trace_process,
-                                  dd.to_parquet,
-                                  get_ctx().tracer.span_context,
-                                  ddf, path,
-                                  schema={},
-                                  engine='pyarrow',
-                                  storage_options=self._parameters.storage_options)
+        return self._submit_with_trace(dd.to_parquet, ddf, path,
+                                       schema={},
+                                       engine='pyarrow',
+                                       storage_options=self._parameters.storage_options)
 
     def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
         pdf: pd.DataFrame or Future<pd.DataFrame>
         returns a Future<None>
         """
-
-        return self.client.submit(wrap_trace_process,
-                                  pdf.to_parquet,
-                                  get_ctx().tracer.span_context,
-                                  path,
-                                  span_context=get_ctx().tracer.span_context,
-                                  engine='pyarrow',
-                                  storage_options=self._parameters.storage_options)
+        return self._submit_with_trace(pdf.to_parquet, path,
+                                       engine='pyarrow',
+                                       storage_options=self._parameters.storage_options)
 
     def _check_incoming_chunk(self, df):
         # TODO should we test if is_monotonic?, unique ?
@@ -318,14 +313,14 @@ class DaskBulkStorage:
         if not dfs:
             raise BulkNotProcessable("No data to commit")
 
-        dfs = self.client.map(set_index, dfs)
+        dfs = self.client.map(wrap_trace_process,
+                              dfs,
+                              target_func=set_index,
+                              span_context=get_ctx().tracer.span_context,
+                              )
 
         while len(dfs) > 1:
-            dfs = [self.client.submit(wrap_trace_process,
-                                      do_merge,
-                                      get_ctx().tracer.span_context,
-                                      a, b)
-                   for a, b in by_pairs(dfs)]
+            dfs = [self._submit_with_trace(do_merge, a, b) for a, b in by_pairs(dfs)]
 
         return await self.save_blob(dfs[0], record_id=session.recordId)
 
@@ -336,14 +331,15 @@ class DaskBulkStorage:
         return result + 42
 
     async def test_method_in_dask(self) -> dd.DataFrame:
-        fut1 = self._submit_with_trace(self._test_method_2, 0)
-        fut2 = self._submit_with_trace(self._test_method_2, fut1)
-        responses = await fut2
-        return responses
-        # return await self._submit_with_trace(dd.to_parquet, None, "42",
-        #                                      schema="infer",
-        #                                      engine='pyarrow',
-        #                                      storage_options=self._parameters.storage_options)
+        # fut1 = self._submit_with_trace(self._test_method_2, 0)
+        # fut2 = self._submit_with_trace(self._test_method_2, fut1)
+        # responses = await fut2
+        # return responses
+        return await self._submit_with_trace(dd.to_parquet,
+                                             None, "42",
+                                             schema="infer",
+                                             engine='pyarrow',
+                                             storage_options=self._parameters.storage_options)
 
 
 async def make_local_dask_bulk_storage(base_directory: str) -> DaskBulkStorage:
