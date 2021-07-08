@@ -27,7 +27,6 @@ from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 from app.clients.storage_service_client import get_storage_record_service
-from app.record_utils import fetch_record
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
 from app.model.log_bulk import LogBulkHelper
@@ -40,6 +39,7 @@ from app.routers.common_parameters import (
     json_orient_parameter)
 from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSessionStateValue,
                                   WithSessionStorages, get_session_dependencies)
+from app.routers.record_utils import fetch_record
 from app.helper.traces import with_trace
 
 router_bulk = APIRouter()  # router dedicated to bulk APIs
