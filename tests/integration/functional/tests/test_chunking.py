@@ -116,8 +116,10 @@ def build_request_post_chunk(entity_type: str, record_id: str, session_id: str, 
     url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
-def build_request_get_data(entity_type: str, record_id: str) -> RequestRunner:
+def build_request_get_data(entity_type: str, record_id: str, filters=None) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/data'
+    if filters:
+        url = url + '?' + '&'.join(f'{k}={v}' for k, v in filters.items())
     return build_request(f'{entity_type} get data', 'GET', url)
 
 
@@ -486,3 +488,17 @@ def test_get_data_from_record_data_without_dask(with_wdms_env, entity_type, seri
         result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
         pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
         # check type set to false since in Json dType is lost so int32 can become int64
+
+        result = build_request_get_data(entity_type, record_id, filters={'curves': 'MD'}).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data[['MD']], serializer.read(result.response.content), check_dtype=False)
+
+        result = build_request_get_data(entity_type, record_id, filters={'limit': 5}).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data[:5], serializer.read(result.response.content), check_dtype=False)
+
+        result = build_request_get_data(entity_type, record_id, filters={'offset': 4}).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data[4:], serializer.read(result.response.content), check_dtype=False)
+
+        result = build_request_get_data(entity_type, record_id,
+                                        filters={'curves': 'X', 'offset': 2, 'limit': 5}
+                                        ).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data[['X']][2:7], serializer.read(result.response.content), check_dtype=False)

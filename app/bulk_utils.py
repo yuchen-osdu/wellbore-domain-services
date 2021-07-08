@@ -19,6 +19,7 @@ from contextlib import suppress
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
+import dask.dataframe as dd
 import pandas as pd
 
 from app.bulk_persistence import DataframeSerializerAsync, JSONOrient, get_dataframe
@@ -131,6 +132,9 @@ class DataFrameRender:
     @staticmethod
     @with_trace('process_params')
     async def process_params(df, params: GetDataParams):
+        if isinstance(df, pd.DataFrame):
+            df = dd.from_pandas(df, npartitions=1)
+
         if params.curves:
             selection = list(map(str.strip, params.curves.split(',')))
             columns = DataFrameRender.get_matching_column(selection, set(df))
@@ -142,10 +146,7 @@ class DataFrameRender:
             df = df.loc[~df.index.isin(index)]
 
         if params.limit and params.limit > 0:
-            try:
-                df = df.head(params.limit, npartitions=-1, compute=False)  # dask async
-            except:
-                df = df.head(params.limit)
+            df = df.head(params.limit, npartitions=-1, compute=False)
         return df
 
     @staticmethod
