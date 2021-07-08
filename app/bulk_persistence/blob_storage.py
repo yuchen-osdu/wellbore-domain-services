@@ -50,6 +50,7 @@ from .mime_types import MimeType, MimeTypes
 # - using faster format, e.g. hd5
 # - threshold about the busyness of the service (if not busy and not huge data -> direct write)
 # - better proc fork and arg serialization
+from ..helper.traces import with_trace
 
 
 def export_to_parquet(
@@ -228,6 +229,7 @@ async def create_and_write_blob(
         raise RuntimeError(f'unexpected type {source} returned by bulk exporter function')
 
 
+@with_trace('read_blob')
 async def read_blob(blob: BlobBulk):
     importer = BlobFileImporters.from_string(blob.content_type)
     # TODO: run in executor?
