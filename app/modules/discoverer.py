@@ -12,19 +12,19 @@ discovered_routers = []
 
 def get_routers():
     if len(discovered_routers) == 0:
-        load_extensions()
+        load_modules()
     return discovered_routers
 
 
-def load_extensions():
-    discovered_extensions = []
+def load_modules():
+    discovered_modules = []
 
     extension_modules = Config.extension_modules.value
     if extension_modules:
-        discovered_extensions = extension_modules.split(',')
+        discovered_modules = extension_modules.split(',')
 
-    logger.get_logger().info(f'Discovered extensions: {discovered_extensions}')
-    for name in discovered_extensions:
+    logger.get_logger().info(f'Discovered modules: {discovered_modules}')
+    for name in discovered_modules:
         load_extension(name)
 
 

@@ -262,7 +262,7 @@ wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
 add_exception_handlers(wdms_app)
 
 
-# Load and add router extensions [alpha version]
+# Load and add router modules [alpha version]
 def add_extension_routers():
     for router in discoverer.get_routers():
         add_extension_router(router)
