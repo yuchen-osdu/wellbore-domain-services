@@ -24,18 +24,17 @@ async def test_fwd_correlation_id_to_outgoing_request_to_storage(ctx_fixture: Co
     storage_url = "http://example.com"  # well formed url required
     expected_correlation_id = 'some-correlation-id'
 
-    storage_client = make_storage_record_client(storage_url)
-    httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
-
     ctx = ctx_fixture.with_correlation_id(expected_correlation_id).with_auth("foobar")
     Context.set_current(ctx)
 
     # safety: make sure no methods on tracer have been called yet
     assert ctx.tracer.method_calls == []
 
-    # force to use endpoint which does not return a response to skip model validation
-    response = await storage_client.delete_record(id="123", data_partition_id="test")
-    assert response is not None
+    async with make_storage_record_client(storage_url) as storage_client:
+        httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
+        # force to use endpoint which does not return a response to skip model validation
+        response = await storage_client.delete_record(id="123", data_partition_id="test")
+        assert response is not None
 
     # make sure correlation-id is traced when doing a request to storage
     ctx.tracer.add_attribute_to_current_span.assert_any_call(
@@ -48,18 +47,17 @@ async def test_fwd_correlation_id_to_outgoing_request_to_search(ctx_fixture: Con
     storage_url = "http://example.com"  # well formed url required
     expected_correlation_id = 'some-correlation-id'
 
-    search_client = make_search_client(storage_url)
-    httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
-
     ctx = ctx_fixture.with_correlation_id(expected_correlation_id).with_auth("foobar")
     Context.set_current(ctx)
 
     # safety: make sure no methods on tracer have been called yet
     assert ctx.tracer.method_calls == []
 
-    # force to use endpoint which does not return a response to skip model validation
-    response = await search_client.delete_index(kind="kind", data_partition_id="test")
-    assert response is not None
+    async with make_search_client(storage_url) as search_client:
+        httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
+        # force to use endpoint which does not return a response to skip model validation
+        response = await search_client.delete_index(kind="kind", data_partition_id="test")
+        assert response is not None
     
     # make sure correlation-id is traced when doing a request to search
     ctx.tracer.add_attribute_to_current_span.assert_any_call(

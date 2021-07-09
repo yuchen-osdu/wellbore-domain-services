@@ -22,7 +22,7 @@ from tests.unit.test_utils import NopeLogger
 from unittest.mock import MagicMock
 
 # Initialize traces exporter in app with a custom one to allow validating our traces
-class TestExporter(base_exporter.Exporter):
+class ExporterInTest(base_exporter.Exporter):
     def __init__(self) -> None:
         self.exported = []
 
@@ -52,7 +52,7 @@ def build_url(path: str):
 def test_about_call_creates_correlation_id_if_absent(client: TestClient):
 
     # Initialize traces exporter in app, like it is in app's startup_event
-    wdms_app.trace_exporter = TestExporter()
+    wdms_app.trace_exporter = ExporterInTest()
 
     # no header -> works fine    
     response = client.get(build_url("/about"))
@@ -62,11 +62,12 @@ def test_about_call_creates_correlation_id_if_absent(client: TestClient):
     assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
     spandata = wdms_app.trace_exporter.exported[0]
     assert 'correlation-id' in spandata.attributes.keys()
+    assert spandata.attributes['correlation-id'] is not None
 
 def test_about_call_traces_existing_correlation_id(client: TestClient):
 
     # Initialize traces exporter in app, like it is in app's startup_event
-    wdms_app.trace_exporter = TestExporter()
+    wdms_app.trace_exporter = ExporterInTest()
 
     # no header -> works fine    
     response = client.get(build_url("/about"), headers={'correlation-id': 'some correlation id'})
@@ -81,7 +82,7 @@ def test_about_call_traces_existing_correlation_id(client: TestClient):
 def test_about_call_traces_existing_data_partition_id(client: TestClient):
 
     # Initialize traces exporter in app, like it is in app's startup_event
-    wdms_app.trace_exporter = TestExporter()
+    wdms_app.trace_exporter = ExporterInTest()
 
     # no header -> works fine    
     response = client.get(build_url("/about"))
