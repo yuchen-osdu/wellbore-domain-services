@@ -22,10 +22,10 @@ The following software have components provided under the terms of this license:
 - googleapis-common-protos (from https://github.com/googleapis/googleapis)
 - grpcio (from http://www.grpc.io)
 - importlib-metadata (from http://importlib-metadata.readthedocs.io/)
-- jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from http://msgpack.org/)
 - multidict (from https://github.com/aio-libs/multidict/)
 - numpy (from http://www.numpy.org)
+- openapi-spec-validator (from https://github.com/p1c2u/openapi-spec-validator)
 - opencensus (from https://github.com/census-instrumentation/opencensus-python)
 - opencensus-context (from https://github.com/census-instrumentation/opencensus-python/tree/master/context/opencensus-context)
 - opencensus-ext-azure (from )
@@ -95,6 +95,7 @@ The following software have components provided under the terms of this license:
 - mock (from https://github.com/testing-cabal/mock)
 - numpy (from http://www.numpy.org)
 - oauthlib (from https://github.com/idan/oauthlib)
+- openapi-schema-validator (from https://github.com/p1c2u/openapi-schema-validator)
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
@@ -125,6 +126,7 @@ The following software have components provided under the terms of this license:
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - fsspec (from http://github.com/intake/filesystem_spec)
 - gcsfs (from https://github.com/dask/gcsfs)
+- numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
 - toolz (from http://github.com/pytoolz/toolz/)
@@ -215,6 +217,8 @@ The following software have components provided under the terms of this license:
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioredis (from https://github.com/aio-libs/aioredis)
+- anyio (from )
+- asgiref (from http://github.com/django/asgiref/)
 - atomicwrites (from https://github.com/untitaker/python-atomicwrites)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -222,9 +226,6 @@ The following software have components provided under the terms of this license:
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
 - azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/identity/azure-identity)
 - azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
-- azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-certificates)
-- azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
-- azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
 - azure-storage-blob (from https://github.com/Azure/azure-storage-python)
 - backoff (from https://github.com/litl/backoff)
 - botocore (from https://github.com/boto/botocore)
@@ -329,11 +330,11 @@ The following software have components provided under the terms of this license:
 - grpcio (from http://www.grpc.io)
 
 ========================================================================
-WTFPL
+X11
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
+- numpy (from http://www.numpy.org)
 
 ========================================================================
 ZPL-2.1
