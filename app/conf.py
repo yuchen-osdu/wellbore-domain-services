@@ -371,4 +371,4 @@ AUTHORIZATION_HEADER_NAME = 'Authorization'
 APP_KEY_HEADER_NAME = 'appKey'
 CORRELATION_ID_HEADER_NAME = 'correlation-id'
 REQUEST_ID_HEADER_NAME = 'Request-ID'
-
+PARTITION_ID_HEADER_NAME = 'data-partition-id'

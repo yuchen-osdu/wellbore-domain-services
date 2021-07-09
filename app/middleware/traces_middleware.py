@@ -87,6 +87,15 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(
             attribute_key=conf.CORRELATION_ID_HEADER_NAME,
             attribute_value=correlation_id)
+    
+        ctx_partition_id = get_or_create_ctx().partition_id
+        partition_id = ctx_partition_id if ctx_partition_id is not None \
+            else request.headers.get(conf.PARTITION_ID_HEADER_NAME)
+        # only put in the trace if there is data    
+        if partition_id is not None:
+            tracer.add_attribute_to_current_span(
+                attribute_key=conf.PARTITION_ID_HEADER_NAME,
+                attribute_value=partition_id)
 
         request_content_type = request.headers.get("Content-type")
         tracer.add_attribute_to_current_span(attribute_key="request.header Content-type",
