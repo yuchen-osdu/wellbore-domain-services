@@ -24,7 +24,7 @@ from app import bulk_utils
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers
-from app.extensions import discoverer
+from app.modules import discoverer
 
 from app.helper import traces, logger
 from app.injector.app_injector import AppInjector
