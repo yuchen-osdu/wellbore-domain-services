@@ -22,6 +22,7 @@ The following software have components provided under the terms of this license:
 - googleapis-common-protos (from https://github.com/googleapis/googleapis)
 - grpcio (from http://www.grpc.io)
 - importlib-metadata (from http://importlib-metadata.readthedocs.io/)
+- jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from http://msgpack.org/)
 - multidict (from https://github.com/aio-libs/multidict/)
 - numpy (from http://www.numpy.org)
@@ -226,6 +227,9 @@ The following software have components provided under the terms of this license:
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
 - azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/identity/azure-identity)
 - azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
+- azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-certificates)
+- azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
+- azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
 - azure-storage-blob (from https://github.com/Azure/azure-storage-python)
 - backoff (from https://github.com/litl/backoff)
 - botocore (from https://github.com/boto/botocore)
@@ -328,6 +332,13 @@ Unlicense
 The following software have components provided under the terms of this license:
 
 - grpcio (from http://www.grpc.io)
+
+========================================================================
+WTFPL
+========================================================================
+The following software have components provided under the terms of this license:
+
+- jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 
 ========================================================================
 X11
