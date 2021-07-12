@@ -31,7 +31,7 @@ osdu-log-recognition-lib>=0.0.9
 osdu-data-ecosystem-storage~=1.2.0
 osdu-data-ecosystem-search>=0.3.2, <0.4
 
-osdu-core-lib-python-ibm>=0.0.3, <0.1
+osdu-core-lib-python-ibm>=1.1.0
 osdu-core-lib-python-gcp~=1.1.0
 osdu-core-lib-python-azure~=1.1.2
 osdu-core-lib-python-aws>=0.0.1, <0.1
