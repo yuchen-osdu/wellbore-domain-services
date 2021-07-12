@@ -145,13 +145,17 @@ async def shutdown_event():
 def update_operation_ids():
     # Ensure all operation_id are uniques
     from fastapi.routing import APIRoute
+    operation_ids = set()
     for route in wdms_app.routes:
         if isinstance(route, APIRoute):
-            if route.operation_id in bulk_utils.OPERATION_IDS.values():  # All route with possible duplicate
+            if route.operation_id in operation_ids:
+                # duplicate detected
                 new_operation_id = route.unique_id
                 if route.operation_id in OpenApiHandler._handlers:
-                    OpenApiHandler._handlers[new_operation_id] = OpenApiHandler._handlers.pop(route.operation_id)
-                route.operation_id = route.unique_id
+                    OpenApiHandler._handlers[new_operation_id] = OpenApiHandler._handlers[route.operation_id]
+                route.operation_id = new_operation_id
+            else:
+                operation_ids.add(route.operation_id)
 
 
 DDMS_V2_PATH = '/ddms/v2'
