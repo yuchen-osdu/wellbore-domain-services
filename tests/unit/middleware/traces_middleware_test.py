@@ -88,10 +88,11 @@ def test_about_call_traces_existing_data_partition_id(client: TestClient):
     response = client.get(build_url("/about"))
     assert response.status_code == 200
     
-    # one call was exported, without data-partition-id
+    # one call was exported, with data-partition-id
     assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
     spandata = wdms_app.trace_exporter.exported[0]
-    assert 'data-partition-id' not in spandata.attributes.keys()
+    assert 'data-partition-id' in spandata.attributes.keys()
+    assert spandata.attributes['data-partition-id'] is None
 
     # data-partition-id header -> works as well
     client.get(build_url("/about"), headers={'data-partition-id': 'some partition id'})
