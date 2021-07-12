@@ -19,6 +19,7 @@ from contextlib import suppress
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
+import dask.dataframe as dd
 import pandas as pd
 
 from app.bulk_persistence import DataframeSerializerAsync, JSONOrient, get_dataframe
@@ -26,7 +27,6 @@ from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 from app.clients.storage_service_client import get_storage_record_service
-from app.record_utils import fetch_record
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
 from app.model.log_bulk import LogBulkHelper
@@ -39,7 +39,8 @@ from app.routers.common_parameters import (
     json_orient_parameter)
 from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSessionStateValue,
                                   WithSessionStorages, get_session_dependencies)
-
+from app.routers.record_utils import fetch_record
+from app.helper.traces import with_trace
 
 router_bulk = APIRouter()  # router dedicated to bulk APIs
 
@@ -55,6 +56,7 @@ def _check_df_columns_type(df: pd.DataFrame):
                             detail=f'All columns type should be string')
 
 
+@with_trace("get_df_from_request")
 async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
     """ extract dataframe from request """
 
@@ -129,7 +131,11 @@ class DataFrameRender:
         return list(selected)
 
     @staticmethod
+    @with_trace('process_params')
     async def process_params(df, params: GetDataParams):
+        if isinstance(df, pd.DataFrame):
+            df = dd.from_pandas(df, npartitions=1)
+
         if params.curves:
             selection = list(map(str.strip, params.curves.split(',')))
             columns = DataFrameRender.get_matching_column(selection, set(df))
@@ -141,13 +147,11 @@ class DataFrameRender:
             df = df.loc[~df.index.isin(index)]
 
         if params.limit and params.limit > 0:
-            try:
-                df = df.head(params.limit, npartitions=-1, compute=False)  # dask async
-            except:
-                df = df.head(params.limit)
+            df = df.head(params.limit, npartitions=-1, compute=False)
         return df
 
     @staticmethod
+    @with_trace('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None):
         if params.describe:
             return {
@@ -212,6 +216,7 @@ async def post_data(record_id: str,
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                     ):
+    @with_trace("save_blob")
     async def save_blob():
         df = await get_df_from_request(request, orient)
         _check_df_columns_type(df)
@@ -283,8 +288,10 @@ async def get_data_version(
     bulk_urn = get_bulk_uri_osdu(record)
     if bulk_urn is not None:
         bulk_id, prefix = BulkId.bulk_urn_decode(bulk_urn)
-    else: # fallback on ddms_v2 Persistence for wks:log schema
+    else:
+        # fallback on ddms_v2 Persistence for wks:log schema
         bulk_id, prefix = LogBulkHelper.get_bulk_id(record, None)
+
     try:
         if bulk_id is None:
             raise BulkNotFound(record_id=record_id, bulk_id=None)
@@ -294,6 +301,7 @@ async def get_data_version(
             df = await get_dataframe(ctx, bulk_id)
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
+
         df = await DataFrameRender.process_params(df, ctrl_p)
         return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
     except BulkError as ex:

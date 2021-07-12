@@ -20,7 +20,6 @@ from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
 
 from app import __version__, __build_number__, __app_name__
-from app import bulk_utils
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers
@@ -31,7 +30,7 @@ from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id
-from app.routers import probes, about, sessions
+from app.routers import probes, about, sessions, bulk_utils
 from app.routers.ddms_v2 import (
     ddms_v2,
     wellbore_ddms_v2,
