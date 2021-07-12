@@ -4,7 +4,7 @@ from io import BytesIO
 from fastapi import HTTPException
 
 from app.model.model_chunking import GetDataParams
-from app.bulk_utils import DataFrameRender, get_df_from_request
+from app.routers.bulk_utils import DataFrameRender, get_df_from_request
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
