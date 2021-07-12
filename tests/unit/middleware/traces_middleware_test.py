@@ -19,8 +19,6 @@ from app.wdms_app import wdms_app, DDMS_V2_PATH
 from app.utils import get_or_create_ctx
 from tests.unit.test_utils import NopeLogger
 
-from unittest.mock import MagicMock
-
 # Initialize traces exporter in app with a custom one to allow validating our traces
 class ExporterInTest(base_exporter.Exporter):
     def __init__(self) -> None:
@@ -79,7 +77,11 @@ def test_about_call_traces_existing_correlation_id(client: TestClient):
     assert 'correlation-id' in spandata.attributes.keys()
     assert spandata.attributes['correlation-id'] == 'some correlation id'
 
-def test_about_call_traces_existing_app_id(client: TestClient):
+@pytest.mark.parametrize("header_name",[
+    'x-app-id',
+    'data-partition-id'
+])
+def test_about_call_traces_request_header(header_name, client: TestClient):
 
     # Initialize traces exporter in app, like it is in app's startup_event
     wdms_app.trace_exporter = ExporterInTest()
@@ -88,43 +90,18 @@ def test_about_call_traces_existing_app_id(client: TestClient):
     response = client.get(build_url("/about"))
     assert response.status_code == 200
 
-    # one call was exported, without x-app-id
+    # one call was exported, without header
     assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
     spandata = wdms_app.trace_exporter.exported[0]
-    assert 'x-app-id' in spandata.attributes.keys()
-    assert spandata.attributes['x-app-id'] is None
+    assert header_name in spandata.attributes.keys()
+    assert spandata.attributes[header_name] is None
 
-    # x-app-id header -> works as well
-    client.get(build_url("/about"), headers={'x-app-id': 'some app id'})
-
-    # a second call was exported, with data-partition-id
-    assert len(wdms_app.trace_exporter.exported) == 2  # one call => one export
-    spandata = wdms_app.trace_exporter.exported[1]
-    assert 'x-app-id' in spandata.attributes.keys()
-    assert spandata.attributes['x-app-id'] == 'some app id'
-
-
-def test_about_call_traces_existing_data_partition_id(client: TestClient):
-
-    # Initialize traces exporter in app, like it is in app's startup_event
-    wdms_app.trace_exporter = ExporterInTest()
-
-    # no header -> works fine    
-    response = client.get(build_url("/about"))
+    # with header -> works as well
+    client.get(build_url("/about"), headers={header_name: "some value"})
     assert response.status_code == 200
-    
-    # one call was exported, with data-partition-id
-    assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
-    spandata = wdms_app.trace_exporter.exported[0]
-    assert 'data-partition-id' in spandata.attributes.keys()
-    assert spandata.attributes['data-partition-id'] is None
 
-    # data-partition-id header -> works as well
-    client.get(build_url("/about"), headers={'data-partition-id': 'some partition id'})
-
-    # a second call was exported, with data-partition-id
+    # a second call was exported, with header
     assert len(wdms_app.trace_exporter.exported) == 2  # one call => one export
     spandata = wdms_app.trace_exporter.exported[1]
-    assert 'data-partition-id' in spandata.attributes.keys()
-    assert spandata.attributes['data-partition-id'] == 'some partition id'
-
+    assert header_name in spandata.attributes.keys()
+    assert spandata.attributes[header_name] == "some value"
