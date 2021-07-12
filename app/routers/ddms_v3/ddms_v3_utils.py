@@ -48,5 +48,5 @@ class DMSV3RouterUtils:
         try:
             delfi_id = ConverterUtils.decode_id(entity_id)
             return DMSV3RouterUtils.is_delfi_id(delfi_id), delfi_id
-        except ValueError as e:
+        except (ValueError, LookupError) as e:
             return False, None
