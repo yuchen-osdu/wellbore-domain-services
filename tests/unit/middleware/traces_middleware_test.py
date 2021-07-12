@@ -91,7 +91,8 @@ def test_about_call_traces_existing_app_id(client: TestClient):
     # one call was exported, without x-app-id
     assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
     spandata = wdms_app.trace_exporter.exported[0]
-    assert 'x-app-id' not in spandata.attributes.keys()
+    assert 'x-app-id' in spandata.attributes.keys()
+    assert spandata.attributes['x-app-id'] is None
 
     # x-app-id header -> works as well
     client.get(build_url("/about"), headers={'x-app-id': 'some app id'})
