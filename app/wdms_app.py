@@ -126,7 +126,7 @@ async def startup_event():
     if Config.alpha_feature_enabled.value:
         enable_alpha_feature()
 
-    add_extension_routers()
+    add_modules_routers()
 
 
 @base_app.on_event('shutdown')
@@ -263,12 +263,12 @@ add_exception_handlers(wdms_app)
 
 
 # Load and add router modules [alpha version]
-def add_extension_routers():
+def add_modules_routers():
     for router in discoverer.get_routers():
-        add_extension_router(router)
+        add_modules_router(router)
 
 
-def add_extension_router(router):
+def add_modules_router(router):
     log = logger.get_logger()
     name = router.prefix
     try:

@@ -1,5 +1,5 @@
 
-# Load extension modules [alpha version]
+# Load modules [alpha version]
 import importlib
 import sys
 
@@ -19,19 +19,19 @@ def get_routers():
 def load_modules():
     discovered_modules = []
 
-    extension_modules = Config.extension_modules.value
-    if extension_modules:
-        discovered_modules = extension_modules.split(',')
+    modules = Config.modules.value
+    if modules:
+        discovered_modules = modules.split(',')
 
     logger.get_logger().info(f'Discovered modules: {discovered_modules}')
     for name in discovered_modules:
-        load_extension(name)
+        load_module(name)
 
 
-def load_extension(name):
+def load_module(name):
     log = logger.get_logger()
     try:
-        log.info(f'Loading `{name}` extension')
+        log.info(f'Loading `{name}` module')
         module = importlib.import_module(name)
 
         can_run, message = module.can_run()
@@ -49,12 +49,12 @@ def load_extension(name):
 
         log.info(f'Done. `{name}` loaded')
     except AttributeError as error:
-        log.warning(f'Failed to load `{name}` extension. Module not configured properly. {error}')
+        log.warning(f'Failed to load `{name}` module. Module not configured properly. {error}')
     except ModuleNotFoundError as error:
-        log.warning(f'Failed to load `{name}` extension. Module not found. {error}')
+        log.warning(f'Failed to load `{name}` module. Module not found. {error}')
     except ValueError as error:
-        log.warning(f'Failed to load `{name}` extension. {error}')
+        log.warning(f'Failed to load `{name}` module. {error}')
     except NameError as error:
-        log.warning(f'Failed to load `{name}` extension. Missing module configuration. {error}')
+        log.warning(f'Failed to load `{name}` module. Missing module configuration. {error}')
     except:
-        log.warning(f'Failed to load `{name}` extension. {sys.exc_info()[0]}')
+        log.warning(f'Failed to load `{name}` module. {sys.exc_info()[0]}')
