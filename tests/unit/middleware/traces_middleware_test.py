@@ -79,6 +79,30 @@ def test_about_call_traces_existing_correlation_id(client: TestClient):
     assert 'correlation-id' in spandata.attributes.keys()
     assert spandata.attributes['correlation-id'] == 'some correlation id'
 
+def test_about_call_traces_existing_app_id(client: TestClient):
+
+    # Initialize traces exporter in app, like it is in app's startup_event
+    wdms_app.trace_exporter = ExporterInTest()
+
+    # no header -> works fine
+    response = client.get(build_url("/about"))
+    assert response.status_code == 200
+
+    # one call was exported, without x-app-id
+    assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
+    spandata = wdms_app.trace_exporter.exported[0]
+    assert 'x-app-id' not in spandata.attributes.keys()
+
+    # x-app-id header -> works as well
+    client.get(build_url("/about"), headers={'x-app-id': 'some app id'})
+
+    # a second call was exported, with data-partition-id
+    assert len(wdms_app.trace_exporter.exported) == 2  # one call => one export
+    spandata = wdms_app.trace_exporter.exported[1]
+    assert 'x-app-id' in spandata.attributes.keys()
+    assert spandata.attributes['x-app-id'] == 'some app id'
+
+
 def test_about_call_traces_existing_data_partition_id(client: TestClient):
 
     # Initialize traces exporter in app, like it is in app's startup_event

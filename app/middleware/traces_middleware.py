@@ -103,6 +103,11 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(attribute_key="request.header Content-length",
                                              attribute_value=request_content_length)
 
+        app_id = request.headers.get(conf.APP_ID_HEADER_NAME)
+        if app_id is not None:
+            tracer.add_attribute_to_current_span(attribute_key=conf.APP_ID_HEADER_NAME,
+                                                 attribute_value=app_id)
+
     @staticmethod
     def _after_request(request: Request, response: Response, tracer):
 
