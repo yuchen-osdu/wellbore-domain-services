@@ -1172,8 +1172,6 @@
               }
             ],
             "description": "Decimal number between 0 and 1",
-            "exclusiveMaximum": 1.0,
-            "exclusiveMinimum": 0.0,
             "title": "Quality of the dip"
           },
           "reference": {

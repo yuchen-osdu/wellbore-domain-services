@@ -80,6 +80,5 @@ def test_api_spec_for_duplicates(openapi_json):
             operation_id_set.add(operation_id)
 
 
-@pytest.mark.skip(reason="Generated open api is not correct due to exclusiMinimum fast api open bug")
 def test_open_api_validity(openapi_json):
     validate_spec(openapi_json)
