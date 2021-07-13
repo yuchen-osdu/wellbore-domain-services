@@ -33,17 +33,11 @@ dataframe_dict = {
     'split': {'index': Reference_df.index.tolist(),
               'columns': Reference_df.columns.tolist(),
               'data': Reference_df.values.tolist()},
-    'index': {
-        str(row_val): {
-            str(col_val): Reference_df[col_val].tolist()[count] for col_val in Reference_df.columns.tolist()
-        } for count, row_val in enumerate(Reference_df.index.tolist())
-    },
     'columns': {
         str(col_val): {
             str(row_val): Reference_df[col_val].tolist()[count] for count, row_val in enumerate(Reference_df.index.tolist())
         } for col_val in Reference_df.columns.tolist()
-    },
-    'records': [{c: v for c, v in zip(Reference_df.columns, row_values)} for row_values in Reference_df.values]
+    }
 }
 
 

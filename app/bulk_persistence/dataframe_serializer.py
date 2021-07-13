@@ -15,7 +15,7 @@
 import json
 import asyncio
 from io import BytesIO
-from typing import Union, AnyStr, IO, Optional, List
+from typing import Union, AnyStr, IO, Optional, List, Dict
 
 from pathlib import Path
 import numpy as np
@@ -48,23 +48,12 @@ class DataframeSerializerSync:
             columns: List[Union[str, int, float]] = None
             index: List[Union[str, int, float]] = None
 
-        class IndexFormat(BaseModel):
-            # TODO
-            pass
-
         class ColumnFormat(BaseModel):
-            # TODO
-            pass
-
-        class RecordsFormat(BaseModel):
-            # TODO
-            pass
+            __root__: Dict[str, Dict[Union[str, int, float], Union[str, int, float]]]
 
         schema_dict = {
             JSONOrient.split: SplitFormat.schema(),
-            JSONOrient.index: IndexFormat.schema(),
-            JSONOrient.columns: ColumnFormat.schema(),
-            JSONOrient.records: RecordsFormat.schema()
+            JSONOrient.columns: ColumnFormat.schema()
         }
 
         return schema_dict[JSONOrient.get(orient)]

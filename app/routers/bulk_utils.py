@@ -152,7 +152,7 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('df_render')
-    async def df_render(df, params: GetDataParams, accept: str = None):
+    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None):
         if params.describe:
             return {
                 "numberOfRows": await DataFrameRender.get_size(df),
@@ -166,7 +166,9 @@ class DataFrameRender:
             return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
 
         if MimeTypes.JSON.type in accept:
-            return Response(pdf.to_json(index=True, date_format='iso'), media_type=MimeTypes.JSON.type)
+            return Response(
+                pdf.to_json(index=True, date_format='iso', orient=orient.value), media_type=MimeTypes.JSON.type
+            )
 
         if MimeTypes.CSV.type in accept:
             return Response(pdf.to_csv(), media_type=MimeTypes.CSV.type)
@@ -281,6 +283,7 @@ async def get_data_version(
     record_id: str, version: int,
     request: Request,
     ctrl_p: GetDataParams = Depends(),
+    orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
 ):
@@ -303,7 +306,7 @@ async def get_data_version(
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
         df = await DataFrameRender.process_params(df, ctrl_p)
-        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
+        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'), orient=orient)
     except BulkError as ex:
         ex.raise_as_http()
 
@@ -330,10 +333,11 @@ async def get_data(
     record_id: str,
     request: Request,
     ctrl_p: GetDataParams = Depends(),
+    orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
 ):
-    return await get_data_version(record_id, None, request, ctrl_p, ctx, dask_blob_storage)
+    return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, dask_blob_storage)
 
 
 @router_bulk.patch(
