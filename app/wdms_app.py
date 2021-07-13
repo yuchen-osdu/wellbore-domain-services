@@ -142,6 +142,22 @@ async def shutdown_event():
     await get_http_client_session().close()
 
 
+def update_operation_ids():
+    # Ensure all operation_id are uniques
+    from fastapi.routing import APIRoute
+    operation_ids = set()
+    for route in wdms_app.routes:
+        if isinstance(route, APIRoute):
+            if route.operation_id in operation_ids:
+                # duplicate detected
+                new_operation_id = route.unique_id
+                if route.operation_id in OpenApiHandler._handlers:
+                    OpenApiHandler._handlers[new_operation_id] = OpenApiHandler._handlers[route.operation_id]
+                route.operation_id = new_operation_id
+            else:
+                operation_ids.add(route.operation_id)
+
+
 DDMS_V2_PATH = '/ddms/v2'
 DDMS_V3_PATH = '/ddms/v3'
 ALPHA_APIS_PREFIX = '/alpha'
@@ -241,6 +257,10 @@ wdms_app.include_router(
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
     dependencies=basic_dependencies)
+
+
+#The multiple instanciation of bulk_utils router create some duplicates operation_id
+update_operation_ids()
 
 
 # ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs

@@ -47,7 +47,8 @@ router_bulk = APIRouter()  # router dedicated to bulk APIs
 
 BULK_URN_PREFIX_VERSION = "wdms-1"
 BULK_URI_FIELD = "bulkURI"
-
+OPERATION_IDS = {"record_data": "write_record_data",
+                 "chunk_data": "post_chunk_data"}
 
 def _check_df_columns_type(df: pd.DataFrame):
     if any((type(t) is not str for t in df.columns)):
@@ -193,7 +194,7 @@ async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record):
     )
 
 
-@OpenApiHandler.set(operation_id="post_data", request_body=REQUEST_DATA_BODY_SCHEMA)
+@OpenApiHandler.set(operation_id=OPERATION_IDS["record_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
 @router_bulk.post(
     '/{record_id}/data',
     summary='Writes data as a whole bulk, creates a new version.',
@@ -204,7 +205,7 @@ any previous bulk. Previous bulk versions are accessible via the get bulk data v
 Support JSON and Parquet format ('Content_Type' must be set accordingly).
 In case of JSON the orient must be set accordingly. Support http chunked encoding transfer.
 """ + REQUIRED_ROLES_WRITE,
-    operation_id="write_record_data",
+    operation_id=OPERATION_IDS["record_data"],
     responses={
             404: {},
             200: {}
@@ -228,7 +229,7 @@ async def post_data(record_id: str,
     return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record)
 
 
-@OpenApiHandler.set(operation_id="post_chunk_data", request_body=REQUEST_DATA_BODY_SCHEMA)
+@OpenApiHandler.set(operation_id=OPERATION_IDS["chunk_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
 @router_bulk.post(
     "/{record_id}/sessions/{session_id}/data",
     summary="Send a data chunk. Session must be complete/commit once all chunks are sent.",
@@ -237,7 +238,7 @@ async def post_data(record_id: str,
                 "Support JSON and Parquet format ('Content_Type' must be set accordingly). "
                 "In case of JSON the orient must be set accordingly. Support http chunked encoding."
     + REQUIRED_ROLES_WRITE,
-    operation_id="post_chunk_data",
+    operation_id=OPERATION_IDS["chunk_data"],
     responses={400: {"error": "Record not found"}}
 )
 async def post_chunk_data(record_id: str,
