@@ -181,6 +181,21 @@ def test_get_record_as_OSDU(client, entity_class, base_url, source_file, record_
         entity_class.validate(res)
 
 
+get_invalid_id_parameters = [
+    (Wellbore, "/ddms/v3/wellbores", "toto"),
+    (Well, "/ddms/v3/wells", "schmurf"),
+]
+
+
+@pytest.mark.parametrize("entity_class, base_url, record_id", get_invalid_id_parameters)
+def test_get_record_incorrect_id(client, entity_class, base_url, record_id):
+    response = client.get(
+        f"{base_url}/{record_id}",
+        headers={"data-partition-id": "testing_partition"},
+    )
+    assert response.status_code == status.HTTP_417_EXPECTATION_FAILED
+
+
 @pytest.mark.parametrize("base_url, id, record_obj", tests_parameters)
 def test_get_record_success(client, base_url, id, record_obj):
     record_id = record_obj.id

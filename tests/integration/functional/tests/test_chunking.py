@@ -152,10 +152,8 @@ class ParquetSerializer:
 class JsonSerializer:
     mime_type = 'application/json'
 
-    # TODO There's an inconsistency in service, cannot specify orient in json and default is 'columns'
-    #  (which different from legacy which is 'split')
     def read(self, json_content):
-        return pd.read_json(json_content, orient='columns')
+        return pd.read_json(json_content, orient='split')
 
     def dump(self, df):
         return df.to_json(orient='split')
