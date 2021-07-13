@@ -23,7 +23,7 @@ from app import __version__, __build_number__, __app_name__
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers
-from app.extensions import discoverer
+from app.modules import discoverer
 
 from app.helper import traces, logger
 from app.injector.app_injector import AppInjector
@@ -125,7 +125,7 @@ async def startup_event():
     if Config.alpha_feature_enabled.value:
         enable_alpha_feature()
 
-    add_extension_routers()
+    add_modules_routers()
 
 
 @base_app.on_event('shutdown')
@@ -279,13 +279,13 @@ wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
 add_exception_handlers(wdms_app)
 
 
-# Load and add router extensions [alpha version]
-def add_extension_routers():
+# Load and add router modules [alpha version]
+def add_modules_routers():
     for router in discoverer.get_routers():
-        add_extension_router(router)
+        add_modules_router(router)
 
 
-def add_extension_router(router):
+def add_modules_router(router):
     log = logger.get_logger()
     name = router.prefix
     try:
