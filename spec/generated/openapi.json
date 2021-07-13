@@ -2184,18 +2184,23 @@
             "type": "object"
           },
           {
-            "properties": {},
-            "title": "IndexFormat",
-            "type": "object"
-          },
-          {
-            "properties": {},
+            "additionalProperties": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "type": "object"
+            },
             "title": "ColumnFormat",
-            "type": "object"
-          },
-          {
-            "properties": {},
-            "title": "RecordsFormat",
             "type": "object"
           }
         ]
@@ -2302,18 +2307,23 @@
             "type": "object"
           },
           {
-            "properties": {},
-            "title": "IndexFormat",
-            "type": "object"
-          },
-          {
-            "properties": {},
+            "additionalProperties": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "type": "object"
+            },
             "title": "ColumnFormat",
-            "type": "object"
-          },
-          {
-            "properties": {},
-            "title": "RecordsFormat",
             "type": "object"
           }
         ]
@@ -2386,9 +2396,7 @@
         "description": "An enumeration.",
         "enum": [
           "split",
-          "index",
-          "columns",
-          "records"
+          "columns"
         ],
         "title": "JSONOrient",
         "type": "string"
@@ -8404,6 +8412,21 @@
             }
           },
           {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
             "description": "identifier of the data partition to query",
             "in": "header",
             "name": "data-partition-id",
@@ -8506,7 +8529,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},\"1\":{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},\"2\":{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},\"3\":{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},\"4\":{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}]`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -8882,7 +8905,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},\"1\":{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},\"2\":{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},\"3\":{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},\"4\":{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}]`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -8991,6 +9014,21 @@
               "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
               "title": "Describe",
               "type": "boolean"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
             }
           },
           {
@@ -9108,6 +9146,21 @@
             }
           },
           {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
             "description": "identifier of the data partition to query",
             "in": "header",
             "name": "data-partition-id",
@@ -9210,7 +9263,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},\"1\":{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},\"2\":{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},\"3\":{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},\"4\":{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}]`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -9586,7 +9639,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},\"1\":{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},\"2\":{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},\"3\":{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},\"4\":{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}]`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -9695,6 +9748,21 @@
               "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
               "title": "Describe",
               "type": "boolean"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
             }
           },
           {
@@ -9812,6 +9880,21 @@
             }
           },
           {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
             "description": "identifier of the data partition to query",
             "in": "header",
             "name": "data-partition-id",
@@ -9914,7 +9997,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},\"1\":{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},\"2\":{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},\"3\":{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},\"4\":{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}]`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -10290,7 +10373,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},\"1\":{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},\"2\":{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},\"3\":{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},\"4\":{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}]`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -10399,6 +10482,21 @@
               "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
               "title": "Describe",
               "type": "boolean"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
             }
           },
           {
@@ -13550,7 +13648,7 @@
                 }
               }
             },
-            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},\"1\":{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},\"2\":{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},\"3\":{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},\"4\":{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}]`<br/>&nbsp;"
+            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
           "404": {
             "description": "log not found"
@@ -13758,25 +13856,30 @@
                     "type": "object"
                   },
                   {
-                    "properties": {},
-                    "title": "IndexFormat",
-                    "type": "object"
-                  },
-                  {
-                    "properties": {},
+                    "additionalProperties": {
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "type": "object"
+                    },
                     "title": "ColumnFormat",
-                    "type": "object"
-                  },
-                  {
-                    "properties": {},
-                    "title": "RecordsFormat",
                     "type": "object"
                   }
                 ]
               }
             }
           },
-          "description": "Write log bulk data.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},\"1\":{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},\"2\":{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},\"3\":{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},\"4\":{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}]`<br/>&nbsp;",
+          "description": "Write log bulk data.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -14306,7 +14409,7 @@
                 }
               }
             },
-            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},\"1\":{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},\"2\":{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},\"3\":{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},\"4\":{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}]`<br/>&nbsp;"
+            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
           "404": {
             "description": "log not found"
@@ -15482,7 +15585,7 @@
                 }
               }
             },
-            "description": "Get trajectory data of the given channels.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows for channels MD, TVD, X, Y with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},\"1\":{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},\"2\":{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},\"3\":{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},\"4\":{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}]`<br/>&nbsp;"
+            "description": "Get trajectory data of the given channels.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows for channels MD, TVD, X, Y with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
           "204": {
             "description": "No bulkURI"
@@ -15648,25 +15751,30 @@
                     "type": "object"
                   },
                   {
-                    "properties": {},
-                    "title": "IndexFormat",
-                    "type": "object"
-                  },
-                  {
-                    "properties": {},
+                    "additionalProperties": {
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "type": "object"
+                    },
                     "title": "ColumnFormat",
-                    "type": "object"
-                  },
-                  {
-                    "properties": {},
-                    "title": "RecordsFormat",
                     "type": "object"
                   }
                 ]
               }
             }
           },
-          "description": "Write trajectory bulk data. Each column corresponds to a channel.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 channels (MD, TVD, X, Y) with different _orient_: \n* split: <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* index: <br/>`{\"0\":{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},\"1\":{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},\"2\":{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},\"3\":{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},\"4\":{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}}`<br/>&nbsp;\n* columns: <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records: <br/>`[{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}]`<br/>&nbsp;",
+          "description": "Write trajectory bulk data. Each column corresponds to a channel.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 channels (MD, TVD, X, Y) with different _orient_: \n* split: <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* columns: <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -15915,7 +16023,7 @@
                 }
               }
             },
-            "description": "Get trajectory bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},\"1\":{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},\"2\":{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},\"3\":{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},\"4\":{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}]`<br/>&nbsp;"
+            "description": "Get trajectory bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
           "404": {
             "description": "trajectory not found"
