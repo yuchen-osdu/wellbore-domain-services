@@ -47,7 +47,8 @@ router_bulk = APIRouter()  # router dedicated to bulk APIs
 
 BULK_URN_PREFIX_VERSION = "wdms-1"
 BULK_URI_FIELD = "bulkURI"
-
+OPERATION_IDS = {"record_data": "write_record_data",
+                 "chunk_data": "post_chunk_data"}
 
 def _check_df_columns_type(df: pd.DataFrame):
     if any((type(t) is not str for t in df.columns)):
@@ -151,7 +152,7 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('df_render')
-    async def df_render(df, params: GetDataParams, accept: str = None):
+    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None):
         if params.describe:
             return {
                 "numberOfRows": await DataFrameRender.get_size(df),
@@ -165,7 +166,9 @@ class DataFrameRender:
             return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
 
         if MimeTypes.JSON.type in accept:
-            return Response(pdf.to_json(index=True, date_format='iso'), media_type=MimeTypes.JSON.type)
+            return Response(
+                pdf.to_json(index=True, date_format='iso', orient=orient.value), media_type=MimeTypes.JSON.type
+            )
 
         if MimeTypes.CSV.type in accept:
             return Response(pdf.to_csv(), media_type=MimeTypes.CSV.type)
@@ -193,7 +196,7 @@ async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record):
     )
 
 
-@OpenApiHandler.set(operation_id="post_data", request_body=REQUEST_DATA_BODY_SCHEMA)
+@OpenApiHandler.set(operation_id=OPERATION_IDS["record_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
 @router_bulk.post(
     '/{record_id}/data',
     summary='Writes data as a whole bulk, creates a new version.',
@@ -204,7 +207,7 @@ any previous bulk. Previous bulk versions are accessible via the get bulk data v
 Support JSON and Parquet format ('Content_Type' must be set accordingly).
 In case of JSON the orient must be set accordingly. Support http chunked encoding transfer.
 """ + REQUIRED_ROLES_WRITE,
-    operation_id="write_record_data",
+    operation_id=OPERATION_IDS["record_data"],
     responses={
             404: {},
             200: {}
@@ -228,7 +231,7 @@ async def post_data(record_id: str,
     return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record)
 
 
-@OpenApiHandler.set(operation_id="post_chunk_data", request_body=REQUEST_DATA_BODY_SCHEMA)
+@OpenApiHandler.set(operation_id=OPERATION_IDS["chunk_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
 @router_bulk.post(
     "/{record_id}/sessions/{session_id}/data",
     summary="Send a data chunk. Session must be complete/commit once all chunks are sent.",
@@ -237,7 +240,7 @@ async def post_data(record_id: str,
                 "Support JSON and Parquet format ('Content_Type' must be set accordingly). "
                 "In case of JSON the orient must be set accordingly. Support http chunked encoding."
     + REQUIRED_ROLES_WRITE,
-    operation_id="post_chunk_data",
+    operation_id=OPERATION_IDS["chunk_data"],
     responses={400: {"error": "Record not found"}}
 )
 async def post_chunk_data(record_id: str,
@@ -280,6 +283,7 @@ async def get_data_version(
     record_id: str, version: int,
     request: Request,
     ctrl_p: GetDataParams = Depends(),
+    orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
 ):
@@ -302,7 +306,7 @@ async def get_data_version(
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
         df = await DataFrameRender.process_params(df, ctrl_p)
-        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'))
+        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'), orient=orient)
     except BulkError as ex:
         ex.raise_as_http()
 
@@ -329,10 +333,11 @@ async def get_data(
     record_id: str,
     request: Request,
     ctrl_p: GetDataParams = Depends(),
+    orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
 ):
-    return await get_data_version(record_id, None, request, ctrl_p, ctx, dask_blob_storage)
+    return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, dask_blob_storage)
 
 
 @router_bulk.patch(

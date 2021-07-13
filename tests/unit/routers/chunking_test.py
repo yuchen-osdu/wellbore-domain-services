@@ -75,7 +75,7 @@ def _create_df_from_response(response):
     elif content_type == 'text/csv; charset=utf-8':
         return pd.read_csv(f, index_col=0)
     elif content_type == 'application/json':
-        return pd.read_json(f, dtype=True)
+        return pd.read_json(f, dtype=True, orient='split')
     else:
         raise ValueError(f"Unknown content-type: '{content_type}'")
 
@@ -486,7 +486,7 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client, entity_type):
                                                                           (['E'], range(15)),  # overlap both side
                                                                           ])
 
-    data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'Accept': 'application/json'})
+    data_response = client.get(f'{chunking_url}/{record_id}/data?orient=columns', headers={'Accept': 'application/json'})
     assert data_response.status_code == 200
     with_new_col = pd.DataFrame.from_dict(data_response.json())
     assert list(with_new_col.columns) == ['A', 'B', 'C', 'D', 'E', 'MD']

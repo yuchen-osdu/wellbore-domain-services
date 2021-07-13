@@ -87,6 +87,13 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(
             attribute_key=conf.CORRELATION_ID_HEADER_NAME,
             attribute_value=correlation_id)
+    
+        ctx_partition_id = get_or_create_ctx().partition_id
+        partition_id = ctx_partition_id if ctx_partition_id is not None \
+            else request.headers.get(conf.PARTITION_ID_HEADER_NAME)
+        tracer.add_attribute_to_current_span(
+            attribute_key=conf.PARTITION_ID_HEADER_NAME,
+            attribute_value=partition_id)
 
         request_content_type = request.headers.get("Content-type")
         tracer.add_attribute_to_current_span(attribute_key="request.header Content-type",
@@ -95,6 +102,10 @@ class TracingMiddleware(BaseHTTPMiddleware):
         request_content_length = request.headers.get("Content-Length")
         tracer.add_attribute_to_current_span(attribute_key="request.header Content-length",
                                              attribute_value=request_content_length)
+
+        app_id = request.headers.get(conf.APP_ID_HEADER_NAME)
+        tracer.add_attribute_to_current_span(attribute_key=conf.APP_ID_HEADER_NAME,
+                                                 attribute_value=app_id)
 
     @staticmethod
     def _after_request(request: Request, response: Response, tracer):
