@@ -6,6 +6,7 @@ from app.utils import Context
 from .app_injector import AppInjector, AppInjectorModule
 from app.bulk_persistence import resolve_tenant
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from osdu_ibm.storage.dask_storage_parameters import get_dask_storage_parameters as ibm_parameters
 
 
 class IBMInjector(AppInjectorModule):
@@ -25,4 +26,8 @@ class IBMInjector(AppInjectorModule):
 
     @staticmethod
     async def build_ibm_dask_blob_storage() -> DaskBulkStorage:
-        raise NotImplementedError()
+        # raise NotImplementedError()
+        ctx: Context = Context.current()
+        tenant = await resolve_tenant(ctx.partition_id)
+        params = await ibm_parameters(tenant)
+        return await DaskBulkStorage.create(params)
