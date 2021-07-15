@@ -18,26 +18,27 @@ import json
 import time
 from contextlib import suppress
 from functools import wraps
-from logging import getLogger
 from operator import attrgetter
-from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-
 import fsspec
 import pandas as pd
+from pyarrow.lib import ArrowException
+import dask
+import dask.dataframe as dd
+from dask.distributed import Client as DaskDistributedClient, WorkerPlugin
+
+from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
+
 from app.bulk_persistence import BulkId
+from app.bulk_persistence.dask.traces import wrap_trace_process
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
                                              do_merge, set_index,
                                              worker_capture_timing_handlers)
+
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
-from app.utils import capture_timings, get_wdms_temp_dir
-from pyarrow.lib import ArrowException
-
-import dask
-import dask.dataframe as dd
-from dask.distributed import Client as DaskDistributedClient, WorkerPlugin
+from app.utils import capture_timings, get_wdms_temp_dir, get_ctx
 
 dask.config.set({'temporary_directory': get_wdms_temp_dir()})
 
@@ -55,9 +56,12 @@ def handle_pyarrow_exceptions(target):
 
 
 class DefaultWorkerPlugin(WorkerPlugin):
+
     def __init__(self, logger=None, register_fsspec_implementation=None) -> None:
+        self.worker = None
         global _LOGGER
         _LOGGER = logger
+
         self._register_fsspec_implementation = register_fsspec_implementation
         get_logger().debug("WorkerPlugin initialised")
         super().__init__()
@@ -69,8 +73,8 @@ class DefaultWorkerPlugin(WorkerPlugin):
 
     def transition(self, key, start, finish, *args, **kwargs):
         if finish == 'error':
-            exc = self.worker.exceptions[key]
-            getLogger().exception("Task '%s' has failed with exception: %s" % (key, str(exc)))
+            # exc = self.worker.exceptions[key]
+            get_logger().exception(f"Task '{key}' has failed with exception")
 
 
 class DaskBulkStorage:
@@ -84,7 +88,7 @@ class DaskBulkStorage:
         """ use `create` to create instance """
         self._parameters = None
         self._fs = None
-        
+
     @classmethod
     async def create(cls, parameters: DaskStorageParameters, dask_client=None) -> 'DaskBulkStorage':
         instance = cls()
@@ -94,7 +98,7 @@ class DaskBulkStorage:
         async with DaskBulkStorage.lock_client:
             if not DaskBulkStorage.client:
                 DaskBulkStorage.client = dask_client or await DaskDistributedClient(asynchronous=True, processes=True)
-                
+
                 if parameters.register_fsspec_implementation:
                     parameters.register_fsspec_implementation()
 
@@ -103,8 +107,8 @@ class DaskBulkStorage:
                     name="LoggerWorkerPlugin",
                     logger=get_logger(),
                     register_fsspec_implementation=parameters.register_fsspec_implementation)
-                    
-                get_logger().debug(f"dask client initialized : {DaskBulkStorage.client}")
+
+                get_logger().info(f"Distributed Dask client initialized : {DaskBulkStorage.client}")
 
         instance._fs = fsspec.filesystem(parameters.protocol, **parameters.storage_options)
         return instance
@@ -146,9 +150,10 @@ class DaskBulkStorage:
         **kwargs: dict (of dicts) Passthrough key-word arguments for read backend.
         """
         get_logger().debug(f"loading bulk : {path}")
-        return self.client.submit(dd.read_parquet, path, engine='pyarrow-dataset',
-                                  storage_options=self._parameters.storage_options,
-                                  **kwargs)
+        return self._submit_with_trace(dd.read_parquet, path,
+                                       engine='pyarrow-dataset',
+                                       storage_options=self._parameters.storage_options,
+                                       **kwargs)
 
     def _load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version.
@@ -156,7 +161,24 @@ class DaskBulkStorage:
         """
         return self._load(self._get_blob_path(record_id, bulk_id))
 
+    def _submit_with_trace(self, target_func, *args, **kwargs):
+        """
+             Submit given target_func to Distributed Dask workers and add tracing required stuff
+        """
+        kwargs['span_context'] = get_ctx().tracer.span_context
+        kwargs['target_func'] = target_func
+        return self.client.submit(wrap_trace_process, *args, **kwargs)
+
+    def _map_with_trace(self, target_func, *args, **kwargs):
+        """
+             Submit given target_func to Distributed Dask workers and add tracing required stuff
+        """
+        kwargs['span_context'] = get_ctx().tracer.span_context
+        kwargs['target_func'] = target_func
+        return self.client.map(wrap_trace_process, *args, **kwargs)
+
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
+    @with_trace('load_bulk')
     async def load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version."""
         try:
@@ -172,17 +194,19 @@ class DaskBulkStorage:
             we should be able to change or support other format easily ?
             schema={} instead of 'infer' fixes wrong inference for columns of type string starting with nan values
         """
-        return self.client.submit(dd.to_parquet, ddf, path, schema={}, engine='pyarrow',
-                                  storage_options=self._parameters.storage_options)
+        return self._submit_with_trace(dd.to_parquet, ddf, path,
+                                       schema={},
+                                       engine='pyarrow',
+                                       storage_options=self._parameters.storage_options)
 
     def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
         pdf: pd.DataFrame or Future<pd.DataFrame>
         returns a Future<None>
         """
-        return self.client.submit(pdf.to_parquet, path,
-                                  engine='pyarrow',
-                                  storage_options=self._parameters.storage_options)
+        return self._submit_with_trace(pdf.to_parquet, path,
+                                       engine='pyarrow',
+                                       storage_options=self._parameters.storage_options)
 
     def _check_incoming_chunk(self, df):
         # TODO should we test if is_monotonic?, unique ?
@@ -289,13 +313,12 @@ class DaskBulkStorage:
         if not dfs:
             raise BulkNotProcessable("No data to commit")
 
-        dfs = self.client.map(set_index, dfs)
-
+        dfs = self._map_with_trace(set_index, dfs)
         while len(dfs) > 1:
-            dfs = [self.client.submit(do_merge, a, b) for a, b in by_pairs(dfs)]
+            dfs = [self._submit_with_trace(do_merge, a, b) for a, b in by_pairs(dfs)]
 
         return await self.save_blob(dfs[0], record_id=session.recordId)
-	
+
 
 async def make_local_dask_bulk_storage(base_directory: str) -> DaskBulkStorage:
     params = DaskStorageParameters(protocol='file',

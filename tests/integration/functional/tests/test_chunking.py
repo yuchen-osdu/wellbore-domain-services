@@ -43,28 +43,25 @@ def generate_df(columns, index):
     df.columns = columns
     return df
 
+entity_type_dict={
+    "well_log": {"entity": "welllogs", "version": "v3"},
+    "wellbore_trajectory": {"entity": "wellboretrajectories", "version": "v3"},
+    "log": {"entity": "logs", "version": "v2"},
+}
 
-class EntityType(str, Enum):
-    well_log = "welllogs"
-    wellbore_trajectory = "wellboretrajectories"
-    log = "logs"
+def build_base_url(entity_type: str) -> str:
+    return '{{base_url}}/alpha/ddms/' + entity_type_dict[entity_type]["version"] + '/' + entity_type_dict[entity_type]["entity"]
 
-
-def build_base_url(entity_type: EntityType) -> str:
-    if entity_type == 'logs':
-        version = 'v2'
-    else:
-        version = 'v3'
-    return '{{base_url}}/alpha/ddms/' + version + '/' + entity_type.value
-
+def build_base_url_without_dask(entity_type: str) -> str:
+    return '{{base_url}}/ddms/' + entity_type_dict[entity_type]["version"] + '/' + entity_type_dict[entity_type]["entity"]
 
 @contextmanager
-def create_record(env, entity_type: EntityType):
-    if entity_type == EntityType.well_log:
+def create_record(env, entity_type: str):
+    if entity_type == "well_log":
         result = build_request_create_osdu_welllog(False).call(env)
-    elif entity_type == EntityType.wellbore_trajectory:
+    elif entity_type == "wellbore_trajectory":
         result = build_request_create_osdu_wellboretrajectory(False).call(env)
-    elif entity_type == EntityType.log:
+    elif entity_type == "log":
         result = build_request_create_log().call(env)
     else:
         raise RuntimeError()
@@ -79,11 +76,11 @@ def create_record(env, entity_type: EntityType):
     yield record_id
 
     # actually
-    if entity_type == EntityType.well_log:
+    if entity_type == "well_log":
         build_request_delete_osdu_welllog(record_id).call(env)
-    elif entity_type == EntityType.wellbore_trajectory:
+    elif entity_type == "wellbore_trajectory":
         build_request_delete_osdu_wellboretrajectory(record_id).call(env)
-    elif entity_type == EntityType.log:
+    elif entity_type == "log":
         env.set('log_record_id', record_id)
         build_request_delete_log().call(env)
 
@@ -107,29 +104,33 @@ def build_request(name, method, url, *, payload=None, headers=None) -> RequestRu
     return RequestRunner(rq_proto)
 
 
-def build_request_post_data(entity_type: EntityType, record_id: str, payload) -> RequestRunner:
+def build_request_post_data(entity_type: str, record_id: str, payload) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
+def build_request_post_data_without_dask(entity_type: str, record_id: str, payload) -> RequestRunner:
+    url = build_base_url_without_dask(entity_type) + f'/{record_id}/data'
+    return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
-def build_request_post_chunk(entity_type: EntityType, record_id: str, session_id: str, payload) -> RequestRunner:
+def build_request_post_chunk(entity_type: str, record_id: str, session_id: str, payload) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
-
-def build_request_get_data(entity_type: EntityType, record_id: str) -> RequestRunner:
+def build_request_get_data(entity_type: str, record_id: str, filters=None) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/data'
+    if filters:
+        url = url + '?' + '&'.join(f'{k}={v}' for k, v in filters.items())
     return build_request(f'{entity_type} get data', 'GET', url)
 
 
-def create_session(env, entity_type: EntityType, record_id: str, overwrite: bool) -> str:
+def create_session(env, entity_type: str, record_id: str, overwrite: bool) -> str:
     url = build_base_url(entity_type) + f'/{record_id}/sessions'
     runner = build_request(f'create {entity_type} session', 'POST', url,
                            payload={'mode': 'overwrite' if overwrite else 'update'})
     return runner.call(env, assert_status=200, headers={"Content-Type": "application/json"}).get_response_obj().id
 
 
-def complete_session(env, entity_type: EntityType, record_id: str, session_id: str, commit: bool):
+def complete_session(env, entity_type: str, record_id: str, session_id: str, commit: bool):
     state = "commit" if commit else "abandon"
     url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}'
     runner = build_request(f'{state} session', 'PATCH', url, payload={'state': state})
@@ -151,10 +152,8 @@ class ParquetSerializer:
 class JsonSerializer:
     mime_type = 'application/json'
 
-    # TODO There's an inconsistency in service, cannot specify orient in json and default is 'columns'
-    #  (which different from legacy which is 'split')
     def read(self, json_content):
-        return pd.read_json(json_content, orient='columns')
+        return pd.read_json(json_content, orient='split')
 
     def dump(self, df):
         return df.to_json(orient='split')
@@ -164,10 +163,9 @@ WELLLOG_URL_PREFIX = 'alpha/ddms/v3/welllogs'
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory, EntityType.log])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
-
     with create_record(with_wdms_env, entity_type) as record_id:
         data = generate_df(['MD', 'X'], range(8))
         data_to_send = serializer.dump(data)
@@ -181,7 +179,7 @@ def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory, EntityType.log])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_with_session_commit(with_wdms_env, entity_type, serializer):
 
@@ -215,7 +213,7 @@ def test_send_one_chunk_with_session_commit(with_wdms_env, entity_type, serializ
 @pytest.mark.parametrize("shuffle", [False])  # [False, True]
 def test_send_multiple_chunks_with_session_commit(with_wdms_env, shuffle):
     # well log on parquet
-    entity_type = EntityType.well_log
+    entity_type = "well_log"
     serializer = ParquetSerializer()
 
     with create_record(with_wdms_env, entity_type) as record_id:
@@ -259,7 +257,7 @@ def test_send_multiple_chunks_with_session_commit(with_wdms_env, shuffle):
 @pytest.mark.tag('chunking', 'smoke')
 def test_get_data_with_offset_filter(with_wdms_env):
     # well log on parquet
-    entity_type = EntityType.well_log
+    entity_type = "well_log"
     serializer = ParquetSerializer()
 
     with create_record(with_wdms_env, entity_type) as record_id:
@@ -298,7 +296,7 @@ def test_get_data_with_offset_filter(with_wdms_env):
 @pytest.mark.tag('chunking', 'smoke')
 def test_get_data_with_column_filter(with_wdms_env):
     # well log on parquet
-    entity_type = EntityType.well_log
+    entity_type = "well_log"
     serializer = ParquetSerializer()
 
     with create_record(with_wdms_env, entity_type) as record_id:
@@ -331,7 +329,7 @@ def test_get_data_with_column_filter(with_wdms_env):
 @pytest.mark.tag('chunking', 'smoke')
 def test_get_data_with_limit_filter(with_wdms_env):
     # well log on parquet
-    entity_type = EntityType.well_log
+    entity_type = "well_log"
     serializer = ParquetSerializer()
 
     with create_record(with_wdms_env, entity_type) as record_id:
@@ -366,7 +364,7 @@ def test_get_data_with_limit_filter(with_wdms_env):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory, EntityType.log])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
     serializer = ParquetSerializer()
 
@@ -394,7 +392,7 @@ def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
 
@@ -431,7 +429,7 @@ def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, enti
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', [EntityType.well_log, EntityType.wellbore_trajectory])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
 
@@ -471,3 +469,34 @@ def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_
             pd.testing.assert_frame_equal(
                 expected, serializer.read(result.response.content), check_dtype=False)
             # check type set to false since in Json dType is lost so int32 can become int64
+
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', ["log"])
+@pytest.mark.parametrize('serializer', [JsonSerializer()])
+def test_get_data_from_record_data_without_dask(with_wdms_env, entity_type, serializer):
+    with create_record(with_wdms_env, entity_type) as record_id:
+        data = generate_df(['MD', 'X'], range(8))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        build_request_post_data_without_dask(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+        result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
+        # check type set to false since in Json dType is lost so int32 can become int64
+
+        result = build_request_get_data(entity_type, record_id, filters={'curves': 'MD'}).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data[['MD']], serializer.read(result.response.content), check_dtype=False)
+
+        result = build_request_get_data(entity_type, record_id, filters={'limit': 5}).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data[:5], serializer.read(result.response.content), check_dtype=False)
+
+        result = build_request_get_data(entity_type, record_id, filters={'offset': 4}).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data[4:], serializer.read(result.response.content), check_dtype=False)
+
+        result = build_request_get_data(entity_type, record_id,
+                                        filters={'curves': 'X', 'offset': 2, 'limit': 5}
+                                        ).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data[['X']][2:7], serializer.read(result.response.content), check_dtype=False)

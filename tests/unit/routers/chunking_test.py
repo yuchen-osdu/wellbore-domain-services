@@ -1,13 +1,13 @@
 import io
-
-from app.bulk_persistence.dask.errors import BulkNotFound
-from tests.unit.test_utils import nope_logger_fixture
-
 from tempfile import TemporaryDirectory
 
 from fastapi import Header
 from fastapi.testclient import TestClient
 import pytest
+import numpy as np
+import pandas as pd
+import pyarrow.parquet as pq
+import pyarrow as pa
 
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -23,8 +23,8 @@ from app.helper import traces
 from app.utils import Context
 from app import conf
 
-import pandas as pd
 from tests.unit.persistence.dask_blob_storage_test import generate_df
+from tests.unit.test_utils import nope_logger_fixture
 
 
 Definitions = {
@@ -64,6 +64,7 @@ Definitions = {
 
 EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log']
 
+
 def _create_df_from_response(response):
     f = io.BytesIO(response.content)
     f.seek(0)
@@ -74,7 +75,7 @@ def _create_df_from_response(response):
     elif content_type == 'text/csv; charset=utf-8':
         return pd.read_csv(f, index_col=0)
     elif content_type == 'application/json':
-        return pd.read_json(f, dtype=True)
+        return pd.read_json(f, dtype=True, orient='split')
     else:
         raise ValueError(f"Unknown content-type: '{content_type}'")
 
@@ -118,12 +119,12 @@ def _cast_datetime_to_datetime64_ns(result_df):
     for name, col in result_df.items():
         if name.startswith('date'):
             result_df[name] = result_df[name].astype('datetime64[ns]')
-            
+
     return result_df
 
 
 @pytest.fixture
-def bob(nope_logger_fixture, monkeypatch):
+def init_fixtures(nope_logger_fixture, monkeypatch):
     with TemporaryDirectory() as tmp_dir:
         monkeypatch.setenv(name='USE_LOCALFS_BLOB_STORAGE_WITH_PATH', value=tmp_dir)
         conf.Config = conf.ConfigurationContainer.with_load_all()
@@ -131,7 +132,7 @@ def bob(nope_logger_fixture, monkeypatch):
 
 
 @pytest.fixture
-def setup_client(nope_logger_fixture, bob):
+def setup_client(init_fixtures):
     from app.wdms_app import wdms_app, enable_alpha_feature
     from app.wdms_app import app_injector
 
@@ -181,7 +182,6 @@ def setup_client(nope_logger_fixture, bob):
 ])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    # 'text/csv; charset=utf-8',
     'application/json',
 ])
 @pytest.mark.parametrize("columns", [
@@ -246,11 +246,11 @@ def test_send_all_data_once(setup_client,
     ['MD', 'float_X', 'str_X', 'date_X']
 ])
 def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
-                            entity_type,
-                            columns,
-                            content_type_header,
-                            create_func,
-                            accept_content):
+                                                     entity_type,
+                                                     columns,
+                                                     content_type_header,
+                                                     create_func,
+                                                     accept_content):
     client, tmp_dir = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -303,8 +303,8 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
 
     # BELOW test cases FAIL with UPDATE mode:
     # => If adding new column Date/String not starting at first index AND override an existing column
-    #['MD', 'date_X'],
-    #['MD', 'float_X', 'str_X', 'date_X'],
+    # ['MD', 'date_X'],
+    # ['MD', 'float_X', 'str_X', 'date_X'],
 ])
 @pytest.mark.parametrize("session_mode", [
     'overwrite',
@@ -480,13 +480,13 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client, entity_type):
     chunking_url = Definitions[entity_type]['chunking_url']
 
     _create_chunks(client, entity_type, record_id=record_id, cols_ranges=[(['MD', 'A'], range(5, 10)),
-                                                             (['B'], range(8)),  # overlap left side
-                                                             (['C'], range(8, 15)),  # overlap left side
-                                                             (['D'], range(6, 8)),  # within
-                                                             (['E'], range(15)),  # overlap both side
-                                                             ])
+                                                                          (['B'], range(8)),  # overlap left side
+                                                                          (['C'], range(8, 15)),  # overlap left side
+                                                                          (['D'], range(6, 8)),  # within
+                                                                          (['E'], range(15)),  # overlap both side
+                                                                          ])
 
-    data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'Accept': 'application/json'})
+    data_response = client.get(f'{chunking_url}/{record_id}/data?orient=columns', headers={'Accept': 'application/json'})
     assert data_response.status_code == 200
     with_new_col = pd.DataFrame.from_dict(data_response.json())
     assert list(with_new_col.columns) == ['A', 'B', 'C', 'D', 'E', 'MD']
@@ -618,7 +618,7 @@ def test_creates_two_sessions_one_record_with_chunks_different_format(setup_clie
 
     _create_chunks(client, entity_type, record_id=record_id, data_format='json', cols_ranges=[(['X'], range(5, 20))])
     _create_chunks(client, entity_type, record_id=record_id, data_format='parquet', cols_ranges=[(['Y'], range(5, 20)),
-                                                                                    (['Z'], range(5, 20))])
+                                                                                                 (['Z'], range(5, 20))])
     data_response = client.get(f'{chunking_url}/{record_id}/data')
     assert data_response.status_code == 200
     df = _create_df_from_response(data_response)
@@ -634,7 +634,7 @@ def test_creates_two_sessions_two_record_with_chunks(setup_client, entity_type):
 
     _create_chunks(client, entity_type, record_id=record_id, cols_ranges=[(['X'], range(5, 20))])
     _create_chunks(client, entity_type, record_id=another_record_id, cols_ranges=[(['Y'], range(0, 10)),
-                                                                     (['Z'], range(5, 10))])
+                                                                                  (['Z'], range(5, 10))])
     data_response = client.get(f'{chunking_url}/{record_id}/data')
     assert data_response.status_code == 200
     df = _create_df_from_response(data_response)
@@ -674,6 +674,53 @@ def test_session_sent_same_col_different_types(setup_client, entity_type):
 
     commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
     assert commit_response.status_code == 422
+
+
+def _df_to_pyarrow_parquet(df_data: pd.DataFrame):
+    """ Return a buffer containing parquet format file from the given dataframe """
+
+    table = pa.Table.from_pandas(df=df_data)
+    buf = pa.BufferOutputStream()
+    pq.write_table(table, buf)
+    return buf.getvalue().to_pybytes()
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+@pytest.mark.parametrize("columns_type", [
+    [int(42), float(-42)],
+    [int(42), float(-42), str('forty two')]
+])
+@pytest.mark.parametrize("content_type_header,create_func", [
+    ('application/x-parquet', lambda df: _df_to_pyarrow_parquet(df)),
+    ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
+])
+def test_session_chunk_int(setup_client, entity_type, content_type_header, create_func, columns_type):
+    client, _ = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    json_data = {t: np.random.rand(10) for t in columns_type}
+    df_data = pd.DataFrame(json_data)
+    data_to_send = create_func(df_data)
+
+    headers = {'content-type': content_type_header}
+
+    expected_code = 422
+    if content_type_header.endswith('parquet') and any((type(c) is str for c in columns_type)):
+        # there is a side effect with parquet format, if at least one col is str, then all cols are casted into str
+        expected_code = 200
+
+    write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
+    assert write_response.status_code == expected_code
+
+    session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert session_response.status_code == 200
+    session_id = session_response.json()['id']
+
+    chunk_response_1 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   data=data_to_send,
+                                   headers=headers)
+    assert chunk_response_1.status_code == expected_code
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests

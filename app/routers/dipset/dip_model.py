@@ -48,9 +48,7 @@ class Dip(BaseModel):
     quality: Optional[ValueWithUnit] = Field(
         None,
         title="Quality of the dip",
-        description="Decimal number between 0 and 1",
-        exclusiveMinimum=0,
-        exclusiveMaximum=1,
+        description="Decimal number between 0 and 1"
     )
     xCoordinate: Optional[ValueWithUnit] = Field(
         None, title="The X coordinate of the dip", description="Only meter unit is supported for the moment"
