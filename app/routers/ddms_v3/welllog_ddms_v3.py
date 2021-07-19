@@ -24,7 +24,7 @@ from odes_storage.models import (CreateUpdateRecordsResponse, List,
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import from_record, to_record
-from app.model.osdu_model import WellLog
+from app.model.osdu_model import WellLog110 as WellLog
 
 from app.utils import Context, get_ctx, load_schema_example
 

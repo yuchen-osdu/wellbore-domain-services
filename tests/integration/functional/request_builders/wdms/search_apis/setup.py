@@ -251,7 +251,8 @@ def build_request_seach_tests_setup_create_osdu_welllogs() -> RequestRunner:
           "VerticalReferenceID": "Example VerticalReferenceID",
           "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"    
     }
-  }], 
+  }]
+  }, 
   "meta": [
     {
       "kind": "Unit", 
@@ -278,7 +279,6 @@ def build_request_seach_tests_setup_create_osdu_welllogs() -> RequestRunner:
       ]
     }
   ]
-}
 }
 ]
 """
