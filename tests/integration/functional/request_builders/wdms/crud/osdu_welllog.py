@@ -360,7 +360,6 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True) -> RequestRunner:
     "ActivityType": "Example ActivityType",
     "DrillingFluidProperty": "Example DrillingFluidProperty",
     "HoleTypeLogging": "OPENHOLE",
-    "VerticalMeasurementID": "Example VerticalMeasurementID",
         "VerticalMeasurement": {
           "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
           "VerticalMeasurement": 12345.6,
@@ -374,6 +373,10 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True) -> RequestRunner:
           "VerticalReferenceID": "Example VerticalReferenceID",
           "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
     },
+    "IsRegular": true,
+    "SamplingStart": 12345.6,
+    "SamplingStop": 12345.6,
+    "ReferenceCurveID": "Example CurveID",    
     "Curves": [
       {
         "CurveID": "Example CurveID",
@@ -383,11 +386,7 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True) -> RequestRunner:
         "InterpreterName": "Example InterpreterName",
         "IsProcessed": true,
         "NullValue": true,
-        "DepthCoding": "REGULAR",
         "Interpolate": true,
-        "TopDepth": 12345.6,
-        "BaseDepth": 12345.6,
-        "DepthUnit": "namespace:reference-data--UnitOfMeasure:m:",
         "CurveUnit": "namespace:reference-data--UnitOfMeasure:m:",
         "Mnemonic": "Example Mnemonic",
         "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
@@ -406,7 +405,7 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True) -> RequestRunner:
 
 def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
     ref = {
-  "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
+  "kind": "osdu:wks:work-product-component--WellLog:1.1.0",
   "acl": {
     "owners": [
       "someone@company.com"
@@ -688,7 +687,6 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
     "ActivityType": "Example ActivityType",
     "DrillingFluidProperty": "Example DrillingFluidProperty",
     "HoleTypeLogging": "OPENHOLE",
-    "VerticalMeasurementID": "Example VerticalMeasurementID",
     "VerticalMeasurement": {
         "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
         "VerticalMeasurement": 12345.6,
@@ -700,8 +698,12 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
         "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
         "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
         "VerticalReferenceID": "Example VerticalReferenceID",
-        "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+        "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
     },
+    "IsRegular": True,
+    "SamplingStart": 12345.6,
+    "SamplingStop": 12345.6,
+    "ReferenceCurveID": "Example CurveID",
     "Curves": [
       {
         "CurveID": "Example CurveID",
@@ -711,11 +713,7 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
         "InterpreterName": "Example InterpreterName",
         "IsProcessed": True,
         "NullValue": True,
-        "DepthCoding": "REGULAR",
         "Interpolate": True,
-        "TopDepth": 12345.6,
-        "BaseDepth": 12345.6,
-        "DepthUnit": "namespace:reference-data--UnitOfMeasure:m:",
         "CurveUnit": "namespace:reference-data--UnitOfMeasure:m:",
         "Mnemonic": "Example Mnemonic",
         "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
@@ -733,7 +731,7 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
     del ref["modifyUser"]
     del ref["modifyTime"]
     # Add mandatory fields
-    ref["kind"] = "{{authorityKind}}:wks:master-data--WellLog:1.0.0"
+    ref["kind"] = "{{authorityKind}}:wks:master-data--WellLog:1.1.0"
     ref["acl"] = {
         "owners": ["{{acl_owner}}"],
         "viewers": ["{{acl_viewer}}"],
