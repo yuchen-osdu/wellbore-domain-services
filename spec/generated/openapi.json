@@ -608,6 +608,34 @@
         "title": "Artefact",
         "type": "object"
       },
+      "AvailableTrajectoryStationProperty": {
+        "additionalProperties": false,
+        "description": "A set of properties describing a trajectory station property which is available for this instance of a WellboreTrajectory.",
+        "properties": {
+          "Name": {
+            "description": "The name of the curve (e.g. column in a CSV document) as originally found. If absent The name of the TrajectoryCurveType is intended to be used.",
+            "example": "AzimuthTN",
+            "title": "Name",
+            "type": "string"
+          },
+          "StationPropertyUnitID": {
+            "description": "Unit of Measure for the station properties of type TrajectoryStationPropertyType.",
+            "example": "partition-id:reference-data--UnitOfMeasure:dega:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Station Property Unit ID",
+            "type": "string"
+          },
+          "TrajectoryStationPropertyTypeID": {
+            "description": "The reference to a trajectory station property type - of if interpreted as channels, the curve or channel name type, identifying e.g. MD, Inclination, Azimuth. This is a relationship to a reference-data--TrajectoryStationPropertyType record id.",
+            "example": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TrajectoryStationPropertyType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Trajectory Station Property Type ID",
+            "type": "string"
+          }
+        },
+        "title": "AvailableTrajectoryStationProperty",
+        "type": "object"
+      },
       "Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post": {
         "properties": {
           "points": {
@@ -4969,7 +4997,7 @@
         ],
         "title": "WellboreStatus"
       },
-      "WellboreTrajectory": {
+      "WellboreTrajectory110": {
         "additionalProperties": false,
         "description": "Work Product Component describing an individual instance of a wellbore trajectory data object. Also called a deviation survey, wellbore trajectory is data that is used to calculate the position and spatial uncertainty of a planned or actual wellbore in 2-dimensional and 3-dimensional space.",
         "properties": {
@@ -5005,7 +5033,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellboreTrajectoryData"
+            "$ref": "#/components/schemas/WellboreTrajectoryData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5016,7 +5044,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
+            "example": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5072,10 +5100,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellboreTrajectory",
+        "title": "WellboreTrajectory110",
         "type": "object"
       },
-      "WellboreTrajectoryData": {
+      "WellboreTrajectoryData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -5095,6 +5123,14 @@
             "title": "Active Survey Indicator",
             "type": "boolean"
           },
+          "AppliedOperations": {
+            "description": "The audit trail of operations applied to the station coordinates from the original state to the current state. The list may contain operations applied prior to ingestion as well as the operations applied to produce the Wgs84Coordinates. The text elements refer to ESRI style CRS and Transformation names, which may have to be translated to EPSG standard names.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Applied Operations",
+            "type": "array"
+          },
           "Artefacts": {
             "description": "An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly",
             "items": {
@@ -5109,6 +5145,14 @@
               "type": "string"
             },
             "title": "Authorids",
+            "type": "array"
+          },
+          "AvailableTrajectoryStationProperties": {
+            "description": "The array of TrajectoryStationProperty definitions describing the available properties for this instance of WellboreTrajectory.",
+            "items": {
+              "$ref": "#/components/schemas/AvailableTrajectoryStationProperty"
+            },
+            "title": "Available Trajectory Station Properties",
             "type": "array"
           },
           "AzimuthReferenceType": {
@@ -5134,6 +5178,12 @@
             "description": "Calculation Method Type used to compute the TVD, X OFFSET, Y OFFSET and DOG LEG SEVERITY values for this Directional Survey. For example, Radius of Curvature, Minimum Curvature, Balanced Tangential, etc.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CalculationMethodType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Calculation Method Type",
+            "type": "string"
+          },
+          "CompanyID": {
+            "description": "The relationship to company who engaged the service company (ServiceCompanyID) to perform the surveying.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Company ID",
             "type": "string"
           },
           "CreationDateTime": {
@@ -5285,6 +5335,7 @@
           },
           "SurveyToolTypeID": {
             "description": "The type of tool or equipment used to acquire this Directional Survey.  For example, gyroscopic, magnetic, MWD, TOTCO, acid bottle, etc. Follow OWSG reference data and support the ISCWSA survey tool definitions.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-SurveyToolType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Type of the Survey Tool",
             "type": "string"
           },
@@ -5338,7 +5389,7 @@
           "BaseDepthMeasuredDepth",
           "VerticalMeasurement"
         ],
-        "title": "WellboreTrajectoryData",
+        "title": "WellboreTrajectoryData110",
         "type": "object"
       },
       "WellboreType": {
@@ -16730,7 +16781,7 @@
             "application/json": {
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 },
                 "title": "Wellboretrajectories",
                 "type": "array"
@@ -17595,7 +17646,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 }
               }
             },
@@ -17730,7 +17781,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 }
               }
             },

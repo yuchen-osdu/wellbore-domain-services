@@ -281,7 +281,7 @@
       "GeographicCRSID": "namespace:reference-data--CoordinateReferenceSystem:GeodeticCRS.EPSG.4326:",
       "AcquisitionRemark": "Example Survey Remark",
       "SurveyReferenceIdentifier": "Example Survey Reference Identifier",
-      "SurveyToolTypeID": "Example Type of the Survey Tool",
+      "SurveyToolTypeID": "namespace:reference-data--SurveyToolType:exampletooltype:",
       "SurveyVersion": "Example Survey Version",
       "ExtrapolatedMeasuredDepth": 12345.6,
       "BaseDepthMeasuredDepth": 12345.6,
@@ -1445,7 +1445,7 @@
       "iIPnJblT:reference-data--OSDURegion:ksoc:18618740",
       "kki7jjjiy:reference-data--OSDURegion:l1jIn:68929"
     ],
-    "SurveyToolTypeID": "sit nostrud",
+    "SurveyToolTypeID": "namespace:reference-data--SurveyToolType:exampletooltype:",
     "ServiceCompanyID": "QntSR6-:master-data--Organisation:A:83536"
   },
   "modifyTime": "1986-09-19T06:42:59.62Z",
