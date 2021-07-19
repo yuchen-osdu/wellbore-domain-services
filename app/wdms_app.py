@@ -206,10 +206,6 @@ wdms_app.include_router(search_v3.router, prefix='/ddms/v3', tags=['search v3'],
 wdms_app.include_router(fast_search_v3.router, prefix='/ddms/v3', tags=['fast-search v3'],
                         dependencies=basic_dependencies)
 
-wdms_app.include_router(log_recognition.router, prefix='/log-recognition',
-                        tags=['log-recognition'],
-                        dependencies=basic_dependencies)
-
 alpha_tags = ['ALPHA feature: bulk data chunking']
 
 for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, alpha_tags, False),
