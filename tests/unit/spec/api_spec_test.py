@@ -20,13 +20,14 @@ The updated spec file must then be committed with the latest changes.
 
 OPENAPI_PATH = 'spec/generated/openapi.json'
 
-from fastapi.testclient import TestClient
 import pytest
-from app.wdms_app import wdms_app
-from app.helper import traces
-from tests.unit.test_utils import ctx_fixture
-
 import rapidjson as json
+from tests.unit.test_utils import ctx_fixture
+from fastapi.testclient import TestClient
+from openapi_spec_validator import validate_spec
+
+from app.helper import traces
+from app.wdms_app import wdms_app
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
@@ -38,11 +39,15 @@ def client(ctx_fixture):
     wdms_app.dependency_overrides = {}
 
 
-def test_api_spec(client):
+@pytest.fixture
+def openapi_json(client):
     # get the openapi spec
     response = client.get("/openapi.json")
     assert response.status_code == 200
-    openapi_json = response.json()
+    yield response.json()
+
+
+def test_api_spec(openapi_json):
     openapi_text = json.dumps(openapi_json, sort_keys=True, indent=2)
     # get the saved spec
     with open(OPENAPI_PATH, 'r') as specfile:
@@ -55,3 +60,25 @@ def test_api_spec(client):
             specfile.write(openapi_text)
         # assert error
         assert False, f"{OPENAPI_PATH} has changed, commit the updated file"
+
+
+def test_api_spec_for_duplicates(openapi_json):
+    # Check operationId for all paths are different
+    # structure is
+    # root
+    #   + paths
+    #       + url for instance "/alpha/ddms/v2/logs/{record_id}/data"
+    #           + method for instance get, post, ...
+    #               + operationId
+    path_dict = openapi_json.get("paths", None)
+    operation_id_set = set()
+    assert path_dict is not None
+    for url, url_dict in path_dict.items():
+        for method, method_dict in url_dict.items():
+            operation_id = method_dict.get("operationId", None)
+            assert operation_id not in operation_id_set, f"{method}:{url} {operation_id} already defined"
+            operation_id_set.add(operation_id)
+
+
+def test_open_api_validity(openapi_json):
+    validate_spec(openapi_json)

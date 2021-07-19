@@ -608,6 +608,34 @@
         "title": "Artefact",
         "type": "object"
       },
+      "AvailableTrajectoryStationProperty": {
+        "additionalProperties": false,
+        "description": "A set of properties describing a trajectory station property which is available for this instance of a WellboreTrajectory.",
+        "properties": {
+          "Name": {
+            "description": "The name of the curve (e.g. column in a CSV document) as originally found. If absent The name of the TrajectoryCurveType is intended to be used.",
+            "example": "AzimuthTN",
+            "title": "Name",
+            "type": "string"
+          },
+          "StationPropertyUnitID": {
+            "description": "Unit of Measure for the station properties of type TrajectoryStationPropertyType.",
+            "example": "partition-id:reference-data--UnitOfMeasure:dega:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Station Property Unit ID",
+            "type": "string"
+          },
+          "TrajectoryStationPropertyTypeID": {
+            "description": "The reference to a trajectory station property type - of if interpreted as channels, the curve or channel name type, identifying e.g. MD, Inclination, Azimuth. This is a relationship to a reference-data--TrajectoryStationPropertyType record id.",
+            "example": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TrajectoryStationPropertyType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Trajectory Station Property Type ID",
+            "type": "string"
+          }
+        },
+        "title": "AvailableTrajectoryStationProperty",
+        "type": "object"
+      },
       "Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post": {
         "properties": {
           "points": {
@@ -1172,8 +1200,6 @@
               }
             ],
             "description": "Decimal number between 0 and 1",
-            "exclusiveMaximum": 1.0,
-            "exclusiveMinimum": 0.0,
             "title": "Quality of the dip"
           },
           "reference": {
@@ -2184,18 +2210,23 @@
             "type": "object"
           },
           {
-            "properties": {},
-            "title": "IndexFormat",
-            "type": "object"
-          },
-          {
-            "properties": {},
+            "additionalProperties": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "type": "object"
+            },
             "title": "ColumnFormat",
-            "type": "object"
-          },
-          {
-            "properties": {},
-            "title": "RecordsFormat",
             "type": "object"
           }
         ]
@@ -2302,18 +2333,23 @@
             "type": "object"
           },
           {
-            "properties": {},
-            "title": "IndexFormat",
-            "type": "object"
-          },
-          {
-            "properties": {},
+            "additionalProperties": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "type": "object"
+            },
             "title": "ColumnFormat",
-            "type": "object"
-          },
-          {
-            "properties": {},
-            "title": "RecordsFormat",
             "type": "object"
           }
         ]
@@ -2386,9 +2422,7 @@
         "description": "An enumeration.",
         "enum": [
           "split",
-          "index",
-          "columns",
-          "records"
+          "columns"
         ],
         "title": "JSONOrient",
         "type": "string"
@@ -4963,7 +4997,7 @@
         ],
         "title": "WellboreStatus"
       },
-      "WellboreTrajectory": {
+      "WellboreTrajectory110": {
         "additionalProperties": false,
         "description": "Work Product Component describing an individual instance of a wellbore trajectory data object. Also called a deviation survey, wellbore trajectory is data that is used to calculate the position and spatial uncertainty of a planned or actual wellbore in 2-dimensional and 3-dimensional space.",
         "properties": {
@@ -4999,7 +5033,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellboreTrajectoryData"
+            "$ref": "#/components/schemas/WellboreTrajectoryData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5010,7 +5044,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
+            "example": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5066,10 +5100,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellboreTrajectory",
+        "title": "WellboreTrajectory110",
         "type": "object"
       },
-      "WellboreTrajectoryData": {
+      "WellboreTrajectoryData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -5089,6 +5123,14 @@
             "title": "Active Survey Indicator",
             "type": "boolean"
           },
+          "AppliedOperations": {
+            "description": "The audit trail of operations applied to the station coordinates from the original state to the current state. The list may contain operations applied prior to ingestion as well as the operations applied to produce the Wgs84Coordinates. The text elements refer to ESRI style CRS and Transformation names, which may have to be translated to EPSG standard names.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Applied Operations",
+            "type": "array"
+          },
           "Artefacts": {
             "description": "An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly",
             "items": {
@@ -5103,6 +5145,14 @@
               "type": "string"
             },
             "title": "Authorids",
+            "type": "array"
+          },
+          "AvailableTrajectoryStationProperties": {
+            "description": "The array of TrajectoryStationProperty definitions describing the available properties for this instance of WellboreTrajectory.",
+            "items": {
+              "$ref": "#/components/schemas/AvailableTrajectoryStationProperty"
+            },
+            "title": "Available Trajectory Station Properties",
             "type": "array"
           },
           "AzimuthReferenceType": {
@@ -5128,6 +5178,12 @@
             "description": "Calculation Method Type used to compute the TVD, X OFFSET, Y OFFSET and DOG LEG SEVERITY values for this Directional Survey. For example, Radius of Curvature, Minimum Curvature, Balanced Tangential, etc.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CalculationMethodType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Calculation Method Type",
+            "type": "string"
+          },
+          "CompanyID": {
+            "description": "The relationship to company who engaged the service company (ServiceCompanyID) to perform the surveying.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Company ID",
             "type": "string"
           },
           "CreationDateTime": {
@@ -5279,6 +5335,7 @@
           },
           "SurveyToolTypeID": {
             "description": "The type of tool or equipment used to acquire this Directional Survey.  For example, gyroscopic, magnetic, MWD, TOTCO, acid bottle, etc. Follow OWSG reference data and support the ISCWSA survey tool definitions.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-SurveyToolType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Type of the Survey Tool",
             "type": "string"
           },
@@ -5332,7 +5389,7 @@
           "BaseDepthMeasuredDepth",
           "VerticalMeasurement"
         ],
-        "title": "WellboreTrajectoryData",
+        "title": "WellboreTrajectoryData110",
         "type": "object"
       },
       "WellboreType": {
@@ -8404,6 +8461,21 @@
             }
           },
           {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
             "description": "identifier of the data partition to query",
             "in": "header",
             "name": "data-partition-id",
@@ -8453,7 +8525,7 @@
       },
       "post": {
         "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "write_record_data",
+        "operationId": "post_data_alpha_ddms_v2_logs__record_id__data_post",
         "parameters": [
           {
             "in": "path",
@@ -8492,6 +8564,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              }
+            },
+            "application/x-parquet": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -8803,7 +8892,7 @@
     "/alpha/ddms/v2/logs/{record_id}/sessions/{session_id}/data": {
       "post": {
         "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "post_chunk_data",
+        "operationId": "post_chunk_data_alpha_ddms_v2_logs__record_id__sessions__session_id__data_post",
         "parameters": [
           {
             "in": "path",
@@ -8851,6 +8940,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              }
+            },
+            "application/x-parquet": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -8960,181 +9066,6 @@
             }
           },
           {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              },
-              "application/x-parquet": {},
-              "text/csv": {}
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Returns data of the specified version.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/wellboretrajectories/{record_id}/data": {
-      "get": {
-        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
-        "operationId": "get_data_alpha_ddms_v3_wellboretrajectories__record_id__data_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "The number of rows that are to be skipped and not included in the result.",
-            "example": 5,
-            "in": "query",
-            "name": "offset",
-            "required": false,
-            "schema": {
-              "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
-              "title": "Offset",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "The maximum number of rows to be returned.",
-            "example": 100,
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
-              "title": "Limit",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "Filters curves. List of curves to be returned.",
-            "example": "MD,GR",
-            "in": "query",
-            "name": "curves",
-            "required": false,
-            "schema": {
-              "description": "Filters curves. List of curves to be returned.",
-              "title": "Curves",
-              "type": "string"
-            }
-          },
-          {
-            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-            "example": "false",
-            "in": "query",
-            "name": "describe",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-              "title": "Describe",
-              "type": "boolean"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              },
-              "application/x-parquet": {},
-              "text/csv": {}
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Returns the data according to the specified query parameters.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      },
-      "post": {
-        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "write_record_data",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -9147,1173 +9078,6 @@
               ],
               "default": "split",
               "description": "format for JSON only."
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Writes data as a whole bulk, creates a new version.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/wellboretrajectories/{record_id}/sessions": {
-      "get": {
-        "operationId": "list_session_alpha_ddms_v3_wellboretrajectories__record_id__sessions_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Session"
-                  },
-                  "title": "Response List Session Alpha Ddms V3 Wellboretrajectories  Record Id  Sessions Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "list session of the given record.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      },
-      "post": {
-        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
-        "operationId": "create_session_alpha_ddms_v3_wellboretrajectories__record_id__sessions_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateDataSessionRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Create a new session on the given record for writing bulk data.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}": {
-      "get": {
-        "operationId": "get_session_alpha_ddms_v3_wellboretrajectories__record_id__sessions__session_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "session_id",
-            "required": true,
-            "schema": {
-              "title": "Session Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "get session.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      },
-      "patch": {
-        "operationId": "complete_session_alpha_ddms_v3_wellboretrajectories__record_id__sessions__session_id__patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "session_id",
-            "required": true,
-            "schema": {
-              "title": "Session Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSessionState"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Update a session, either commit or abandon.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data": {
-      "post": {
-        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "post_chunk_data",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "session_id",
-            "required": true,
-            "schema": {
-              "title": "Session Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Send a data chunk. Session must be complete/commit once all chunks are sent.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/wellboretrajectories/{record_id}/versions/{version}/data": {
-      "get": {
-        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
-        "operationId": "get_data_version_alpha_ddms_v3_wellboretrajectories__record_id__versions__version__data_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "title": "Version",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "The number of rows that are to be skipped and not included in the result.",
-            "example": 5,
-            "in": "query",
-            "name": "offset",
-            "required": false,
-            "schema": {
-              "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
-              "title": "Offset",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "The maximum number of rows to be returned.",
-            "example": 100,
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
-              "title": "Limit",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "Filters curves. List of curves to be returned.",
-            "example": "MD,GR",
-            "in": "query",
-            "name": "curves",
-            "required": false,
-            "schema": {
-              "description": "Filters curves. List of curves to be returned.",
-              "title": "Curves",
-              "type": "string"
-            }
-          },
-          {
-            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-            "example": "false",
-            "in": "query",
-            "name": "describe",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-              "title": "Describe",
-              "type": "boolean"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              },
-              "application/x-parquet": {},
-              "text/csv": {}
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Returns data of the specified version.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/welllogs/{record_id}/data": {
-      "get": {
-        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
-        "operationId": "get_data_alpha_ddms_v3_welllogs__record_id__data_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "The number of rows that are to be skipped and not included in the result.",
-            "example": 5,
-            "in": "query",
-            "name": "offset",
-            "required": false,
-            "schema": {
-              "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
-              "title": "Offset",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "The maximum number of rows to be returned.",
-            "example": 100,
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
-              "title": "Limit",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "Filters curves. List of curves to be returned.",
-            "example": "MD,GR",
-            "in": "query",
-            "name": "curves",
-            "required": false,
-            "schema": {
-              "description": "Filters curves. List of curves to be returned.",
-              "title": "Curves",
-              "type": "string"
-            }
-          },
-          {
-            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-            "example": "false",
-            "in": "query",
-            "name": "describe",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-              "title": "Describe",
-              "type": "boolean"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              },
-              "application/x-parquet": {},
-              "text/csv": {}
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Returns the data according to the specified query parameters.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      },
-      "post": {
-        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "write_record_data",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Writes data as a whole bulk, creates a new version.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/welllogs/{record_id}/sessions": {
-      "get": {
-        "operationId": "list_session_alpha_ddms_v3_welllogs__record_id__sessions_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Session"
-                  },
-                  "title": "Response List Session Alpha Ddms V3 Welllogs  Record Id  Sessions Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "list session of the given record.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      },
-      "post": {
-        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
-        "operationId": "create_session_alpha_ddms_v3_welllogs__record_id__sessions_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateDataSessionRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Create a new session on the given record for writing bulk data.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/welllogs/{record_id}/sessions/{session_id}": {
-      "get": {
-        "operationId": "get_session_alpha_ddms_v3_welllogs__record_id__sessions__session_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "session_id",
-            "required": true,
-            "schema": {
-              "title": "Session Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "get session.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      },
-      "patch": {
-        "operationId": "complete_session_alpha_ddms_v3_welllogs__record_id__sessions__session_id__patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "session_id",
-            "required": true,
-            "schema": {
-              "title": "Session Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSessionState"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Session"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Update a session, either commit or abandon.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data": {
-      "post": {
-        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
-        "operationId": "post_chunk_data",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "session_id",
-            "required": true,
-            "schema": {
-              "title": "Session Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "example": "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n    ]\n  ]\n}"
-              }
-            },
-            "application/x-parquet": {
-              "schema": {
-                "format": "binary",
-                "type": "string"
-              }
-            }
-          },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},\"1\":{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},\"2\":{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},\"3\":{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},\"4\":{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_1\":1111.1,\"col_2\":2222.1},{\"Ref\":0.5,\"col_1\":1111.2,\"col_2\":2222.2},{\"Ref\":1.0,\"col_1\":1111.3,\"col_2\":2222.3},{\"Ref\":1.5,\"col_1\":1111.4,\"col_2\":2222.4},{\"Ref\":2.0,\"col_1\":1111.5,\"col_2\":2222.5}]`<br/>&nbsp;",
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Send a data chunk. Session must be complete/commit once all chunks are sent.",
-        "tags": [
-          "ALPHA feature: bulk data chunking"
-        ]
-      }
-    },
-    "/alpha/ddms/v3/welllogs/{record_id}/versions/{version}/data": {
-      "get": {
-        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
-        "operationId": "get_data_version_alpha_ddms_v3_welllogs__record_id__versions__version__data_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "title": "Version",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "The number of rows that are to be skipped and not included in the result.",
-            "example": 5,
-            "in": "query",
-            "name": "offset",
-            "required": false,
-            "schema": {
-              "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
-              "title": "Offset",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "The maximum number of rows to be returned.",
-            "example": 100,
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
-              "title": "Limit",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "Filters curves. List of curves to be returned.",
-            "example": "MD,GR",
-            "in": "query",
-            "name": "curves",
-            "required": false,
-            "schema": {
-              "description": "Filters curves. List of curves to be returned.",
-              "title": "Curves",
-              "type": "string"
-            }
-          },
-          {
-            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-            "example": "false",
-            "in": "query",
-            "name": "describe",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
-              "title": "Describe",
-              "type": "boolean"
             }
           },
           {
@@ -13465,7 +12229,7 @@
                 }
               }
             },
-            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},\"1\":{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},\"2\":{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},\"3\":{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},\"4\":{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}]`<br/>&nbsp;"
+            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
           "404": {
             "description": "log not found"
@@ -13673,25 +12437,30 @@
                     "type": "object"
                   },
                   {
-                    "properties": {},
-                    "title": "IndexFormat",
-                    "type": "object"
-                  },
-                  {
-                    "properties": {},
+                    "additionalProperties": {
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "type": "object"
+                    },
                     "title": "ColumnFormat",
-                    "type": "object"
-                  },
-                  {
-                    "properties": {},
-                    "title": "RecordsFormat",
                     "type": "object"
                   }
                 ]
               }
             }
           },
-          "description": "Write log bulk data.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},\"1\":{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},\"2\":{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},\"3\":{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},\"4\":{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}]`<br/>&nbsp;",
+          "description": "Write log bulk data.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -14221,7 +12990,7 @@
                 }
               }
             },
-            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},\"1\":{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},\"2\":{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},\"3\":{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},\"4\":{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"Ref\":0.0,\"col_100X\":1001,\"col_200X\":2001},{\"Ref\":0.5,\"col_100X\":1002,\"col_200X\":2002},{\"Ref\":1.0,\"col_100X\":1003,\"col_200X\":2003},{\"Ref\":1.5,\"col_100X\":1004,\"col_200X\":2004},{\"Ref\":2.0,\"col_100X\":1005,\"col_200X\":2005}]`<br/>&nbsp;"
+            "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
           "404": {
             "description": "log not found"
@@ -15397,7 +14166,7 @@
                 }
               }
             },
-            "description": "Get trajectory data of the given channels.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows for channels MD, TVD, X, Y with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},\"1\":{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},\"2\":{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},\"3\":{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},\"4\":{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}]`<br/>&nbsp;"
+            "description": "Get trajectory data of the given channels.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows for channels MD, TVD, X, Y with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
           "204": {
             "description": "No bulkURI"
@@ -15563,25 +14332,30 @@
                     "type": "object"
                   },
                   {
-                    "properties": {},
-                    "title": "IndexFormat",
-                    "type": "object"
-                  },
-                  {
-                    "properties": {},
+                    "additionalProperties": {
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "type": "object"
+                    },
                     "title": "ColumnFormat",
-                    "type": "object"
-                  },
-                  {
-                    "properties": {},
-                    "title": "RecordsFormat",
                     "type": "object"
                   }
                 ]
               }
             }
           },
-          "description": "Write trajectory bulk data. Each column corresponds to a channel.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 channels (MD, TVD, X, Y) with different _orient_: \n* split: <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* index: <br/>`{\"0\":{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},\"1\":{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},\"2\":{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},\"3\":{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},\"4\":{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}}`<br/>&nbsp;\n* columns: <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records: <br/>`[{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}]`<br/>&nbsp;",
+          "description": "Write trajectory bulk data. Each column corresponds to a channel.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 channels (MD, TVD, X, Y) with different _orient_: \n* split: <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* columns: <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -15830,7 +14604,7 @@
                 }
               }
             },
-            "description": "Get trajectory bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* index:  <br/>`{\"0\":{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},\"1\":{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},\"2\":{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},\"3\":{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},\"4\":{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;\n* records:  <br/>`[{\"MD\":0.0,\"TVD\":0.0,\"X\":1001,\"Y\":2001},{\"MD\":0.5,\"TVD\":0.5,\"X\":1002,\"Y\":2002},{\"MD\":1.0,\"TVD\":0.75,\"X\":1003,\"Y\":2003},{\"MD\":1.5,\"TVD\":1.0,\"X\":1004,\"Y\":2004},{\"MD\":2.0,\"TVD\":1.5,\"X\":1005,\"Y\":2005}]`<br/>&nbsp;"
+            "description": "Get trajectory bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
           "404": {
             "description": "trajectory not found"
@@ -16777,7 +15551,7 @@
         ],
         "summary": "Query with cursor, search WellLogs IDs by wellbore attribute",
         "tags": [
-          "fast-search"
+          "fast-search v3"
         ]
       }
     },
@@ -16837,7 +15611,7 @@
         ],
         "summary": "Query with cursor",
         "tags": [
-          "fast-search"
+          "fast-search v3"
         ]
       }
     },
@@ -16906,7 +15680,7 @@
         ],
         "summary": "Query with cursor, search wellbore markersets IDs by wellbore ID",
         "tags": [
-          "fast-search"
+          "fast-search v3"
         ]
       }
     },
@@ -16975,7 +15749,7 @@
         ],
         "summary": "Query with cursor, search WellLogs IDs by wellbore ID",
         "tags": [
-          "fast-search"
+          "fast-search v3"
         ]
       }
     },
@@ -17044,7 +15818,7 @@
         ],
         "summary": "Query with cursor, search WellLogs by wellbore attribute",
         "tags": [
-          "search"
+          "search v3"
         ]
       }
     },
@@ -17104,7 +15878,7 @@
         ],
         "summary": "Query with cursor, get wellbores",
         "tags": [
-          "search"
+          "search v3"
         ]
       }
     },
@@ -17173,7 +15947,7 @@
         ],
         "summary": "Query with cursor, search wellbore markersets by wellbore ID",
         "tags": [
-          "search"
+          "search v3"
         ]
       }
     },
@@ -17242,7 +16016,7 @@
         ],
         "summary": "Query with cursor, search WellLogs by wellbore ID",
         "tags": [
-          "search"
+          "search v3"
         ]
       }
     },
@@ -18007,7 +16781,7 @@
             "application/json": {
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 },
                 "title": "Wellboretrajectories",
                 "type": "array"
@@ -18048,7 +16822,741 @@
         ],
         "summary": "Create or update the WellboreTrajectories using osdu schema",
         "tags": [
-          "Trajectory"
+          "Trajectory v3"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{record_id}/data": {
+      "get": {
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "get_data_ddms_v3_wellboretrajectories__record_id__data_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The number of rows that are to be skipped and not included in the result.",
+            "example": 5,
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "description": "The number of rows that are to be skipped and not included in the result.",
+              "minimum": 0.0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The maximum number of rows to be returned.",
+            "example": 100,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "description": "The maximum number of rows to be returned.",
+              "minimum": 1.0,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filters curves. List of curves to be returned.",
+            "example": "MD,GR",
+            "in": "query",
+            "name": "curves",
+            "required": false,
+            "schema": {
+              "description": "Filters curves. List of curves to be returned.",
+              "title": "Curves",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+            "example": "false",
+            "in": "query",
+            "name": "describe",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+              "title": "Describe",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/x-parquet": {},
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Returns the data according to the specified query parameters.",
+        "tags": [
+          "Trajectory v3"
+        ]
+      },
+      "post": {
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_data_ddms_v3_wellboretrajectories__record_id__data_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              }
+            },
+            "application/x-parquet": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Writes data as a whole bulk, creates a new version.",
+        "tags": [
+          "Trajectory v3"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{record_id}/sessions": {
+      "get": {
+        "operationId": "list_session_ddms_v3_wellboretrajectories__record_id__sessions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Session"
+                  },
+                  "title": "Response List Session Ddms V3 Wellboretrajectories  Record Id  Sessions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "list session of the given record.",
+        "tags": [
+          "Trajectory v3"
+        ]
+      },
+      "post": {
+        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
+        "operationId": "create_session_ddms_v3_wellboretrajectories__record_id__sessions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDataSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create a new session on the given record for writing bulk data.",
+        "tags": [
+          "Trajectory v3"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}": {
+      "get": {
+        "operationId": "get_session_ddms_v3_wellboretrajectories__record_id__sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "get session.",
+        "tags": [
+          "Trajectory v3"
+        ]
+      },
+      "patch": {
+        "operationId": "complete_session_ddms_v3_wellboretrajectories__record_id__sessions__session_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSessionState"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update a session, either commit or abandon.",
+        "tags": [
+          "Trajectory v3"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data": {
+      "post": {
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_chunk_data_ddms_v3_wellboretrajectories__record_id__sessions__session_id__data_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              }
+            },
+            "application/x-parquet": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send a data chunk. Session must be complete/commit once all chunks are sent.",
+        "tags": [
+          "Trajectory v3"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{record_id}/versions/{version}/data": {
+      "get": {
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "get_data_version_ddms_v3_wellboretrajectories__record_id__versions__version__data_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The number of rows that are to be skipped and not included in the result.",
+            "example": 5,
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "description": "The number of rows that are to be skipped and not included in the result.",
+              "minimum": 0.0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The maximum number of rows to be returned.",
+            "example": 100,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "description": "The maximum number of rows to be returned.",
+              "minimum": 1.0,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filters curves. List of curves to be returned.",
+            "example": "MD,GR",
+            "in": "query",
+            "name": "curves",
+            "required": false,
+            "schema": {
+              "description": "Filters curves. List of curves to be returned.",
+              "title": "Curves",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+            "example": "false",
+            "in": "query",
+            "name": "describe",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+              "title": "Describe",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/x-parquet": {},
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Returns data of the specified version.",
+        "tags": [
+          "Trajectory v3"
         ]
       }
     },
@@ -18104,7 +17612,7 @@
         ],
         "summary": "Delete the wellboreTrajectory. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
         "tags": [
-          "Trajectory"
+          "Trajectory v3"
         ]
       },
       "get": {
@@ -18138,7 +17646,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 }
               }
             },
@@ -18165,7 +17673,7 @@
         ],
         "summary": "Get the WellboreTrajectory using osdu schema",
         "tags": [
-          "Trajectory"
+          "Trajectory v3"
         ]
       }
     },
@@ -18228,7 +17736,7 @@
         ],
         "summary": "Get all versions of the WellboreTrajectory",
         "tags": [
-          "Trajectory"
+          "Trajectory v3"
         ]
       }
     },
@@ -18273,7 +17781,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 }
               }
             },
@@ -18300,7 +17808,7 @@
         ],
         "summary": "Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory schema",
         "tags": [
-          "Trajectory"
+          "Trajectory v3"
         ]
       }
     },
@@ -18455,6 +17963,740 @@
           }
         ],
         "summary": "Create or update the WellLogs using osdu schema",
+        "tags": [
+          "WellLog"
+        ]
+      }
+    },
+    "/ddms/v3/welllogs/{record_id}/data": {
+      "get": {
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "get_data_ddms_v3_welllogs__record_id__data_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The number of rows that are to be skipped and not included in the result.",
+            "example": 5,
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "description": "The number of rows that are to be skipped and not included in the result.",
+              "minimum": 0.0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The maximum number of rows to be returned.",
+            "example": 100,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "description": "The maximum number of rows to be returned.",
+              "minimum": 1.0,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filters curves. List of curves to be returned.",
+            "example": "MD,GR",
+            "in": "query",
+            "name": "curves",
+            "required": false,
+            "schema": {
+              "description": "Filters curves. List of curves to be returned.",
+              "title": "Curves",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+            "example": "false",
+            "in": "query",
+            "name": "describe",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+              "title": "Describe",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/x-parquet": {},
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Returns the data according to the specified query parameters.",
+        "tags": [
+          "WellLog"
+        ]
+      },
+      "post": {
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_data_ddms_v3_welllogs__record_id__data_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              }
+            },
+            "application/x-parquet": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Writes data as a whole bulk, creates a new version.",
+        "tags": [
+          "WellLog"
+        ]
+      }
+    },
+    "/ddms/v3/welllogs/{record_id}/sessions": {
+      "get": {
+        "operationId": "list_session_ddms_v3_welllogs__record_id__sessions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Session"
+                  },
+                  "title": "Response List Session Ddms V3 Welllogs  Record Id  Sessions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "list session of the given record.",
+        "tags": [
+          "WellLog"
+        ]
+      },
+      "post": {
+        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
+        "operationId": "create_session_ddms_v3_welllogs__record_id__sessions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDataSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create a new session on the given record for writing bulk data.",
+        "tags": [
+          "WellLog"
+        ]
+      }
+    },
+    "/ddms/v3/welllogs/{record_id}/sessions/{session_id}": {
+      "get": {
+        "operationId": "get_session_ddms_v3_welllogs__record_id__sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "get session.",
+        "tags": [
+          "WellLog"
+        ]
+      },
+      "patch": {
+        "operationId": "complete_session_ddms_v3_welllogs__record_id__sessions__session_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSessionState"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update a session, either commit or abandon.",
+        "tags": [
+          "WellLog"
+        ]
+      }
+    },
+    "/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data": {
+      "post": {
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_chunk_data_ddms_v3_welllogs__record_id__sessions__session_id__data_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              }
+            },
+            "application/x-parquet": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send a data chunk. Session must be complete/commit once all chunks are sent.",
+        "tags": [
+          "WellLog"
+        ]
+      }
+    },
+    "/ddms/v3/welllogs/{record_id}/versions/{version}/data": {
+      "get": {
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "get_data_version_ddms_v3_welllogs__record_id__versions__version__data_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The number of rows that are to be skipped and not included in the result.",
+            "example": 5,
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "description": "The number of rows that are to be skipped and not included in the result.",
+              "minimum": 0.0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The maximum number of rows to be returned.",
+            "example": 100,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "description": "The maximum number of rows to be returned.",
+              "minimum": 1.0,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filters curves. List of curves to be returned.",
+            "example": "MD,GR",
+            "in": "query",
+            "name": "curves",
+            "required": false,
+            "schema": {
+              "description": "Filters curves. List of curves to be returned.",
+              "title": "Curves",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+            "example": "false",
+            "in": "query",
+            "name": "describe",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
+              "title": "Describe",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "format for JSON only.",
+            "in": "query",
+            "name": "orient",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/JSONOrient"
+                }
+              ],
+              "default": "split",
+              "description": "format for JSON only."
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/x-parquet": {},
+              "text/csv": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Returns data of the specified version.",
         "tags": [
           "WellLog"
         ]

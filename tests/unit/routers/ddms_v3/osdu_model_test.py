@@ -16,25 +16,33 @@ import pytest
 import json
 import os
 from typing import Type
-from pydantic import BaseModel
-from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet
+from pydantic import BaseModel, ValidationError
+from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet, \
+    WellboreTrajectory110
 
 
 test_parameters = [
-    (Wellbore, "Wellbore_unit.json"),
-    (Well, "Well_unit.json"),
-    (WellLog, "WellLog_unit.json"),
-    (WellboreTrajectory, "WellboreTrajectory_unit.json"),
-    (WellboreMarkerSet, "WellboreMarkerSet_unit.json"),
+    (Wellbore, "Wellbore_unit.json", None),
+    (Well, "Well_unit.json", None),
+    (WellLog, "WellLog_unit.json", None),
+    (WellboreTrajectory, "WellboreTrajectory_unit.json", None),
+    (WellboreTrajectory, "WellboreTrajectory110_unit.json", ValidationError),
+    (WellboreTrajectory110, "WellboreTrajectory_unit.json", None),
+    (WellboreTrajectory110, "WellboreTrajectory110_unit.json", None),
+    (WellboreMarkerSet, "WellboreMarkerSet_unit.json", None),
 ]
 
 
-@pytest.mark.parametrize("cls, json_file", test_parameters)
-def test_osdu_models(cls: Type[BaseModel], json_file):
+@pytest.mark.parametrize("cls, json_file, expected_exception", test_parameters)
+def test_osdu_models(cls: Type[BaseModel], json_file, expected_exception):
     with open(
         os.path.join(os.path.dirname(os.path.realpath(__file__)), json_file)
     ) as f:
         file_contents = json.load(f)
 
     for file_content in file_contents:
-        cls.validate(file_content)
+        if expected_exception is not None:
+            with pytest.raises(expected_exception):
+                cls.validate(file_content)
+        else:
+            cls.validate(file_content)

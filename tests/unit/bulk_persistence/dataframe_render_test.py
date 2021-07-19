@@ -3,8 +3,9 @@ from io import BytesIO
 
 from fastapi import HTTPException
 
+from app.bulk_persistence import JSONOrient
 from app.model.model_chunking import GetDataParams
-from app.bulk_utils import DataFrameRender, get_df_from_request
+from app.routers.bulk_utils import DataFrameRender, get_df_from_request
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
@@ -75,10 +76,11 @@ async def test_df_render_accept_parquet(default_get_params, basic_dataframe, acc
 
 
 @pytest.mark.asyncio
-async def test_df_render_accept_json(default_get_params, basic_dataframe):
-    response = await DataFrameRender.df_render(basic_dataframe, default_get_params, "application/json")
+@pytest.mark.parametrize("orient", [JSONOrient.split, JSONOrient.columns])
+async def test_df_render_accept_json(default_get_params, basic_dataframe, orient):
+    response = await DataFrameRender.df_render(basic_dataframe, default_get_params, "application/json", orient)
     assert 'application/json' == response.headers.get('Content-Type')
-    actual = pd.read_json(response.body, orient='columns')
+    actual = pd.read_json(response.body, orient=orient)
     assert_frame_equal(basic_dataframe, actual)
 
 

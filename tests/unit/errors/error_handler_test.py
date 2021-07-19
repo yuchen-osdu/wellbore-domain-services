@@ -60,7 +60,7 @@ def client(nope_logger_fixture):
     with mock.patch('app.routers.ddms_v2.logset_ddms_v2.get_storage_record_service', mock_storage):
         with mock.patch('app.routers.ddms_v2.logset_ddms_v2.get_search_service', mock_search):
             with mock.patch('app.routers.ddms_v2.log_ddms_v2.get_storage_record_service', mock_storage_blob):
-                with mock.patch('app.record_utils.get_storage_record_service', mock_storage_blob):
+                with mock.patch('app.routers.record_utils.get_storage_record_service', mock_storage_blob):
                     wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
                     wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
                     client = TestClient(wdms_app)

@@ -144,14 +144,6 @@ def client_with_log(client):
         }
     ),
     (
-        "index",
-        {
-            "0": {"MD": 1.0, "X": 10, "Y": 11, "Z": 12},
-            "1": {"MD": 1.5, "X": 20, "Y": 21, "Z": 22},
-            "2": {"MD": 2.0, "X": 30, "Y": 31, "Z": 32},
-        }
-    ),
-    (
         "columns",
         {
             "MD": {"0": 1.0, "1": 1.5, "2": 2.0},
@@ -159,14 +151,6 @@ def client_with_log(client):
             "Y": {"0": 11, "1": 21, "2": 31},
             "Z": {"0": 12, "1": 22, "2": 32},
         }
-    ),
-    (
-        "records",
-        [
-            {"MD": 1.0, "X": 10, "Y": 11, "Z": 12},
-            {"MD": 1.5, "X": 20, "Y": 21, "Z": 22},
-            {"MD": 2.0, "X": 30, "Y": 31, "Z": 32}
-        ]
     )
 ])
 def test_traj_bulk(client, orient_value, data):
@@ -267,7 +251,7 @@ def test_log_version_data(client_with_log):
     assert response.json() == prev_data, "response json body should match previous version data"
 
 
-@pytest.mark.parametrize("orient_value", ["split", "index", "columns", "records"])
+@pytest.mark.parametrize("orient_value", ["split", "columns"])
 def test_log_version_data_orient_param_validation(client_with_log, orient_value):
     client, log_id, version_id = client_with_log
 
