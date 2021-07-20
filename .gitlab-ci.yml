@@ -180,7 +180,7 @@ osdu-gcp-test-python:
     - gcloud config set project $OSDU_GCP_PROJECT_NAME
     - >
       python gen_postman_env.py
-      --token $(gcloud auth print-identity-token)
+      --token $(gcloud auth print-access-token)
       --base_url ${OSDU_GCP_URL}${OSDU_GCP_SERVICE_PATH}
       --cloud_provider $OSDU_GCP_VENDOR
       --data_partition $OSDU_GCP_TENANT

@@ -32,7 +32,7 @@ Definitions = {
         'api_version': 'v3',
         'base_url': '/ddms/v3/welllogs',
         'chunking_url': '/alpha/ddms/v3/welllogs',  # TODO: update when no longer alpha
-        'kind': 'osdu:wks:work-product-component--WellLog:1.0.0',
+        'kind': 'osdu:wks:work-product-component--WellLog:1.1.0',
         'record_data': {
             "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
             "Curves": [{"CurveID": "MD"}, {"CurveID": "X"}]

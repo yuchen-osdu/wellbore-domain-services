@@ -1,0 +1,1021 @@
+[
+  {
+  "kind": "eesx:fAJQmAi:DN:2374647701P4035C031565186",
+  "acl": {
+    "owners": [
+      "qJ.8OWoZ.cz0Zdstf.+9*QZ.+rvrNp+_Wig.3qkCvUZ.HFM0bV2RvI.mW78wXgelhq.9Td_zl.a.rBmpmY2@4GQxz.12iFLkh0qYD.gnAdV.N3X8cbR7pyv.18obA2.j.lHxcVSr",
+      "*+9z1Xb.h5DYtQDELb@yV7.6sG.UKLNv3.8ZayTG.nsRZsP",
+      "4jd40pyI.&.s@zpSgGjYTsr.1q1.6dj1lU346.B3.-.yp.VkGDAlhxsgF.8.eXqUnnDe.6FmusKNe.l-60uJFk.uAGiJof",
+      "ddkH+&RhgJY.R_A5lNB*ZL.vKj30jM0s8.PWxJy@clkBc.MSSGp2.Vzm.nS.9m.RT.X4xDd.P4G-3r.LwbWi",
+      "dcynE&jkdz.-FZF8cIx.HDSGD.y8lS.5Z.*qJ0.gL0Kpe.5gr-W7Wa.F&6JR@zy3o.12.Bni.pu9Js.i7t1-Y09jR.pKTX.BKnlc"
+    ],
+    "viewers": [
+      "arpV_zC@Husv.pxT1Lwg.uAs.aoviZzen.ziPwOp4VPg.Zb5WZ2.Mii.j.bFDz-74.wm",
+      "+PvprILG13W.oQ-e-.8Ckr&t0b8d.5C66h-1NdRW.w---7AW6.uvt_i+sBIH@DQ.An.plAqp.hc9akRl.0y7POm8dJ.W.4WOTyUBKOV.dgaWC",
+      "NobI-Rx.rke2XP.HuR.CC_BriJhH7x.p6Fyl.8OxVrB.Jm_.r.4E6Fkh.IAM.-iTvm@Geq00.Qr2.y8fn1E.0J9Sc.FdCW6jd0U.HibjDjg",
+      "MT_Ht_.pLCDL.0@Riyd8Twl.H9.8W.QfbpYQJb.WHn9.n2SYRL.6Fb7FT.KLGLCN"
+    ]
+  },
+  "legal": {
+    "legaltags": [
+      "id sunt",
+      "enim Lorem commodo",
+      "non cillum aute ea eu"
+    ],
+    "otherRelevantDataCountries": [
+      "VS"
+    ],
+    "status": "uncompliant"
+  },
+  "ancestry": {
+    "parents": [
+      "L_J04:GhA:7:5889",
+      "jyt55oWf:Euj9gdZW2k9:iD:281099",
+      "qzpDqnsY:zr1d_H-8LYB:h%h23T:35515",
+      "mZKwuDxfB:vEJk8r59CN:t6nl:Ddaa:550615"
+    ]
+  },
+  "id": "xl6K:work-product-component--WellLog::p:",
+  "createTime": "1941-10-05T13:08:17.013Z",
+  "version": 45373600,
+  "tags": {
+    "consequat57": "aliquip ea nulla",
+    "pariaturd": "irure incididunt anim"
+  },
+  "meta": [
+    {
+      "kind": "AzimuthReference",
+      "persistableReference": "ad et consectetur",
+      "name": "nisi commodo dolore",
+      "propertyNames": [
+        "reprehenderit aliqua Duis Excepteur",
+        "aliqua dolore reprehenderit",
+        "ipsum",
+        "nisi irure aliqua"
+      ]
+    },
+    {
+      "kind": "AzimuthReference",
+      "persistableReference": "enim quis tempor ex fugiat",
+      "name": "occaecat Lorem exercitation id",
+      "propertyNames": [
+        "sint irure ullamco",
+        "ad do mollit consectetur Ut",
+        "qui commodo Ut non",
+        "proident",
+        "aliquip deserunt in dolor"
+      ]
+    },
+    {
+      "kind": "Unit",
+      "persistableReference": "velit dolore incididunt",
+      "unitOfMeasureID": "THBsdXOX7:reference-data--UnitOfMeasure:mpAnYM7:19816806",
+      "propertyNames": [
+        "tempor occaecat sed amet",
+        "aliquip",
+        "consectetur"
+      ],
+      "name": "et eiusmod non sed"
+    },
+    {
+      "kind": "CRS",
+      "persistableReference": "in",
+      "propertyNames": [
+        "Duis tempor irure est",
+        "ut deserunt mollit Ut",
+        "est aliqua incididunt in nostrud"
+      ],
+      "name": "sed dolor anim",
+      "coordinateReferenceSystemID": "l.2KS:reference-data--CoordinateReferenceSystem:drrB:2"
+    }
+  ],
+  "createUser": "irure velit",
+  "modifyTime": "1946-11-05T00:46:23.348Z",
+  "modifyUser": "aute exercitation",
+  "data": {
+    "SamplingStop": -30795841.679913044,
+    "Name": "laborum do incididunt amet",
+    "IsRegular": false,
+    "ResourceHomeRegionID": "C9:reference-data--OSDURegion:zBwziFD:502832670",
+    "ResourceHostRegionIDs": [
+      "7tQMkSjia:reference-data--OSDURegion:-XU_gaR:8",
+      "niIg6mrJ:reference-data--OSDURegion:_0H:31052466",
+      "nfP9C:reference-data--OSDURegion:S06q_E:8153370"
+    ],
+    "IsDiscoverable": true,
+    "HoleTypeLogging": "CEMENTEDHOLE",
+    "Description": "ex",
+    "SpatialArea": {
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "persistableReferenceCrs": "ullamco proident exercitation aliquip Excepteur",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "geometry": {
+              "type": "AnyCrsMultiLineString",
+              "coordinates": [
+                [
+                  [
+                    -30259788.30919124,
+                    -60308055.423766404,
+                    -20797298.949343413,
+                    -21724410.018182904
+                  ],
+                  [
+                    40805578.68772927,
+                    20444631.110621095,
+                    -13104742.657142326,
+                    85926988.06257007,
+                    -80165896.22488248
+                  ],
+                  [
+                    57093863.32117313,
+                    40441551.412373096,
+                    -78385677.79479204,
+                    -67687070.25714953,
+                    3169315.212389052
+                  ],
+                  [
+                    -32053847.90626806,
+                    75215489.4741751,
+                    -91177851.15212084,
+                    -92730763.3443808,
+                    -90954779.68626589
+                  ]
+                ],
+                [
+                  [
+                    -17629526.089879423,
+                    -59334940.76411589,
+                    73026669.03534597
+                  ],
+                  [
+                    -68892551.06725329,
+                    91440053.45881107
+                  ]
+                ]
+              ],
+              "bbox": [
+                -96101273.424848,
+                -39807920.73128652,
+                -74571718.88298818,
+                86804521.32676712,
+                -89532071.07622969
+              ]
+            },
+            "bbox": [
+              29106731.190773338,
+              35183609.89582905,
+              46188371.19424465,
+              -80923579.77400972
+            ]
+          }
+        ],
+        "persistableReferenceUnitZ": "ullamco reprehenderit fugiat laboris",
+        "CoordinateReferenceSystemID": "2Y-:reference-data--CoordinateReferenceSystem:K5OkR:9",
+        "persistableReferenceVerticalCrs": "esse in",
+        "VerticalCoordinateReferenceSystemID": "egufjj3:reference-data--CoordinateReferenceSystem:o1pWOMG7F:64959",
+        "bbox": [
+          -51505189.26229508,
+          45002067.53005892,
+          77631959.76975185,
+          80523389.37631854
+        ]
+      },
+      "QualitativeSpatialAccuracyTypeID": "t:reference-data--QualitativeSpatialAccuracyType:Neu3w89vNj:16",
+      "SpatialLocationCoordinatesDate": "2019-09-11T16:46:06.824Z",
+      "SpatialParameterTypeID": "9K:reference-data--SpatialParameterType:E1uWLn7eF-:288",
+      "CoordinateQualityCheckDateTime": "1975-03-21T14:05:55.746Z",
+      "QuantitativeAccuracyBandID": "Oz:reference-data--QuantitativeAccuracyBand:e%oF:0747",
+      "AppliedOperations": [
+        "sed nisi magna esse do",
+        "veniam quis sit sint dolor",
+        "eiusmod nisi"
+      ],
+      "CoordinateQualityCheckPerformedBy": "magna sit et incididunt dolore",
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": null,
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -69822048.86012128,
+                  -70456263.91719523
+                ],
+                [
+                  28350140.202132136,
+                  69368289.18749475,
+                  -94571149.86669599,
+                  68666697.46693522
+                ]
+              ],
+              "bbox": [
+                33917077.94068757,
+                -89738118.50083542,
+                85978276.30815119,
+                74242573.61871901
+              ]
+            },
+            "bbox": [
+              16490050.462889493,
+              22159424.030084774,
+              -41232341.295565076,
+              -65071106.346710116,
+              27934521.836921796
+            ]
+          }
+        ],
+        "bbox": [
+          10520191.964182496,
+          62815467.14726466,
+          -65242566.03538459,
+          83256318.28451988,
+          -84475139.78919381
+        ]
+      },
+      "SpatialGeometryTypeID": "04kgw6l1Ac:reference-data--SpatialGeometryType:R:0",
+      "CoordinateQualityCheckRemarks": [
+        "dolore cupidatat consectetur",
+        "fugiat tempor",
+        "do nostrud officia Lorem dolore",
+        "Ut commodo",
+        "ullamco Excepteur cupidatat labore dolor"
+      ]
+    },
+    "SamplingDomainTypeID": "EhkPbE:reference-data--WellLogSamplingDomainType:zXRVeXA2TAb:",
+    "VerticalMeasurement": {
+      "VerticalMeasurementTypeID": "rL5n:reference-data--VerticalMeasurementType:ru3tsSkTa:06444458",
+      "WellboreTVDTrajectoryID": "35v:work-product-component--WellboreTrajectory:i%D1sF:13963",
+      "VerticalMeasurementDescription": "nisi laborum commodo",
+      "VerticalMeasurementUnitOfMeasureID": "cpc:reference-data--UnitOfMeasure:Dc5:kh:870900662",
+      "VerticalMeasurementPathID": "shp:reference-data--VerticalMeasurementPath:EUO:81467",
+      "VerticalReferenceID": "labore in",
+      "TerminationDateTime": "1972-08-28T02:00:53.932Z",
+      "VerticalMeasurement": -25426727.936307892,
+      "EffectiveDateTime": "2019-05-27T23:26:23.075Z",
+      "VerticalMeasurementSourceID": "Ujkxr:reference-data--VerticalMeasurementSource:tIcX:08",
+      "VerticalCRSID": "SAEmO:reference-data--CoordinateReferenceSystem:DaAQr:046"
+    },
+    "SamplingInterval": -95703771.93237212,
+    "SubmitterName": "sint aute",
+    "BottomMeasuredDepth": 56820693.03520936,
+    "ReferenceCurveID": "aliquip ullamco",
+    "Datasets": [
+      "CCPtZbcsL:dataset--G:gKGkMt:66",
+      "ALK6XiBUYc:dataset--i0a:Cmq:5"
+    ],
+    "TopMeasuredDepth": 6478503.63091132,
+    "LogVersion": "nisi dolor reprehenderit",
+    "Artefacts": [
+      {
+        "ResourceKind": "t1F:6Iri4c:GR9fg:45356182q11315&34",
+        "RoleID": "_OUyY9rg:reference-data--ArtefactRole::%GpKWcdi:9249262",
+        "ResourceID": "a1YykIg:dataset--iTt3eZA:q8cJZkz5fr:0"
+      },
+      {
+        "ResourceID": "-e_aJid:dataset--tJeQGif9:q:6030769531",
+        "ResourceKind": "50:9u:R_.vS:171U251046418436570801",
+        "RoleID": "Udgia.f:reference-data--ArtefactRole:KjR6t1jIeB.:891857"
+      },
+      {
+        "ResourceKind": "u4:WXE68CP:2:3816258154|55649230I5034",
+        "RoleID": "zAmNeGXOD:reference-data--ArtefactRole:09eVr8jDN1k:198",
+        "ResourceID": "T_:dataset--P7g0qU1z5:i%YBu:8484"
+      },
+      {
+        "RoleID": "LE:reference-data--ArtefactRole:Wd0:uVQjS:33880046",
+        "ResourceID": "eh9ubYnz:dataset--kkgDVn:Tt:6670377",
+        "ResourceKind": "tY1l7x_W:9:_pDF9n2B:5213172607Y423217496I97219"
+      }
+    ],
+    "LogActivity": "laborum quis fugiat eiusmod dolor",
+    "AuthorIDs": [
+      "tempor velit officia",
+      "est qui",
+      "ut ipsum eiusmod ex",
+      "velit veniam labore anim"
+    ],
+    "ActivityType": "esse sed",
+    "Tags": [
+      "velit",
+      "anim nulla tempor",
+      "et ut",
+      "aliqua commodo fugiat minim do"
+    ],
+    "ZeroTime": "1965-01-31T10:32:30.449Z",
+    "CompanyID": "r0YPBw:master-data--Organisation:ReTNqs:0487",
+    "LogServiceDateInterval": {
+      "EndDate": "1978-09-27T01:05:51.764Z",
+      "StartDate": "1946-08-02T08:25:03.939Z"
+    },
+    "LoggingService": "sit eiusmod amet",
+    "ResourceLifecycleStatus": "K:reference-data--ResourceLifecycleStatus:o_%lKMP:0300153411",
+    "LogSource": "anim minim enim in",
+    "PassNumber": -40587525,
+    "IsExtendedLoad": true,
+    "LogRun": "magna",
+    "ResourceSecurityClassification": "14AGRFO:reference-data--ResourceSecurityClassification:eAnlkp6-:",
+    "ExistenceKind": "xXsj:reference-data--ExistenceKind:uVdEai1Wo:3329",
+    "Source": "Lorem",
+    "CandidateReferenceCurveIDs": [
+      "commodo exercitation Excepteur deserunt"
+    ],
+    "WellLogTypeID": "U5_ckqZU:reference-data--LogType:0.Dg9:7797023315",
+    "BusinessActivities": [
+      "officia",
+      "non in",
+      "quis laborum laboris pariatur"
+    ],
+    "WellboreID": "kG6w:master-data--Wellbore:zVkjz6:298",
+    "ServiceCompanyID": "kUj1o:master-data--Organisation:D:537906",
+    "CreationDateTime": "1943-09-18T03:50:04.344Z",
+    "Curves": [
+      {
+        "DepthCoding": "REGULAR",
+        "DateStamp": "1994-09-06T00:33:25.629Z",
+        "IsProcessed": true,
+        "Interpolate": true,
+        "NumberOfColumns": -26842275,
+        "DepthUnit": "M8rvq:reference-data--UnitOfMeasure:JPNbgB5j:",
+        "NullValue": true,
+        "CurveQuality": "commodo elit dolore dolor deserunt",
+        "LogCurveMainFamilyID": "4Q6-qJPJ:reference-data--LogCurveMainFamily:lbxn-MgzKW:1292",
+        "CurveUnit": "_:reference-data--UnitOfMeasure:VKSLH6PE:132",
+        "LogCurveFamilyID": "soCP0XTv:reference-data--LogCurveFamily:vNpot:552245292",
+        "BaseDepth": -56536685.580252536,
+        "TopDepth": -30485864.871288016,
+        "LogCurveTypeID": "EOmm1G:reference-data--LogCurveType:dr:13186273",
+        "InterpreterName": "non ullamco sit reprehenderit ea",
+        "LogCurveBusinessValueID": "eg.klLZ4:reference-data--LogCurveBusinessValue:OYa:06786",
+        "CurveID": "fugiat dolore",
+        "CurveVersion": "Duis proident",
+        "Mnemonic": "consequat proident"
+      },
+      {
+        "NullValue": true,
+        "LogCurveBusinessValueID": "0BzgdUe:reference-data--LogCurveBusinessValue:FP5MbA6:4",
+        "CurveVersion": "commodo reprehenderit elit deserunt",
+        "Mnemonic": "incididunt aliquip",
+        "IsProcessed": false,
+        "CurveID": "deserunt Lorem",
+        "DepthUnit": "K8xC98:reference-data--UnitOfMeasure:3:K7:404683",
+        "DateStamp": "1988-09-06T00:34:54.5Z",
+        "NumberOfColumns": -89976187,
+        "Interpolate": false,
+        "CurveQuality": "ea in mollit laboris",
+        "LogCurveMainFamilyID": "e8NpXR7qg.:reference-data--LogCurveMainFamily:aYMNZxhz:",
+        "InterpreterName": "minim deserunt officia ut",
+        "DepthCoding": "DISCRETE",
+        "LogCurveTypeID": "6O4-:reference-data--LogCurveType:1wBtzdzuW9:0806483131",
+        "BaseDepth": 79786624.78696346,
+        "LogCurveFamilyID": "vHg:reference-data--LogCurveFamily:6ch8jW:69",
+        "TopDepth": 85502020.09433332,
+        "CurveUnit": "L-:reference-data--UnitOfMeasure:wUTtX:"
+      }
+    ],
+    "ResourceCurationStatus": "u4yNb:reference-data--ResourceCurationStatus:U6T2dTJ8SR-:19556288",
+    "ToolStringDescription": "pariatur",
+    "LoggingDirection": "ut",
+    "DrillingFluidProperty": "id sit dolore aliquip",
+    "LineageAssertions": [
+      {
+        "ID": "mga7aNc0:EJft3XcX:5v:979500913",
+        "LineageRelationshipType": "zgd:reference-data--LineageRelationshipType:N98mmRIu7:6092"
+      },
+      {
+        "LineageRelationshipType": "qq7eYV:reference-data--LineageRelationshipType:A36zeOu:3",
+        "ID": "5Ehbdp:4GispM53Mdf:jjyJS:8"
+      },
+      {
+        "ID": "xt6Jc:qh6JR4jRSBm:%U6Ty::07455",
+        "LineageRelationshipType": "rpekBiU:reference-data--LineageRelationshipType:VevwHpAG:343"
+      }
+    ],
+    "GeoContexts": [
+      {
+        "GeoTypeID": "w2y:reference-data--ProspectType:GLvpP:08495920",
+        "ProspectID": "NJ3pjLOUr:master-data--Prospect:3I.cROVXvnH:"
+      },
+      {
+        "GeoTypeID": "Field",
+        "FieldID": "f.:master-data--Field:K:692"
+      }
+    ],
+    "SpatialPoint": {
+      "SpatialParameterTypeID": "XG.q0R_Bo:reference-data--SpatialParameterType::3%G:64",
+      "CoordinateQualityCheckRemarks": [
+        "elit labore quis commodo",
+        "non",
+        "Ut ut"
+      ],
+      "CoordinateQualityCheckPerformedBy": "non ullamco exercitation enim",
+      "AppliedOperations": [
+        "mollit",
+        "anim",
+        "est Ut"
+      ],
+      "SpatialGeometryTypeID": "MotB:reference-data--SpatialGeometryType:Eb.:105",
+      "QuantitativeAccuracyBandID": "j34:reference-data--QuantitativeAccuracyBand:lWe6UMuECl.:996074",
+      "QualitativeSpatialAccuracyTypeID": "cpKJsAqyiSU:reference-data--QualitativeSpatialAccuracyType:wJrEO:93ZPB:603590752",
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                23399369.13769333,
+                29737874.05206126,
+                -6481950.328128949,
+                -74941922.56706342,
+                70859254.62451386
+              ],
+              "bbox": [
+                31234310.720769674,
+                -30896581.393070787,
+                -57751469.90978719,
+                -53321019.75809156,
+                -15861001.040833637
+              ]
+            },
+            "bbox": [
+              -53477715.00755041,
+              -82544578.37154444,
+              85199040.25223121,
+              -57961373.162644625
+            ]
+          },
+          {
+            "type": "Feature",
+            "properties": null,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -90211600.75720353,
+                    -42977633.63148905
+                  ],
+                  [
+                    9505874.640234604,
+                    20408906.542138055,
+                    64180869.243760794,
+                    22563477.311955363
+                  ],
+                  [
+                    93512599.75656652,
+                    -70019196.27274841,
+                    -21671015.99603857,
+                    38717054.17264989,
+                    -26954542.780013487
+                  ],
+                  [
+                    96428628.0144997,
+                    40441993.24807912,
+                    7826012.622527584
+                  ]
+                ],
+                [
+                  [
+                    -31838299.560103238,
+                    56519918.134361774,
+                    -34737853.99178611,
+                    8321811.395492911
+                  ],
+                  [
+                    16090250.976070002,
+                    -78249916.8879598
+                  ],
+                  [
+                    -12788395.898443475,
+                    86946659.53630677,
+                    24171323.056742772,
+                    -9025856.34554103
+                  ],
+                  [
+                    -70150457.34872021,
+                    -75700452.4755625,
+                    -77373191.16962734,
+                    -32944170.551137343,
+                    55988992.614171416
+                  ]
+                ],
+                [
+                  [
+                    33897634.65646492,
+                    -30159641.546747237
+                  ],
+                  [
+                    50076090.159903556,
+                    41213288.76178509,
+                    14580342.773749515,
+                    -48143329.84056313,
+                    9597214.730984807
+                  ],
+                  [
+                    53799857.53831735,
+                    29475491.711624667,
+                    20966410.235930115,
+                    58811544.27024877,
+                    38069006.9095225
+                  ],
+                  [
+                    -3940616.9973199964,
+                    14489356.532021523,
+                    -94239951.75151631
+                  ]
+                ],
+                [
+                  [
+                    31787647.871396363,
+                    93062214.90575334,
+                    -27756023.049626857
+                  ],
+                  [
+                    69250992.64942661,
+                    -20712205.898229823,
+                    -45885086.747447535,
+                    -18565028.15868835
+                  ],
+                  [
+                    -25135760.64553167,
+                    -64488135.61469864,
+                    9370731.68811953,
+                    1895168.880332321,
+                    -59774774.784956545
+                  ],
+                  [
+                    53879438.36827916,
+                    -379818.98454782367,
+                    77958472.88709798,
+                    52233561.74003357
+                  ]
+                ]
+              ],
+              "bbox": [
+                -61245142.87074998,
+                -52027500.19662852,
+                92180609.05156231,
+                -64771249.37310816
+              ]
+            },
+            "bbox": [
+              8766884.700596347,
+              -55315807.500758484,
+              -54483091.059949815,
+              -82842967.79642774
+            ]
+          }
+        ],
+        "bbox": [
+          -75192218.34323266,
+          -84378868.22142877,
+          -79745219.10558647,
+          47250907.71990746,
+          8207322.280548632
+        ]
+      },
+      "SpatialLocationCoordinatesDate": "1998-01-10T07:54:52.198Z",
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "persistableReferenceCrs": "sed laboris est dolore cillum",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "geometry": {
+              "type": "AnyCrsMultiPoint",
+              "coordinates": [
+                [
+                  68723856.27647257,
+                  85367023.85645589,
+                  35370316.35215485
+                ],
+                [
+                  72408765.23132074,
+                  -4203571.81016247,
+                  -3291872.332387328,
+                  -46033495.26715119,
+                  -56071113.89965915
+                ],
+                [
+                  43621311.886725456,
+                  30026029.39506395,
+                  -54036970.862177335,
+                  -51522001.37134084,
+                  -8653844.874010637
+                ],
+                [
+                  -43485082.420591906,
+                  -36102620.51340203,
+                  -69264859.07445553
+                ],
+                [
+                  -40312880.53508466,
+                  72572368.9944723,
+                  -2659584.9449047
+                ]
+              ],
+              "bbox": [
+                57463260.22872156,
+                32295990.669952482,
+                27367490.8897084,
+                27250734.780875295
+              ]
+            },
+            "bbox": [
+              -77517126.13447776,
+              -39375889.74745756,
+              -23541064.513747707,
+              30580843.555781767
+            ]
+          }
+        ],
+        "bbox": [
+          62598863.91309202,
+          -25644078.929522738,
+          43116431.705385685,
+          17463171.32154624,
+          86471362.39044285
+        ],
+        "persistableReferenceUnitZ": "cupidatat",
+        "persistableReferenceVerticalCrs": "laborum est aliqua",
+        "CoordinateReferenceSystemID": "Sjtv4xAm:reference-data--CoordinateReferenceSystem:BldT9G:35715120",
+        "VerticalCoordinateReferenceSystemID": "s.W:reference-data--CoordinateReferenceSystem:tTZic3b3q:29468439"
+      },
+      "CoordinateQualityCheckDateTime": "1953-07-25T07:15:49.157Z"
+    },
+    "FrameIdentifier": "cillum",
+    "SamplingStart": 15978753.286292553,
+    "SeismicReferenceElevation": {
+      "TerminationDateTime": "1976-07-04T03:03:45.932Z",
+      "WellboreTVDTrajectoryID": "Bu:work-product-component--WellboreTrajectory::lFNTmN1e:",
+      "VerticalCRSID": "pMOo7g3fK:reference-data--CoordinateReferenceSystem:5-8:4620",
+      "VerticalMeasurementUnitOfMeasureID": "X:reference-data--UnitOfMeasure:H:34393322",
+      "VerticalMeasurementDescription": "aute do tempor",
+      "VerticalReferenceID": "incididunt amet aliqua adipisicing dolor",
+      "VerticalMeasurementPathID": "lt7:reference-data--VerticalMeasurementPath:Z:4795535",
+      "VerticalMeasurement": -77812220.57015783,
+      "VerticalMeasurementTypeID": "l81K-Nm_s:reference-data--VerticalMeasurementType:aqLzAXCjK2t:513915",
+      "EffectiveDateTime": "2003-12-19T03:19:50.631Z",
+      "VerticalMeasurementSourceID": "LeH5Pj1lhqy:reference-data--VerticalMeasurementSource:32Km6QfA:412166"
+    },
+    "VerticalMeasurementID": "enim quis Duis ullamco culpa"
+  }
+}
+,
+{
+  "id": "namespace:work-product-component--WellLog:132456",
+  "kind": "osdu:wks:work-product-component--WellLog:1.1.0",
+  "version": 1562066009929332,
+  "acl": {
+    "owners": [
+      "someone@company.com"
+    ],
+    "viewers": [
+      "someone@company.com"
+    ]
+  },
+  "legal": {
+    "legaltags": [
+      "Example legaltags"
+    ],
+    "otherRelevantDataCountries": [
+      "US"
+    ],
+    "status": "compliant"
+  },
+  "tags": {
+    "NameOfKey": "String value"
+  },
+  "createTime": "2020-12-16T11:46:20.163Z",
+  "createUser": "some-user@some-company-cloud.com",
+  "modifyTime": "2020-12-16T11:52:24.477Z",
+  "modifyUser": "some-user@some-company-cloud.com",
+  "ancestry": {
+    "parents": []
+  },
+  "meta": [
+    {
+      "kind": "Unit",
+      "name": "m",
+      "persistableReference": "{\"abcd\":{\"a\":0.0,\"b\":1.0,\"c\":1.0,\"d\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"L\",\"type\":\"UM\"},\"type\":\"UAD\"}",
+      "unitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+      "propertyNames": [
+        "TopMeasuredDepth",
+        "BottomMeasuredDepth"
+      ]
+    }
+  ],
+  "data": {
+    "ResourceHomeRegionID": "namespace:reference-data--OSDURegion:AWSEastUSA:",
+    "ResourceHostRegionIDs": [
+      "namespace:reference-data--OSDURegion:AWSEastUSA:"
+    ],
+    "ResourceCurationStatus": "namespace:reference-data--ResourceCurationStatus:CREATED:",
+    "ResourceLifecycleStatus": "namespace:reference-data--ResourceLifecycleStatus:LOADING:",
+    "ResourceSecurityClassification": "namespace:reference-data--ResourceSecurityClassification:RESTRICTED:",
+    "Source": "Example Data Source",
+    "ExistenceKind": "namespace:reference-data--ExistenceKind:Prototype:",
+    "Datasets": [
+      "namespace:dataset--AnyDataset:SomeUniqueAnyDatasetID:"
+    ],
+    "Artefacts": [
+      {
+        "RoleID": "namespace:reference-data--ArtefactRole:ConvertedContent:",
+        "ResourceKind": "namespace:source_name:group_type--IndividualType:0.0.0",
+        "ResourceID": "namespace:dataset--AnyDataset:SomeUniqueAnyDatasetID:"
+      }
+    ],
+    "IsExtendedLoad": true,
+    "IsDiscoverable": true,
+    "Name": "Example Name",
+    "Description": "Example Description",
+    "CreationDateTime": "2020-02-13T09:13:15.55Z",
+    "Tags": [
+      "Example Tags"
+    ],
+    "SpatialPoint": {
+      "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
+      "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
+      "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Confirmed:",
+      "CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
+      "CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55Z",
+      "CoordinateQualityCheckRemarks": [
+        "Example CoordinateQualityCheckRemarks"
+      ],
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "CoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:BoundCRS.SLB.32021.15851:",
+        "VerticalCoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:VerticalCRS.EPSG.5773:",
+        "persistableReferenceCrs": "{\"lateBoundCRS\":{\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.1833333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.4833333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",32021]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"type\":\"LBC\"},\"singleCT\":{\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"type\":\"ST\"},\"ver\":\"PE_10_3_1\",\"name\":\"NAD27 * OGP-Usa Conus / North Dakota South [32021,15851]\",\"authCode\":{\"auth\":\"SLB\",\"code\":\"32021079\"},\"type\":\"EBC\"}",
+        "persistableReferenceVerticalCrs": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5773\"},\"type\":\"LBC\",\"ver\":\"PE_10_3_1\",\"name\":\"EGM96_Geoid\",\"wkt\":\"VERTCS[\\\"EGM96_Geoid\\\",VDATUM[\\\"EGM96_Geoid\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5773]]\"}",
+        "persistableReferenceUnitZ": "{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "properties": {},
+            "geometry": {
+              "type": "AnyCrsPoint",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "AppliedOperations": [
+        "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+        "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+      ],
+      "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+      "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:"
+    },
+    "SpatialArea": {
+      "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
+      "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
+      "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Confirmed:",
+      "CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
+      "CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55Z",
+      "CoordinateQualityCheckRemarks": [
+        "Example CoordinateQualityCheckRemarks"
+      ],
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "CoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:BoundCRS.SLB.32021.15851:",
+        "VerticalCoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:VerticalCRS.EPSG.5773:",
+        "persistableReferenceCrs": "{\"lateBoundCRS\":{\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.1833333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.4833333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",32021]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"type\":\"LBC\"},\"singleCT\":{\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"type\":\"ST\"},\"ver\":\"PE_10_3_1\",\"name\":\"NAD27 * OGP-Usa Conus / North Dakota South [32021,15851]\",\"authCode\":{\"auth\":\"SLB\",\"code\":\"32021079\"},\"type\":\"EBC\"}",
+        "persistableReferenceVerticalCrs": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5773\"},\"type\":\"LBC\",\"ver\":\"PE_10_3_1\",\"name\":\"EGM96_Geoid\",\"wkt\":\"VERTCS[\\\"EGM96_Geoid\\\",VDATUM[\\\"EGM96_Geoid\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5773]]\"}",
+        "persistableReferenceUnitZ": "{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "properties": {},
+            "geometry": {
+              "type": "AnyCrsPoint",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "AppliedOperations": [
+        "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+        "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+      ],
+      "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+      "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:"
+    },
+    "GeoContexts": [
+      {
+        "BasinID": "namespace:master-data--Basin:SomeUniqueBasinID:",
+        "GeoTypeID": "namespace:reference-data--BasinType:ArcWrenchOceanContinent:"
+      }
+    ],
+    "SubmitterName": "Example SubmitterName",
+    "BusinessActivities": [
+      "Example Business Activity"
+    ],
+    "AuthorIDs": [
+      "Example Author ID"
+    ],
+    "LineageAssertions": [
+      {
+        "ID": "namespace:any-group-type--AnyIndividualType:SomeUniqueAnyIndividualTypeID:",
+        "LineageRelationshipType": "namespace:reference-data--LineageRelationshipType:Direct:"
+      }
+    ],
+    "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
+    "WellLogTypeID": "namespace:reference-data--LogType:Raw:",
+    "TopMeasuredDepth": 12345.6,
+    "BottomMeasuredDepth": 12345.6,
+    "ServiceCompanyID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+    "LogSource": "Example LogSource",
+    "LogActivity": "Example LogActivity",
+    "LogRun": "Example LogRun",
+    "LogVersion": "Example LogVersion",
+    "LoggingService": "Example LoggingService",
+    "LogServiceDateInterval": {
+      "StartDate": "2020-02-13T09:13:15.55Z",
+      "EndDate": "2020-02-13T09:13:15.55Z"
+    },
+    "ToolStringDescription": "Example ToolStringDescription",
+    "LoggingDirection": "Example LoggingDirection",
+    "PassNumber": 2,
+    "ActivityType": "Example ActivityType",
+    "DrillingFluidProperty": "Example DrillingFluidProperty",
+    "HoleTypeLogging": "OPENHOLE",
+    "VerticalMeasurement": {
+      "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+      "VerticalMeasurement": 12345.6,
+      "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+      "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:PBD:",
+      "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MD:",
+      "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
+      "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-465:",
+      "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+      "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundCRS::OSDU::23031018:",
+      "VerticalReferenceID": "Example VerticalReferenceID",
+      "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+    },
+    "Curves": [
+      {
+        "CurveID": "Example CurveID",
+        "DateStamp": "2020-02-13T09:13:15.55Z",
+        "CurveVersion": "Example CurveVersion",
+        "CurveQuality": "Example CurveQuality",
+        "InterpreterName": "Example InterpreterName",
+        "IsProcessed": true,
+        "NullValue": true,
+        "Interpolate": true,
+        "CurveUnit": "namespace:reference-data--UnitOfMeasure:m:",
+        "Mnemonic": "Example Mnemonic",
+        "LogCurveTypeID": "namespace:reference-data--LogCurveType:BakerHughesInteq:A08A:",
+        "LogCurveBusinessValueID": "namespace:reference-data--LogCurveBusinessValue:High:",
+        "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:Acoustic:",
+        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:Acoustic%20Amplitude:",
+        "NumberOfColumns": 192
+      }
+    ],
+    "FrameIdentifier": "0",
+    "SamplingInterval": 0.0254,
+    "ReferenceCurveID": "MD",
+    "SamplingStart": 2500.0,
+    "SamplingStop": 7500.0,
+    "SamplingDomainTypeID": "namespace:reference-data--WellLogSamplingDomainType:Depth:",
+    "CompanyID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+    "CandidateReferenceCurveIDs": [
+      "Example CandidateReferenceCurveIDs"
+    ],
+    "ZeroTime": "2020-02-13T09:13:15.55Z",
+    "SeismicReferenceElevation": {
+      "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+      "VerticalMeasurement": 12345.6,
+      "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+      "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:PBD:",
+      "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MD:",
+      "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
+      "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-467:",
+      "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+      "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundCRS::OSDU::23031018:",
+      "VerticalReferenceID": "Example VerticalReferenceID",
+      "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+    },
+    "IsRegular": true,
+    "ExtensionProperties": {}
+  }
+}
+
+]
