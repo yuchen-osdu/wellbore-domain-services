@@ -26,7 +26,7 @@ from app.auth.auth import require_opendes_authorized_user
 from app.clients import *
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.routers.logrecognition.log_recognition import family_processor_manager
+from app.modules.log_recognition.routers.log_recognition import family_processor_manager
 from app.utils import Context
 from app.wdms_app import wdms_app
 from tests.unit.test_utils import create_mock_class, nope_logger_fixture
