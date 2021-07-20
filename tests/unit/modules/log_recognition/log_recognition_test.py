@@ -44,8 +44,8 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     mock_storage = mock.AsyncMock(return_value=StorageRecordServiceClientMock())
-    with mock.patch('app.routers.logrecognition.family_processor_manager.get_storage_record_service', mock_storage):
-        with mock.patch('app.routers.logrecognition.log_recognition.get_storage_record_service', mock_storage):
+    with mock.patch('app.modules.log_recognition.routers.family_processor_manager.get_storage_record_service', mock_storage):
+        with mock.patch('app.modules.log_recognition.routers.log_recognition.get_storage_record_service', mock_storage):
             # override authentication dependency
             previous_overrides = wdms_app.dependency_overrides
 
