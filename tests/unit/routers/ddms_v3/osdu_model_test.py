@@ -18,13 +18,17 @@ import os
 from typing import Type
 from pydantic import BaseModel, ValidationError
 from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet, \
-    WellboreTrajectory110
+    WellLog110, WellboreTrajectory110
 
 
 test_parameters = [
     (Wellbore, "Wellbore_unit.json", None),
     (Well, "Well_unit.json", None),
     (WellLog, "WellLog_unit.json", None),
+    (WellLog, "WellLog110_unit.json", ValidationError), #WellLog 100 must not accept to load WellLog 110
+    (WellLog110, "WellLog_unit.json", None), #WellLog 110 accepts to load WellLog 100
+    (WellLog110, "WellLog110_unit.json", None),
+    (WellboreTrajectory, "WellboreTrajectory_unit.json", None),
     (WellboreTrajectory, "WellboreTrajectory_unit.json", None),
     (WellboreTrajectory, "WellboreTrajectory110_unit.json", ValidationError),
     (WellboreTrajectory110, "WellboreTrajectory_unit.json", None),
