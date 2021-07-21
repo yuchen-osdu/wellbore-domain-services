@@ -54,6 +54,7 @@ configMap:
     usePartitionService: 'enabled'
     loggerLevel: 'INFO'
     environmentName: gitlab
+    modules: app.modules.log_recognition.routers.log_recognition
   name: os-wellbore-ddms-envs
 
 ingress:
