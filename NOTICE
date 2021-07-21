@@ -127,6 +127,7 @@ The following software have components provided under the terms of this license:
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - fsspec (from http://github.com/intake/filesystem_spec)
 - gcsfs (from https://github.com/dask/gcsfs)
+- numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
 - toolz (from http://github.com/pytoolz/toolz/)
@@ -219,6 +220,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioredis (from https://github.com/aio-libs/aioredis)
 - anyio (from )
+- asgiref (from http://github.com/django/asgiref/)
 - atomicwrites (from https://github.com/untitaker/python-atomicwrites)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -340,6 +342,13 @@ WTFPL
 The following software have components provided under the terms of this license:
 
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
+
+========================================================================
+X11
+========================================================================
+The following software have components provided under the terms of this license:
+
+- numpy (from http://www.numpy.org)
 
 ========================================================================
 ZPL-2.1
