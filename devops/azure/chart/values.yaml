@@ -31,7 +31,6 @@ annotations:
   buildOrigin: AzureDevops build/#{Build.DefinitionName}#
   commitBranch: []
   commitId: []
-  appgw.ingress.kubernetes.io/ssl-redirect: "true"
 
 image:
   repository: community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/wellbore-domain-services-master
@@ -59,6 +58,7 @@ configMap:
 
 ingress:
   enabled: false
+  ssl-redirect: true
   hosts:
     host: # leave it empty for our dev cluster
     pathPrefix: /api/os-wellbore-ddms
