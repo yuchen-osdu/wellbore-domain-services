@@ -86,7 +86,7 @@ class DataframeSerializerSync:
         return pd.read_parquet(data)
 
     @classmethod
-    def read_json(cls, data, orient: Union[str, JSONOrient]) -> 'DataframeSerializerAsync.DataframeClass':
+    def read_json(cls, data, orient: Union[str, JSONOrient], convert_axes: Optional[bool] = None) -> 'DataframeSerializerAsync.DataframeClass':
         """
         :param data: bytes str content (valid JSON str), path object or file-like object
         :param orient:
@@ -94,7 +94,7 @@ class DataframeSerializerSync:
         """
         orient = JSONOrient.get(orient)
 
-        return pd.read_json(path_or_buf=data, orient=orient.value).replace("NaN", np.NaN)
+        return pd.read_json(path_or_buf=data, orient=orient.value, convert_axes=convert_axes).replace("NaN", np.NaN)
 
 
 class DataframeSerializerAsync:
@@ -117,7 +117,7 @@ class DataframeSerializerAsync:
         )
 
     @with_trace("Parquet JSON deserialization")
-    async def read_json(self, data, orient: Union[str, JSONOrient]) -> DataframeClass:
+    async def read_json(self, data, orient: Union[str, JSONOrient], convert_axes: Optional[bool] = None) -> DataframeClass:
         return await asyncio.get_event_loop().run_in_executor(
             self.executor, DataframeSerializerSync.read_json, data, orient
         )
