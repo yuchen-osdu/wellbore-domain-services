@@ -119,5 +119,5 @@ class DataframeSerializerAsync:
     @with_trace("Parquet JSON deserialization")
     async def read_json(self, data, orient: Union[str, JSONOrient], convert_axes: Optional[bool] = None) -> DataframeClass:
         return await asyncio.get_event_loop().run_in_executor(
-            self.executor, DataframeSerializerSync.read_json, data, orient
+            self.executor, DataframeSerializerSync.read_json, data, orient, convert_axes=convert_axes
         )
