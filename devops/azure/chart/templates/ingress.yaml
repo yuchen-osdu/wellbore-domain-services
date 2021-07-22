@@ -19,7 +19,7 @@ kind: Ingress
 metadata:
   annotations:
 {{ include "os-wellbore-ddms.commonAnnotations" . | indent 4}}      
-{{ if .Values.ingress.ssl-redirect }}
+{{ if index .Values.ingress "ssl-redirect" }}
     appgw.ingress.kubernetes.io/ssl-redirect: "true"
 {{ end }}
     appgw.ingress.kubernetes.io/request-timeout: "300"
