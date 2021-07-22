@@ -18,11 +18,21 @@ env:
   secrets-manager:
     DOCKER_USERNAME: /osdu/devops/docker_credentials:username
     DOCKER_PASSWORD: /osdu/devops/docker_credentials:password
+    SONAR_USERNAME: /osdu/devops/sonar_credentials:username
+    SONAR_PASSWORD: /osdu/devops/sonar_credentials:password
+  
+  parameter-store:
+    SONAR_URL: /osdu/devops/sonar_url
 
 phases:
   install:
+    runtime-versions:
+      java: corretto8
     commands:
       - apt-get update -y
+      - wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472.zip
+      - unzip -q ./sonar-scanner-cli-4.6.2.2472.zip
+      - pip install safety
   
   pre_build:
     commands:
@@ -32,6 +42,7 @@ phases:
     commands:
       - export OUTPUT_DIR="dist"
       - mkdir ${OUTPUT_DIR}
+      - mkdir ${OUTPUT_DIR}/python-safety
       - export REPO_NAME=${PWD##*/}
       - export BRANCH_NAME=`echo ${CODEBUILD_SOURCE_VERSION} | awk '{gsub("refs/heads/","");gsub("\\.","-");gsub("[[:space:]]","-")}1' | sed 's/\//-/g' | awk '{print tolower($0)}'`
       - export ECR_TAG=`echo build.${BRANCH_NAME}.${CODEBUILD_BUILD_NUMBER}.${CODEBUILD_RESOLVED_SOURCE_VERSION} | cut -c 1-120`
@@ -52,6 +63,13 @@ phases:
       - pip install -r ./requirements.txt
       - pip install -r ./requirements_dev.txt
 
+      # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
+      - |
+        java -jar sonar-scanner-4.6.2.2472/lib/sonar-scanner-cli-4.6.2.2472.jar -Dsonar.projectKey=wellbore-ddms -Dsonar.host.url=${SONAR_URL} \
+          -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME}
+      
+      - safety check -r frozenrequirements.txt -r requirements.txt -r requirements_dev.txt -o safety_check.txt; EXITCODE=$?
+      
       - echo "Logging into Docker Hub..."
       - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 
@@ -69,6 +87,9 @@ phases:
         python provider/os-wellbore-ddms-aws/build-aws/build-info.py --branch ${CODEBUILD_SOURCE_VERSION} --commit ${CODEBUILD_RESOLVED_SOURCE_VERSION} \
           --buildid ${CODEBUILD_BUILD_ID} --buildnumber ${CODEBUILD_BUILD_NUMBER} --reponame ${REPO_NAME} --outdir ${OUTPUT_DIR} \
           --artifact ${ECR_IMAGE}
+  post_build:
+    commands:
+      - cp safety_check.txt ${OUTPUT_DIR}/python-safety
 artifacts:
   files:
     - "**/*"
