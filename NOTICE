@@ -83,6 +83,7 @@ The following software have components provided under the terms of this license:
 - HeapDict (from http://stutzbachenterprises.com/)
 - Pygments (from http://pygments.org/)
 - SecretStorage (from https://github.com/mitya57/secretstorage)
+- adlfs (from https://github.com/hayesgb/adlfs/)
 - asgiref (from http://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
@@ -131,6 +132,7 @@ CC-BY-4.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- adlfs (from https://github.com/hayesgb/adlfs/)
 - dask (from http://github.com/dask/dask/)
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - fsspec (from http://github.com/intake/filesystem_spec)
