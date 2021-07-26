@@ -41,6 +41,7 @@ from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSes
                                   WithSessionStorages, get_session_dependencies)
 from app.routers.record_utils import fetch_record
 from app.helper.traces import with_trace
+from natsort import natsorted
 
 router_bulk = APIRouter()  # router dedicated to bulk APIs
 
@@ -72,7 +73,7 @@ async def get_df_from_request(request: Request, orient: Optional[str] = None) ->
     if MimeTypes.JSON.match(ct):
         content = await request.body()  # request.stream()
         try:
-            return await DataframeSerializerAsync().read_json(content, orient)
+            return await DataframeSerializerAsync().read_json(content, orient, convert_axes=False)
         except ValueError:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail='invalid body')  # TODO
@@ -139,7 +140,7 @@ class DataFrameRender:
         if params.curves:
             selection = list(map(str.strip, params.curves.split(',')))
             columns = DataFrameRender.get_matching_column(selection, set(df))
-            df = df[sorted(columns)]
+            df = df[columns]
 
         if params.offset:
             head_index = df.head(params.offset, npartitions=-1, compute=False).index
@@ -148,6 +149,8 @@ class DataFrameRender:
 
         if params.limit and params.limit > 0:
             df = df.head(params.limit, npartitions=-1, compute=False)
+
+        df = df[natsorted(df.columns)]
         return df
 
     @staticmethod

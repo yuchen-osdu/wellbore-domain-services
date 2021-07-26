@@ -7,10 +7,8 @@ Apache-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Pygments (from http://pygments.org/)
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
-- bleach (from http://github.com/mozilla/bleach)
 - boto3 (from https://github.com/boto/boto3)
 - botocore (from https://github.com/boto/botocore)
 - coverage (from https://coverage.readthedocs.io)
@@ -43,9 +41,7 @@ The following software have components provided under the terms of this license:
 - pytest-dependency (from https://github.com/RKrahl/pytest-dependency)
 - python-dateutil (from https://dateutil.readthedocs.org)
 - python-multipart (from http://github.com/andrew-d/python-multipart)
-- readme-renderer (from https://github.com/pypa/readme_renderer)
 - requests (from http://python-requests.org)
-- requests-toolbelt (from https://toolbelt.readthedocs.org)
 - rfc3986 (from https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
 - s3transfer (from https://github.com/boto/s3transfer)
@@ -61,9 +57,7 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Pygments (from http://pygments.org/)
 - colorama (from https://github.com/tartley/colorama)
-- docutils (from http://docutils.sourceforge.net/)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
@@ -81,8 +75,6 @@ BSD-3-Clause
 The following software have components provided under the terms of this license:
 
 - HeapDict (from http://stutzbachenterprises.com/)
-- Pygments (from http://pygments.org/)
-- SecretStorage (from https://github.com/mitya57/secretstorage)
 - adlfs (from https://github.com/hayesgb/adlfs/)
 - asgiref (from http://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
@@ -92,7 +84,6 @@ The following software have components provided under the terms of this license:
 - dask (from http://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
 - distributed (from https://distributed.readthedocs.io/en/latest/)
-- docutils (from http://docutils.sourceforge.net/)
 - fsspec (from http://github.com/intake/filesystem_spec)
 - gcsfs (from https://github.com/dask/gcsfs)
 - grpcio (from https://grpc.io)
@@ -124,7 +115,6 @@ The following software have components provided under the terms of this license:
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn)
-- webencodings (from https://github.com/SimonSapin/python-webencodings)
 - zict (from http://github.com/dask/zict/)
 
 ========================================================================
@@ -150,13 +140,6 @@ The following software have components provided under the terms of this license:
 - numpy (from http://www.numpy.org)
 
 ========================================================================
-CNRI-Python
-========================================================================
-The following software have components provided under the terms of this license:
-
-- webencodings (from https://github.com/SimonSapin/python-webencodings)
-
-========================================================================
 GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -177,17 +160,9 @@ GPL-3.0-only
 The following software have components provided under the terms of this license:
 
 - coverage (from https://coverage.readthedocs.io)
-- docutils (from http://docutils.sourceforge.net/)
 - grpcio (from https://grpc.io)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
-
-========================================================================
-GPL-3.0-or-later
-========================================================================
-The following software have components provided under the terms of this license:
-
-- docutils (from http://docutils.sourceforge.net/)
 
 ========================================================================
 ISC
@@ -246,6 +221,7 @@ The following software have components provided under the terms of this license:
 - aioredis (from https://github.com/aio-libs/aioredis)
 - anyio (from )
 - asgiref (from http://github.com/django/asgiref/)
+- atomicwrites (from https://github.com/untitaker/python-atomicwrites)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
 - azure-core (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/core/azure-core)
@@ -266,17 +242,15 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - h11 (from https://github.com/python-hyper/h11)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig)
-- jeepney (from https://gitlab.com/takluyver/jeepney)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema (from http://github.com/Julian/jsonschema)
-- keyring (from https://github.com/jaraco/keyring)
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
 - msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - munch (from http://github.com/Infinidat/munch)
+- natsort (from https://github.com/SethMMorton/natsort)
 - numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
-- pkginfo (from https://code.launchpad.net/~tseaver/pkginfo/trunk)
 - pluggy (from https://github.com/pytest-dev/pluggy)
 - py (from http://pylib.readthedocs.org/)
 - pyarrow (from https://arrow.apache.org/)
@@ -295,7 +269,6 @@ The following software have components provided under the terms of this license:
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from http://www.structlog.org/)
 - toml (from https://github.com/uiri/toml)
-- tqdm (from https://github.com/tqdm/tqdm)
 - urllib3 (from https://urllib3.readthedocs.io/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)
@@ -307,7 +280,6 @@ The following software have components provided under the terms of this license:
 
 - certifi (from http://certifi.io/)
 - charset-normalizer (from https://github.com/ousret/charset_normalizer)
-- tqdm (from https://github.com/tqdm/tqdm)
 
 ========================================================================
 NCSA
@@ -338,10 +310,8 @@ The following software have components provided under the terms of this license:
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - coverage (from https://coverage.readthedocs.io)
 - distributed (from https://distributed.readthedocs.io/en/latest/)
-- docutils (from http://docutils.sourceforge.net/)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
-- keyring (from https://github.com/jaraco/keyring)
 - numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - ply (from http://www.dabeaz.com/ply/)
@@ -350,7 +320,6 @@ The following software have components provided under the terms of this license:
 - pytz (from http://pythonhosted.org/pytz)
 - rsa (from https://stuvel.eu/rsa)
 - sniffio (from https://github.com/python-trio/sniffio)
-- tqdm (from https://github.com/tqdm/tqdm)
 - typing-extensions (from https://github.com/python/typing)
 - urllib3 (from https://urllib3.readthedocs.io/)
 
@@ -402,9 +371,7 @@ public-domain
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Pygments (from http://pygments.org/)
 - botocore (from https://github.com/boto/botocore)
-- docutils (from http://docutils.sourceforge.net/)
 - grpcio (from https://grpc.io)
 - numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
