@@ -247,6 +247,7 @@ The following software have components provided under the terms of this license:
 - msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - munch (from http://github.com/Infinidat/munch)
+- natsort (from https://github.com/SethMMorton/natsort)
 - numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - pluggy (from https://github.com/pytest-dev/pluggy)
