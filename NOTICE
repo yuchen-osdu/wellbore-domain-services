@@ -127,6 +127,7 @@ The following software have components provided under the terms of this license:
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - fsspec (from http://github.com/intake/filesystem_spec)
 - gcsfs (from https://github.com/dask/gcsfs)
+- numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
 - toolz (from http://github.com/pytoolz/toolz/)
@@ -191,6 +192,7 @@ LGPL-2.1-only
 The following software have components provided under the terms of this license:
 
 - chardet (from https://github.com/chardet/chardet)
+- charset-normalizer (from https://github.com/ousret/charset_normalizer)
 
 ========================================================================
 LGPL-2.1-or-later
@@ -233,6 +235,7 @@ The following software have components provided under the terms of this license:
 - botocore (from https://github.com/boto/botocore)
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi (from http://cffi.readthedocs.org)
+- charset-normalizer (from https://github.com/ousret/charset_normalizer)
 - coverage (from https://coverage.readthedocs.io)
 - fastapi (from https://github.com/tiangolo/fastapi)
 - grpcio (from https://grpc.io)
@@ -274,6 +277,7 @@ MPL-2.0
 The following software have components provided under the terms of this license:
 
 - certifi (from http://certifi.io/)
+- charset-normalizer (from https://github.com/ousret/charset_normalizer)
 
 ========================================================================
 NCSA
@@ -337,6 +341,13 @@ WTFPL
 The following software have components provided under the terms of this license:
 
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
+
+========================================================================
+X11
+========================================================================
+The following software have components provided under the terms of this license:
+
+- numpy (from http://www.numpy.org)
 
 ========================================================================
 ZPL-2.1
