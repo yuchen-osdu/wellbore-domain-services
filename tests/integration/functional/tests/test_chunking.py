@@ -315,6 +315,8 @@ def test_get_data_with_column_filter(with_wdms_env):
             ({"curves": "2D[0]"}, 200, data[['2D[0]']]),
             ({"curves": "2D[0:1]"}, 200, data[['2D[0]', '2D[1]']]),
             ({"curves": "2D"}, 200, data[['2D[0]', '2D[1]', '2D[2]']]),
+            ({"curves": "Y, X"}, 200, data[['Y', 'X']]),  # filter order should be maintain
+            ({"curves": "2D[1], 2D[0]"}, 200, data[['2D[1]', '2D[0]']]),  # filter order should be maintain
         ]
 
         for (params, expected_status, expected_data) in validation_list:
