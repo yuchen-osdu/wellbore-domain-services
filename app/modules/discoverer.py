@@ -3,7 +3,7 @@
 import importlib
 import sys
 
-from app.conf import Config
+from app.conf import Config, MODULES_PATH_PREFIX
 from app.helper import logger
 
 
@@ -37,7 +37,7 @@ def load_module(name):
     log = logger.get_logger()
     try:
         log.info(f'Loading `{name}` module')
-        module = importlib.import_module(name)
+        module = importlib.import_module(f'{MODULES_PATH_PREFIX}.{name}')
 
         can_run, message = module.can_run()
         if not can_run:

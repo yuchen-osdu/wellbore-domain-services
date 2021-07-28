@@ -372,7 +372,7 @@ def test_swagger_generation():
 # Global module setup / teardown
 def setup_module():
     nope_logger()
-    ConfigurationContainer.modules.value = "app.modules.log_recognition.routers.log_recognition"
+    ConfigurationContainer.modules.value = "log_recognition.routers.log_recognition"
     add_modules_routers()
 
 def teardown_module():
