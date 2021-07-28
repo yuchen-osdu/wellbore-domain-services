@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "08ee8ed2-3963-442e-b118-b51f482225f2",
+		"_postman_id": "2415b229-5e99-4759-8974-12f134260e16",
 		"name": "Core dependencies test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1033,6 +1033,192 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Schemas",
+			"item": [
+				{
+					"name": "schemas - get schemas DDMS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let entityType = pm.collectionVariables.get(\"entityType\");\r",
+									"let currentVersion = pm.collectionVariables.get(\"currentVersion\");\r",
+									"\r",
+									"pm.test(pm.info.requestName + \" [\" + entityType + \"][\"+currentVersion+\"]\", function () {\r",
+									"    try{\r",
+									"        pm.response.to.be.ok;\r",
+									"        pm.response.to.be.withBody;\r",
+									"        pm.response.to.be.json;\r",
+									"        const responseJson = pm.response.json();\r",
+									"        pm.expect(responseJson).to.not.be.empty;\r",
+									"        pm.expect(responseJson.schemaInfos.length).to.to.eql(1);\r",
+									"        pm.expect(responseJson.schemaInfos[0].schemaIdentity.id).to.eql(pm.variables.get(\"kind\"));\r",
+									"    }catch(e){\r",
+									"        pm.test(\"FAIL - [\" + entityType + \"][\"+currentVersion+\"]\", () => {throw new Error(e.message)}); \r",
+									"    }\r",
+									"    \r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// INIT\r",
+									"var authorityKind = pm.collectionVariables.get(\"authorityKind\");\r",
+									"var sourceKind = pm.collectionVariables.get(\"sourceKind\");\r",
+									"var entitiesJson = JSON.parse(pm.collectionVariables.get(\"entityJson\"));\r",
+									"var entitiesCount = Object.keys(entitiesJson[authorityKind]).length\r",
+									"var currentEntity = pm.collectionVariables.get(\"entityType\");\r",
+									"var currentVersion = pm.collectionVariables.get(\"currentVersion\");\r",
+									"\r",
+									"if (!currentEntity || currentEntity.length == 0){                                              //first request of the loop when global variables are not set yet\r",
+									"    currentEntity = Object.keys(entitiesJson[authorityKind])[0];                               //get first entity from json\r",
+									"    pm.collectionVariables.set(\"entityType\", currentEntity);                                   //set the global entity type variable for the request loop\r",
+									"    currentVersion = entitiesJson[authorityKind][currentEntity].versions[0];                   //get first version from json\r",
+									"    pm.collectionVariables.set(\"currentVersion\", currentVersion);                              //set the global version variable for the request loop\r",
+									"    var versionsCount = entitiesJson[authorityKind][currentEntity].versions.length;            //get number of versions\r",
+									"}else{\r",
+									"    versionsCount = entitiesJson[authorityKind][currentEntity].versions.length;                 //get number of versions\r",
+									"    var versionsArray = entitiesJson[authorityKind][currentEntity].versions;                    //get array of versions\r",
+									"    var indexOldVersion = versionsArray.indexOf(currentVersion);                                //get index of the previous version\r",
+									"    if (indexOldVersion == versionsCount-1){                                                    //check if currentVersion is the array versions last version \r",
+									"        var indexOldEntity = Object.keys(entitiesJson[authorityKind]).indexOf(currentEntity);   //get index of old entity type\r",
+									"        currentEntity = Object.keys(entitiesJson[authorityKind])[indexOldEntity+1];             //set new current entity type\r",
+									"        versionsCount = entitiesJson[authorityKind][currentEntity].versions.length              //update version count of the new entity\r",
+									"        pm.collectionVariables.set(\"entityType\", currentEntity);                                //set the global entity type variable for the request loop\r",
+									"        currentVersion = entitiesJson[authorityKind][currentEntity].versions[0];                //get the new version to check\r",
+									"        pm.collectionVariables.set(\"currentVersion\", currentVersion);                           //set the global version variable for the request loop\r",
+									"    }else{\r",
+									"        currentVersion = versionsArray[indexOldVersion+1];                                      //get new version of the same entity\r",
+									"        pm.collectionVariables.set(\"currentVersion\", currentVersion);                           //set the global version variable for the request loop\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"// SET ENTITY\r",
+									"var entityTypeName = entitiesJson[authorityKind][currentEntity][\"schema_name\"];\r",
+									"pm.variables.set(\"entityTypeName\", entityTypeName);\r",
+									"\r",
+									"// KIND\r",
+									"var kind = authorityKind+\":\"+sourceKind+\":\"+entityTypeName+\":\"+currentVersion;\r",
+									"\r",
+									"//------- SET KIND\r",
+									"pm.variables.set(\"kind\", kind);\r",
+									"\r",
+									"//------- GET VERSION\r",
+									"var version = currentVersion.split('.');\r",
+									"\r",
+									"//------- SET VERSION VARIABLES\r",
+									"pm.variables.set(\"versionMajor\", version[0]);\r",
+									"pm.variables.set(\"versionMinor\", version[1]);\r",
+									"pm.variables.set(\"versionPatch\", version[2]);\r",
+									"\r",
+									"//LOOP CONDITIONS\r",
+									"var indexCurrentEntity = Object.keys(entitiesJson[authorityKind]).indexOf(currentEntity);\r",
+									"var indexCurrentVersion = entitiesJson[authorityKind][currentEntity].versions.indexOf(currentVersion);\r",
+									"\r",
+									"if ((indexCurrentEntity < entitiesCount-1) || (indexCurrentVersion < versionsCount-1)){ \r",
+									"    postman.setNextRequest(\"schemas - get schemas DDMS\");\r",
+									"} else {\r",
+									"    postman.setNextRequest(null);\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"value": "{{data_partition}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/schema-service/v1/schema?source={{sourceKind}}&authority={{authorityKind}}&entityType={{entityTypeName}}&schemaVersionMajor={{versionMajor}}&schemaVersionMinor={{versionMinor}}&schemaVersionPatch={{versionPatch}}&scope=SHARED",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"schema-service",
+								"v1",
+								"schema"
+							],
+							"query": [
+								{
+									"key": "source",
+									"value": "{{sourceKind}}"
+								},
+								{
+									"key": "authority",
+									"value": "{{authorityKind}}"
+								},
+								{
+									"key": "entityType",
+									"value": "{{entityTypeName}}"
+								},
+								{
+									"key": "schemaVersionMajor",
+									"value": "{{versionMajor}}"
+								},
+								{
+									"key": "schemaVersionMinor",
+									"value": "{{versionMinor}}"
+								},
+								{
+									"key": "schemaVersionPatch",
+									"value": "{{versionPatch}}"
+								},
+								{
+									"key": "scope",
+									"value": "SHARED"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		}
 	],
 	"event": [
@@ -1062,7 +1248,23 @@
 		},
 		{
 			"key": "authorityKind",
-			"value": "slb"
+			"value": ""
+		},
+		{
+			"key": "sourceKind",
+			"value": ""
+		},
+		{
+			"key": "entityJson",
+			"value": ""
+		},
+		{
+			"key": "entityType",
+			"value": ""
+		},
+		{
+			"key": "currentVersion",
+			"value": ""
 		},
 		{
 			"key": "wellKind",
@@ -1094,7 +1296,7 @@
 		},
 		{
 			"key": "acl_domain",
-			"value": "enterprisedata.cloud.slb-ds.com"
+			"value": ""
 		},
 		{
 			"key": "acl_owner",
