@@ -20,7 +20,7 @@ The following software have components provided under the terms of this license:
 - google-cloud-monitoring (from https://github.com/GoogleCloudPlatform/google-cloud-python)
 - google-cloud-trace (from https://github.com/googleapis/googleapis)
 - googleapis-common-protos (from https://github.com/googleapis/googleapis)
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 - importlib-metadata (from http://importlib-metadata.readthedocs.io/)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from http://msgpack.org/)
@@ -38,10 +38,10 @@ The following software have components provided under the terms of this license:
 - pandas (from http://pandas.pydata.org)
 - pyarrow (from https://arrow.apache.org/)
 - pytest-asyncio (from https://github.com/pytest-dev/pytest-asyncio)
-- pytest-dependency (from )
+- pytest-dependency (from https://github.com/RKrahl/pytest-dependency)
 - python-dateutil (from https://dateutil.readthedocs.org)
 - python-multipart (from http://github.com/andrew-d/python-multipart)
-- requests (from http://python-requests.org)
+- requests (from https://requests.readthedocs.io)
 - rfc3986 (from https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
 - s3transfer (from https://github.com/boto/s3transfer)
@@ -58,7 +58,7 @@ BSD-2-Clause
 The following software have components provided under the terms of this license:
 
 - colorama (from https://github.com/tartley/colorama)
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
 - numpy (from http://www.numpy.org)
@@ -86,7 +86,7 @@ The following software have components provided under the terms of this license:
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - fsspec (from http://github.com/intake/filesystem_spec)
 - gcsfs (from https://github.com/dask/gcsfs)
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore)
 - httpx (from https://github.com/encode/httpx)
@@ -127,6 +127,7 @@ The following software have components provided under the terms of this license:
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - fsspec (from http://github.com/intake/filesystem_spec)
 - gcsfs (from https://github.com/dask/gcsfs)
+- numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
 - toolz (from http://github.com/pytoolz/toolz/)
@@ -144,14 +145,14 @@ GPL-2.0-only
 The following software have components provided under the terms of this license:
 
 - coverage (from https://coverage.readthedocs.io)
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 
 ========================================================================
 GPL-2.0-or-later
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 
 ========================================================================
 GPL-3.0-only
@@ -159,7 +160,7 @@ GPL-3.0-only
 The following software have components provided under the terms of this license:
 
 - coverage (from https://coverage.readthedocs.io)
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
 
@@ -168,7 +169,7 @@ ISC
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 
 ========================================================================
@@ -176,7 +177,7 @@ Info-ZIP
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 
 ========================================================================
 JSON
@@ -191,6 +192,7 @@ LGPL-2.1-only
 The following software have components provided under the terms of this license:
 
 - chardet (from https://github.com/chardet/chardet)
+- charset-normalizer (from https://github.com/ousret/charset_normalizer)
 
 ========================================================================
 LGPL-2.1-or-later
@@ -218,6 +220,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioredis (from https://github.com/aio-libs/aioredis)
 - anyio (from )
+- asgiref (from http://github.com/django/asgiref/)
 - atomicwrites (from https://github.com/untitaker/python-atomicwrites)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -233,9 +236,10 @@ The following software have components provided under the terms of this license:
 - botocore (from https://github.com/boto/botocore)
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi (from http://cffi.readthedocs.org)
+- charset-normalizer (from https://github.com/ousret/charset_normalizer)
 - coverage (from https://coverage.readthedocs.io)
 - fastapi (from https://github.com/tiangolo/fastapi)
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 - h11 (from https://github.com/python-hyper/h11)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig)
 - jmespath (from https://github.com/jmespath/jmespath.py)
@@ -244,6 +248,7 @@ The following software have components provided under the terms of this license:
 - msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - munch (from http://github.com/Infinidat/munch)
+- natsort (from https://github.com/SethMMorton/natsort)
 - numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - pluggy (from https://github.com/pytest-dev/pluggy)
@@ -254,7 +259,7 @@ The following software have components provided under the terms of this license:
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
-- pytest-httpx (from )
+- pytest-httpx (from https://colin-b.github.io/pytest_httpx/)
 - pytest-mock (from https://github.com/pytest-dev/pytest-mock/)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - python-ulid (from https://github.com/mdomke/python-ulid)
@@ -274,6 +279,7 @@ MPL-2.0
 The following software have components provided under the terms of this license:
 
 - certifi (from http://certifi.io/)
+- charset-normalizer (from https://github.com/ousret/charset_normalizer)
 
 ========================================================================
 NCSA
@@ -294,7 +300,7 @@ OpenSSL
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 
 ========================================================================
 Python-2.0
@@ -329,7 +335,7 @@ Unlicense
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 
 ========================================================================
 WTFPL
@@ -337,6 +343,13 @@ WTFPL
 The following software have components provided under the terms of this license:
 
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
+
+========================================================================
+X11
+========================================================================
+The following software have components provided under the terms of this license:
+
+- numpy (from http://www.numpy.org)
 
 ========================================================================
 ZPL-2.1
@@ -350,7 +363,7 @@ Zlib
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 - numpy (from http://www.numpy.org)
 
 ========================================================================
@@ -359,7 +372,7 @@ public-domain
 The following software have components provided under the terms of this license:
 
 - botocore (from https://github.com/boto/botocore)
-- grpcio (from http://www.grpc.io)
+- grpcio (from https://grpc.io)
 - numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - py (from http://pylib.readthedocs.org/)
