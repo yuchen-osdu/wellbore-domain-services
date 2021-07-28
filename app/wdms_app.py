@@ -30,7 +30,7 @@ from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id
-from app.routers import probes, about, sessions, bulk_utils
+from app.routers import probes, about, sessions
 from app.routers.ddms_v2 import (
     ddms_v2,
     wellbore_ddms_v2,
@@ -45,6 +45,7 @@ from app.routers.ddms_v3 import (
     welllog_ddms_v3,
     wellbore_trajectory_ddms_v3,
     markerset_ddms_v3)
+from app.routers.bulk import bulk_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.logrecognition import log_recognition
@@ -56,6 +57,7 @@ from app.utils import (
     get_wdms_temp_dir,
     get_pool_executor,
     POOL_EXECUTOR_MAX_WORKER)
+from app.routers.bulk.utils import update_operation_ids, set_v3_input_dataframe_check, set_legacy_input_dataframe_check
 
 base_app = FastAPI()
 
@@ -142,28 +144,12 @@ async def shutdown_event():
     await get_http_client_session().close()
 
 
-def update_operation_ids():
-    # Ensure all operation_id are uniques
-    from fastapi.routing import APIRoute
-    operation_ids = set()
-    for route in wdms_app.routes:
-        if isinstance(route, APIRoute):
-            if route.operation_id in operation_ids:
-                # duplicate detected
-                new_operation_id = route.unique_id
-                if route.operation_id in OpenApiHandler._handlers:
-                    OpenApiHandler._handlers[new_operation_id] = OpenApiHandler._handlers[route.operation_id]
-                route.operation_id = new_operation_id
-            else:
-                operation_ids.add(route.operation_id)
-
-
 DDMS_V2_PATH = '/ddms/v2'
 DDMS_V3_PATH = '/ddms/v3'
 ALPHA_APIS_PREFIX = '/alpha'
 basic_dependencies = [
     Depends(require_data_partition_id, use_cache=False),
-    Depends(require_opendes_authorized_user, use_cache=False)
+    Depends(require_opendes_authorized_user, use_cache=False),
 ]
 
 wdms_app.include_router(probes.router)
@@ -212,6 +198,7 @@ wdms_app.include_router(log_recognition.router, prefix='/log-recognition',
                         dependencies=basic_dependencies)
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
+v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check)]
 
 for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, alpha_tags, False),
                                            (DDMS_V3_PATH, [], True)
@@ -225,10 +212,10 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         include_in_schema=is_visible)
 
     wdms_app.include_router(
-        bulk_utils.router_bulk,
+        bulk_routes.router,
         prefix=bulk_prefix + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["WellLog"],
-        dependencies=basic_dependencies,
+        dependencies=v3_bulk_dependencies,
         include_in_schema=is_visible)
 
     # wellbore trajectory bulk v3 APIs
@@ -240,10 +227,10 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         include_in_schema=is_visible)
 
     wdms_app.include_router(
-        bulk_utils.router_bulk,
+        bulk_routes.router,
         prefix=bulk_prefix + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["Trajectory v3"],
-        dependencies=basic_dependencies,
+        dependencies=v3_bulk_dependencies,
         include_in_schema=is_visible)
 
 # log bulk v2 APIs
@@ -253,14 +240,13 @@ wdms_app.include_router(
     tags=alpha_tags,
     dependencies=basic_dependencies)
 wdms_app.include_router(
-    bulk_utils.router_bulk,
+    bulk_routes.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
-    dependencies=basic_dependencies)
+    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check)])
 
-
-#The multiple instanciation of bulk_utils router create some duplicates operation_id
-update_operation_ids()
+# The multiple instantiation of bulk_utils router create some duplicates operation_id
+update_operation_ids(wdms_app)
 
 
 # ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs

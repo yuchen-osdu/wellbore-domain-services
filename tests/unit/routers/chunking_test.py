@@ -75,7 +75,7 @@ def _create_df_from_response(response):
     elif content_type == 'text/csv; charset=utf-8':
         return pd.read_csv(f, index_col=0)
     elif content_type == 'application/json':
-        return pd.read_json(f, dtype=True, orient='split')
+        return pd.read_json(f, dtype=True, orient='split', convert_axes=False)
     else:
         raise ValueError(f"Unknown content-type: '{content_type}'")
 
@@ -132,7 +132,7 @@ def init_fixtures(nope_logger_fixture, monkeypatch):
 
 
 @pytest.fixture
-def setup_client(init_fixtures):
+def dasked_test_app(init_fixtures):
     from app.wdms_app import wdms_app, enable_alpha_feature
     from app.wdms_app import app_injector
 
@@ -170,9 +170,14 @@ def setup_client(init_fixtures):
         # Initialize traces exporter in app, like it is in app's startup decorator
         wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
-        yield TestClient(wdms_app), tmp_dir
+        yield wdms_app
 
         wdms_app.dependency_overrides = {}  # clean up
+
+
+@pytest.fixture
+def setup_client(dasked_test_app):
+    yield TestClient(dasked_test_app)
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -189,7 +194,7 @@ def setup_client(init_fixtures):
     ['float_MD', 'float_X'],
     ['str_MD', 'str_X'],
     ['date_MD', 'date_X'],
-    ['MD', 'float_X', 'str_X', 'date_X']
+    ['MD', 'date_X', 'float_X', 'str_X']
 ])
 def test_send_all_data_once(setup_client,
                             entity_type,
@@ -197,7 +202,7 @@ def test_send_all_data_once(setup_client,
                             content_type_header,
                             create_func,
                             accept_content):
-    client, tmp_dir = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -243,7 +248,7 @@ def test_send_all_data_once(setup_client,
     ['float_MD', 'float_X'],
     ['str_MD', 'str_X'],
     ['date_MD', 'date_X'],
-    ['MD', 'float_X', 'str_X', 'date_X']
+    ['MD', 'date_X', 'float_X', 'str_X']
 ])
 def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
                                                      entity_type,
@@ -251,7 +256,7 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
                                                      content_type_header,
                                                      create_func,
                                                      accept_content):
-    client, tmp_dir = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
@@ -314,7 +319,7 @@ def test_overwrite_data_by_chunk_append(setup_client, entity_type, columns, cont
                                         accept_content, session_mode):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -398,7 +403,7 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
 def test_add_curve_by_chunk_different_cols(setup_client, entity_type, data_format, accept_content):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -427,7 +432,7 @@ def test_add_curve_by_chunk_different_cols(setup_client, entity_type, data_forma
 def test_add_curve_by_chunk_same_cols(setup_client, entity_type, data_format, accept_content):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -452,7 +457,7 @@ def test_add_curve_by_chunk_same_cols(setup_client, entity_type, data_format, ac
 def test_add_curve_by_chunk_same_cols_overlapped_index(setup_client, entity_type):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -475,7 +480,7 @@ def test_add_curve_by_chunk_same_cols_overlapped_index(setup_client, entity_type
 def test_add_curve_by_chunk_overlap_different_cols(setup_client, entity_type):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -496,7 +501,7 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_abandon_session_with_data_push_data_again(setup_client, entity_type):
     """ Create session, append chunking with consecutive index, abort sessions """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -524,7 +529,7 @@ def test_abandon_session_with_data_push_data_again(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_abandon_no_data_session(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -543,7 +548,7 @@ def test_abandon_no_data_session(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_session_commit_no_data(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -558,7 +563,7 @@ def test_session_commit_no_data(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_session_double_abandon(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -578,7 +583,7 @@ def test_session_double_abandon(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_valid_session_double_commit(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -603,7 +608,7 @@ def test_valid_session_double_commit(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_session_unknown_record(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     chunking_url = Definitions[entity_type]['chunking_url']
 
     session_response = client.post(f'{chunking_url}/123456/sessions', json={'mode': 'update'})
@@ -612,7 +617,7 @@ def test_session_unknown_record(setup_client, entity_type):
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_creates_two_sessions_one_record_with_chunks_different_format(setup_client, entity_type):
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -627,7 +632,7 @@ def test_creates_two_sessions_one_record_with_chunks_different_format(setup_clie
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_creates_two_sessions_two_record_with_chunks(setup_client, entity_type):
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     another_record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -651,7 +656,7 @@ def test_creates_two_sessions_two_record_with_chunks(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_session_sent_same_col_different_types(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -695,7 +700,7 @@ def _df_to_pyarrow_parquet(df_data: pd.DataFrame):
     ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
 ])
 def test_session_chunk_int(setup_client, entity_type, content_type_header, create_func, columns_type):
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -704,10 +709,14 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     data_to_send = create_func(df_data)
 
     headers = {'content-type': content_type_header}
-
     expected_code = 422
+
+    # there is a side effect with parquet format, if at least one col is str, then all cols are casted into str
     if content_type_header.endswith('parquet') and any((type(c) is str for c in columns_type)):
-        # there is a side effect with parquet format, if at least one col is str, then all cols are casted into str
+        expected_code = 200
+
+    # for legacy Log entity, column type as int are automatically casted to string to ensure backward compatibility
+    if content_type_header.endswith('json') and entity_type == 'Log':
         expected_code = 200
 
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
@@ -721,6 +730,32 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
                                    data=data_to_send,
                                    headers=headers)
     assert chunk_response_1.status_code == expected_code
+
+
+@pytest.mark.parametrize("data_format", ['parquet', 'json'])
+@pytest.mark.parametrize("accept_content", ['application/x-parquet', 'application/json'])
+@pytest.mark.parametrize("columns_name", [
+    list(map(str, range(100))),
+    list(map(lambda x: f'test_{x}', range(100))),
+    list(map(lambda x: f'{x}_test_{x%10}', range(100)))
+])
+def test_nat_sort_columns(setup_client, data_format, accept_content, columns_name):
+    """ Create session, append chunking with consecutive index, validate session """
+
+    entity_type = 'WellLog'
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    _create_chunks(client, entity_type, record_id=record_id, data_format=data_format,
+                cols_ranges=[(columns_name, range(20))])
+
+    data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
+    assert data_response.status_code == 200
+    response_df = _create_df_from_response(data_response)
+    assert list(response_df.columns) == columns_name
+
+
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
