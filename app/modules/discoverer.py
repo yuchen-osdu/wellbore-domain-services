@@ -10,6 +10,11 @@ from app.helper import logger
 discovered_routers = []
 
 
+def reset_routers():
+    global discovered_routers
+    discovered_routers = []
+
+
 def get_routers():
     if len(discovered_routers) == 0:
         load_modules()

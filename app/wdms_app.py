@@ -274,6 +274,10 @@ wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
 add_exception_handlers(wdms_app)
 
 
+def remove_modules_routers():
+    discoverer.reset_routers()
+
+
 # Load and add router modules
 def add_modules_routers():
     for router in discoverer.get_routers():
