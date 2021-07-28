@@ -15,6 +15,7 @@
 import time
 import mock
 import pytest
+import importlib
 
 from fastapi import Header, status
 from fastapi.testclient import TestClient
@@ -22,15 +23,13 @@ from odes_storage import models as m
 from odes_storage.exceptions import UnexpectedResponse
 from odes_storage.models import CreateUpdateRecordsResponse
 
-import app
 from app.auth.auth import require_opendes_authorized_user
 from app.clients import *
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.modules.discoverer import load_module
 from app.modules.log_recognition.routers.log_recognition import family_processor_manager
 from app.utils import Context
-from app.wdms_app import wdms_app
+from app.wdms_app import wdms_app, add_modules_router
 from tests.unit.test_utils import create_mock_class, nope_logger_fixture
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
@@ -52,8 +51,8 @@ def client(nope_logger_fixture):
             previous_overrides = wdms_app.dependency_overrides
 
             try:
-                load_module('app.modules.log_recognition.routers.log_recognition')
-                app.wdms_app.add_modules_routers()
+                module = importlib.import_module('app.modules.log_recognition.routers.log_recognition')
+                add_modules_router(module.router)
                 wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
                 wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
                 client = TestClient(wdms_app)
