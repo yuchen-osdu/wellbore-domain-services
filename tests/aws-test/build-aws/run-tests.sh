@@ -39,7 +39,7 @@ token=$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id
 cd deployment/osdu-core/os-wellbore-domain-services/testing
 python3 -m venv env
 source env/bin/activate
-pip install -r ./aws-test/build-aws/requirements.txt
+python3 -m pip install -r ./aws-test/build-aws/requirements.txt
 rm -rf test-reports/
 mkdir test-reports
 
@@ -48,7 +48,7 @@ cd integration
 acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
 
-python gen_postman_env.py --token $token --base_url $svc_url --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
+python3 gen_postman_env.py --token $token --base_url $svc_url --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
 
 pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
