@@ -44,10 +44,12 @@ def ctx_fixture():
 
 @pytest.fixture
 def nope_logger_fixture():
-    from app.helper import logger
-    logger._LOGGER = NopeLogger()
+    nope_logger()
     yield
 
+def nope_logger():
+    from app.helper import logger
+    logger._LOGGER = NopeLogger()
 
 class NopeLogger:
     def __init__(self):

@@ -48,7 +48,6 @@ from app.routers.ddms_v3 import (
 from app.routers.bulk import bulk_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
-from app.routers.logrecognition import log_recognition
 from app.routers.search import search, fast_search, search_v3, fast_search_v3
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import (
@@ -193,10 +192,6 @@ wdms_app.include_router(search_v3.router, prefix='/ddms/v3', tags=['search v3'],
 wdms_app.include_router(fast_search_v3.router, prefix='/ddms/v3', tags=['fast-search v3'],
                         dependencies=basic_dependencies)
 
-wdms_app.include_router(log_recognition.router, prefix='/log-recognition',
-                        tags=['log-recognition'],
-                        dependencies=basic_dependencies)
-
 alpha_tags = ['ALPHA feature: bulk data chunking']
 v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check)]
 
@@ -265,7 +260,11 @@ wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
 add_exception_handlers(wdms_app)
 
 
-# Load and add router modules [alpha version]
+def remove_modules_routers():
+    discoverer.reset_routers()
+
+
+# Load and add router modules
 def add_modules_routers():
     for router in discoverer.get_routers():
         add_modules_router(router)
