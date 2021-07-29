@@ -22,14 +22,15 @@ from odes_storage import models as m
 from odes_storage.exceptions import UnexpectedResponse
 from odes_storage.models import CreateUpdateRecordsResponse
 
+from app.conf import ConfigurationContainer
 from app.auth.auth import require_opendes_authorized_user
 from app.clients import *
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.routers.logrecognition.log_recognition import family_processor_manager
+from app.modules.log_recognition.routers.log_recognition import family_processor_manager
 from app.utils import Context
-from app.wdms_app import wdms_app
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture
+from app.wdms_app import wdms_app, add_modules_routers, remove_modules_routers
+from tests.unit.test_utils import create_mock_class, nope_logger, nope_logger_fixture
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)
@@ -44,8 +45,8 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     mock_storage = mock.AsyncMock(return_value=StorageRecordServiceClientMock())
-    with mock.patch('app.routers.logrecognition.family_processor_manager.get_storage_record_service', mock_storage):
-        with mock.patch('app.routers.logrecognition.log_recognition.get_storage_record_service', mock_storage):
+    with mock.patch('app.modules.log_recognition.routers.family_processor_manager.get_storage_record_service', mock_storage):
+        with mock.patch('app.modules.log_recognition.routers.log_recognition.get_storage_record_service', mock_storage):
             # override authentication dependency
             previous_overrides = wdms_app.dependency_overrides
 
@@ -366,3 +367,14 @@ def test_swagger_generation():
                      {'MainFamily': 'Resistivity', 'Family': 'Medium Resistivity', 'Unit': 'OHMM'}]}}
 
     assert swagger_dict is not None
+
+
+# Global module setup / teardown
+def setup_module():
+    nope_logger()
+    ConfigurationContainer.modules.value = "log_recognition.routers.log_recognition"
+    add_modules_routers()
+
+def teardown_module():
+    remove_modules_routers()
+
