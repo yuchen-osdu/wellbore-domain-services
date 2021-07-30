@@ -54,7 +54,8 @@ from app.utils import (
     get_http_client_session,
     OpenApiHandler,
     get_wdms_temp_dir,
-    get_pool_executor,
+    run_in_pool_executor,
+    DaskClient,
     POOL_EXECUTOR_MAX_WORKER)
 from app.routers.bulk.utils import update_operation_ids, set_v3_input_dataframe_check, set_legacy_input_dataframe_check
 
@@ -114,14 +115,16 @@ async def startup_event():
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
 
+    # seems that the lock is not in the same event loop as requests
+    # so we need to wait instead of just fire a task
+    asyncio.create_task(DaskClient.create())
+
     # init executor pool
     logger.get_logger().info("Startup process pool executor")
 
     # force to adjust process count now instead of on first demand
-    pool = get_pool_executor()
-    loop = asyncio.get_running_loop()
-    futures = [loop.run_in_executor(pool, executor_startup_task) for _ in range(POOL_EXECUTOR_MAX_WORKER)]
-    await asyncio.gather(*futures)
+    for _ in range(POOL_EXECUTOR_MAX_WORKER):
+        asyncio.create_task(run_in_pool_executor(executor_startup_task))
 
     if Config.alpha_feature_enabled.value:
         enable_alpha_feature()
@@ -141,6 +144,7 @@ async def shutdown_event():
         await storage_client.api_client.close()
 
     await get_http_client_session().close()
+    await DaskClient.close()
 
 
 DDMS_V2_PATH = '/ddms/v2'

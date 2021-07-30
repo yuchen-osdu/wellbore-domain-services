@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from app.utils import DaskClient
 import asyncio
 from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
@@ -50,7 +51,7 @@ def event_loop():  # all tests will share the same loop
     loop = asyncio.get_event_loop()
     yield loop
     # teardown
-    loop.run_until_complete(DaskBulkStorage.close())
+    loop.run_until_complete(DaskClient.close())
     loop.close()
 
 
