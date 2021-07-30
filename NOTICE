@@ -215,7 +215,6 @@ MIT
 The following software have components provided under the terms of this license:
 
 - PyJWT (from http://github.com/jpadilla/pyjwt)
-- PyYAML (from http://pyyaml.org/wiki/PyYAML)
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioredis (from https://github.com/aio-libs/aioredis)
