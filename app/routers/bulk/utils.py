@@ -13,14 +13,11 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.bulk_persistence import DataframeSerializerAsync
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.mime_types import MimeTypes
-from app.bulk_persistence import BulkId, JSONOrient
+from app.bulk_persistence import JSONOrient
 from app.utils import get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
-
 from app.model.model_chunking import GetDataParams
-
-BULK_URN_PREFIX_VERSION = "wdms-1"
-BULK_URI_FIELD = "bulkURI"
+from app.routers.bulk.bulk_uri_dependencies import (BulkIdAccess, BULK_URI_FIELD)
 
 
 def update_operation_ids(wdms_app):
@@ -212,17 +209,8 @@ class DataFrameRender:
         return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
 
 
-def get_bulk_uri_osdu(record):
-    return record.data.get('ExtensionProperties', {}).get('wdms', {}).get(BULK_URI_FIELD, None)
-
-
-def set_bulk_uri(record, bulk_urn):
-    return record.data.update({'ExtensionProperties': {'wdms': {BULK_URI_FIELD: bulk_urn}}})
-
-
-async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record):
-    bulk_urn = BulkId.bulk_urn_encode(bulk_id, BULK_URN_PREFIX_VERSION)
-    set_bulk_uri(record, bulk_urn)
+async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri_access: BulkIdAccess):
+    bulk_uri_access.set_bulk_uri(record=record, bulk_id=bulk_id)
 
     # push new version on the storage
     storage_client = await get_storage_record_service(ctx)

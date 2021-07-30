@@ -56,7 +56,15 @@ from app.utils import (
     get_wdms_temp_dir,
     get_pool_executor,
     POOL_EXECUTOR_MAX_WORKER)
-from app.routers.bulk.utils import update_operation_ids, set_v3_input_dataframe_check, set_legacy_input_dataframe_check
+from app.routers.bulk.utils import (
+    update_operation_ids,
+    set_v3_input_dataframe_check,
+    set_legacy_input_dataframe_check,
+)
+from app.routers.bulk.bulk_uri_dependencies import (
+    set_osdu_bulk_id_access,
+    set_log_bulk_id_access
+)
 
 base_app = FastAPI()
 
@@ -193,7 +201,7 @@ wdms_app.include_router(fast_search_v3.router, prefix='/ddms/v3', tags=['fast-se
                         dependencies=basic_dependencies)
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
-v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check)]
+v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check), Depends(set_osdu_bulk_id_access)]
 
 for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, alpha_tags, False),
                                            (DDMS_V3_PATH, [], True)
@@ -238,7 +246,7 @@ wdms_app.include_router(
     bulk_routes.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
-    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check)])
+    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access)])
 
 # The multiple instantiation of bulk_utils router create some duplicates operation_id
 update_operation_ids(wdms_app)
