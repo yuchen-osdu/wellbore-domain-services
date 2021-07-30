@@ -1,13 +1,14 @@
 import pytest
 from io import BytesIO
+import pandas as pd
+from pandas.testing import assert_frame_equal
 
 from fastapi import HTTPException
 
 from app.bulk_persistence import JSONOrient
 from app.model.model_chunking import GetDataParams
-from app.routers.bulk_utils import DataFrameRender, get_df_from_request
-import pandas as pd
-from pandas.testing import assert_frame_equal
+from app.routers.bulk.bulk_routes import DataFrameRender
+from app.routers.bulk.utils import get_df_from_request
 
 
 @pytest.mark.parametrize("requested, df_columns, expected", [
