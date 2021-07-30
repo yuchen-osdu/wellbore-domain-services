@@ -8513,13 +8513,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -9118,13 +9118,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -16944,13 +16944,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -17549,13 +17549,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -18086,13 +18086,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -18691,13 +18691,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
