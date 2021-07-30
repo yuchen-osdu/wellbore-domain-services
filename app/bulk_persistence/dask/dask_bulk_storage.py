@@ -12,35 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import hashlib
 import json
 import time
 from contextlib import suppress
 from functools import wraps
 from operator import attrgetter
+
 import fsspec
 import pandas as pd
-from pyarrow.lib import ArrowException
-import dask
-import dask.dataframe as dd
-from dask.distributed import Client as DaskDistributedClient, WorkerPlugin
-
-from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-
 from app.bulk_persistence import BulkId
-from app.bulk_persistence.dask.traces import wrap_trace_process
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
+from app.bulk_persistence.dask.traces import wrap_trace_process
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
                                              do_merge, set_index,
                                              worker_capture_timing_handlers)
-
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
-from app.utils import capture_timings, get_wdms_temp_dir, get_ctx
+from app.utils import DaskClient, capture_timings, get_ctx
+from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
+from pyarrow.lib import ArrowException
 
-dask.config.set({'temporary_directory': get_wdms_temp_dir()})
+import dask.dataframe as dd
+from dask.distributed import Client as DaskDistributedClient
+from dask.distributed import WorkerPlugin
 
 
 def handle_pyarrow_exceptions(target):
@@ -63,8 +59,8 @@ class DefaultWorkerPlugin(WorkerPlugin):
         _LOGGER = logger
 
         self._register_fsspec_implementation = register_fsspec_implementation
-        get_logger().debug("WorkerPlugin initialised")
         super().__init__()
+        get_logger().debug("WorkerPlugin initialised")
 
     def setup(self, worker):
         self.worker = worker
@@ -77,12 +73,13 @@ class DefaultWorkerPlugin(WorkerPlugin):
             get_logger().exception(f"Task '{key}' has failed with exception")
 
 
-class DaskBulkStorage:
-    client = None
-    """ Dask client """
+def pandas_to_parquet(pdf, path, opt):
+    return pdf.to_parquet(path, index=True, engine='pyarrow', storage_options=opt)
 
-    lock_client = asyncio.Lock()
-    """ used to ensure  """
+
+class DaskBulkStorage:
+    client: DaskDistributedClient = None
+    """ Dask client """
 
     def __init__(self):
         """ use `create` to create instance """
@@ -95,20 +92,20 @@ class DaskBulkStorage:
         instance._parameters = parameters
 
         # Initialise the dask client.
-        async with DaskBulkStorage.lock_client:
-            if not DaskBulkStorage.client:
-                DaskBulkStorage.client = dask_client or await DaskDistributedClient(asynchronous=True, processes=True)
+        dask_client = dask_client or await DaskClient.create()
+        if DaskBulkStorage.client is not dask_client:  # executed only once per dask client
+            DaskBulkStorage.client = dask_client
+                
+            if parameters.register_fsspec_implementation:
+                parameters.register_fsspec_implementation()
 
-                if parameters.register_fsspec_implementation:
-                    parameters.register_fsspec_implementation()
+            await DaskBulkStorage.client.register_worker_plugin(
+                DefaultWorkerPlugin,
+                name="LoggerWorkerPlugin",
+                logger=get_logger(),
+                register_fsspec_implementation=parameters.register_fsspec_implementation)
 
-                await DaskBulkStorage.client.register_worker_plugin(
-                    DefaultWorkerPlugin,
-                    name="LoggerWorkerPlugin",
-                    logger=get_logger(),
-                    register_fsspec_implementation=parameters.register_fsspec_implementation)
-
-                get_logger().info(f"Distributed Dask client initialized : {DaskBulkStorage.client}")
+            get_logger().info(f"Distributed Dask client initialized : {DaskBulkStorage.client}")
 
         instance._fs = fsspec.filesystem(parameters.protocol, **parameters.storage_options)
         return instance
@@ -121,12 +118,6 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
-    @staticmethod
-    async def close():  # TODO check for the needs, currently not usage
-        async with DaskBulkStorage.lock_client:
-            if DaskBulkStorage.client:
-                await DaskBulkStorage.client.close()  # or shutdown
-                DaskBulkStorage.client = None
 
     def _encode_record_id(self, record_id: str) -> str:
         return hashlib.sha1(record_id.encode()).hexdigest()
@@ -149,7 +140,6 @@ class DaskBulkStorage:
         path : string or list
         **kwargs: dict (of dicts) Passthrough key-word arguments for read backend.
         """
-        get_logger().debug(f"loading bulk : {path}")
         return self._submit_with_trace(dd.read_parquet, path,
                                        engine='pyarrow-dataset',
                                        storage_options=self._parameters.storage_options,
@@ -199,15 +189,17 @@ class DaskBulkStorage:
                                        engine='pyarrow',
                                        storage_options=self._parameters.storage_options)
 
-    def _save_with_pandas(self, path, pdf: dd.DataFrame):
+
+    async def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
         pdf: pd.DataFrame or Future<pd.DataFrame>
         returns a Future<None>
         """
-        return self._submit_with_trace(pdf.to_parquet, path,
-                                       engine='pyarrow',
-                                       storage_options=self._parameters.storage_options)
+        f_pdf = await self.client.scatter(pdf)
+        return await self._submit_with_trace(pandas_to_parquet, f_pdf, path,
+                                             self._parameters.storage_options)
 
+    
     def _check_incoming_chunk(self, df):
         # TODO should we test if is_monotonic?, unique ?
         if len(df.index) == 0:
@@ -223,13 +215,12 @@ class DaskBulkStorage:
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
     async def save_blob(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
-        # TODO: The new bulk_id should contain information about the way we store the bulk
-        # In the future, if we change the way we store chunk it could be useful to deduce it from the bulk_uri
         bulk_id = bulk_id or BulkId.new_bulk_id()
 
         if isinstance(ddf, pd.DataFrame):
             self._check_incoming_chunk(ddf)
             ddf = dd.from_pandas(ddf, npartitions=1)
+            ddf = await self.client.scatter(ddf)
 
         path = self._get_blob_path(record_id, bulk_id)
         try:
@@ -261,14 +252,9 @@ class DaskBulkStorage:
         with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
             json.dump({"columns": list(pdf)}, outfile)
 
-        # could be done asynchronously in the workers but it as a cost
-        # we may want to be async if the dataFrame is big
         session_path = self._build_path_from_session(session)
-        # await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
-        # TODO: Warning this is a sync CPU bound operation
-        pdf.to_parquet(f'{session_path}/{filename}.parquet', index=True,
-                       storage_options=self._parameters.storage_options, engine='pyarrow')
+        await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
@@ -313,7 +299,9 @@ class DaskBulkStorage:
         if not dfs:
             raise BulkNotProcessable("No data to commit")
 
-        dfs = self._map_with_trace(set_index, dfs)
+        if len(dfs) > 1:  # set_index is not needed if no merge operations are done
+            dfs = self._map_with_trace(set_index, dfs)
+
         while len(dfs) > 1:
             dfs = [self._submit_with_trace(do_merge, a, b) for a, b in by_pairs(dfs)]
 

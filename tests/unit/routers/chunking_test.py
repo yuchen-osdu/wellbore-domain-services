@@ -1,3 +1,4 @@
+import asyncio
 import io
 from tempfile import TemporaryDirectory
 
@@ -20,7 +21,7 @@ from app.clients.storage_service_blob_storage import StorageRecordServiceBlobSto
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.helper import traces
-from app.utils import Context
+from app.utils import Context, DaskClient
 from app import conf
 
 from tests.unit.persistence.dask_blob_storage_test import generate_df
@@ -130,6 +131,15 @@ def init_fixtures(nope_logger_fixture, monkeypatch):
         conf.Config = conf.ConfigurationContainer.with_load_all()
         yield
 
+
+@pytest.fixture(scope="module")
+def event_loop():  # all tests will share the same loop
+    loop = asyncio.get_event_loop()
+    yield loop
+    # teardown
+    loop.run_until_complete(DaskClient.close())
+    loop.close()
+    
 
 @pytest.fixture
 def dasked_test_app(init_fixtures):

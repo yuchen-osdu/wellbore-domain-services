@@ -74,7 +74,8 @@ class SessionFileMeta:
 def set_index(ddf):  # TODO
     """Set index of the dask dataFrame only if needed."""
     if not ddf.known_divisions or '_idx' not in ddf:
-        ddf['_idx'] = ddf.index  # we need to create a temporary variable to set it as index
+        if '_idx' not in ddf:
+            ddf['_idx'] = ddf.index  # we need to create a temporary variable to set it as index
         ddf['_idx'] = ddf['_idx'].astype(ddf.index.dtype)
         return ddf.set_index('_idx', sorted=True)
     return ddf
