@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser.add_argument('--cloud_provider', dest="cloud_provider", help="Name of cloud provider in which tests are run")
     parser.add_argument('--acl_domain', dest="acl_domain", help="acl_domain name", default=None)
     parser.add_argument('--legal_tag', dest="legal_tag", help="legal_tag", default=None)
-    parser.add_argument('--schemas_versions_list_json', dest="schemas_versions_list_json", help="Json versions list related to the authority kind", default=get_str_variable_from_file("default_schemas_versions_list.json"))
+    parser.add_argument('--schemas_versions_list_json', dest="schemas_versions_list_json", help="Json versions list related to the authority kind", default=get_str_variable_from_file("./default_schemas_versions_list.json"))
     args = parser.parse_args()
 
     try:
