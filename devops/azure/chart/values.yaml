@@ -58,7 +58,8 @@ configMap:
 
 ingress:
   enabled: false
-  ssl-redirect: true
+  extraAnnotations:
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
     host: # leave it empty for our dev cluster
     pathPrefix: /api/os-wellbore-ddms
