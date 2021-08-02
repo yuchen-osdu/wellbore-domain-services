@@ -31,6 +31,8 @@ parameters:
   - name: environmentName
     type: string
     default: "UndefinedEnv"
+  - name: schemasVersionsListJson
+    type: string
   - name: skipCertValidation
     # Used in case of invalid certificate (self-signed,...) 
     type: boolean
@@ -59,6 +61,7 @@ steps:
       echo "parameters.legalTag: ${{ parameters.legalTag }}"
       echo "parameters.dataPartition: ${{ parameters.dataPartition }}"
       echo "parameters.environmentName: ${{ parameters.environmentName }}"
+      echo "parameters.schemasVersionsListJson: ${{ parameters.schemasVersionsListJson }}"
   displayName: 'Display Info'
 
 - task: Bash@3
@@ -127,7 +130,7 @@ steps:
           osduBaseUrl=${{ parameters.baseUrl }}
     fi
 
-    python tests/integration/gen_postman_env.py --token $(token) --base_url ${osduBaseUrl} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
+    python tests/integration/gen_postman_env.py --token $(token) --base_url ${osduBaseUrl} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}  --schemas_versions_list_json ${{ parameters.schemasVersionsListJson }}
 
     newman run tests/dependencies/core_dependencies_test.postman_collection.json -e generated/postman_environment.json -r junit,cli --reporter-junit-export dependencies_tests_report_$(testReportBaseName).xml --timeout-request 10000 $(insecure_flag)
 
@@ -140,7 +143,7 @@ steps:
 
     appUrl=${{ parameters.baseUrl }}${{ parameters.basePath }}
     echo "Testing App on ${appUrl}"
-    
+
     python tests/integration/gen_postman_env.py --token $(token) --base_url ${appUrl} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
 
     pip install virtualenv

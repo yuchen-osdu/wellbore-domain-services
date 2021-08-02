@@ -48,6 +48,9 @@ def create_env_file(file_path, env_data):
     with open(file_path, 'w') as outfile:
         json.dump(env_data, outfile)
 
+def get_str_variable_from_file(file_path):
+    with open(file_path) as file:
+        return json.load(file)
 
 if __name__ == "__main__":
     # execute only if run as a script
@@ -59,6 +62,7 @@ if __name__ == "__main__":
     parser.add_argument('--cloud_provider', dest="cloud_provider", help="Name of cloud provider in which tests are run")
     parser.add_argument('--acl_domain', dest="acl_domain", help="acl_domain name", default=None)
     parser.add_argument('--legal_tag', dest="legal_tag", help="legal_tag", default=None)
+    parser.add_argument('--schemas_versions_list_json', dest="schemas_versions_list_json", help="Json versions list related to the authority kind", default=get_str_variable_from_file("default_schemas_versions_list.json"))
     args = parser.parse_args()
 
     try:
@@ -77,4 +81,6 @@ if __name__ == "__main__":
         add_environment_data(env_data, "acl_domain", args.acl_domain, "string")
     if args.legal_tag:
         add_environment_data(env_data, "legal_tag", args.legal_tag, "string")
+    if args.schemas_versions_list:
+        add_environment_data(env_data, "schemas_versions_list_json", args.schemas_versions_list_json, "string")
     create_env_file("generated/postman_environment.json", env_data)
