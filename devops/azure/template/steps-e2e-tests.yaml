@@ -31,8 +31,6 @@ parameters:
   - name: environmentName
     type: string
     default: "UndefinedEnv"
-  - name: schemasVersionsListJson
-    type: string
   - name: skipCertValidation
     # Used in case of invalid certificate (self-signed,...) 
     type: boolean
