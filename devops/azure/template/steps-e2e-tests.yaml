@@ -59,7 +59,6 @@ steps:
       echo "parameters.legalTag: ${{ parameters.legalTag }}"
       echo "parameters.dataPartition: ${{ parameters.dataPartition }}"
       echo "parameters.environmentName: ${{ parameters.environmentName }}"
-      echo "parameters.schemasVersionsListJson: ${{ parameters.schemasVersionsListJson }}"
   displayName: 'Display Info'
 
 - task: Bash@3
