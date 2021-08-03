@@ -48,12 +48,17 @@ def create_env_file(file_path, env_data):
     with open(file_path, 'w') as outfile:
         json.dump(env_data, outfile)
 
-def get_str_variable_from_file(file_path):
-    with open(file_path) as file:
-        return json.load(file)
+def get_content_json_file(json_file):
+    with open(
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), json_file)
+    ) as f:
+        return json.load(f)
+
 
 if __name__ == "__main__":
     # execute only if run as a script
+
+    print(get_content_json_file("default_schemas_versions_list.json"))
 
     parser = argparse.ArgumentParser(description='Generates postman environment file for test')
     parser.add_argument('--token', dest="token", help="auth token")
@@ -62,8 +67,9 @@ if __name__ == "__main__":
     parser.add_argument('--cloud_provider', dest="cloud_provider", help="Name of cloud provider in which tests are run")
     parser.add_argument('--acl_domain', dest="acl_domain", help="acl_domain name", default=None)
     parser.add_argument('--legal_tag', dest="legal_tag", help="legal_tag", default=None)
-    parser.add_argument('--schemas_versions_list_json', dest="schemas_versions_list_json", help="Json versions list related to the authority kind", default=get_str_variable_from_file("./default_schemas_versions_list.json"))
+    parser.add_argument('--schemas_versions_list_json', dest="schemas_versions_list_json", help="Json versions list related to the authority kind", default=get_content_json_file("default_schemas_versions_list.json"))
     args = parser.parse_args()
+
 
     try:
         os.mkdir("./generated")

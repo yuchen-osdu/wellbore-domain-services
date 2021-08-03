@@ -928,10 +928,9 @@
 							"script": {
 								"exec": [
 									"var getRequest = pm.request;\r",
-									"var url_variables = pm.request.url.toString();\r",
+									"var url_variables = pm.request.url.toString()+\"&authority={{authorityKindName}}&entityType={{entityTypeName}}\";\r",
 									"var schemasVersionsListJson = JSON.parse(pm.collectionVariables.get(\"schemasVersionsListJson\"));\r",
 									"var authoritiesCount = Object.keys(schemasVersionsListJson).length\r",
-									"\r",
 									"\r",
 									"pm.test(pm.info.requestName, function () {\r",
 									"\r",
@@ -950,18 +949,21 @@
 									"                pm.expect(response).to.be.ok;\r",
 									"                pm.expect(response).to.be.withBody;\r",
 									"                pm.expect(response).to.be.json;\r",
+									"\r",
 									"                const responseJson = response.json();\r",
+									"                const schemaInfosLenght = responseJson.schemaInfos.length;\r",
+									"                pm.expect(responseJson.schemaInfos).to.not.be.empty;\r",
 									"\r",
 									"                //check versions\r",
-									"                for (let k = 0; k < responseJson.schemaInfos.length; k++) {\r",
+									"                for (let k = 0; k < schemaInfosLenght; k++) {\r",
 									"                    var kind = responseJson.schemaInfos[k].schemaIdentity.id.split(\":\");\r",
 									"                    var validVersions = schemasVersionsListJson[kind[0]][kind[2]].versions;\r",
+									"                    pm.expect(schemaInfosLenght).to.be.equal(validVersions.length);\r",
 									"                    pm.expect(validVersions).to.includes(kind[3]);\r",
 									"                }\r",
 									"            });\r",
 									"        }\r",
 									"    }\r",
-									"    \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -997,7 +999,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/schema-service/v1/schema?source={{sourceKind}}&authority={{authorityKindName}}&entityType={{entityTypeName}}&scope=SHARED",
+							"raw": "{{base_url}}/api/schema-service/v1/schema?source={{sourceKind}}&scope=SHARED",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1011,14 +1013,6 @@
 								{
 									"key": "source",
 									"value": "{{sourceKind}}"
-								},
-								{
-									"key": "authority",
-									"value": "{{authorityKindName}}"
-								},
-								{
-									"key": "entityType",
-									"value": "{{entityTypeName}}"
 								},
 								{
 									"key": "scope",
