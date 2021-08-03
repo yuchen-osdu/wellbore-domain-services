@@ -164,7 +164,8 @@ basic_dependencies = [
 ]
 
 wdms_app.include_router(probes.router)
-wdms_app.include_router(about.router, prefix=DDMS_V2_PATH)
+wdms_app.include_router(about.router)
+wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, include_in_schema=False)
 
 ddms_v2_routes_groups = [
     (ddms_v2, "Wellbore DDMS"),
