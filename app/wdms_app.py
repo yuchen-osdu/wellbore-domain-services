@@ -167,8 +167,9 @@ wdms_app.include_router(probes.router)
 wdms_app.include_router(about.router)
 wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, include_in_schema=False)
 
+wdms_app.include_router(ddms_v2.router, prefix=DDMS_V2_PATH, tags="Wellbore DDMS", include_in_schema=False)
+
 ddms_v2_routes_groups = [
-    (ddms_v2, "Wellbore DDMS"),
     (well_ddms_v2, "Well"),
     (wellbore_ddms_v2, "Wellbore"),
     (logset_ddms_v2, "Logset"),
