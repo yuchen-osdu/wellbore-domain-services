@@ -19,7 +19,7 @@ def build_request_version() -> RequestRunner:
     rq_proto = Request(
         name='version',
         method='GET',
-        url='{{base_url}}/ddms/v2/version',
+        url='{{base_url}}/version',
         headers={
             'accept': 'application/json',
             'Connection': '{{header_connection}}',
