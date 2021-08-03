@@ -183,10 +183,10 @@ class ConfigurationContainer:
         default='300',
         factory=lambda x: int(x))
 
-    extension_modules: EnvVar = EnvVar(
-        key='EXTENSION_MODULES',
-        description="""Comma separated list of extension module names to load.""",
-        default=None)
+    modules: EnvVar = EnvVar(
+        key='MODULES',
+        description="""Comma separated list of module names to load.""",
+        default="log_recognition.routers.log_recognition") # Add modules to the list once they are refactored, so that they are included
 
     _environment_dict: Dict = os.environ
 
@@ -373,3 +373,4 @@ APP_ID_HEADER_NAME = 'x-app-id'
 CORRELATION_ID_HEADER_NAME = 'correlation-id'
 REQUEST_ID_HEADER_NAME = 'Request-ID'
 PARTITION_ID_HEADER_NAME = 'data-partition-id'
+MODULES_PATH_PREFIX = 'app.modules'

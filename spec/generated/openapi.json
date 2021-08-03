@@ -608,6 +608,34 @@
         "title": "Artefact",
         "type": "object"
       },
+      "AvailableTrajectoryStationProperty": {
+        "additionalProperties": false,
+        "description": "A set of properties describing a trajectory station property which is available for this instance of a WellboreTrajectory.",
+        "properties": {
+          "Name": {
+            "description": "The name of the curve (e.g. column in a CSV document) as originally found. If absent The name of the TrajectoryCurveType is intended to be used.",
+            "example": "AzimuthTN",
+            "title": "Name",
+            "type": "string"
+          },
+          "StationPropertyUnitID": {
+            "description": "Unit of Measure for the station properties of type TrajectoryStationPropertyType.",
+            "example": "partition-id:reference-data--UnitOfMeasure:dega:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Station Property Unit ID",
+            "type": "string"
+          },
+          "TrajectoryStationPropertyTypeID": {
+            "description": "The reference to a trajectory station property type - of if interpreted as channels, the curve or channel name type, identifying e.g. MD, Inclination, Azimuth. This is a relationship to a reference-data--TrajectoryStationPropertyType record id.",
+            "example": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TrajectoryStationPropertyType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Trajectory Station Property Type ID",
+            "type": "string"
+          }
+        },
+        "title": "AvailableTrajectoryStationProperty",
+        "type": "object"
+      },
       "Body_fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post": {
         "properties": {
           "points": {
@@ -965,12 +993,12 @@
         "title": "CursorQueryResponse",
         "type": "object"
       },
-      "Curve": {
+      "Curve110": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "BaseDepth": {
-            "description": "Base Depth",
+            "description": "DEPRECATED: populate data.SamplingStart or data.SamplingStop instead, for informational purposes data.BottomMeasuredDepth. SamplingStart and SamplingStop support other domains than depth.",
             "title": "Basedepth",
             "type": "number"
           },
@@ -1002,13 +1030,13 @@
             "type": "string"
           },
           "DepthCoding": {
-            "description": "The Coding of the depth.",
+            "description": "DEPRECATED: Replaced by boolean data.IsRegular. The Coding of the depth.",
             "pattern": "^REGULAR|DISCRETE$",
             "title": "Depthcoding",
             "type": "string"
           },
           "DepthUnit": {
-            "description": "Unit of Measure for Top and Base depth",
+            "description": "DEPRECATED: use the meta[] to specify the sampling UnitOfMeasure (AbstractMetaItem of kind \"Unit\"; propertyNames[\"TopMeasuredDepth\", \"BottomMeasuredDepth\"]). Originally: Unit of Measure for Top and Base depth.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Depthunit",
             "type": "string"
@@ -1029,31 +1057,31 @@
             "type": "boolean"
           },
           "LogCurveBusinessValueID": {
-            "description": "The SRN of the Log Curve Business Value Type.",
+            "description": "The related record id of the Log Curve Business Value Type.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-LogCurveBusinessValue:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Logcurvebusinessvalueid",
             "type": "string"
           },
           "LogCurveFamilyID": {
-            "description": "The SRN of the Log Curve Family - which is the detailed Geological Physical Quantity Measured - such as neutron porosity",
+            "description": "The related record id of the Log Curve Family - which is the detailed Geological Physical Quantity Measured - such as neutron porosity",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-LogCurveFamily:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Logcurvefamilyid",
             "type": "string"
           },
           "LogCurveMainFamilyID": {
-            "description": "The SRN of the Log Curve Main Family Type - which is the Geological Physical Quantity measured - such as porosity.",
+            "description": "The related record id of the Log Curve Main Family Type - which is the Geological Physical Quantity measured - such as porosity.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-LogCurveMainFamily:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Logcurvemainfamilyid",
             "type": "string"
           },
           "LogCurveTypeID": {
-            "description": "The SRN of the Log Curve Type - which is the standard mnemonic chosen by the company - OSDU provides an initial list",
+            "description": "The related record id of the Log Curve Type - which is the standard mnemonic chosen by the company - OSDU provides an initial list",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-LogCurveType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Logcurvetypeid",
             "type": "string"
           },
           "Mnemonic": {
-            "description": "The Mnemonic of the Log Curve is the value as received either from Raw Providers or from Internal Processing team ",
+            "description": "The Mnemonic of the Log Curve is the value as received either from Raw Providers or from Internal Processing team",
             "title": "Mnemonic",
             "type": "string"
           },
@@ -1062,13 +1090,19 @@
             "title": "Nullvalue",
             "type": "boolean"
           },
+          "NumberOfColumns": {
+            "description": "The number of columns present in this Curve for a single reference value. For simple logs this is typically 1; for image logs this holds the number of image traces or property series. Further information about the columns can be obtained via the respective log or curve APIs of the Domain Data Management Service.",
+            "example": 192,
+            "title": "Number Of Columns",
+            "type": "integer"
+          },
           "TopDepth": {
-            "description": "Top Depth",
+            "description": "DEPRECATED: populate data.SamplingStart or data.SamplingStop instead, for informational purposes data.TopMeasuredDepth. SamplingStart and SamplingStop support other domains than depth.",
             "title": "Topdepth",
             "type": "number"
           }
         },
-        "title": "Curve",
+        "title": "Curve110",
         "type": "object"
       },
       "DataType": {
@@ -1172,8 +1206,6 @@
               }
             ],
             "description": "Decimal number between 0 and 1",
-            "exclusiveMaximum": 1.0,
-            "exclusiveMinimum": 0.0,
             "title": "Quality of the dip"
           },
           "reference": {
@@ -4082,9 +4114,9 @@
         ],
         "title": "WellLocationType"
       },
-      "WellLog": {
+      "WellLog110": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "A well log is a data type that correlates a particular measurement or multiple measurements in a wellbore against depth and/or time within that wellbore. When plotted visually, well logs are typically long line graphs (called \"curves\") but may sometimes be discrete points or intervals. This schema object is intended for digital well logs, not raster log files or raster calibration files, but may be used for the latter in the absence of a defined OSDU schema for these use cases.",
         "properties": {
           "acl": {
             "allOf": [
@@ -4118,7 +4150,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellLogData"
+            "$ref": "#/components/schemas/WellLogData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -4129,7 +4161,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellLog:1.0.0",
+            "example": "osdu:wks:work-product-component--WellLog:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -4185,10 +4217,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellLog",
+        "title": "WellLog110",
         "type": "object"
       },
-      "WellLogData": {
+      "WellLogData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4214,7 +4246,7 @@
             "type": "array"
           },
           "BottomMeasuredDepth": {
-            "description": "OSDU Native Bottom Measured Depth of the Well Log.",
+            "description": "Informational Bottom Measured Depth of the Well Log. Always populate SamplingStart and SamplingStop, which represents the real sampling of the WellLog, including  non-depth sampling.",
             "title": "Bottom Measured Depth",
             "type": "number"
           },
@@ -4226,6 +4258,20 @@
             "title": "Businessactivities",
             "type": "array"
           },
+          "CandidateReferenceCurveIDs": {
+            "description": "Secondary index curves, which are alternative candidates to act as ReferenceCurveID. Generally not populated, except in the cases where multiple reference curves are present, e.g. measured depth and time.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Candidatereferencecurveids",
+            "type": "array"
+          },
+          "CompanyID": {
+            "description": "The relationship to company who engaged the service company (ServiceCompanyID) to perform the logging.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Company ID",
+            "type": "string"
+          },
           "CreationDateTime": {
             "description": "Date that a resource (work  product component here) is formed outside of OSDU before loading (e.g. publication date).",
             "format": "date-time",
@@ -4234,7 +4280,7 @@
           },
           "Curves": {
             "items": {
-              "$ref": "#/components/schemas/Curve"
+              "$ref": "#/components/schemas/Curve110"
             },
             "title": "Curves",
             "type": "array"
@@ -4266,6 +4312,12 @@
             "title": "Extensionproperties",
             "type": "object"
           },
+          "FrameIdentifier": {
+            "description": "For multi-frame or multi-section files, this identifier defines the source frame in the file. If the identifier is an index number the index starts with zero and is converted to a string for this property.",
+            "example": 0,
+            "title": "Frame Identifier",
+            "type": "string"
+          },
           "GeoContexts": {
             "description": "List of geographic entities which provide context to the WPC.  This may include multiple types or multiple values of the same type.",
             "items": {},
@@ -4286,6 +4338,11 @@
           "IsExtendedLoad": {
             "description": "A flag that indicates if the work product component is undergoing an extended load.  It reflects the fact that the work product component is in an early stage and may be updated before finalization.",
             "title": "Isextendedload",
+            "type": "boolean"
+          },
+          "IsRegular": {
+            "description": "Boolean property indicating the sampling mode of the ReferenceCurveID. True means all reference curve values are regularly spaced (see SamplingInterval); false means irregular or discrete sample spacing.",
+            "title": "Is Regular Flag",
             "type": "boolean"
           },
           "LineageAssertions": {
@@ -4316,7 +4373,7 @@
             "title": "Logservicedateinterval"
           },
           "LogSource": {
-            "description": "OSDU Native Log Source - will be updated for later releases - not to be used yet ",
+            "description": "OSDU Native Log Source - will be updated for later releases - not to be used yet",
             "title": "Logsource",
             "type": "string"
           },
@@ -4344,6 +4401,12 @@
             "description": "Indicates if the Pass is the Main one (1) or a repeated one - and it's level repetition",
             "title": "Passnumber",
             "type": "integer"
+          },
+          "ReferenceCurveID": {
+            "description": "The data.Curves[].CurveID, which holds the primary index (reference) values.",
+            "example": "MD",
+            "title": "Reference Curve ID",
+            "type": "string"
           },
           "ResourceCurationStatus": {
             "description": "Describes the current Curation status.",
@@ -4377,8 +4440,42 @@
             "title": "Resource Security Classification",
             "type": "string"
           },
+          "SamplingDomainTypeID": {
+            "description": "The sampling domain, e.g. measured depth, true vertical, travel-time, calendar-time.",
+            "example": "namespace:reference-data--WellLogSamplingDomainType:Depth:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellLogSamplingDomainType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Sampling Domain Type ID",
+            "type": "string"
+          },
+          "SamplingInterval": {
+            "description": "For regularly sampled curves this property holds the sampling interval. For non regular sampling rate this property is not set. The IsRegular flag indicates whether SamplingInterval is required.",
+            "example": 0.0254,
+            "title": "Sampling Interval",
+            "type": "number"
+          },
+          "SamplingStart": {
+            "description": "The start value/first value of the ReferenceCurveID, typically the start depth of the logging.",
+            "example": 2500,
+            "title": "Sampling Start",
+            "type": "number"
+          },
+          "SamplingStop": {
+            "description": "The stop value/last value of the ReferenceCurveID, typically the end depth of the logging.",
+            "example": 7500,
+            "title": "Sampling Stop",
+            "type": "number"
+          },
+          "SeismicReferenceElevation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractFacilityVerticalMeasurement100"
+              }
+            ],
+            "description": "Populated only if the WellLog represents time-depth relationships or checkshots. It is expressed via the standard AbstractFacilityVerticalMeasurement. The following properties are expected to be present: VerticalMeasurementPathID (typically elevation), VerticalMeasurementTypeID as SeismicReferenceDatum, VerticalMeasurement holding the offset to either the VerticalCRSID or the chained VerticalReferenceID in the parent Wellbore.",
+            "title": "Seismicreferenceelevation"
+          },
           "ServiceCompanyID": {
-            "description": "Service Company ID",
+            "description": "The relationship to a Service Company, typically the producer or logging contractor.",
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Servicecompanyid",
             "type": "string"
@@ -4425,7 +4522,7 @@
             "type": "string"
           },
           "TopMeasuredDepth": {
-            "description": "OSDU Native Top Measured Depth of the Well Log.",
+            "description": "Informational Top Measured Depth of the Well Log. Always populate SamplingStart and SamplingStop, which represents the real sampling of the WellLog, including  non-depth sampling.",
             "title": "Top Measured Depth",
             "type": "number"
           },
@@ -4439,7 +4536,7 @@
             "title": "Verticalmeasurement"
           },
           "VerticalMeasurementID": {
-            "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths. Either VerticalMeasurementID or VerticalMeasurement are populated.",
+            "description": "DEPRECATED: Use data.VerticalMeasurement.VerticalReferenceID instead. References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths. Either VerticalMeasurementID or VerticalMeasurement are populated.",
             "title": "Verticalmeasurementid",
             "type": "string"
           },
@@ -4454,9 +4551,15 @@
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Wellboreid",
             "type": "string"
+          },
+          "ZeroTime": {
+            "description": "Optional time reference for (calender) time logs. The ISO date time string representing zero time. Not to be confused with seismic travel time zero. The latter is defined by SeismicReferenceDatum.",
+            "format": "date-time",
+            "title": "Zerotime",
+            "type": "string"
           }
         },
-        "title": "WellLogData",
+        "title": "WellLogData110",
         "type": "object"
       },
       "WellPurpose": {
@@ -4971,7 +5074,7 @@
         ],
         "title": "WellboreStatus"
       },
-      "WellboreTrajectory": {
+      "WellboreTrajectory110": {
         "additionalProperties": false,
         "description": "Work Product Component describing an individual instance of a wellbore trajectory data object. Also called a deviation survey, wellbore trajectory is data that is used to calculate the position and spatial uncertainty of a planned or actual wellbore in 2-dimensional and 3-dimensional space.",
         "properties": {
@@ -5007,7 +5110,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellboreTrajectoryData"
+            "$ref": "#/components/schemas/WellboreTrajectoryData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5018,7 +5121,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
+            "example": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5074,10 +5177,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellboreTrajectory",
+        "title": "WellboreTrajectory110",
         "type": "object"
       },
-      "WellboreTrajectoryData": {
+      "WellboreTrajectoryData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -5097,6 +5200,14 @@
             "title": "Active Survey Indicator",
             "type": "boolean"
           },
+          "AppliedOperations": {
+            "description": "The audit trail of operations applied to the station coordinates from the original state to the current state. The list may contain operations applied prior to ingestion as well as the operations applied to produce the Wgs84Coordinates. The text elements refer to ESRI style CRS and Transformation names, which may have to be translated to EPSG standard names.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Applied Operations",
+            "type": "array"
+          },
           "Artefacts": {
             "description": "An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly",
             "items": {
@@ -5111,6 +5222,14 @@
               "type": "string"
             },
             "title": "Authorids",
+            "type": "array"
+          },
+          "AvailableTrajectoryStationProperties": {
+            "description": "The array of TrajectoryStationProperty definitions describing the available properties for this instance of WellboreTrajectory.",
+            "items": {
+              "$ref": "#/components/schemas/AvailableTrajectoryStationProperty"
+            },
+            "title": "Available Trajectory Station Properties",
             "type": "array"
           },
           "AzimuthReferenceType": {
@@ -5136,6 +5255,12 @@
             "description": "Calculation Method Type used to compute the TVD, X OFFSET, Y OFFSET and DOG LEG SEVERITY values for this Directional Survey. For example, Radius of Curvature, Minimum Curvature, Balanced Tangential, etc.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CalculationMethodType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Calculation Method Type",
+            "type": "string"
+          },
+          "CompanyID": {
+            "description": "The relationship to company who engaged the service company (ServiceCompanyID) to perform the surveying.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Company ID",
             "type": "string"
           },
           "CreationDateTime": {
@@ -5287,6 +5412,7 @@
           },
           "SurveyToolTypeID": {
             "description": "The type of tool or equipment used to acquire this Directional Survey.  For example, gyroscopic, magnetic, MWD, TOTCO, acid bottle, etc. Follow OWSG reference data and support the ISCWSA survey tool definitions.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-SurveyToolType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Type of the Survey Tool",
             "type": "string"
           },
@@ -5340,7 +5466,7 @@
           "BaseDepthMeasuredDepth",
           "VerticalMeasurement"
         ],
-        "title": "WellboreTrajectoryData",
+        "title": "WellboreTrajectoryData110",
         "type": "object"
       },
       "WellboreType": {
@@ -8387,13 +8513,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -8992,13 +9118,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -16732,7 +16858,7 @@
             "application/json": {
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 },
                 "title": "Wellboretrajectories",
                 "type": "array"
@@ -16818,13 +16944,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -17423,13 +17549,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -17597,7 +17723,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 }
               }
             },
@@ -17732,7 +17858,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreTrajectory"
+                  "$ref": "#/components/schemas/WellboreTrajectory110"
                 }
               }
             },
@@ -17874,7 +18000,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellLog"
+                  "$ref": "#/components/schemas/WellLog110"
                 },
                 "title": "Welllogs",
                 "type": "array"
@@ -17960,13 +18086,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -18565,13 +18691,13 @@
             }
           },
           {
-            "description": "Filters curves. List of curves to be returned.",
+            "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
             "example": "MD,GR",
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
-              "description": "Filters curves. List of curves to be returned.",
+              "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
               "title": "Curves",
               "type": "string"
             }
@@ -18739,7 +18865,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellLog"
+                  "$ref": "#/components/schemas/WellLog110"
                 }
               }
             },
@@ -18874,7 +19000,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellLog"
+                  "$ref": "#/components/schemas/WellLog110"
                 }
               }
             },

@@ -13,23 +13,15 @@
 # limitations under the License.
 
 import asyncio
-from typing import List, Set, Optional
-import re
-from contextlib import suppress
-
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import Response
-import dask.dataframe as dd
-import pandas as pd
 
-from app.bulk_persistence import DataframeSerializerAsync, JSONOrient, get_dataframe
+from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
-from app.clients.storage_service_client import get_storage_record_service
+
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
-from app.model.log_bulk import LogBulkHelper
 from app.utils import Context, OpenApiHandler, get_ctx
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
@@ -40,164 +32,23 @@ from app.routers.common_parameters import (
 from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSessionStateValue,
                                   WithSessionStorages, get_session_dependencies)
 from app.routers.record_utils import fetch_record
+from app.routers.bulk.utils import (with_dask_blob_storage, get_check_input_df_func, get_df_from_request,
+                                    set_bulk_field_and_send_record, DataFrameRender)
+from app.routers.bulk.bulk_uri_dependencies import (get_bulk_id_access, BulkIdAccess,
+                                                    BULK_URN_PREFIX_VERSION)
+
 from app.helper.traces import with_trace
 
-router_bulk = APIRouter()  # router dedicated to bulk APIs
+from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
+router = APIRouter()  # router dedicated to bulk APIs
 
-BULK_URN_PREFIX_VERSION = "wdms-1"
-BULK_URI_FIELD = "bulkURI"
 OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}
 
-def _check_df_columns_type(df: pd.DataFrame):
-    if any((type(t) is not str for t in df.columns)):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=f'All columns type should be string')
-
-
-@with_trace("get_df_from_request")
-async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
-    """ extract dataframe from request """
-
-    ct = request.headers.get('Content-Type', '')
-    if MimeTypes.PARQUET.match(ct):
-        content = await request.body()  # request.stream()
-        try:
-            return await DataframeSerializerAsync().read_parquet(content)
-        except OSError as err:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                detail=f'{err}')  # TODO
-
-    if MimeTypes.JSON.match(ct):
-        content = await request.body()  # request.stream()
-        try:
-            return await DataframeSerializerAsync().read_json(content, orient)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                detail='invalid body')  # TODO
-
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f'Invalid content-type, "{ct}" is not supported')
-
-
-async def with_dask_blob_storage() -> DaskBulkStorage:
-    ctx = Context.current()
-    return await ctx.app_injector.get(DaskBulkStorage)
-
-
-class DataFrameRender:
-    @staticmethod
-    async def compute(df):
-        if isinstance(df, pd.DataFrame):
-            return df
-        driver = await with_dask_blob_storage()
-        return await driver.client.compute(df)
-
-    @staticmethod
-    async def get_size(df):
-        if isinstance(df, pd.DataFrame):
-            return len(df.index)
-        driver = await with_dask_blob_storage()
-        return await driver.client.submit(lambda: len(df.index))
-
-
-    re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
-
-    @staticmethod
-    def _col_matching(sel, col):
-        if sel == col:  # exact match
-            return True
-        m_col = DataFrameRender.re_array_selection.match(col)
-        if not m_col:  # if the column doesn't have an array pattern (col[*])
-            return False
-        # compare selection with curve name without array suffix [*]
-        if sel == m_col['name']:  # if selection is 'c', c[*] should match
-            return True
-        # range selection use cases c[0:2] should match c[0], c[1] and c[2]
-        m_sel = DataFrameRender.re_array_selection.match(sel)
-        if m_sel and m_sel['stop']: 
-            with suppress(ValueError):  # suppress int conversion exceptions
-                if int(m_sel['start']) <=  int(m_col['start']) <= int(m_sel['stop']):
-                    return True
-        return False
-    
-    @staticmethod
-    def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
-        selected = set()
-        for sel in selection:
-            selected.update(filter(lambda col: DataFrameRender._col_matching(sel, col),
-                                   cols.difference(selected)))
-        return list(selected)
-
-    @staticmethod
-    @with_trace('process_params')
-    async def process_params(df, params: GetDataParams):
-        if isinstance(df, pd.DataFrame):
-            df = dd.from_pandas(df, npartitions=1)
-
-        if params.curves:
-            selection = list(map(str.strip, params.curves.split(',')))
-            columns = DataFrameRender.get_matching_column(selection, set(df))
-            df = df[sorted(columns)]
-
-        if params.offset:
-            head_index = df.head(params.offset, npartitions=-1, compute=False).index
-            index = await DataFrameRender.compute(head_index)  # TODO could be slow!
-            df = df.loc[~df.index.isin(index)]
-
-        if params.limit and params.limit > 0:
-            df = df.head(params.limit, npartitions=-1, compute=False)
-        return df
-
-    @staticmethod
-    @with_trace('df_render')
-    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None):
-        if params.describe:
-            return {
-                "numberOfRows": await DataFrameRender.get_size(df),
-                "columns": [c for c in df.columns]
-            }
-
-        pdf = await DataFrameRender.compute(df)
-        pdf.index.name = None  # TODO
-
-        if not accept or MimeTypes.PARQUET.type in accept:
-            return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
-
-        if MimeTypes.JSON.type in accept:
-            return Response(
-                pdf.to_json(index=True, date_format='iso', orient=orient.value), media_type=MimeTypes.JSON.type
-            )
-
-        if MimeTypes.CSV.type in accept:
-            return Response(pdf.to_csv(), media_type=MimeTypes.CSV.type)
-
-        # in any other case => Parquet anyway?
-        return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
-
-
-def get_bulk_uri_osdu(record):
-    return record.data.get('ExtensionProperties', {}).get('wdms', {}).get(BULK_URI_FIELD, None)
-
-
-def set_bulk_uri(record, bulk_urn):
-    return record.data.update({'ExtensionProperties': {'wdms': {BULK_URI_FIELD: bulk_urn}}})
-
-
-async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record):
-    bulk_urn = BulkId.bulk_urn_encode(bulk_id, BULK_URN_PREFIX_VERSION)
-    set_bulk_uri(record, bulk_urn)
-
-    # push new version on the storage
-    storage_client = await get_storage_record_service(ctx)
-    return await storage_client.create_or_update_records(
-        record=[record], data_partition_id=ctx.partition_id
-    )
-
 
 @OpenApiHandler.set(operation_id=OPERATION_IDS["record_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
-@router_bulk.post(
+@router.post(
     '/{record_id}/data',
     summary='Writes data as a whole bulk, creates a new version.',
     description="""
@@ -217,22 +68,25 @@ async def post_data(record_id: str,
                     orient: JSONOrient = Depends(json_orient_parameter),
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+                    check_input_df_func=Depends(get_check_input_df_func),
+                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
                     ):
     @with_trace("save_blob")
     async def save_blob():
         df = await get_df_from_request(request, orient)
-        _check_df_columns_type(df)
+        check_input_df_func(df)
         return await dask_blob_storage.save_blob(df, record_id)
 
     record, bulk_id = await asyncio.gather(
         fetch_record(ctx, record_id),
         save_blob()
     )
-    return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record)
+    
+    return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record, bulk_uri_access=bulk_uri_access)
 
 
 @OpenApiHandler.set(operation_id=OPERATION_IDS["chunk_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
-@router_bulk.post(
+@router.post(
     "/{record_id}/sessions/{session_id}/data",
     summary="Send a data chunk. Session must be complete/commit once all chunks are sent.",
     description="Send a data chunk. Session must be complete/commit once all chunks are sent. "
@@ -249,6 +103,7 @@ async def post_chunk_data(record_id: str,
                           orient: JSONOrient = Depends(json_orient_parameter),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+                          check_input_df_func=Depends(get_check_input_df_func),
                           ):
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
@@ -257,11 +112,11 @@ async def post_chunk_data(record_id: str,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
     df = await get_df_from_request(request, orient)
-    _check_df_columns_type(df)
+    check_input_df_func(df)
     await dask_blob_storage.session_add_chunk(i_session.session, df)
 
 
-@router_bulk.get(
+@router.get(
     '/{record_id}/versions/{version}/data',
     summary='Returns data of the specified version.',
     description='Returns the data of a specific version according to the specified query parameters.'
@@ -286,14 +141,10 @@ async def get_data_version(
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
     record = await fetch_record(ctx, record_id, version)
-    bulk_urn = get_bulk_uri_osdu(record)
-    if bulk_urn is not None:
-        bulk_id, prefix = BulkId.bulk_urn_decode(bulk_urn)
-    else:
-        # fallback on ddms_v2 Persistence for wks:log schema
-        bulk_id, prefix = LogBulkHelper.get_bulk_id(record, None)
+    bulk_id, prefix = bulk_uri_access.get_bulk_uri(record=record) # TODO PATH logv2
 
     try:
         if bulk_id is None:
@@ -311,7 +162,7 @@ async def get_data_version(
         ex.raise_as_http()
 
 
-@router_bulk.get(
+@router.get(
     "/{record_id}/data",
     summary='Returns the data according to the specified query parameters.',
     description='Returns the data according to the specified query parameters.'
@@ -336,11 +187,12 @@ async def get_data(
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, dask_blob_storage)
+    return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, dask_blob_storage, bulk_uri_access)
 
 
-@router_bulk.patch(
+@router.patch(
     "/{record_id}/sessions/{session_id}",
     summary='Update a session, either commit or abandon.',
     response_model=Session
@@ -352,6 +204,7 @@ async def complete_session(
     with_session: WithSessionStorages = Depends(get_session_dependencies),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     ctx: Context = Depends(get_ctx),
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ) -> Session:
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
@@ -362,19 +215,27 @@ async def complete_session(
             async with sessions_storage.initiate_commit(tenant, record_id, session_id) as commit_guard:
                 # get the session if some information is needed
                 i_session = commit_guard.session
-                internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
+                _internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
 
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
                 previous_bulk_uri = None
-                bulk_urn = get_bulk_uri_osdu(record)
-                if i_session.session.mode == SessionUpdateMode.Update and bulk_urn is not None:
-                    previous_bulk_uri, _prefix = BulkId.bulk_urn_decode(bulk_urn)
+
+                if i_session.session.mode == SessionUpdateMode.Update:
+                    previous_bulk_uri, prefix = bulk_uri_access.get_bulk_uri(record) # TODO PATH for logv2
+
+                    if previous_bulk_uri is not None and prefix != BULK_URN_PREFIX_VERSION:
+                        try:
+                            df = await get_dataframe(ctx, previous_bulk_uri)
+                            # convert old bulk to new one
+                            previous_bulk_uri = await dask_blob_storage.save_blob(df, record_id=record_id)
+                        except ResourceNotFoundException:
+                            BulkNotFound(record_id=record_id, bulk_id=previous_bulk_uri).raise_as_http()
 
                 new_bulk_uri = await dask_blob_storage.session_commit(i_session.session, previous_bulk_uri)
                 # ==============>
-                # ==============> UPDATE WELLLOG META DATA HERE (baseDepth, ...) <==============
+                # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
                 # ==============>
-                await set_bulk_field_and_send_record(ctx, new_bulk_uri, record)
+                await set_bulk_field_and_send_record(ctx, new_bulk_uri, record, bulk_uri_access)
 
             i_session = commit_guard.session
             i_session.session.meta = i_session.session.meta or {}

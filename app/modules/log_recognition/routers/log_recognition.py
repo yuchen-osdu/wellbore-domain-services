@@ -19,14 +19,19 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 import odes_storage.models as model
 
-import app.routers.logrecognition.family_processor_manager as fp_manager
+import app.modules.log_recognition.routers.family_processor_manager as fp_manager
 from app.clients.storage_service_client import get_storage_record_service
 from app.conf import Config
-from ..common_parameters import REQUIRED_ROLES_WRITE
+from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
 
+def can_run() -> (bool, str):
+    return True, ""
+
 router = APIRouter()
+router.prefix='/log-recognition'
+router.tags=['log-recognition']
 
 
 class CatalogItem(BaseModel):
