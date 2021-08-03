@@ -58,8 +58,6 @@ def get_content_json_file(json_file):
 if __name__ == "__main__":
     # execute only if run as a script
 
-    print(get_content_json_file("default_schemas_versions_list.json"))
-
     parser = argparse.ArgumentParser(description='Generates postman environment file for test')
     parser.add_argument('--token', dest="token", help="auth token")
     parser.add_argument('--base_url', dest="base_url", help="service base url", default=None)
@@ -87,6 +85,6 @@ if __name__ == "__main__":
         add_environment_data(env_data, "acl_domain", args.acl_domain, "string")
     if args.legal_tag:
         add_environment_data(env_data, "legal_tag", args.legal_tag, "string")
-    if args.schemas_versions_list:
+    if args.schemas_versions_list_json:
         add_environment_data(env_data, "schemas_versions_list_json", args.schemas_versions_list_json, "string")
     create_env_file("generated/postman_environment.json", env_data)
