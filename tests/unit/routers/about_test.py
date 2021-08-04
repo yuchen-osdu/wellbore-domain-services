@@ -23,6 +23,7 @@ from tests.unit.test_utils import ctx_fixture
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
+# parametrized for backward compatibility with /ddms/v2 APIs
 PathPrefixParams = [DDMS_V2_PATH, '']
 
 @pytest.fixture

@@ -165,8 +165,9 @@ basic_dependencies = [
 
 wdms_app.include_router(probes.router)
 wdms_app.include_router(about.router, tags=["Wellbore DDMS"])
-wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
 
+# hidden from swagger but maintained for backward compatibility with /ddms/v2 APIs
+wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
 wdms_app.include_router(ddms_v2.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
 
 ddms_v2_routes_groups = [
