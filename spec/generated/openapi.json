@@ -8442,7 +8442,10 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Get About"
+        "summary": "Get About",
+        "tags": [
+          "Wellbore DDMS"
+        ]
       }
     },
     "/alpha/ddms/v2/logs/{record_id}/data": {
@@ -19405,7 +19408,10 @@
             "HTTPBearer": []
           }
         ],
-        "summary": "Get Version"
+        "summary": "Get Version",
+        "tags": [
+          "Wellbore DDMS"
+        ]
       }
     }
   }
