@@ -15,13 +15,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
 									"    pm.response.to.be.ok;",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
-									"",
 									"    pm.expect(pm.response.json().groups).to.not.be.empty;",
-									"});",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(resobj);",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
 									"",
 									"",
 									""
@@ -70,15 +74,15 @@
 			"name": "Storage",
 			"item": [
 				{
-					"name": "storage -  create logset record Copy",
+					"name": "storage -  create logset record",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"const resobj = pm.response.json();",
-									"",
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
 									"    pm.response.to.have.status(201);",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
@@ -86,12 +90,15 @@
 									"    pm.expect(resobj.recordIds.length).to.eql(1);",
 									"    if (resobj.skippedRecordIds)",
 									"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-									"});",
-									"",
-									"// stored the record id for the following tests",
-									"let record_id = resobj.recordIds[0];",
-									"console.log(\"created-logset-record-id\", record_id)",
-									"pm.variables.set(\"created-logset-record-id\", record_id);",
+									"    // stored the record id for the following tests",
+									"    let record_id = resobj.recordIds[0];",
+									"    console.log(\"created-logset-record-id\", record_id)",
+									"    pm.variables.set(\"created-logset-record-id\", record_id);",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(resobj);",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
 									""
 								],
 								"type": "text/javascript"
@@ -163,11 +170,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
 									"    pm.response.to.be.ok;",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
-									"});"
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(pm.response.json());",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
+									"",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -215,9 +229,14 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
 									"    pm.response.to.have.status(204);",
-									"});",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(pm.response.json());",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
 									""
 								],
 								"type": "text/javascript"
@@ -276,7 +295,8 @@
 										"exec": [
 											"const resobj = pm.response.json();",
 											"",
-											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
 											"    pm.response.to.have.status(201);",
 											"    pm.response.to.be.withBody;",
 											"    pm.response.to.be.json;",
@@ -284,7 +304,11 @@
 											"    pm.expect(resobj.recordIds.length).to.eql(1);",
 											"    if (resobj.skippedRecordIds)",
 											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-											"});",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
 											""
 										],
 										"type": "text/javascript"
@@ -358,7 +382,8 @@
 										"exec": [
 											"const resobj = pm.response.json();",
 											"",
-											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
 											"    pm.response.to.have.status(201);",
 											"    pm.response.to.be.withBody;",
 											"    pm.response.to.be.json;",
@@ -366,7 +391,11 @@
 											"    pm.expect(resobj.recordIds.length).to.eql(1);",
 											"    if (resobj.skippedRecordIds)",
 											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-											"});",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
 											""
 										],
 										"type": "text/javascript"
@@ -440,7 +469,8 @@
 										"exec": [
 											"const resobj = pm.response.json();",
 											"",
-											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
 											"    pm.response.to.have.status(201);",
 											"    pm.response.to.be.withBody;",
 											"    pm.response.to.be.json;",
@@ -448,7 +478,11 @@
 											"    pm.expect(resobj.recordIds.length).to.eql(1);",
 											"    if (resobj.skippedRecordIds)",
 											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-											"});",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
 											""
 										],
 										"type": "text/javascript"
@@ -522,7 +556,8 @@
 										"exec": [
 											"const resobj = pm.response.json();",
 											"",
-											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
 											"    pm.response.to.have.status(201);",
 											"    pm.response.to.be.withBody;",
 											"    pm.response.to.be.json;",
@@ -530,7 +565,11 @@
 											"    pm.expect(resobj.recordIds.length).to.eql(1);",
 											"    if (resobj.skippedRecordIds)",
 											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-											"});",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
 											""
 										],
 										"type": "text/javascript"
@@ -625,13 +664,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
 									"    pm.response.to.be.ok;\r",
 									"    pm.response.to.be.withBody;\r",
 									"    pm.response.to.be.json;\r",
 									"\r",
 									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
-									"});\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript"
@@ -705,13 +749,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
 									"    pm.response.to.be.ok;\r",
 									"    pm.response.to.be.withBody;\r",
 									"    pm.response.to.be.json;\r",
 									"\r",
 									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
-									"});\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript"
@@ -774,13 +823,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
 									"    pm.response.to.be.ok;\r",
 									"    pm.response.to.be.withBody;\r",
 									"    pm.response.to.be.json;\r",
 									"\r",
 									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
-									"});\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript"
@@ -848,13 +902,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
 									"    pm.response.to.be.ok;\r",
 									"    pm.response.to.be.withBody;\r",
 									"    pm.response.to.be.json;\r",
 									"\r",
 									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
-									"});\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript"
@@ -932,7 +991,7 @@
 									"var schemasVersionsListJson = JSON.parse(pm.environment.get(\"schemas_versions_list_json\")); //set as environment variable and not collection variable\r",
 									"var authoritiesCount = Object.keys(schemasVersionsListJson).length\r",
 									"\r",
-									"pm.test(pm.info.requestName, function () {\r",
+									"pm.test(pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\", function () {\r",
 									"\r",
 									"    for (let i = 0; i < authoritiesCount; i++) {\r",
 									"        var currentAuthority = Object.keys(schemasVersionsListJson)[i];\r",
