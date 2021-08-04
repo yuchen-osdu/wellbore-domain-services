@@ -1,3 +1,4 @@
+import asyncio
 import io
 from tempfile import TemporaryDirectory
 
@@ -20,7 +21,7 @@ from app.clients.storage_service_blob_storage import StorageRecordServiceBlobSto
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.helper import traces
-from app.utils import Context
+from app.utils import Context, DaskClient
 from app import conf
 
 from tests.unit.persistence.dask_blob_storage_test import generate_df
@@ -130,6 +131,15 @@ def init_fixtures(nope_logger_fixture, monkeypatch):
         conf.Config = conf.ConfigurationContainer.with_load_all()
         yield
 
+
+@pytest.fixture(scope="module")
+def event_loop():  # all tests will share the same loop
+    loop = asyncio.get_event_loop()
+    yield loop
+    # teardown
+    loop.run_until_complete(DaskClient.close())
+    loop.close()
+    
 
 @pytest.fixture
 def dasked_test_app(init_fixtures):
@@ -755,6 +765,60 @@ def test_nat_sort_columns(setup_client, data_format, accept_content, columns_nam
     response_df = _create_df_from_response(data_response)
     assert list(response_df.columns) == columns_name
 
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+def test_session_update_previous_version(setup_client, entity_type):
+    """ create a session opdate on a previous version """
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+    base_url = Definitions[entity_type]['base_url']
+    headers = headers={'Content-Type': 'application/x-parquet'}
+    nb_rows = 5
+    version_data = [
+        generate_df(['MD', 'X', 'Y'], range(nb_rows)),
+        generate_df(['MD', 'X', 'Z'], range(nb_rows)),
+        generate_df(['MD', 'A', 'B'], range(nb_rows))
+    ]
+
+    # create the different version of data
+    for data in version_data:
+        write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                     data=data.to_parquet(engine="pyarrow"),
+                                     headers=headers)
+        assert write_response.status_code == 200
+
+
+    versions_response = client.get(f'{base_url}/{record_id}/versions')
+    assert versions_response.status_code == 200
+    versions = versions_response.json()['versions']
+    versions_with_data = zip(versions[1:], version_data)
+    assert len(versions) == len(version_data) + 1
+    
+    # update specific versions
+    for from_version, data in versions_with_data:
+        session_response = client.post(f'{chunking_url}/{record_id}/sessions',
+                                       json={"fromVersion": from_version, 'mode': 'update'})
+        assert session_response.status_code == 200
+        session_id = session_response.json()['id']
+
+        new_curve = generate_df(['New'], range(nb_rows))
+        chunk_response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                     data=new_curve.to_parquet(engine="pyarrow"),
+                                     headers=headers)
+        assert chunk_response.status_code == 200
+
+        commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+        assert commit_response.status_code == 200
+
+        # check result
+        get_response = client.get(f'{chunking_url}/{record_id}/data')
+        assert get_response.status_code == 200
+        res_df = _create_df_from_response(get_response)
+        expected_df = data
+        expected_df['New'] = new_curve['New']
+        expected_df = expected_df[sorted(expected_df.columns)]
+        pd.testing.assert_frame_equal(expected_df, res_df)
 
 
 # todo:

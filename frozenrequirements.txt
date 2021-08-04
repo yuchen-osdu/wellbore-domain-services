@@ -14,7 +14,7 @@ azure-keyvault==4.1.0
 azure-keyvault-certificates==4.3.0
 azure-keyvault-keys==4.4.0
 azure-keyvault-secrets==4.3.0
-azure-storage-blob==12.6.0
+azure-storage-blob==12.8.1
 backoff==1.11.1
 boto3==1.18.1
 botocore==1.21.1

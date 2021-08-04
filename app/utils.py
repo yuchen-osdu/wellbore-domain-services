@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 from typing import Optional, Callable, List, Tuple, Union, NamedTuple
 import concurrent.futures
-from functools import lru_cache, wraps
+from functools import lru_cache, wraps, partial
 from aiohttp import ClientSession
 import contextvars
 from os import path, makedirs
@@ -27,6 +28,8 @@ from app.injector.app_injector import AppInjector
 from app.conf import Config
 from time import perf_counter, process_time
 from logging import INFO
+import dask
+from dask.distributed import Client as DaskDistributedClient
 
 
 @lru_cache()
@@ -37,14 +40,52 @@ def get_http_client_session(key: str = 'GLOBAL'):
 POOL_EXECUTOR_MAX_WORKER = 4
 
 
+class DaskClient:
+    client: DaskDistributedClient = None
+    """ Dask client """
+    lock_client: asyncio.Lock = None
+    """ used to ensure  """
+
+    @staticmethod
+    async def create() -> DaskDistributedClient:
+        if not DaskClient.lock_client:
+            DaskClient.lock_client = asyncio.Lock()
+
+        if not DaskClient.client:
+            async with DaskClient.lock_client:
+                if not DaskClient.client:
+                    from app.helper.logger import get_logger
+                    get_logger().info(f"Dask client initialization started...")
+                    DaskClient.client = await DaskDistributedClient(asynchronous=True,
+                                                                    processes=True,
+                                                                    dashboard_address=None,
+                                                                    diagnostics_port=None,
+                                                                    )
+                    get_logger().info(f"Dask client initialized : {DaskClient.client}")
+        return DaskClient.client
+
+    @staticmethod
+    async def close():
+        async with DaskClient.lock_client:
+            if DaskClient.client:
+                await DaskClient.client.close()  # or shutdown
+                DaskClient.client = None
+
+        
 def get_pool_executor():
     if get_pool_executor._pool is None:
         get_pool_executor._pool = concurrent.futures.ProcessPoolExecutor(POOL_EXECUTOR_MAX_WORKER)
-
     return get_pool_executor._pool
 
 
 get_pool_executor._pool = None
+
+
+async def run_in_pool_executor(func, *args, **kwargs):
+    pool = get_pool_executor()
+    loop = asyncio.get_running_loop()
+    func = partial(func, *args, **kwargs)
+    return await loop.run_in_executor(pool, func=func)
 
 
 def _setup_temp_dir() -> str:
@@ -469,3 +510,5 @@ class __OpenApiHandler:
 
 
 OpenApiHandler = __OpenApiHandler()
+
+dask.config.set({'temporary_directory': get_wdms_temp_dir()})

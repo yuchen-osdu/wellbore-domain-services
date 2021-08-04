@@ -315,6 +315,8 @@ def test_get_data_with_column_filter(with_wdms_env):
             ({"curves": "2D[0]"}, 200, data[['2D[0]']]),
             ({"curves": "2D[0:1]"}, 200, data[['2D[0]', '2D[1]']]),
             ({"curves": "2D"}, 200, data[['2D[0]', '2D[1]', '2D[2]']]),
+            ({"curves": "Y, X"}, 200, data[['Y', 'X']]),  # filter order should be maintain
+            ({"curves": "2D[1], 2D[0]"}, 200, data[['2D[1]', '2D[0]']]),  # filter order should be maintain
         ]
 
         for (params, expected_status, expected_data) in validation_list:
@@ -500,3 +502,36 @@ def test_get_data_from_record_data_without_dask(with_wdms_env, entity_type, seri
                                         filters={'curves': 'X', 'offset': 2, 'limit': 5}
                                         ).call(with_wdms_env, headers=headers, assert_status=200)
         pd.testing.assert_frame_equal(data[['X']][2:7], serializer.read(result.response.content), check_dtype=False)
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', ["log"])
+@pytest.mark.parametrize('serializer', [JsonSerializer()])
+def test_data_without_dask_update_session(with_wdms_env, entity_type, serializer):
+    with create_record(with_wdms_env, entity_type) as record_id:
+        expected = generate_df(['MD', 'X'], range(20))
+        data_to_send = serializer.dump(expected[:10])
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        build_request_post_data_without_dask(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+        # create session
+        session_id = create_session(with_wdms_env, entity_type, record_id, False)  # mode update
+
+        # post chunk
+        data_to_send = serializer.dump(expected[10:20])
+        build_request_post_chunk(
+            entity_type, record_id, session_id, data_to_send
+        ).call(
+            with_wdms_env, headers={'Content-Type': serializer.mime_type},
+        ).assert_ok()
+
+        # commit session
+        complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
+
+         # check full dataframe
+        result = build_request_get_data(
+            entity_type, record_id
+        ).call(with_wdms_env, headers=headers, assert_status=200)
+        result_df = serializer.read(result.response.content)
+        pd.testing.assert_frame_equal(expected, result_df, check_dtype=False)

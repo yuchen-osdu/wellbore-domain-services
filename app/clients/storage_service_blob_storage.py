@@ -14,10 +14,12 @@
 
 import uuid
 from asyncio import gather, iscoroutinefunction
+from typing import List
 
 from app.model import model_utils
-from fastapi import FastAPI, HTTPException, status
-from odes_storage.models import *
+from fastapi import HTTPException, status
+from odes_storage.models import (CreateUpdateRecordsResponse, Record,
+                                 RecordVersions)
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from osdu.core.api.storage.tenant import Tenant
@@ -116,11 +118,11 @@ class StorageRecordServiceBlobStorage:
                                            skipped_record_ids=[])
 
     async def get_record_version(self,
-                         id: str,
-                         version: int,
-                         data_partition_id: str = None,
-                         appkey: str = None,
-                         token: str = None) -> Record:
+                                 id: str,
+                                 version: int,
+                                 data_partition_id: str = None,
+                                 appkey: str = None,
+                                 token: str = None) -> Record:
         await self._check_auth(appkey, token)
         try:
             object_name = await self._build_record_path(id, data_partition_id, version=version)

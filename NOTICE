@@ -219,7 +219,7 @@ The following software have components provided under the terms of this license:
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioredis (from https://github.com/aio-libs/aioredis)
-- anyio (from )
+- anyio (from https://pypi.org/project/anyio/3.3.0/)
 - asgiref (from http://github.com/django/asgiref/)
 - atomicwrites (from https://github.com/untitaker/python-atomicwrites)
 - attrs (from https://attrs.readthedocs.io/)
