@@ -254,8 +254,15 @@ async def test_session_update_ovelap_by_column(test_session, dask_storage: DaskB
 
 @pytest.mark.asyncio
 async def test_bad_bulkId_commit(test_session, dask_storage: DaskBulkStorage):
+    await dask_storage.session_add_chunk(test_session, generate_df(['A'], range(10)))
     with pytest.raises(BulkNotFound):
         await dask_storage.session_commit(test_session, from_bulk_id="bad_bulk_id")
+
+
+@pytest.mark.asyncio
+async def test_empty_session_commit(test_session, dask_storage: DaskBulkStorage):
+    with pytest.raises(BulkNotProcessable):
+        await dask_storage.session_commit(test_session, from_bulk_id=test_session.recordId)
 
 
 @pytest.mark.asyncio
