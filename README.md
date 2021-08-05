@@ -88,6 +88,12 @@ Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Un
     pip install -r requirements.txt
     ```
 
+    Or, for a developer setup, this will install tools to help you work with the code.
+    ```bash
+    pip install -r requirements.txt -r requirements_dev.txt
+    ```
+    
+
 6. Run the service
 
     ```bash
@@ -316,7 +322,7 @@ docker build -t=$IMAGE_TAG --rm . -f ./build/dockerfile --build-arg PIP_WHEEL_DI
 
 ```bash
 # Install test dependencies
-pip install -r requirements_dev.txt
+pip install -r requirements.txt -r requirements_dev.txt
 
 python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit
 ```
@@ -344,6 +350,29 @@ pytest ./functional --environment="./generated/postman_environment.json" --filte
 ```
 
 For more information see the [integration tests README](tests/integration/README.md)
+
+### Manage package dependencies
+
+Anytime, you may want to ensure your virtual environment is in sync with your requirements specification.
+For this you can use:
+
+```bash
+pip-sync
+```
+
+If you want to work with other requirements file, you can specify them
+```bash
+pip-sync requirements.txt requirements_dev.txt
+```
+
+If you want to update `requirements.txt` to retrieve the most recent version, respecting bounds set in `requirements.in`, you can use:
+
+```bash
+pip-compile
+```
+
+For more information: https://github.com/jazzband/pip-tools/
+
 
 ### Port Forward from Kubernetes
 
