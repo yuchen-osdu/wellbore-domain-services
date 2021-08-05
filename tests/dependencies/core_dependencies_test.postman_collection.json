@@ -986,6 +986,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"//This test doesnt match with the other tests based on a try catch for a better way to manage errors\r",
+									"//the main request ( {{base_url}}/api/schema-service/v1/schema?source={{sourceKind}}&scope=SHARED ) will be run once\r",
+									"//based on this request the script will complete the URL to check all schemas listed in a json file\r",
 									"var getRequest = pm.request;\r",
 									"var url_variables = pm.request.url.toString()+\"&authority={{authorityKindName}}&entityType={{entityTypeName}}\";\r",
 									"var schemasVersionsListJson = JSON.parse(pm.environment.get(\"schemas_versions_list_json\")); //set as environment variable and not collection variable\r",
