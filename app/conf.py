@@ -188,6 +188,11 @@ class ConfigurationContainer:
         description="""Comma separated list of module names to load.""",
         default="log_recognition.routers.log_recognition") # Add modules to the list once they are refactored, so that they are included
 
+    min_worker_memory: EnvVar = EnvVar(
+        key='MIN_WORKER_MEMORY',
+        description='Min amount of memory for one worker',
+        default="512Mi")
+
     _environment_dict: Dict = os.environ
 
     _contextual_loader: Callable = None
