@@ -384,6 +384,12 @@ If you want to update `requirements.txt` to retrieve the most recent version, re
 pip-compile
 ```
 
+If you want to update the version of only one dependency, for instance fastapi:
+
+```bash
+pip-compile --upgrade-package fastapi
+```
+
 For more information: https://github.com/jazzband/pip-tools/
 
 ### Debugging:
