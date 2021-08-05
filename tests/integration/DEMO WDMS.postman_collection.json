@@ -408,6 +408,76 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "get OSDU wellLog data",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"value": "{{datapartitionid}}",
+										"type": "text"
+									},
+									{
+										"key": "offset",
+										"value": 0,
+										"type": "integer"
+									},
+									{
+										"key": "limit",
+										"value": 100,
+										"type": "integer"
+									},
+									{
+										"key": "curves",
+										"value": "",
+										"type": "text"
+									},
+									{
+										"key": "describe",
+										"value": "false",
+										"type": "boolean"
+									},
+									{
+										"key": "orient",
+										"value": "split",
+										"type": "text"
+									},
+									{
+										"key": "accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/data",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"os-wellbore-ddms",
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
