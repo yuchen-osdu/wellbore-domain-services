@@ -767,7 +767,7 @@ def test_nat_sort_columns(setup_client, data_format, accept_content, columns_nam
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
 def test_session_update_previous_version(setup_client, entity_type):
-    """ create a session opdate on a previous version """
+    """ create a session update on a previous version """
 
     client = setup_client
     record_id = _create_record(client, entity_type)
