@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "37429a7a-54cb-41d9-a365-d989ce8e428d",
+		"_postman_id": "fe08fcdc-b4c0-440b-a8c2-f6b1f94e2d5c",
 		"name": "DEMO WDMS",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -512,6 +512,56 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "protocol",
+			"value": "http"
+		},
+		{
+			"key": "baseUrl",
+			"value": "127.0.0.1:8080"
+		},
+		{
+			"key": "authorization",
+			"value": "1234"
+		},
+		{
+			"key": "datapartitionid",
+			"value": "dummy"
+		},
+		{
+			"key": "domain",
+			"value": "contoso.com"
+		},
+		{
+			"key": "legaltags",
+			"value": "{{datapartitionid}}-default-legal"
+		},
+		{
+			"key": "wellName",
+			"value": "dummy1234"
+		},
+		{
+			"key": "wellId",
+			"value": "00001234"
+		},
+		{
+			"key": "wellboreName",
+			"value": "dummy1234"
+		},
+		{
+			"key": "wellboreId",
+			"value": "dummy1234"
+		},
+		{
+			"key": "welllogName",
+			"value": "dummy1234"
+		},
+		{
+			"key": "welllogId",
+			"value": "dummy1234"
 		}
 	]
 }
