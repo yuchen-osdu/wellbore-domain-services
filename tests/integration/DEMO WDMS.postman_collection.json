@@ -106,10 +106,10 @@
 											]
 										}
 									},
-									"_postman_previewlanguage": null,
-									"header": null,
+									"_postman_previewlanguage": "Text",
+									"header": [],
 									"cookie": [],
-									"body": null
+									"body": ""
 								}
 							]
 						},
@@ -302,6 +302,67 @@
 										{
 											"key": "data-partition-id",
 											"value": "{{datapartitionid}}",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "post OSDU wellLog data",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{datapartitionid}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"columns\": [\r\n    \"Ref\",\r\n    \"col_1\",\r\n    \"col_2\"\r\n  ],\r\n  \"index\": [\r\n    0,\r\n    1,\r\n    2,\r\n    3,\r\n    4\r\n  ],\r\n  \"data\": [\r\n    [\r\n      0,\r\n      1111.1,\r\n      2222.1\r\n    ],\r\n    [\r\n      0.5,\r\n      1111.2,\r\n      2222.2\r\n    ],\r\n    [\r\n      1,\r\n      1111.3,\r\n      2222.3\r\n    ],\r\n    [\r\n      1.5,\r\n      1111.4,\r\n      2222.4\r\n    ],\r\n    [\r\n      2,\r\n      1111.5,\r\n      2222.5\r\n    ]\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/data",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"os-wellbore-ddms",
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "data-partition-id",
+											"value": "{{datapartitionid}}",
+											"disabled": true
+										},
+										{
+											"key": "orient",
+											"value": "split",
 											"disabled": true
 										}
 									]
