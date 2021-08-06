@@ -26,6 +26,12 @@ deployment:
 
 replicaCount: 2
 
+resources:
+ limits:
+   memory: 3Gi
+ requests:
+   memory: 3Gi
+
 annotations:
   buildNumber: []
   buildOrigin: AzureDevops build/#{Build.DefinitionName}#
@@ -54,6 +60,7 @@ configMap:
     usePartitionService: 'enabled'
     loggerLevel: 'INFO'
     environmentName: gitlab
+    modules: log_recognition.routers.log_recognition
   name: os-wellbore-ddms-envs
 
 ingress:

@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "08ee8ed2-3963-442e-b118-b51f482225f2",
-		"name": "Core dependencies test",
+		"_postman_id": "41aaca62-e223-45e4-9773-1c09ce09e884",
+		"name": "Core dependencies test V3",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -15,13 +15,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
 									"    pm.response.to.be.ok;",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
-									"",
 									"    pm.expect(pm.response.json().groups).to.not.be.empty;",
-									"});",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(resobj);",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
 									"",
 									"",
 									""
@@ -70,132 +74,15 @@
 			"name": "Storage",
 			"item": [
 				{
-					"name": "storage -  query all schemas",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
-									"    pm.response.to.be.ok;",
-									"    pm.response.to.be.withBody;",
-									"    pm.response.to.be.json;",
-									"    pm.expect(pm.response.json()).to.not.be.empty;",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "data-partition-id",
-								"value": "{{data_partition}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/schema-service/v1/schema?source=wks&authority=slb",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"schema-service",
-								"v1",
-								"schema"
-							],
-							"query": [
-								{
-									"key": "source",
-									"value": "wks"
-								},
-								{
-									"key": "authority",
-									"value": "slb"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "storage - get schema from logSetKind",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
-									"    pm.response.to.be.ok;",
-									"    pm.response.to.be.withBody;",
-									"    pm.response.to.be.json;",
-									"",
-									"    pm.expect(pm.response.json()).to.not.be.empty;",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "data-partition-id",
-								"value": "{{data_partition}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/schema-service/v1/schema/{{logSetKind}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"schema-service",
-								"v1",
-								"schema",
-								"{{logSetKind}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "storage -  create logset record Copy",
+					"name": "storage -  create logset record",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"const resobj = pm.response.json();",
-									"",
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
 									"    pm.response.to.have.status(201);",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
@@ -203,12 +90,15 @@
 									"    pm.expect(resobj.recordIds.length).to.eql(1);",
 									"    if (resobj.skippedRecordIds)",
 									"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-									"});",
-									"",
-									"// stored the record id for the following tests",
-									"let record_id = resobj.recordIds[0];",
-									"console.log(\"created-logset-record-id\", record_id)",
-									"pm.variables.set(\"created-logset-record-id\", record_id);",
+									"    // stored the record id for the following tests",
+									"    let record_id = resobj.recordIds[0];",
+									"    console.log(\"created-logset-record-id\", record_id)",
+									"    pm.variables.set(\"created-logset-record-id\", record_id);",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(resobj);",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
 									""
 								],
 								"type": "text/javascript"
@@ -280,11 +170,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
 									"    pm.response.to.be.ok;",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
-									"});"
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(pm.response.json());",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
+									"",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -332,9 +229,14 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
 									"    pm.response.to.have.status(204);",
-									"});",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(pm.response.json());",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
 									""
 								],
 								"type": "text/javascript"
@@ -393,7 +295,8 @@
 										"exec": [
 											"const resobj = pm.response.json();",
 											"",
-											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
 											"    pm.response.to.have.status(201);",
 											"    pm.response.to.be.withBody;",
 											"    pm.response.to.be.json;",
@@ -401,7 +304,11 @@
 											"    pm.expect(resobj.recordIds.length).to.eql(1);",
 											"    if (resobj.skippedRecordIds)",
 											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-											"});",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
 											""
 										],
 										"type": "text/javascript"
@@ -475,7 +382,8 @@
 										"exec": [
 											"const resobj = pm.response.json();",
 											"",
-											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
 											"    pm.response.to.have.status(201);",
 											"    pm.response.to.be.withBody;",
 											"    pm.response.to.be.json;",
@@ -483,7 +391,11 @@
 											"    pm.expect(resobj.recordIds.length).to.eql(1);",
 											"    if (resobj.skippedRecordIds)",
 											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-											"});",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
 											""
 										],
 										"type": "text/javascript"
@@ -557,7 +469,8 @@
 										"exec": [
 											"const resobj = pm.response.json();",
 											"",
-											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
 											"    pm.response.to.have.status(201);",
 											"    pm.response.to.be.withBody;",
 											"    pm.response.to.be.json;",
@@ -565,7 +478,11 @@
 											"    pm.expect(resobj.recordIds.length).to.eql(1);",
 											"    if (resobj.skippedRecordIds)",
 											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-											"});",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
 											""
 										],
 										"type": "text/javascript"
@@ -639,7 +556,8 @@
 										"exec": [
 											"const resobj = pm.response.json();",
 											"",
-											"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
 											"    pm.response.to.have.status(201);",
 											"    pm.response.to.be.withBody;",
 											"    pm.response.to.be.json;",
@@ -647,7 +565,11 @@
 											"    pm.expect(resobj.recordIds.length).to.eql(1);",
 											"    if (resobj.skippedRecordIds)",
 											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
-											"});",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
 											""
 										],
 										"type": "text/javascript"
@@ -742,13 +664,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
 									"    pm.response.to.be.ok;\r",
 									"    pm.response.to.be.withBody;\r",
 									"    pm.response.to.be.json;\r",
 									"\r",
 									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
-									"});\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript"
@@ -822,13 +749,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
 									"    pm.response.to.be.ok;\r",
 									"    pm.response.to.be.withBody;\r",
 									"    pm.response.to.be.json;\r",
 									"\r",
 									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
-									"});\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript"
@@ -891,13 +823,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
 									"    pm.response.to.be.ok;\r",
 									"    pm.response.to.be.withBody;\r",
 									"    pm.response.to.be.json;\r",
 									"\r",
 									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
-									"});\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript"
@@ -965,13 +902,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(pm.info.requestName + \" [\" + pm.variables.get('osduBaseUrl') + \"]\", function () {\r",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
 									"    pm.response.to.be.ok;\r",
 									"    pm.response.to.be.withBody;\r",
 									"    pm.response.to.be.json;\r",
 									"\r",
 									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
-									"});\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript"
@@ -1033,6 +975,145 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Schemas",
+			"item": [
+				{
+					"name": "schemas - get schemas DDMS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//This test doesnt match with the other tests based on a try catch for a better way to manage errors\r",
+									"//the main request ( {{base_url}}/api/schema-service/v1/schema?source={{sourceKind}}&scope=SHARED ) will be run once\r",
+									"//based on this request the script will complete the URL to check all schemas listed in a json file\r",
+									"var getRequest = pm.request;\r",
+									"var url_variables = pm.request.url.toString()+\"&authority={{authorityKindName}}&entityType={{entityTypeName}}\";\r",
+									"var schemasVersionsListJson = JSON.parse(pm.environment.get(\"schemas_versions_list_json\")); //set as environment variable and not collection variable\r",
+									"var authoritiesCount = Object.keys(schemasVersionsListJson).length\r",
+									"\r",
+									"pm.test(pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\", function () {\r",
+									"\r",
+									"    for (let i = 0; i < authoritiesCount; i++) {\r",
+									"        var currentAuthority = Object.keys(schemasVersionsListJson)[i];\r",
+									"\r",
+									"        pm.test(\"Test on authority :\"+currentAuthority, function () {\r",
+									"            pm.variables.set(\"authorityKindName\", currentAuthority);\r",
+									"            var entitiesCount = Object.keys(schemasVersionsListJson[currentAuthority]).length\r",
+									"\r",
+									"            for (let j = 0; j < entitiesCount; j++) {\r",
+									"                var entityTypeName = Object.keys(schemasVersionsListJson[currentAuthority])[j];\r",
+									"                pm.variables.set(\"entityTypeName\", entityTypeName);\r",
+									"                getRequest.url = pm.variables.replaceIn(url_variables);\r",
+									"\r",
+									"                pm.sendRequest(getRequest, (error, response) => {\r",
+									"                    console.log(\"Request : \" + getRequest.url.toString());\r",
+									"                    console.log(error ? error : response.json());\r",
+									"\r",
+									"                    pm.expect(response).to.be.ok;\r",
+									"                    pm.expect(response).to.be.json;\r",
+									"\r",
+									"                    const responseJson = response.json();\r",
+									"                    const schemaInfosLenght = responseJson.schemaInfos.length;\r",
+									"                    pm.expect(responseJson.schemaInfos).to.not.be.empty;\r",
+									"\r",
+									"                    console.log(\"Check schema versions\");\r",
+									"                    //check versions\r",
+									"                    for (let k = 0; k < schemaInfosLenght; k++) {\r",
+									"                        var kind = responseJson.schemaInfos[k].schemaIdentity.id.split(\":\");\r",
+									"\r",
+									"                        pm.test(\"Check schema id : \"+ responseJson.schemaInfos[k].schemaIdentity.id, function () {\r",
+									"                            var validVersions = schemasVersionsListJson[kind[0]][kind[2]].versions;\r",
+									"                            pm.expect(schemaInfosLenght).to.be.equal(validVersions.length);\r",
+									"                            pm.expect(validVersions).to.includes(kind[3]);\r",
+									"                        });\r",
+									"                    }\r",
+									"                });\r",
+									"            }\r",
+									"        });\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"value": "{{data_partition}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/schema-service/v1/schema?source={{sourceKind}}&scope=SHARED",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"schema-service",
+								"v1",
+								"schema"
+							],
+							"query": [
+								{
+									"key": "source",
+									"value": "{{sourceKind}}"
+								},
+								{
+									"key": "scope",
+									"value": "SHARED"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		}
 	],
 	"event": [
@@ -1062,7 +1143,15 @@
 		},
 		{
 			"key": "authorityKind",
-			"value": "slb"
+			"value": "osdu"
+		},
+		{
+			"key": "sourceKind",
+			"value": "wks"
+		},
+		{
+			"key": "schemas_versions_list_json",
+			"value": ""
 		},
 		{
 			"key": "wellKind",
@@ -1094,7 +1183,7 @@
 		},
 		{
 			"key": "acl_domain",
-			"value": "enterprisedata.cloud.slb-ds.com"
+			"value": ""
 		},
 		{
 			"key": "acl_owner",

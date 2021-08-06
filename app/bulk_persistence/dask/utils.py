@@ -20,6 +20,8 @@ from logging import INFO
 from app.helper.logger import get_logger
 from app.utils import capture_timings
 
+import dask.dataframe as dd
+
 
 def worker_make_log_captured_timing_handler(level=INFO):
     """log captured timing from the worker subprocess (no access to context)"""
@@ -71,24 +73,25 @@ class SessionFileMeta:
 
 
 @capture_timings("set_index", handlers=worker_capture_timing_handlers)
-def set_index(ddf):  # TODO
+def set_index(ddf: dd.DataFrame):
     """Set index of the dask dataFrame only if needed."""
-    if not ddf.known_divisions or '_idx' not in ddf:
-        ddf['_idx'] = ddf.index  # we need to create a temporary variable to set it as index
-        ddf['_idx'] = ddf['_idx'].astype(ddf.index.dtype)
-        return ddf.set_index('_idx', sorted=True)
+    if not ddf.known_divisions:
+        return ddf.set_index(ddf.index, sorted=True)
     return ddf
 
 
 @capture_timings("do_merge", handlers=worker_capture_timing_handlers)
-def do_merge(df1, df2):
+def do_merge(df1: dd.DataFrame, df2: dd.DataFrame):
     """Combine the 2 dask dataframe. Updates df1 with df2 values if overlap."""
     if df2 is None:
         return df1
 
+    df1 = set_index(df1)
+    df2 = set_index(df2)
     if share_items(df1.columns, df2.columns):
         ddf = df2.combine_first(df1)
     else:
         ddf = df1.join(df2, how='outer')  # join seems faster when there no columns in common
 
-    return ddf[sorted(ddf.columns)]
+    return ddf
+    

@@ -1,3 +1,4 @@
+import asyncio
 import io
 from tempfile import TemporaryDirectory
 
@@ -20,7 +21,7 @@ from app.clients.storage_service_blob_storage import StorageRecordServiceBlobSto
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.helper import traces
-from app.utils import Context
+from app.utils import Context, DaskClient
 from app import conf
 
 from tests.unit.persistence.dask_blob_storage_test import generate_df
@@ -131,8 +132,17 @@ def init_fixtures(nope_logger_fixture, monkeypatch):
         yield
 
 
+@pytest.fixture(scope="module")
+def event_loop():  # all tests will share the same loop
+    loop = asyncio.get_event_loop()
+    yield loop
+    # teardown
+    loop.run_until_complete(DaskClient.close())
+    loop.close()
+    
+
 @pytest.fixture
-def setup_client(init_fixtures):
+def dasked_test_app(init_fixtures):
     from app.wdms_app import wdms_app, enable_alpha_feature
     from app.wdms_app import app_injector
 
@@ -170,9 +180,14 @@ def setup_client(init_fixtures):
         # Initialize traces exporter in app, like it is in app's startup decorator
         wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
-        yield TestClient(wdms_app), tmp_dir
+        yield wdms_app
 
         wdms_app.dependency_overrides = {}  # clean up
+
+
+@pytest.fixture
+def setup_client(dasked_test_app):
+    yield TestClient(dasked_test_app)
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -197,7 +212,7 @@ def test_send_all_data_once(setup_client,
                             content_type_header,
                             create_func,
                             accept_content):
-    client, tmp_dir = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -251,7 +266,7 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
                                                      content_type_header,
                                                      create_func,
                                                      accept_content):
-    client, tmp_dir = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
@@ -314,7 +329,7 @@ def test_overwrite_data_by_chunk_append(setup_client, entity_type, columns, cont
                                         accept_content, session_mode):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -398,7 +413,7 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
 def test_add_curve_by_chunk_different_cols(setup_client, entity_type, data_format, accept_content):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -427,7 +442,7 @@ def test_add_curve_by_chunk_different_cols(setup_client, entity_type, data_forma
 def test_add_curve_by_chunk_same_cols(setup_client, entity_type, data_format, accept_content):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -452,7 +467,7 @@ def test_add_curve_by_chunk_same_cols(setup_client, entity_type, data_format, ac
 def test_add_curve_by_chunk_same_cols_overlapped_index(setup_client, entity_type):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -475,7 +490,7 @@ def test_add_curve_by_chunk_same_cols_overlapped_index(setup_client, entity_type
 def test_add_curve_by_chunk_overlap_different_cols(setup_client, entity_type):
     """ Create session, append chunking with consecutive index, validate session """
 
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -496,7 +511,7 @@ def test_add_curve_by_chunk_overlap_different_cols(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_abandon_session_with_data_push_data_again(setup_client, entity_type):
     """ Create session, append chunking with consecutive index, abort sessions """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -524,7 +539,7 @@ def test_abandon_session_with_data_push_data_again(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_abandon_no_data_session(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -543,7 +558,7 @@ def test_abandon_no_data_session(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_session_commit_no_data(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -558,7 +573,7 @@ def test_session_commit_no_data(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_session_double_abandon(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -578,7 +593,7 @@ def test_session_double_abandon(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_valid_session_double_commit(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -603,7 +618,7 @@ def test_valid_session_double_commit(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_session_unknown_record(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     chunking_url = Definitions[entity_type]['chunking_url']
 
     session_response = client.post(f'{chunking_url}/123456/sessions', json={'mode': 'update'})
@@ -612,7 +627,7 @@ def test_session_unknown_record(setup_client, entity_type):
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_creates_two_sessions_one_record_with_chunks_different_format(setup_client, entity_type):
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -627,7 +642,7 @@ def test_creates_two_sessions_one_record_with_chunks_different_format(setup_clie
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_creates_two_sessions_two_record_with_chunks(setup_client, entity_type):
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     another_record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -651,7 +666,7 @@ def test_creates_two_sessions_two_record_with_chunks(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_session_sent_same_col_different_types(setup_client, entity_type):
     """ Create session, append chunking with overlapped index, validate session """
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -695,7 +710,7 @@ def _df_to_pyarrow_parquet(df_data: pd.DataFrame):
     ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
 ])
 def test_session_chunk_int(setup_client, entity_type, content_type_header, create_func, columns_type):
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -704,10 +719,14 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     data_to_send = create_func(df_data)
 
     headers = {'content-type': content_type_header}
-
     expected_code = 422
+
+    # there is a side effect with parquet format, if at least one col is str, then all cols are casted into str
     if content_type_header.endswith('parquet') and any((type(c) is str for c in columns_type)):
-        # there is a side effect with parquet format, if at least one col is str, then all cols are casted into str
+        expected_code = 200
+
+    # for legacy Log entity, column type as int are automatically casted to string to ensure backward compatibility
+    if content_type_header.endswith('json') and entity_type == 'Log':
         expected_code = 200
 
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
@@ -734,7 +753,7 @@ def test_nat_sort_columns(setup_client, data_format, accept_content, columns_nam
     """ Create session, append chunking with consecutive index, validate session """
 
     entity_type = 'WellLog'
-    client, _ = setup_client
+    client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
@@ -746,6 +765,60 @@ def test_nat_sort_columns(setup_client, data_format, accept_content, columns_nam
     response_df = _create_df_from_response(data_response)
     assert list(response_df.columns) == columns_name
 
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+def test_session_update_previous_version(setup_client, entity_type):
+    """ create a session update on a previous version """
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+    base_url = Definitions[entity_type]['base_url']
+    headers = headers={'Content-Type': 'application/x-parquet'}
+    nb_rows = 5
+    version_data = [
+        generate_df(['MD', 'X', 'Y'], range(nb_rows)),
+        generate_df(['MD', 'X', 'Z'], range(nb_rows)),
+        generate_df(['MD', 'A', 'B'], range(nb_rows))
+    ]
+
+    # create the different version of data
+    for data in version_data:
+        write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                     data=data.to_parquet(engine="pyarrow"),
+                                     headers=headers)
+        assert write_response.status_code == 200
+
+
+    versions_response = client.get(f'{base_url}/{record_id}/versions')
+    assert versions_response.status_code == 200
+    versions = versions_response.json()['versions']
+    versions_with_data = zip(versions[1:], version_data)
+    assert len(versions) == len(version_data) + 1
+    
+    # update specific versions
+    for from_version, data in versions_with_data:
+        session_response = client.post(f'{chunking_url}/{record_id}/sessions',
+                                       json={"fromVersion": from_version, 'mode': 'update'})
+        assert session_response.status_code == 200
+        session_id = session_response.json()['id']
+
+        new_curve = generate_df(['New'], range(nb_rows))
+        chunk_response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                     data=new_curve.to_parquet(engine="pyarrow"),
+                                     headers=headers)
+        assert chunk_response.status_code == 200
+
+        commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+        assert commit_response.status_code == 200
+
+        # check result
+        get_response = client.get(f'{chunking_url}/{record_id}/data')
+        assert get_response.status_code == 200
+        res_df = _create_df_from_response(get_response)
+        expected_df = data
+        expected_df['New'] = new_curve['New']
+        expected_df = expected_df[sorted(expected_df.columns)]
+        pd.testing.assert_frame_equal(expected_df, res_df)
 
 
 # todo:

@@ -11,23 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import asyncio
 from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
-
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+
 import pytest
+from tests.unit.test_utils import ctx_fixture, nope_logger_fixture
+import mock
+
+from app.utils import DaskException
+from app.utils import DaskClient
+from dask.utils import parse_bytes
+from app.helper import logger
 from app.bulk_persistence.dask.dask_bulk_storage import (BulkNotFound,
                                                          BulkNotProcessable,
                                                          DaskBulkStorage,
                                                          make_local_dask_bulk_storage)
 from app.persistence.sessions_storage import (Session, SessionState,
                                               SessionUpdateMode)
-
-from tests.unit.test_utils import ctx_fixture, nope_logger_fixture
 
 
 def generate_df(columns, index):
@@ -50,7 +54,7 @@ def event_loop():  # all tests will share the same loop
     loop = asyncio.get_event_loop()
     yield loop
     # teardown
-    loop.run_until_complete(DaskBulkStorage.close())
+    loop.run_until_complete(DaskClient.close())
     loop.close()
 
 
@@ -250,8 +254,15 @@ async def test_session_update_ovelap_by_column(test_session, dask_storage: DaskB
 
 @pytest.mark.asyncio
 async def test_bad_bulkId_commit(test_session, dask_storage: DaskBulkStorage):
+    await dask_storage.session_add_chunk(test_session, generate_df(['A'], range(10)))
     with pytest.raises(BulkNotFound):
         await dask_storage.session_commit(test_session, from_bulk_id="bad_bulk_id")
+
+
+@pytest.mark.asyncio
+async def test_empty_session_commit(test_session, dask_storage: DaskBulkStorage):
+    with pytest.raises(BulkNotProcessable):
+        await dask_storage.session_commit(test_session, from_bulk_id=test_session.recordId)
 
 
 @pytest.mark.asyncio
@@ -339,3 +350,33 @@ async def test_duplicate_index(test_session, dask_storage: DaskBulkStorage):
     # with session
     with pytest.raises(BulkNotProcessable):
         await dask_storage.session_add_chunk(test_session, df_ref)
+
+
+@pytest.mark.parametrize("system_memory, worker_created", [
+    (42, 0),
+    ((DaskClient.min_worker_memory_recommended + DaskClient.memory_leeway), 1),
+    ((DaskClient.min_worker_memory_recommended * 3 + DaskClient.memory_leeway), 3),
+    ((DaskClient.min_worker_memory_recommended * 3 + DaskClient.memory_leeway) + 1000, 3)
+])
+@pytest.mark.asyncio
+async def test_dask_workers_according_ram_available(system_memory, worker_created):
+    # clear existing Dask distributed client
+    await DaskClient.close()
+    logger._LOGGER = mock.MagicMock()
+
+    with mock.patch('app.utils.DaskClient._get_system_memory', mock.Mock(return_value=system_memory)):
+        with mock.patch('app.utils.DaskClient._recommended_workers_and_threads', mock.Mock(return_value=(10, 10))):
+
+            if DaskClient._available_memory_for_workers() < DaskClient.min_worker_memory_recommended:
+                with pytest.raises(DaskException):
+                    await DaskClient.create()
+            else:
+                client = await DaskClient.create()
+                expected_worker_memory = (system_memory - DaskClient.memory_leeway) / worker_created
+                assert worker_created == len(client.cluster.scheduler.workers)
+
+                workers_has_expected_memory = [w.memory_limit == int(expected_worker_memory)
+                                               for _, w in client.cluster.scheduler.workers.items()]
+                assert all(workers_has_expected_memory)
+
+    await DaskClient.close()

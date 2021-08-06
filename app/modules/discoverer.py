@@ -3,11 +3,16 @@
 import importlib
 import sys
 
-from app.conf import Config
+from app.conf import Config, MODULES_PATH_PREFIX
 from app.helper import logger
 
 
 discovered_routers = []
+
+
+def reset_routers():
+    global discovered_routers
+    discovered_routers = []
 
 
 def get_routers():
@@ -32,7 +37,7 @@ def load_module(name):
     log = logger.get_logger()
     try:
         log.info(f'Loading `{name}` module')
-        module = importlib.import_module(name)
+        module = importlib.import_module(f'{MODULES_PATH_PREFIX}.{name}')
 
         can_run, message = module.can_run()
         if not can_run:
