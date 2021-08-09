@@ -25,7 +25,7 @@ from app.bulk_persistence import BulkId
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.traces import wrap_trace_process
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
-                                             do_merge, set_index,
+                                             do_merge, 
                                              worker_capture_timing_handlers)
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
@@ -106,7 +106,7 @@ class DaskBulkStorage:
         dask_client = dask_client or await DaskClient.create()
         if DaskBulkStorage.client is not dask_client:  # executed only once per dask client
             DaskBulkStorage.client = dask_client
-                
+
             if parameters.register_fsspec_implementation:
                 parameters.register_fsspec_implementation()
 
@@ -149,10 +149,17 @@ class DaskBulkStorage:
         """Read a Parquet file into a Dask DataFrame
         path : string or list
         **kwargs: dict (of dicts) Passthrough key-word arguments for read backend.
+
+        read_parquet parameters:
+          chunksize='25M': if chunk are too small, we aggregate them until we reach chunksize
+          aggregate_files=True: because we are passing a list of path when commiting a session,
+                                aggregate_files is needed when paths are different
         """
         return self._submit_with_trace(dd.read_parquet, path,
                                        engine='pyarrow-dataset',
                                        storage_options=self._parameters.storage_options,
+                                       chunksize='25M',
+                                       aggregate_files=True,
                                        **kwargs)
 
     def _load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
@@ -303,14 +310,11 @@ class DaskBulkStorage:
     @internal_bulk_exceptions
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
-        if from_bulk_id:
-            dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
-
         if not dfs:
             raise BulkNotProcessable("No data to commit")
 
-        if len(dfs) > 1:  # set_index is not needed if no merge operations are done
-            dfs = self._map_with_trace(set_index, dfs)
+        if from_bulk_id:
+            dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
 
         while len(dfs) > 1:
             dfs = [self._submit_with_trace(do_merge, a, b) for a, b in by_pairs(dfs)]

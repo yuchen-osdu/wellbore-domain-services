@@ -108,7 +108,7 @@ cryptography==3.4.7
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
     #   pyjwt
-dask[distributed]==2021.6.2
+dask[distributed]==2021.7.2
     # via
     #   -r requirements.in
     #   distributed
@@ -116,7 +116,7 @@ decorator==5.0.9
     # via
     #   gcsfs
     #   jsonpath-ng
-distributed==2021.06.2
+distributed==2021.07.2
     # via dask
 fastapi==0.65.1
     # via
@@ -255,7 +255,9 @@ osdu-data-ecosystem-storage==1.2.0
 osdu-log-recognition-lib==0.0.9
     # via -r requirements.in
 packaging==21.0
-    # via google-api-core
+    # via
+    #   dask
+    #   google-api-core
 pandas==1.2.4
     # via -r requirements.in
 partd==1.2.0

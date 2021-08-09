@@ -20,7 +20,7 @@ opencensus-ext-ocagent
 opencensus-ext-logging
 
 # for chunking feature
-dask[distributed]==2021.6.2
+dask[distributed]==2021.7.2
 fsspec
 python-ulid
 
