@@ -25,7 +25,7 @@ from app.bulk_persistence import BulkId
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.traces import wrap_trace_process
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
-                                             do_merge, set_index,
+                                             do_merge, 
                                              worker_capture_timing_handlers)
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
@@ -37,16 +37,27 @@ from pyarrow.lib import ArrowException
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
 from dask.distributed import WorkerPlugin
+from dask.distributed import scheduler
 
 
-def handle_pyarrow_exceptions(target):
+def internal_bulk_exceptions(target):
+    """
+    Decoration to handler exceptions that should be not exposed to outside world. e.g. Pyarrow or Dask exceptions
+    """
+
     @wraps(target)
     async def async_inner(*args, **kwargs):
         try:
             return await target(*args, **kwargs)
         except ArrowException:
-            get_logger().exception(f"{target} raised exception")
-            raise BulkNotProcessable("Unable to process bulk")
+            get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
+            raise BulkNotProcessable("Unable to process bulk - Arrow")
+        except scheduler.KilledWorker:
+            get_logger().exception(f"Dask worker raised exception when running '{target.__name__}'")
+            raise BulkNotProcessable("Unable to process bulk- Dask")
+        except Exception:
+            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
+            raise
 
     return async_inner
 
@@ -95,7 +106,7 @@ class DaskBulkStorage:
         dask_client = dask_client or await DaskClient.create()
         if DaskBulkStorage.client is not dask_client:  # executed only once per dask client
             DaskBulkStorage.client = dask_client
-                
+
             if parameters.register_fsspec_implementation:
                 parameters.register_fsspec_implementation()
 
@@ -118,7 +129,6 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
-
     def _encode_record_id(self, record_id: str) -> str:
         return hashlib.sha1(record_id.encode()).hexdigest()
 
@@ -139,10 +149,17 @@ class DaskBulkStorage:
         """Read a Parquet file into a Dask DataFrame
         path : string or list
         **kwargs: dict (of dicts) Passthrough key-word arguments for read backend.
+
+        read_parquet parameters:
+          chunksize='25M': if chunk are too small, we aggregate them until we reach chunksize
+          aggregate_files=True: because we are passing a list of path when commiting a session,
+                                aggregate_files is needed when paths are different
         """
         return self._submit_with_trace(dd.read_parquet, path,
                                        engine='pyarrow-dataset',
                                        storage_options=self._parameters.storage_options,
+                                       chunksize='25M',
+                                       aggregate_files=True,
                                        **kwargs)
 
     def _load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
@@ -189,7 +206,6 @@ class DaskBulkStorage:
                                        engine='pyarrow',
                                        storage_options=self._parameters.storage_options)
 
-
     async def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
         pdf: pd.DataFrame or Future<pd.DataFrame>
@@ -199,8 +215,8 @@ class DaskBulkStorage:
         return await self._submit_with_trace(pandas_to_parquet, f_pdf, path,
                                              self._parameters.storage_options)
 
-    
-    def _check_incoming_chunk(self, df):
+    @staticmethod
+    def _check_incoming_chunk(df):
         # TODO should we test if is_monotonic?, unique ?
         if len(df.index) == 0:
             raise BulkNotProcessable("Empty data")
@@ -211,8 +227,9 @@ class DaskBulkStorage:
         if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
             raise BulkNotProcessable("Index should be numeric or datetime")
 
-    @handle_pyarrow_exceptions
+    @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
+    @with_trace('save_blob')
     async def save_blob(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
         bulk_id = bulk_id or BulkId.new_bulk_id()
@@ -290,17 +307,14 @@ class DaskBulkStorage:
 
     @capture_timings('session_commit')
     @with_trace('session_commit')
-    @handle_pyarrow_exceptions
+    @internal_bulk_exceptions
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
-        if from_bulk_id:
-            dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
-
         if not dfs:
             raise BulkNotProcessable("No data to commit")
 
-        if len(dfs) > 1:  # set_index is not needed if no merge operations are done
-            dfs = self._map_with_trace(set_index, dfs)
+        if from_bulk_id:
+            dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
 
         while len(dfs) > 1:
             dfs = [self._submit_with_trace(do_merge, a, b) for a, b in by_pairs(dfs)]
