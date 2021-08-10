@@ -203,6 +203,3 @@ ibm-deploy:
 
 ibm-test:
   allow_failure: true
-
-aws-test-python:
-  allow_failure: true
