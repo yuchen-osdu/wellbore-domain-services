@@ -135,7 +135,6 @@ azure_test_py:
     - source venv/bin/activate
     - pip install --upgrade pip
     - pip install wheel pytest pytest-cov
-    - pip install -r frozenrequirements.txt
     - pip install -r requirements.txt
     - pip install -r requirements_dev.txt
     - svctoken=$(python devops/scripts/azure_jwt_client.py)
