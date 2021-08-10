@@ -26,6 +26,12 @@ deployment:
 
 replicaCount: 2
 
+resources:
+ limits:
+   memory: 3Gi
+ requests:
+   memory: 3Gi
+
 annotations:
   buildNumber: []
   buildOrigin: AzureDevops build/#{Build.DefinitionName}#

@@ -13,14 +13,11 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.bulk_persistence import DataframeSerializerAsync
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.mime_types import MimeTypes
-from app.bulk_persistence import BulkId, JSONOrient
+from app.bulk_persistence import JSONOrient
 from app.utils import get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
-
 from app.model.model_chunking import GetDataParams
-
-BULK_URN_PREFIX_VERSION = "wdms-1"
-BULK_URI_FIELD = "bulkURI"
+from app.routers.bulk.bulk_uri_dependencies import (BulkIdAccess, BULK_URI_FIELD)
 
 
 def update_operation_ids(wdms_app):
@@ -149,7 +146,7 @@ class DataFrameRender:
             return True
         # range selection use cases c[0:2] should match c[0], c[1] and c[2]
         m_sel = DataFrameRender.re_array_selection.match(sel)
-        if m_sel and m_sel['stop']:
+        if m_sel and m_sel['stop'] and m_sel['name'] == m_col['name']:
             with suppress(ValueError):  # suppress int conversion exceptions
                 if int(m_sel['start']) <= int(m_col['start']) <= int(m_sel['stop']):
                     return True
@@ -157,11 +154,13 @@ class DataFrameRender:
 
     @staticmethod
     def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
-        selected = set()
+        selected = []
         for sel in selection:
-            selected.update(filter(lambda col: DataFrameRender._col_matching(sel, col),
-                                   cols.difference(selected)))
-        return list(selected)
+            matching_columns = list(filter(lambda col: DataFrameRender._col_matching(sel, col),
+                                           cols.difference(selected)))
+            selected.extend(natsorted(matching_columns))
+        return selected
+
 
     @staticmethod
     @with_trace('process_params')
@@ -172,7 +171,9 @@ class DataFrameRender:
         if params.curves:
             selection = list(map(str.strip, params.curves.split(',')))
             columns = DataFrameRender.get_matching_column(selection, set(df))
-            df = df[columns]
+            df = df[columns]  # columns are ordered as the user requested
+        else:
+            df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
         if params.offset:
             head_index = df.head(params.offset, npartitions=-1, compute=False).index
@@ -182,8 +183,8 @@ class DataFrameRender:
         if params.limit and params.limit > 0:
             df = df.head(params.limit, npartitions=-1, compute=False)
 
-        df = df[natsorted(df.columns)]
         return df
+
 
     @staticmethod
     @with_trace('df_render')
@@ -212,17 +213,8 @@ class DataFrameRender:
         return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
 
 
-def get_bulk_uri_osdu(record):
-    return record.data.get('ExtensionProperties', {}).get('wdms', {}).get(BULK_URI_FIELD, None)
-
-
-def set_bulk_uri(record, bulk_urn):
-    return record.data.update({'ExtensionProperties': {'wdms': {BULK_URI_FIELD: bulk_urn}}})
-
-
-async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record):
-    bulk_urn = BulkId.bulk_urn_encode(bulk_id, BULK_URN_PREFIX_VERSION)
-    set_bulk_uri(record, bulk_urn)
+async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri_access: BulkIdAccess):
+    bulk_uri_access.set_bulk_uri(record=record, bulk_id=bulk_id)
 
     # push new version on the storage
     storage_client = await get_storage_record_service(ctx)

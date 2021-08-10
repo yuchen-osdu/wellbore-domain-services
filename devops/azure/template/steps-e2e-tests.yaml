@@ -140,7 +140,7 @@ steps:
 
     appUrl=${{ parameters.baseUrl }}${{ parameters.basePath }}
     echo "Testing App on ${appUrl}"
-    
+
     python tests/integration/gen_postman_env.py --token $(token) --base_url ${appUrl} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
 
     pip install virtualenv

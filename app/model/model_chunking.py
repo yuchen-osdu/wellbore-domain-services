@@ -34,7 +34,7 @@ class GetDataParams:
             example=100),
         curves: Optional[str] = Query(
             default=None,
-            description='Filters curves. List of curves to be returned.',
+            description='Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.',
             example='MD,GR'),
         describe: Optional[bool] = Query(
             default=False,

@@ -42,6 +42,7 @@ Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Un
 - [pandas](https://pandas.pydata.org/) and [numpy](https://numpy.org/) for data manipulation
 - [pyarrow](https://pypi.org/project/pyarrow/) for load and save data into parquet format
 - [opencensus](https://opencensus.io/guides/grpc/python/) for tracing and logging on cloud provider
+- [dask](https://docs.dask.org/en/latest/) to manage huge amount of bulk data
 
 ### Library Dependencies
 
@@ -59,6 +60,16 @@ Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Un
   - osdu-data-ecosystem-storage
 
 ## Project Startup
+
+### Dask Configuration - Locally
+By default, It will use all memory available and use CPU resources through workers. The number of workers is determined by the quantity of core the current local machine has.
+
+### Dask Configuration - In a cluster
+In a container context, such as Kubernetes we recommend to set container memory limit at 3Gi of RAM and 4-8 CPUs.
+At the minimum 1.2Gi and 1 cpu but performance will be reduced, but enough to handle WellLogs of 10 curves with 1M values each.
+
+Note: container memory is not entirely dedicated to Dask workers, fastapi service with its process also require some.  
+
 
 ### Run the service locally
 
@@ -87,6 +98,12 @@ Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Un
     ```bash
     pip install -r requirements.txt
     ```
+
+    Or, for a developer setup, this will install tools to help you work with the code.
+    ```bash
+    pip install -r requirements.txt -r requirements_dev.txt
+    ```
+    
 
 6. Run the service
 
@@ -298,8 +315,9 @@ docker build -t=$IMAGE_TAG --rm . -f ./build/dockerfile --build-arg PIP_WHEEL_DI
 
     ```bash
     LOCAL_PORT=<local_port>
-
-    docker run -d -p $LOCAL_PORT:8080 -e OS_WELLBORE_DDMS_DEV_MODE=1 -e USE_LOCALFS_BLOB_STORAGE_WITH_PATH=1 $IMAGE_TAG
+    IMAGE_TAG=<image_name>
+   
+    docker run -d -p $LOCAL_PORT:8080 -e CLOUD_PROVIDER=local -e USE_LOCALFS_BLOB_STORAGE_WITH_PATH="/tmp" -e USE_INTERNAL_STORAGE_SERVICE_WITH_PATH="/tmp" -e OS_WELLBORE_DDMS_DEV_MODE=True -e USE_PARTITION_SERVICE=disabled $IMAGE_TAG
     ```
 
 2. Access app on `http://127.0.0.1:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
@@ -312,11 +330,12 @@ docker build -t=$IMAGE_TAG --rm . -f ./build/dockerfile --build-arg PIP_WHEEL_DI
     docker logs CONTAINER_ID
     ```
 
+
 ### Run Unit Tests Locally
 
 ```bash
 # Install test dependencies
-pip install -r requirements_dev.txt
+pip install -r requirements.txt -r requirements_dev.txt
 
 python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit
 ```
@@ -345,7 +364,36 @@ pytest ./functional --environment="./generated/postman_environment.json" --filte
 
 For more information see the [integration tests README](tests/integration/README.md)
 
-### Port Forward from Kubernetes
+### Manage package dependencies
+
+Anytime, you may want to ensure your virtual environment is in sync with your requirements specification.
+For this you can use:
+
+```bash
+pip-sync
+```
+
+If you want to work with other requirements file, you can specify them
+```bash
+pip-sync requirements.txt requirements_dev.txt
+```
+
+If you want to update `requirements.txt` to retrieve the most recent version, respecting bounds set in `requirements.in`, you can use:
+
+```bash
+pip-compile
+```
+
+If you want to update the version of only one dependency, for instance fastapi:
+
+```bash
+pip-compile --upgrade-package fastapi
+```
+
+For more information: https://github.com/jazzband/pip-tools/
+
+### Debugging:
+#### Port Forward from Kubernetes
 
  1. List the pods: `kubectl get pods`
  2. Port forward: `kubectl port-forward pods/POD_NAME LOCAL_PORT:8080`

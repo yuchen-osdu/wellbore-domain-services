@@ -54,9 +54,18 @@ from app.utils import (
     get_http_client_session,
     OpenApiHandler,
     get_wdms_temp_dir,
-    get_pool_executor,
+    run_in_pool_executor,
+    DaskClient,
     POOL_EXECUTOR_MAX_WORKER)
-from app.routers.bulk.utils import update_operation_ids, set_v3_input_dataframe_check, set_legacy_input_dataframe_check
+from app.routers.bulk.utils import (
+    update_operation_ids,
+    set_v3_input_dataframe_check,
+    set_legacy_input_dataframe_check,
+)
+from app.routers.bulk.bulk_uri_dependencies import (
+    set_osdu_bulk_id_access,
+    set_log_bulk_id_access
+)
 
 base_app = FastAPI()
 
@@ -114,14 +123,16 @@ async def startup_event():
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
 
+    # seems that the lock is not in the same event loop as requests
+    # so we need to wait instead of just fire a task
+    asyncio.create_task(DaskClient.create())
+
     # init executor pool
     logger.get_logger().info("Startup process pool executor")
 
     # force to adjust process count now instead of on first demand
-    pool = get_pool_executor()
-    loop = asyncio.get_running_loop()
-    futures = [loop.run_in_executor(pool, executor_startup_task) for _ in range(POOL_EXECUTOR_MAX_WORKER)]
-    await asyncio.gather(*futures)
+    for _ in range(POOL_EXECUTOR_MAX_WORKER):
+        asyncio.create_task(run_in_pool_executor(executor_startup_task))
 
     if Config.alpha_feature_enabled.value:
         enable_alpha_feature()
@@ -141,6 +152,7 @@ async def shutdown_event():
         await storage_client.api_client.close()
 
     await get_http_client_session().close()
+    await DaskClient.close()
 
 
 DDMS_V2_PATH = '/ddms/v2'
@@ -193,7 +205,7 @@ wdms_app.include_router(fast_search_v3.router, prefix='/ddms/v3', tags=['fast-se
                         dependencies=basic_dependencies)
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
-v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check)]
+v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check), Depends(set_osdu_bulk_id_access)]
 
 for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, alpha_tags, False),
                                            (DDMS_V3_PATH, [], True)
@@ -238,7 +250,7 @@ wdms_app.include_router(
     bulk_routes.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
-    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check)])
+    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access)])
 
 # The multiple instantiation of bulk_utils router create some duplicates operation_id
 update_operation_ids(wdms_app)
