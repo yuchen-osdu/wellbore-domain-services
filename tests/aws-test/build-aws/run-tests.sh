@@ -40,6 +40,7 @@ cd deployment/osdu-core/os-wellbore-domain-services/testing
 python3 -m venv env
 source env/bin/activate
 pip install -r ./aws-test/build-aws/requirements.txt
+pip install -r ./aws-test/build-aws/requirements_dev.txt
 rm -rf test-reports/
 mkdir test-reports
 
