@@ -60,6 +60,9 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
 
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws-python.yml"
+
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
