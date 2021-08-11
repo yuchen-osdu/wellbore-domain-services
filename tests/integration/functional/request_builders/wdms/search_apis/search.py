@@ -51,7 +51,7 @@ def build_request_search_markersets_by_wellbore_id() -> RequestRunner:
     rq_proto = Request(
         name='search markersets by wellbore id',
         method='POST',
-        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/{{setup_search_osdu_wellbore_id}}/wellboremarkersets',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores/{{setup_search_osdu_wellbore_id}}/wellboremarkersets',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -103,7 +103,7 @@ def build_request_search_osdu_wellbores_by_geo_polygon() -> RequestRunner:
     rq_proto = Request(
         name='search wellbores by geo polygon',
         method='POST',
-        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/bygeopolygon',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores/bygeopolygon',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -176,7 +176,7 @@ def build_request_search_welllogs_by_wellbores_attribute() -> RequestRunner:
     rq_proto = Request(
         name='search logset by wellbores attribute',
         method='POST',
-        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbore/data.DefaultVerticalMeasurementID:"KB"/welllogs',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbore/data.DefaultVerticalMeasurementID:"KB"/welllogs',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -224,7 +224,7 @@ def build_request_search_osdu_wellbores_by_bounding_box() -> RequestRunner:
     rq_proto = Request(
         name='search wellbores by bounding box',
         method='POST',
-        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/byboundingbox?latitude_top_left=-20&longitude_top_left=71&latitude_bottom_right=-22&longitude_bottom_right=73',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores/byboundingbox?latitude_top_left=-20&longitude_top_left=71&latitude_bottom_right=-22&longitude_bottom_right=73',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -256,7 +256,7 @@ def build_request_search_osdu_wellbores_by_distance() -> RequestRunner:
     rq_proto = Request(
         name='search wellbores by distance',
         method='POST',
-        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/bydistance?latitude=-21.5399&longitude=72.4635&distance=100',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores/bydistance?latitude=-21.5399&longitude=72.4635&distance=100',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -304,7 +304,7 @@ def build_request_search_welllogs_by_wellbore_id() -> RequestRunner:
     rq_proto = Request(
         name='search logset by wellbore id',
         method='POST',
-        url='{{base_url}}/ddms/v3/{{search_query_type}}/wellbores/{{setup_search_osdu_wellbore_id}}/welllogs',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores/{{setup_search_osdu_wellbore_id}}/welllogs',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -345,5 +345,21 @@ def build_request_search_logs() -> RequestRunner:
             'Authorization': 'Bearer {{token}}',
         },
         payload='{ "query": "" }'
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_search_wellbore_by_name() -> RequestRunner:
+    rq_proto = Request(
+        name='search wellbore by name',
+        method='POST',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores/byname?names=wdms_e2e_search_refs_v%2A',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload='{}'
     )
     return RequestRunner(rq_proto)
