@@ -60,6 +60,7 @@ def update_query_with_names_based_search(names: str = None, user_query: str = No
 
 
 def escape_forbidden_characters_for_search(input_str: str) -> str:
+    # Reserved character are listed here https://community.opengroup.org/osdu/documentation/-/blob/master/platform/tutorials/core-services/SearchService.md
     # ? and * are allowed for wildcard search
     reserved_char_list = ['+', '-', '=', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~',
                           ':', '\\', '/']

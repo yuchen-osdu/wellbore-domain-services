@@ -200,8 +200,8 @@ for v3_api, tag in ddms_v3_routes_groups:
 wdms_app.include_router(search.router, prefix='/ddms', tags=['search'], dependencies=basic_dependencies)
 wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search'], dependencies=basic_dependencies)
 
-wdms_app.include_router(search_v3.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies)
-wdms_app.include_router(fast_search_v3.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH, tags=['fast-search v3'],
+wdms_app.include_router(search_v3.router, prefix=DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies)
+wdms_app.include_router(fast_search_v3.router, prefix=DDMS_V3_PATH, tags=['fast-search v3'],
                         dependencies=basic_dependencies)
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
