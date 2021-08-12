@@ -9228,6 +9228,81 @@
         ]
       }
     },
+    "/alpha/ddms/v3/query/wellbores/byname": {
+      "post": {
+        "description": "Get Wellbores object by name.  <p>The wellbore kind is *:wks:master-data--Wellbore:*\n        returns all records directly based on existing schemas. The query is done on data.FacilityName field</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "operationId": "query_wellbores_by_name_alpha_ddms_v3_query_wellbores_byname_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "names",
+            "required": true,
+            "schema": {
+              "title": "Names",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQueryRequest"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorQueryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Query with cursor or offset, get wellbores",
+        "tags": [
+          "ALPHA feature: search v3"
+        ]
+      }
+    },
     "/ddms/fastquery/logs": {
       "post": {
         "description": "Get all Logs object.  <p>The Logs kind is\n        *:wks:log:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
@@ -15976,81 +16051,6 @@
           }
         ],
         "summary": "Query with cursor, get wellbores",
-        "tags": [
-          "search v3"
-        ]
-      }
-    },
-    "/ddms/v3/query/wellbores/byname": {
-      "post": {
-        "description": "Get Wellbores object by name.  <p>The wellbore kind is *:wks:master-data--Wellbore:*\n        returns all records directly based on existing schemas. The query is done on data.FacilityName field</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
-        "operationId": "query_wellbores_by_name_ddms_v3_query_wellbores_byname_post",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "names",
-            "required": true,
-            "schema": {
-              "title": "Names",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/SearchQueryRequest"
-                  }
-                ],
-                "default": {},
-                "title": "Body"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CursorQueryResponse"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Query with cursor or offset, get wellbores",
         "tags": [
           "search v3"
         ]
