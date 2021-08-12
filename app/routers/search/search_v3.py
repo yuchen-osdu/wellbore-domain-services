@@ -191,26 +191,6 @@ async def query_wellbores_by_name(names: str, body: SearchQueryRequest = DEFAULT
     return await query_request(query_type, OSDU_WELLBORE_KIND, ctx, body)
 
 
-# @router.post('/querywithcursor/wellbores/byname', summary='Query with cursor, get wellbores',
-#              description=f"""Get Wellbores object by name.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
-#         returns all records directly based on existing schemas. The query is done on data.FacilityName field</p>{REQUIRED_ROLES_READ}""",
-#              response_model=CursorQueryResponse)
-# async def query_cursor_wellbores_by_name(names: str, body: SimpleCursorQueryRequest = DEFAULT_CURSORQUERYREQUEST, ctx: Context = Depends(get_ctx)):
-#     names = escape_forbidden_characters_for_search(names)
-#     body.query = update_query_with_names_based_search(names=names, user_query=body.query)
-#     return await query_request_with_cursor(query_type, OSDU_WELLBORE_KIND, ctx, body)
-#
-#
-# @router.post('/querywithoffset/wellbores/byname', summary='Query with offset, get wellbores',
-#              description=f"""Get Wellbores object by name.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
-#         returns all records directly based on existing schemas. The query is done on data.FacilityName field</p>{REQUIRED_ROLES_READ}""",
-#              response_model=CcsQueryResponse)
-# async def query_offset_wellbores_by_name(names: str, body: SimpleOffsetQueryRequest = DEFAULT_QUERYREQUEST, ctx: Context = Depends(get_ctx)):
-#     names = escape_forbidden_characters_for_search(names)
-#     body.query = update_query_with_names_based_search(names=names, user_query=body.query)
-#     return await query_request_with_offset(query_type, OSDU_WELLBORE_KIND, ctx, body)
-
-
 @router.post('/query/wellbores', summary='Query with cursor, get wellbores',
              description=f"""Get all Wellbores object.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
         returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
