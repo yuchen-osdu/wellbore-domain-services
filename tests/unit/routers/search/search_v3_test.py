@@ -1,6 +1,5 @@
 import pytest
 
-import app.routers.search.search_v3_wellbore as search_v3_wellbore
 import app.routers.search.search_v3 as search_v3
 
 ADDED_QUERY_PARAMS = [
@@ -43,7 +42,7 @@ NAMES_QUERY_PARAMS = [
 
 @pytest.mark.parametrize("names, user_query, expected_query", NAMES_QUERY_PARAMS)
 def test_update_query_with_names_based_search(names, user_query, expected_query):
-    assert search_v3_wellbore.update_query_with_names_based_search(names, user_query) == expected_query
+    assert search_v3.update_query_with_names_based_search(names, user_query) == expected_query
 
 
 ESCAPE_CHAR_PARAMS = [
@@ -56,4 +55,4 @@ ESCAPE_CHAR_PARAMS = [
 
 @pytest.mark.parametrize("input_str, expected_str", ESCAPE_CHAR_PARAMS)
 def test_escape_forbidden_characters_for_search(input_str, expected_str):
-    assert search_v3_wellbore.escape_forbidden_characters_for_search(input_str) == expected_str
+    assert search_v3.escape_forbidden_characters_for_search(input_str) == expected_str

@@ -18,15 +18,17 @@ from odes_search.models import Point, CursorQueryResponse
 from app.utils import Context
 from .search_v3 import (
     SearchQuery,
+    SearchQueryRequest,
+    query_request,
     query_type,
-    basic_query_request,
     added_relationships_query,
     query_request_with_specific_attribute,
     OSDU_WELLBORE_KIND,
     OSDU_WELLLOG_KIND,
     OSDU_WELLBOREMARKERSET_KIND,
     WELLBORE_RELATIONSHIP,
-    REQUIRED_ROLES_READ
+    REQUIRED_ROLES_READ,
+    DEFAULT_QUERYREQUEST
 )
 
 router = APIRouter()
@@ -41,8 +43,8 @@ def get_ctx() -> Context:
              description=f"""Get all Wellbores IDs object.  <p>The wellbore kind is
         {OSDU_WELLBORE_KIND} returns all records IDs IDs directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def fastquery_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
-    return await basic_query_request(query_type, OSDU_WELLBORE_KIND, ctx,  body.query)
+async def fastquery_wellbores(body: SearchQueryRequest = DEFAULT_QUERYREQUEST, ctx: Context = Depends(get_ctx)):
+    return await query_request(query_type, OSDU_WELLBORE_KIND, ctx,  body)
 
 @router.post('/fastquery/wellbores/{wellbore_id}/welllogs',
              summary='Query with cursor, search WellLogs IDs by wellbore ID',
@@ -50,10 +52,10 @@ async def fastquery_wellbores(body: SearchQuery = None, ctx: Context = Depends(g
             specific ID will be returned</p>
             <p>The LogSet kind is {OSDU_WELLLOG_KIND} returns all records IDs directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def fastquery_welllogs_bywellbore(wellbore_id: str, body: SearchQuery = None,
-                ctx: Context = Depends(get_ctx)):
-    query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
-    return await basic_query_request(query_type, OSDU_WELLLOG_KIND, ctx, query)
+async def fastquery_welllogs_bywellbore(wellbore_id: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+                                        ctx: Context = Depends(get_ctx)):
+    body.query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
+    return await query_request(query_type, OSDU_WELLLOG_KIND, ctx, body)
 
 
 @router.post('/fastquery/wellbore/{wellbore_attribute}/welllogs',
@@ -75,7 +77,7 @@ async def fastquery_welllogs_bywellboreattribute(wellbore_attribute: str, body: 
             specific ID will be returned</p>
             <p>The Marker kind is {OSDU_WELLBOREMARKERSET_KIND} returns all records IDs directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def fastquery_markers_bywellbore(wellbore_id: str, body: SearchQuery = None,
+async def fastquery_markers_bywellbore(wellbore_id: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                 ctx: Context = Depends(get_ctx)):
-    query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
-    return await basic_query_request(query_type, OSDU_WELLBOREMARKERSET_KIND, ctx, query)
+    body.query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
+    return await query_request(query_type, OSDU_WELLBOREMARKERSET_KIND, ctx, body)
