@@ -24,11 +24,9 @@ INTEGRATION_TEST_OUTPUT_DIR=${INTEGRATION_TEST_OUTPUT_DIR:-$OUTPUT_DIR}/testing
 rm -rf "$INTEGRATION_TEST_OUTPUT_DIR"
 mkdir -p "$INTEGRATION_TEST_OUTPUT_DIR"
 
-if [ ! -e frozenrequirements.txt ]; then
-    echo "File frozenrequirements.txt does not exist!"
-else
-    cp frozenrequirements.txt tests/aws-test/build-aws/requirements.txt
-fi
+cp requirements.txt tests/aws-test/build-aws
+cp requirements_dev.txt tests/aws-test/build-aws
+
 cp  -r tests/aws-test "${INTEGRATION_TEST_OUTPUT_DIR}"
 cp  -r tests/integration "${INTEGRATION_TEST_OUTPUT_DIR}"
 cp  -r schema/indexation "${INTEGRATION_TEST_OUTPUT_DIR}"

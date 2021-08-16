@@ -44,7 +44,6 @@ phases:
       - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh
       - ./tests/aws-test/build-aws/prepare-dist.sh
 
-      - pip install -r ./frozenrequirements.txt
       - pip install -r ./requirements.txt
       - pip install -r ./requirements_dev.txt
 

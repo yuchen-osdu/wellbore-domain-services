@@ -28,9 +28,9 @@ replicaCount: 2
 
 resources:
  limits:
-   memory: 3Gi
+   memory: 2Gi
  requests:
-   memory: 3Gi
+   memory: 2Gi
 
 annotations:
   buildNumber: []
@@ -65,6 +65,12 @@ configMap:
 
 ingress:
   enabled: false
+  extraAnnotations:
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    appgw.ingress.kubernetes.io/request-timeout: "300"
+    appgw.ingress.kubernetes.io/connection-draining: "true"
+    appgw.ingress.kubernetes.io/connection-draining-timeout: "30"
+    kubernetes.io/ingress.class: azure/application-gateway
   hosts:
     host: # leave it empty for our dev cluster
     pathPrefix: /api/os-wellbore-ddms
