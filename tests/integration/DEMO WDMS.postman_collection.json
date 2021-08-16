@@ -65,7 +65,7 @@
 							},
 							"response": [
 								{
-									"name": "Put Well",
+									"name": "Create OSDU Well response",
 									"originalRequest": {
 										"method": "POST",
 										"header": [
@@ -165,7 +165,7 @@
 					"name": "Wellbore",
 					"item": [
 						{
-							"name": "create OSDU Wellbore",
+							"name": "Create OSDU Wellbore",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -212,7 +212,7 @@
 							"response": []
 						},
 						{
-							"name": "get OSDU wellbore",
+							"name": "get OSDU Wellbore",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -253,10 +253,10 @@
 					]
 				},
 				{
-					"name": "wellLog",
+					"name": "WellLog",
 					"item": [
 						{
-							"name": "post OSDU wellLog",
+							"name": "Create OSDU WellLog",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -310,7 +310,7 @@
 							"response": []
 						},
 						{
-							"name": "post OSDU wellLog data",
+							"name": "post OSDU WellLog data",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -371,7 +371,7 @@
 							"response": []
 						},
 						{
-							"name": "get OSDU wellLog",
+							"name": "get OSDU WellLog",
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -410,7 +410,7 @@
 							"response": []
 						},
 						{
-							"name": "get OSDU wellLog data",
+							"name": "get OSDU WellLog data",
 							"request": {
 								"auth": {
 									"type": "bearer",
