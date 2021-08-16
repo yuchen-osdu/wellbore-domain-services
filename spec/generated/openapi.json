@@ -15691,7 +15691,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -15976,7 +15982,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
