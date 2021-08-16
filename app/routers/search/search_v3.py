@@ -207,7 +207,7 @@ async def query_welllogs_bywellbore(wellboreId: str, body: SearchQueryRequest = 
             with this specific attribute will be returned</p>
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_welllogs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
+async def query_welllogs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = SearchQuery(query=None),
                                              ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, wellboreAttribute, OSDU_WELLBORE_KIND,
                                                        OSDU_WELLLOG_KIND,
