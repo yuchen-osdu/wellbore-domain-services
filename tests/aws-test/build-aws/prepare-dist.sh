@@ -32,3 +32,6 @@ fi
 cp  -r tests/aws-test "${INTEGRATION_TEST_OUTPUT_DIR}"
 cp  -r tests/integration "${INTEGRATION_TEST_OUTPUT_DIR}"
 cp  -r schema/indexation "${INTEGRATION_TEST_OUTPUT_DIR}"
+cp  -r tests/dependencies "${INTEGRATION_TEST_OUTPUT_DIR}"
+cp  -r tests/performace "${INTEGRATION_TEST_OUTPUT_DIR}"
+cp  -r tests/unit "${INTEGRATION_TEST_OUTPUT_DIR}"
