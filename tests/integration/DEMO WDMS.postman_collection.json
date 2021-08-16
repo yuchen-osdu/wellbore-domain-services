@@ -478,6 +478,47 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Create WellLog session",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"value": "{{datapartitionid}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"fromVersion\": 0,\r\n  \"timeToLive\": 60,\r\n  \"mode\": \"overwrite\"\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/sessions",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"os-wellbore-ddms",
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
+										"sessions"
+									],
+									"query": [
+										{
+											"key": "data-partition-id",
+											"value": "{{datapartitionid}}",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
