@@ -481,6 +481,18 @@
 						},
 						{
 							"name": "Create WellLog session",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"pm.collectionVariables.set(\"welllogSessionId\", resobj.id);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
 							"request": {
 								"method": "POST",
 								"header": [
@@ -603,6 +615,10 @@
 		{
 			"key": "welllogId",
 			"value": "dummy1234"
+		},
+		{
+			"key": "welllogSessionId",
+			"value": "xxxx1234"
 		}
 	]
 }
