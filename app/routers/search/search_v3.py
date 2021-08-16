@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
 from fastapi import APIRouter, Depends
 from odes_search.models import (
     QueryRequest,
-    CursorQueryResponse,
-    )
+    CursorQueryResponse)
 from app.clients.search_service_client import get_search_service
 from ..common_parameters import REQUIRED_ROLES_READ
 from app.utils import Context
@@ -29,13 +27,15 @@ from .search import (
     query_type_returned_fields,
     basic_query_request,
     basic_query_request_with_cursor)
+
 router = APIRouter()
 
-#osdu kind
+# osdu kind
 OSDU_WELLBORE_KIND = '*:wks:master-data--Wellbore:*'
 OSDU_WELLLOG_KIND = '*:wks:work-product-component--WellLog:*'
 OSDU_WELLBOREMARKERSET_KIND = '*:wks:work-product-component--WellboreMarkerSet:*'
 WELLBORE_RELATIONSHIP = "WellboreID"
+
 
 def create_relationships_id_str(data_type: str, id: str):
     return f'data.{data_type}:\"{id}\"'
@@ -73,7 +73,7 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
         return query_result
 
     relationships_ids = [create_relationships_id_str(data_type, r["id"]) for r in response.results]
-    id_list = ' OR '.join(relationships_ids) # [a, b, c] => 'a OR b OR c'
+    id_list = ' OR '.join(relationships_ids)  # [a, b, c] => 'a OR b OR c'
 
     query = added_query(id_list, query)
 
@@ -94,13 +94,14 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
 async def query_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
     return await basic_query_request_with_cursor(query_type, OSDU_WELLBORE_KIND, ctx, body.query)
 
+
 @router.post('/query/wellbores/{wellboreId}/welllogs', summary='Query with cursor, search WellLogs by wellbore ID',
              description=f"""Get all WellLogs object using its relationship Wellbore ID.  <p>All WellLogs linked to this
             specific ID will be returned</p>
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
 async def query_welllogs_bywellbore(wellboreId: str, body: SearchQuery = None,
-                                   ctx: Context = Depends(get_ctx)):
+                                    ctx: Context = Depends(get_ctx)):
     query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
     return await basic_query_request(query_type, OSDU_WELLLOG_KIND, ctx, query)
 
@@ -112,13 +113,15 @@ async def query_welllogs_bywellbore(wellboreId: str, body: SearchQuery = None,
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
 async def query_welllogs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
-                                            ctx: Context = Depends(get_ctx)):
-    return await query_request_with_specific_attribute(query_type, wellboreAttribute, OSDU_WELLBORE_KIND, OSDU_WELLLOG_KIND,
+                                             ctx: Context = Depends(get_ctx)):
+    return await query_request_with_specific_attribute(query_type, wellboreAttribute, OSDU_WELLBORE_KIND,
+                                                       OSDU_WELLLOG_KIND,
                                                        WELLBORE_RELATIONSHIP, ctx,
                                                        body.query)
 
 
-@router.post('/query/wellbores/{wellboreId}/wellboremarkersets', summary='Query with cursor, search wellbore markersets by wellbore ID',
+@router.post('/query/wellbores/{wellboreId}/wellboremarkersets',
+             summary='Query with cursor, search wellbore markersets by wellbore ID',
              description=f"""Get all Wellbore Markersets objects using its relationship Wellbore ID.  <p>All Markers linked to this
             specific ID will be returned</p>
             <p>The Wellbore Markerset kind is {OSDU_WELLBOREMARKERSET_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",

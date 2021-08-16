@@ -84,6 +84,8 @@ spec:
           - mountPath: /azure-keyvault
             name: azure-keyvault
             readOnly: true
+        resources:
+          {{ toYaml .Values.resources | nindent 10 }}
         livenessProbe:
           httpGet:
             path: {{ include "os-wellbore-ddms.prefix" . }}/healthz

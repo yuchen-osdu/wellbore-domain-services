@@ -94,3 +94,11 @@ def test_search_logset_by_wellbore_attribute(with_wdms_env, set_search_query_typ
     assert resobj.totalCount >= 2
 
 
+@pytest.mark.tag('search')
+@pytest.mark.dependency(depends=["test_setup_for_search"])
+def test_search_wellbore_by_name(with_wdms_env):
+    #Only search and no fast search
+    env = with_wdms_env
+    env.set('search_query_type', 'query')
+    resobj = build_request_search_wellbore_by_name().call(with_wdms_env, assert_status=200).get_response_obj()
+    assert resobj.totalCount >= 1

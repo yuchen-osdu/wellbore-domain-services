@@ -59,7 +59,6 @@ phases:
       - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
       - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
-      - pip install -r ./frozenrequirements.txt
       - pip install -r ./requirements.txt
       - pip install -r ./requirements_dev.txt
 
