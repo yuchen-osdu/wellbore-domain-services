@@ -531,6 +531,44 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "get WellLog session",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"value": "{{datapartitionid}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/sessions/{{welllogSessionId}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"os-wellbore-ddms",
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
+										"sessions",
+										"{{welllogSessionId}}"
+									],
+									"query": [
+										{
+											"key": "data-partition-id",
+											"value": "{{datapartitionid}}",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
