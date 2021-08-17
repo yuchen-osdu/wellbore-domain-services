@@ -6,6 +6,71 @@
 	},
 	"item": [
 		{
+			"name": "About & Version",
+			"item": [
+				{
+					"name": "About",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/about",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"os-wellbore-ddms",
+								"about"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Version",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorization}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/version",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"os-wellbore-ddms",
+								"version"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "v3",
 			"item": [
 				{
