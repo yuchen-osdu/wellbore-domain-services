@@ -32,6 +32,7 @@ spec:
     - operation:
         notPaths:
         - {{ include "os-wellbore-ddms.prefix" . }}/
+        - {{ include "os-wellbore-ddms.prefix" . }}/about
         - {{ include "os-wellbore-ddms.prefix" . }}/ddms/v2/about
         - {{ include "os-wellbore-ddms.prefix" . }}/docs
         - {{ include "os-wellbore-ddms.prefix" . }}/openapi.json
