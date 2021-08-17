@@ -363,3 +363,19 @@ def build_request_search_wellbore_by_name() -> RequestRunner:
         payload='{}'
     )
     return RequestRunner(rq_proto)
+
+
+def build_request_search_trajectory_by_wellbore_id() -> RequestRunner:
+    rq_proto = Request(
+        name='search wellbore by name',
+        method='POST',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores/{{setup_search_osdu_wellbore_id}}/wellboretrajectories',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload='{}'
+    )
+    return RequestRunner(rq_proto)
