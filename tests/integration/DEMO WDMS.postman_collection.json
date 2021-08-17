@@ -741,6 +741,97 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "Trajectory",
+					"item": [
+						{
+							"name": "Create OSDU Trajectory",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{datapartitionid}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n  {\r\n\r\n    \"acl\": {\r\n            \"viewers\": [\r\n            \"data.default.viewers@{{datapartitionid}}.{{domain}}\"\r\n        ],\r\n        \"owners\": [\r\n            \"data.default.owners@{{datapartitionid}}.{{domain}}\"\r\n        ]\r\n    },\r\n\r\n    \"legal\": {\r\n        \"legaltags\": [\r\n            \"{{legaltags}}\"\r\n        ],\r\n        \"otherRelevantDataCountries\": [\r\n            \"FR\", \"US\"\r\n        ]\r\n    },\r\n\r\n    \"id\": \"{{datapartitionid}}:work-product-component--WellboreTrajectory:{{wellboretrajectoryId}}\",\r\n    \"kind\": \"osdu:wks:work-product-component--WellboreTrajectory:1.1.0\",\r\n\r\n    \"data\": {\r\n      \"Name\": \"{{wellboretrajectoryName}}\",\r\n      \"WellboreID\": \"{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}\",\r\n      \"TopDepthMeasuredDepth\": 0,\r\n      \"BaseDepthMeasuredDepth\": 0,\r\n      \"VerticalMeasurement\": {\r\n        \"EffectiveDateTime\": \"2021-08-17T14:13:08.174Z\",\r\n        \"VerticalMeasurement\": 0\r\n      }\r\n    }\r\n  }\r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/wellboretrajectories",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"os-wellbore-ddms",
+										"ddms",
+										"v3",
+										"wellboretrajectories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get OSDU Trajectory",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{datapartitionid}}"
+									}
+								],
+								"url": {
+									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/wellboretrajectories/{{datapartitionid}}:work-product-component--WellboreTrajectory:{{wellboretrajectoryId}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"os-wellbore-ddms",
+										"ddms",
+										"v3",
+										"wellboretrajectories",
+										"{{datapartitionid}}:work-product-component--WellboreTrajectory:{{wellboretrajectoryId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		}
@@ -814,7 +905,7 @@
 		},
 		{
 			"key": "wellboreId",
-			"value": "dummy1234"
+			"value": "00001234"
 		},
 		{
 			"key": "welllogName",
@@ -822,11 +913,19 @@
 		},
 		{
 			"key": "welllogId",
-			"value": "dummy1234"
+			"value": "00001234"
 		},
 		{
 			"key": "welllogSessionId",
 			"value": "xxxx1234"
+		},
+		{
+			"key": "wellboretrajectoryName",
+			"value": "dummy1234"
+		},
+		{
+			"key": "wellboretrajectoryId",
+			"value": "00001234"
 		}
 	]
 }
