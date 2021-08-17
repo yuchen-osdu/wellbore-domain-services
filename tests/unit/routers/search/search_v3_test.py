@@ -50,6 +50,10 @@ ESCAPE_CHAR_PARAMS = [
     ('not char to escape', 'not char to escape'),
     ('wildcard * ? not to escape', 'wildcard * ? not to escape'),
     (r'all other to escape +-=><!(){}[]^"~:\ /', r'all other to escape \+\-\=\>\<\!\(\)\{\}\[\]\^\"\~\:\\ \/'),
+    ('double escape if already escaped \\+\\-\\=\\>\\<\\!\(\\)\\{\\}\\[\\]\\^\\"\\~\\:\\\ \\/',
+        'double escape if already escaped '
+        '\\\\\\+\\\\\\-\\\\\\=\\\\\\>\\\\\\<\\\\\\!\\\\\\(\\\\\\)\\\\\\{\\\\\\}\\\\\\[\\\\\\]\\\\\\^'
+        '\\\\\\"\\\\\\~\\\\\\:\\\\\\\\ \\\\\\/'),
 ]
 
 
