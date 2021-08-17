@@ -19,19 +19,13 @@ import jwt
 
 payload = {}
 
-wellbore_api_group_prefix = 'ddms/v2'
-
-def build_url(base_url: str, path: str):
-    return f"{base_url}/{wellbore_api_group_prefix}{path}"
-
-
 @pytest.fixture
 def skip_if_gcp_environment(base_url):
     """
         In GCP environment there is no AuthorizationPolicy set. Certain tests may fail on GCP
         and this fixture aims to skip a test case when targeted environment is GCP.
     """
-    response = requests.request("GET", build_url(base_url, "/about"), verify=False)
+    response = requests.request("GET", f"{base_url}/about", verify=False)
     assert response.status_code == 200
     about_response = response.json()
 
@@ -41,7 +35,7 @@ def skip_if_gcp_environment(base_url):
 
 # Test for expired token
 def test_expired_token_returns_40X(base_url, check_cert, token):
-    url = build_url(base_url, "/about")
+    url = f"{base_url}/about"
     token_expired = jwt.encode({"email":"nobody@example.com", "exp":datetime.datetime.utcnow() - datetime.timedelta(seconds=300)}, key="secret", algorithm="HS256")
     headers = {
         'Authorization': f"Bearer {token_expired}"
@@ -59,7 +53,7 @@ def test_notoken_paths_returns_20X_docs(base_url, check_cert, token):
     assert 'content-security-policy' in response.headers
 
 # Test for no token on some paths where JWT token is NOT required due to the AuthorizationPolicy
-@pytest.mark.parametrize("path", ["docs", "openapi.json", f"{wellbore_api_group_prefix}/about"])
+@pytest.mark.parametrize("path", ["docs", "openapi.json", "about"])
 def test_notoken_paths_returns_20X(base_url, check_cert, token, path):
 
     url = f"{base_url}/{path}"
@@ -71,7 +65,7 @@ def test_notoken_paths_returns_20X(base_url, check_cert, token, path):
 @pytest.mark.parametrize("path", ["version", "nonExistingPath"])
 def test_notoken_returns_40X(base_url, check_cert, token, skip_if_gcp_environment, path):
 
-    url = build_url(base_url, f"/{path}")
+    url = f"{base_url}/{path}"
     headers = {}
     response = requests.request("GET", url, headers=headers, data=payload, verify=check_cert)
     assert response.status_code == 403
@@ -80,7 +74,7 @@ def test_notoken_returns_40X(base_url, check_cert, token, skip_if_gcp_environmen
 
 # Test for invalid token
 def test_invalid_token_returns_40X(base_url, check_cert, token):
-    url = build_url(base_url, "/about")
+    url = f"{base_url}/about"
     blank = {}
     token_invalid = token[0:len(token) - 10]
     headers = {
@@ -93,7 +87,7 @@ def test_invalid_token_returns_40X(base_url, check_cert, token):
 
 # Test for unauthorized issuer
 def test_invalid_issuer_token_returns_40X(base_url, check_cert, token):
-    url = build_url(base_url, "/about")
+    url = f"{base_url}/about"
     blank = {}
     token_no_iss = jwt.encode({"email": "nobody@example.com"}, key="secret", algorithm="HS256")
     headers = {
