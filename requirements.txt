@@ -312,7 +312,7 @@ pytz==2021.1
     # via
     #   google-api-core
     #   pandas
-pywin32==301
+	#pywin32==301
     # via portalocker
 pyyaml==5.4.1
     # via
