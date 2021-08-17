@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "fe08fcdc-b4c0-440b-a8c2-f6b1f94e2d5c",
+		"_postman_id": "81137a1d-3fd1-4d06-bc40-a3a7d0cce914",
 		"name": "DEMO WDMS",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -569,7 +569,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"fromVersion\": 0,\r\n  \"timeToLive\": 60,\r\n  \"mode\": \"overwrite\"\r\n}"
+									"raw": "{\r\n  \"fromVersion\": 0,\r\n  \"timeToLive\": 60,\r\n  \"mode\": \"update\"\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/sessions",
@@ -608,6 +608,111 @@
 										"type": "text"
 									}
 								],
+								"url": {
+									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/sessions/{{welllogSessionId}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"os-wellbore-ddms",
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
+										"sessions",
+										"{{welllogSessionId}}"
+									],
+									"query": [
+										{
+											"key": "data-partition-id",
+											"value": "{{datapartitionid}}",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "post WellLog session data",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authorization}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{datapartitionid}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"columns\": [\r\n    \"Ref\",\r\n    \"col_1\",\r\n    \"col_2\"\r\n  ],\r\n  \"index\": [\r\n    0,\r\n    5,\r\n    6\r\n  ],\r\n  \"data\": [\r\n    [\r\n      0,\r\n      1010.1,\r\n      2020.1\r\n    ],\r\n    [\r\n      10,\r\n      9999,\r\n      8888\r\n    ],\r\n    [\r\n      100,\r\n      7777.77,\r\n      66.6666\r\n    ]\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/sessions/{{welllogSessionId}}/data",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"os-wellbore-ddms",
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
+										"sessions",
+										"{{welllogSessionId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "data-partition-id",
+											"value": "{{datapartitionid}}",
+											"disabled": true
+										},
+										{
+											"key": "orient",
+											"value": "split",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "commit WellLog session",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"value": "{{datapartitionid}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"state\": \"commit\"\r\n}"
+								},
 								"url": {
 									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/sessions/{{welllogSessionId}}",
 									"protocol": "{{protocol}}",
