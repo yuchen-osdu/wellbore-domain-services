@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "903391ee-72f7-4187-b570-c9e2d7331838",
+		"_postman_id": "866d3e3c-b600-4487-83e7-6f3b1b548f79",
 		"name": "DEMO WDMS",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -569,7 +569,12 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"fromVersion\": 0,\r\n  \"timeToLive\": 60,\r\n  \"mode\": \"update\"\r\n}"
+									"raw": "{\r\n  \"fromVersion\": 0,\r\n  \"timeToLive\": 60,\r\n  \"mode\": \"update\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
 								},
 								"url": {
 									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/sessions",
@@ -711,7 +716,12 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"state\": \"commit\"\r\n}"
+									"raw": "{\r\n  \"state\": \"commit\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
 								},
 								"url": {
 									"raw": "{{protocol}}://{{baseUrl}}/api/os-wellbore-ddms/ddms/v3/welllogs/{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}/sessions/{{welllogSessionId}}",
