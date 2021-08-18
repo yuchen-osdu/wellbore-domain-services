@@ -14,15 +14,17 @@
 
 from fastapi import APIRouter, Depends
 from odes_search.models import CursorQueryResponse
-
 from app.utils import Context
 from .search_v3 import (
     SearchQueryRequest,
     DEFAULT_QUERYREQUEST,
     OSDU_WELLBORE_KIND,
+    OSDU_WELLBORETRAJECTORY_KIND,
     escape_forbidden_characters_for_search,
     update_query_with_names_based_search,
     query_request,
+    added_relationships_query,
+    WELLBORE_RELATIONSHIP,
     get_ctx,
     query_type)
 from ..common_parameters import REQUIRED_ROLES_READ
@@ -39,3 +41,15 @@ async def query_wellbores_by_name(names: str, body: SearchQueryRequest = DEFAULT
     names = escape_forbidden_characters_for_search(names)
     body.query = update_query_with_names_based_search(names=names, user_query=body.query)
     return await query_request(query_type, OSDU_WELLBORE_KIND, ctx, body)
+
+
+@router.post('/query/wellbores/{wellboreId}/wellboretrajectories',
+             summary='Query with cursor, search wellbore trajectories by wellbore ID',
+             description=f"""Get all Wellbore Trajectories objects using its relationship Wellbore ID.  <p>All Wellbore Trajectories linked to this
+            specific ID will be returned</p>
+            <p>The Wellbore Trajectories kind is {OSDU_WELLBORETRAJECTORY_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
+             response_model=CursorQueryResponse)
+async def query_trajectories_bywellbore(wellboreId: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+                                   ctx: Context = Depends(get_ctx)):
+    body.query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
+    return await query_request(query_type, OSDU_WELLBORETRAJECTORY_KIND, ctx, body)

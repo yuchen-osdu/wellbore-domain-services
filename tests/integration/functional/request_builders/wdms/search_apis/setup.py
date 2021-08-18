@@ -200,7 +200,7 @@ def build_request_seach_tests_setup_create_logsets() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_seach_tests_setup_create_osdu_welllogs() -> RequestRunner:
+def build_request_search_tests_setup_create_osdu_welllogs() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_osdu_welllog',
         method='POST',
@@ -219,6 +219,19 @@ def build_request_seach_tests_setup_create_osdu_welllogs() -> RequestRunner:
   "data": {
     "WellboreID": "{{setup_search_osdu_wellbore_id}}:",  
     "Name": "wdms_e2e_search_record_v{{search_record_version}}",
+    "VerticalMeasurement": {
+      "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+      "VerticalMeasurement": 12345.6,
+      "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+      "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
+      "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
+      "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+      "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-123456:",
+      "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+      "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+      "VerticalReferenceID": "Example VerticalReferenceID",
+      "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+      },
     "Curves": [{
         "CurveID": "Example CurveID",
         "DateStamp": "2020-02-13T09:13:15.55Z",
@@ -237,20 +250,7 @@ def build_request_seach_tests_setup_create_osdu_welllogs() -> RequestRunner:
         "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
         "LogCurveBusinessValueID": "namespace:reference-data--LogCurveBusinessValue:SomeUniqueLogCurveBusinessValueID:",
         "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
-        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
-        "VerticalMeasurement": {
-          "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
-          "VerticalMeasurement": 12345.6,
-          "TerminationDateTime": "2020-02-13T09:13:15.55Z",
-          "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
-          "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
-          "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
-          "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-123456:",
-          "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
-          "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
-          "VerticalReferenceID": "Example VerticalReferenceID",
-          "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"    
-    }
+        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:"
   }]
   }, 
   "meta": [
@@ -619,7 +619,7 @@ def build_request_seach_tests_setup_create_wellbore() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_seach_tests_setup_create_osdu_wellbore() -> RequestRunner:
+def build_request_search_tests_setup_create_osdu_wellbore() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_osdu_wellbore',
         method='POST',
@@ -869,7 +869,7 @@ def build_request_seach_tests_setup_create_markers() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_seach_tests_setup_create_osdu_markersets() -> RequestRunner:
+def build_request_search_tests_setup_create_osdu_markersets() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_create_osdu_markersets',
         method='POST',
@@ -914,6 +914,54 @@ def build_request_seach_tests_setup_create_osdu_markersets() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_search_tests_setup_create_osdu_trajectories() -> RequestRunner:
+    rq_proto = Request(
+        name='seach_tests_setup_create_osdu_trajectories',
+        method='POST',
+        url='{{base_url}}/ddms/v3/wellboretrajectories',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload=r"""
+[
+{
+  "acl": {{record_acl}}, "legal": {{record_legal}},
+  "kind": "{{osduWellboreTrajectoryKind}}",
+  "data": {
+    "Name": "wdms_e2e_search_record_v{{search_record_version}}",
+    "WellboreID": "{{setup_search_osdu_wellbore_id}}:",
+    "TopDepthMeasuredDepth": 12345.6,
+    "BaseDepthMeasuredDepth": 123.6,
+    "AzimuthReferenceType": "namespace:reference-data--AzimuthReferenceType:TrueNorth:",
+    "CalculationMethodType": "namespace:reference-data--CalculationMethodType:MinimumCurvature:",
+    "ProjectedCRSID": "namespace:reference-data--CoordinateReferenceSystem:ProjectedCRS.EPSG.32615:",
+    "ActiveIndicator": true,
+    "VerticalMeasurement": {
+      "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+      "VerticalMeasurement": 12345.6,
+      "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
+      "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:PBD:",
+      "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MD:",
+      "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
+      "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-456:",
+      "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+      "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundCRS::OSDU::23031018:",
+      "VerticalReferenceID": "Example VerticalReferenceID",
+      "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+    },
+    "SurveyType": "Example Directional Survey Type"
+    }
+}
+]
+"""
+    )
+    return RequestRunner(rq_proto)
+
+
+
 def build_request_seach_tests_setup_start() -> RequestRunner:
     rq_proto = Request(
         name='seach_tests_setup_start',
@@ -953,7 +1001,7 @@ def build_request_osdu_seach_tests_setup_start() -> RequestRunner:
 
     payload=r"""
 {
-    "kind": "{{osduWellLogKind}}",
+    "kind": "{{osduWellboreTrajectoryKind}}",
     "query": "data.Name:\"wdms_e2e_search_record_v{{search_record_version}}\" AND _exists_:data.WellboreID",
     "returnedFields": ["id", "data.WellboreID"]
 }

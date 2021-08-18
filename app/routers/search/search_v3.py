@@ -21,7 +21,7 @@ from odes_search.models import (
     Field,
     Optional)
 from app.clients.search_service_client import get_search_service
-from ..common_parameters import REQUIRED_ROLES_READ
+from app.routers.common_parameters import REQUIRED_ROLES_READ
 from app.utils import Context
 import app.routers.search.search_wrapper as search_wrapper
 from .search import (
@@ -39,6 +39,7 @@ router = APIRouter()
 OSDU_WELLBORE_KIND = '*:wks:master-data--Wellbore:*'
 OSDU_WELLLOG_KIND = '*:wks:work-product-component--WellLog:*'
 OSDU_WELLBOREMARKERSET_KIND = '*:wks:work-product-component--WellboreMarkerSet:*'
+OSDU_WELLBORETRAJECTORY_KIND = '*:wks:work-product-component--WellboreTrajectory:*'
 WELLBORE_RELATIONSHIP = "WellboreID"
 
 
