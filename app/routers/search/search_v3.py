@@ -127,8 +127,8 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
 
 
 
-def update_query_with_names_based_search(names: str = None, user_query: str = None) -> str:
-    generated_query = f"data.FacilityName:{names}"
+def update_query_with_names_based_search(names: str = None, user_query: str = None, name_field = "data.FacilityName") -> str:
+    generated_query = f"{name_field}:{names}"
     return added_query(generated_query, user_query)
 
 

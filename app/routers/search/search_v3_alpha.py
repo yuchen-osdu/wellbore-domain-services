@@ -20,6 +20,7 @@ from .search_v3 import (
     DEFAULT_QUERYREQUEST,
     OSDU_WELLBORE_KIND,
     OSDU_WELLBORETRAJECTORY_KIND,
+    OSDU_WELLLOG_KIND,
     escape_forbidden_characters_for_search,
     update_query_with_names_based_search,
     query_request,
@@ -53,3 +54,17 @@ async def query_trajectories_bywellbore(wellboreId: str, body: SearchQueryReques
                                    ctx: Context = Depends(get_ctx)):
     body.query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
     return await query_request(query_type, OSDU_WELLBORETRAJECTORY_KIND, ctx, body)
+
+
+@router.post('/query/welllogs/byname',
+             summary='Query with cursor, search WellLogs by name and optionally by wellbore ID',
+             description=f"""Get all WellLogs objects using its name and optionally relationship Wellbore ID.  
+            <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas. The query is done on data.Name field</p>{REQUIRED_ROLES_READ}""",
+             response_model=CursorQueryResponse)
+async def query_trajectories_bywellbore(names: str, wellbore_id: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+                                   ctx: Context = Depends(get_ctx)):
+    if wellbore_id is not None:
+        body.query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
+    names = escape_forbidden_characters_for_search(names)
+    body.query = update_query_with_names_based_search(names=names, user_query=body.query, name_field="data.Name")
+    return await query_request(query_type, OSDU_WELLLOG_KIND, ctx, body)

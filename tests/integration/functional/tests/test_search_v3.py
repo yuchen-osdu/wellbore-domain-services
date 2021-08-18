@@ -114,3 +114,23 @@ def test_search_trajectory_by_wellbore_id(with_wdms_env):
     env.set('search_query_type', 'query')
     resobj = build_request_search_trajectory_by_wellbore_id().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1
+
+
+@pytest.mark.tag('search')
+@pytest.mark.dependency(depends=["test_setup_for_search"])
+def test_search_wellLog_by_name(with_wdms_env):
+    #Only search and no fast search
+    env = with_wdms_env
+    env.set('search_query_type', 'query')
+    resobj = build_request_search_welllog_by_name().call(with_wdms_env, assert_status=200).get_response_obj()
+    assert resobj.totalCount >= 1
+
+
+@pytest.mark.tag('search')
+@pytest.mark.dependency(depends=["test_setup_for_search"])
+def test_search_wellLog_by_name_and_wellbore(with_wdms_env):
+    #Only search and no fast search
+    env = with_wdms_env
+    env.set('search_query_type', 'query')
+    resobj = build_request_search_welllog_by_name_and_wellbore().call(with_wdms_env, assert_status=200).get_response_obj()
+    assert resobj.totalCount >= 1
