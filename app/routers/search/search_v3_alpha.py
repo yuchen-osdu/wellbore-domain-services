@@ -61,7 +61,7 @@ async def query_trajectories_bywellbore(wellboreId: str, body: SearchQueryReques
              description=f"""Get all WellLogs objects using its name and optionally relationship Wellbore ID.  
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas. The query is done on data.Name field</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_trajectories_bywellbore(names: str, wellbore_id: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+async def query_welllogs_byname(names: str, wellbore_id: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                    ctx: Context = Depends(get_ctx)):
     if wellbore_id is not None:
         body.query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
