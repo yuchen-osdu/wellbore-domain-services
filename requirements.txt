@@ -10,13 +10,18 @@ adal==1.2.7
     # via azure-datalake-store
 adlfs==2021.8.2
     # via osdu-core-lib-python-azure
+aiobotocore==1.4.0
+    # via s3fs
 aiohttp==3.7.4.post0
     # via
     #   -r requirements.in
     #   adlfs
+    #   aiobotocore
     #   gcsfs
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
+aioitertools==0.8.0
+    # via aiobotocore
 aioredis==2.0.0
     # via osdu-core-lib-python
 anyio==3.3.0
@@ -64,13 +69,8 @@ azure-storage-blob==12.8.1
     #   osdu-core-lib-python-azure
 backoff==1.11.1
     # via -r requirements.in
-boto3==1.18.25
-    # via osdu-core-lib-python-ibm
-botocore==1.21.25
-    # via
-    #   boto3
-    #   osdu-core-lib-python-ibm
-    #   s3transfer
+botocore==1.20.106
+    # via aiobotocore
 cachetools==4.2.2
     # via
     #   google-auth
@@ -132,6 +132,7 @@ fsspec==2021.7.0
     #   dask
     #   gcsfs
     #   osdu-core-lib-python-azure
+    #   s3fs
 gcsfs==2021.7.0
     # via osdu-core-lib-python-gcp
 google-api-core[grpc]==1.31.2
@@ -182,9 +183,7 @@ idna==3.2
 isodate==0.6.0
     # via msrest
 jmespath==0.10.0
-    # via
-    #   boto3
-    #   botocore
+    # via botocore
 jsonbender==0.9.3
     # via -r requirements.in
 jsonpath-ng==1.5.3
@@ -243,8 +242,6 @@ osdu-core-lib-python-aws==0.0.2
 osdu-core-lib-python-azure==1.2.1
     # via -r requirements.in
 osdu-core-lib-python-gcp==1.1.0
-    # via -r requirements.in
-osdu-core-lib-python-ibm==1.1.0
     # via -r requirements.in
 osdu-data-ecosystem-search==0.3.3
     # via -r requirements.in
@@ -337,8 +334,8 @@ rfc3986[idna2008]==1.5.0
     # via httpx
 rsa==4.7.2
     # via google-auth
-s3transfer==0.5.0
-    # via boto3
+s3fs==2021.7.0
+    # via -r requirements.in
 six==1.16.0
     # via
     #   azure-core
@@ -386,6 +383,8 @@ urllib3==1.26.6
     #   requests
 uvicorn==0.15.0
     # via -r requirements.in
+wrapt==1.12.1
+    # via aiobotocore
 xmltodict==0.11.0
     # via osdu-log-recognition-lib
 yarl==1.6.3
