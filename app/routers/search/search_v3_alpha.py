@@ -33,11 +33,11 @@ from ..common_parameters import REQUIRED_ROLES_READ
 router = APIRouter()
 
 
-@router.post('/query/wellbores/byname', summary='Query with cursor or offset, get wellbores',
+@router.post('/query/wellbores', summary='Query with cursor or offset, get wellbores',
              description=f"""Get Wellbores object by name.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
         returns all records directly based on existing schemas. The query is done on data.FacilityName field</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_wellbores_by_name(names: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+async def query_wellbores_by_name(names: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                   ctx: Context = Depends(get_ctx)):
     names = escape_forbidden_characters_for_search(names)
     body.query = update_query_with_names_based_search(names=names, user_query=body.query)
@@ -56,12 +56,12 @@ async def query_trajectories_bywellbore(wellboreId: str, body: SearchQueryReques
     return await query_request(query_type, OSDU_WELLBORETRAJECTORY_KIND, ctx, body)
 
 
-@router.post('/query/welllogs/byname',
+@router.post('/query/welllogs',
              summary='Query with cursor, search WellLogs by name and optionally by wellbore ID',
              description=f"""Get all WellLogs objects using its name and optionally relationship Wellbore ID.  
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas. The query is done on data.Name field</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_welllogs_byname(names: str, wellbore_id: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+async def query_welllogs_by_name(names: str = None, wellbore_id: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                    ctx: Context = Depends(get_ctx)):
     if wellbore_id is not None:
         body.query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)

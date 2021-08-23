@@ -128,6 +128,8 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
 
 
 def update_query_with_names_based_search(names: str = None, user_query: str = None, name_field = "data.FacilityName") -> str:
+    if names is None:
+        return user_query
     generated_query = f"{name_field}:{names}"
     return added_query(generated_query, user_query)
 
@@ -135,6 +137,8 @@ def update_query_with_names_based_search(names: str = None, user_query: str = No
 def escape_forbidden_characters_for_search(input_str: str) -> str:
     # Reserved character are listed here https://community.opengroup.org/osdu/documentation/-/blob/master/platform/tutorials/core-services/SearchService.md
     # ? and * are allowed for wildcard search
+    if input_str is None:
+        return None
     reserved_char_list = ['+', '-', '=', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~',
                           ':', '\\', '/']
 

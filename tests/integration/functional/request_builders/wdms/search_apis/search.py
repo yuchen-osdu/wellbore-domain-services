@@ -353,7 +353,7 @@ def build_request_search_wellbore_by_name() -> RequestRunner:
     rq_proto = Request(
         name='search wellbore by name',
         method='POST',
-        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores/byname?names=wdms_e2e_search_refs_v%2A',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/wellbores?names=wdms_e2e_search_refs_v%2A',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -385,7 +385,7 @@ def build_request_search_welllog_by_name() -> RequestRunner:
     rq_proto = Request(
         name='search wellbore by name',
         method='POST',
-        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/welllogs/byname?names=wdms_e2e_search_record_%2A',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/welllogs?names=wdms_e2e_search_record_%2A',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -402,7 +402,7 @@ def build_request_search_welllog_by_name_and_wellbore() -> RequestRunner:
     rq_proto = Request(
         name='search wellbore by name',
         method='POST',
-        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/welllogs/byname?names=wdms_e2e_search_record_%2A'
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/welllogs?names=wdms_e2e_search_record_%2A'
             '&wellbore_id={{setup_search_osdu_wellbore_id}}',
         headers={
             'accept': 'application/json',
