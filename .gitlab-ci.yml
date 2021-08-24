@@ -27,14 +27,14 @@ variables:
   AWS_TEST_SUBDIR: tests/aws-test/build-aws
   AWS_INT_TEST_TYPE: python
 
-  OSDU_GCP_PROJECT_NAME: nice-etching-277309
-  OSDU_GCP_CLUSTER: asm-primary
-  OSDU_GCP_ZONE: us-central1-c
   OSDU_GCP_SERVICE: wellbore
-  OSDU_GCP_HELM_DEPLOYMENT_DIR: devops/gcp/osdu-helm
-  OSDU_GCP_SERVICE_PATH: /api/os-wellbore-ddms
-  OSDU_GCP_HEALTH_PATH: /api/os-wellbore-ddms/healthz
-
+  OSDU_GCP_VENDOR: gcp
+  OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT --set data.service_host_search=$OSDU_GCP_SERVICE_HOST_SEARCH --set data.sa_key=$OSDU_GCP_INTEGRATION_TESTER"
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA"
+  OSDU_GCP_HELM_CONFIG_SERVICE: wellbore-config
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE: wellbore-deploy
+  OSDU_GCP_INT_TEST_TYPE: python
 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
@@ -50,7 +50,7 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/osdu-gcp-stateful-k8s.yml"
+    file: "cloud-providers/osdu-gcp-gke.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm-wellbore.yml"
@@ -92,7 +92,7 @@ containerize:
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
 
-osdu-gcp-containerize:
+osdu-gcp-containerize-gitlab:
   stage: containerize
   image: docker:19.03
   cache: {}
@@ -101,8 +101,8 @@ osdu-gcp-containerize:
     variables:
       - $OSDU_GCP == 'true'
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:$CI_COMMIT_SHA
-    IMAGE_TAG_COMMUNITY: $CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:gcp-community
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA
+    IMAGE_TAG_LATEST: $CI_REGISTRY_IMAGE/osdu-gcp:latest
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
     - apk update
@@ -119,11 +119,11 @@ osdu-gcp-containerize:
     - commit_branch=$commit_id
     - echo $commit_branch
     - echo ---- ---- BUILD IMAGE
-    - docker build -t $IMAGE_TAG -t $IMAGE_TAG_COMMUNITY -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker build -t $IMAGE_TAG -t $IMAGE_TAG_LATEST --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG
-    - docker push $IMAGE_TAG_COMMUNITY
+    - docker push $IMAGE_TAG_LATEST
 
 osdu-gcp-containerize-for-release:
   stage: containerize
@@ -132,10 +132,9 @@ osdu-gcp-containerize-for-release:
   tags: ["osdu-medium"]
   only:
     variables:
-      - $OSDU_GCP == 'true' && $RELEASE =~ /(v)(\d+\.)(\d+\.)\w+/i
+      - $OSDU_GCP == 'true' && $CI_COMMIT_TAG != null
   variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:gcp-$RELEASE
-    IMAGE_TAG_RELEASE: $CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:gcp-release
+    IMAGE_TAG_RELEASE: $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_TAG
   script:
     - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
     - apk update
@@ -152,16 +151,16 @@ osdu-gcp-containerize-for-release:
     - commit_branch=$commit_id
     - echo $commit_branch
     - echo ---- ---- BUILD IMAGE
-    - docker build -t $IMAGE_TAG -t $IMAGE_TAG_RELEASE -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker build -t $IMAGE_TAG_RELEASE --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - echo ---- ---- PUSH IMAGE
-    - docker push $IMAGE_TAG
     - docker push $IMAGE_TAG_RELEASE
 
 osdu-gcp-test-python:
+  extends: .osdu-gcp-variables
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  needs: ['osdu-gcp-deploy']
+  needs: ["osdu-gcp-deploy-deployment"]
   only:
     variables:
       - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE == 'python'
@@ -178,17 +177,21 @@ osdu-gcp-test-python:
     - cd tests/integration
     - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
-    - gcloud config set project $OSDU_GCP_PROJECT_NAME
+    - gcloud config set project $OSDU_GCP_PROJECT
     - >
       python gen_postman_env.py
       --token $(gcloud auth print-access-token)
-      --base_url ${OSDU_GCP_URL}${OSDU_GCP_SERVICE_PATH}
+      --base_url $OSDU_GCP_WELLBORE_BASE_URL
       --cloud_provider $OSDU_GCP_VENDOR
       --data_partition $OSDU_GCP_TENANT
       --acl_domain $DOMAIN
-      --legal_tag $OSDU_GCP_LEGAL_TAG
+      --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
+# Disable maven job in gcp common gke pipeline
+osdu-gcp-test:
+  extends:
+    - .osdu-gcp-variables
 
 # Allow failure on deployments
 
