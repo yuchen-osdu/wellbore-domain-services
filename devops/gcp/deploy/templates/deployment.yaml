@@ -51,4 +51,3 @@ spec:
             limits:
               cpu: "{{ .Values.data.limits_cpu }}"
               memory: "{{ .Values.data.limits_memory }}"
-
