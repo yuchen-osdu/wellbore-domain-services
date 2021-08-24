@@ -34,7 +34,7 @@ def test_added_relationships_query(id, user_query, expected_query):
 
 
 NAMES_QUERY_PARAMS = [
-    (None, None, 'data.FacilityName:None'),
+    (None, None, None),
     ('Fab OR Fred', None, 'data.FacilityName:Fab OR Fred'),
     ('Fab', 'data.AnyField:\\"any value\\"', 'data.FacilityName:Fab AND (data.AnyField:\\"any value\\")'),
 ]
