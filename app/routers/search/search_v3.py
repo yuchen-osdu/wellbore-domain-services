@@ -126,11 +126,19 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
         query_request=query_request)
 
 
-
-def update_query_with_names_based_search(names: str = None, user_query: str = None, name_field = "data.FacilityName") -> str:
+def update_query_with_names_based_search(names: str = None, user_query: str = None,
+                                         name_field: str = "data.FacilityName") -> str:
     if names is None:
         return user_query
     generated_query = f"{name_field}:{names}"
+    return added_query(generated_query, user_query)
+
+
+def update_query_with_nested_names_based_search(array_field: str, nested_field: str, names: str = None,
+                                                user_query: str = None) -> str:
+    if names is None:
+        return user_query
+    generated_query = f"(nested({array_field}, ({nested_field}:({names}))))"
     return added_query(generated_query, user_query)
 
 
@@ -149,8 +157,10 @@ def escape_forbidden_characters_for_search(input_str: str) -> str:
     return result_str
 
 
-async def query_request_with_cursor(query_type: str, kind: str, ctx: Context, query: SimpleCursorQueryRequest = None):
-    returned_fields = query_type_returned_fields(query_type)
+async def query_request_with_cursor(query_type: str, kind: str, ctx: Context, query: SimpleCursorQueryRequest = None,
+                                    custom_returned_fields: [str] = None):
+    returned_fields = query_type_returned_fields(query_type) if custom_returned_fields is None \
+        else custom_returned_fields
     query_request = CursorQueryRequest(kind=kind,
                                        limit=query.limit or LIMIT,
                                        query=query.query,
@@ -162,8 +172,10 @@ async def query_request_with_cursor(query_type: str, kind: str, ctx: Context, qu
         cursor_query_request=query_request)
 
 
-async def query_request_with_offset(query_type: str, kind: str, ctx: Context, query: SimpleOffsetQueryRequest = None):
-    returned_fields = query_type_returned_fields(query_type)
+async def query_request_with_offset(query_type: str, kind: str, ctx: Context, query: SimpleOffsetQueryRequest = None,
+                                    custom_returned_fields: [str] = None):
+    returned_fields = query_type_returned_fields(query_type) if custom_returned_fields is None \
+        else custom_returned_fields
 
     query_request = QueryRequest(kind=kind,
                                  limit=query.limit or LIMIT,
@@ -176,15 +188,16 @@ async def query_request_with_offset(query_type: str, kind: str, ctx: Context, qu
         query_request=query_request)
 
 
-async def query_request(query_type: str, kind: str, ctx: Context, query: SearchQueryRequest = None):
+async def query_request(query_type: str, kind: str, ctx: Context, query: SearchQueryRequest = None,
+                        custom_returned_fields: [str] = None):
     # use offset if not not none else use cursor
     query_as_dict = query.dict(exclude_none=True, exclude_unset=True)
     if query.offset is not None:
         cursor_query = SimpleOffsetQueryRequest(**query_as_dict)
-        return await query_request_with_offset(query_type, kind, ctx, cursor_query)
+        return await query_request_with_offset(query_type, kind, ctx, cursor_query, custom_returned_fields)
 
     cursor_query = SimpleCursorQueryRequest(**query_as_dict)
-    return await query_request_with_cursor(query_type, kind, ctx, cursor_query)
+    return await query_request_with_cursor(query_type, kind, ctx, cursor_query, custom_returned_fields)
 
 
 @router.post('/query/wellbores', summary='Query with cursor, get wellbores',
