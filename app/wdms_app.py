@@ -49,6 +49,7 @@ from app.routers.bulk import bulk_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_wellbore
+from app.routers.delete import delete_bulk_data
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import (
     get_http_client_session,
@@ -257,6 +258,9 @@ wdms_app.include_router(
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
     dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access)])
+
+wdms_app.include_router(delete_bulk_data.router, prefix=DDMS_V3_PATH, tags=['feature: delete'],
+                        dependencies=v3_bulk_dependencies,)
 
 # The multiple instantiation of bulk_utils router create some duplicates operation_id
 update_operation_ids(wdms_app)
