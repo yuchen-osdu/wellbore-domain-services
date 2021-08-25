@@ -16127,13 +16127,13 @@
         ]
       }
     },
-    "/ddms/v3/record/{id}": {
+    "/ddms/v3/record/{record_id}": {
       "delete": {
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_purge",
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "record_id",
             "required": true,
             "schema": {
