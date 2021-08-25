@@ -48,7 +48,7 @@ from app.routers.ddms_v3 import (
 from app.routers.bulk import bulk_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
-from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_wellbore
+from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_alpha
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import (
     get_http_client_session,
@@ -164,10 +164,13 @@ basic_dependencies = [
 ]
 
 wdms_app.include_router(probes.router)
-wdms_app.include_router(about.router, prefix=DDMS_V2_PATH)
+wdms_app.include_router(about.router, tags=["Wellbore DDMS"])
+
+# hidden from swagger but maintained for backward compatibility with /ddms/v2 APIs
+wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
+wdms_app.include_router(ddms_v2.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
 
 ddms_v2_routes_groups = [
-    (ddms_v2, "Wellbore DDMS"),
     (well_ddms_v2, "Well"),
     (wellbore_ddms_v2, "Wellbore"),
     (logset_ddms_v2, "Logset"),
@@ -203,7 +206,7 @@ wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search']
 wdms_app.include_router(search_v3.router, prefix=DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies)
 wdms_app.include_router(fast_search_v3.router, prefix=DDMS_V3_PATH, tags=['fast-search v3'],
                         dependencies=basic_dependencies)
-wdms_app.include_router(search_v3_wellbore.router, prefix=ALPHA_APIS_PREFIX+DDMS_V3_PATH, tags=['ALPHA feature: search v3'],
+wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH, tags=['ALPHA feature: search v3'],
                         dependencies=basic_dependencies)
 
 
