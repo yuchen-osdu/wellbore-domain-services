@@ -15,11 +15,9 @@
 from typing import Optional, Dict, List
 
 from fastapi import APIRouter, Depends
-from odes_search.models import CursorQueryResponse, QueryRequest
-from pydantic import BaseModel, Field
+from odes_search.models import CursorQueryResponse
 
 from app.utils import Context
-from . import search_wrapper
 from .search_v3 import (
     SearchQueryRequest,
     DEFAULT_QUERYREQUEST,
@@ -34,8 +32,6 @@ from .search_v3 import (
     get_ctx,
     query_type, update_query_with_nested_names_based_search)
 from ..common_parameters import REQUIRED_ROLES_READ
-from ...clients.search_service_client import get_search_service
-from ...model.osdu_model import Curve110
 
 router = APIRouter()
 
@@ -79,37 +75,3 @@ async def query_welllogs_by_name(names: str = None, wellbore_id: str = None, mne
     body.query = update_query_with_nested_names_based_search(array_field='data.Curves', nested_field='Mnemonic',
                                                              names=mnemonics, user_query=body.query)
     return await query_request(query_type, OSDU_WELLLOG_KIND, ctx, body)
-    
-    
-class CurvePer(BaseModel):
-    results: "Optional[Dict[str, List[Curve110]]]" = Field(None, alias="results")
-
-class CurvesQueryResponse(BaseModel):
-    results: "Optional[Dict[str, List[Curve110]]]" = Field(None, alias="results")
-
-
-@router.post('/query/wellbores/{wellboreid}/curves',
-             summary='Query with cursor',
-             description=f"""Get all Curves from all WellLogs using relationship Wellbore ID.<p></p>
-            <p>The WellLog  kind is {OSDU_WELLLOG_KIND}</p>{REQUIRED_ROLES_READ}""",
-             response_model=CurvesQueryResponse,
-             response_model_exclude_unset=True)
-async def query_curves_by_wellbore(wellboreid: str, ctx: Context = Depends(get_ctx)):
-    query = added_relationships_query(wellboreid, WELLBORE_RELATIONSHIP, None)
-    welllogs_query_request = QueryRequest(kind=OSDU_WELLLOG_KIND,
-                                 query=query,
-                                 returnedFields=['id', 'data.Curves'])
-
-    client = await get_search_service(ctx)
-    results = await search_wrapper.SearchWrapper.query_cursorless(
-        search_service=client,
-        data_partition_id=ctx.partition_id,
-        query_request=welllogs_query_request)
-
-    curves_response = CurvesQueryResponse()
-    curves_response.results = dict()
-    if results.results is not None:
-        for item in results.results:
-            curves_response.results[item['id']] = item.get('data', {}).get('Curves', [])
-
-    return curves_response
