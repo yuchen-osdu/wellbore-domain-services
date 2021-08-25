@@ -36,7 +36,7 @@ router = APIRouter()
 # -------------------------------------------------- API delete record ----------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
-@router.delete('/record/{id}',
+@router.delete('/record/{record_id}',
                summary="The API performs a logical deletion of the given record",
                description="{}".format(REQUIRED_ROLES_WRITE),
                operation_id="del_purge",
