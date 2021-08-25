@@ -9042,7 +9042,7 @@
             "description": "Successful Response"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Record not found"
           },
           "422": {
             "content": {
@@ -17664,7 +17664,7 @@
             "description": "Successful Response"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Record not found"
           },
           "422": {
             "content": {
@@ -18806,7 +18806,7 @@
             "description": "Successful Response"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Record not found"
           },
           "422": {
             "content": {
