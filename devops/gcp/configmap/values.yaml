@@ -3,10 +3,10 @@
 # Declare variables to be passed into your templates.
 
 data:
-  os_wellbore_ddms_data_project_id: "nice-etching-277309"
+  os_wellbore_ddms_data_project_id: ""
   os_wellbore_ddms_data_project_credentials: "/tmp/key/key.json"
-  service_host_search: ""
-  service_host_storage: ""
+  service_host_search: "http://search/api/search"
+  service_host_storage: "http://storage/api/storage"
   sa_key: ""
 
 conf:
