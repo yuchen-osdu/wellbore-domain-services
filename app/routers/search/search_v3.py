@@ -170,8 +170,7 @@ async def query_request_with_cursor(query_type: str, kind: str, ctx: Context, qu
         cursor_query_request=query_request)
 
 
-async def query_request_with_offset(query_type: str, kind: str, ctx: Context, query: SimpleOffsetQueryRequest = None,
-                                    custom_returned_fields: [str] = None):
+async def query_request_with_offset(query_type: str, kind: str, ctx: Context, query: SimpleOffsetQueryRequest = None):
     returned_fields = query_type_returned_fields(query_type)
 
     query_request = QueryRequest(kind=kind,
