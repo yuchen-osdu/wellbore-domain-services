@@ -12,40 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
-import json
-from typing import List, Optional
-
-import numpy as np
-import pandas as pd
-
 from fastapi import (
     APIRouter,
     Depends,
-    File,
-    HTTPException,
-    Query,
-    Request,
-    UploadFile,
     Response,
-    status,
-    Body
+    status
 )
-from odes_storage.models import (
-    CreateUpdateRecordsResponse,
-    RecordVersions,
-)
-from osdu.core.api.storage.tenant import Tenant
-from pydantic import BaseModel, Field
+
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from app.clients.storage_service_client import get_storage_record_service
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.routers.bulk.bulk_uri_dependencies import (get_bulk_id_access, BulkIdAccess,
-                                                    BULK_URN_PREFIX_VERSION)
-from app.routers.bulk.utils import with_dask_blob_storage
-from app.routers.common_parameters import json_orient_parameter, REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.routers.delete.persistence import get_bulkURI
+from app.routers.bulk.bulk_uri_dependencies import (get_bulk_id_access, BulkIdAccess)
+from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
 from app.bulk_persistence.tenant_provider import resolve_tenant
@@ -92,7 +70,12 @@ async def delete_purge_record(
         tenant = await resolve_tenant(ctx.partition_id)
         storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
 
-        for bulk_id in record_bulk_uris:
+        bulk_ids = []
+        for bulk_id_folder in record_bulk_uris:
+            bulk_ids.append(await storage.list_objects(tenant=tenant, prefix=bulk_id_folder))
+        print(bulk_ids)
+
+        for bulk_id in bulk_ids:
             await storage.delete(tenant, bulk_id)
 
     else:
