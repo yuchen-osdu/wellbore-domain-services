@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Dict, List
-
 from fastapi import APIRouter, Depends
 from odes_search.models import CursorQueryResponse
 
@@ -30,7 +28,8 @@ from .search_v3 import (
     added_relationships_query,
     WELLBORE_RELATIONSHIP,
     get_ctx,
-    query_type, update_query_with_nested_names_based_search)
+    query_type,
+    update_query_with_nested_names_based_search)
 from ..common_parameters import REQUIRED_ROLES_READ
 
 router = APIRouter()

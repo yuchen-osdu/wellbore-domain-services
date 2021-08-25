@@ -157,10 +157,8 @@ def escape_forbidden_characters_for_search(input_str: str) -> str:
     return result_str
 
 
-async def query_request_with_cursor(query_type: str, kind: str, ctx: Context, query: SimpleCursorQueryRequest = None,
-                                    custom_returned_fields: [str] = None):
-    returned_fields = query_type_returned_fields(query_type) if custom_returned_fields is None \
-        else custom_returned_fields
+async def query_request_with_cursor(query_type: str, kind: str, ctx: Context, query: SimpleCursorQueryRequest = None):
+    returned_fields = query_type_returned_fields(query_type)
     query_request = CursorQueryRequest(kind=kind,
                                        limit=query.limit or LIMIT,
                                        query=query.query,
@@ -174,8 +172,7 @@ async def query_request_with_cursor(query_type: str, kind: str, ctx: Context, qu
 
 async def query_request_with_offset(query_type: str, kind: str, ctx: Context, query: SimpleOffsetQueryRequest = None,
                                     custom_returned_fields: [str] = None):
-    returned_fields = query_type_returned_fields(query_type) if custom_returned_fields is None \
-        else custom_returned_fields
+    returned_fields = query_type_returned_fields(query_type)
 
     query_request = QueryRequest(kind=kind,
                                  limit=query.limit or LIMIT,
@@ -188,16 +185,15 @@ async def query_request_with_offset(query_type: str, kind: str, ctx: Context, qu
         query_request=query_request)
 
 
-async def query_request(query_type: str, kind: str, ctx: Context, query: SearchQueryRequest = None,
-                        custom_returned_fields: [str] = None):
+async def query_request(query_type: str, kind: str, ctx: Context, query: SearchQueryRequest = None):
     # use offset if not not none else use cursor
     query_as_dict = query.dict(exclude_none=True, exclude_unset=True)
     if query.offset is not None:
         cursor_query = SimpleOffsetQueryRequest(**query_as_dict)
-        return await query_request_with_offset(query_type, kind, ctx, cursor_query, custom_returned_fields)
+        return await query_request_with_offset(query_type, kind, ctx, cursor_query)
 
     cursor_query = SimpleCursorQueryRequest(**query_as_dict)
-    return await query_request_with_cursor(query_type, kind, ctx, cursor_query, custom_returned_fields)
+    return await query_request_with_cursor(query_type, kind, ctx, cursor_query)
 
 
 @router.post('/query/wellbores', summary='Query with cursor, get wellbores',
