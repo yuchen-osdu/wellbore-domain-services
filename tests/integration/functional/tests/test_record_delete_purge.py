@@ -14,7 +14,8 @@
 
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders import build_request, get_cleaned_ref_and_res
+from ..request_builders import build_request
+from ..request_builders.wdms.delete import build_request_delete_purge_record
 
 
 kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog', 'osdu_wellboretrajectory', 'osdu_wellboremarkerset']
@@ -61,8 +62,8 @@ def test_crud_record_versions(with_wdms_env, kind):
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize('kind', param_kind_depend_on_create)
-def test_crud_delete_record(with_wdms_env, kind):
+def test_delete_purge_record(with_wdms_env, kind):
     with_wdms_env.set(f'record_id', with_wdms_env.get(f'{kind}_record_id'))
     with_wdms_env.set(f'purge', "true")
-    result = build_request(f'delete.build_request_delete_purge_record').call(with_wdms_env)
+    result = build_request_delete_purge_record().call(with_wdms_env)
     result.assert_status_code(204)

@@ -36,7 +36,7 @@ router = APIRouter()
 # -------------------------------------------------- API delete record ----------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
-@router.delete('/record/{record_id}',
+@router.delete("/record/{record_id}",
                summary="The API performs a logical deletion of the given record",
                description="{}".format(REQUIRED_ROLES_WRITE),
                operation_id="del_purge",
@@ -54,10 +54,16 @@ async def delete_purge_record(
     storage_client = await get_storage_record_service(ctx)
     if purge:
         record_versions = await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
+        print(record_versions.versions)
+        ctx.logger.debug(f'record_versions.versions: {record_versions.versions}')
         record_bulk_uris = []
         for i in range(len(record_versions.versions)):
             version = record_versions.versions[i]
+            print(version)
+            ctx.logger.debug(f'token: {ctx.auth}')
+            ctx.logger.debug(f'version: {version}')
             record = await fetch_record(ctx, record_id, version)
+            print(record)
             bulk_id, prefix = bulk_uri_access.get_bulk_uri(record=record)
             if bulk_id is not None:
                 record_bulk_uris.append(bulk_id)
@@ -66,6 +72,7 @@ async def delete_purge_record(
         await storage_client.purge_record(id=record_id, data_partition_id=ctx.partition_id)
 
         print(record_bulk_uris)
+        ctx.logger.debug(f'record_bulk_uris: {record_bulk_uris}')
 
         tenant = await resolve_tenant(ctx.partition_id)
         storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
@@ -74,6 +81,8 @@ async def delete_purge_record(
         for bulk_id_folder in record_bulk_uris:
             bulk_ids.append(await storage.list_objects(tenant=tenant, prefix=bulk_id_folder))
         print(bulk_ids)
+
+        ctx.logger.debug(f'bulk_ids: {bulk_ids}')
 
         for bulk_id in bulk_ids:
             await storage.delete(tenant, bulk_id)
