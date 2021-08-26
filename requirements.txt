@@ -97,6 +97,8 @@ cloudpickle==1.6.0
     # via
     #   dask
     #   distributed
+colorama==0.4.4
+    # via click
 cryptography==3.4.7
     # via
     #   -r requirements.in
@@ -118,7 +120,7 @@ decorator==5.0.9
     #   jsonpath-ng
 distributed==2021.07.2
     # via dask
-fastapi==0.65.1
+fastapi==0.68.1
     # via
     #   -r requirements.in
     #   osdu-data-ecosystem-search
@@ -179,8 +181,6 @@ idna==3.2
     #   requests
     #   rfc3986
     #   yarl
-importlib-metadata==4.6.3
-    # via click
 isodate==0.6.0
     # via msrest
 jmespath==0.10.0
@@ -246,7 +246,7 @@ osdu-core-lib-python-azure==1.2.1
     # via -r requirements.in
 osdu-core-lib-python-gcp==1.1.0
     # via -r requirements.in
-osdu-core-lib-python-ibm==1.1.0
+osdu-core-lib-python-ibm==1.2.0
     # via -r requirements.in
 osdu-data-ecosystem-search==0.3.3
     # via -r requirements.in
@@ -312,6 +312,8 @@ pytz==2021.1
     # via
     #   google-api-core
     #   pandas
+	#pywin32==301
+    # via portalocker
 pyyaml==5.4.1
     # via
     #   dask
@@ -374,15 +376,9 @@ tornado==6.1
 typing-extensions==3.10.0.0
     # via
     #   aiohttp
-    #   anyio
-    #   asgiref
-    #   importlib-metadata
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   pydantic
-    #   structlog
-    #   uvicorn
-    #   yarl
 urllib3==1.26.6
     # via
     #   botocore
@@ -395,8 +391,6 @@ yarl==1.6.3
     # via aiohttp
 zict==2.0.0
     # via distributed
-zipp==3.5.0
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

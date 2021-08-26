@@ -48,8 +48,8 @@ from app.routers.ddms_v3 import (
 from app.routers.bulk import bulk_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
-from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_wellbore
 from app.routers.delete import delete_bulk_data
+from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_alpha
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.utils import (
     get_http_client_session,
@@ -207,7 +207,7 @@ wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search']
 wdms_app.include_router(search_v3.router, prefix=DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies)
 wdms_app.include_router(fast_search_v3.router, prefix=DDMS_V3_PATH, tags=['fast-search v3'],
                         dependencies=basic_dependencies)
-wdms_app.include_router(search_v3_wellbore.router, prefix=ALPHA_APIS_PREFIX+DDMS_V3_PATH, tags=['ALPHA feature: search v3'],
+wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH, tags=['ALPHA feature: search v3'],
                         dependencies=basic_dependencies)
 
 

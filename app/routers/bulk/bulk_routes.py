@@ -95,7 +95,7 @@ async def post_data(record_id: str,
                 "In case of JSON the orient must be set accordingly. Support http chunked encoding."
     + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["chunk_data"],
-    responses={400: {"error": "Record not found"}}
+    responses={400: {"description": "Record not found"}}
 )
 async def post_chunk_data(record_id: str,
                           session_id: str,

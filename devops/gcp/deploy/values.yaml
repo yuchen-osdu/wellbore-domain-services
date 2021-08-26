@@ -1,0 +1,15 @@
+# Default values for wellbore-deploy.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+data:
+  requests_cpu: "0.25"
+  requests_memory: "256M"
+  limits_cpu: "1"
+  limits_memory: "1G"
+  image: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp:latest"
+
+conf:
+  configmap: "wellbore-config"
+  app_name: "wellbore"
+  secret_name: "wellbore-secret"

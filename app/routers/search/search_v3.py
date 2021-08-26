@@ -21,7 +21,7 @@ from odes_search.models import (
     Field,
     Optional)
 from app.clients.search_service_client import get_search_service
-from ..common_parameters import REQUIRED_ROLES_READ
+from app.routers.common_parameters import REQUIRED_ROLES_READ
 from app.utils import Context
 import app.routers.search.search_wrapper as search_wrapper
 from .search import (
@@ -39,6 +39,7 @@ router = APIRouter()
 OSDU_WELLBORE_KIND = '*:wks:master-data--Wellbore:*'
 OSDU_WELLLOG_KIND = '*:wks:work-product-component--WellLog:*'
 OSDU_WELLBOREMARKERSET_KIND = '*:wks:work-product-component--WellboreMarkerSet:*'
+OSDU_WELLBORETRAJECTORY_KIND = '*:wks:work-product-component--WellboreTrajectory:*'
 WELLBORE_RELATIONSHIP = "WellboreID"
 
 
@@ -126,14 +127,18 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
 
 
 
-def update_query_with_names_based_search(names: str = None, user_query: str = None) -> str:
-    generated_query = f"data.FacilityName:{names}"
+def update_query_with_names_based_search(names: str = None, user_query: str = None, name_field = "data.FacilityName") -> str:
+    if names is None:
+        return user_query
+    generated_query = f"{name_field}:{names}"
     return added_query(generated_query, user_query)
 
 
 def escape_forbidden_characters_for_search(input_str: str) -> str:
     # Reserved character are listed here https://community.opengroup.org/osdu/documentation/-/blob/master/platform/tutorials/core-services/SearchService.md
     # ? and * are allowed for wildcard search
+    if input_str is None:
+        return None
     reserved_char_list = ['+', '-', '=', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~',
                           ':', '\\', '/']
 
