@@ -1,0 +1,15 @@
+# Default values for wellbore-configmap.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+data:
+  os_wellbore_ddms_data_project_id: ""
+  os_wellbore_ddms_data_project_credentials: "/tmp/key/key.json"
+  service_host_search: "http://search/api/search"
+  service_host_storage: "http://storage/api/storage"
+  sa_key: ""
+
+conf:
+  configmap: "wellbore-config"
+  app_name: "wellbore"
+  secret_name: "wellbore-secret"

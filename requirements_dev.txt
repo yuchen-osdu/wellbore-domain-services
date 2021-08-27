@@ -58,7 +58,7 @@ idna==3.2
     #   anyio
     #   requests
     #   rfc3986
-importlib-metadata==4.6.3
+importlib-metadata==4.6.4
     # via
     #   -c requirements.txt
     #   click

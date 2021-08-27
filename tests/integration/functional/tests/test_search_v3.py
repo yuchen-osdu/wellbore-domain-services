@@ -27,7 +27,6 @@ def query_for_record_set_available(env):
     result = build_request_osdu_seach_tests_setup_start().call(env)
     result.assert_ok()
     return result.get_response_obj()
-    # return result.response.json()
 
 @pytest.mark.tag('search')
 @pytest.mark.dependency()
@@ -50,17 +49,20 @@ def test_setup_for_search(with_wdms_env):
 
     if nb_record == 0:
         # create one wellbore
-        record_id = build_request_seach_tests_setup_create_osdu_wellbore().call(
+        record_id = build_request_search_tests_setup_create_osdu_wellbore().call(
             env, assert_status=200).get_response_obj().recordIds[0]
         env.set("setup_search_osdu_wellbore_id", record_id)
 
         for _ in range(2):  # create 2 logset
-            record_id = build_request_seach_tests_setup_create_osdu_welllogs().call(
+            record_id = build_request_search_tests_setup_create_osdu_welllogs().call(
                 env, assert_status=200).get_response_obj().recordIds[0]
         env.set("setup_search_osdu_welllog_id", record_id)  # it doesn't matter which logset id is set
 
         for _ in range(2):  # create 2 marker
-            build_request_seach_tests_setup_create_osdu_markersets().call(env, assert_status=200)
+            build_request_search_tests_setup_create_osdu_markersets().call(env, assert_status=200)
+
+        for _ in range(2):  # create 2 trajectories
+            build_request_search_tests_setup_create_osdu_trajectories().call(env, assert_status=200)
 
         # wait for the record to be searchable
         while nb_record <= 0 and wait_attempt >= 0:
@@ -101,4 +103,34 @@ def test_search_wellbore_by_name(with_wdms_env):
     env = with_wdms_env
     env.set('search_query_type', 'query')
     resobj = build_request_search_wellbore_by_name().call(with_wdms_env, assert_status=200).get_response_obj()
+    assert resobj.totalCount >= 1
+
+
+@pytest.mark.tag('search')
+@pytest.mark.dependency(depends=["test_setup_for_search"])
+def test_search_trajectory_by_wellbore_id(with_wdms_env):
+    #Only search and no fast search
+    env = with_wdms_env
+    env.set('search_query_type', 'query')
+    resobj = build_request_search_trajectory_by_wellbore_id().call(with_wdms_env, assert_status=200).get_response_obj()
+    assert resobj.totalCount >= 1
+
+
+@pytest.mark.tag('search')
+@pytest.mark.dependency(depends=["test_setup_for_search"])
+def test_search_wellLog_by_name(with_wdms_env):
+    #Only search and no fast search
+    env = with_wdms_env
+    env.set('search_query_type', 'query')
+    resobj = build_request_search_welllog_by_name().call(with_wdms_env, assert_status=200).get_response_obj()
+    assert resobj.totalCount >= 1
+
+
+@pytest.mark.tag('search')
+@pytest.mark.dependency(depends=["test_setup_for_search"])
+def test_search_wellLog_by_name_and_wellbore(with_wdms_env):
+    #Only search and no fast search
+    env = with_wdms_env
+    env.set('search_query_type', 'query')
+    resobj = build_request_search_welllog_by_name_and_wellbore().call(with_wdms_env, assert_status=200).get_response_obj()
     assert resobj.totalCount >= 1

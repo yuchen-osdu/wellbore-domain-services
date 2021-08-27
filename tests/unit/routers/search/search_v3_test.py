@@ -1,6 +1,5 @@
 import pytest
 
-import app.routers.search.search_v3_wellbore as search_v3_wellbore
 import app.routers.search.search_v3 as search_v3
 
 ADDED_QUERY_PARAMS = [
@@ -35,7 +34,7 @@ def test_added_relationships_query(id, user_query, expected_query):
 
 
 NAMES_QUERY_PARAMS = [
-    (None, None, 'data.FacilityName:None'),
+    (None, None, None),
     ('Fab OR Fred', None, 'data.FacilityName:Fab OR Fred'),
     ('Fab', 'data.AnyField:\\"any value\\"', 'data.FacilityName:Fab AND (data.AnyField:\\"any value\\")'),
 ]
@@ -43,7 +42,7 @@ NAMES_QUERY_PARAMS = [
 
 @pytest.mark.parametrize("names, user_query, expected_query", NAMES_QUERY_PARAMS)
 def test_update_query_with_names_based_search(names, user_query, expected_query):
-    assert search_v3_wellbore.update_query_with_names_based_search(names, user_query) == expected_query
+    assert search_v3.update_query_with_names_based_search(names, user_query) == expected_query
 
 
 ESCAPE_CHAR_PARAMS = [
@@ -51,9 +50,13 @@ ESCAPE_CHAR_PARAMS = [
     ('not char to escape', 'not char to escape'),
     ('wildcard * ? not to escape', 'wildcard * ? not to escape'),
     (r'all other to escape +-=><!(){}[]^"~:\ /', r'all other to escape \+\-\=\>\<\!\(\)\{\}\[\]\^\"\~\:\\ \/'),
+    ('double escape if already escaped \\+\\-\\=\\>\\<\\!\(\\)\\{\\}\\[\\]\\^\\"\\~\\:\\\ \\/',
+        'double escape if already escaped '
+        '\\\\\\+\\\\\\-\\\\\\=\\\\\\>\\\\\\<\\\\\\!\\\\\\(\\\\\\)\\\\\\{\\\\\\}\\\\\\[\\\\\\]\\\\\\^'
+        '\\\\\\"\\\\\\~\\\\\\:\\\\\\\\ \\\\\\/'),
 ]
 
 
 @pytest.mark.parametrize("input_str, expected_str", ESCAPE_CHAR_PARAMS)
 def test_escape_forbidden_characters_for_search(input_str, expected_str):
-    assert search_v3_wellbore.escape_forbidden_characters_for_search(input_str) == expected_str
+    assert search_v3.escape_forbidden_characters_for_search(input_str) == expected_str

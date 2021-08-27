@@ -15,12 +15,17 @@
 from fastapi import APIRouter, Depends
 from odes_search.models import (
     QueryRequest,
-    CursorQueryResponse)
+    CursorQueryResponse,
+    CursorQueryRequest,
+    BaseModel,
+    Field,
+    Optional)
 from app.clients.search_service_client import get_search_service
-from ..common_parameters import REQUIRED_ROLES_READ
+from app.routers.common_parameters import REQUIRED_ROLES_READ
 from app.utils import Context
 import app.routers.search.search_wrapper as search_wrapper
 from .search import (
+    LIMIT,
     query_type,
     SearchQuery,
     get_ctx,
@@ -34,7 +39,41 @@ router = APIRouter()
 OSDU_WELLBORE_KIND = '*:wks:master-data--Wellbore:*'
 OSDU_WELLLOG_KIND = '*:wks:work-product-component--WellLog:*'
 OSDU_WELLBOREMARKERSET_KIND = '*:wks:work-product-component--WellboreMarkerSet:*'
+OSDU_WELLBORETRAJECTORY_KIND = '*:wks:work-product-component--WellboreTrajectory:*'
 WELLBORE_RELATIONSHIP = "WellboreID"
+
+
+class SearchQueryRequest(BaseModel):
+    # Used by as input, w/o kind, etc...
+    limit: "Optional[int]" = Field(None, alias="limit")
+    query: "Optional[str]" = Field(None, alias="query")
+    cursor: "Optional[str]" = Field(None, alias="cursor")
+    offset: "Optional[int]" = Field(None, alias="offset")
+
+
+SearchQueryRequest.update_forward_refs()
+DEFAULT_SEARCHQUERYREQUEST = SearchQueryRequest(limit=None, query=None, cursor=None, offset=None)
+
+
+class SimpleCursorQueryRequest(BaseModel):
+    # Used by as input, w/o kind, etc...
+    limit: "Optional[int]" = Field(None, alias="limit")
+    query: "Optional[str]" = Field(None, alias="query")
+    cursor: "Optional[str]" = Field(None, alias="cursor")
+
+
+SimpleCursorQueryRequest.update_forward_refs()
+DEFAULT_CURSORQUERYREQUEST = SimpleCursorQueryRequest(limit=None, query=None, cursor=None)
+
+
+class SimpleOffsetQueryRequest(BaseModel):
+    limit: "Optional[int]" = Field(None, alias="limit")
+    query: "Optional[str]" = Field(None, alias="query")
+    offset: "Optional[int]" = Field(None, alias="offset")
+
+
+SimpleOffsetQueryRequest.update_forward_refs()
+DEFAULT_QUERYREQUEST = SimpleOffsetQueryRequest(limit=None, query=None, offset=None)
 
 
 def create_relationships_id_str(data_type: str, id: str):
@@ -87,12 +126,73 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
         query_request=query_request)
 
 
+
+def update_query_with_names_based_search(names: str = None, user_query: str = None, name_field = "data.FacilityName") -> str:
+    if names is None:
+        return user_query
+    generated_query = f"{name_field}:{names}"
+    return added_query(generated_query, user_query)
+
+
+def escape_forbidden_characters_for_search(input_str: str) -> str:
+    # Reserved character are listed here https://community.opengroup.org/osdu/documentation/-/blob/master/platform/tutorials/core-services/SearchService.md
+    # ? and * are allowed for wildcard search
+    if input_str is None:
+        return None
+    reserved_char_list = ['+', '-', '=', '>', '<', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~',
+                          ':', '\\', '/']
+
+    def escape_char(input_char: str, reserved_char_list: [str]) -> str:
+        return input_char if input_char not in reserved_char_list else f"\\{input_char}"
+
+    result_str = ''.join([escape_char(char, reserved_char_list) for char in input_str])
+    return result_str
+
+
+async def query_request_with_cursor(query_type: str, kind: str, ctx: Context, query: SimpleCursorQueryRequest = None):
+    returned_fields = query_type_returned_fields(query_type)
+    query_request = CursorQueryRequest(kind=kind,
+                                       limit=query.limit or LIMIT,
+                                       query=query.query,
+                                       returnedFields=[returned_fields],
+                                       cursor=query.cursor)
+    client = await get_search_service(ctx)
+    return await client.query_with_cursor(
+        data_partition_id=ctx.partition_id,
+        cursor_query_request=query_request)
+
+
+async def query_request_with_offset(query_type: str, kind: str, ctx: Context, query: SimpleOffsetQueryRequest = None):
+    returned_fields = query_type_returned_fields(query_type)
+
+    query_request = QueryRequest(kind=kind,
+                                 limit=query.limit or LIMIT,
+                                 query=query.query,
+                                 returnedFields=[returned_fields],
+                                 offset=query.offset)
+    client = await get_search_service(ctx)
+    return await client.query(
+        data_partition_id=ctx.partition_id,
+        query_request=query_request)
+
+
+async def query_request(query_type: str, kind: str, ctx: Context, query: SearchQueryRequest = None):
+    # use offset if not not none else use cursor
+    query_as_dict = query.dict(exclude_none=True, exclude_unset=True)
+    if query.offset is not None:
+        cursor_query = SimpleOffsetQueryRequest(**query_as_dict)
+        return await query_request_with_offset(query_type, kind, ctx, cursor_query)
+
+    cursor_query = SimpleCursorQueryRequest(**query_as_dict)
+    return await query_request_with_cursor(query_type, kind, ctx, cursor_query)
+
+
 @router.post('/query/wellbores', summary='Query with cursor, get wellbores',
              description=f"""Get all Wellbores object.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
         returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
-    return await basic_query_request_with_cursor(query_type, OSDU_WELLBORE_KIND, ctx, body.query)
+async def query_wellbores(body: SearchQueryRequest = DEFAULT_QUERYREQUEST, ctx: Context = Depends(get_ctx)):
+    return await query_request(query_type, OSDU_WELLBORE_KIND, ctx, body)
 
 
 @router.post('/query/wellbores/{wellboreId}/welllogs', summary='Query with cursor, search WellLogs by wellbore ID',
@@ -100,10 +200,10 @@ async def query_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_c
             specific ID will be returned</p>
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_welllogs_bywellbore(wellboreId: str, body: SearchQuery = None,
+async def query_welllogs_bywellbore(wellboreId: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                     ctx: Context = Depends(get_ctx)):
-    query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
-    return await basic_query_request(query_type, OSDU_WELLLOG_KIND, ctx, query)
+    body.query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
+    return await query_request(query_type, OSDU_WELLLOG_KIND, ctx, body)
 
 
 @router.post('/query/wellbore/{wellboreAttribute}/welllogs',
@@ -112,7 +212,7 @@ async def query_welllogs_bywellbore(wellboreId: str, body: SearchQuery = None,
             with this specific attribute will be returned</p>
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_welllogs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
+async def query_welllogs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = SearchQuery(query=None),
                                              ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, wellboreAttribute, OSDU_WELLBORE_KIND,
                                                        OSDU_WELLLOG_KIND,
@@ -126,7 +226,7 @@ async def query_welllogs_bywellboreattribute(wellboreAttribute: str, body: Searc
             specific ID will be returned</p>
             <p>The Wellbore Markerset kind is {OSDU_WELLBOREMARKERSET_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_markers_bywellbore(wellboreId: str, body: SearchQuery = None,
+async def query_markers_bywellbore(wellboreId: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                    ctx: Context = Depends(get_ctx)):
-    query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
-    return await basic_query_request(query_type, OSDU_WELLBOREMARKERSET_KIND, ctx, query)
+    body.query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
+    return await query_request(query_type, OSDU_WELLBOREMARKERSET_KIND, ctx, body)
