@@ -45,6 +45,20 @@ def test_update_query_with_names_based_search(names, user_query, expected_query)
     assert search_v3.update_query_with_names_based_search(names, user_query) == expected_query
 
 
+NESTED_NAMES_QUERY_PARAMS = [
+    (None, None, None, None, None),
+    ('array.field', 'nested_field', 'names', 'user_query', '(nested(array.field, (nested_field:(names)))) AND (user_query)'),
+    ('array.field', 'nested_field', None, 'user query', 'user query'),
+]
+
+
+@pytest.mark.parametrize("array_field, nested_field, names, user_query, expected_query", NESTED_NAMES_QUERY_PARAMS)
+def test_update_query_with_neted_names_based_search(array_field, nested_field, names, user_query, expected_query):
+    assert search_v3.update_query_with_nested_names_based_search(array_field, nested_field, names,
+                                                                 user_query) == expected_query
+
+
+
 ESCAPE_CHAR_PARAMS = [
     ('', ''),
     ('not char to escape', 'not char to escape'),

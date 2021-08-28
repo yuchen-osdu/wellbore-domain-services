@@ -126,11 +126,19 @@ async def query_request_with_specific_attribute(query_type: str, attribute: str,
         query_request=query_request)
 
 
-
-def update_query_with_names_based_search(names: str = None, user_query: str = None, name_field = "data.FacilityName") -> str:
+def update_query_with_names_based_search(names: str = None, user_query: str = None,
+                                         name_field: str = "data.FacilityName") -> str:
     if names is None:
         return user_query
     generated_query = f"{name_field}:{names}"
+    return added_query(generated_query, user_query)
+
+
+def update_query_with_nested_names_based_search(array_field: str, nested_field: str, names: str = None,
+                                                user_query: str = None) -> str:
+    if names is None:
+        return user_query
+    generated_query = f"(nested({array_field}, ({nested_field}:({names}))))"
     return added_query(generated_query, user_query)
 
 

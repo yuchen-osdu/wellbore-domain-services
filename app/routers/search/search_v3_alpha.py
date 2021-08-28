@@ -14,6 +14,7 @@
 
 from fastapi import APIRouter, Depends
 from odes_search.models import CursorQueryResponse
+
 from app.utils import Context
 from .search_v3 import (
     SearchQueryRequest,
@@ -27,7 +28,8 @@ from .search_v3 import (
     added_relationships_query,
     WELLBORE_RELATIONSHIP,
     get_ctx,
-    query_type)
+    query_type,
+    update_query_with_nested_names_based_search)
 from ..common_parameters import REQUIRED_ROLES_READ
 
 router = APIRouter()
@@ -57,14 +59,18 @@ async def query_trajectories_bywellbore(wellboreId: str, body: SearchQueryReques
 
 
 @router.post('/query/welllogs',
-             summary='Query with cursor, search WellLogs by name and optionally by wellbore ID',
-             description=f"""Get all WellLogs objects using its name and optionally relationship Wellbore ID.  
+             summary='Query with cursor, search WellLogs by name and optionally by wellbore ID and curves mnemonics',
+             description=f"""Get all WellLogs objects using its name and optionally relationship Wellbore ID. Filtering can be done on curves mnemonics
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas. The query is done on data.Name field</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_welllogs_by_name(names: str = None, wellbore_id: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
-                                   ctx: Context = Depends(get_ctx)):
+async def query_welllogs_by_name(names: str = None, wellbore_id: str = None, mnemonics: str = None,
+                                 body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+                                 ctx: Context = Depends(get_ctx)):
     if wellbore_id is not None:
         body.query = added_relationships_query(wellbore_id, WELLBORE_RELATIONSHIP, body.query)
     names = escape_forbidden_characters_for_search(names)
+    mnemonics = escape_forbidden_characters_for_search(mnemonics)
     body.query = update_query_with_names_based_search(names=names, user_query=body.query, name_field="data.Name")
+    body.query = update_query_with_nested_names_based_search(array_field='data.Curves', nested_field='Mnemonic',
+                                                             names=mnemonics, user_query=body.query)
     return await query_request(query_type, OSDU_WELLLOG_KIND, ctx, body)

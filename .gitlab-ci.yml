@@ -26,6 +26,8 @@ variables:
   AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
   AWS_TEST_SUBDIR: tests/aws-test/build-aws
   AWS_INT_TEST_TYPE: python
+  AWS_DEPLOY_TARGET: EKS
+  AWS_EKS_DEPLOYMENT_NAME: os-wellbore-ddms
 
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_VENDOR: gcp
