@@ -4,14 +4,14 @@
 #
 #    pip-compile requirements.in
 #
---index-url https://aws:eyJ2ZXIiOjEsImlzdSI6MTYyOTQ5NDA5MSwiZW5jIjoiQTEyOEdDTSIsInRhZyI6Ik0xV2EzcUg2UUlRVGpTUW9sSTUtMEEiLCJleHAiOjE2Mjk1MzcyOTEsImFsZyI6IkExMjhHQ01LVyIsIml2IjoiaEdRcXlqQkh5bnRLaWpfayJ9.vT3xN0hCevtjezwjg4tktQ.pVTY81mIAV04Mzm2.kfmGoNB3HUJAkk6G4d-MS-UkmSWDKPmsKmmpA24Mqi_YIH89OuazDvgmGdLlqGVCgcxKbZNrKIa1UMfPWqWFVVU-WEea32aIfbXkZkBurYk4blQRJEKHZ86UZPsVDNIlSJz0WxIbWT9CsCP27Gin9rYqw7YeX4B1F20baDQBbziVf9oU8zPlWb0QRE4DsXnMFuzMbXJUuY-wchKBk62YMqAEyoWN7GEE5iWR08z6rxtE9hce7OSLIPx3HyOX7ubwIiMNTtdPbjuvqxpOlnj_sCXMxrRAMZR0FyJMnjc4U_x8EUU7Xs205TxJGd39AhpWnVfCOY5QhG2OJlBe_OqAhGGKfcBUrE6I3O5DNnyDEJ9dbPTOa3FZ4Rx8Q4rWgZhm1iD3MlIUHF8Q_5a89lrn5KxYhitThmQRhzx5AtzcLxKjbyhL4Ssd8mlMVMyCmkKpKl2cG4VMmwGLqCEWQAj_JEM0W5QoF2moPgCtEhJYvNqdsMhuhUSoVnx57Puyri1b8bTK4fJkuC3ROkeBlNr6ub0IIiUv8_834-wZhA9DGx9bFg6RTU2arjMnHZdp1Wno4hWxQ7ptsAUsy3Bj-Dh2pl-w8FVB8RJvAtAvB7Pp8bDvozzCjM0FOezOkgtvysWZPMLqhuPFMKy-6aoUibQwZQQprAJCN5sl95IYGqMFi68KMP5oRxQ5hNf99xZYE8V-QKUv3ENDS1ZW2ygo0u6jEZwpqAVNbmr2Je72ohMMAWlHvHTl5a8qgvjJ_WMQ3ei_uOkISy6SA9KA1m_sv2hnd0FojV9dACuPbPHvp3972CJekKWL48QnPxhIEn285uBAIBjtjWXlFvIBrDPspNyu2LUQ__jOAOHxuGzBOfH0-Q5JXMCgae9dhW5o-1bOW7o_onqwFXWQmyDxINi3IXIa0z1bi_UbKiSt7z8MBc8A8pq0fdnRqxHmZUY86z-gx2-H9pehBVoUU2BtpygZYHc8zijO--GqvsYpPDZCAbksle3u_R6aYRLNkyq6ga3Eg-x5iDsdVL1fAU4xUj36mNKzBR7Ev271CGK1grR9sbvYf_bklimSsoT2cK_6RRma3Z_cbmrLvKUiMDuOfHmPvuYKITO-XUUcPMCo8tpLZnSI8Yg1KvC4xzGAhH1b-nQLQY8BPtupyJNXW90RHM-_z4Rt4zJFvdbBVoAubWqBdZn6tuPh1Y8dW-AGJOafG4FPXXCier5CCeSrTbgkDsRMDalqT7iTMc7pg_BC67xQ3wA3TRH-FabJxSi4jXmWYBrYOFNF9Md5ffolMuZhDcKG5ym0ZBz9iCGVvrhoaMen09G07Q6a1-98MZKvZw86AoNDCRzJjSJZZ3AfV1raIhIlV2UwoLVWaR-KDgqJVQ.576N9F8aR2u1kzius_Dlag@osdu-dev-888733619319.d.codeartifact.us-east-1.amazonaws.com/pypi/osdu-python/simple/
+--index-url https://aws:eyJ2ZXIiOjEsImlzdSI6MTYzMDExNDkxNCwiZW5jIjoiQTEyOEdDTSIsInRhZyI6InBnSGNPamhIWk8teVdfaFI3TnNuV0EiLCJleHAiOjE2MzAxNTgxMTQsImFsZyI6IkExMjhHQ01LVyIsIml2IjoiWTBScnZabWRPNlBfUnNSVSJ9.43R-J82u8v3qAYoFe1_-aQ.y_p2h4tIaXNR3B9E.46VoUr4wBFrK3liMOCzGCOSfuAKh1BPOcl_MJnyjIwjTEOalMimXF3HjjttkHC8eHD1Na7eFsUDo2FFf6wMB425cTDYMgJlGaaXJlzc-83ORTnh2v7Asactf5K40GbJ4XLLz0YOHu8BIPKJFoLfltDj4tbZdJIxwxski9BwzklElUirS-6w5QCzM5_UDA_tAqQQTWscLyaMK4DJS5deeN_jw7WovW6lM1AqpyxZY5hGvnjV25i4rgiItksutg1SMwCsQC-LU7YO2w-IFSiKFSlO_9h6YEzeCXcwptDPAaalnhSscZRXHZUs2G7Nyii7kI7VATArqpTVo2YYI85A7yM-tRIgfNvlXSn_FvEXE41egUs25zMAyXDhpaS4KMLSTGGRRSZBN6aoS5YOh-skjFP72fej99F00KovfRR_ETpyTh9xoZxyiJvZMFLKpSgo3dWCGt5pKLHQtrlJnEpghl2ecwCdjh5sasEEOKbGtn_6H7fDiixnhP-zMyeO8ajixepkCkIhoxnPQolt865Q_JLr6nFu9LDu3Hecl91BojXqkE-kacIdVb9zWpjuM1PtNBQn3P13fovgGX81LriVbnhGjJWYB3ec80rSsodVQNI8s-_UURb6qucb8tgUjJh10PYjs4hkiagEAdAi5119FnkHqB-O1VJ96FWLmw7nvsp7M8__SMmj_nYBVbEQipfIDBGzI0rFBNDnL3oJjLrWAUVA9Zy1EhCZ0P6l9zs9th968bbVD8CUzcefBHAKCrD9_oLnFCy5UQaIbrS827pcalqthwdmxZjRJ-hjlBB9CGdz_SZAgn3hypvMxEMsAuRKgt6q8HCHK6ZttzCbb_p3RfOMMT7hdm9rHQ538lfYS3a_AVsvpbc0wllwrmh1uQOwjXgnRcO0tM_Dgp4kvLmEjWxOKRGgSVCn5pxjN4yrPjCqI5eBBdzkP9E4OYp-aNensYUIVJezSIzaDFfWwDwTKnnjdH47b2dT_aRmvbr35acilfShgv3pZVfb6IJLCgVi0ouSq7qxG79UjjNyYpqmfLdfNcAwV52h55nHx0r-StU0vzyQeieV7W4NZ3kPDrm8wRly6CrjGVbe5ueaMd7NIWXnJYJkD10Hifoz6PEuPgPKCn4iut0fS8VroKLvxIlP76Z9rCEmUdGXmbYR3dh-pHFxLUBITDIyHLBseNllKpYBvlYsn81dQcGe4MFOlLrXi5NVC30tA83RNpEhUduMMTuPGRohvq5_tICfCn7FBv4Sc1M36XiaJcELXcLCQJ4givz1GAIh6YyZUDqnHsieUEr6MGpn6IAJw12G_vSnlMhLYIOdRWDQN-csnU07btidaokG4WGzF2qs.jVdGhptTH9m-3asE5TkXCg@osdu-dev-888733619319.d.codeartifact.us-east-1.amazonaws.com/pypi/osdu-python/simple/
 --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
 adal==1.2.7
     # via azure-datalake-store
 adlfs==2021.8.2
     # via osdu-core-lib-python-azure
-aiobotocore==1.4.0
+aiobotocore==1.4.1
     # via s3fs
 aiohttp==3.7.4.post0
     # via
@@ -109,9 +109,7 @@ cloudpickle==1.6.0
     # via
     #   dask
     #   distributed
-colorama==0.4.4
-    # via click
-cryptography==3.4.7
+cryptography==3.4.8
     # via
     #   -r requirements.in
     #   adal
@@ -204,7 +202,7 @@ jsonpath-ng==1.5.3
     # via -r requirements.in
 locket==0.2.1
     # via partd
-msal==1.13.0
+msal==1.14.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -327,8 +325,6 @@ pytz==2021.1
     # via
     #   google-api-core
     #   pandas
-	#pywin32==301
-    # via portalocker
 pyyaml==5.4.1
     # via
     #   dask
@@ -393,6 +389,7 @@ tornado==6.1
 typing-extensions==3.10.0.0
     # via
     #   aiohttp
+    #   aioredis
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   pydantic
