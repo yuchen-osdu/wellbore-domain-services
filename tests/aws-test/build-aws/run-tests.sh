@@ -42,15 +42,17 @@ source env/bin/activate
 python3 -m pip install -r ./aws-test/build-aws/requirements.txt
 rm -rf test-reports/
 mkdir test-reports
+echo $(pwd)
 
+echo 'cd to integration\n'
 cd integration
-
+echo $(pwd)
 acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
 
 python3 gen_postman_env.py --token $token --base_url $svc_url --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
 
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
 
 TEST_EXIT_CODE=$?
 deactivate
