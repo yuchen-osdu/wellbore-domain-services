@@ -21,7 +21,7 @@ opencensus-ext-logging
 # for chunking feature
 dask[distributed]==2021.4.1
 fsspec
-
+natsort==7.1.1
 --extra-index-url \
 https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
