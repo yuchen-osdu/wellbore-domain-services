@@ -23,9 +23,7 @@ opencensus-ext-logging
 dask[distributed]==2021.7.2
 fsspec
 python-ulid
-boto3==1.17.106
-botocore==1.20.106 
-s3fs==2021.8.0
+
 --extra-index-url \
 https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
@@ -34,8 +32,9 @@ osdu-log-recognition-lib>=0.0.9
 osdu-data-ecosystem-storage~=1.2.0
 osdu-data-ecosystem-search>=0.3.2, <0.4
 
-osdu-core-lib-python-ibm~=1.2.0
 osdu-core-lib-python-gcp~=1.1.0
 osdu-core-lib-python-azure~=1.2.1
 osdu-core-lib-python-aws>=0.0.2, <0.1
 osdu-core-lib-python~=1.1.0
+boto3
+s3fs
