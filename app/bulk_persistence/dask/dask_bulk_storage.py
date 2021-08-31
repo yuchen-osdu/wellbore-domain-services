@@ -201,6 +201,7 @@ class DaskBulkStorage:
             we should be able to change or support other format easily ?
             schema={} instead of 'infer' fixes wrong inference for columns of type string starting with nan values
         """
+        get_logger().info(f"_save_with_dask, path : {path}")
         return self._submit_with_trace(dd.to_parquet, ddf, path,
                                        schema={},
                                        engine='pyarrow',
