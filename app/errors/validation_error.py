@@ -17,7 +17,7 @@ from typing import Union
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 from fastapi.openapi.constants import REF_PREFIX
-from fastapi.openapi.utils import validation_error_response_definition
+from fastapi.openapi.utils import validation_error_response_definition, validation_error_definition
 from pydantic import ValidationError
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -37,6 +37,18 @@ async def http422_error_handler(
     return JSONResponse(content=jsonable_encoder({"errors": exc.errors()}), status_code=HTTP_422_UNPROCESSABLE_ENTITY)
 
 
+validation_error_definition["properties"] = {
+    "loc": {
+        "title": "Location", "type": "array", "items": {
+            "oneOf": [
+                {"type": "string"},
+                {"type": "integer"}
+            ]
+        }
+    },
+    "msg": {"title": "Message", "type": "string"},
+    "type": {"title": "Error Type", "type": "string"},
+}
 validation_error_response_definition["properties"] = {
     "errors": {
         "title": "Errors",
