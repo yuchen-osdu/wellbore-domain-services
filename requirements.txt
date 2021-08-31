@@ -11,7 +11,7 @@ python-rapidjson
 python-multipart
 jsonpath-ng # TODO: remove when bulk_path no longer supported
 jsonbender==0.9.3
-
+python-ulid
 opencensus
 opencensus-ext-stackdriver
 opencensus-ext-azure
