@@ -87,7 +87,7 @@ phases:
       - echo "Pushing docker image..."
       - docker push ${ECR_IMAGE}
       - docker push ${ECR_IMAGE_BRANCH_LATEST}
-      
+
       - pip install -r ./requirements.txt
 	    - pip install -r ./requirements_dev.txt
       - python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit
