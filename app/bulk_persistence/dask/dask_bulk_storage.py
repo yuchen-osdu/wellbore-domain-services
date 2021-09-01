@@ -150,7 +150,7 @@ class DaskBulkStorage:
 
     def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
         """Return the bulk path from the bulk_id."""
-        return f'{self._get_blob_path(record_id, bulk_id, with_protocol)}/data'
+        return f'{self._get_bulk_id_path(record_id, bulk_id, with_protocol)}/data'
 
     def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
         """Return the session path."""
