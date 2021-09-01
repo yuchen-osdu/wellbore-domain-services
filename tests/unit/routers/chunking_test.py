@@ -32,18 +32,19 @@ Definitions = {
     'WellLog': {
         'api_version': 'v3',
         'base_url': '/ddms/v3/welllogs',
-        'chunking_url': '/alpha/ddms/v3/welllogs',  # TODO: update when no longer alpha
+        'chunking_url': '/ddms/v3/welllogs',
         'kind': 'osdu:wks:work-product-component--WellLog:1.1.0',
         'record_data': {
             "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
-            "Curves": [{"CurveID": "MD"}, {"CurveID": "X"}]
+            "Curves": [{"CurveID": "MD"}, {"CurveID": "X"}],
+            "ExtensionProperties": {"my_test_extension": 42},
         }
     },
 
     'WellboreTrajectory': {
         'api_version': 'v3',
         'base_url': '/ddms/v3/wellboretrajectories',
-        'chunking_url': '/alpha/ddms/v3/wellboretrajectories',  # TODO: update when no longer alpha
+        'chunking_url': '/ddms/v3/wellboretrajectories',  # TODO: update when no longer alpha
         'kind': 'osdu:wks:work-product-component--WellboreTrajectory:1.0.0',
         'record_data': {
             "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
@@ -55,7 +56,7 @@ Definitions = {
     'Log': {
         'api_version': 'v2',
         'base_url': '/ddms/v2/logs',
-        'chunking_url': '/alpha/ddms/v2/logs',  # TODO: update when no longer alpha
+        'chunking_url': '/ddms/v2/logs',
         'kind': 'osdu:wks:log:1.0.5',
         'record_data': {
             "name": "myLog_name"
@@ -188,6 +189,29 @@ def dasked_test_app(init_fixtures):
 @pytest.fixture
 def setup_client(dasked_test_app):
     yield TestClient(dasked_test_app)
+
+
+def test_post_data_merge_extension_properties(setup_client):
+    client = setup_client
+    record_id = _create_record(client, "WellLog")
+    chunking_url = Definitions["WellLog"]['chunking_url']
+
+    df = generate_df(['MD'], range(10))
+    data_to_send = df.to_json(orient='split', date_format='iso')
+    headers = {'content-type': 'application/json'}
+
+    write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
+    assert write_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}')
+    assert get_response.status_code == 200
+
+    expected = Definitions["WellLog"]["record_data"]["ExtensionProperties"].copy()
+
+    expected["wdms"] = get_response.json()["data"]["ExtensionProperties"]["wdms"]
+
+    assert get_response.json()["data"]["ExtensionProperties"] == expected
+
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
