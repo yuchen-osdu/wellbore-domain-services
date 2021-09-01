@@ -140,6 +140,11 @@ class DaskBulkStorage:
         encoded_id = self._encode_record_id(record_id)
         return f'{self._get_base_directory(with_protocol)}/{encoded_id}/bulk/{bulk_id}/data'
 
+    def _get_entity_path(self, record_id: str, with_protocol=True) -> str:
+        """Return the entity path from the record_id."""
+        encoded_id = self._encode_record_id(record_id)
+        return f'{self._get_base_directory(with_protocol)}/{encoded_id}'
+
     def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
         """Return the session path."""
         encoded_id = self._encode_record_id(session.recordId)
@@ -281,6 +286,14 @@ class DaskBulkStorage:
             session_files = [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
             return session_files
         return []
+
+    @capture_timings('delete_entity_bulk')
+    @with_trace('delete_entity_bulk')
+    def delete_entity_bulk(self, record_id: str):
+        path = self._get_entity_path(record_id, with_protocol=False)
+        print(path)
+        self._fs.rm(path, recursive=True)
+
 
     def _get_next_files_list(self, session: Session):
         """Group session files in lists of files that can be read directly with dask
