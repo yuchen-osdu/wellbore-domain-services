@@ -72,7 +72,8 @@ phases:
       - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
 
       - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
-
+      - pip install -r ./requirements.txt
+	    - pip install -r ./requirements_dev.txt
       # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
       - |
         java -jar sonar-scanner-4.6.2.2472/lib/sonar-scanner-cli-4.6.2.2472.jar -Dsonar.projectKey=wellbore-ddms -Dsonar.host.url=${SONAR_URL} \
