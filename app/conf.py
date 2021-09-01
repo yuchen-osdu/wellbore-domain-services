@@ -318,13 +318,13 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             override=True,
                             validator=validator_path_must_exist)
 
-    # if provider == 'ibm':
-    #     config.add_from_env(attribute_name='default_data_tenant_project_id',
-    #                         env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
-    #                         description='IBM data tenant ID',
-    #                         default='logstore-ibm',
-    #                         is_mandatory=True,
-    #                         override=True)
+    if provider == 'ibm':
+        config.add_from_env(attribute_name='default_data_tenant_project_id',
+                            env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
+                            description='IBM data tenant ID',
+                            default='logstore-ibm',
+                            is_mandatory=True,
+                            override=True)
     if provider == 'aws':
         config.add_from_env(attribute_name='aws_region',
                             env_var_key='AWS_REGION',

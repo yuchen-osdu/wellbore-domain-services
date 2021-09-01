@@ -23,7 +23,7 @@ from .app_injector import AppInjector, AppInjectorModule, WithLifeTime
 from app.injector.az_injector import AzureInjector
 from app.injector.aws_injector import AwsInjector
 from app.injector.gcp_injector import GCPInjector
-# from app.injector.ibm_injector import IBMInjector
+from app.injector.ibm_injector import IBMInjector
 
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
@@ -64,9 +64,9 @@ class MainInjector(AppInjectorModule):
             logger.info('using gcp injector')
             GCPInjector().configure(app_injector)
 
-        # if Config.cloud_provider.value == 'ibm':
-        #     logger.info('using ibm injector')
-        #     IBMInjector().configure(app_injector)
+        if Config.cloud_provider.value == 'ibm':
+            logger.info('using ibm injector')
+            IBMInjector().configure(app_injector)
 
         if Config.cloud_provider.value == 'aws':
             logger.info('using aws injector')
