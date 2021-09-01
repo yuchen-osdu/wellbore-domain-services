@@ -7,7 +7,6 @@ Apache-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- aiobotocore (from https://github.com/aio-libs/aiobotocore)
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - boto3 (from https://github.com/boto/boto3)
@@ -38,7 +37,6 @@ The following software have components provided under the terms of this license:
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org)
 - pep517 (from https://github.com/takluyver/pep517)
-- proto-plus (from https://github.com/googleapis/proto-plus-python.git)
 - pyarrow (from https://arrow.apache.org/)
 - pytest-asyncio (from https://github.com/pytest-dev/pytest-asyncio)
 - pytest-dependency (from https://github.com/RKrahl/pytest-dependency)
@@ -71,7 +69,6 @@ The following software have components provided under the terms of this license:
 - pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
 - pycparser (from https://github.com/eliben/pycparser)
 - tblib (from https://github.com/ionelmc/python-tblib)
-- wrapt (from https://github.com/GrahamDumpleton/wrapt)
 
 ========================================================================
 BSD-3-Clause
@@ -116,12 +113,10 @@ The following software have components provided under the terms of this license:
 - python-dateutil (from https://dateutil.readthedocs.org)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
-- s3fs (from http://github.com/dask/s3fs/)
 - starlette (from https://github.com/encode/starlette)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn)
-- wrapt (from https://github.com/GrahamDumpleton/wrapt)
 - zict (from http://github.com/dask/zict/)
 
 ========================================================================
@@ -137,7 +132,6 @@ The following software have components provided under the terms of this license:
 - numpy (from http://www.numpy.org)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- s3fs (from http://github.com/dask/s3fs/)
 - toolz (from http://github.com/pytoolz/toolz/)
 
 ========================================================================
@@ -226,7 +220,6 @@ The following software have components provided under the terms of this license:
 - PyYAML (from http://pyyaml.org/wiki/PyYAML)
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
-- aioitertools (from https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis)
 - anyio (from https://pypi.org/project/anyio/3.3.0/)
 - asgiref (from http://github.com/django/asgiref/)
@@ -279,7 +272,7 @@ The following software have components provided under the terms of this license:
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from http://www.structlog.org/)
 - toml (from https://github.com/uiri/toml)
-- tomli (from https://pypi.org/project/tomli/1.2.1/)
+- tomli (from https://pypi.org/project/tomli/1.1.0/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)

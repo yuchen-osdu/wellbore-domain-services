@@ -36,11 +36,11 @@ async def http422_error_handler(
     get_logger().exception(f"http422_error_handler - {request.url}")
     return JSONResponse(content=jsonable_encoder({"errors": exc.errors()}), status_code=HTTP_422_UNPROCESSABLE_ENTITY)
 
-
+# TODO remove this once this fastapi issue is closed https://github.com/tiangolo/fastapi/issues/3790
 validation_error_definition["properties"] = {
     "loc": {
         "title": "Location", "type": "array", "items": {
-            "oneOf": [
+            "anyOf": [
                 {"type": "string"},
                 {"type": "integer"}
             ]

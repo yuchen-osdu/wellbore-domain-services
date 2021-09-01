@@ -3394,7 +3394,7 @@
         "properties": {
           "loc": {
             "items": {
-              "oneOf": [
+              "anyOf": [
                 {
                   "type": "string"
                 },
