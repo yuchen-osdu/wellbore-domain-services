@@ -23,10 +23,12 @@ from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.routers.bulk.bulk_uri_dependencies import (get_bulk_id_access, BulkIdAccess)
+from app.routers.bulk.utils import with_dask_blob_storage
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
 from app.bulk_persistence.tenant_provider import resolve_tenant
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 
 
 router = APIRouter()
@@ -49,7 +51,8 @@ async def delete_purge_record(
         record_id: str,
         purge: bool,
         ctx: Context = Depends(get_ctx),
-        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
+        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+        dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),):
 
     storage_client = await get_storage_record_service(ctx)
     if purge:
@@ -71,21 +74,20 @@ async def delete_purge_record(
         print("Delete meta data")
         await storage_client.purge_record(id=record_id, data_partition_id=ctx.partition_id)
 
-        print(record_bulk_uris)
         ctx.logger.debug(f'record_bulk_uris: {record_bulk_uris}')
 
-        tenant = await resolve_tenant(ctx.partition_id)
-        storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
-
-        bulk_ids = []
-        for bulk_id_folder in record_bulk_uris:
-            bulk_ids.append(await storage.list_objects(tenant=tenant, prefix=bulk_id_folder))
-        print(bulk_ids)
-
+        bulk_ids = dask_blob_storage.get_bulk_ids(record_id)
         ctx.logger.debug(f'bulk_ids: {bulk_ids}')
 
-        for bulk_id in bulk_ids:
-            await storage.delete(tenant, bulk_id)
+        if len(record_bulk_uris) == len(bulk_ids)+1:
+            dask_blob_storage.delete_entity(record_id)
+        else:
+            ctx.logger.debug(f'else')
+            for bulk_id in record_bulk_uris:
+                dask_blob_storage.delete_bulk(record_id=record_id, bulk_id=bulk_id)
+
+        bulk_ids = dask_blob_storage.get_bulk_ids(record_id)
+        ctx.logger.debug(f'bulk_ids empty: {bulk_ids}')
 
     else:
         await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)

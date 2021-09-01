@@ -135,20 +135,26 @@ class DaskBulkStorage:
     def _get_base_directory(self, protocol=True):
         return f'{self.protocol}://{self.base_directory}' if protocol else self.base_directory
 
-    def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
-        """Return the bulk path from the bulk_id."""
-        encoded_id = self._encode_record_id(record_id)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/bulk/{bulk_id}/data'
-
     def _get_entity_path(self, record_id: str, with_protocol=True) -> str:
-        """Return the entity path from the record_id."""
+        """Return the entity id path from the record_id."""
         encoded_id = self._encode_record_id(record_id)
         return f'{self._get_base_directory(with_protocol)}/{encoded_id}'
 
+    def _get_bulk_path(self, record_id: str, with_protocol=True) -> str:
+        """Return the bulk folder path from the record_id."""
+        return f'{self._get_entity_path(record_id, with_protocol)}/bulk'
+
+    def _get_bulk_id_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
+        """Return the bulk id path from the record_id."""
+        return f'{self._get_bulk_path(record_id, with_protocol)}/{bulk_id}'
+
+    def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
+        """Return the bulk path from the bulk_id."""
+        return f'{self._get_blob_path(record_id, bulk_id, with_protocol)}/data'
+
     def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
         """Return the session path."""
-        encoded_id = self._encode_record_id(session.recordId)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/session/{session.id}/data'
+        return f'{self._get_entity_path(session.recordId, with_protocol)}/session/{session.id}/data'
 
     def _load(self, path, **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
@@ -287,13 +293,24 @@ class DaskBulkStorage:
             return session_files
         return []
 
-    @capture_timings('delete_entity_bulk')
-    @with_trace('delete_entity_bulk')
-    def delete_entity_bulk(self, record_id: str):
+    @capture_timings('get_bulk_ids')
+    @with_trace('get_bulk_ids')
+    def get_bulk_ids(self, record_id: str):
+        path = self._get_bulk_path(record_id=record_id, with_protocol=False)
+        bulk_ids = [f.split("/")[-1] for f in self._fs.ls(path)]
+        return bulk_ids
+
+    @capture_timings('delete_entity')
+    @with_trace('delete_entity')
+    def delete_entity(self, record_id: str):
         path = self._get_entity_path(record_id, with_protocol=False)
-        print(path)
         self._fs.rm(path, recursive=True)
 
+    @capture_timings('delete_bulk')
+    @with_trace('delete_bulk')
+    def delete_bulk(self, record_id: str, bulk_id: str):
+        path = self._get_bulk_id_path(record_id=record_id, bulk_id=bulk_id, with_protocol=False)
+        self._fs.rm(path, recursive=True)
 
     def _get_next_files_list(self, session: Session):
         """Group session files in lists of files that can be read directly with dask
