@@ -15,8 +15,9 @@
 FROM python:3.9-slim-buster
 
 COPY requirements.txt ./ 
-
+COPY osdu-core-lib-python-aws-1.0.2.tar.gz ./
 RUN pip install -r requirements.txt
+RUN pip install ./osdu-core-lib-python-aws-1.0.2.tar.gz
 
 COPY ./app /app
 COPY provider/os-wellbore-ddms-aws/build-aws/entrypoint.sh .

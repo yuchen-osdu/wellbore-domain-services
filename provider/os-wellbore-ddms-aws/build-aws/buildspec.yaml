@@ -56,11 +56,22 @@ phases:
       - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh
       - ./tests/aws-test/build-aws/prepare-dist.sh
 
-      - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
-      - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
+      - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository osdu-python --region us-east-1
+      - |
+        aws codeartifact get-package-version-asset \
+        --domain osdu-dev \
+        --domain-owner $AWS_ACCOUNT_ID \
+        --repository osdu-python \
+        --region us-east-1 \
+        --format pypi \
+        --package osdu-core-lib-python-aws \
+        --package-version 1.0.2 \
+        --asset osdu-core-lib-python-aws-1.0.2.tar.gz \
+        ./osdu-core-lib-python-aws-1.0.2.tar.gz
 
-      - pip install -r ./requirements.txt
-      - pip install -r ./requirements_dev.txt
+      - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
+
+      - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
       # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
       - |
