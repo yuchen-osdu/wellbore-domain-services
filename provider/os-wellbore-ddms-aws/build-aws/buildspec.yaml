@@ -65,9 +65,9 @@ phases:
         --region us-east-1 \
         --format pypi \
         --package osdu-core-lib-python-aws \
-        --package-version 2.0.2 \
-        --asset osdu-core-lib-python-aws-2.0.2.tar.gz \
-        ./osdu-core-lib-python-aws-2.0.2.tar.gz
+        --package-version 0.0.3 \
+        --asset osdu-core-lib-python-aws-0.0.3.tar.gz \
+        ./osdu-core-lib-python-aws-0.0.3.tar.gz
 
       - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
 
