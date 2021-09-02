@@ -56,19 +56,6 @@ phases:
       - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh
       - ./tests/aws-test/build-aws/prepare-dist.sh
 
-      - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository osdu-python --region us-east-1
-      - |
-        aws codeartifact get-package-version-asset \
-        --domain osdu-dev \
-        --domain-owner $AWS_ACCOUNT_ID \
-        --repository osdu-python \
-        --region us-east-1 \
-        --format pypi \
-        --package osdu-core-lib-python-aws \
-        --package-version 0.0.3 \
-        --asset osdu-core-lib-python-aws-0.0.3.tar.gz \
-        ./osdu-core-lib-python-aws-0.0.3.tar.gz
-
       - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
 
       - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/

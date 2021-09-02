@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.9-slim-buster
+FROM python:3.7-slim-buster
 
 COPY requirements.txt ./ 
-COPY osdu-core-lib-python-aws-0.0.3.tar.gz ./
+
 RUN pip install -r requirements.txt
-RUN pip install ./osdu-core-lib-python-aws-0.0.3.tar.gz
 
 COPY ./app /app
 COPY provider/os-wellbore-ddms-aws/build-aws/entrypoint.sh .
