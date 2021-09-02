@@ -77,7 +77,7 @@ async def delete_purge_record(
         # Delete meta data
         await storage_client.purge_record(id=record_id, data_partition_id=ctx.partition_id)
 
-        # Get bulk_ids directly from storage to check if it's match
+        # Get bulk_ids directly from storage to check if it's matching
         # with the number of bulk uris retrieved from record version
         bulk_ids = dask_blob_storage.get_bulk_ids(record_id)
 
