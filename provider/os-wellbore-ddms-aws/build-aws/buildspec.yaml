@@ -57,14 +57,18 @@ phases:
       - ./tests/aws-test/build-aws/prepare-dist.sh
 
       - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
-
       - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
+
+      - pip install -r ./requirements.txt
+      - pip install -r ./requirements_dev.txt
+
       # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
       - |
         java -jar sonar-scanner-4.6.2.2472/lib/sonar-scanner-cli-4.6.2.2472.jar -Dsonar.projectKey=wellbore-ddms -Dsonar.host.url=${SONAR_URL} \
           -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME}
+      
       - safety check -r requirements.txt -r requirements_dev.txt -o safety_check.txt; EXITCODE=$?
-
+      
       - echo "Logging into Docker Hub..."
       - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 
@@ -74,9 +78,7 @@ phases:
       - echo "Pushing docker image..."
       - docker push ${ECR_IMAGE}
       - docker push ${ECR_IMAGE_BRANCH_LATEST}
-
-      - pip install -r ./requirements.txt
-      - pip install -r ./requirements_dev.txt
+     
       - python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit
 
       - echo "Generate build-info.json"
