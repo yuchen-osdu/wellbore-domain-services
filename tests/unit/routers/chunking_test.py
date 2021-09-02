@@ -44,7 +44,7 @@ Definitions = {
     'WellboreTrajectory': {
         'api_version': 'v3',
         'base_url': '/ddms/v3/wellboretrajectories',
-        'chunking_url': '/ddms/v3/wellboretrajectories',  # TODO: update when no longer alpha
+        'chunking_url': '/ddms/v3/wellboretrajectories',
         'kind': 'osdu:wks:work-product-component--WellboreTrajectory:1.0.0',
         'record_data': {
             "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
@@ -56,7 +56,7 @@ Definitions = {
     'Log': {
         'api_version': 'v2',
         'base_url': '/ddms/v2/logs',
-        'chunking_url': '/ddms/v2/logs',
+        'chunking_url': '/alpha/ddms/v2/logs',
         'kind': 'osdu:wks:log:1.0.5',
         'record_data': {
             "name": "myLog_name"
