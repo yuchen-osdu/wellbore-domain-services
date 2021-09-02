@@ -42,11 +42,8 @@ source env/bin/activate
 python3 -m pip install -r ./aws-test/build-aws/requirements.txt
 rm -rf test-reports/
 mkdir test-reports
-echo $(pwd)
 
-echo 'cd to integration\n'
 cd integration
-echo $(pwd)
 acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
 
