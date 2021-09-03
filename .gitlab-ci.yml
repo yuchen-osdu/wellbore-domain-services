@@ -41,29 +41,37 @@ variables:
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
+    ref: release/0.11
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "build/python.yml"
+    ref: release/0.11
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/fossa-python.yml"
+    ref: release/0.11
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
+    ref: release/0.11
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/osdu-gcp-gke.yml"
+    ref: release/0.11
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm-wellbore.yml"
+    ref: release/0.11
 
   - local: "/devops/azure/azure-wellbore.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
+    ref: release/0.11
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
+    ref: release/0.11
 
 containerize:
   extends: .skipForTriggeringMergeRequests
