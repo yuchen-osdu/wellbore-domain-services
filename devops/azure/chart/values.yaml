@@ -80,4 +80,4 @@ authorizationPolicy:
   name: wellbore-jwt-authz
 
 
-istioDnsHost: #{ISTIO_DNS_HOST}#
+istioDnsHost: ""
