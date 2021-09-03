@@ -845,6 +845,57 @@ def test_session_update_previous_version(setup_client, entity_type):
         pd.testing.assert_frame_equal(expected_df, res_df)
 
 
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+def test_parquet_maintain_float_type(setup_client, entity_type):
+    """ send float32 and float64 columns and check if the type is maintain """
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    df = generate_df(['MD', 'float_32', 'float_64'], range(5))
+    df = df.astype({'float_32': 'float32', 'float_64': 'float64'})
+
+    # Without session
+    write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                 data=df.to_parquet(engine="pyarrow"),
+                                 headers={'Content-Type': 'application/x-parquet'})
+    assert write_response.status_code == 200
+    get_response = client.get(f'{chunking_url}/{record_id}/data')
+    assert get_response.status_code == 200
+    res_df = _create_df_from_response(get_response)
+    pd.testing.assert_frame_equal(df, res_df)
+
+    # With session
+    session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert session_response.status_code == 200
+    session_id = session_response.json()['id']
+
+    new_chunk = generate_df(['MD', 'float_32', 'float_64'], range(5, 10))
+    new_chunk = new_chunk.astype({'float_32': 'float32', 'float_64': 'float64'})
+
+    chunk_response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                 data=new_chunk.to_parquet(engine="pyarrow"),
+                                 headers={'Content-Type': 'application/x-parquet'})
+    assert chunk_response.status_code == 200
+    commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    assert commit_response.status_code == 200
+
+    df = pd.concat([df, new_chunk])
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data')
+    assert get_response.status_code == 200
+    res_df = _create_df_from_response(get_response)
+    pd.testing.assert_frame_equal(df, res_df)
+
+    # with curve selection
+    for curve in ('float_32', 'float_64'):
+        get_response = client.get(f'{chunking_url}/{record_id}/data', params={'curves': curve})
+        assert get_response.status_code == 200
+        res_df = _create_df_from_response(get_response)
+        pd.testing.assert_frame_equal(df[[curve]], res_df)
+
+
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
 #  - index: check if dataframe has an index
