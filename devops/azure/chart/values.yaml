@@ -25,6 +25,8 @@ deployment:
   name: os-wellbore-ddms
 
 replicaCount: 2
+nodepool: services
+isAutoscalingEnabled: false
 
 resources:
  limits:
