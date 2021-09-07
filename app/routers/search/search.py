@@ -67,8 +67,8 @@ async def query_request_with_spatial_filter(query_type: str, spatial_filter: Spa
         query_request=query_request)
 
 
-def query_spatial_filter_builder(spacial_filter_type: str, latitude1: str = None, longitude1: float = None,
-                                 latitude2: str = None, longitude2: float = None, distance: int = None,
+def query_spatial_filter_builder(spacial_filter_type: str, latitude1: float = None, longitude1: float = None,
+                                 latitude2: float = None, longitude2: float = None, distance: int = None,
                                  points: List[Point] = None, geo_field: str = crs_format):
     if spacial_filter_type == "bydistance":
         point = Point(latitude=latitude1, longitude=longitude1)
