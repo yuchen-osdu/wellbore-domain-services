@@ -24,12 +24,16 @@ from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import asyncio
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_client import get_storage_record_service
+from app.helper.traces import with_trace
 from app.routers.bulk.bulk_uri_dependencies import (get_bulk_id_access, BulkIdAccess)
 from app.routers.bulk.utils import with_dask_blob_storage
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+
+
+
 
 router = APIRouter()
 
@@ -57,6 +61,7 @@ async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
 # -------------------------------------------------- API delete record ----------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
+@with_trace('delete_purge_record')
 @router.delete("/record/{record_id}",
                summary="The API performs a logical deletion of the given record",
                description="{}".format(REQUIRED_ROLES_WRITE),

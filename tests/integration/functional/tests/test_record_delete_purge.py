@@ -55,7 +55,7 @@ def test_create_record_with_data(with_wdms_env, entity_type, serializer):
     resobj = result.get_response_obj()
 
     #DATA 10 versions
-    for i in range(0, 10):
+    for i in range(20):
         build_request_post_data(entity_type, resobj.recordIds[0], data_to_send).call(with_wdms_env,
                                                                                  headers=headers).assert_ok()
     assert resobj.recordCount == 1
