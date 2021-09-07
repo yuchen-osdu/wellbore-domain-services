@@ -40,7 +40,7 @@ def build_request_post_data(entity_type: str, record_id: str, payload) -> Reques
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 @pytest.mark.parametrize('entity_type', [entity_type for entity_type in entity_type_dict.keys()])
-def test_crud_create_record_with_data(with_wdms_env, entity_type, serializer):
+def test_create_record_with_data(with_wdms_env, entity_type, serializer):
     data = generate_df(['MD', 'X'], range(8))
     data_to_send = serializer.dump(data)
     headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
@@ -54,8 +54,9 @@ def test_crud_create_record_with_data(with_wdms_env, entity_type, serializer):
     result.assert_ok()
     resobj = result.get_response_obj()
 
-    #DATA
-    build_request_post_data(entity_type, resobj.recordIds[0], data_to_send).call(with_wdms_env,
+    #DATA 10 versions
+    for i in range(0, 10):
+        build_request_post_data(entity_type, resobj.recordIds[0], data_to_send).call(with_wdms_env,
                                                                                  headers=headers).assert_ok()
     assert resobj.recordCount == 1
     assert len(resobj.recordIds) == 1
@@ -66,7 +67,7 @@ def test_crud_create_record_with_data(with_wdms_env, entity_type, serializer):
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize('entity_type', [entity_type for entity_type in entity_type_dict.keys()])
-def test_delete_purge_record(with_wdms_env, entity_type):
+def test_hard_delete_purge_record(with_wdms_env, entity_type):
     with_wdms_env.set(f'record_id', with_wdms_env.get(f'{entity_type}_record_id'))
     with_wdms_env.set(f'purge', "true")
     result = build_request_delete_purge_record().call(with_wdms_env)

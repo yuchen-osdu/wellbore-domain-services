@@ -21,7 +21,7 @@ from fastapi import (
 )
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-
+import asyncio
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_client import get_storage_record_service
 from app.routers.bulk.bulk_uri_dependencies import (get_bulk_id_access, BulkIdAccess)
@@ -33,19 +33,22 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 
 router = APIRouter()
 
+async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess, record_id: str, index: int, record_versions):
+    version = record_versions.versions[index]
+    record_from_version = await fetch_record(ctx, record_id, version)
+    bulk_uri, prefix = bulk_uri_access.get_bulk_uri(record=record_from_version)
+    return bulk_uri
 
 async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
                                               bulk_uri_access: BulkIdAccess,
                                               storage_client: StorageRecordServiceClient,
                                               record_id: str):
     record_versions = await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
-    record_bulk_uris = []
-    for i in range(len(record_versions.versions)):
-        version = record_versions.versions[i]
-        record_from_version = await fetch_record(ctx, record_id, version)
-        bulk_uri, prefix = bulk_uri_access.get_bulk_uri(record=record_from_version)
-        if bulk_uri is not None:
-            record_bulk_uris.append(bulk_uri)
+    record_bulk_uris = [bulk_uri for bulk_uri in await asyncio.gather(*[
+        _get_bulk_uri_from_version(ctx, bulk_uri_access, record_id, i, record_versions)
+        for i in range(len(record_versions.versions))
+    ], return_exceptions=True) if bulk_uri is not None]
+
     return record_bulk_uris
 
 
