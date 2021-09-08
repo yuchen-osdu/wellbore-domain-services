@@ -22,13 +22,6 @@ from fastapi import (
 )
 
 from app.bulk_persistence import resolve_tenant
-from app.bulk_persistence.blob_storage import (
-    BlobBulk,
-    BlobFileExporters,
-    create_and_write_blob,
-    read_blob,
-)
-
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import asyncio
 from app.clients import StorageRecordServiceClient
@@ -103,12 +96,17 @@ async def delete_purge_record(
         # In tiny cases record_id sha1 can be similar with a other record_id sha1
         # To delete only data relative to the record_id wanted, we deleting data by version instead of the entire folder
         if len(record_bulk_uris) == len(bulk_ids):
-            bulk_names = BlobStorageBase.list_objects(tenant, prefix=hashlib.sha1(record_id.encode()).hexdigest())
+            bulk_file_names = await storage.list_objects(tenant=tenant, prefix=hashlib.sha1(record_id.encode()).hexdigest())
             await asyncio.gather(*[
-                await storage.delete(tenant, bulk_name)
-                for bulk_name in bulk_names], return_exceptions=True)
+                storage.delete(tenant=tenant, object_name=bulk_file_name)
+                for bulk_file_name in bulk_file_names],
+                                 return_exceptions=True)
         else:
             for bulk_id in record_bulk_uris:
-                await dask_blob_storage.delete_bulk(record_id=record_id, bulk_id=bulk_id)
+                bulk_file_names = await storage.list_objects(tenant=tenant, prefix=bulk_id)
+                await asyncio.gather(*[
+                    storage.delete(tenant=tenant, object_name=bulk_file_name)
+                    for bulk_file_name in bulk_file_names],
+                                     return_exceptions=True)
     else:
         await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
