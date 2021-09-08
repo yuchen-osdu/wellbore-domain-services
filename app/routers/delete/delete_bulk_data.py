@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import hashlib
 import sys
 
 from fastapi import (
@@ -18,6 +19,14 @@ from fastapi import (
     Depends,
     Response,
     status
+)
+
+from app.bulk_persistence import resolve_tenant
+from app.bulk_persistence.blob_storage import (
+    BlobBulk,
+    BlobFileExporters,
+    create_and_write_blob,
+    read_blob,
 )
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -89,10 +98,15 @@ async def delete_purge_record(
         # with the number of bulk uris retrieved from record version
         bulk_ids = await dask_blob_storage.get_bulk_ids(record_id)
 
+        tenant = await resolve_tenant(ctx.partition_id)
+        storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
         # In tiny cases record_id sha1 can be similar with a other record_id sha1
         # To delete only data relative to the record_id wanted, we deleting data by version instead of the entire folder
         if len(record_bulk_uris) == len(bulk_ids):
-            await dask_blob_storage.delete_entity(record_id)
+            bulk_names = BlobStorageBase.list_objects(tenant, prefix=hashlib.sha1(record_id.encode()).hexdigest())
+            await asyncio.gather(*[
+                await storage.delete(tenant, bulk_name)
+                for bulk_name in bulk_names], return_exceptions=True)
         else:
             for bulk_id in record_bulk_uris:
                 await dask_blob_storage.delete_bulk(record_id=record_id, bulk_id=bulk_id)
