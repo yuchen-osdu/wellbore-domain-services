@@ -21,29 +21,24 @@ from ..request_builders.wdms.crud.osdu_welllog import build_request_create_osdu_
 from ..request_builders.wdms.delete import build_request_delete_purge_record
 from ..request_runner import RequestRunner
 
-kind_list = ['osdu_welllog', 'osdu_wellboretrajectory', 'osdu_wellboremarkerset']
-
 entity_type_dict = {
     "well_log": {"entity": "welllogs", "version": "v3"},
     "wellbore_trajectory": {"entity": "wellboretrajectories", "version": "v3"},
-    #"wellbore_markerset": {"entity": "wellboremarkersets", "version": "v3"},
+    # "wellbore_markerset": {"entity": "wellboremarkersets", "version": "v3"},
 }
 
+
 def build_base_url(entity_type: str) -> str:
-    return '{{base_url}}/ddms/' + entity_type_dict[entity_type]["version"] + '/' + entity_type_dict[entity_type]["entity"]
+    return '{{base_url}}/ddms/' + entity_type_dict[entity_type]["version"] + '/' + entity_type_dict[entity_type][
+        "entity"]
+
 
 def build_request_post_data(entity_type: str, record_id: str, payload) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
 
-@pytest.mark.tag('basic', 'crud', 'smoke')
-@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
-@pytest.mark.parametrize('entity_type', [entity_type for entity_type in entity_type_dict.keys()])
-def test_create_record_with_data(with_wdms_env, entity_type, serializer):
-    data = generate_df(['MD', 'X'], range(8))
-    data_to_send = serializer.dump(data)
-    headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
     if entity_type == 'well_log':
         result = build_request_create_osdu_welllog(False).call(with_wdms_env)
     elif entity_type == 'wellbore_trajectory':
@@ -51,24 +46,40 @@ def test_create_record_with_data(with_wdms_env, entity_type, serializer):
     elif entity_type == 'wellbore_markerset':
         result = build_request_create_osdu_wellboremarkerset(False).call(with_wdms_env)
 
-    result.assert_ok()
     resobj = result.get_response_obj()
 
-    #DATA 10 versions
-    for i in range(20):
-        build_request_post_data(entity_type, resobj.recordIds[0], data_to_send).call(with_wdms_env,
-                                                                                 headers=headers).assert_ok()
+    data = generate_df(['MD', 'X'], range(8))
+    data_to_send = serializer.dump(data)
+    headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+    # DATA
+    for i in range(nb_version):
+        build_request_post_data(entity_type, resobj.recordIds[0], data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
     assert resobj.recordCount == 1
     assert len(resobj.recordIds) == 1
-    assert len(resobj.recordIdVersions) == 1
     with_wdms_env.set(f'{entity_type}_record_id', resobj.recordIds[0])  # stored the record id for the following tests
 
 
-
-@pytest.mark.tag('basic', 'crud', 'smoke')
+@pytest.mark.tag('basic', 'smoke')
+@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 @pytest.mark.parametrize('entity_type', [entity_type for entity_type in entity_type_dict.keys()])
-def test_hard_delete_purge_record(with_wdms_env, entity_type):
+def test_hard_delete_purge_record(with_wdms_env, entity_type, serializer):
+    create_record_with_data(with_wdms_env, entity_type, serializer, 20)
+
     with_wdms_env.set(f'record_id', with_wdms_env.get(f'{entity_type}_record_id'))
     with_wdms_env.set(f'purge', "true")
+    result = build_request_delete_purge_record().call(with_wdms_env)
+    result.assert_status_code(204)
+
+
+@pytest.mark.tag('basic', 'smoke')
+@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
+@pytest.mark.parametrize('entity_type', [entity_type for entity_type in entity_type_dict.keys()])
+def test_soft_delete_purge_record(with_wdms_env, entity_type, serializer):
+    create_record_with_data(with_wdms_env, entity_type, serializer, 20)
+
+    with_wdms_env.set(f'record_id', with_wdms_env.get(f'{entity_type}_record_id'))
+    with_wdms_env.set(f'purge', "false")
     result = build_request_delete_purge_record().call(with_wdms_env)
     result.assert_status_code(204)
