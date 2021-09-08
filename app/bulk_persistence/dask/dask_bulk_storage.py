@@ -295,20 +295,20 @@ class DaskBulkStorage:
 
     @capture_timings('get_bulk_ids')
     @with_trace('get_bulk_ids')
-    def get_bulk_ids(self, record_id: str):
+    async def get_bulk_ids(self, record_id: str):
         path = self._get_bulk_path(record_id=record_id, with_protocol=False)
         bulk_ids = [f.split("/")[-1] for f in self._fs.ls(path)]
         return bulk_ids
 
     @capture_timings('delete_entity')
     @with_trace('delete_entity')
-    def delete_entity(self, record_id: str):
+    async def delete_entity(self, record_id: str):
         path = self._get_entity_path(record_id, with_protocol=False)
         self._fs.rm(path, recursive=True)
 
     @capture_timings('delete_bulk')
     @with_trace('delete_bulk')
-    def delete_bulk(self, record_id: str, bulk_id: str):
+    async def delete_bulk(self, record_id: str, bulk_id: str):
         path = self._get_bulk_id_path(record_id=record_id, bulk_id=bulk_id, with_protocol=False)
         self._fs.rm(path, recursive=True)
 

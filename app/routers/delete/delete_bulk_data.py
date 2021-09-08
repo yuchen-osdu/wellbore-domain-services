@@ -87,14 +87,14 @@ async def delete_purge_record(
 
         # Get bulk_ids directly from storage to check if it's matching
         # with the number of bulk uris retrieved from record version
-        bulk_ids = dask_blob_storage.get_bulk_ids(record_id)
+        bulk_ids = await dask_blob_storage.get_bulk_ids(record_id)
 
         # In tiny cases record_id sha1 can be similar with a other record_id sha1
         # To delete only data relative to the record_id wanted, we deleting data by version instead of the entire folder
         if len(record_bulk_uris) == len(bulk_ids):
-            dask_blob_storage.delete_entity(record_id)
+            await dask_blob_storage.delete_entity(record_id)
         else:
             for bulk_id in record_bulk_uris:
-                dask_blob_storage.delete_bulk(record_id=record_id, bulk_id=bulk_id)
+                await dask_blob_storage.delete_bulk(record_id=record_id, bulk_id=bulk_id)
     else:
         await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
