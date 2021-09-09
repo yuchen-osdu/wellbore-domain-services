@@ -15,7 +15,8 @@ spec:
   http:  
   - match:
     - uri:
-        prefix: "/api/{{ .Chart.Name }}/v2"
+        prefix: '{{ include "os-wellbore-ddms.prefix" . }}/*'
+        # TODO make naming more uniform across services: prefix: "/api/{{ .Chart.Name }}/v2"
     route:
     - destination:
         host: {{ .Chart.Name }}
