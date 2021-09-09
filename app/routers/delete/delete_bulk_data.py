@@ -24,6 +24,8 @@ from fastapi import (
 from app.bulk_persistence import resolve_tenant
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import asyncio
+
+from app.bulk_persistence.dask.errors import BulkNotFound
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_client import get_storage_record_service
 from app.helper.traces import with_trace
@@ -33,22 +35,26 @@ from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-
-
-
+from opencensus.trace.span import SpanKind
+from app.utils import get_or_create_ctx
 
 router = APIRouter()
 
-async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess, record_id: str, index: int, record_versions):
+
+@with_trace('_get_bulk_uri_from_version')
+async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess, record_id: str, index: int,
+                                     record_versions):
     version = record_versions.versions[index]
     record_from_version = await fetch_record(ctx, record_id, version)
     bulk_uri, prefix = bulk_uri_access.get_bulk_uri(record=record_from_version)
     return bulk_uri
 
+
+@with_trace('_get_bulk_uris_of_versions_from_record_id')
 async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
-                                              bulk_uri_access: BulkIdAccess,
-                                              storage_client: StorageRecordServiceClient,
-                                              record_id: str):
+                                                    bulk_uri_access: BulkIdAccess,
+                                                    storage_client: StorageRecordServiceClient,
+                                                    record_id: str):
     record_versions = await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
     record_bulk_uris = [bulk_uri for bulk_uri in await asyncio.gather(*[
         _get_bulk_uri_from_version(ctx, bulk_uri_access, record_id, i, record_versions)
@@ -63,7 +69,6 @@ async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
 # -------------------------------------------------- API delete record ----------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
-@with_trace('delete_purge_record')
 @router.delete("/record/{record_id}",
                summary="The API performs a logical deletion of the given record",
                description="{}".format(REQUIRED_ROLES_WRITE),
@@ -82,8 +87,8 @@ async def delete_purge_record(
     storage_client = await get_storage_record_service(ctx)
 
     if purge:
-        record_bulk_uris = await _get_bulk_uris_of_versions_from_record_id(ctx, bulk_uri_access, storage_client, record_id)
-
+        record_bulk_uris = await _get_bulk_uris_of_versions_from_record_id(ctx, bulk_uri_access, storage_client,
+                                                                           record_id)
         # Delete meta data
         await storage_client.purge_record(id=record_id, data_partition_id=ctx.partition_id)
 
@@ -93,20 +98,20 @@ async def delete_purge_record(
 
         tenant = await resolve_tenant(ctx.partition_id)
         storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
+        bulk_file_names = await storage.list_objects(tenant=tenant,
+                                                     prefix=hashlib.sha1(record_id.encode()).hexdigest())
         # In tiny cases record_id sha1 can be similar with a other record_id sha1
         # To delete only data relative to the record_id wanted, we deleting data by version instead of the entire folder
         if len(record_bulk_uris) == len(bulk_ids):
-            bulk_file_names = await storage.list_objects(tenant=tenant, prefix=hashlib.sha1(record_id.encode()).hexdigest())
             await asyncio.gather(*[
                 storage.delete(tenant=tenant, object_name=bulk_file_name)
                 for bulk_file_name in bulk_file_names],
                                  return_exceptions=True)
         else:
-            for bulk_id in record_bulk_uris:
-                bulk_file_names = await storage.list_objects(tenant=tenant, prefix=bulk_id)
-                await asyncio.gather(*[
-                    storage.delete(tenant=tenant, object_name=bulk_file_name)
-                    for bulk_file_name in bulk_file_names],
+            await asyncio.gather(*[
+                storage.delete(tenant=tenant, object_name=bulk_file_name)
+                for bulk_file_name in bulk_file_names
+                for bulk_id in record_bulk_uris if bulk_id in bulk_file_name],
                                      return_exceptions=True)
     else:
         await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
