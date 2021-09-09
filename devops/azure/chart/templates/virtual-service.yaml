@@ -1,7 +1,7 @@
 ---
 # Source: /devops/azure/chart/templates/virtual-service.yaml
 #
-{{- if .Values.istioDnsHost -}}
+{{- if .Values.istioDnsHost }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -37,4 +37,4 @@ spec:
       - DELETE
       allowOrigins:
       - prefix: "*"
-{{- end -}}
+{{- end }}
