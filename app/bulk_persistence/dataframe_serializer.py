@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import asyncio
+from functools import partial
 from io import BytesIO
 from typing import Union, AnyStr, IO, Optional, List, Dict
 
@@ -61,19 +62,19 @@ class DataframeSerializerSync:
     def to_json(cls,
                 df: DataframeClass,
                 orient: Union[str, JSONOrient] = JSONOrient.split,
-                path_or_buf: Optional[Union[str, Path, IO[AnyStr]]] = None) -> Optional[str]:
+                **kwargs) -> Optional[str]:
         """
         :param df: dataframe to dump
         :param orient: format for Json, default is split
-        :param path_or_buf: File path or object. If not specified, the result is returned as a string.
+        :param kwargs: keyword arguments will be forwarded to pandas.to_json()
         :return: None or json string of path_or_buf is None
         """
         orient = JSONOrient.get(orient)
 
-        return df.fillna("NaN").to_json(path_or_buf=path_or_buf, orient=orient.value)
+        return df.fillna("NaN").to_json(orient=orient.value, **kwargs)
 
     @classmethod
-    def read_parquet(cls, data) -> 'DataframeSerializerAsync.DataframeClass':
+    def read_parquet(cls, data) -> DataframeClass:
         """
         :param data: bytes, path object or file-like object
         :return: dataframe
@@ -85,7 +86,7 @@ class DataframeSerializerSync:
         return pd.read_parquet(data)
 
     @classmethod
-    def read_json(cls, data, orient: Union[str, JSONOrient], convert_axes: Optional[bool] = None) -> 'DataframeSerializerAsync.DataframeClass':
+    def read_json(cls, data, orient: Union[str, JSONOrient], convert_axes: Optional[bool] = None) -> DataframeClass:
         """
         :param data: bytes str content (valid JSON str), path object or file-like object
         :param orient:
@@ -100,14 +101,26 @@ class DataframeSerializerAsync:
     def __init__(self, pool_executor=get_pool_executor()):
         self.executor = pool_executor
 
+    @with_trace("Parquet bulk serialization")
+    async def to_parquet(self, df: DataframeClass, *args, **kwargs) -> DataframeClass:
+
+        func = partial(df.to_parquet, *args, **kwargs)
+        return await asyncio.get_event_loop().run_in_executor(self.executor, func)
+
     @with_trace("JSON bulk serialization")
     async def to_json(self,
                       df: DataframeClass,
                       orient: Union[str, JSONOrient] = JSONOrient.split,
-                      path_or_buf: Optional[Union[str, Path, IO[AnyStr]]] = None) -> Optional[str]:
-        return await asyncio.get_event_loop().run_in_executor(
-            self.executor, DataframeSerializerSync.to_json, df, orient, path_or_buf
-        )
+                      *args, **kwargs) -> Optional[str]:
+
+        func = partial(DataframeSerializerSync.to_json, df, orient, *args, **kwargs)
+        return await asyncio.get_event_loop().run_in_executor(self.executor, func)
+
+    @with_trace("CSV bulk serialization")
+    async def to_csv(self, df: DataframeClass, *args, **kwargs) -> Optional[str]:
+        df = df.fillna("NaN")
+        func = partial(df.to_csv, *args, **kwargs)
+        return await asyncio.get_event_loop().run_in_executor(self.executor, func)
 
     @with_trace("Parquet bulk deserialization")
     async def read_parquet(self, data) -> DataframeClass:
