@@ -77,7 +77,9 @@ def _create_df_from_response(response):
     elif content_type == 'text/csv; charset=utf-8':
         return pd.read_csv(f, index_col=0)
     elif content_type == 'application/json':
-        return pd.read_json(f, dtype=True, orient='split', convert_axes=False)
+        return pd.read_json(f, dtype=True, orient='split', convert_axes=False).replace("NaN", np.NaN)
+    elif content_type == 'application/csv':
+        return pd.read_csv(f, dtype=True).replace("NaN", np.NaN)
     else:
         raise ValueError(f"Unknown content-type: '{content_type}'")
 
@@ -222,6 +224,7 @@ def test_post_data_merge_extension_properties(setup_client):
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
     'application/json',
+    'text/csv; charset=utf-8',
 ])
 @pytest.mark.parametrize("columns", [
     ['MD', 'X'],
@@ -254,7 +257,7 @@ def test_send_all_data_once(setup_client,
     assert get_response.status_code == 200
     result_df = _create_df_from_response(get_response)
 
-    if content_type_header.endswith('parquet') and accept_content.endswith('json'):
+    if content_type_header.endswith('parquet') and not accept_content.endswith('parquet'):
         result_df = _cast_datetime_to_datetime64_ns(result_df)
 
     if content_type_header.endswith('json'):
@@ -328,7 +331,7 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
 ])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    # 'text/csv; charset=utf-8',
+    'text/csv; charset=utf-8',
     'application/json',
 ])
 @pytest.mark.parametrize("columns", [
@@ -789,6 +792,7 @@ def test_nat_sort_columns(setup_client, data_format, accept_content, columns_nam
     response_df = _create_df_from_response(data_response)
     assert list(response_df.columns) == columns_name
 
+
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
 def test_session_update_previous_version(setup_client, entity_type):
     """ create a session update on a previous version """
@@ -797,7 +801,7 @@ def test_session_update_previous_version(setup_client, entity_type):
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
-    headers = headers={'Content-Type': 'application/x-parquet'}
+    headers = {'Content-Type': 'application/x-parquet'}
     nb_rows = 5
     version_data = [
         generate_df(['MD', 'X', 'Y'], range(nb_rows)),
@@ -811,7 +815,6 @@ def test_session_update_previous_version(setup_client, entity_type):
                                      data=data.to_parquet(engine="pyarrow"),
                                      headers=headers)
         assert write_response.status_code == 200
-
 
     versions_response = client.get(f'{base_url}/{record_id}/versions')
     assert versions_response.status_code == 200

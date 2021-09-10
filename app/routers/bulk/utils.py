@@ -176,7 +176,6 @@ class DataFrameRender:
             selected.extend(natsorted(matching_columns))
         return selected
 
-
     @staticmethod
     @with_trace('process_params')
     async def process_params(df, params: GetDataParams):
@@ -194,7 +193,6 @@ class DataFrameRender:
 
         return df
 
-
     @staticmethod
     @with_trace('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None):
@@ -208,18 +206,19 @@ class DataFrameRender:
         pdf.index.name = None  # TODO
 
         if not accept or MimeTypes.PARQUET.type in accept:
-            return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
+            content = await DataframeSerializerAsync().to_parquet(pdf, engine="pyarrow")
+            return Response(content, media_type=MimeTypes.PARQUET.type)
 
         if MimeTypes.JSON.type in accept:
-            return Response(
-                pdf.to_json(index=True, date_format='iso', orient=orient.value), media_type=MimeTypes.JSON.type
-            )
+            content = await DataframeSerializerAsync().to_json(pdf, index=True, date_format='iso', orient=orient.value)
+            return Response(content, media_type=MimeTypes.JSON.type)
 
         if MimeTypes.CSV.type in accept:
-            return Response(pdf.to_csv(), media_type=MimeTypes.CSV.type)
+            content = await DataframeSerializerAsync().to_csv(pdf)
+            return Response(content, media_type=MimeTypes.CSV.type)
 
-        # in any other case => Parquet anyway?
-        return Response(pdf.to_parquet(engine="pyarrow"), media_type=MimeTypes.PARQUET.type)
+        content = await DataframeSerializerAsync().to_parquet(pdf, engine="pyarrow")
+        return Response(content, media_type=MimeTypes.PARQUET.type)
 
 
 async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri_access: BulkIdAccess):
