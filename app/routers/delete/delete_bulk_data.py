@@ -98,8 +98,9 @@ async def delete_purge_record(
 
         tenant = await resolve_tenant(ctx.partition_id)
         storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
+        encode_record_id = dask_blob_storage.encode_record_id()
         bulk_file_names = await storage.list_objects(tenant=tenant,
-                                                     prefix=hashlib.sha1(record_id.encode()).hexdigest())
+                                                     prefix=encode_record_id)
         # In tiny cases record_id sha1 can be similar with a other record_id sha1
         # To delete only data relative to the record_id wanted, we deleting data by version instead of the entire folder
         if len(record_bulk_uris) == len(bulk_ids):

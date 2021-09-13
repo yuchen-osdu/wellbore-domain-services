@@ -129,7 +129,7 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
-    def _encode_record_id(self, record_id: str) -> str:
+    def encode_record_id(self, record_id: str) -> str:
         return hashlib.sha1(record_id.encode()).hexdigest()
 
     def _get_base_directory(self, protocol=True):
