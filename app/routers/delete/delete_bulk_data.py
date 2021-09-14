@@ -96,7 +96,7 @@ async def delete_purge_record(
 
         tenant = await resolve_tenant(ctx.partition_id)
         storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
-        encode_record_id = dask_blob_storage.encode_record_id()
+        encode_record_id = dask_blob_storage.encode_record_id(record_id)
         bulk_file_names = await storage.list_objects(tenant=tenant,
                                                      prefix=encode_record_id)
         delete_results = await asyncio.gather(*[storage.delete(tenant=tenant, object_name=bulk_file_name)
