@@ -86,7 +86,9 @@ async def delete_purge_record(
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage)):
     storage_client = await get_storage_record_service(ctx)
 
-    if purge:
+    if not purge:
+        await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
+    elif purge:
         record_bulk_uris = await _get_bulk_uris_of_versions_from_record_id(ctx, bulk_uri_access, storage_client,
                                                                            record_id)
         # Delete meta data
@@ -97,10 +99,7 @@ async def delete_purge_record(
         encode_record_id = dask_blob_storage.encode_record_id()
         bulk_file_names = await storage.list_objects(tenant=tenant,
                                                      prefix=encode_record_id)
-        await asyncio.gather(*[
-            storage.delete(tenant=tenant, object_name=bulk_file_name)
-            for bulk_file_name in bulk_file_names
-            for bulk_id in record_bulk_uris if bulk_id in bulk_file_name],
-                                 return_exceptions=True)
-    else:
-        await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
+        delete_results = await asyncio.gather(*[storage.delete(tenant=tenant, object_name=bulk_file_name)
+                        for bulk_file_name in bulk_file_names
+                        for bulk_id in record_bulk_uris if bulk_id in bulk_file_name],
+                                             return_exceptions=True)
