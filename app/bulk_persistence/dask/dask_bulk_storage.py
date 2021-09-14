@@ -129,7 +129,8 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
-    def encode_record_id(self, record_id: str) -> str:
+    @staticmethod
+    def encode_record_id(record_id: str) -> str:
         return hashlib.sha1(record_id.encode()).hexdigest()
 
     def _get_base_directory(self, protocol=True):
@@ -137,7 +138,7 @@ class DaskBulkStorage:
 
     def _get_entity_path(self, record_id: str, with_protocol=True) -> str:
         """Return the entity id path from the record_id."""
-        encoded_id = self._encode_record_id(record_id)
+        encoded_id = self.encode_record_id(record_id)
         return f'{self._get_base_directory(with_protocol)}/{encoded_id}'
 
     def _get_bulk_path(self, record_id: str, with_protocol=True) -> str:
