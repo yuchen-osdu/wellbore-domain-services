@@ -6,8 +6,11 @@ OSDU_WELLBORE_VERSION_REGEX = re.compile(r'^([\w\-\.]+:master-data\-\-Wellbore:[
 OSDU_WELLBORE_REGEX = re.compile(r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')
 OSDU_WELL_VERSION_REGEX = re.compile(r'^([\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+):([0-9]*)$')
 OSDU_WELL_REGEX = re.compile(r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')
-DELFI_REGEX = re.compile(r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+$')
 
+OSDU_WELLLOG_VERSION_REGEX = re.compile(r'^([\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+):([0-9]*)$')
+OSDU_WELLBORETRAJECTORY_VERSION_REGEX = re.compile(r'^([\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+):([0-9]*)$')
+OSDU_WELLBOREMARKERSET_VERSION_REGEX = re.compile(r'^([\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+):([0-9]*)$')
+DELFI_REGEX = re.compile(r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+$')
 
 class DMSV3RouterUtils:
     @staticmethod
@@ -31,6 +34,11 @@ class DMSV3RouterUtils:
         if matches is None:
             return False, None, None
         return True, matches.group(1), matches.group(2)
+
+    @staticmethod
+    def get_id_without_version(entity_regexp, entity_id: str) -> str:
+        is_versioned, id_without_version, _ = DMSV3RouterUtils.is_osdu_versionned_entity_id(entity_regexp, entity_id)
+        return id_without_version if is_versioned else entity_id
 
     @staticmethod
     def is_osdu_versionned_wellbore_id(entity_id: str) -> Tuple[bool, str, str]:

@@ -252,11 +252,9 @@ async def post_traj_data(
 
     # Update record
     storage_client = await get_storage_record_service(ctx)
-    await storage_client.create_or_update_records(
+    return await storage_client.create_or_update_records(
         data_partition_id=ctx.partition_id, record=[record]
     )
-
-    return record
 
 
 async def _get_trajectory_data(

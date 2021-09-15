@@ -27,6 +27,7 @@ from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import WellLog110 as WellLog
 
 from app.utils import Context, get_ctx, load_schema_example
+from .ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLLOG_VERSION_REGEX
 
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 
@@ -50,6 +51,8 @@ async def get_welllog_osdu(
         welllogid: str, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
     storage_client = await get_storage_record_service(ctx)
+    welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
+                                                                  welllogid)
     welllog_record = await storage_client.get_record(
         id=welllogid, data_partition_id=ctx.partition_id
     )
@@ -73,6 +76,8 @@ async def get_welllog_osdu(
 )
 async def del_osdu_welllog(welllogid: str, ctx: Context = Depends(get_ctx)):
     storage_client = await get_storage_record_service(ctx)
+    welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
+                                                                  welllogid)
     await storage_client.delete_record(
         id=welllogid, data_partition_id=ctx.partition_id
     )
@@ -92,6 +97,8 @@ async def get_osdu_welllog_versions(
         welllogid: str, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
     storage_client = await get_storage_record_service(ctx)
+    welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
+                                                                  welllogid)
     return await storage_client.get_all_record_versions(
         id=welllogid, data_partition_id=ctx.partition_id
     )
@@ -112,6 +119,8 @@ async def get_osdu_welllog_version(
         welllogid: str, version: int, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
     storage_client = await get_storage_record_service(ctx)
+    welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
+                                                                  welllogid)
     welllog_record = await storage_client.get_record_version(
         id=welllogid, version=version, data_partition_id=ctx.partition_id
     )
