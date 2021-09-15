@@ -18,14 +18,12 @@ from fastapi import (
     APIRouter,
     Depends,
     Response,
-    status,
-    HTTPException)
+    status)
 
 from app.bulk_persistence import resolve_tenant
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import asyncio
 
-from app.bulk_persistence.dask.errors import BulkNotFound
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_client import get_storage_record_service
 from app.helper.traces import with_trace
@@ -35,8 +33,6 @@ from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from opencensus.trace.span import SpanKind
-from app.utils import get_or_create_ctx
 
 router = APIRouter()
 
