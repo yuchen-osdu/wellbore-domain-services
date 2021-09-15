@@ -42,6 +42,9 @@ def generate_df(columns, index):
             return [f'string_value_{i}' for i in range(size)]
         if col_name.startswith('date'):
             return (np.datetime64('2021-01-01') + days for days in range(size))
+        if col_name.startswith('array_'):
+            array_size = int(col_name.split('_')[1])
+            return [np.array(np.random.random_sample(size=array_size)) for _i in range(size)]
         return np.random.randint(-100, 1000, size=size)
 
     df = pd.DataFrame({c: gen_values(c, len(index))
@@ -380,3 +383,13 @@ async def test_dask_workers_according_ram_available(system_memory, worker_create
                 assert all(workers_has_expected_memory)
 
     await DaskClient.close()
+
+
+@pytest.mark.asyncio
+async def test_array_values(test_session, dask_storage: DaskBulkStorage):
+    df_ref = generate_df(['array_10_A', 'array_5_B', 'C'], range(5))
+    assert len(df_ref['array_10_A'][0]) == 10
+    bulk_id = await dask_storage.save_blob(df_ref, record_id=test_session.recordId)
+
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
+    await compare_frame(df_ref, ddf)

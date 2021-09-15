@@ -17,7 +17,6 @@ from enum import Enum
 from contextlib import contextmanager
 import random
 
-import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pytest
@@ -35,13 +34,8 @@ from ..request_builders.wdms.crud.osdu_wellboretrajectory import (
     build_request_create_osdu_wellboretrajectory,
     build_request_delete_osdu_wellboretrajectory)
 
+from tests.unit.persistence.dask_blob_storage_test import generate_df
 
-def generate_df(columns, index):
-    nbrows = len(index)
-    df = pd.DataFrame(
-        np.random.randint(-100, 1000, size=(nbrows, len(columns))), index=index)
-    df.columns = columns
-    return df
 
 entity_type_dict={
     "well_log": {"entity": "welllogs", "version": "v3"},
@@ -535,3 +529,18 @@ def test_data_without_dask_update_session(with_wdms_env, entity_type, serializer
         ).call(with_wdms_env, headers=headers, assert_status=200)
         result_df = serializer.read(result.response.content)
         pd.testing.assert_frame_equal(expected, result_df, check_dtype=False)
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory"])
+@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
+def test_send_arrayd_without_session(with_wdms_env, entity_type, serializer):
+    with create_record(with_wdms_env, entity_type) as record_id:
+        data = generate_df(['MD', 'array_10_A'], range(8))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+        result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)

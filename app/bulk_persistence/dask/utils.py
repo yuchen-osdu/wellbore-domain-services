@@ -89,9 +89,5 @@ def do_merge(df1: dd.DataFrame, df2: dd.DataFrame):
     df1 = set_index(df1)
     df2 = set_index(df2)
     if share_items(df1.columns, df2.columns):
-        ddf = df2.combine_first(df1)
-    else:
-        ddf = df1.join(df2, how='outer')  # join seems faster when there no columns in common
-
-    return ddf
-    
+        return df2.combine_first(df1)
+    return df1.join(df2, how='outer')  # join seems faster when there no columns in common

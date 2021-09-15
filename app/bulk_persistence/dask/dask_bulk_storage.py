@@ -201,10 +201,15 @@ class DaskBulkStorage:
             we should be able to change or support other format easily ?
             schema={} instead of 'infer' fixes wrong inference for columns of type string starting with nan values
         """
-        return self._submit_with_trace(dd.to_parquet, ddf, path,
-                                       schema={},
-                                       engine='pyarrow',
-                                       storage_options=self._parameters.storage_options)
+        def try_to_paquet(ddf, path, storage_options):
+            to_parquet_args = {'engine': 'pyarrow', 'storage_options': storage_options}
+            try:
+                return dd.to_parquet(ddf, path, **to_parquet_args, schema="infer")
+            except ArrowException: # ArrowInvalid
+                # In some conditions, the shema is not properly infered. As a workaround, passing schema={} solve the issue.
+                return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
+
+        return self._submit_with_trace(try_to_paquet, ddf, path, storage_options=self._parameters.storage_options)
 
     async def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
@@ -309,13 +314,29 @@ class DaskBulkStorage:
     @with_trace('session_commit')
     @internal_bulk_exceptions
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
+        """
+        Commit a session
+        session: the session to commit
+        from_bulk_id: id of the bulk to add to seesion. Used when updating a record.
+        we are merging the session chunks based on a tree reduction algorithm
+        finish           result             single output
+            ^          /        \
+            |        c1          c2        neighbors merge
+            |       /  \        /  \
+            |     b1    b2    b3    b4     neighbors merge
+            ^    / \   / \   / \   / \
+        start   a1 a2 a3 a4 a5 a6 a7 a8    many inputs
+        """
+        # load all session chunks
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
         if not dfs:
             raise BulkNotProcessable("No data to commit")
 
+        # load the data of a precedent version of the record.
         if from_bulk_id:
             dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
 
+        # tree reduction
         while len(dfs) > 1:
             dfs = [self._submit_with_trace(do_merge, a, b) for a, b in by_pairs(dfs)]
 
