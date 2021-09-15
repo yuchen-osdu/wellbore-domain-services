@@ -20,6 +20,7 @@ import random
 import numpy.testing as npt
 import pandas as pd
 import pytest
+import dask.dataframe as dd
 
 from .fixtures import with_wdms_env
 from ..request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log

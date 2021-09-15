@@ -24,7 +24,6 @@ import mock
 
 from app.utils import DaskException
 from app.utils import DaskClient
-from dask.utils import parse_bytes
 from app.helper import logger
 from app.bulk_persistence.dask.dask_bulk_storage import (BulkNotFound,
                                                          BulkNotProcessable,

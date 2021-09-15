@@ -76,7 +76,7 @@ class SessionFileMeta:
 def set_index(ddf: dd.DataFrame):
     """Set index of the dask dataFrame only if needed."""
     if not ddf.known_divisions:
-        return ddf.set_index(ddf.index, sorted=True)
+        return ddf.set_index(ddf.index, sorted=True).persist()
     return ddf
 
 
@@ -91,3 +91,4 @@ def do_merge(df1: dd.DataFrame, df2: dd.DataFrame):
     if share_items(df1.columns, df2.columns):
         return df2.combine_first(df1)
     return df1.join(df2, how='outer')  # join seems faster when there no columns in common
+
