@@ -18,8 +18,8 @@ from fastapi import (
     APIRouter,
     Depends,
     Response,
-    status
-)
+    status,
+    HTTPException)
 
 from app.bulk_persistence import resolve_tenant
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -88,7 +88,7 @@ async def delete_purge_record(
 
     if not purge:
         await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
-    elif purge:
+    else:
         record_bulk_uris = await _get_bulk_uris_of_versions_from_record_id(ctx, bulk_uri_access, storage_client,
                                                                            record_id)
         # Delete meta data
@@ -100,6 +100,7 @@ async def delete_purge_record(
         bulk_file_names = await storage.list_objects(tenant=tenant,
                                                      prefix=encode_record_id)
         delete_results = await asyncio.gather(*[storage.delete(tenant=tenant, object_name=bulk_file_name)
-                        for bulk_file_name in bulk_file_names
-                        for bulk_id in record_bulk_uris if bulk_id in bulk_file_name],
-                                             return_exceptions=True)
+                                                for bulk_file_name in bulk_file_names
+                                                for bulk_id in record_bulk_uris if bulk_id in bulk_file_name],
+                                              return_exceptions=True)
+        get_ctx().logger.exception(f"List of errors on bulk versions deletion: {[error for error in delete_results if error is not None]}")
