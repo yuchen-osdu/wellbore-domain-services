@@ -54,11 +54,13 @@ def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
 
     # DATA
     for i in range(nb_version):
-        build_request_post_data(entity_type, resobj.recordIds[0], data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+        build_request_post_data(entity_type, resobj.recordIds[0], data_to_send).call(with_wdms_env,
+                                                                                     headers=headers).assert_ok()
 
     assert resobj.recordCount == 1
     assert len(resobj.recordIds) == 1
-    with_wdms_env.set(f'{entity_type}_record_id', resobj.recordIds[0])  # stored the record id for the following tests
+    with_wdms_env.set(f'osdu_{entity_type}_record_id',
+                      resobj.recordIds[0])  # stored the record id for the following tests
 
 
 @pytest.mark.tag('basic', 'smoke')
@@ -67,10 +69,12 @@ def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
 def test_hard_delete_purge_record(with_wdms_env, entity_type, serializer):
     create_record_with_data(with_wdms_env, entity_type, serializer, 20)
 
-    with_wdms_env.set(f'record_id', with_wdms_env.get(f'{entity_type}_record_id'))
+    with_wdms_env.set(f'record_id', with_wdms_env.get(f'osdu_{entity_type}_record_id'))
     with_wdms_env.set(f'purge', "true")
     result = build_request_delete_purge_record().call(with_wdms_env)
     result.assert_status_code(204)
+    result = build_request(f'crud.osdu_{entity_type}.get_osdu_{entity_type}').call(with_wdms_env)
+    result.assert_status_code(404)
 
 
 @pytest.mark.tag('basic', 'smoke')
@@ -79,7 +83,9 @@ def test_hard_delete_purge_record(with_wdms_env, entity_type, serializer):
 def test_soft_delete_purge_record(with_wdms_env, entity_type, serializer):
     create_record_with_data(with_wdms_env, entity_type, serializer, 20)
 
-    with_wdms_env.set(f'record_id', with_wdms_env.get(f'{entity_type}_record_id'))
+    with_wdms_env.set(f'record_id', with_wdms_env.get(f'osdu_{entity_type}_record_id'))
     with_wdms_env.set(f'purge', "false")
     result = build_request_delete_purge_record().call(with_wdms_env)
     result.assert_status_code(204)
+    result = build_request(f'crud.osdu_{entity_type}.get_osdu_{entity_type}').call(with_wdms_env)
+    result.assert_status_code(404)
