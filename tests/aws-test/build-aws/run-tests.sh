@@ -44,12 +44,13 @@ rm -rf test-reports/
 mkdir test-reports
 
 cd integration
+
 acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
 
 python3 gen_postman_env.py --token $token --base_url $svc_url --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
 
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
 TEST_EXIT_CODE=$?
 deactivate
