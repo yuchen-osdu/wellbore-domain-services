@@ -17,7 +17,9 @@
 # ./dist/testing/integration/build-aws/run-tests.sh "./reports/"
 echo '********* Running Wellbore DDMS integration tests  *********'
 
-echo $(pwd)
+SCRIPT_SOURCE_DIR=$(dirname "$0")
+echo "Script source location"
+echo "$SCRIPT_SOURCE_DIR"
 
 AWS_COGNITO_PWD=$ADMIN_PASSWORD
 AWS_COGNITO_USER=$ADMIN_USER
@@ -36,7 +38,8 @@ token=$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id
 #### RUN INTEGRATION TEST #########################################################################
 
 
-cd deployment/osdu-core/os-wellbore-domain-services/testing
+pushd "$SCRIPT_SOURCE_DIR"/../../
+echo $(pwd)
 python3 -m venv env
 source env/bin/activate
 python3 -m pip install -r ./aws-test/build-aws/requirements.txt
