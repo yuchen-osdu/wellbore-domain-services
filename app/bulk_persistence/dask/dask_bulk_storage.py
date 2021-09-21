@@ -294,13 +294,6 @@ class DaskBulkStorage:
             return session_files
         return []
 
-    @capture_timings('get_bulk_ids')
-    @with_trace('get_bulk_ids')
-    async def get_bulk_ids(self, record_id: str):
-        path = self._get_bulk_path(record_id=record_id, with_protocol=False)
-        bulk_ids = [f.split("/")[-1] for f in self._fs.ls(path)]
-        return bulk_ids
-
     @capture_timings('delete_entity')
     @with_trace('delete_entity')
     async def delete_entity(self, record_id: str):
