@@ -295,7 +295,8 @@ async def upload_log_data_file(
         df = await DataframeSerializerAsync().read_json(content, orient)
     elif mime_type == MimeTypes.PARQUET:
         try:
-            df = await DataframeSerializerAsync().read_parquet(file.file)
+            data = await file.read()
+            df = await DataframeSerializerAsync().read_parquet(data)
         except Exception as e:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail='invalid data: ' + e.message if hasattr(e, 'message') else 'unknown error')
