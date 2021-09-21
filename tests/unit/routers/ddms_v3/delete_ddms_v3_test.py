@@ -14,13 +14,10 @@
 
 import pytest
 import mock
-import json
-import os
 
 from fastapi.testclient import TestClient
 
 from fastapi import Header, status, HTTPException
-from odes_storage.models import RecordVersions
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
@@ -80,10 +77,12 @@ wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
 
 record_versions = RecordVersions(record_id='opendes:work-product-component--WellLog:00001234',
                                  versions=[1972724675421999416275969243854301388, 1972724691719041369425630371084748387,
-                                           1972724692685381136056789571749686596,
-                                           1972724693418066907321024541915238319])
+                                           1972724692685381136056789571749686596, 1972724693418066907321024541915238319,
+                                           1972724692685381136056789571458786590, 1972724691719041369425637411084748854,
+                                           1972724691719041369425637411084487596, 1972724691719041369425637411257894562
+                                           ])
 record_bulk_uris = ['59c1ab7b-3bc9-4963-976d-815952bc8ddc', None, None, '87be6134-1b8f-43c0-a7f6-384a6a323f60', None,
-                    '356eb799-ba19-49ea-814c-cdd8cf87553b', None, None, 'a764776c-a389-415b-a92c-af8366ce6901']
+                    '356eb799-ba19-49ea-814c-cdd8cf87553b', None, 'a764776c-a389-415b-a92c-af8366ce6901']
 list_objects = ['bulk/59c1ab7b-3bc9-4963-976d-815952bc8ddc/data/part.0.parquet',
                 'bulk/87be6134-1b8f-43c0-a7f6-384a6a323f60/data/part.0.parquet',
                 'bulk/356eb799-ba19-49ea-814c-cdd8cf87553b/data/part.0.parquet',
@@ -93,10 +92,10 @@ list_objects = ['bulk/59c1ab7b-3bc9-4963-976d-815952bc8ddc/data/part.0.parquet',
 def test_delete_purge_record(client_delete):
     record_id = "opendes:work-product-component--WellLog:00001234"
     mock_storage_service_delete_record = mock.AsyncMock(return_value=status.HTTP_204_NO_CONTENT,
-                                                        side_effect=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                                        side_effect=status.HTTP_404_NOT_FOUND)
     mock_blob_storage = mock.AsyncMock(return_value=status.HTTP_204_NO_CONTENT,
-                                       side_effect=HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                                                 detail="blaabla"))
+                                       side_effect=HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                                                 detail="Error 404 not found"))
 
     mock_storage_list_objects = mock.AsyncMock(return_value=list_objects)
     mock_get_bulk_uri_from_version = mock.AsyncMock(side_effect=record_bulk_uris)
