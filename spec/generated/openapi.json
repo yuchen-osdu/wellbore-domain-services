@@ -16288,7 +16288,7 @@
     },
     "/ddms/v3/record/{record_id}": {
       "delete": {
-        "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "If 'purge' argument is set to 'true' (HARD Delete): It will first find all versions which has bulkURI, delete meta data using storage service then bulk data using blob storage service. If 'purge' argument is set to 'false' (SOFT Delete): It will only delete meta data using storage service.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_purge",
         "parameters": [
           {
@@ -16345,7 +16345,7 @@
             "HTTPBearer": []
           }
         ],
-        "summary": "The API performs a logical deletion of the given record",
+        "summary": "The API performs a logical soft or hard deletion of the given v3 record.",
         "tags": [
           "feature: delete"
         ]

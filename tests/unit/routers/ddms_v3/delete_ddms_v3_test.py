@@ -18,6 +18,7 @@ import mock
 from fastapi.testclient import TestClient
 
 from fastapi import Header, status, HTTPException
+from opencensus.trace import base_exporter
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
@@ -33,12 +34,17 @@ from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
 from tests.unit.test_utils import create_mock_class, nope_logger_fixture
 
-StorageRecordServiceClientMock = mock.AsyncMock()  # create_mock_class(StorageRecordServiceClient)
-BlobStorageMock = mock.AsyncMock()  # create_mock_class(BlobStorageBase)
-
+StorageRecordServiceClientMock = mock.AsyncMock()
+BlobStorageMock = mock.AsyncMock()
 
 @pytest.fixture
-def client_delete(nope_logger_fixture):
+def logger_fixture():
+    from app.helper import logger
+    logger._LOGGER = mock.MagicMock()
+    yield logger._LOGGER
+
+@pytest.fixture
+def client_delete(logger_fixture):
     async def bypass_authorization():
         # empty method
         pass
@@ -89,7 +95,7 @@ list_objects = ['bulk/59c1ab7b-3bc9-4963-976d-815952bc8ddc/data/part.0.parquet',
                 'bulk/a764776c-a389-415b-a92c-af8366ce6901/data/part.0.parquet']
 
 
-def test_delete_purge_record(client_delete):
+def test_delete_purge_record(client_delete, logger_fixture):
     record_id = "opendes:work-product-component--WellLog:00001234"
     mock_storage_service_delete_record = mock.AsyncMock(return_value=status.HTTP_204_NO_CONTENT,
                                                         side_effect=status.HTTP_404_NOT_FOUND)
@@ -107,15 +113,12 @@ def test_delete_purge_record(client_delete):
          mock.patch.object(BlobStorageMock, "list_objects", mock_storage_list_objects), \
          mock.patch.object(BlobStorageMock, "delete", mock_blob_storage), \
          mock.patch.object(delete_bulk_data, "_get_bulk_uri_from_version", mock_get_bulk_uri_from_version):
-        # when
+
         response = client_delete.delete(
             f"/ddms/v3/record/{record_id}?purge=true",
             headers={"data-partition-id": "testing_partition"},
         )
         assert response.status_code == status.HTTP_204_NO_CONTENT
-
-    # then assert storage is called with the proper id and data_partition
-    # mock_storage_service.assert_called_with(id=id_test, data_partition_id="testing_partition")
-
-    # assert it validates the input object schema
-    # record_obj.validate(response.json())
+        logger_exception = logger_fixture.exception.mock_calls[0].args[0].split(":")
+        assert logger_exception[0] == "List of errors on bulk versions deletion"
+        assert logger_exception[1].count("HTTPException(status_code=404, detail='Error 404 not found')") == 4
