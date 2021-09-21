@@ -60,14 +60,14 @@ async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
     return record_bulk_uris
 
 
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-# -------------------------------------------------- API delete record ----------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
 @router.delete("/record/{record_id}",
-               summary="The API performs a logical deletion of the given record",
-               description="{}".format(REQUIRED_ROLES_WRITE),
+               summary="The API performs a logical soft or hard deletion of the given v3 record.",
+               description="If 'purge' argument is set to 'true' (HARD Delete): "
+                           "It will first find all versions which has bulkURI, "
+                           "delete meta data using storage service then bulk data using blob storage service. "
+                           "If 'purge' argument is set to 'false' (SOFT Delete): "
+                           "It will only delete meta data using storage service."
+                           "{}".format(REQUIRED_ROLES_WRITE),
                operation_id="del_purge",
                status_code=status.HTTP_204_NO_CONTENT,
                response_class=Response,
@@ -99,4 +99,5 @@ async def delete_purge_record(
                                                 for bulk_file_name in bulk_file_names
                                                 for bulk_id in record_bulk_uris if bulk_id in bulk_file_name],
                                               return_exceptions=True)
-        get_ctx().logger.exception(f"List of errors on bulk versions deletion: {[error for error in delete_results if error is not None]}")
+        get_ctx().logger.exception(
+            f"List of errors on bulk versions deletion: {[error for error in delete_results if error is not None]}")
