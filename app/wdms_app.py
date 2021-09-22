@@ -260,7 +260,7 @@ wdms_app.include_router(
     dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access)])
 
 wdms_app.include_router(delete_bulk_data.router, prefix=DDMS_V3_PATH, tags=['feature: delete'],
-                        dependencies=v3_bulk_dependencies,)
+                        dependencies=v3_bulk_dependencies, include_in_schema=is_visible)
 
 # The multiple instantiation of bulk_utils router create some duplicates operation_id
 update_operation_ids(wdms_app)
