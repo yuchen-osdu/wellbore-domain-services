@@ -22,9 +22,8 @@ from ..request_builders.wdms.delete import build_request_delete_purge_record
 from ..request_runner import RequestRunner
 
 entity_type_dict = {
-    "well_log": {"entity": "welllogs", "version": "v3"},
-    "wellbore_trajectory": {"entity": "wellboretrajectories", "version": "v3"},
-    # "wellbore_markerset": {"entity": "wellboremarkersets", "version": "v3"},
+    "welllog": {"entity": "welllogs", "version": "v3"},
+    "wellboretrajectory": {"entity": "wellboretrajectories", "version": "v3"}
 }
 
 
@@ -39,12 +38,10 @@ def build_request_post_data(entity_type: str, record_id: str, payload) -> Reques
 
 
 def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
-    if entity_type == 'well_log':
+    if entity_type == 'welllog':
         result = build_request_create_osdu_welllog(False).call(with_wdms_env)
-    elif entity_type == 'wellbore_trajectory':
+    elif entity_type == 'wellboretrajectory':
         result = build_request_create_osdu_wellboretrajectory(False).call(with_wdms_env)
-    elif entity_type == 'wellbore_markerset':
-        result = build_request_create_osdu_wellboremarkerset(False).call(with_wdms_env)
 
     resobj = result.get_response_obj()
 
