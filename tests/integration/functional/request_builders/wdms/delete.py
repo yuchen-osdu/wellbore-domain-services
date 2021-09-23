@@ -28,3 +28,17 @@ def build_request_delete_purge_record() -> RequestRunner:
         },
     )
     return RequestRunner(rq_proto)
+
+def build_request_get_record() -> RequestRunner:
+    rq_proto = Request(
+        name="Get record",
+        method="GET",
+        url="{{base_url_v3_record}}/{{record_id}}",
+        headers={
+            "accept": "application/json",
+            "data-partition-id": "{{data_partition}}",
+            "Connection": "{{header_connection}}",
+            "Authorization": "Bearer {{token}}",
+        },
+    )
+    return RequestRunner(rq_proto)

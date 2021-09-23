@@ -18,7 +18,7 @@ from .test_chunking import ParquetSerializer, JsonSerializer, generate_df, build
 from ..request_builders.wdms.crud.osdu_wellboremarkerset import build_request_create_osdu_wellboremarkerset
 from ..request_builders.wdms.crud.osdu_wellboretrajectory import build_request_create_osdu_wellboretrajectory
 from ..request_builders.wdms.crud.osdu_welllog import build_request_create_osdu_welllog
-from ..request_builders.wdms.delete import build_request_delete_purge_record
+from ..request_builders.wdms.delete import build_request_delete_purge_record, build_request_get_record
 from ..request_runner import RequestRunner
 
 entity_type_dict = {
@@ -70,7 +70,8 @@ def test_hard_delete_purge_record(with_wdms_env, entity_type, serializer):
     with_wdms_env.set(f'purge', "true")
     result = build_request_delete_purge_record().call(with_wdms_env)
     result.assert_status_code(204)
-    result = build_request(f'crud.osdu_{entity_type}.get_osdu_{entity_type}').call(with_wdms_env)
+    with_wdms_env.set(f'base_url_v3_record', build_base_url(entity_type))
+    result = build_request_get_record().call(with_wdms_env)
     result.assert_status_code(404)
 
 
@@ -84,5 +85,6 @@ def test_soft_delete_purge_record(with_wdms_env, entity_type, serializer):
     with_wdms_env.set(f'purge', "false")
     result = build_request_delete_purge_record().call(with_wdms_env)
     result.assert_status_code(204)
-    result = build_request(f'crud.osdu_{entity_type}.get_osdu_{entity_type}').call(with_wdms_env)
+    with_wdms_env.set(f'base_url_v3_record', build_base_url(entity_type))
+    result = build_request_get_record().call(with_wdms_env)
     result.assert_status_code(404)
