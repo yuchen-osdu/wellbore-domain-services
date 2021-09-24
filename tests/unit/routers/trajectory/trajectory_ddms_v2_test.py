@@ -19,6 +19,7 @@ from fastapi.testclient import TestClient
 from fastapi import Header, status
 
 import pytest
+import copy
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
@@ -154,8 +155,14 @@ def client_with_log(client):
     )
 ])
 def test_traj_bulk(client, orient_value, data):
+    traj_cpy = copy.deepcopy(traj)
+    traj_cpy['data']['channels'] = [
+        {'name': 'X', 'family': 'X_family'},
+        {'name': 'NOT_IN_BULK', 'family': 'NOT_IN_BULK_family'},
+    ]
+
     # Create or update a traj record
-    response = client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
+    response = client.post("/ddms/v2/trajectories", json=[traj_cpy], headers=headers)
     assert response.ok, "Create or update trajectory failed"
 
     # get data
@@ -178,12 +185,14 @@ def test_traj_bulk(client, orient_value, data):
     assert computed_record["legal"] == legal, "legal in the record should match trajectory acl"
     assert computed_record["data"]["bulkURI"],  "trajectory record should have a bulkid"
 
-    computed_channel = {channel["name"]: channel["bulkURI"] for channel in computed_record["data"]["channels"]}
+    computed_channel = {channel["name"]: channel for channel in computed_record["data"]["channels"]}
+    for c in ["MD", "X", "Y", 'Z']:
+        assert computed_channel[c]['bulkURI'] == computed_record["data"]["bulkURI"] + f":{c}", "bulkid for channel MD should match {data.bulkid}:{c}"
+    
+    assert computed_channel["X"]["family"] == "X_family", "channels properties should not be overrided"
 
-    assert computed_channel["MD"] == computed_record["data"]["bulkURI"] + ":MD", "bulkid for channel MD should match {data.bulkid}:MD"
-    assert computed_channel["X"] == computed_record["data"]["bulkURI"] + ":X",  "bulkid for channel X should match {data.bulkid}:MD"
-    assert computed_channel["Y"] == computed_record["data"]["bulkURI"] + ":Y",  "bulkid for channel Y should match {data.bulkid}:MD"
-    assert computed_channel["Z"] == computed_record["data"]["bulkURI"] + ":Z",  "bulkid for channel Z should match {data.bulkid}:MD"
+    assert computed_channel["NOT_IN_BULK"].get('bulkURI', None) is None
+    assert computed_channel["NOT_IN_BULK"]["family"] == "NOT_IN_BULK_family", "channels properties should not be deleted if not in bulk"
 
     # get data
     response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
