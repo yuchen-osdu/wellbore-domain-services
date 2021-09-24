@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 import pytest
 import numpy as np
 import pandas as pd
+import pandas.api.types as ptypes
 import pyarrow.parquet as pq
 import pyarrow as pa
 
@@ -213,7 +214,6 @@ def test_post_data_merge_extension_properties(setup_client):
     expected["wdms"] = get_response.json()["data"]["ExtensionProperties"]["wdms"]
 
     assert get_response.json()["data"]["ExtensionProperties"] == expected
-
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -767,6 +767,34 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
                                    data=data_to_send,
                                    headers=headers)
     assert chunk_response_1.status_code == expected_code
+
+
+def test_legacy_logs_int_columns(setup_client):
+    """
+        Ensure legacy v2 Log containing columns name as int type are correctly converted to string
+        to ensure to_parquet is possible.
+    """
+    client = setup_client
+    entity_type = "Log"
+
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+    base_url = Definitions[entity_type]['base_url']
+
+    json_data = {t: np.random.rand(10) for t in [int(42), float(-42)]}
+    df_data = pd.DataFrame(json_data)
+    data_to_send = df_data.to_json(orient='split', date_format='iso')
+
+    write_legacy_log_response = client.post(f'{base_url}/{record_id}/data',
+                                 data=data_to_send,
+                                 headers={'content-type': 'application/json'})
+    assert write_legacy_log_response.status_code == 200
+
+    read_dask_log_response = client.get(f'{chunking_url}/{record_id}/data',
+                               headers={'content-type': 'application/parquet'})
+    assert read_dask_log_response.status_code == 200
+    result_df = _create_df_from_response(read_dask_log_response)
+    assert ptypes.is_string_dtype(result_df.columns)
 
 
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
