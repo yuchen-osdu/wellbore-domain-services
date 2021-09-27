@@ -1,0 +1,40 @@
+---
+# Source: /devops/azure/chart/templates/virtual-service.yaml
+#
+{{- if .Values.istioDnsHost }}
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name:  os-wellbore-ddms{{ include "os-wellbore-ddms.name-suffix" . }}
+  namespace: osdu
+spec:
+  hosts:
+  - "{{ .Values.istioDnsHost }}"
+  gateways:
+  - istio-gateway
+  http:  
+  - match:
+    - uri:
+        prefix: '{{ include "os-wellbore-ddms.prefix" . }}/'
+        # TODO make naming more uniform across services: prefix: "/api/{{ .Chart.Name }}/v2"
+    route:
+    - destination:
+        host: os-wellbore-ddms{{ include "os-wellbore-ddms.name-suffix" . }}
+        port:
+          number: 80
+    corsPolicy:
+      maxAge: "60m"
+      allowCredentials: true
+      allowHeaders:
+      - Authorization
+      - Data-Partition-Id
+      - Correlation-Id
+      allowMethods:
+      - POST
+      - GET
+      - PUT
+      - PATCH
+      - DELETE
+      allowOrigins:
+      - prefix: "*"
+{{- end }}

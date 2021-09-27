@@ -80,3 +80,6 @@ ingress:
 
 authorizationPolicy:
   name: wellbore-jwt-authz
+
+
+istioDnsHost: ""

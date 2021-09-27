@@ -199,8 +199,3 @@ osdu-gcp-test:
 
 ibm-deploy:
   allow_failure: true
-
-# Allow failure on integration tests
-
-ibm-test:
-  allow_failure: true

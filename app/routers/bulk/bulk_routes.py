@@ -33,7 +33,7 @@ from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSes
                                   WithSessionStorages, get_session_dependencies)
 from app.routers.record_utils import fetch_record
 from app.routers.bulk.utils import (with_dask_blob_storage, get_check_input_df_func, get_df_from_request,
-                                    set_bulk_field_and_send_record, DataFrameRender)
+                                    set_bulk_field_and_send_record, DataFrameRender, _check_df_columns_type_legacy)
 from app.routers.bulk.bulk_uri_dependencies import (get_bulk_id_access, BulkIdAccess,
                                                     BULK_URN_PREFIX_VERSION)
 
@@ -153,6 +153,7 @@ async def get_data_version(
             df = await dask_blob_storage.load_bulk(record_id, bulk_id)
         elif prefix is None:
             df = await get_dataframe(ctx, bulk_id)
+            _check_df_columns_type_legacy(df)
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 

@@ -2221,22 +2221,6 @@
           }
         ]
       },
-      "GetStatisticResponse": {
-        "properties": {
-          "columns": {
-            "items": {
-              "$ref": "#/components/schemas/StatsColumn"
-            },
-            "title": "Columns",
-            "type": "array"
-          }
-        },
-        "required": [
-          "columns"
-        ],
-        "title": "GetStatisticResponse",
-        "type": "object"
-      },
       "GetTrajectoryDataResponse": {
         "oneOf": [
           {
@@ -12960,7 +12944,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetStatisticResponse"
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/StatsColumn"
+                  },
+                  "title": "Response Get Log Data Statistics Ddms V2 Logs  Logid  Statistics Get",
+                  "type": "object"
                 }
               }
             },
