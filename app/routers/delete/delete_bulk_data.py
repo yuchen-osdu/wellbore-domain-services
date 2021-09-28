@@ -104,9 +104,9 @@ async def delete_record(
         # create_task => ensure_future
         delete_result = asyncio.ensure_future(tasks[i])
 
-        def when_finished(future_result):
+        def task_done(future_result):
             if future_result.exception() is not None:
                 get_ctx().logger.exception(
-                    f"Exception on bulk versions deletion: {future_result.exception()}")
+                    f"Exception on bulk versions deletion: {future_result.exception().detail}")
 
-        delete_result.add_done_callback(when_finished)
+        delete_result.add_done_callback(task_done)
