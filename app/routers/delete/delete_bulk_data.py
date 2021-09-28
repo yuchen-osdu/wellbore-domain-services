@@ -95,9 +95,18 @@ async def delete_record(
     encode_record_id = dask_blob_storage.encode_record_id(record_id)
     bulk_file_names = await storage.list_objects(tenant=tenant,
                                                  prefix=encode_record_id)
-    delete_results = await asyncio.gather(*[storage.delete(tenant=tenant, object_name=bulk_file_name)
-                                            for bulk_file_name in bulk_file_names
-                                            for bulk_id in record_bulk_uris if bulk_id in bulk_file_name],
-                                          return_exceptions=True)
-    get_ctx().logger.exception(
-        f"List of errors on bulk versions deletion: {[error for error in delete_results if error is not None]}")
+
+    tasks = [storage.delete(tenant=tenant, object_name=bulk_file_name)
+             for bulk_file_name in bulk_file_names
+             for bulk_id in record_bulk_uris if bulk_id in bulk_file_name]
+
+    for i in range(len(tasks)):
+        # create_task => ensure_future
+        delete_result = asyncio.ensure_future(tasks[i])
+
+        def when_finished(future_result):
+            if future_result.exception() is not None:
+                get_ctx().logger.exception(
+                    f"Exception on bulk versions deletion: {future_result.exception()}")
+
+        delete_result.add_done_callback(when_finished)
