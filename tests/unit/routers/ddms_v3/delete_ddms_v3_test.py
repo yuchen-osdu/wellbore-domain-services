@@ -119,6 +119,7 @@ def test_delete_purge_record(client_delete, logger_fixture):
             headers={"data-partition-id": "testing_partition"},
         )
         assert response.status_code == status.HTTP_204_NO_CONTENT
-        logger_exception = logger_fixture.exception.mock_calls[0].args[0].split(":")
-        assert logger_exception[0] == "List of errors on bulk versions deletion"
-        assert logger_exception[1].count("HTTPException(status_code=404, detail='Error 404 not found')") == 4
+        for i in range(4):
+            logger_exception = logger_fixture.exception.mock_calls[i].args[0].split(":")
+            assert logger_exception[0] == "Exception on bulk versions deletion"
+            assert logger_exception[1].count("Error 404 not found") == 1
