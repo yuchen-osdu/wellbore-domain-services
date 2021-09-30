@@ -349,8 +349,7 @@ This example runs basic tests using the local filesystem for blob storage and st
 First, create the temp storage folders and run the service.
 
 ```bash
-mkdir -p tmpstorage
-mkdir -p tmpblob
+mkdir -p tmpstorage tmpblob
 python main.py -e USE_INTERNAL_STORAGE_SERVICE_WITH_PATH $(pwd)/tmpstorage -e USE_LOCALFS_BLOB_STORAGE_WITH_PATH $(pwd)/tmpblob -e CLOUD_PROVIDER local
 ```
 
@@ -378,6 +377,11 @@ If you want to work with other requirements file, you can specify them
 pip-sync requirements.txt requirements_dev.txt
 ```
 
+**Note:** On a Windows workstation, platform-specific modules such as `pywin32` are also needed. In this case don't use `pip-sync` but `pip install` instead.
+```bash
+pip install -r requirements.txt -r requirements_dev.txt
+```
+
 If you want to update `requirements.txt` to retrieve the most recent version, respecting bounds set in `requirements.in`, you can use:
 
 ```bash
@@ -389,6 +393,8 @@ If you want to update the version of only one dependency, for instance fastapi:
 ```bash
 pip-compile --upgrade-package fastapi
 ```
+
+**Note:** On a Windows workstation, **don't** commit the `pywin32` back to the `requirements.txt` file, that will cause CICD to fail.
 
 For more information: https://github.com/jazzband/pip-tools/
 
