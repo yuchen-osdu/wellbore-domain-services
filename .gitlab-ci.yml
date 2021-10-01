@@ -65,6 +65,52 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
 
+verify_existing_requirements:
+  extends:
+    - .python
+    - .skipForTriggeringMergeRequests
+
+  stage: build
+  before_script:
+    - pip3 install --upgrade pip-tools
+
+  script:
+    - pip-compile requirements.in --output-file requirements.ref
+    - pip-compile requirements_dev.in --output-file requirements_dev.ref
+    # checking difference between existing requirements and the newly generated one
+    # and using the number of lines as exit status code
+    - |
+      delta=$(diff -u requirements.txt requirements.ref | tee /dev/fd/2 | wc -l)
+      delta_dev=$(diff -u requirements_dev.txt requirements_dev.ref | tee /dev/fd/2 | wc -l)
+      exit $(expr "$delta" + "$delta_dev")
+
+  artifacts:
+    when: always
+    paths:
+      - "*.ref"
+
+    expire_in: 2 days
+
+generate_updated_requirements:
+  extends:
+    - .python
+    - .skipForTriggeringMergeRequests
+
+  stage: build
+  before_script:
+    - pip3 install --upgrade pip-tools
+
+  script:
+    - pip-compile requirements.in --upgrade --output-file requirements.upg
+    - pip-compile requirements_dev.in --upgrade --output-file requirements_dev.upg
+
+  artifacts:
+    when: always
+    paths:
+      - "*.upg"
+
+    expire_in: 2 days
+
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
