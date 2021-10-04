@@ -193,7 +193,6 @@ ddms_v3_routes_groups = [
     (welllog_ddms_v3, "WellLog"),
     (wellbore_trajectory_ddms_v3, "Trajectory v3"),
     (markerset_ddms_v3, "Marker"),
-    (delete_bulk_data, "Delete V3"),
 ]
 for v3_api, tag in ddms_v3_routes_groups:
     wdms_app.include_router(v3_api.router,
@@ -263,7 +262,7 @@ wdms_app.include_router(
 wdms_app.include_router(
     delete_bulk_data.router,
     prefix=DDMS_V3_PATH,
-    tags=['Delete V3'],
+    tags=bulk_tags if bulk_tags else ['Delete V3'],
     dependencies=v3_bulk_dependencies,
     include_in_schema=is_visible)
 
