@@ -101,13 +101,13 @@ async def delete_record(
                  for bulk_file_name in bulk_file_names
                  for bulk_id in record_bulk_uris if bulk_id in bulk_file_name]
 
-        for i in range(len(tasks)):
+        for task in tasks:
             # create_task => ensure_future
-            delete_result = asyncio.ensure_future(tasks[i])
+            delete_result = asyncio.ensure_future(task)
 
             def task_done(future_result):
-                if future_result.exception() is not None:
+                if future_result.exception():
                     get_ctx().logger.exception(
-                        f"Exception on bulk versions deletion: {future_result.exception().detail}")
+                        f"Exception on bulk versions deletion: {str(future_result.exception())}")
 
             delete_result.add_done_callback(task_done)
