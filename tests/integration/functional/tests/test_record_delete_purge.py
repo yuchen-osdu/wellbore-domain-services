@@ -81,7 +81,7 @@ def test_hard_delete_purge_record(with_wdms_env, entity_type, serializer):
 def test_soft_delete_purge_record(with_wdms_env, entity_type, serializer):
     create_record_with_data(with_wdms_env, entity_type, serializer, 20)
 
-    with_wdms_env.set(f'record_id', with_wdms_env.get(f'osdu_{entity_type}_record_id'))
+    with_wdms_env.set(f'record_id', with_wdms_env.get(f'{entity_type}_record_id'))
     with_wdms_env.set(f'purge', "false")
     result = build_request_delete_purge_record().call(with_wdms_env)
     result.assert_status_code(204)
