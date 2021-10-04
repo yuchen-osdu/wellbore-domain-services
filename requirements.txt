@@ -245,7 +245,7 @@ opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
 osdu-core-lib-python==1.1.0
     # via -r requirements.in
-osdu-core-lib-python-aws==0.0.4.dev629231
+osdu-core-lib-python-aws==0.0.4.dev629929
     # via -r requirements.in
 osdu-core-lib-python-azure==1.2.1
     # via -r requirements.in
