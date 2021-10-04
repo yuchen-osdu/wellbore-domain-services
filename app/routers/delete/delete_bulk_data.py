@@ -108,6 +108,6 @@ async def delete_record(
             def task_done(future_result):
                 if future_result.exception():
                     get_ctx().logger.exception(
-                        f"Exception on bulk versions deletion: {str(future_result.exception())}")
+                        f"Exception on bulk versions deletion: {future_result.exception().detail}")
 
             delete_result.add_done_callback(task_done)
