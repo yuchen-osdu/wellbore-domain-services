@@ -84,7 +84,7 @@ verify_existing_requirements:
   artifacts:
     when: always
     paths:
-      - "*.ref"
+      - "requirements*.txt"
 
     expire_in: 2 days
 
