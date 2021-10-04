@@ -6,7 +6,7 @@ data:
   requests_cpu: "0.25"
   requests_memory: "256M"
   limits_cpu: "1"
-  limits_memory: "1G"
+  limits_memory: "2G"
   image: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp:latest"
 
 conf:
