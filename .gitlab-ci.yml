@@ -75,14 +75,11 @@ verify_existing_requirements:
     - pip3 install --upgrade pip-tools
 
   script:
-    - pip-compile requirements.in --output-file requirements.ref
-    - pip-compile requirements_dev.in --output-file requirements_dev.ref
+    - pip-compile requirements.in
+    - pip-compile requirements_dev.in
     # checking difference between existing requirements and the newly generated one
     # and using the number of lines as exit status code
-    - |
-      delta=$(diff -u requirements.txt requirements.ref | tee /dev/fd/2 | wc -l)
-      delta_dev=$(diff -u requirements_dev.txt requirements_dev.ref | tee /dev/fd/2 | wc -l)
-      exit $(expr "$delta" + "$delta_dev")
+    - exit $(git status -s | grep -e "^ M " | wc -l)
 
   artifacts:
     when: always
