@@ -83,30 +83,31 @@ async def delete_record(
     storage_client = await get_storage_record_service(ctx)
 
     if not purge:
-        return await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
+        await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
+    else:
 
-    record_bulk_uris = await _get_bulk_uris_of_versions_from_record_id(ctx, bulk_uri_access, storage_client,
-                                                                       record_id)
-    # Delete meta data
-    await storage_client.purge_record(id=record_id, data_partition_id=ctx.partition_id)
+        record_bulk_uris = await _get_bulk_uris_of_versions_from_record_id(ctx, bulk_uri_access, storage_client,
+                                                                           record_id)
+        # Delete meta data
+        await storage_client.purge_record(id=record_id, data_partition_id=ctx.partition_id)
 
-    tenant = await resolve_tenant(ctx.partition_id)
-    blob_storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
-    encode_record_id = dask_blob_storage.encode_record_id(record_id)
-    bulk_file_names = await blob_storage.list_objects(tenant=tenant,
-                                                 prefix=encode_record_id)
+        tenant = await resolve_tenant(ctx.partition_id)
+        blob_storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
+        encode_record_id = dask_blob_storage.encode_record_id(record_id)
+        bulk_file_names = await blob_storage.list_objects(tenant=tenant,
+                                                     prefix=encode_record_id)
 
-    tasks = [blob_storage.delete(tenant=tenant, object_name=bulk_file_name)
-             for bulk_file_name in bulk_file_names
-             for bulk_id in record_bulk_uris if bulk_id in bulk_file_name]
+        tasks = [blob_storage.delete(tenant=tenant, object_name=bulk_file_name)
+                 for bulk_file_name in bulk_file_names
+                 for bulk_id in record_bulk_uris if bulk_id in bulk_file_name]
 
-    for i in range(len(tasks)):
-        # create_task => ensure_future
-        delete_result = asyncio.ensure_future(tasks[i])
+        for i in range(len(tasks)):
+            # create_task => ensure_future
+            delete_result = asyncio.ensure_future(tasks[i])
 
-        def task_done(future_result):
-            if future_result.exception() is not None:
-                get_ctx().logger.exception(
-                    f"Exception on bulk versions deletion: {future_result.exception().detail}")
+            def task_done(future_result):
+                if future_result.exception() is not None:
+                    get_ctx().logger.exception(
+                        f"Exception on bulk versions deletion: {future_result.exception().detail}")
 
-        delete_result.add_done_callback(task_done)
+            delete_result.add_done_callback(task_done)
