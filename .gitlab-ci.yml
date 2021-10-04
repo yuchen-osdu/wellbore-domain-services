@@ -110,6 +110,7 @@ generate_updated_requirements:
       - "*.upg"
 
     expire_in: 2 days
+  allow_failure: true
 
 containerize:
   extends: .skipForTriggeringMergeRequests
