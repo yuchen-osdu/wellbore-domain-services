@@ -397,6 +397,22 @@ def build_request_search_welllog_by_name() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_search_welllog_by_curve_mnemonics() -> RequestRunner:
+    rq_proto = Request(
+        name='search wellbore by name',
+        method='POST',
+        url='{{base_url}}/alpha/ddms/v3/{{search_query_type}}/welllogs?mnemonics=Example%20Mnemonic',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+        payload='{}'
+    )
+    return RequestRunner(rq_proto)
+
+
 
 def build_request_search_welllog_by_name_and_wellbore() -> RequestRunner:
     rq_proto = Request(

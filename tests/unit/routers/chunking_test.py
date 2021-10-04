@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 import pytest
 import numpy as np
 import pandas as pd
+import pandas.api.types as ptypes
 import pyarrow.parquet as pq
 import pyarrow as pa
 
@@ -32,18 +33,19 @@ Definitions = {
     'WellLog': {
         'api_version': 'v3',
         'base_url': '/ddms/v3/welllogs',
-        'chunking_url': '/alpha/ddms/v3/welllogs',  # TODO: update when no longer alpha
+        'chunking_url': '/ddms/v3/welllogs',
         'kind': 'osdu:wks:work-product-component--WellLog:1.1.0',
         'record_data': {
             "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
-            "Curves": [{"CurveID": "MD"}, {"CurveID": "X"}]
+            "Curves": [{"CurveID": "MD"}, {"CurveID": "X"}],
+            "ExtensionProperties": {"my_test_extension": 42},
         }
     },
 
     'WellboreTrajectory': {
         'api_version': 'v3',
         'base_url': '/ddms/v3/wellboretrajectories',
-        'chunking_url': '/alpha/ddms/v3/wellboretrajectories',  # TODO: update when no longer alpha
+        'chunking_url': '/ddms/v3/wellboretrajectories',
         'kind': 'osdu:wks:work-product-component--WellboreTrajectory:1.0.0',
         'record_data': {
             "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
@@ -55,7 +57,7 @@ Definitions = {
     'Log': {
         'api_version': 'v2',
         'base_url': '/ddms/v2/logs',
-        'chunking_url': '/alpha/ddms/v2/logs',  # TODO: update when no longer alpha
+        'chunking_url': '/alpha/ddms/v2/logs',
         'kind': 'osdu:wks:log:1.0.5',
         'record_data': {
             "name": "myLog_name"
@@ -76,7 +78,9 @@ def _create_df_from_response(response):
     elif content_type == 'text/csv; charset=utf-8':
         return pd.read_csv(f, index_col=0)
     elif content_type == 'application/json':
-        return pd.read_json(f, dtype=True, orient='split', convert_axes=False)
+        return pd.read_json(f, dtype=True, orient='split', convert_axes=False).replace("NaN", np.NaN)
+    elif content_type == 'application/csv':
+        return pd.read_csv(f, dtype=True).replace("NaN", np.NaN)
     else:
         raise ValueError(f"Unknown content-type: '{content_type}'")
 
@@ -190,6 +194,28 @@ def setup_client(dasked_test_app):
     yield TestClient(dasked_test_app)
 
 
+def test_post_data_merge_extension_properties(setup_client):
+    client = setup_client
+    record_id = _create_record(client, "WellLog")
+    chunking_url = Definitions["WellLog"]['chunking_url']
+
+    df = generate_df(['MD'], range(10))
+    data_to_send = df.to_json(orient='split', date_format='iso')
+    headers = {'content-type': 'application/json'}
+
+    write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
+    assert write_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}')
+    assert get_response.status_code == 200
+
+    expected = Definitions["WellLog"]["record_data"]["ExtensionProperties"].copy()
+
+    expected["wdms"] = get_response.json()["data"]["ExtensionProperties"]["wdms"]
+
+    assert get_response.json()["data"]["ExtensionProperties"] == expected
+
+
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("content_type_header,create_func", [
     ('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
@@ -198,6 +224,7 @@ def setup_client(dasked_test_app):
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
     'application/json',
+    'text/csv; charset=utf-8',
 ])
 @pytest.mark.parametrize("columns", [
     ['MD', 'X'],
@@ -230,7 +257,7 @@ def test_send_all_data_once(setup_client,
     assert get_response.status_code == 200
     result_df = _create_df_from_response(get_response)
 
-    if content_type_header.endswith('parquet') and accept_content.endswith('json'):
+    if content_type_header.endswith('parquet') and not accept_content.endswith('parquet'):
         result_df = _cast_datetime_to_datetime64_ns(result_df)
 
     if content_type_header.endswith('json'):
@@ -304,7 +331,7 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
 ])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    # 'text/csv; charset=utf-8',
+    'text/csv; charset=utf-8',
     'application/json',
 ])
 @pytest.mark.parametrize("columns", [
@@ -742,6 +769,34 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     assert chunk_response_1.status_code == expected_code
 
 
+def test_legacy_logs_int_columns(setup_client):
+    """
+        Ensure legacy v2 Log containing columns name as int type are correctly converted to string
+        to ensure to_parquet is possible.
+    """
+    client = setup_client
+    entity_type = "Log"
+
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+    base_url = Definitions[entity_type]['base_url']
+
+    json_data = {t: np.random.rand(10) for t in [int(42), float(-42)]}
+    df_data = pd.DataFrame(json_data)
+    data_to_send = df_data.to_json(orient='split', date_format='iso')
+
+    write_legacy_log_response = client.post(f'{base_url}/{record_id}/data',
+                                 data=data_to_send,
+                                 headers={'content-type': 'application/json'})
+    assert write_legacy_log_response.status_code == 200
+
+    read_dask_log_response = client.get(f'{chunking_url}/{record_id}/data',
+                               headers={'content-type': 'application/parquet'})
+    assert read_dask_log_response.status_code == 200
+    result_df = _create_df_from_response(read_dask_log_response)
+    assert ptypes.is_string_dtype(result_df.columns)
+
+
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
 @pytest.mark.parametrize("accept_content", ['application/x-parquet', 'application/json'])
 @pytest.mark.parametrize("columns_name", [
@@ -765,6 +820,7 @@ def test_nat_sort_columns(setup_client, data_format, accept_content, columns_nam
     response_df = _create_df_from_response(data_response)
     assert list(response_df.columns) == columns_name
 
+
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
 def test_session_update_previous_version(setup_client, entity_type):
     """ create a session update on a previous version """
@@ -773,7 +829,7 @@ def test_session_update_previous_version(setup_client, entity_type):
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
-    headers = headers={'Content-Type': 'application/x-parquet'}
+    headers = {'Content-Type': 'application/x-parquet'}
     nb_rows = 5
     version_data = [
         generate_df(['MD', 'X', 'Y'], range(nb_rows)),
@@ -787,7 +843,6 @@ def test_session_update_previous_version(setup_client, entity_type):
                                      data=data.to_parquet(engine="pyarrow"),
                                      headers=headers)
         assert write_response.status_code == 200
-
 
     versions_response = client.get(f'{base_url}/{record_id}/versions')
     assert versions_response.status_code == 200
@@ -819,6 +874,57 @@ def test_session_update_previous_version(setup_client, entity_type):
         expected_df['New'] = new_curve['New']
         expected_df = expected_df[sorted(expected_df.columns)]
         pd.testing.assert_frame_equal(expected_df, res_df)
+
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+def test_parquet_maintain_float_type(setup_client, entity_type):
+    """ send float32 and float64 columns and check if the type is maintain """
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    df = generate_df(['MD', 'float_32', 'float_64'], range(5))
+    df = df.astype({'float_32': 'float32', 'float_64': 'float64'})
+
+    # Without session
+    write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                 data=df.to_parquet(engine="pyarrow"),
+                                 headers={'Content-Type': 'application/x-parquet'})
+    assert write_response.status_code == 200
+    get_response = client.get(f'{chunking_url}/{record_id}/data')
+    assert get_response.status_code == 200
+    res_df = _create_df_from_response(get_response)
+    pd.testing.assert_frame_equal(df, res_df)
+
+    # With session
+    session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert session_response.status_code == 200
+    session_id = session_response.json()['id']
+
+    new_chunk = generate_df(['MD', 'float_32', 'float_64'], range(5, 10))
+    new_chunk = new_chunk.astype({'float_32': 'float32', 'float_64': 'float64'})
+
+    chunk_response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                 data=new_chunk.to_parquet(engine="pyarrow"),
+                                 headers={'Content-Type': 'application/x-parquet'})
+    assert chunk_response.status_code == 200
+    commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    assert commit_response.status_code == 200
+
+    df = pd.concat([df, new_chunk])
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data')
+    assert get_response.status_code == 200
+    res_df = _create_df_from_response(get_response)
+    pd.testing.assert_frame_equal(df, res_df)
+
+    # with curve selection
+    for curve in ('float_32', 'float_64'):
+        get_response = client.get(f'{chunking_url}/{record_id}/data', params={'curves': curve})
+        assert get_response.status_code == 200
+        res_df = _create_df_from_response(get_response)
+        pd.testing.assert_frame_equal(df[[curve]], res_df)
 
 
 # todo:

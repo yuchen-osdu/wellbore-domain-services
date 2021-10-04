@@ -34,7 +34,11 @@ spec:
       labels:
         aadpodidbinding: "{{ .Values.labels.aadpodidbinding }}"
 {{ include "os-wellbore-ddms.commonLabels" . | indent 8}}
-    spec:
+    spec:   
+{{- if .Values.isAutoscalingEnabled }}
+      nodeSelector:
+        nodepool: {{ .Values.nodepool }} 
+{{- end }}   
       volumes:
         # Note:
         # This volume is required for pod-identity access mode (https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/docs/pod-identity-mode.md)
