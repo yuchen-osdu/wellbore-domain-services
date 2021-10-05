@@ -32,8 +32,8 @@ variables:
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_VENDOR: gcp
   OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT --set data.service_host_search=$OSDU_GCP_SERVICE_HOST_SEARCH --set data.sa_key=$OSDU_GCP_INTEGRATION_TESTER"
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=workload-identity-wellbore"
   OSDU_GCP_HELM_CONFIG_SERVICE: wellbore-config
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE: wellbore-deploy
   OSDU_GCP_INT_TEST_TYPE: python
