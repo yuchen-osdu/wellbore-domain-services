@@ -8,8 +8,9 @@ data:
   limits_cpu: "1"
   limits_memory: "2G"
   image: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp:latest"
+  serviceAccountName: ""
 
 conf:
   configmap: "wellbore-config"
   app_name: "wellbore"
-  secret_name: "wellbore-secret"
+  

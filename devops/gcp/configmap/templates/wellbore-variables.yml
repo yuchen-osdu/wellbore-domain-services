@@ -10,4 +10,4 @@ data:
   OS_WELLBORE_DDMS_DATA_PROJECT_ID: "{{ .Values.data.os_wellbore_ddms_data_project_id }}"
   SERVICE_HOST_SEARCH: "{{ .Values.data.service_host_search }}"
   SERVICE_HOST_STORAGE: "{{ .Values.data.service_host_storage }}"
-  OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS : "{{ .Values.data.os_wellbore_ddms_data_project_credentials }}"
+
