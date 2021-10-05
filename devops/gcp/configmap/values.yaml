@@ -4,9 +4,6 @@
 
 data:
   os_wellbore_ddms_data_project_id: ""
-  service_host_search: "http://search/api/search"
-  service_host_storage: "http://storage/api/storage"
-  
 
 conf:
   configmap: "wellbore-config"
