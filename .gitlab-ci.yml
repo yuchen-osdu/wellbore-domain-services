@@ -65,6 +65,50 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
 
+verify_existing_requirements:
+  extends:
+    - .python
+    - .skipForTriggeringMergeRequests
+
+  stage: build
+  before_script:
+    - pip3 install --upgrade pip-tools
+
+  script:
+    - pip-compile requirements.in
+    - pip-compile requirements_dev.in
+    # checking difference between existing requirements and the newly generated one
+    # and using the number of lines as exit status code
+    - exit $(git status -s | grep -e "^ M " | wc -l)
+
+  artifacts:
+    when: always
+    paths:
+      - "requirements*.txt"
+
+    expire_in: 2 days
+
+generate_updated_requirements:
+  extends:
+    - .python
+    - .skipForTriggeringMergeRequests
+
+  stage: build
+  before_script:
+    - pip3 install --upgrade pip-tools
+
+  script:
+    - pip-compile requirements.in --upgrade --output-file requirements.upg
+    - pip-compile requirements_dev.in --upgrade --output-file requirements_dev.upg
+
+  artifacts:
+    when: always
+    paths:
+      - "*.upg"
+
+    expire_in: 2 days
+  allow_failure: true
+
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
