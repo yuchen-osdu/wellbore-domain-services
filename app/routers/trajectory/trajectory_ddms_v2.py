@@ -244,11 +244,11 @@ async def post_traj_data(
 
     channels = {c.name: c for c in record.data.channels}
 
-    record.data.channels = []
     for name in df.columns:
         channel = channels.get(name, TrajectoryChannel(name=name))
         channel.bulkURI = record.data.bulkURI + ":" + name
-        record.data.channels.append(channel)
+        if channel.name not in channels:
+            record.data.channels.append(channel)
 
     # Update record
     storage_client = await get_storage_record_service(ctx)
