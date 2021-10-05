@@ -314,9 +314,10 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
         config.add_from_env(attribute_name='default_data_tenant_credentials',
                             env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS',
                             description='path to the key file of the SA to access the data tenant',
-                            is_mandatory=True,
+                            is_mandatory=False,
                             override=True,
-                            validator=validator_path_must_exist)
+                            validator=validator_path_must_exist,
+                            default=None)
 
     if provider == 'ibm':
         config.add_from_env(attribute_name='default_data_tenant_project_id',
