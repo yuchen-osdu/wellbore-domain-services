@@ -28,7 +28,7 @@ spec:
   metrics:
     - type: Resource
       resource:
-        name: cpu
+        name: memory
         target:
           type: Utilization
           averageUtilization: 50
@@ -41,11 +41,11 @@ spec:
         periodSeconds: 30
     scaleUp:
       stabilizationWindowSeconds: 10
-      # Either add 50% of current pods or 4 pods (whichever is higher) every 10 seconds until the the HPA stabilizes
+      # Either add 50% of current pods or 2 pods (whichever is higher) every 10 seconds until the the HPA stabilizes
       selectPolicy: Max
       policies:
       - type: Pods
-        value: 6
+        value: 2
         periodSeconds: 10
       - type: Percent
         value: 50
