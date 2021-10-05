@@ -14,9 +14,9 @@ python3 -m pip install -r requirements_dev.txt
 python3 -m pip install wheel pytest pytest-cov
 
 svc_url=$WELLBORE_DDMS_URL
-tenant='opendes'
+tenant='osdu'
 acl_domain='example.com'
-legal_tag='opendes-sdmstestlegaltag'
+legal_tag='osdu-sdmstestlegaltag'
 svctoken=$(python3 tests/aws-test/build-aws/aws_jwt_client.py)
 
 cd tests/integration
