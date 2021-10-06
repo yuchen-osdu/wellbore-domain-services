@@ -86,8 +86,7 @@ def test_gcp_configuration_checker(gcp_config_fixture):
     assert "default_data_tenant_project_id" in variables_dict.keys()
     assert "default_data_tenant_credentials" in variables_dict.keys()
 
-    with pytest.raises(RuntimeError, match=".*Incorrect .* env var OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS.*"):
-        check_environment(gcp_config)
+    check_environment(gcp_config)
 
 
 def test_azure_configuration_checker(azure_config_fixture):

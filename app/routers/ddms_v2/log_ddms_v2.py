@@ -14,7 +14,7 @@
 
 import asyncio
 import json
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -392,15 +392,11 @@ class StatsColumn(BaseModel):
     max: float = Field(..., description="Maximum of the values in the object")
 
 
-class GetStatisticResponse(BaseModel):
-    columns: List[StatsColumn]
-
-
 @router.get('/logs/{logid}/statistics',
             summary='Data statistics',
             description="This API will return count, mean, std, min, max and percentiles of each column. {}"
             .format(REQUIRED_ROLES_READ),
-            response_model=GetStatisticResponse,
+            response_model=Dict[str, StatsColumn],
             )
 async def get_log_data_statistics(logid: str,
                                   bulk_id_path: str = Depends(bulk_id_path_parameter),
