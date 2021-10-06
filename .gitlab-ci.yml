@@ -238,8 +238,3 @@ osdu-gcp-test-python:
 osdu-gcp-test:
   extends:
     - .osdu-gcp-variables
-
-# Allow failure on deployments
-
-ibm-deploy:
-  allow_failure: true
