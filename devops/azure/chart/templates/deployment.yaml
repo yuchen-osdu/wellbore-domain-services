@@ -23,7 +23,9 @@ metadata:
   name: {{ .Values.deployment.name }}{{ $nameSuffix }}
 {{ include "os-wellbore-ddms.namespace" . | indent 2}}
 spec:
+  {{- if not .Values.isAutoscalingEnabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
 {{ include "os-wellbore-ddms.commonLabels" . | indent 6}}
