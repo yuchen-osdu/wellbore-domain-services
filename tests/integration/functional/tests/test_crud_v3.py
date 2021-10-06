@@ -109,12 +109,3 @@ def test_crud_get_as_record(delfi_id, kind, with_wdms_env):
     # Get it as osdu wellbore with delfi id
     result = build_request(f'crud.osdu_{kind}.get_osdu_{kind}').call(with_wdms_env)
     result.assert_status_code(400)
-
-    # Get it as osdu wellbore with fake osdu id
-    id_as_list = delfi_record_id.split(sep=":")
-    encoded_str = delfi_record_id.encode().hex()
-    res_as_list = [id_as_list[0], f"master-data--{kind.capitalize()}", encoded_str, ""]
-    fakeid = ":".join(res_as_list)
-    with_wdms_env.set(f'osdu_{kind}_record_id', fakeid)  # stored the record id for the following tests
-    result = build_request(f'crud.osdu_{kind}.get_osdu_{kind}').call(with_wdms_env)
-    result.assert_status_code(400)

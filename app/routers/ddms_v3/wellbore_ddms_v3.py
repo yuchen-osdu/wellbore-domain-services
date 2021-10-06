@@ -54,9 +54,6 @@ async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
 async def get_wellbore_osdu(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
-    fake_id, _ = DMSV3RouterUtils.is_osdu_entity_fake_id(wellboreid)
-    if fake_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
     is_osdu_versionned, osdu_id, version = DMSV3RouterUtils.is_osdu_versionned_wellbore_id(wellboreid)
     if is_osdu_versionned:
         return await get_osdu_wellbore(osdu_id, ctx)

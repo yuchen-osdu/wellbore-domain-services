@@ -10,7 +10,6 @@ OSDU_WELL_REGEX = re.compile(r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')
 OSDU_WELLLOG_VERSION_REGEX = re.compile(r'^([\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+):([0-9]*)$')
 OSDU_WELLBORETRAJECTORY_VERSION_REGEX = re.compile(r'^([\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+):([0-9]*)$')
 OSDU_WELLBOREMARKERSET_VERSION_REGEX = re.compile(r'^([\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+):([0-9]*)$')
-DELFI_REGEX = re.compile(r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+$')
 
 class DMSV3RouterUtils:
     @staticmethod
@@ -47,15 +46,3 @@ class DMSV3RouterUtils:
     @staticmethod
     def is_osdu_versionned_well_id(entity_id: str) -> Tuple[bool, str, str]:
         return DMSV3RouterUtils.is_osdu_versionned_entity_id(OSDU_WELL_VERSION_REGEX, entity_id)
-
-    @staticmethod
-    def is_delfi_id(entity_id: str) -> bool:
-        return DELFI_REGEX.match(entity_id) is not None
-
-    @staticmethod
-    def is_osdu_entity_fake_id(entity_id: str) -> Tuple[bool, str]:
-        try:
-            delfi_id = ConverterUtils.decode_id(entity_id)
-            return DMSV3RouterUtils.is_delfi_id(delfi_id), delfi_id
-        except (ValueError, LookupError):
-            return False, None

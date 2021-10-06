@@ -53,9 +53,6 @@ async def get_osdu_well(wellid: str, ctx: Context) -> Well:
 async def get_well_osdu(
     wellid: str, ctx: Context = Depends(get_ctx)
 ) -> Well:
-    fake_id, _ = DMSV3RouterUtils.is_osdu_entity_fake_id(wellid)
-    if fake_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Well")
     is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versionned_well_id(wellid)
     if is_osdu_versioned:
         return await get_osdu_well(osdu_id, ctx)
