@@ -25,4 +25,4 @@ munch
 jsonschema
 
 # Generates fake token for local integration tests runs
-pyjwt
+pyjwt[crypto]
