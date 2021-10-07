@@ -26,7 +26,7 @@ from app.bulk_persistence import BulkId
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.traces import wrap_trace_process
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
-                                             do_merge, 
+                                             do_merge, pack_array,
                                              worker_capture_timing_handlers)
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
@@ -340,6 +340,8 @@ class DaskBulkStorage:
         # tree reduction
         while len(dfs) > 1:
             dfs = [self._submit_with_trace(do_merge, a, b) for a, b in by_pairs(dfs)]
+
+        dfs[0] = self._submit_with_trace(pack_array, dfs[0]) # TODO under testing
 
         return await self.save_blob(dfs[0], record_id=session.recordId)
 

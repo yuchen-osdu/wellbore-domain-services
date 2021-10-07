@@ -182,7 +182,9 @@ class DataFrameRender:
     def unpack_array(df, columns: List[str], user_selection: List[str]):
 
         def unnesting(df: pd.DataFrame, col: str, s: slice, col_names):
-            df1 = pd.DataFrame([v[s] for v in df[col]], index=df.index, columns=col_names)
+            # TODO handle duplicate columns
+            df1 = pd.DataFrame([v[s] for v in df[col]],
+                               index=df.index, columns=col_names)
             return pd.concat([df, df1], axis=1)
             #return df1.join(df.drop(col, 1), how='left')
 
@@ -194,7 +196,7 @@ class DataFrameRender:
             var_name = m_sel['name'] if m_sel else None
             if var_name and var_name in columns: # we looked for var[...] but we only find 'var' so we need to unpack var
                 if df[var_name].dtype == 'object':
-                    start = int(m_sel['start']) #TODO hangle int conversion error
+                    start = int(m_sel['start']) #TODO handle int conversion error
                     stop = int(m_sel['stop']) if m_sel['stop'] else start + 1
                     r, sl = range(start, stop), slice(start, stop)
 
@@ -202,7 +204,13 @@ class DataFrameRender:
                     new_col_meta = {f'{var_name}[{c}]':'f8' for c in r}  # TODO find proper dtype
                     meta.update(new_col_meta)
                     
-                    df = df.map_partitions(unnesting, var_name, s=sl, meta=meta, col_names=list(new_col_meta))
+                    new_df = df.map_partitions(unnesting, var_name, s=sl, meta=meta, col_names=list(new_col_meta))
+                    
+                    cols_order = df.columns.to_list()
+                    idx = cols_order.index(var_name)
+                    cols_order[idx:idx] = list(new_col_meta) # insert new column at the right place
+
+                    df = new_df[cols_order]
                     to_remove.add(var_name)
         df = df.drop(list(to_remove), axis=1)
         return df # TODO ordering

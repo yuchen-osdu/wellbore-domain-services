@@ -92,3 +92,43 @@ def do_merge(df1: dd.DataFrame, df2: dd.DataFrame):
         return df2.combine_first(df1)
     return df1.join(df2, how='outer')  # join seems faster when there no columns in common
 
+
+
+import re
+import numpy as np
+re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
+
+def nesting(df, col):
+    values = df[col]
+    nb_rows = len(values)
+    nb_col = len(values.iloc[0])
+    col_to_nest = []
+    for c in df:
+        m_sel = re_array_selection.match(c)
+        if m_sel and m_sel['name'] == col:
+            col_to_nest.append((c, int(m_sel['start'])))
+
+    if not col_to_nest:
+        return df
+
+    a = np.array(df[col].explode())
+    a = a.reshape(nb_rows, nb_col)
+    for c, col_idx in col_to_nest: # TODO sort by index desc ?
+        if col_idx >= nb_col:
+            empty = np.empty((nb_rows,col_idx-nb_col+1))
+            empty[:] = np.NaN
+            a = np.hstack((a, empty))
+            nb_col = col_idx+1
+        a[:,col_idx] = df[c]
+        
+    df[col] = [r for r in a]
+    df = df.drop([c for c, _idx in col_to_nest], axis=1)
+    return df
+
+@capture_timings("pack_array", handlers=worker_capture_timing_handlers)
+def pack_array(ddf: dd.DataFrame):
+    column_object = [cn for cn, c in ddf.items() if c.dtype == 'object']
+    for col in column_object:
+        meta = {c: str(i.dtype) for c,i in ddf.items() if not c.startswith(f'{col}[')} # TODO if col name == A[abc]
+        ddf = ddf.map_partitions(nesting, col, meta=meta)
+    return ddf
