@@ -89,27 +89,6 @@ verify_existing_requirements:
 
     expire_in: 2 days
 
-generate_updated_requirements:
-  extends:
-    - .python
-    - .skipForTriggeringMergeRequests
-
-  stage: build
-  before_script:
-    - pip3 install --upgrade pip-tools
-
-  script:
-    - pip-compile requirements.in --upgrade --output-file requirements.upg
-    - pip-compile requirements_dev.in --upgrade --output-file requirements_dev.upg
-
-  artifacts:
-    when: always
-    paths:
-      - "*.upg"
-
-    expire_in: 2 days
-  allow_failure: true
-
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
