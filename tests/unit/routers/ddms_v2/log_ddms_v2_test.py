@@ -231,22 +231,23 @@ def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
     pd.testing.assert_frame_equal(df, actual_df)
 
 
-def test_logs_upload_parquet_read_json(client):
+@pytest.mark.parametrize("df", [
+    pd.DataFrame([[1, [1, 4]], [2, [2, 5]], [3, [3, 6]]]),
+    pd.DataFrame({'ref': range(100_000), 'values': [float(val) + 0.1 for val in range(100_000)]})
+])
+def test_logs_upload_parquet_read_json(client, df):
     # given
     record = TestHelper.make_minimal_log_record('test_logs_upload_parquet_read_json', id='1337')
     TestHelper.post_record_to_storage(record)
 
-    df = pd.DataFrame([[1, [1, 4]], [2, [2, 5]], [3, [3, 6]]])
     buffer = BytesIO()
     pq.write_table(pa.Table.from_pandas(df), buffer, compression='none')
     buffer.seek(0)
 
-    # df.to_hdf(byte_stream, key='df')
-
     # when WRITE ----------------------------------------------------------
     response = client.post(TestHelper.build_url('/logs/1337/upload_data?orient=' + log_data_orient),
-                          files={'file': ('test_file_data.parquet', buffer, MimeTypes.PARQUET.type)},
-                          headers=TestHelper.BASE_HEADERS)
+                           files={'file': ('test_file_data.parquet', buffer, MimeTypes.PARQUET.type)},
+                           headers=TestHelper.BASE_HEADERS)
 
     # then
     assert response.status_code == 200

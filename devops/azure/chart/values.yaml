@@ -24,9 +24,11 @@ deployment:
   keyvaultUrlPropertyName: ENV_KEYVAULT
   name: os-wellbore-ddms
 
-replicaCount: 2
 nodepool: services
 isAutoscalingEnabled: false
+maxReplicaCount: 2
+minReplicaCount: 2
+replicaCount: 2
 
 resources:
  limits:
@@ -80,3 +82,6 @@ ingress:
 
 authorizationPolicy:
   name: wellbore-jwt-authz
+
+
+istioDnsHost: ""

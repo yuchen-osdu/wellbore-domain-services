@@ -44,7 +44,6 @@ rm -rf test-reports/
 mkdir test-reports
 
 cd integration
-
 acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
 

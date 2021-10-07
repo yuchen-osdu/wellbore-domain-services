@@ -26,23 +26,9 @@ from app.utils import Context
 from app.utils import get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
-from app.converter.well_converter import WellConverter
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 
 router = APIRouter()
-
-
-async def get_well_as_osdu(wellid: str, ctx: Context) -> Well:
-    storage_client = await get_storage_record_service(ctx)
-    well_record = await storage_client.get_record(
-        id=wellid, data_partition_id=ctx.partition_id
-    )
-    res_as_dict = well_record.dict(
-        exclude_unset=True, exclude_none=True, by_alias=True
-    )
-    well = Well.parse_obj(WellConverter.convert_delfi_to_osdu(res_as_dict,
-                                                              context={"namespace": ctx.partition_id}))
-    return well
 
 
 async def get_osdu_well(wellid: str, ctx: Context) -> Well:
@@ -67,18 +53,12 @@ async def get_osdu_well(wellid: str, ctx: Context) -> Well:
 async def get_well_osdu(
     wellid: str, ctx: Context = Depends(get_ctx)
 ) -> Well:
-    deli_conversion, delfi_id = DMSV3RouterUtils.is_osdu_entity_fake_id(wellid)
-    if deli_conversion:
-        return await get_well_as_osdu(delfi_id, ctx)
     is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versionned_well_id(wellid)
     if is_osdu_versioned:
         return await get_osdu_well(osdu_id, ctx)
     if DMSV3RouterUtils.is_osdu_well_id(wellid):
         return await get_osdu_well(wellid, ctx)
-    if DMSV3RouterUtils.is_delfi_id(wellid):
-        return await get_well_as_osdu(wellid, ctx)
-
-    raise HTTPException(status_code=status.HTTP_417_EXPECTATION_FAILED, detail="Id is not a wellbore")
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Well")
 
 
 

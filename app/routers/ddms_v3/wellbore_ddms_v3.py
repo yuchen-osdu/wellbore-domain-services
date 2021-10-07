@@ -27,23 +27,9 @@ from app.utils import Context
 from app.utils import get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
-from app.converter.wellbore_converter import WellboreConverter
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 
 router = APIRouter()
-
-
-async def get_wellbore_as_osdu(wellboreid: str, ctx: Context) -> Wellbore:
-    storage_client = await get_storage_record_service(ctx)
-    wellbore_record = await storage_client.get_record(
-        id=wellboreid, data_partition_id=ctx.partition_id
-    )
-    res_as_dict = wellbore_record.dict(
-        exclude_unset=True, exclude_none=True, by_alias=True
-    )
-    wellbore = Wellbore.parse_obj(WellboreConverter.convert_delfi_to_osdu(res_as_dict,
-                                                                        context={"namespace": ctx.partition_id}))
-    return wellbore
 
 
 async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
@@ -59,9 +45,7 @@ async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
     response_model=Wellbore,
     response_model_exclude_unset=True,
     summary="Get the Wellbore using osdu schema",
-    description="""Get the Wellbore object using its **id**.
-    <p>If the **id** is a Delfi Wellbore Id, tries to convert it on the fly to return the Wellbore as an osdu Wellbore.</p> 
-    {}""".format(REQUIRED_ROLES_READ),
+    description="""Get the Wellbore object using its **id**.{}""".format(REQUIRED_ROLES_READ),
     operation_id="get_wellbore_osdu",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}
@@ -70,18 +54,12 @@ async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
 async def get_wellbore_osdu(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
-    delfi_convertion, delfi_id = DMSV3RouterUtils.is_osdu_entity_fake_id(wellboreid)
-    if delfi_convertion:
-        return await get_wellbore_as_osdu(delfi_id, ctx)
     is_osdu_versionned, osdu_id, version = DMSV3RouterUtils.is_osdu_versionned_wellbore_id(wellboreid)
     if is_osdu_versionned:
         return await get_osdu_wellbore(osdu_id, ctx)
     if DMSV3RouterUtils.is_osdu_wellbore_id(wellboreid):
         return await get_osdu_wellbore(wellboreid, ctx)
-    if DMSV3RouterUtils.is_delfi_id(wellboreid):
-        return await get_wellbore_as_osdu(wellboreid, ctx)
-
-    raise HTTPException(status_code=status.HTTP_417_EXPECTATION_FAILED, detail="Id is not a wellbore")
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
 
 
 
