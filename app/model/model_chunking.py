@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import Query
 
@@ -47,3 +47,8 @@ class GetDataParams:
         self.curves = curves
         self.describe = describe
         # orient if json ?
+
+    def get_curves_list(self) -> List[str]:
+        if self.curves:
+            return list(filter(None, map(str.strip, self.curves.split(','))))
+        return []

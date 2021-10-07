@@ -151,6 +151,11 @@ async def get_data_version(
             raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
             df = await dask_blob_storage.load_bulk(record_id, bulk_id)
+            columns = None
+            if ctrl_p.curves:
+                columns = DataFrameRender.get_matching_column(ctrl_p.get_curves_list(), set(df))
+            # reloading the dataframe with filter on columns is faster than filtering columns on df
+            df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
         elif prefix is None:
             df = await get_dataframe(ctx, bulk_id)
             _check_df_columns_type_legacy(df)

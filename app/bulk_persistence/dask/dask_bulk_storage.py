@@ -18,6 +18,7 @@ import time
 from contextlib import suppress
 from functools import wraps
 from operator import attrgetter
+from typing import List
 
 import fsspec
 import pandas as pd
@@ -162,11 +163,11 @@ class DaskBulkStorage:
                                        aggregate_files=True,
                                        **kwargs)
 
-    def _load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
+    def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version.
         returns a Future<dd.DataFrame>
         """
-        return self._load(self._get_blob_path(record_id, bulk_id))
+        return self._load(self._get_blob_path(record_id, bulk_id), columns=columns)
 
     def _submit_with_trace(self, target_func, *args, **kwargs):
         """
@@ -186,10 +187,10 @@ class DaskBulkStorage:
 
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
     @with_trace('load_bulk')
-    async def load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
+    async def load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version."""
         try:
-            return await self._load_bulk(record_id, bulk_id)
+            return await self._load_bulk(record_id, bulk_id, columns=columns)
         except OSError:
             raise BulkNotFound(record_id, bulk_id)  # TODO proper exception
 
@@ -206,7 +207,7 @@ class DaskBulkStorage:
             try:
                 return dd.to_parquet(ddf, path, **to_parquet_args, schema="infer")
             except ArrowException: # ArrowInvalid
-                # In some conditions, the shema is not properly infered. As a workaround, passing schema={} solve the issue.
+                # In some conditions, the schema is not properly infered. As a workaround, passing schema={} solve the issue.
                 return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
 
         return self._submit_with_trace(try_to_paquet, ddf, path, storage_options=self._parameters.storage_options)

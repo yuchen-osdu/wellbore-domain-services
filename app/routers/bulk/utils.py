@@ -153,6 +153,9 @@ class DataFrameRender:
     def _col_matching(sel, col):
         if sel == col:  # exact match
             return True
+        m_sel = DataFrameRender.re_array_selection.match(sel)
+        if m_sel and m_sel['name'] == col:
+            return True # TODO if column type is array
         m_col = DataFrameRender.re_array_selection.match(col)
         if not m_col:  # if the column doesn't have an array pattern (col[*])
             return False
@@ -160,7 +163,6 @@ class DataFrameRender:
         if sel == m_col['name']:  # if selection is 'c', c[*] should match
             return True
         # range selection use cases c[0:2] should match c[0], c[1] and c[2]
-        m_sel = DataFrameRender.re_array_selection.match(sel)
         if m_sel and m_sel['stop'] and m_sel['name'] == m_col['name']:
             with suppress(ValueError):  # suppress int conversion exceptions
                 if int(m_sel['start']) <= int(m_col['start']) <= int(m_sel['stop']):
@@ -177,15 +179,46 @@ class DataFrameRender:
         return selected
 
     @staticmethod
+    def unpack_array(df, columns: List[str], user_selection: List[str]):
+
+        def unnesting(df: pd.DataFrame, col: str, s: slice, col_names):
+            df1 = pd.DataFrame([v[s] for v in df[col]], index=df.index, columns=col_names)
+            return pd.concat([df, df1], axis=1)
+            #return df1.join(df.drop(col, 1), how='left')
+
+        to_remove = set()
+        df = df[columns]
+
+        for sel in user_selection:
+            m_sel = DataFrameRender.re_array_selection.match(sel)
+            var_name = m_sel['name'] if m_sel else None
+            if var_name and var_name in columns: # we looked for var[...] but we only find 'var' so we need to unpack var
+                if df[var_name].dtype == 'object':
+                    start = int(m_sel['start']) #TODO hangle int conversion error
+                    stop = int(m_sel['stop']) if m_sel['stop'] else start + 1
+                    r, sl = range(start, stop), slice(start, stop)
+
+                    meta = {c: str(i.dtype) for c, i in df.items()}
+                    new_col_meta = {f'{var_name}[{c}]':'f8' for c in r}  # TODO find proper dtype
+                    meta.update(new_col_meta)
+                    
+                    df = df.map_partitions(unnesting, var_name, s=sl, meta=meta, col_names=list(new_col_meta))
+                    to_remove.add(var_name)
+        df = df.drop(list(to_remove), axis=1)
+        return df # TODO ordering
+
+
+    @staticmethod
     @with_trace('process_params')
     async def process_params(df, params: GetDataParams):
         if isinstance(df, pd.DataFrame):
             df = dd.from_pandas(df, npartitions=1)
 
         if params.curves:
-            selection = list(map(str.strip, params.curves.split(',')))
-            columns = DataFrameRender.get_matching_column(selection, set(df))
-            df = df[columns]  # columns are ordered as the user requested
+            selection = params.get_curves_list()
+            columns = DataFrameRender.get_matching_column(selection, set(df.columns))
+            df = DataFrameRender.unpack_array(df, columns, selection)
+            #df = df[columns]  # columns are ordered as the user requested
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
