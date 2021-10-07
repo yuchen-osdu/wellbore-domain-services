@@ -179,7 +179,7 @@ class DataFrameRender:
         return selected
 
     @staticmethod
-    def unpack_array(df, columns: List[str], user_selection: List[str]):
+    def unpack_array(df, user_selection: List[str]):
 
         def unnesting(df: pd.DataFrame, col: str, s: slice, col_names):
             # TODO handle duplicate columns
@@ -189,12 +189,11 @@ class DataFrameRender:
             #return df1.join(df.drop(col, 1), how='left')
 
         to_remove = set()
-        df = df[columns]
 
         for sel in user_selection:
             m_sel = DataFrameRender.re_array_selection.match(sel)
             var_name = m_sel['name'] if m_sel else None
-            if var_name and var_name in columns: # we looked for var[...] but we only find 'var' so we need to unpack var
+            if var_name and var_name in df.columns: # we looked for var[...] but we only find 'var' so we need to unpack var
                 if df[var_name].dtype == 'object':
                     start = int(m_sel['start']) #TODO handle int conversion error
                     stop = int(m_sel['stop']) if m_sel['stop'] else start + 1
@@ -213,7 +212,7 @@ class DataFrameRender:
                     df = new_df[cols_order]
                     to_remove.add(var_name)
         df = df.drop(list(to_remove), axis=1)
-        return df # TODO ordering
+        return df
 
 
     @staticmethod
@@ -225,8 +224,8 @@ class DataFrameRender:
         if params.curves:
             selection = params.get_curves_list()
             columns = DataFrameRender.get_matching_column(selection, set(df.columns))
-            df = DataFrameRender.unpack_array(df, columns, selection)
-            #df = df[columns]  # columns are ordered as the user requested
+            df = df[columns]  # columns are ordered as the user requested
+            df = DataFrameRender.unpack_array(df, selection)
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 

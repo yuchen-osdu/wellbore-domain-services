@@ -50,5 +50,5 @@ class GetDataParams:
 
     def get_curves_list(self) -> List[str]:
         if self.curves:
-            return list(set(filter(None, map(str.strip, self.curves.split(',')))))
+            return list(filter(None, map(str.strip, self.curves.split(',')))) # TODO remove duplicate but maintain order
         return []
