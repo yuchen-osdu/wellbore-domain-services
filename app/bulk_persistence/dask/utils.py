@@ -100,6 +100,8 @@ re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\
 
 def nesting(df, col):
     values = df[col]
+    if not isinstance(df[col].iloc[0], list):
+        return df
     nb_rows = len(values)
     nb_col = len(values.iloc[0])
     col_to_nest = []
@@ -127,8 +129,10 @@ def nesting(df, col):
 
 @capture_timings("pack_array", handlers=worker_capture_timing_handlers)
 def pack_array(ddf: dd.DataFrame):
-    column_object = [cn for cn, c in ddf.items() if c.dtype == 'object']
-    for col in column_object:
-        meta = {c: str(i.dtype) for c,i in ddf.items() if not c.startswith(f'{col}[')} # TODO if col name == A[abc]
-        ddf = ddf.map_partitions(nesting, col, meta=meta)
+    # TODO handle exceptions
+    # we should try to detect string vs list columns before calling map_partitions
+    for col in ddf.select_dtypes(include=['object']).columns:
+        if any(c.startswith(f'{col}[') for c in ddf.columns):
+            meta = {c: str(i.dtype) for c, i in ddf.items() if not c.startswith(f'{col}[')} # TODO if col name == A[abc]
+            ddf = ddf.map_partitions(nesting, col, meta=meta)
     return ddf
