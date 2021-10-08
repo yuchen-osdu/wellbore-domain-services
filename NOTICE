@@ -31,7 +31,7 @@ The following software have components provided under the terms of this license:
 - opencensus (from https://github.com/census-instrumentation/opencensus-python)
 - opencensus-context (from https://github.com/census-instrumentation/opencensus-python/tree/master/context/opencensus-context)
 - opencensus-ext-azure (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure)
-- opencensus-ext-logging (from )
+- opencensus-ext-logging (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-logging)
 - opencensus-ext-ocagent (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent)
 - opencensus-ext-stackdriver (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver)
 - opencensus-proto (from https://github.com/census-instrumentation/opencensus-proto/tree/master/gen-python)
@@ -59,7 +59,6 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- colorama (from https://github.com/tartley/colorama)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
@@ -82,7 +81,6 @@ The following software have components provided under the terms of this license:
 - asgiref (from http://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
-- colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
 - dask (from http://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
@@ -227,7 +225,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis)
-- anyio (from https://pypi.org/project/anyio/3.3.0/)
+- anyio (from https://pypi.org/project/anyio/3.3.2/)
 - asgiref (from http://github.com/django/asgiref/)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
