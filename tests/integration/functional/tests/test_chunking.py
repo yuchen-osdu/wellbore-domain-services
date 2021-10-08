@@ -35,7 +35,7 @@ from ..request_builders.wdms.crud.osdu_wellboretrajectory import (
     build_request_create_osdu_wellboretrajectory,
     build_request_delete_osdu_wellboretrajectory)
 
-from tests.unit.persistence.dask_blob_storage_test import generate_df
+from tests.unit.generate_data import generate_df
 
 
 entity_type_dict={

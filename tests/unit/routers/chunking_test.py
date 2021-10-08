@@ -25,7 +25,7 @@ from app.helper import traces
 from app.utils import Context, DaskClient
 from app import conf
 
-from tests.unit.persistence.dask_blob_storage_test import generate_df
+from tests.unit.generate_data import generate_df
 from tests.unit.test_utils import nope_logger_fixture
 
 
