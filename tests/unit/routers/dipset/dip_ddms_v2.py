@@ -4,14 +4,11 @@ import pytest
 from fastapi import Header, status
 
 from fastapi.testclient import TestClient
-from odes_storage.models import CreateUpdateRecordsResponse, Record
+from odes_storage.models import Record
 
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.middleware import require_data_partition_id, Response
+from app.middleware import require_data_partition_id
 from app.model.model_curated import dipset
 
-from app.routers.dipset import persistence
-from app.routers.dipset.dip_model import Dip
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
