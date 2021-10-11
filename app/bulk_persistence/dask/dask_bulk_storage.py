@@ -18,6 +18,7 @@ import time
 from contextlib import suppress
 from functools import wraps
 from operator import attrgetter
+from typing import List
 
 import fsspec
 import pandas as pd

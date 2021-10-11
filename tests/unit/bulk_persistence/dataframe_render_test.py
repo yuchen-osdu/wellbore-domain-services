@@ -9,7 +9,7 @@ from app.bulk_persistence import JSONOrient
 from app.model.model_chunking import GetDataParams
 from app.routers.bulk.bulk_routes import DataFrameRender
 from app.routers.bulk.utils import get_df_from_request
-
+from tests.unit.generate_data import generate_df
 
 @pytest.mark.parametrize("requested, df_columns, expected", [
     (["X"],           {"X"},                        ["X"]),
@@ -76,7 +76,7 @@ def basic_dataframe():
 async def test_df_render_accept_parquet(default_get_params, basic_dataframe, accept):
     response = await DataFrameRender.df_render(basic_dataframe, default_get_params, accept)
 
-    assert 'application/x-parquet' == response.headers.get('Content-Type')
+    assert response.headers.get('Content-Type') == "application/x-parquet"
     assert_df_in_parquet(basic_dataframe, response.body)
 
 
@@ -84,9 +84,20 @@ async def test_df_render_accept_parquet(default_get_params, basic_dataframe, acc
 @pytest.mark.parametrize("orient", [JSONOrient.split, JSONOrient.columns])
 async def test_df_render_accept_json(default_get_params, basic_dataframe, orient):
     response = await DataFrameRender.df_render(basic_dataframe, default_get_params, "application/json", orient)
-    assert 'application/json' == response.headers.get('Content-Type')
+    assert response.headers.get('Content-Type') == "application/json"
     actual = pd.read_json(response.body, orient=orient)
     assert_frame_equal(basic_dataframe, actual)
+
+
+@pytest.mark.asyncio
+async def test_df_render_describe():
+    columns = [f'var_{i}' for i in range(10)]
+    data = generate_df(columns, index=range(100))
+    response = await DataFrameRender.df_render(data, GetDataParams(
+        describe=True, limit=None, curves=None, offset=None))
+
+    assert response['columns'] == columns
+    assert response['numberOfRows'] == 100
 
 
 class RequestMock:

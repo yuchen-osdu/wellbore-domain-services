@@ -16,7 +16,6 @@ import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.bulk_persistence import JSONOrient, get_dataframe
-from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 
