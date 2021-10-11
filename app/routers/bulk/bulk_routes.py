@@ -146,11 +146,18 @@ async def get_data_version(
     record = await fetch_record(ctx, record_id, version)
     bulk_id, prefix = bulk_uri_access.get_bulk_uri(record=record) # TODO PATH logv2
 
+    stat = None
     try:
         if bulk_id is None:
             raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
-            df = await dask_blob_storage.load_bulk(record_id, bulk_id)
+            columns = None
+            stat = dask_blob_storage.read_stat(record_id, bulk_id)
+            if ctrl_p.curves:
+                existing_col = set(stat['schema'])
+                columns = DataFrameRender.get_matching_column(ctrl_p.get_curves_list(), existing_col)
+            # loading the dataframe with filter on columns is faster than filtering columns on df
+            df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
         elif prefix is None:
             df = await get_dataframe(ctx, bulk_id)
             _check_df_columns_type_legacy(df)
@@ -158,7 +165,7 @@ async def get_data_version(
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
         df = await DataFrameRender.process_params(df, ctrl_p)
-        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'), orient=orient)
+        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
 
