@@ -136,7 +136,7 @@ async def post_chunk_data(record_id: str,
 async def get_data_version(
     record_id: str, version: int,
     request: Request,
-    ctrl_p: GetDataParams = Depends(),
+    data_param: GetDataParams = Depends(),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
@@ -152,9 +152,9 @@ async def get_data_version(
         if prefix == BULK_URN_PREFIX_VERSION:
             columns = None
             stat = dask_blob_storage.read_stat(record_id, bulk_id)
-            if ctrl_p.curves:
+            if data_param.curves:
                 existing_col = set(stat['schema'])
-                columns = DataFrameRender.get_matching_column(ctrl_p.get_curves_list(), existing_col)
+                columns = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
             # loading the dataframe with filter on columns is faster than filtering columns on df
             df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
         elif prefix is None:
@@ -163,8 +163,8 @@ async def get_data_version(
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
-        df = await DataFrameRender.process_params(df, ctrl_p)
-        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'), orient=orient, stat=stat)
+        df = await DataFrameRender.process_params(df, data_param)
+        return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
 

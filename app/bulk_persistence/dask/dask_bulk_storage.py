@@ -170,6 +170,7 @@ class DaskBulkStorage:
         """
         return self._load(self._get_blob_path(record_id, bulk_id), columns=columns)
 
+    @with_trace('read_stat')
     def read_stat(self, record_id: str, bulk_id: str):
         """Return some meta data about the bulk."""
         file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
@@ -217,7 +218,6 @@ class DaskBulkStorage:
         def try_to_parquet(ddf, path, storage_options):
             to_parquet_args = {'engine': 'pyarrow',
                                'storage_options': storage_options,
-                               #"row_group_size": 50_000
                                }
             try:
                 return dd.to_parquet(ddf, path, **to_parquet_args, schema="infer")
