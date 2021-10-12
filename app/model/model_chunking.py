@@ -51,7 +51,7 @@ class GetDataParams:
     def get_curves_list(self) -> List[str]:
         """parse the curves query parameter and return the list of requested curves"""
         if self.curves:
-            # spit and remove emty
+            # split and remove emty
             curves = list(filter(None, map(str.strip, self.curves.split(','))))
             # remove duplicates but maintain order
             return list(dict.fromkeys(curves))
