@@ -1,14 +1,14 @@
-
+import mock
 import pytest
 
 from fastapi import Header, status
 
 from fastapi.testclient import TestClient
+from odes_storage.models import Record
 
-
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.middleware import require_data_partition_id
 from app.model.model_curated import dipset
+
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
@@ -17,10 +17,10 @@ from tests.unit.errors.error_handler_test import StorageRecordServiceBlobStorage
 
 from tests.unit.test_utils import patch_async, create_mock_class, nope_logger_fixture
 from odes_storage.exceptions import UnexpectedResponse
+import pandas as pd
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)
-StorageRecordServiceBlobStorageMock = create_mock_class(StorageRecordServiceBlobStorage)
 
 tests_parameters = [
     ('/ddms/v2/dipsets', dipset(id="opendes:doc:00000000000000000000000000000000000", data={})),
@@ -65,3 +65,22 @@ def test_get_record_not_found_case_dipset(client, base_url, record_obj):
         response = client.get(f'{base_url}/{record_id}/dips', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert 'not found' in response.text.lower()
+
+@pytest.mark.parametrize('base_url, record_obj', tests_parameters)
+def test_get_dip_empty_query_case(client, base_url, record_obj):
+    record_id = record_obj.id
+    expected_response = Record(id=record_id, kind='xx', acl={'viewers': [], 'owners': []}, legal={}, data={})
+    moc_record = mock.AsyncMock(return_value=expected_response)
+
+    with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc_record), \
+            mock.patch("app.bulk_persistence.dataframe_persistence.get_dataframe", pd.DataFrame()):
+        # when
+        response = client.get(f'{base_url}/{record_id}/dips/query',
+                              headers={'data-partition-id': 'testing_partition'})
+        assert response.status_code == status.HTTP_200_OK
+        response = client.get(f'{base_url}/{record_id}/dips/query?minReference=1&maxReference=1',
+                              headers={'data-partition-id': 'testing_partition'})
+        assert response.status_code == status.HTTP_200_OK
+        response = client.get(f'{base_url}/{record_id}/dips/query?classification=test',
+                              headers={'data-partition-id': 'testing_partition'})
+        assert response.status_code == status.HTTP_200_OK

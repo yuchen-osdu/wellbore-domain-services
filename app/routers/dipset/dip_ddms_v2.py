@@ -118,12 +118,13 @@ async def query_dip(
 ) -> List[Dip]:
     _, df = await persistence.read_dipset_data(ctx, ds=dipsetid)
 
-    if classification is not None:
+    if classification is not None and "classification" in df:
         df = df[df["classification"] == classification]
-    if min_ref is not None and not math.isnan(min_ref):
-        df = df[df["reference"] >= min_ref]
-    if max_ref is not None and not math.isnan(max_ref):
-        df = df[df["reference"] <= max_ref]
+    if "reference" in df:
+        if min_ref is not None and not math.isnan(min_ref):
+            df = df[df["reference"] >= min_ref]
+        if max_ref is not None and not math.isnan(max_ref):
+            df = df[df["reference"] <= max_ref]
 
     return persistence.df_to_dips(df)
 
