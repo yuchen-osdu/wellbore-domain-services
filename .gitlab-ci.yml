@@ -55,7 +55,7 @@ include:
     file: "cloud-providers/osdu-gcp-gke.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/ibm-wellbore.yml"
+    file: "cloud-providers/ibm-wellbore-git.yml"
 
   - local: "/devops/azure/azure-wellbore.yml"
 
