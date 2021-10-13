@@ -218,3 +218,10 @@ osdu-gcp-test-python:
 osdu-gcp-test:
   extends:
     - .osdu-gcp-variables
+
+
+# Allow failure on private development deployments
+
+ibm-deploy-devpri:
+  allow_failure: true
+
