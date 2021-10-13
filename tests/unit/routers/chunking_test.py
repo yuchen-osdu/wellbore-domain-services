@@ -19,7 +19,6 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_lo
 from app.clients import StorageRecordServiceClient
 from app.persistence.sessions_storage import SessionsStorage, SessionState
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.bulk_persistence.dask.errors import BulkNotProcessable
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.helper import traces
