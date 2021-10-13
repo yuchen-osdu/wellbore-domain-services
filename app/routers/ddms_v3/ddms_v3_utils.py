@@ -21,7 +21,7 @@ class DMSV3RouterUtils:
         return OSDU_WELL_REGEX.match(entity_id) is not None
 
     @staticmethod
-    def is_osdu_versionned_entity_id(entity_regexp, entity_id: str) -> Tuple[bool, str, str]:
+    def is_osdu_versioned_entity_id(entity_regexp, entity_id: str) -> Tuple[bool, str, str]:
         """
         :param entity_regexp: regexp to test the entity (one regexp per entity)
         :param entity_id: id of the entity to test
@@ -36,13 +36,13 @@ class DMSV3RouterUtils:
 
     @staticmethod
     def get_id_without_version(entity_regexp, entity_id: str) -> str:
-        is_versioned, id_without_version, _ = DMSV3RouterUtils.is_osdu_versionned_entity_id(entity_regexp, entity_id)
+        is_versioned, id_without_version, _ = DMSV3RouterUtils.is_osdu_versioned_entity_id(entity_regexp, entity_id)
         return id_without_version if is_versioned else entity_id
 
     @staticmethod
-    def is_osdu_versionned_wellbore_id(entity_id: str) -> Tuple[bool, str, str]:
-        return DMSV3RouterUtils.is_osdu_versionned_entity_id(OSDU_WELLBORE_VERSION_REGEX, entity_id)
+    def is_osdu_versioned_wellbore_id(entity_id: str) -> Tuple[bool, str, str]:
+        return DMSV3RouterUtils.is_osdu_versioned_entity_id(OSDU_WELLBORE_VERSION_REGEX, entity_id)
 
     @staticmethod
-    def is_osdu_versionned_well_id(entity_id: str) -> Tuple[bool, str, str]:
-        return DMSV3RouterUtils.is_osdu_versionned_entity_id(OSDU_WELL_VERSION_REGEX, entity_id)
+    def is_osdu_versioned_well_id(entity_id: str) -> Tuple[bool, str, str]:
+        return DMSV3RouterUtils.is_osdu_versioned_entity_id(OSDU_WELL_VERSION_REGEX, entity_id)

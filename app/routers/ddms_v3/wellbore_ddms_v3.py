@@ -54,8 +54,8 @@ async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
 async def get_wellbore_osdu(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
-    is_osdu_versionned, osdu_id, version = DMSV3RouterUtils.is_osdu_versionned_wellbore_id(wellboreid)
-    if is_osdu_versionned:
+    is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versioned_wellbore_id(wellboreid)
+    if is_osdu_versioned:
         return await get_osdu_wellbore(osdu_id, ctx)
     if DMSV3RouterUtils.is_osdu_wellbore_id(wellboreid):
         return await get_osdu_wellbore(wellboreid, ctx)

@@ -53,7 +53,7 @@ async def get_osdu_well(wellid: str, ctx: Context) -> Well:
 async def get_well_osdu(
     wellid: str, ctx: Context = Depends(get_ctx)
 ) -> Well:
-    is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versionned_well_id(wellid)
+    is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versioned_well_id(wellid)
     if is_osdu_versioned:
         return await get_osdu_well(osdu_id, ctx)
     if DMSV3RouterUtils.is_osdu_well_id(wellid):
@@ -137,7 +137,7 @@ async def get_osdu_well_version(
     },
 )
 async def post_well_osdu(
-    wells: List[Well] = Body(..., example= load_schema_example("well_v3.json")), ctx: Context = Depends(get_ctx)
+    wells: List[Well] = Body(..., example=load_schema_example("well_v3.json")), ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
 
     storage_client = await get_storage_record_service(ctx)
