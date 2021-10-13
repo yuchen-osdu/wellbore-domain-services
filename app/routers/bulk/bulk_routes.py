@@ -22,6 +22,7 @@ from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
@@ -190,6 +191,7 @@ async def get_data(
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
+    record_id = DMSV3RouterUtils.is_osdu_right_entity_id(request.url.path, record_id)
     return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, dask_blob_storage, bulk_uri_access)
 
 
