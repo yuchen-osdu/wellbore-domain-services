@@ -19,11 +19,13 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_lo
 from app.clients import StorageRecordServiceClient
 from app.persistence.sessions_storage import SessionsStorage, SessionState
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
+from app.bulk_persistence.dask.errors import BulkNotProcessable
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.helper import traces
 from app.utils import Context, DaskClient
 from app import conf
+
 
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 from tests.unit.test_utils import nope_logger_fixture
@@ -926,6 +928,126 @@ def test_parquet_maintain_float_type(setup_client, entity_type):
         res_df = _create_df_from_response(get_response)
         pd.testing.assert_frame_equal(df[[curve]], res_df)
 
+def test_json_parquet_one_session(setup_client):
+    """ send json first and then parquet in one session   """
+
+    client = setup_client
+    entity_type = 'WellLog'
+    record_id = _create_record(client,  entity_type)
+    # SESSION_MODE = 'update'
+    SESSION_MODE = 'overwrite'
+    # Create a session
+    chunking_url = Definitions[entity_type]['chunking_url']
+    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': SESSION_MODE})
+    assert create_session_response.status_code == 200
+    session_data = create_session_response.json()
+    session_id = session_data['id']
+
+    # append first chunk - JSON
+    chunk_1 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(5, 10))
+    response_chunk_1 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   json=chunk_1.to_dict(orient='split'))
+
+    assert response_chunk_1.status_code == 200
+
+    # append first chunk - PARQUET
+    chunk_2 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(15, 20))
+    headers = {'content-type': 'application/x-parquet'}
+
+    response_chunk_2 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   data=chunk_2.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_chunk_2.status_code == 200
+
+        # COMMIT session
+    commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
+                                               json={'state': 'commit'})
+
+    assert commit_session_response.status_code == 422
+
+
+def test_parquet_json_one_session(setup_client):
+    """ send parquet first and then send json in one session """
+
+    client = setup_client
+    entity_type = 'WellLog'
+    record_id = _create_record(client, entity_type)
+    # SESSION_MODE = 'update'
+    SESSION_MODE = 'overwrite'
+    # Create a session
+    chunking_url = Definitions[entity_type]['chunking_url']
+    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': SESSION_MODE})
+    assert create_session_response.status_code == 200
+    session_data = create_session_response.json()
+    session_id = session_data['id']
+
+    # append first chunk - PARQUET
+    chunk_1 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(15, 20))
+    headers = {'content-type': 'application/x-parquet'}
+
+    response_chunk_1 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   data=chunk_1.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_chunk_1.status_code == 200
+
+    # append first chunk - JSON
+    chunk_2 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(5, 10))
+    response_chunk_2 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   json=chunk_2.to_dict(orient='split'))
+
+    assert response_chunk_2.status_code == 200
+
+    # COMMIT session
+    commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
+                                           json={'state': 'commit'})
+
+    assert commit_session_response.status_code == 422
+
+
+def test_parquet_json_two_session(setup_client):
+    """ send parquet and json separately with two session """
+    client = setup_client
+    entity_type = 'WellLog'
+    record_id = _create_record(client, entity_type)
+    # SESSION_MODE = 'update'
+    SESSION_MODE = 'overwrite'
+    # Create a session
+    chunking_url = Definitions[entity_type]['chunking_url']
+    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': SESSION_MODE})
+    assert create_session_response.status_code == 200
+    session_data = create_session_response.json()
+    session_id = session_data['id']
+
+    # append first chunk - PARQUET
+    chunk_1 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(15, 20))
+    headers = {'content-type': 'application/x-parquet'}
+
+    response_chunk_1 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   data=chunk_1.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_chunk_1.status_code == 200
+    # COMMIT session
+    commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
+                                           json={'state': 'commit'})
+
+    assert commit_session_response.status_code == 200
+
+    SESSION_MODE = 'update'
+    # Create a session
+    chunking_url = Definitions[entity_type]['chunking_url']
+    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': SESSION_MODE})
+    assert create_session_response.status_code == 200
+    session_data = create_session_response.json()
+    session_id = session_data['id']
+    # append first chunk - JSON
+    chunk_2 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(5, 10))
+    response_chunk_2 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   json=chunk_2.to_dict(orient='split'))
+
+    assert response_chunk_2.status_code == 200
+
+    # COMMIT session
+    commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
+                                           json={'state': 'commit'})
+
+    assert commit_session_response.status_code == 200
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
