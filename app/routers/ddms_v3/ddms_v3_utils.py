@@ -1,6 +1,6 @@
 import re
 from app.converter.converter_utils import ConverterUtils
-from typing import Tuple
+from typing import Tuple, Optional
 
 OSDU_WELLBORE_VERSION_REGEX = re.compile(r'^([\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+):([0-9]*)$')
 OSDU_WELLBORE_REGEX = re.compile(r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')
