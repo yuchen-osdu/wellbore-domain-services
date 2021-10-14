@@ -94,4 +94,4 @@ def test_invalid_issuer_token_returns_40X(base_url, check_cert, token):
         'Authorization': f"Bearer {token_no_iss}"
     }
     response = requests.request("GET", url, headers=headers, data=blank, verify=check_cert)
-    assert response.status_code == 401
+    assert response.status_code in [401, 403]
