@@ -2,14 +2,14 @@ WDMS client CLI
 
 # Usage example
 
-`python -m wdms_client.cli --help` to list available commands.
+`python -m wdms_client --help` to list available commands.
 
 ## list callable apis
 
 Callable apis can be listed using command `list`:
 
 ```
-:$ python -m wdms_client.cli list
+:$ python -m wdms_client list
 
 available apis:
   - crud.well.get_well
@@ -27,7 +27,7 @@ available apis:
 Describe environment variables using command `show-env`. Can pass an environment file:
 
 ```
-:$ python -m wdms_client.cli show-env "..\..\my_environment.json"
+:$ python -m wdms_client show-env "..\..\my_environment.json"
 
 environments variables given environment C:\SRC\opengroup\wellbore-domain-services\tests\integration\functional\my_environment.json
   - base_url = http://127.0.0.1:8080/api/os-wellbore-ddms
@@ -46,7 +46,7 @@ Use command `descibe` with an `api` and optionally an environment file. It will 
 
 
 ```
-python -m wdms_client.cli describe crud.well.create_well --environment="..\..\my_environment.json"
+python -m wdms_client describe crud.well.create_well --environment="..\..\my_environment.json"
 
 
 ============ REQUEST ===============
@@ -80,7 +80,7 @@ body: -------------------------------------------
 Use command `descibe` with an `api` and optionally an environment file. It will run it and print the result:
 
 ```
-python -m wdms_client.cli call about --environment="..\..\my_environment.json"
+python -m wdms_client call about --environment="..\..\my_environment.json"
 1 run(s) for about:
 
 # run 1:
@@ -113,7 +113,7 @@ body: -------------------------------------------
 use command `gen-env` to generate a basic environment file. By default, automatically launch editor on the created file.
 
 ```
-python -m wdms_client.cli gen-env new_environment.json
+python -m wdms_client gen-env new_environment.json
 
  basic environment file generated in $WORKING_DIR\new_environment.json
 ```

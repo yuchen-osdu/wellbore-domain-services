@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import requests
-from wdms_client.variables import Variables, CmdLineSpecialVar
+from .variables import Variables, CmdLineSpecialVar
 from typing import Any, Dict, List
 from dataclasses import dataclass, field
 from datetime import datetime
