@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from ....request_runner import RequestRunner, Request
-import json
 
 
 def build_request_delete_osdu_well() -> RequestRunner:

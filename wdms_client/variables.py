@@ -117,6 +117,10 @@ class Variables:
         for k, v in self._variables.items():
             print(f'{k}={v}')
 
+    def enumerate(self):
+        for k in self._variables.keys():
+            yield k, self.get(k)
+
     def copy(self):
         new_inst = Variables()
         new_inst._variables = self._variables.copy()
