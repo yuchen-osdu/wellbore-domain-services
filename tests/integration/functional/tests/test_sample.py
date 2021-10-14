@@ -16,8 +16,8 @@
  This file contains test sample showing how use RequestRunner
 """
 import pytest
-from ..request_runner import Request, RequestRunner
-from ..variables import Variables
+from wdms_client.request_runner import Request, RequestRunner
+from wdms_client.variables import Variables
 
 
 def sample_of_test():

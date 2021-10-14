@@ -14,7 +14,7 @@
 
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders.wdms.crud.log import *
+from wdms_client.request_builders.wdms.crud.log import *
 
 
 @pytest.fixture(scope='module')
