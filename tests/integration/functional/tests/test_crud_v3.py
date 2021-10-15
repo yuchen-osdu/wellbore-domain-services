@@ -14,7 +14,7 @@
 
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders import build_request, get_cleaned_ref_and_res
+from wdms_client.request_builders import build_request, get_cleaned_ref_and_res
 
 
 kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog', 'osdu_wellboretrajectory', 'osdu_wellboremarkerset']
