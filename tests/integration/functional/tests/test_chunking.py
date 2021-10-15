@@ -13,13 +13,14 @@
 # limitations under the License.
 
 import io
-from enum import Enum
 from contextlib import contextmanager
 import random
 
 import numpy.testing as npt
 import pandas as pd
 import pytest
+
+from tests.unit.generate_data import generate_df
 
 from .fixtures import with_wdms_env
 from ..request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log

@@ -55,7 +55,7 @@ include:
     file: "cloud-providers/osdu-gcp-gke.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/ibm-wellbore.yml"
+    file: "cloud-providers/ibm-wellbore-git.yml"
 
   - local: "/devops/azure/azure-wellbore.yml"
 
@@ -88,27 +88,6 @@ verify_existing_requirements:
       - "requirements*.txt"
 
     expire_in: 2 days
-
-generate_updated_requirements:
-  extends:
-    - .python
-    - .skipForTriggeringMergeRequests
-
-  stage: build
-  before_script:
-    - pip3 install --upgrade pip-tools
-
-  script:
-    - pip-compile requirements.in --upgrade --output-file requirements.upg
-    - pip-compile requirements_dev.in --upgrade --output-file requirements_dev.upg
-
-  artifacts:
-    when: always
-    paths:
-      - "*.upg"
-
-    expire_in: 2 days
-  allow_failure: true
 
 containerize:
   extends: .skipForTriggeringMergeRequests
@@ -233,9 +212,16 @@ osdu-gcp-test-python:
       --data_partition $OSDU_GCP_TENANT
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
-    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
 
 # Disable maven job in gcp common gke pipeline
 osdu-gcp-test:
   extends:
     - .osdu-gcp-variables
+
+
+# Allow failure on private development deployments
+
+ibm-deploy-devpri:
+  allow_failure: true
+

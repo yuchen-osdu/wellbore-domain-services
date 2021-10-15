@@ -235,11 +235,17 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('df_render')
-    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None):
+    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
+            nb_rows: int = 0
+            if stat and not params.limit and not params.offset:
+                nb_rows = stat['num_rows']
+            else:
+                nb_rows = await DataFrameRender.get_size(df)
+
             return {
-                "numberOfRows": await DataFrameRender.get_size(df),
-                "columns": [c for c in df.columns]
+                "numberOfRows": nb_rows,
+                "columns": list(df.columns)
             }
 
         pdf = await DataFrameRender.compute(df)

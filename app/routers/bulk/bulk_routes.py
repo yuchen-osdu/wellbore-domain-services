@@ -16,7 +16,6 @@ import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.bulk_persistence import JSONOrient, get_dataframe
-from app.bulk_persistence.bulk_id import BulkId
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 
@@ -137,7 +136,7 @@ async def post_chunk_data(record_id: str,
 async def get_data_version(
     record_id: str, version: int,
     request: Request,
-    ctrl_p: GetDataParams = Depends(),
+    data_param: GetDataParams = Depends(),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
@@ -146,15 +145,20 @@ async def get_data_version(
     record = await fetch_record(ctx, record_id, version)
     bulk_id, prefix = bulk_uri_access.get_bulk_uri(record=record) # TODO PATH logv2
 
+    stat = None
     try:
         if bulk_id is None:
             raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
-            df = await dask_blob_storage.load_bulk(record_id, bulk_id)
             columns = None
-            if ctrl_p.curves:
-                columns = DataFrameRender.get_matching_column(ctrl_p.get_curves_list(), set(df))
-            # reloading the dataframe with filter on columns is faster than filtering columns on df
+            if data_param.curves:
+                stat = dask_blob_storage.read_stat(record_id, bulk_id)
+                existing_col = set(stat['schema'])
+                columns = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
+            elif data_param.describe:
+                stat = dask_blob_storage.read_stat(record_id, bulk_id)
+
+            # loading the dataframe with filter on columns is faster than filtering columns on df
             df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
         elif prefix is None:
             df = await get_dataframe(ctx, bulk_id)
@@ -162,8 +166,8 @@ async def get_data_version(
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
-        df = await DataFrameRender.process_params(df, ctrl_p)
-        return await DataFrameRender.df_render(df, ctrl_p, request.headers.get('Accept'), orient=orient)
+        df = await DataFrameRender.process_params(df, data_param)
+        return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
 

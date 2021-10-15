@@ -49,6 +49,10 @@ class GetDataParams:
         # orient if json ?
 
     def get_curves_list(self) -> List[str]:
+        """parse the curves query parameter and return the list of requested curves"""
         if self.curves:
-            return list(filter(None, map(str.strip, self.curves.split(',')))) # TODO remove duplicate but maintain order
+            # split and remove emty
+            curves = list(filter(None, map(str.strip, self.curves.split(','))))
+            # remove duplicates but maintain order
+            return list(dict.fromkeys(curves))
         return []
