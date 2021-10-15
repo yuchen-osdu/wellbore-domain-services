@@ -32,7 +32,7 @@ from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-from pyarrow.lib import ArrowException
+from pyarrow.lib import ArrowException, ArrowInvalid
 
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
@@ -49,6 +49,9 @@ def internal_bulk_exceptions(target):
     async def async_inner(*args, **kwargs):
         try:
             return await target(*args, **kwargs)
+        except ArrowInvalid as e:
+            get_logger().exception(f"Pyarrow ArrowInvalid when running {target.__name__}")
+            raise BulkNotProcessable(f"Unable to process bulk - {str(e)}")
         except ArrowException:
             get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
             raise BulkNotProcessable("Unable to process bulk - Arrow")

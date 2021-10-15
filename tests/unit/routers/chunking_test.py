@@ -10,6 +10,7 @@ import pandas as pd
 import pandas.api.types as ptypes
 import pyarrow.parquet as pq
 import pyarrow as pa
+import platform
 
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -953,7 +954,6 @@ def test_json_parquet_one_session(setup_client, entity_type):
     # append first chunk - PARQUET
     chunk_2 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(15, 20))
     headers = {'content-type': 'application/x-parquet'}
-
     response_chunk_2 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
                                    data=chunk_2.to_parquet(engine="pyarrow"), headers=headers)
     assert response_chunk_2.status_code == 200
@@ -962,7 +962,8 @@ def test_json_parquet_one_session(setup_client, entity_type):
     commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'commit'})
 
-    assert commit_session_response.status_code == 422
+    assert_commit_session_status_code(create_session_response)
+
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
@@ -999,7 +1000,14 @@ def test_parquet_json_one_session(setup_client, entity_type):
     commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
                                            json={'state': 'commit'})
 
-    assert commit_session_response.status_code == 422
+    assert_commit_session_status_code(commit_session_response)
+
+
+def assert_commit_session_status_code(commit_session_response):
+    if platform.system() == 'Windows':
+        assert commit_session_response.status_code == 422
+    if platform.system() == 'Linux':
+        assert commit_session_response.status_code == 200
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
