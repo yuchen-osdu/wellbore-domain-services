@@ -935,11 +935,10 @@ def test_json_parquet_one_session(setup_client, entity_type):
 
     client = setup_client
     record_id = _create_record(client,  entity_type)
-    # SESSION_MODE = 'update'
-    SESSION_MODE = 'overwrite'
+
     # Create a session
     chunking_url = Definitions[entity_type]['chunking_url']
-    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': SESSION_MODE})
+    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'overwrite'})
     assert create_session_response.status_code == 200
     session_data = create_session_response.json()
     session_id = session_data['id']
@@ -962,7 +961,7 @@ def test_json_parquet_one_session(setup_client, entity_type):
     commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'commit'})
 
-    assert_commit_session_status_code(create_session_response)
+    assert_commit_session_status_code(commit_session_response)
 
 
 
@@ -972,11 +971,10 @@ def test_parquet_json_one_session(setup_client, entity_type):
 
     client = setup_client
     record_id = _create_record(client, entity_type)
-    # SESSION_MODE = 'update'
-    SESSION_MODE = 'overwrite'
+
     # Create a session
     chunking_url = Definitions[entity_type]['chunking_url']
-    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': SESSION_MODE})
+    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'overwrite'})
     assert create_session_response.status_code == 200
     session_data = create_session_response.json()
     session_id = session_data['id']
@@ -1004,9 +1002,14 @@ def test_parquet_json_one_session(setup_client, entity_type):
 
 
 def assert_commit_session_status_code(commit_session_response):
+    """
+     in Windows, dtypes of the dataframe created from Request for parquet are int32, while for json are int64.
+     send json and parquet in one session cause 422 exception because of dtypes incoherence.
+    """
+
     if platform.system() == 'Windows':
         assert commit_session_response.status_code == 422
-    if platform.system() == 'Linux':
+    else:
         assert commit_session_response.status_code == 200
 
 
@@ -1015,8 +1018,6 @@ def test_parquet_json_two_session(setup_client, entity_type):
     """ send parquet and json separately with two session """
     client = setup_client
     record_id = _create_record(client, entity_type)
-    # SESSION_MODE = 'update'
-    SESSION_MODE_JSON = 'overwrite'
     # append chunk - JSON
     _create_chunks(client=client,
                    entity_type=entity_type,
@@ -1024,17 +1025,16 @@ def test_parquet_json_two_session(setup_client, entity_type):
                        (['COLUMN_MD', 'COLUMN_X'], range(5, 10)),
                        (['COLUMN_MD', 'COLUMN_X'], range(15, 20))],
                    record_id=record_id,
-                   session_mode=SESSION_MODE_JSON,
+                   session_mode='overwrite',
                    data_format='json')
 
-    SESSION_MODE_PARQUET = 'update'
     # append chunk - PARQUET
     _create_chunks(client=client,
                    entity_type=entity_type,
                    cols_ranges=[
                        (['COLUMN_MD', 'COLUMN_X'], range(5, 10))],
                    record_id=record_id,
-                   session_mode=SESSION_MODE_PARQUET,
+                   session_mode='update',
                    data_format='parquet')
 
 # todo:
