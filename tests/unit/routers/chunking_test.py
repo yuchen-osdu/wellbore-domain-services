@@ -929,9 +929,10 @@ def test_parquet_maintain_float_type(setup_client, entity_type):
         pd.testing.assert_frame_equal(df[[curve]], res_df)
 
 
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-def test_json_parquet_one_session(setup_client, entity_type):
-    """ send json first and then parquet in one session   """
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_send_json_parquet_in_one_session(setup_client, entity_type):
+    """ send data in json format first and then in parquet format in one session,
+        check if the session can be committed successfully """
 
     client = setup_client
     record_id = _create_record(client,  entity_type)
@@ -964,10 +965,10 @@ def test_json_parquet_one_session(setup_client, entity_type):
     assert_commit_session_status_code(commit_session_response)
 
 
-
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-def test_parquet_json_one_session(setup_client, entity_type):
-    """ send parquet first and then send json in one session """
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_send_parquet_json_in_one_session(setup_client, entity_type):
+    """ send data in parquet format first and then in json format in one session,
+    check if the session can be committed successfully  """
 
     client = setup_client
     record_id = _create_record(client, entity_type)
@@ -1004,7 +1005,7 @@ def test_parquet_json_one_session(setup_client, entity_type):
 def assert_commit_session_status_code(commit_session_response):
     """
      in Windows, dtypes of the dataframe created from Request for parquet are int32, while for json are int64.
-     send json and parquet in one session cause 422 exception because of dtypes incoherence.
+     send json and parquet no matter what the order is in one session cause 422 exception because of dtypes incoherence.
     """
 
     if platform.system() == 'Windows':
@@ -1013,9 +1014,9 @@ def assert_commit_session_status_code(commit_session_response):
         assert commit_session_response.status_code == 200
 
 
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-def test_parquet_json_two_session(setup_client, entity_type):
-    """ send parquet and json separately with two session """
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_send_parquet_json_with_two_session(setup_client, entity_type):
+    """ send parquet and json separately with two session, check if each session can be committed successfully"""
     client = setup_client
     record_id = _create_record(client, entity_type)
     # append chunk - JSON
