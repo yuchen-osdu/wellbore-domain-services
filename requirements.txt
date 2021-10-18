@@ -251,7 +251,7 @@ opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
 osdu-core-lib-python==1.1.0
     # via -r requirements.in
-osdu-core-lib-python-aws==0.0.3
+osdu-core-lib-python-aws==0.0.4.dev662003
     # via -r requirements.in
 osdu-core-lib-python-azure==1.2.1
     # via -r requirements.in
@@ -265,6 +265,10 @@ osdu-data-ecosystem-storage==1.2.0
     # via -r requirements.in
 osdu-log-recognition-lib==0.0.9
     # via -r requirements.in
+    
+--extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
+osdu_api==0.10.1.dev207+67ed6fe4
+
 packaging==21.0
     # via
     #   dask
