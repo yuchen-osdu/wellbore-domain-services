@@ -4,23 +4,31 @@
   "values": [
     {
       "enabled": true,
-      "key": "token", "value": ""
+      "key": "token", "value": "R4nd0m_T0k3n_5Tr1nG"
     },
     {
       "enabled": true,
-      "key": "cloud_provider", "value": ""
+      "key": "cloud_provider", "value": "local"
     },
     {
       "enabled": true,
-      "key": "base_url", "value": ""
+      "key": "base_url", "value": "http://localhost:8080/api/os-wellbore-ddms"
+    },
+    {
+      "enabled": true,
+      "key": "data_partition", "value": "local-partition"
     },
     {
       "enabled": false,
-      "key": "acl_domain", "value": ""
+      "key": "acl_domain", "value": "domain.ext"
     },
     {
       "enabled": false,
-      "key": "legal_tag", "value": ""
+      "key": "legal_tag", "value": "local-partition-legal"
+    },
+    {
+      "enabled": true,
+      "key": "authorityKind", "value": "osdu"
     }
   ]
 }
