@@ -14,7 +14,7 @@
 
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders import build_request
+from wdms_client.request_builders import build_request
 
 kind_list = ['well', 'wellbore', 'logset', 'marker', 'trajectory', 'log']
 new_parameters_env = {'authorityKind': 'slb',

@@ -32,8 +32,8 @@ variables:
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_VENDOR: gcp
   OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT --set data.service_host_search=$OSDU_GCP_SERVICE_HOST_SEARCH --set data.sa_key=$OSDU_GCP_INTEGRATION_TESTER"
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=workload-identity-wellbore"
   OSDU_GCP_HELM_CONFIG_SERVICE: wellbore-config
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE: wellbore-deploy
   OSDU_GCP_INT_TEST_TYPE: python
@@ -55,7 +55,7 @@ include:
     file: "cloud-providers/osdu-gcp-gke.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/ibm-wellbore.yml"
+    file: "cloud-providers/ibm-wellbore-git.yml"
 
   - local: "/devops/azure/azure-wellbore.yml"
 
@@ -64,6 +64,30 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
+
+verify_existing_requirements:
+  extends:
+    - .python
+    - .skipForTriggeringMergeRequests
+
+  stage: build
+  before_script:
+    - pip3 install --upgrade pip-tools
+
+  script:
+    - pip-compile requirements.in
+    - pip-compile requirements_dev.in
+    - git diff
+    # checking difference between existing requirements and the newly generated one
+    # and using the number of lines as exit status code
+    - exit $(git status -s | grep -e "^ M " | wc -l)
+
+  artifacts:
+    when: always
+    paths:
+      - "requirements*.txt"
+
+    expire_in: 2 days
 
 containerize:
   extends: .skipForTriggeringMergeRequests
@@ -188,14 +212,16 @@ osdu-gcp-test-python:
       --data_partition $OSDU_GCP_TENANT
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
-    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
 
 # Disable maven job in gcp common gke pipeline
 osdu-gcp-test:
   extends:
     - .osdu-gcp-variables
 
-# Allow failure on deployments
 
-ibm-deploy:
+# Allow failure on private development deployments
+
+ibm-deploy-devpri:
   allow_failure: true
+

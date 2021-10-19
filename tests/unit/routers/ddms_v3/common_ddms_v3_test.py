@@ -139,12 +139,18 @@ def test_post_records_successful(client):
 
 
 getas_parameters = [
-    (Wellbore, "/ddms/v3/wellbores", r"../../converter/wellbore_wks.json", "opendes:wellbore:12345"),
-    (Wellbore, "/ddms/v3/wellbores",r"../../converter/wellbore_wks.json", "opendes:master-data--Wellbore:6f70656e6465733a646f633a3132333435:"),
-    (Wellbore, "/ddms/v3/wellbores", r"../../../../app/model_examples/wellbore_v3.json", "opendes:master-data--Wellbore:123"),
-    (Well, "/ddms/v3/wells", r"../../converter/well_wks.json", "opendes:well:12345"),
-    (Well, "/ddms/v3/wells", r"../../converter/well_wks.json", "opendes:master-data--Well:6f70656e6465733a646f633a3132333435:"),
-    (Well, "/ddms/v3/wells", r"../../../../app/model_examples/well_v3.json", "opendes:master-data--Well:12345:456"),
+    (Wellbore, "/ddms/v3/wellbores", r"../../converter/wellbore_wks.json", "opendes:wellbore:12345",
+     status.HTTP_400_BAD_REQUEST),
+    (Wellbore, "/ddms/v3/wellbores", r"../../converter/wellbore_wks.json",
+     "opendes:master-data--Wellbore:6f70656e6465733a646f633a3132333435:", status.HTTP_422_UNPROCESSABLE_ENTITY),
+    (Wellbore, "/ddms/v3/wellbores", r"../../../../app/model_examples/wellbore_v3.json",
+     "opendes:master-data--Wellbore:123", status.HTTP_200_OK),
+    (Well, "/ddms/v3/wells", r"../../converter/well_wks.json", "opendes:well:12345",
+     status.HTTP_400_BAD_REQUEST),
+    (Well, "/ddms/v3/wells", r"../../converter/well_wks.json",
+     "opendes:master-data--Well:6f70656e6465733a646f633a3132333435:", status.HTTP_422_UNPROCESSABLE_ENTITY),
+    (Well, "/ddms/v3/wells", r"../../../../app/model_examples/well_v3.json", "opendes:master-data--Well:12345:456",
+     status.HTTP_200_OK),
 ]
 
 
@@ -155,8 +161,8 @@ def replace_template(source_obj_str: str) -> str:
     return source_obj_str
 
 
-@pytest.mark.parametrize("entity_class, base_url, source_file, record_id", getas_parameters)
-def test_get_record_as_OSDU(client, entity_class, base_url, source_file, record_id):
+@pytest.mark.parametrize("entity_class, base_url, source_file, record_id, expected_response", getas_parameters)
+def test_get_record_as_OSDU(client, entity_class, base_url, source_file, record_id, expected_response):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(dir_path, source_file)) as f:
         record_str = replace_template(f.read())
@@ -174,11 +180,11 @@ def test_get_record_as_OSDU(client, entity_class, base_url, source_file, record_
             headers={"data-partition-id": "testing_partition"},
         )
 
-        assert response.status_code == status.HTTP_200_OK
-
-        # assert it validates the input object schema
-        res = response.json()
-        entity_class.validate(res)
+        assert response.status_code == expected_response
+        if response.status_code == status.HTTP_200_OK:
+            # assert it validates the input object schema
+            res = response.json()
+            entity_class.validate(res)
 
 
 get_invalid_id_parameters = [
@@ -193,7 +199,7 @@ def test_get_record_incorrect_id(client, entity_class, base_url, record_id):
         f"{base_url}/{record_id}",
         headers={"data-partition-id": "testing_partition"},
     )
-    assert response.status_code == status.HTTP_417_EXPECTATION_FAILED
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.parametrize("base_url, id, record_obj", tests_parameters)

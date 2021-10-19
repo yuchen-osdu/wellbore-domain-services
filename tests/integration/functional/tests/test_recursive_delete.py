@@ -14,8 +14,8 @@
 
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders.wdms.recursive_delete.setup import *
-from ..request_builders.wdms.recursive_delete.delete_well import *
+from wdms_client.request_builders.wdms.recursive_delete.setup import *
+from wdms_client.request_builders.wdms.recursive_delete.delete_well import *
 from time import sleep
 from random import randint
 

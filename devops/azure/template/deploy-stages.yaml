@@ -26,6 +26,10 @@ parameters:
         #       # TODO: The following templates needs to be injected as parameters
         #       authenticationTemplate: ${{ getImageTemplate }}
         #       authenticationTemplateParameters: ${{ getImageTemplateParameters }}
+        #       preDeployTemplates:
+        #       - template: ${{ my_template }}
+        #         parameters: ${{ my_template_params }}
+        #       - ...
         #     getImageTemplate: ${{ authenticationTemplate }}
         #     getImageTemplateParameters: ${{ authenticationTemplateParameter }}
 
@@ -51,6 +55,11 @@ stages:
               - template: steps-define-variables.yaml
               - template: ${{ provider.getImageTemplate }}
                 parameters: ${{ provider.getImageTemplateParameters }}
+              - ${{ each preDeployTemplate in environment.preDeployTemplates }}:
+                - template: ${{ preDeployTemplate.template }}
+                  parameters:
+                    ${{ each parameter in preDeployTemplate.parameters }}:
+                      ${{ parameter.key }}: ${{ parameter.value }}
               - template: steps-push-image.yaml
                 parameters:
                   azureSubscription: $(SERVICE_CONNECTION_NAME)
