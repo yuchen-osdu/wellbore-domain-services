@@ -1,1 +1,1 @@
-This contains the automatically generated and fully exhaustive list of APIs. You can find the cleaned version [here](../../docs/api/openapi.json)
+This contains the automatically generated and fully exhaustive list of APIs. You can find the recommanded version [here](../../docs/api/openapi.json)
