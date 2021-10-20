@@ -283,7 +283,7 @@ tests_parameters_restricted_well = [
             id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
             kind="namespace:osdu:Well:2.7.112",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-            version=1976171122787081690003306173641150356,
+            version=1976,
             legal={
                 "legaltags": ["string"],
                 "otherRelevantDataCountries": ["FR"],
@@ -364,7 +364,7 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
                 id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
                 kind="test",
                 acl={"owners": ["test"], "viewers": ["test"]},
-                version=1976171122787081690003306173641150356,
+                version=1976,
                 legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
                 data={'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {
                           'wdms': {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}},
