@@ -50,6 +50,7 @@ WELL_LOGS_API_BASE_PATH = '/welllogs'
 async def get_welllog_osdu(
         welllogid: str, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
+    welllogid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/welllogs/",welllogid)
     storage_client = await get_storage_record_service(ctx)
     welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
                                                                   welllogid)
@@ -75,6 +76,7 @@ async def get_welllog_osdu(
     },
 )
 async def del_osdu_welllog(welllogid: str, ctx: Context = Depends(get_ctx)):
+    welllogid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/welllogs/", welllogid)
     storage_client = await get_storage_record_service(ctx)
     welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
                                                                   welllogid)
@@ -96,6 +98,7 @@ async def del_osdu_welllog(welllogid: str, ctx: Context = Depends(get_ctx)):
 async def get_osdu_welllog_versions(
         welllogid: str, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
+    welllogid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/welllogs/", welllogid)
     storage_client = await get_storage_record_service(ctx)
     welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
                                                                   welllogid)
@@ -118,6 +121,7 @@ async def get_osdu_welllog_versions(
 async def get_osdu_welllog_version(
         welllogid: str, version: int, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
+    welllogid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/welllogs/", welllogid)
     storage_client = await get_storage_record_service(ctx)
     welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
                                                                   welllogid)

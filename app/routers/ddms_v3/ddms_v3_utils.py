@@ -1,4 +1,8 @@
 import re
+
+from fastapi import HTTPException
+from starlette import status
+
 from app.converter.converter_utils import ConverterUtils
 from typing import Tuple, Optional
 
@@ -65,11 +69,16 @@ class DMSV3RouterUtils:
 
     @staticmethod
     def is_osdu_right_entity_id(url: str, entity_id: str) -> Optional[str]:
+        if "/ddms/v2/" in url:
+            return entity_id
         for entity_regex in entities_regex:
             if "/ddms/v3/"+entity_regex[0]+"/" in url:
                 matches = entity_regex[1].match(entity_id)  # versioned entity id
                 if matches is None:
                     matches = entity_regex[2].match(entity_id)  # entity id not versioned
-                return entity_id if matches else None
+                if matches:
+                    return entity_id
+                else:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_regex[0])
 
 

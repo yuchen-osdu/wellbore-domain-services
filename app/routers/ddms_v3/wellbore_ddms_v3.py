@@ -54,6 +54,7 @@ async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
 async def get_wellbore_osdu(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
+    wellboreid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/Wellbores/", wellboreid)
     is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versioned_wellbore_id(wellboreid)
     if is_osdu_versioned:
         return await get_osdu_wellbore(osdu_id, ctx)
@@ -79,6 +80,7 @@ async def get_wellbore_osdu(
     },
 )
 async def del_osdu_wellbore(wellboreid: str, ctx: Context = Depends(get_ctx)):
+    wellboreid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/Wellbores/", wellboreid)
     storage_client = await get_storage_record_service(ctx)
     await storage_client.delete_record(
         id=wellboreid, data_partition_id=ctx.partition_id
@@ -98,6 +100,7 @@ async def del_osdu_wellbore(wellboreid: str, ctx: Context = Depends(get_ctx)):
 async def get_osdu_wellbore_versions(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
+    wellboreid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/Wellbores/", wellboreid)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(
         id=wellboreid, data_partition_id=ctx.partition_id
@@ -118,6 +121,7 @@ async def get_osdu_wellbore_versions(
 async def get_osdu_wellbore_version(
     wellboreid: str, version: int, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
+    wellboreid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/Wellbores/", wellboreid)
     storage_client = await get_storage_record_service(ctx)
     wellbore_record = await storage_client.get_record_version(
         id=wellboreid, version=version, data_partition_id=ctx.partition_id
