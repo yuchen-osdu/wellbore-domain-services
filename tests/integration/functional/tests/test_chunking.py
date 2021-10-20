@@ -13,35 +13,28 @@
 # limitations under the License.
 
 import io
-from enum import Enum
 from contextlib import contextmanager
 import random
 
-import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pytest
 
-from .fixtures import with_wdms_env
-from ..request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log
-from ..request_builders.wdms.session import build_delete_session
-from ..request_runner import RequestRunner, Request
+from tests.unit.generate_data import generate_df
 
-from ..request_builders.wdms.crud.osdu_welllog import (
+from .fixtures import with_wdms_env
+from wdms_client.request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log
+from wdms_client.request_builders.wdms.session import build_delete_session
+from wdms_client.request_runner import RequestRunner, Request
+
+from wdms_client.request_builders.wdms.crud.osdu_welllog import (
     build_request_create_osdu_welllog,
     build_request_delete_osdu_welllog)
 
-from ..request_builders.wdms.crud.osdu_wellboretrajectory import (
+from wdms_client.request_builders.wdms.crud.osdu_wellboretrajectory import (
     build_request_create_osdu_wellboretrajectory,
     build_request_delete_osdu_wellboretrajectory)
 
-
-def generate_df(columns, index):
-    nbrows = len(index)
-    df = pd.DataFrame(
-        np.random.randint(-100, 1000, size=(nbrows, len(columns))), index=index)
-    df.columns = columns
-    return df
 
 entity_type_dict={
     "well_log": {"entity": "welllogs", "version": "v3"},

@@ -14,8 +14,8 @@
 
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders.wdms.search_apis.setup import *
-from ..request_builders.wdms.search_apis.search import *
+from wdms_client.request_builders.wdms.search_apis.setup import *
+from wdms_client.request_builders.wdms.search_apis.search import *
 from time import sleep
 
 new_parameters_env = {'authorityKind': 'slb',

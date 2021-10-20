@@ -18,6 +18,7 @@ import time
 from contextlib import suppress
 from functools import wraps
 from operator import attrgetter
+from typing import List
 
 import fsspec
 import pandas as pd
@@ -33,6 +34,7 @@ from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 from pyarrow.lib import ArrowException
+import pyarrow.parquet as pa
 
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
@@ -162,11 +164,23 @@ class DaskBulkStorage:
                                        aggregate_files=True,
                                        **kwargs)
 
-    def _load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
+    def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version.
         returns a Future<dd.DataFrame>
         """
-        return self._load(self._get_blob_path(record_id, bulk_id))
+        return self._load(self._get_blob_path(record_id, bulk_id), columns=columns)
+
+    @with_trace('read_stat')
+    def read_stat(self, record_id: str, bulk_id: str):
+        """Return some meta data about the bulk."""
+        file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
+        dataset = pa.ParquetDataset(file_path, filesystem=self._fs)
+        schema = dataset.read_pandas().schema
+        schema_dict = {x: str(y) for (x, y) in zip(schema.names, schema.types)}
+        return {
+            "num_rows": dataset.metadata.num_rows,
+            "schema": schema_dict
+        }
 
     def _submit_with_trace(self, target_func, *args, **kwargs):
         """
@@ -186,10 +200,10 @@ class DaskBulkStorage:
 
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
     @with_trace('load_bulk')
-    async def load_bulk(self, record_id: str, bulk_id: str) -> dd.DataFrame:
+    async def load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version."""
         try:
-            return await self._load_bulk(record_id, bulk_id)
+            return await self._load_bulk(record_id, bulk_id, columns=columns)
         except OSError:
             raise BulkNotFound(record_id, bulk_id)  # TODO proper exception
 
@@ -201,10 +215,17 @@ class DaskBulkStorage:
             we should be able to change or support other format easily ?
             schema={} instead of 'infer' fixes wrong inference for columns of type string starting with nan values
         """
-        return self._submit_with_trace(dd.to_parquet, ddf, path,
-                                       schema={},
-                                       engine='pyarrow',
-                                       storage_options=self._parameters.storage_options)
+        def try_to_parquet(ddf, path, storage_options):
+            to_parquet_args = {'engine': 'pyarrow',
+                               'storage_options': storage_options,
+                               }
+            try:
+                return dd.to_parquet(ddf, path, **to_parquet_args, schema="infer")
+            except ArrowException: # ArrowInvalid
+                # In some conditions, the schema is not properly infered. As a workaround, passing schema={} solve the issue.
+                return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
+
+        return self._submit_with_trace(try_to_parquet, ddf, path, storage_options=self._parameters.storage_options)
 
     async def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).

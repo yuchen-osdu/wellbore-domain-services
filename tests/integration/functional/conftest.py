@@ -28,7 +28,7 @@ integration_test_base_path = str(pathlib.Path(__file__).parent.absolute())
 sys.path.append(integration_test_base_path)  # set the current directory into the python path
 
 # put after sys.path update
-from .variables import Variables, CmdLineSpecialVar
+from wdms_client.variables import Variables, CmdLineSpecialVar
 from .tests.fixtures import WDMS_Variables
 
 FILTER_IN_TAGS = set()

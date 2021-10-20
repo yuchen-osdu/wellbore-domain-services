@@ -23,7 +23,7 @@ opencensus-ext-logging
 dask[distributed]==2021.7.2
 fsspec
 python-ulid
-s3fs==2021.8.0
+s3fs
 aiobotocore[boto3]
 
 --extra-index-url \

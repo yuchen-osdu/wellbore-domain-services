@@ -11,15 +11,6 @@ DELFI_SOURCE = "delfi_source_entity"
 
 class ConverterUtils:
     @staticmethod
-    def decode_id(osdu_id: str) -> str:
-        """
-        decode osdu style id to delfi id
-        """
-        if osdu_id is None:
-            return None
-        return bytes.fromhex(osdu_id.split(":")[2]).decode()
-
-    @staticmethod
     def fix_id(delfi_id: str, osdu_type: str) -> str:
         if delfi_id is None:
             return None

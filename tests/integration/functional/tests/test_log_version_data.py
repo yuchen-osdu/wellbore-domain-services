@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import pytest
-from ..request_builders.wdms.crud.log import *
-from request_runner import RequestRunner, Request
+from wdms_client.request_builders.wdms.crud.log import *
+from wdms_client.request_runner import RequestRunner, Request
 from .fixtures import with_wdms_env
 
 @pytest.fixture(scope="module")

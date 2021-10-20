@@ -18,15 +18,9 @@ spec:
         rollme: {{ randAlphaNum 5 | quote }}
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
-      volumes:
-        - name: service-account-key
-          secret:
-            secretName:  "{{ .Values.conf.secret_name }}"
+      serviceAccountName: "{{ .Values.data.serviceAccountName }}"
       containers:
         - name: "{{ .Values.conf.app_name }}"
-          volumeMounts:
-            - mountPath: /tmp/key
-              name: service-account-key
           image: "{{ .Values.data.image }}"
           imagePullPolicy: Always
           envFrom:
