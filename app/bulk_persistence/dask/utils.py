@@ -55,7 +55,7 @@ class SessionFileMeta:
         self.start = float(start)  # data time support ?
         self.end = float(end)
         self.time, self.shape, tail = tail.split('.')
-        self.columns = self._get_columns(file_path)  # TODO lazy load
+        #self.columns = self._get_columns(file_path)  # TODO lazy load
         self.path = file_path
 
     def _get_columns(self, file_path):
