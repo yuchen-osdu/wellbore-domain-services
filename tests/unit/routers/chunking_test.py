@@ -649,7 +649,10 @@ def test_session_unknown_record(setup_client, entity_type):
     chunking_url = Definitions[entity_type]['chunking_url']
 
     session_response = client.post(f'{chunking_url}/123456/sessions', json={'mode': 'update'})
-    assert session_response.status_code == 404
+    if "ddms/v2" in chunking_url:
+        assert session_response.status_code == 404
+    else:
+        assert session_response.status_code == 400
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
