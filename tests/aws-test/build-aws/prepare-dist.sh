@@ -29,9 +29,5 @@ if [ ! -e requirements_dev.txt ]; then
 else
     cp requirements_dev.txt tests/aws-test/build-aws/requirements.txt
 fi
-cp  -r tests/aws-test "${INTEGRATION_TEST_OUTPUT_DIR}"
-cp  -r tests/integration "${INTEGRATION_TEST_OUTPUT_DIR}"
-cp  -r tests/dependencies "${INTEGRATION_TEST_OUTPUT_DIR}"
-cp  -r tests/performance "${INTEGRATION_TEST_OUTPUT_DIR}"
-cp -r tests/unit "${INTEGRATION_TEST_OUTPUT_DIR}"
+cp  -r tests "${INTEGRATION_TEST_OUTPUT_DIR}"
 cp -r wdms_client "${INTEGRATION_TEST_OUTPUT_DIR}"
