@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import pytest
-from variables import Variables
-from ..request_builders.wdms_variables import variables_dict
+from wdms_client.variables import Variables
+from wdms_client.request_builders.wdms_variables import variables_dict
 
 WDMS_Variables = Variables.from_dict(variables_dict)
 

@@ -16,10 +16,10 @@ import math
 import pytest
 
 from .fixtures import with_wdms_env
-from ..request_builders.wdms.crud.dips import *
+from wdms_client.request_builders.wdms.crud.dips import *
 from jsonschema import validate
 
-from ..request_builders.wdms.crud.log import build_request_get_log
+from wdms_client.request_builders.wdms.crud.log import build_request_get_log
 
 new_parameters_env = {'authorityKind': 'slb',
                       'prefix_data_entity_name': 'wdms_e2e_osdu'}

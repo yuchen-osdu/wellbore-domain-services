@@ -23,15 +23,15 @@ import pytest
 from tests.unit.generate_data import generate_df
 
 from .fixtures import with_wdms_env
-from ..request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log
-from ..request_builders.wdms.session import build_delete_session
-from ..request_runner import RequestRunner, Request
+from wdms_client.request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log
+from wdms_client.request_builders.wdms.session import build_delete_session
+from wdms_client.request_runner import RequestRunner, Request
 
-from ..request_builders.wdms.crud.osdu_welllog import (
+from wdms_client.request_builders.wdms.crud.osdu_welllog import (
     build_request_create_osdu_welllog,
     build_request_delete_osdu_welllog)
 
-from ..request_builders.wdms.crud.osdu_wellboretrajectory import (
+from wdms_client.request_builders.wdms.crud.osdu_wellboretrajectory import (
     build_request_create_osdu_wellboretrajectory,
     build_request_delete_osdu_wellboretrajectory)
 

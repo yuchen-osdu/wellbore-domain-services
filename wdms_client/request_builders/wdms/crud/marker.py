@@ -12,59 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from request_runner import RequestRunner, Request
+from ....request_runner import RequestRunner, Request
 
 
-def build_request_get_versions_of_logset() -> RequestRunner:
+def build_request_delete_marker() -> RequestRunner:
     rq_proto = Request(
-        name='Get versions of logset',
-        method='GET',
-        url='{{base_url}}/ddms/v2/logsets/{{logset_record_id}}/versions',
-        headers={
-            'accept': 'application/json',
-            'data-partition-id': '{{data_partition}}',
-            'Connection': '{{header_connection}}',
-            'Authorization': 'Bearer {{token}}',
-        },
-    )
-    return RequestRunner(rq_proto)
-
-
-def build_request_get_logset_specific_version() -> RequestRunner:
-    rq_proto = Request(
-        name='Get logset specific version',
-        method='GET',
-        url='{{base_url}}/ddms/v2/logsets/{{logset_record_id}}/versions/{{logset_record_version}}',
-        headers={
-            'accept': 'application/json',
-            'data-partition-id': '{{data_partition}}',
-            'Connection': '{{header_connection}}',
-            'Authorization': 'Bearer {{token}}',
-        },
-    )
-    return RequestRunner(rq_proto)
-
-
-def build_request_get_logset() -> RequestRunner:
-    rq_proto = Request(
-        name='Get logset',
-        method='GET',
-        url='{{base_url}}/ddms/v2/logsets/{{logset_record_id}}',
-        headers={
-            'accept': 'application/json',
-            'data-partition-id': '{{data_partition}}',
-            'Connection': '{{header_connection}}',
-            'Authorization': 'Bearer {{token}}',
-        },
-    )
-    return RequestRunner(rq_proto)
-
-
-def build_request_delete_logset() -> RequestRunner:
-    rq_proto = Request(
-        name='Delete logset',
+        name='Delete marker',
         method='DELETE',
-        url='{{base_url}}/ddms/v2/logsets/{{logset_record_id}}',
+        url='{{base_url}}/ddms/v2/markers/{{marker_record_id}}',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -75,11 +30,56 @@ def build_request_delete_logset() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_create_logset() -> RequestRunner:
+def build_request_get_versions_of_marker() -> RequestRunner:
     rq_proto = Request(
-        name='Create logset',
+        name='Get versions of marker',
+        method='GET',
+        url='{{base_url}}/ddms/v2/markers/{{marker_record_id}}/versions',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_get_marker() -> RequestRunner:
+    rq_proto = Request(
+        name='Get marker',
+        method='GET',
+        url='{{base_url}}/ddms/v2/markers/{{marker_record_id}}',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_get_marker_specific_version() -> RequestRunner:
+    rq_proto = Request(
+        name='Get marker specific version',
+        method='GET',
+        url='{{base_url}}/ddms/v2/markers/{{marker_record_id}}/versions/{{marker_record_version}}',
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+        },
+    )
+    return RequestRunner(rq_proto)
+
+
+def build_request_create_marker() -> RequestRunner:
+    rq_proto = Request(
+        name='Create marker',
         method='POST',
-        url='{{base_url}}/ddms/v2/logsets',
+        url='{{base_url}}/ddms/v2/markers',
         headers={
             'accept': 'application/json',
             'Content-Type': 'application/json',
@@ -91,8 +91,11 @@ def build_request_create_logset() -> RequestRunner:
 [
 {
   "acl": {{record_acl}}, "legal": {{record_legal}},
-  "data": {"name": "{{prefix_data_entity_name}}_logset"},
-  "kind": "{{logSetKind}}"
+  "data": {
+      "name": "{{prefix_data_entity_name}}_marker",
+      "md": { "unitKey": "Unknown", "value": 0 }
+  },
+  "kind": "{{markerKind}}"
 }
 ]
 """

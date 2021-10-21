@@ -103,7 +103,7 @@ The following software have components provided under the terms of this license:
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- pip-tools (from http://pypi.python.org/pypi/pip-tools/1.8.1rc3)
+- pip-tools (from https://github.com/jazzband/pip-tools/)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
@@ -227,7 +227,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis)
-- anyio (from https://pypi.org/project/anyio/3.3.2/)
+- anyio (from https://pypi.org/project/anyio/3.3.3/)
 - asgiref (from http://github.com/django/asgiref/)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -353,13 +353,6 @@ WTFPL
 The following software have components provided under the terms of this license:
 
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
-
-========================================================================
-X11
-========================================================================
-The following software have components provided under the terms of this license:
-
-- numpy (from http://www.numpy.org)
 
 ========================================================================
 ZPL-2.1

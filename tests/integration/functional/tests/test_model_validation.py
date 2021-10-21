@@ -14,8 +14,8 @@
 
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders.wdms.error_cases import build_request_create_log_with_invalid_data_should_422
-from ..request_builders.wdms.model_extensibility import *
+from wdms_client.request_builders.wdms.error_cases import build_request_create_log_with_invalid_data_should_422
+from wdms_client.request_builders.wdms.model_extensibility import *
 
 
 def test_create_log_with_invalid_data_should_422(with_wdms_env):
