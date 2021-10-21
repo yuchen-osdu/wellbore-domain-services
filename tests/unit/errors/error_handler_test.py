@@ -15,17 +15,18 @@
 import json
 import pytest
 import mock
-from fastapi import Header
+from fastapi import Header, HTTPException
 
 from fastapi.testclient import TestClient
 import starlette.status as status
 
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
+from app.errors.exception_handlers import create_custom_http_exception_handler
 from app.middleware import require_data_partition_id
 from app.utils import Context
 from app.wdms_app import wdms_app
 from app.clients import *
-from app.helper import traces
+from app.helper import traces, logger
 from app.auth.auth import require_opendes_authorized_user
 
 from tests.unit.test_utils import patch_async, create_mock_class, nope_logger_fixture
@@ -149,3 +150,26 @@ def test_partition_client_raise_api_exception(client):
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert json_res['errors'][0] == 'Failed to retrieve partition. Not found.'
+
+
+@pytest.fixture()
+def create_exception_handler():
+    log = mock.MagicMock()
+    logger._LOGGER = log
+    create_custom_http_exception_handler(wdms_app, logger)
+    client = TestClient(wdms_app)
+    yield client, log
+
+
+@pytest.mark.parametrize("status_code, msg, called", [(400, "bad request", False),
+                                                    (404, "not found", False),
+                                                    (500, "internal error", True),
+                                                    (502, "bad gateway", True)])
+def test_500_exception_handler(create_exception_handler, status_code, msg, called):
+    client, log = create_exception_handler
+
+    with mock.patch("app.routers.about.AboutResponse.construct", side_effect=HTTPException(status_code=status_code, detail=msg)):
+        response = client.get('about')
+        assert response.status_code == status_code
+        assert response.text == '{"detail":"' + msg + '"}'
+        assert log.exception.called == called
