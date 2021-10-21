@@ -15,7 +15,7 @@
 import json
 import pytest
 import mock
-from fastapi import Header, HTTPException
+from fastapi import Header
 
 from fastapi.testclient import TestClient
 import starlette.status as status
@@ -161,10 +161,7 @@ def create_exception_handler():
     yield client, log
 
 
-@pytest.mark.parametrize("status_code, msg", [(400, "bad request"),
-                                              (404, "not found"),
-                                              (500, "internal error"),
-                                              (502, "bad gateway")])
+@pytest.mark.parametrize("status_code, msg", [(400, "bad request"), (404, "not found"), (500, "internal error")])
 def test_500_exception_handler(create_exception_handler, status_code, msg):
     client, log = create_exception_handler
 
@@ -178,7 +175,4 @@ def test_500_exception_handler(create_exception_handler, status_code, msg):
             log.exception.assert_not_called()
         if response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
             assert response.text == '{"detail":"internal error"}'
-            log.exception.assert_called()
-        if response.status_code == status.HTTP_502_BAD_GATEWAY:
-            assert response.text == '{"detail":"bad gateway"}'
             log.exception.assert_called()
