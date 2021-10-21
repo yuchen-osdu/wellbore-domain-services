@@ -12,7 +12,7 @@ The following software have components provided under the terms of this license:
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - boto3 (from https://github.com/boto/boto3)
 - botocore (from https://github.com/boto/botocore)
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - cryptography (from https://github.com/pyca/cryptography)
 - google-api-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
 - google-auth (from https://github.com/googleapis/google-auth-library-python)
@@ -103,7 +103,7 @@ The following software have components provided under the terms of this license:
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- pip-tools (from http://pypi.python.org/pypi/pip-tools/1.8.1rc3)
+- pip-tools (from https://github.com/jazzband/pip-tools/)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
@@ -151,7 +151,7 @@ GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 
 ========================================================================
@@ -166,7 +166,7 @@ GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
@@ -227,7 +227,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis)
-- anyio (from https://pypi.org/project/anyio/3.3.2/)
+- anyio (from https://pypi.org/project/anyio/3.3.3/)
 - asgiref (from http://github.com/django/asgiref/)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -244,7 +244,7 @@ The following software have components provided under the terms of this license:
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi (from http://cffi.readthedocs.org)
 - charset-normalizer (from https://github.com/ousret/charset_normalizer)
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - fastapi (from https://github.com/tiangolo/fastapi)
 - grpcio (from https://grpc.io)
 - h11 (from https://github.com/python-hyper/h11)
@@ -318,7 +318,7 @@ Python-2.0
 The following software have components provided under the terms of this license:
 
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - google-auth (from https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
@@ -353,13 +353,6 @@ WTFPL
 The following software have components provided under the terms of this license:
 
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
-
-========================================================================
-X11
-========================================================================
-The following software have components provided under the terms of this license:
-
-- numpy (from http://www.numpy.org)
 
 ========================================================================
 ZPL-2.1
