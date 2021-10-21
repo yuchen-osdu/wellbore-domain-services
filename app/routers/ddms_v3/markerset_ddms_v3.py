@@ -44,7 +44,6 @@ router = APIRouter()
 async def get_wellbore_markerset_osdu(
         wellboremarkersetid: str, ctx: Context = Depends(get_ctx)
 ) -> WellboreMarkerSet:
-    wellboremarkersetid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/wellboremarkersets/", wellboremarkersetid)
     storage_client = await get_storage_record_service(ctx)
     wellboremarkersetid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBOREMARKERSET_VERSION_REGEX,
                                                                   wellboremarkersetid)
@@ -70,7 +69,6 @@ async def get_wellbore_markerset_osdu(
     },
 )
 async def del_osdu_wellboreMarkerset(wellboremarkersetid: str, ctx: Context = Depends(get_ctx)):
-    wellboremarkersetid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/wellboremarkersets/", wellboremarkersetid)
     storage_client = await get_storage_record_service(ctx)
     wellboremarkersetid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBOREMARKERSET_VERSION_REGEX,
                                                                   wellboremarkersetid)
@@ -92,7 +90,6 @@ async def del_osdu_wellboreMarkerset(wellboremarkersetid: str, ctx: Context = De
 async def get_osdu_wellboreMarkerset_versions(
         wellboremarkersetid: str, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
-    wellboremarkersetid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/wellboremarkersets/", wellboremarkersetid)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(
         id=wellboremarkersetid, data_partition_id=ctx.partition_id
@@ -113,7 +110,6 @@ async def get_osdu_wellboreMarkerset_versions(
 async def get_osdu_wellboreMarkerset_version(
         wellboremarkersetid: str, version: int, ctx: Context = Depends(get_ctx)
 ) -> WellboreMarkerSet:
-    wellboremarkersetid = DMSV3RouterUtils.is_osdu_right_entity_id("/ddms/v3/wellboremarkersets/", wellboremarkersetid)
     storage_client = await get_storage_record_service(ctx)
     wellboremarkersetid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBOREMARKERSET_VERSION_REGEX,
                                                                   wellboremarkersetid)

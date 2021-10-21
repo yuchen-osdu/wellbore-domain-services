@@ -22,7 +22,6 @@ from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
 
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
-from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
@@ -72,7 +71,6 @@ async def post_data(record_id: str,
                     check_input_df_func=Depends(get_check_input_df_func),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
                     ):
-    record_id = DMSV3RouterUtils.is_osdu_right_entity_id(request.url.path, record_id)
     @with_trace("save_blob")
     async def save_blob():
         df = await get_df_from_request(request, orient)
@@ -107,7 +105,6 @@ async def post_chunk_data(record_id: str,
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           check_input_df_func=Depends(get_check_input_df_func),
                           ):
-    record_id = DMSV3RouterUtils.is_osdu_right_entity_id(request.url.path, record_id)
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
         raise HTTPException(
@@ -146,7 +143,6 @@ async def get_data_version(
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    record_id = DMSV3RouterUtils.is_osdu_right_entity_id(request.url.path, record_id)
     record = await fetch_record(ctx, record_id, version)
     bulk_id, prefix = bulk_uri_access.get_bulk_uri(record=record) # TODO PATH logv2
 
@@ -194,7 +190,6 @@ async def get_data(
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    record_id = DMSV3RouterUtils.is_osdu_right_entity_id(request.url.path, record_id)
     return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, dask_blob_storage, bulk_uri_access)
 
 
@@ -206,14 +201,12 @@ async def get_data(
 async def complete_session(
     record_id: str,
     session_id: str,
-    request: Request,
     update_request: UpdateSessionState,
     with_session: WithSessionStorages = Depends(get_session_dependencies),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ) -> Session:
-    record_id = DMSV3RouterUtils.is_osdu_right_entity_id(request.url.path, record_id)
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
 

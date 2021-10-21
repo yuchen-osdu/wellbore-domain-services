@@ -20,15 +20,19 @@ bulk_routes_path = [(route.path, route.methods) for route in router.routes]
 @pytest.fixture()
 def dependencies_check_app(dasked_test_app):
     from app.routers.bulk.utils import set_v3_input_dataframe_check, set_legacy_input_dataframe_check
-
+    from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
     async def expected_legacy_check_func():
         raise ArithmeticError("I'm raising for legacy injection")
 
     async def expected_v3_check_func():
         raise RuntimeError("I'm raising for v3 injection")
 
+    async def is_osdu_right_entity_id_func():
+        return
+
     dasked_test_app.dependency_overrides[set_legacy_input_dataframe_check] = expected_legacy_check_func
     dasked_test_app.dependency_overrides[set_v3_input_dataframe_check] = expected_v3_check_func
+    dasked_test_app.dependency_overrides[DMSV3RouterUtils.is_osdu_right_entity_id] = is_osdu_right_entity_id_func
 
     yield TestClient(dasked_test_app)
     dasked_test_app.dependency_overrides = {}

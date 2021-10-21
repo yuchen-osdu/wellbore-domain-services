@@ -2,6 +2,7 @@ import re
 
 from fastapi import HTTPException
 from starlette import status
+from starlette.requests import Request
 
 from app.converter.converter_utils import ConverterUtils
 from typing import Tuple, Optional
@@ -25,11 +26,13 @@ OSDU_WELLBOREMARKERSET_VERSION_REGEX = re.compile(
 OSDU_WELLBOREMARKERSET_REGEX = re.compile(
     r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$')
 
-entities_regex = [["Wells", OSDU_WELL_VERSION_REGEX, OSDU_WELL_REGEX],
-            ["Wellbores", OSDU_WELLBORE_VERSION_REGEX, OSDU_WELLBORE_REGEX],
+entities_regex = [["wells", OSDU_WELL_VERSION_REGEX, OSDU_WELL_REGEX],
+            ["wellbores", OSDU_WELLBORE_VERSION_REGEX, OSDU_WELLBORE_REGEX],
             ["welllogs", OSDU_WELLLOG_VERSION_REGEX, OSDU_WELLLOG_REGEX],
             ["wellboretrajectories", OSDU_WELLBORETRAJECTORY_VERSION_REGEX, OSDU_WELLBORETRAJECTORY_REGEX],
             ["wellboremarkersets", OSDU_WELLBOREMARKERSET_VERSION_REGEX, OSDU_WELLBOREMARKERSET_REGEX]]
+
+entity_id_names = ["record_id", "wellid", "wellboreid", "welllogid", "wellboretrajectoryid", "wellboremarkersetid"]
 
 class DMSV3RouterUtils:
     @staticmethod
@@ -67,18 +70,22 @@ class DMSV3RouterUtils:
     def is_osdu_versioned_well_id(entity_id: str) -> Tuple[bool, str, str]:
         return DMSV3RouterUtils.is_osdu_versioned_entity_id(OSDU_WELL_VERSION_REGEX, entity_id)
 
+
     @staticmethod
-    def is_osdu_right_entity_id(url: str, entity_id: str) -> Optional[str]:
-        if "/ddms/v2/" in url:
-            return entity_id
-        for entity_regex in entities_regex:
-            if "/ddms/v3/"+entity_regex[0]+"/" in url:
-                matches = entity_regex[1].match(entity_id)  # versioned entity id
-                if matches is None:
-                    matches = entity_regex[2].match(entity_id)  # entity id not versioned
-                if matches:
-                    return entity_id
-                else:
-                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_regex[0])
+    def is_osdu_right_entity_id(request: Request):
+        url = request.url.path
+        record_id = None
+        for record_id_name in entity_id_names:
+            record_id_in_param = request.scope.get("path_params").get(record_id_name)
+            if record_id_in_param:
+                record_id = record_id_in_param
+        if record_id and "/ddms/v2/" not in url:
+            for entity_regex in entities_regex:
+                if "/ddms/v3/"+entity_regex[0]+"/" in url:
+                    matches = entity_regex[1].match(record_id)  # versioned entity id
+                    if matches is None:
+                        matches = entity_regex[2].match(record_id)  # entity id not versioned
+                    if matches is None:
+                        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_regex[0])
 
 

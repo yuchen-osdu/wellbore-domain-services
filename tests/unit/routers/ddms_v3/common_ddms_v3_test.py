@@ -266,7 +266,7 @@ tests_parameters_restricted_record_id = [
     (
         "/ddms/v3/wellboremarkersets",
         r"namespace:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9"
-    ),
+    )
 ]
 
 tests_parameters_restricted_well = [
@@ -293,8 +293,8 @@ tests_parameters_restricted_well = [
     )]
 
 
-def validation_test_restricted_record_id(record_id, record_id_2, response, ok_response=status.HTTP_200_OK, error_response=status.HTTP_400_BAD_REQUEST):
-    if record_id != record_id_2:
+def validation_test_restricted_record_id(record_id, record_id_to_test, response, ok_response=status.HTTP_200_OK, error_response=status.HTTP_400_BAD_REQUEST):
+    if record_id != record_id_to_test:
         assert response.status_code == error_response
     else:
         assert response.status_code == ok_response
@@ -307,7 +307,7 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
     record_id_to_test = id_to_test
     version = 65469556549465
     chunk = pd.DataFrame([[10, 11]], index=[1], columns=['c1', 'c2'])
-    version_obj = RecordVersions(recordId=record_id, versions=[version])
+    version_obj = RecordVersions(recordId=record_id_to_test, versions=[version])
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
     moc_get_record = mock.AsyncMock(return_value=record_obj_to_test)
     moc_get_all_record_versions = mock.AsyncMock(return_value=version_obj)
