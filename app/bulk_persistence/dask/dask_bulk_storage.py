@@ -356,12 +356,17 @@ class DaskBulkStorage:
 
             yield [f'{self.protocol}://{file.path}' for file in file_list]
 
+    def trim_protocol(self, path):
+        return path.lstrip(f'{self.protocol}://')
+
     def save_catalog(self, path, catalog):
+        path = self.trim_protocol(path)
         meta_path = f'{path}/_meta.json'
         with self._fs.open(meta_path, 'w') as outfile:
             json.dump(catalog, outfile)
 
     def get_catalog(self, path):
+        path = self.trim_protocol(path)
         meta_path = f'{path}/_meta.json'
         if self._fs.exists(meta_path):
             with self._fs.open(meta_path) as json_file:
@@ -370,6 +375,7 @@ class DaskBulkStorage:
 
     @capture_timings('build_catalog')
     def build_catalog(self, path, force_build=False):
+        path = self.trim_protocol(path)
         if not force_build:
             cat = self.get_catalog(path)
             if cat:
