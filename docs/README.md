@@ -1,7 +1,7 @@
 # WDMS Documentation
 
 
-* [OpenAPI Spec](./api/openapo.json)
+* [OpenAPI Spec](./api/openapi.json)
 * [Tutorials](./tutorials/.placeholder)
 * [Service Overview](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/home)
 
