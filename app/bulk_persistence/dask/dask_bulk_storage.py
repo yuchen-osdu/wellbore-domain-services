@@ -27,7 +27,7 @@ from app.bulk_persistence import BulkId
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.traces import wrap_trace_process
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
-                                             do_merge, pack_array,
+                                             do_merge,
                                              worker_capture_timing_handlers)
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
@@ -105,11 +105,6 @@ def dask_to_parquet(ddf, path, storage_options):
         return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
 
 
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
-
 class DaskBulkStorage:
     client: DaskDistributedClient = None
     """ Dask client """
@@ -183,7 +178,6 @@ class DaskBulkStorage:
                                        chunksize='25M',
                                        aggregate_files=True,
                                        **kwargs)
-
 
     def _load_bulk_impl(self, bulk_path, columns: List[str] = None) -> dd.DataFrame:
         schemas = self.get_catalog(bulk_path)
@@ -330,51 +324,6 @@ class DaskBulkStorage:
 
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
-
-    # @capture_timings('session_add_chunk')
-    # @with_trace('session_add_chunk')
-    # async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
-    #     self._check_incoming_chunk(pdf)
-
-    #     groups = group_array(pdf)
-    #     first_idx, last_idx = pdf.index[0], pdf.index[-1]
-    #     if isinstance(pdf.index, pd.DatetimeIndex):
-    #         first_idx, last_idx = pdf.index[0].value, pdf.index[-1].value
-
-    #     t = round(time.time() * 1000)
-    #     session_path = self._build_path_from_session(session)
-
-    #     for var_name, dims in groups.items():
-    #         if dims:
-    #             c_hashed = hashlib.sha1(var_name.encode()).hexdigest()
-    #             filename = f'{first_idx}_{last_idx}_{t}'
-    #             index = pdf.index.values
-    #             dims = sorted([int(dim) for dim in dims])
-    #             #dims = sorted(dims)
-    #             values = pdf[[f'{var_name}[{dim}]' for dim in dims]].values
-    #             data = xr.DataArray(values, name=var_name, coords=[index, dims], dims=['index', 'col'])
-    #             dset = xr.Dataset(data_vars={var_name : data})
-    #             store = self._fs.get_mapper(f'{session_path}/zarr/{c_hashed}/{filename}.zarr')
-    #             dset.to_zarr(store, consolidated=True, safe_chunks=False)
-
-    #     cols = [cn for cn, dims in groups.items() if not dims]
-    #     # filter and sort column by names
-    #     pdf = pdf[sorted(cols)]
-
-    #     # generate a file name sorted by starting index
-    #     # dask reads and sort files by 'natural_key' So the file name impact the final result
-
-    #     idx_range = f'{first_idx}_{last_idx}'
-    #     shape = hashlib.sha1('_'.join(map(str, pdf)).encode()).hexdigest()
-    #     filename = f'{idx_range}_{t}.{shape}'
-
-    #     session_path_wo_protocol = self._build_path_from_session(session, with_protocol=False)
-    #     self._fs.mkdirs(session_path_wo_protocol, exist_ok=True)
-    #     with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
-    #         json.dump({"columns": list(pdf)}, outfile)
-
-    #     await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
-
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
     def get_session_parquet_files(self, session):
@@ -444,56 +393,6 @@ class DaskBulkStorage:
 
         return schemas
 
-    # @capture_timings('session_commit')
-    # @with_trace('session_commit')
-    # @internal_bulk_exceptions
-    # async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
-    #     session_path = self._build_path_from_session(session, with_protocol=False)
-    #     bulk_id = BulkId.new_bulk_id()
-    #     bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=bulk_id, with_protocol=False)
-    #     proto_bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=bulk_id, with_protocol=True)
-
-    #     #self._fs.mv(session_path, bulk_path, recursive=True)
-    #     schema = self.build_catalog(session_path, force_build=True)
-    #     prev_schema = {}
-    #     session_columns = set(schema)
-    #     col_to_merge = set()
-    #     col_from_prev = set()
-    #     if from_bulk_id:
-    #         prev_bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=from_bulk_id, with_protocol=False)
-    #         prev_schema = self.build_catalog(prev_bulk_path)
-    #         prev_columns = set(prev_schema)
-    #         col_to_merge = set(prev_columns).intersection(session_columns)
-    #         col_from_prev = set(prev_columns).difference(session_columns)
-
-    #     if col_to_merge:
-    #         cur_df = self._load_bulk_session(session, columns=list(col_to_merge))
-    #         prev_df = self._load_bulk(record_id=session.recordId, bulk_id=from_bulk_id, columns=list(col_to_merge))
-    #         shape = hashlib.sha1('_'.join(map(str, col_to_merge)).encode()).hexdigest()
-    #         path = f'{proto_bulk_path}/{shape}.parquet'
-    #         ddf =  self._submit_with_trace(do_merge, cur_df, prev_df)
-    #         await self._save_with_dask(path, ddf)
-
-    #         for col_name in col_to_merge:
-    #             schema[col_name]["files"] = [path]
-
-    #     col_to_copy = session_columns.difference(col_to_merge)
-    #     if col_to_copy: # set max column per file
-    #         for columns in chunks(list(col_to_copy), 500): # TODO define max columns
-    #             ddf = self._load_bulk_session(session, columns=columns)
-    #             shape = hashlib.sha1('_'.join(map(str, col_to_copy)).encode()).hexdigest()
-    #             path = f'{proto_bulk_path}/{shape}.parquet'
-    #             await self._save_with_dask(path, ddf)
-    #             for col_name in col_to_copy:
-    #                 schema[col_name]["files"] = [path]
-
-    #     for col_name in col_from_prev:
-    #         schema[col_name] = prev_schema[col_name]
-        
-    #     self.save_catalog(bulk_path, schema)
-
-    #     return bulk_id
-
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
         if not dfs:
@@ -509,24 +408,24 @@ class DaskBulkStorage:
             futures = []
             while len(dfs):
                 ddf, dfs = dfs[0], dfs[1:]
-                if len(ddf.columns) == 0:
+                if ddf.columns.empty:
                     continue
+
                 to_merge = [ddf]
                 for i in range(len(dfs)):
                     other = dfs[i]
-                    common_cols = set(ddf.columns).intersection(set(other.columns))
-                    if common_cols:
-                        to_merge.append(other[list(common_cols)])
-                        remaining_cols_in_other = set(other.columns).difference(common_cols)
-                        dfs[i] = other[list(remaining_cols_in_other)]
+                    common_cols = ddf.columns.intersection(other.columns)
+                    if not common_cols.empty:
+                        to_merge.append(other[common_cols])
+                        remaining_cols_in_other = other.columns.difference(common_cols)
+                        dfs[i] = other[remaining_cols_in_other]
+
                 while len(to_merge) > 1:
                     to_merge = [client.submit(do_merge, a, b) for a, b in by_pairs(to_merge)]
-                to_parquet_args = {'engine': 'pyarrow',
-                                   'storage_options': storage_options,
-                                   'compression': 'snappy'}
+
                 path = f'{base_path}/part_{part_count}.parquet'
                 part_count += 1
-                save_task = client.submit(dd.to_parquet, to_merge[0], path, **to_parquet_args, schema="infer")
+                save_task = client.submit(dask_to_parquet, to_merge[0], path, storage_options)
                 futures.append(save_task)
             return client.gather(futures)
 
