@@ -22,7 +22,7 @@ variables:
   AZURE_TEST_TYPE: python
 
   AWS_SERVICE: wellbore-ddms
-  AW_SERVICE_NAMESPACE: osdu-wellbore-ddms
+  AWS_SERVICE_NAMESPACE: osdu-wellbore-ddms
   AWS_ENVIRONMENT: dev
   AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
   AWS_TEST_SUBDIR: tests/aws-test/build-aws
