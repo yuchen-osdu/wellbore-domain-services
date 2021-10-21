@@ -38,7 +38,7 @@ import pyarrow.parquet as pa
 
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
-from dask.distributed import WorkerPlugin
+from dask.distributed import WorkerPlugin, get_client
 from dask.distributed import scheduler
 
 
@@ -86,8 +86,21 @@ class DefaultWorkerPlugin(WorkerPlugin):
             get_logger().exception(f"Task '{key}' has failed with exception")
 
 
-def pandas_to_parquet(pdf, path, opt):
-    return pdf.to_parquet(path, index=True, engine='pyarrow', storage_options=opt)
+def pandas_to_parquet(pdf, path, storage_options):
+    return pdf.to_parquet(path, index=True, engine='pyarrow', storage_options=storage_options)
+
+
+def dask_to_parquet(ddf, path, storage_options):
+    to_parquet_args = {'engine': 'pyarrow',
+                       'storage_options': storage_options,
+                       'compression': 'snappy',
+                       }
+    try:
+        return dd.to_parquet(ddf, path, **to_parquet_args, schema="infer")
+    except ArrowException: # ArrowInvalid
+        # In some conditions, the schema is not properly infered. As a workaround, passing schema={} solve the issue.
+        return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
+
 
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -170,18 +183,21 @@ class DaskBulkStorage:
 
 
     def _load_bulk_impl(self, bulk_path, columns: List[str] = None) -> dd.DataFrame:
-        schemas = self.build_catalog(bulk_path, force_build=False)
+        schemas = self.get_catalog(bulk_path)
+        if schemas is None:
+            return self._load(bulk_path, columns=columns)
+
         files_to_load = {}
         cols = columns if columns else list(schemas)
-        for vn in cols:
-            files_list = schemas[vn]['files']
+        for col_name in cols:
+            files_list = schemas[col_name]["files"]
             h = hash("".join(files_list))
             if h in files_to_load:
-                files_to_load[h]["vars"].append(vn)
+                files_to_load[h]["vars"].append(col_name)
             else:
-                files_to_load[h] = {"files" : files_list, "vars": [vn]}
+                files_to_load[h] = {"files" : files_list, "vars": [col_name]}
             
-        dfs = [self._load(path=f['files'], columns=f['vars']) for _h, f in files_to_load.items()]
+        dfs = [self._load(path=f["files"], columns=f["vars"]) for _h, f in files_to_load.items()]
         def merge(df_list):
             if len(df_list) > 1:
                 return df_list[0].join(df_list[1:], how='outer')
@@ -242,18 +258,7 @@ class DaskBulkStorage:
             we should be able to change or support other format easily ?
             schema={} instead of 'infer' fixes wrong inference for columns of type string starting with nan values
         """
-        def try_to_parquet(ddf, path, storage_options):
-            to_parquet_args = {'engine': 'pyarrow',
-                               'storage_options': storage_options,
-                               'compression': 'snappy',
-                               }
-            try:
-                return dd.to_parquet(ddf, path, **to_parquet_args, schema="infer")
-            except ArrowException: # ArrowInvalid
-                # In some conditions, the schema is not properly infered. As a workaround, passing schema={} solve the issue.
-                return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
-
-        return self._submit_with_trace(try_to_parquet, ddf, path, storage_options=self._parameters.storage_options)
+        return self._submit_with_trace(dask_to_parquet, ddf, path, storage_options=self._parameters.storage_options)
 
     async def _save_with_pandas(self, path, pdf: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
@@ -311,18 +316,17 @@ class DaskBulkStorage:
         idx_range = f'{first_idx}_{last_idx}'
         shape = hashlib.sha1('_'.join(map(str, pdf)).encode()).hexdigest()
         t = round(time.time() * 1000)
-        #filename = f'{idx_range}_{t}.{shape}'
-        filename = f'{idx_range}_{t}'
+        filename = f'{idx_range}_{t}.{shape}'
 
         session_path_wo_protocol = self._build_path_from_session(session, with_protocol=False)
         self._fs.mkdirs(session_path_wo_protocol, exist_ok=True)
-        self._fs.mkdirs(f'{session_path_wo_protocol}/{shape}.parquet', exist_ok=True)
-        #with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
-        #    json.dump({"columns": list(pdf)}, outfile)
+        with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
+           json.dump({"columns": list(pdf)}, outfile)
 
         session_path = self._build_path_from_session(session)
 
-        await self._save_with_pandas(f'{session_path}/{shape}.parquet/{filename}.parquet', pdf)
+        await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
+
 
     # @capture_timings('session_add_chunk')
     # @with_trace('session_add_chunk')
@@ -405,12 +409,19 @@ class DaskBulkStorage:
         with self._fs.open(meta_path, 'w') as outfile:
             json.dump(catalog, outfile)
 
-    @capture_timings('build_catalog')
-    def build_catalog(self, path, force_build=False):
+    def get_catalog(self, path):
         meta_path = f'{path}/_meta.json'
-        if self._fs.exists(meta_path) and not force_build:
+        if self._fs.exists(meta_path):
             with self._fs.open(meta_path) as json_file:
                 return json.load(json_file)
+        return None
+
+    @capture_timings('build_catalog')
+    def build_catalog(self, path, force_build=False):
+        if not force_build:
+            cat = self.get_catalog(path)
+            if cat:
+                return cat
 
         files = [f for f in self._fs.ls(path) if f.endswith('.parquet')]
         data = [pa.ParquetDataset(f, filesystem=self._fs) for f in files]
@@ -418,67 +429,110 @@ class DaskBulkStorage:
         
         for file, dataset in zip(files, data):
             schema = dataset.read_pandas().schema
-            schema_dict = {x: str(y) for (x, y) in zip(schema.names, schema.types)}
+            # filter special dask columns '__null_dask_index__'
+            schema_dict = {x: str(y) for x, y in zip(
+                schema.names, schema.types) if x != '__null_dask_index__'}
             file_with_proto = f'{self.protocol}://{file}'
-            for vn, _meta in schema_dict.items():
-                if vn.startswith('__'):  # TODO filter special dask columns
-                    continue
-                if vn not in schemas:
-                    schemas[vn] = {'files': [file_with_proto], 'dtype': _meta}
+            for col_name, _meta in schema_dict.items():
+                if col_name not in schemas:
+                    schemas[col_name] = {"files": [file_with_proto], 'dtype': _meta}
                 else:
-                    schemas[vn]['files'].append(file_with_proto)
+                    schemas[col_name]["files"].append(file_with_proto)
 
-        with self._fs.open(meta_path, 'w') as outfile:
-            json.dump(schemas, outfile)
         return schemas
 
-    @capture_timings('session_commit')
-    @with_trace('session_commit')
-    @internal_bulk_exceptions
-    async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
-        session_path = self._build_path_from_session(session, with_protocol=False)
-        bulk_id = BulkId.new_bulk_id()
-        bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=bulk_id, with_protocol=False)
-        proto_bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=bulk_id, with_protocol=True)
+    # @capture_timings('session_commit')
+    # @with_trace('session_commit')
+    # @internal_bulk_exceptions
+    # async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
+    #     session_path = self._build_path_from_session(session, with_protocol=False)
+    #     bulk_id = BulkId.new_bulk_id()
+    #     bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=bulk_id, with_protocol=False)
+    #     proto_bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=bulk_id, with_protocol=True)
 
-        #self._fs.mv(session_path, bulk_path, recursive=True)
-        schema = self.build_catalog(session_path)
-        prev_schema = {}
-        session_columns = set(schema)
-        col_to_merge = set()
-        col_from_prev = set()
-        if from_bulk_id:
-            prev_bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=from_bulk_id, with_protocol=False)
-            prev_schema = self.build_catalog(prev_bulk_path)
-            prev_columns = set(prev_schema)
-            col_to_merge = set(prev_columns).intersection(session_columns)
-            col_from_prev = set(prev_columns).difference(session_columns)
+    #     #self._fs.mv(session_path, bulk_path, recursive=True)
+    #     schema = self.build_catalog(session_path, force_build=True)
+    #     prev_schema = {}
+    #     session_columns = set(schema)
+    #     col_to_merge = set()
+    #     col_from_prev = set()
+    #     if from_bulk_id:
+    #         prev_bulk_path = self._get_blob_path(record_id=session.recordId, bulk_id=from_bulk_id, with_protocol=False)
+    #         prev_schema = self.build_catalog(prev_bulk_path)
+    #         prev_columns = set(prev_schema)
+    #         col_to_merge = set(prev_columns).intersection(session_columns)
+    #         col_from_prev = set(prev_columns).difference(session_columns)
 
-        if col_to_merge:
-            cur_df = self._load_bulk_session(session, columns=list(col_to_merge))
-            prev_df = self._load_bulk(record_id=session.recordId, bulk_id=from_bulk_id, columns=list(col_to_merge))
-            shape = hashlib.sha1('_'.join(map(str, col_to_merge)).encode()).hexdigest()
-            path = f'{proto_bulk_path}/{shape}.parquet'
-            ddf =  self._submit_with_trace(do_merge, cur_df, prev_df)
-            await self._save_with_dask(path, ddf)
+    #     if col_to_merge:
+    #         cur_df = self._load_bulk_session(session, columns=list(col_to_merge))
+    #         prev_df = self._load_bulk(record_id=session.recordId, bulk_id=from_bulk_id, columns=list(col_to_merge))
+    #         shape = hashlib.sha1('_'.join(map(str, col_to_merge)).encode()).hexdigest()
+    #         path = f'{proto_bulk_path}/{shape}.parquet'
+    #         ddf =  self._submit_with_trace(do_merge, cur_df, prev_df)
+    #         await self._save_with_dask(path, ddf)
 
-            for col_name in col_to_merge:
-                schema[col_name]['files'] = [path]
+    #         for col_name in col_to_merge:
+    #             schema[col_name]["files"] = [path]
 
-        col_to_copy = session_columns.difference(col_to_merge)
-        if col_to_copy: # set max column per file
-            for columns in chunks(list(col_to_copy), 500): # TODO define max columns
-                ddf = self._load_bulk_session(session, columns=columns)
-                shape = hashlib.sha1('_'.join(map(str, col_to_copy)).encode()).hexdigest()
-                path = f'{proto_bulk_path}/{shape}.parquet'
-                await self._save_with_dask(path, ddf)
-                for col_name in col_to_copy:
-                    schema[col_name]['files'] = [path]
+    #     col_to_copy = session_columns.difference(col_to_merge)
+    #     if col_to_copy: # set max column per file
+    #         for columns in chunks(list(col_to_copy), 500): # TODO define max columns
+    #             ddf = self._load_bulk_session(session, columns=columns)
+    #             shape = hashlib.sha1('_'.join(map(str, col_to_copy)).encode()).hexdigest()
+    #             path = f'{proto_bulk_path}/{shape}.parquet'
+    #             await self._save_with_dask(path, ddf)
+    #             for col_name in col_to_copy:
+    #                 schema[col_name]["files"] = [path]
 
-        for col_name in col_from_prev:
-            schema[col_name] = prev_schema[col_name]
+    #     for col_name in col_from_prev:
+    #         schema[col_name] = prev_schema[col_name]
         
-        self.save_catalog(bulk_path, schema)
+    #     self.save_catalog(bulk_path, schema)
+
+    #     return bulk_id
+
+    async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
+        dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
+        if not dfs:
+            raise BulkNotProcessable("No data to commit")
+
+        # load the data of a precedent version of the record.
+        if from_bulk_id:
+            dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
+        
+        def commit_async(dfs: List[dd.DataFrame], base_path, storage_options):
+            part_count = 0
+            client = get_client()
+            futures = []
+            while len(dfs):
+                ddf, dfs = dfs[0], dfs[1:]
+                if len(ddf.columns) == 0:
+                    continue
+                to_merge = [ddf]
+                for i in range(len(dfs)):
+                    other = dfs[i]
+                    common_cols = set(ddf.columns).intersection(set(other.columns))
+                    if common_cols:
+                        to_merge.append(other[list(common_cols)])
+                        remaining_cols_in_other = set(other.columns).difference(common_cols)
+                        dfs[i] = other[list(remaining_cols_in_other)]
+                while len(to_merge) > 1:
+                    to_merge = [client.submit(do_merge, a, b) for a, b in by_pairs(to_merge)]
+                to_parquet_args = {'engine': 'pyarrow',
+                                   'storage_options': storage_options,
+                                   'compression': 'snappy'}
+                path = f'{base_path}/part_{part_count}.parquet'
+                part_count += 1
+                save_task = client.submit(dd.to_parquet, to_merge[0], path, **to_parquet_args, schema="infer")
+                futures.append(save_task)
+            return client.gather(futures)
+
+        bulk_id = BulkId.new_bulk_id()
+        base_path = self._get_blob_path(session.recordId, bulk_id)
+        await self._submit_with_trace(commit_async, dfs, base_path, self._parameters.storage_options)
+        
+        catalog = self.build_catalog(base_path, force_build=True) # TODO async
+        self.save_catalog(base_path, catalog) # TODO async
 
         return bulk_id
 
