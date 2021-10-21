@@ -26,7 +26,6 @@ from .client_error import (
 )
 from fastapi import HTTPException
 from fastapi.exception_handlers import http_exception_handler
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 __all__ = ['add_exception_handlers']
 
@@ -39,7 +38,7 @@ def create_custom_http_exception_handler(app, logger):
     need to register this exception handler in a separate function here and call this function in start up event.
     Because in add_exception_handlers function, we can't get an initialized logger
     """
-    @app.exception_handler(StarletteHTTPException)
+    @app.exception_handler(HTTPException)
     async def custom_http_exception_handler(request, exc: HTTPException):
         if exc.status_code >= status.HTTP_500_INTERNAL_SERVER_ERROR:
             logger.get_logger().exception(f"Internal server error - url: '{request.url}'")

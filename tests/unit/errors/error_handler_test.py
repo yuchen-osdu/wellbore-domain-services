@@ -161,24 +161,15 @@ def create_exception_handler():
     yield client, log
 
 
-@pytest.mark.parametrize("status_code, msg", [(400, "bad request"),
-                                              (404, "not found"),
-                                              (500, "internal error"),
-                                              (502, "bad gateway")])
-def test_500_exception_handler(create_exception_handler, status_code, msg):
+@pytest.mark.parametrize("status_code, msg, called", [(400, "bad request", False),
+                                                    (404, "not found", False),
+                                                    (500, "internal error", True),
+                                                    (502, "bad gateway", True)])
+def test_500_exception_handler(create_exception_handler, status_code, msg, called):
     client, log = create_exception_handler
 
     with mock.patch("app.routers.about.AboutResponse.construct", side_effect=HTTPException(status_code=status_code, detail=msg)):
         response = client.get('about')
-        if response.status_code == status.HTTP_400_BAD_REQUEST:
-            assert response.text == '{"detail":"bad request"}'
-            log.exception.assert_not_called()
-        if response.status_code == status.HTTP_404_NOT_FOUND:
-            assert response.text == '{"detail":"not found"}'
-            log.exception.assert_not_called()
-        if response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
-            assert response.text == '{"detail":"internal error"}'
-            log.exception.assert_called()
-        if response.status_code == status.HTTP_502_BAD_GATEWAY:
-            assert response.text == '{"detail":"bad gateway"}'
-            log.exception.assert_called()
+        assert response.status_code == status_code
+        assert response.text == '{"detail":"' + msg + '"}'
+        assert log.exception.called == called
