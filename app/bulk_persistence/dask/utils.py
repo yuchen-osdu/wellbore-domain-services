@@ -16,6 +16,7 @@ import json
 import os
 from itertools import zip_longest
 from logging import INFO
+from typing import List
 
 from app.helper.logger import get_logger
 from app.utils import capture_timings
@@ -78,6 +79,13 @@ def set_index(ddf: dd.DataFrame):
     if not ddf.known_divisions:
         return ddf.set_index(ddf.index, sorted=True).persist()
     return ddf
+
+
+@capture_timings("join_dataframes", handlers=worker_capture_timing_handlers)
+def join_dataframes(dfs: List[dd.DataFrame]):
+    if len(dfs) > 1:
+        return dfs[0].join(dfs[1:], how='outer')
+    return dfs[0] if dfs else None
 
 
 @capture_timings("do_merge", handlers=worker_capture_timing_handlers)

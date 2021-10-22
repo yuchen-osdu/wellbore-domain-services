@@ -27,7 +27,7 @@ from app.bulk_persistence import BulkId
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.traces import wrap_trace_process
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
-                                             do_merge,
+                                             do_merge, join_dataframes,
                                              worker_capture_timing_handlers)
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
@@ -179,36 +179,39 @@ class DaskBulkStorage:
                                        aggregate_files=True,
                                        **kwargs)
 
-    def _load_bulk_impl(self, bulk_path, columns: List[str] = None) -> dd.DataFrame:
+    def _load_bulk_from_path(self, bulk_path, columns: List[str] = None):
+        """
+            load columns from parquet files in the bulk_path
+            return a Future<dd.DataFrame>
+        """
         schemas = self.get_catalog(bulk_path)
         if schemas is None:
             return self._load(bulk_path, columns=columns)
 
+        if columns:
+             # if the user request columns that does not exists, we ignore them
+            columns = set(schemas).intersection(columns)
+        else:
+            # request all columns
+            columns = schemas
+
         files_to_load = {}
-        cols = columns if columns else list(schemas)
-        for col_name in cols:
+        # find columns that we can load together
+        for col_name in columns:
             files_list = schemas[col_name]["files"]
-            h = hash("".join(files_list))
-            if h in files_to_load:
-                files_to_load[h]["vars"].append(col_name)
+            group_by = hash("".join(files_list))
+            if group_by in files_to_load:
+                files_to_load[group_by]["vars"].append(col_name)
             else:
-                files_to_load[h] = {"files" : files_list, "vars": [col_name]}
-            
-        dfs = [self._load(path=f["files"], columns=f["vars"]) for _h, f in files_to_load.items()]
-        def merge(df_list):
-            if len(df_list) > 1:
-                return df_list[0].join(df_list[1:], how='outer')
-            return df_list[0]
-        df = self._submit_with_trace(merge, dfs)
-        return df
+                files_to_load[group_by] = {"files" : files_list, "vars": [col_name]}
 
-    def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
-        blob_path = self._get_blob_path(record_id=record_id, bulk_id=bulk_id, with_protocol=False)
-        return self._load_bulk_impl(blob_path, columns=columns)
+        dfs = [self._load(path=f["files"], columns=f["vars"]) for f in files_to_load.values()]
+        if len(dfs) == 1:
+            return dfs[0]
+        return self._submit_with_trace(join_dataframes, dfs)
 
-    def _load_bulk_session(self, session: Session, columns: List[str] = None) -> dd.DataFrame:
-        session_path = self._build_path_from_session(session, with_protocol=False)
-        return self._load_bulk_impl(session_path, columns=columns)
+    def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None):
+        return self._load_bulk_from_path(self._get_blob_path(record_id, bulk_id), columns=columns)
 
     @with_trace('read_stat')
     def read_stat(self, record_id: str, bulk_id: str):
@@ -387,7 +390,7 @@ class DaskBulkStorage:
         
         for file, dataset in zip(files, data):
             schema = dataset.read_pandas().schema
-            # filter special dask columns '__null_dask_index__'
+            # filter special dask column '__null_dask_index__'
             schema_dict = {x: str(y) for x, y in zip(
                 schema.names, schema.types) if x != '__null_dask_index__'}
             file_with_proto = f'{self.protocol}://{file}'
@@ -400,6 +403,20 @@ class DaskBulkStorage:
         return schemas
 
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
+        """
+        Commit a session
+        session: the session to commit
+        from_bulk_id: id of the bulk to add to seesion. Used when updating a record.
+        we are merging the session chunks based on a tree reduction algorithm
+        finish           result             single output
+            ^          /        \
+            |        c1          c2        neighbors merge
+            |       /  \        /  \
+            |     b1    b2    b3    b4     neighbors merge
+            ^    / \   / \   / \   / \
+        start   a1 a2 a3 a4 a5 a6 a7 a8    many inputs
+        """
+        # load all session chunks
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
         if not dfs:
             raise BulkNotProcessable("No data to commit")
@@ -408,38 +425,39 @@ class DaskBulkStorage:
         if from_bulk_id:
             dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
         
-        def commit_async(dfs: List[dd.DataFrame], base_path, storage_options):
-            part_count = 0
+        def commit_async(chunks: List[dd.DataFrame], base_path, storage_options):
             client = get_client()
             futures = []
-            while len(dfs):
-                ddf, dfs = dfs[0], dfs[1:]
+            catalog = {}
+            while chunks:
+                ddf, *chunks = chunks
                 if ddf.columns.empty:
                     continue
 
+                path = f'{base_path}/part_{len(futures)}.parquet'
+                catalog.update({cn: {'dtype': str(dt), 'files': [path] } for cn, dt in ddf.dtypes.items()})
+
                 to_merge = [ddf]
-                for i in range(len(dfs)):
-                    other = dfs[i]
+                for i, other in enumerate(chunks):
                     common_cols = ddf.columns.intersection(other.columns)
                     if not common_cols.empty:
                         to_merge.append(other[common_cols])
-                        remaining_cols_in_other = other.columns.difference(common_cols)
-                        dfs[i] = other[remaining_cols_in_other]
+                        chunks[i] = other[other.columns.difference(common_cols)]
 
                 while len(to_merge) > 1:
                     to_merge = [client.submit(do_merge, a, b) for a, b in by_pairs(to_merge)]
 
-                path = f'{base_path}/part_{part_count}.parquet'
-                part_count += 1
-                save_task = client.submit(dask_to_parquet, to_merge[0], path, storage_options)
-                futures.append(save_task)
-            return client.gather(futures)
+                # save to parquet
+                futures.append(client.submit(dask_to_parquet, to_merge[0], path, storage_options))
+
+            client.gather(futures)
+            return catalog
 
         bulk_id = BulkId.new_bulk_id()
         base_path = self._get_blob_path(session.recordId, bulk_id)
-        await self._submit_with_trace(commit_async, dfs, base_path, self._parameters.storage_options)
-        
-        catalog = self.build_catalog(base_path, force_build=True) # TODO async
+        catalog =  await self._submit_with_trace(commit_async, dfs, base_path, self._parameters.storage_options)
+
+        #catalog = self.build_catalog(base_path, force_build=True) # TODO async
         self.save_catalog(base_path, catalog) # TODO async
 
         return bulk_id
