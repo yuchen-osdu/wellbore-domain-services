@@ -388,11 +388,14 @@ class DaskBulkStorage:
         data = [pa.ParquetDataset(f, filesystem=self._fs) for f in files]
         schemas = {}
         
+        def is_special_column(name) -> bool:
+            return name.startswith('__') and name.endswith('__')
+            
         for file, dataset in zip(files, data):
             schema = dataset.read_pandas().schema
-            # filter special dask column '__null_dask_index__'
+            # filter special dask and pandas column '__null_dask_index__', '__index_level_0__'
             schema_dict = {x: str(y) for x, y in zip(
-                schema.names, schema.types) if x != '__null_dask_index__'}
+                schema.names, schema.types) if not is_special_column(x)}
             file_with_proto = f'{self.protocol}://{file}'
             for col_name, _meta in schema_dict.items():
                 if col_name not in schemas:
@@ -407,14 +410,6 @@ class DaskBulkStorage:
         Commit a session
         session: the session to commit
         from_bulk_id: id of the bulk to add to seesion. Used when updating a record.
-        we are merging the session chunks based on a tree reduction algorithm
-        finish           result             single output
-            ^          /        \
-            |        c1          c2        neighbors merge
-            |       /  \        /  \
-            |     b1    b2    b3    b4     neighbors merge
-            ^    / \   / \   / \   / \
-        start   a1 a2 a3 a4 a5 a6 a7 a8    many inputs
         """
         # load all session chunks
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
@@ -425,6 +420,15 @@ class DaskBulkStorage:
         if from_bulk_id:
             dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
         
+        def needs_merge(chunks: List[dd.DataFrame]):
+            while chunks:
+                ddf, *chunks = chunks
+                for other in chunks:
+                    common_cols = ddf.columns.intersection(other.columns)
+                    if not common_cols.empty:
+                        return True
+            return False
+
         def commit_async(chunks: List[dd.DataFrame], base_path, storage_options):
             client = get_client()
             futures = []
@@ -450,14 +454,25 @@ class DaskBulkStorage:
                 # save to parquet
                 futures.append(client.submit(dask_to_parquet, to_merge[0], path, storage_options))
 
-            client.gather(futures)
-            return catalog
+            #client.gather(futures)
+            return futures, catalog
 
         bulk_id = BulkId.new_bulk_id()
         base_path = self._get_blob_path(session.recordId, bulk_id)
-        catalog =  await self._submit_with_trace(commit_async, dfs, base_path, self._parameters.storage_options)
 
-        #catalog = self.build_catalog(base_path, force_build=True) # TODO async
+        merge_needed = await self._submit_with_trace(needs_merge, dfs)
+        if not merge_needed:
+            catalog = self.build_catalog(self._build_path_from_session(session), force_build=True) # TODO async
+            if from_bulk_id:
+                prev_catalog = self.build_catalog(self._get_blob_path(session.recordId, from_bulk_id))  # TODO async
+                if prev_catalog: # else exception ?
+                    catalog.update(prev_catalog)
+            self.save_catalog(base_path, catalog) # TODO async
+            return bulk_id
+
+        futures, catalog =  await self._submit_with_trace(commit_async, dfs, base_path, self._parameters.storage_options)
+        await self.client.gather(futures)
+
         self.save_catalog(base_path, catalog) # TODO async
 
         return bulk_id
