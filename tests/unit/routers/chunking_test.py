@@ -1038,6 +1038,26 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
                    session_mode='update',
                    data_format='parquet')
 
+
+def test_receive_empty_log_bulk_in_parquet(setup_client):
+    client = setup_client
+    entity_type = 'Log'
+    record_id = _create_record(client, entity_type)
+    base_url = Definitions[entity_type]['base_url']
+    write_response = client.post(f'{base_url}/{record_id}/data', data=b"{}", headers={'content-type': 'application/json'})
+    assert write_response.status_code == 200
+    chunking_url = Definitions[entity_type]['chunking_url']
+    get_response_no_data = client.get(f'{chunking_url}/{record_id}/data',
+                                      headers={'content-type': 'application/x-parquet'})
+    assert get_response_no_data.status_code == 200
+    f = io.BytesIO(get_response_no_data.content)
+    f.seek(0)
+    df = pd.read_parquet(f)
+    assert df.empty is True
+
+
+
+
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
 #  - index: check if dataframe has an index
