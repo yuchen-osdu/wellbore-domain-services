@@ -56,13 +56,15 @@ class SessionFileMeta:
         self.start = float(start)  # data time support ?
         self.end = float(end)
         self.time, self.shape, tail = tail.split('.')
-        self.columns = self._get_columns(file_path)  # TODO lazy load
+        meta = self._read_meta(file_path)
+        self.columns = meta['columns']
+        self.dtypes = meta['dtypes']
         self.path = file_path
 
-    def _get_columns(self, file_path):
+    def _read_meta(self, file_path):
         path, _ = os.path.splitext(file_path)
         with self._fs.open(path + '.meta') as meta_file:
-            return json.load(meta_file)['columns']
+            return json.load(meta_file)
 
     def overlap(self, other: 'SessionFileMeta'):
         """Returns True if indexes overlap."""

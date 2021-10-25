@@ -154,12 +154,19 @@ async def get_data_version(
             if data_param.curves:
                 stat = dask_blob_storage.read_stat(record_id, bulk_id)
                 existing_col = set(stat['schema'])
-                columns = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
+                columns = DataFrameRender.get_matching_column(
+                    data_param.get_curves_list(), existing_col)
+                stat['schema'] = { k: stat['schema'][k] for k in columns }
             elif data_param.describe:
                 stat = dask_blob_storage.read_stat(record_id, bulk_id)
-
-            # loading the dataframe with filter on columns is faster than filtering columns on df
-            df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
+            
+            if data_param.describe and not data_param.offset and not data_param.limit:
+                import pandas as pd
+                # optimization: create a fake dataset when describe on all rows
+                df = pd.DataFrame()
+            else:
+                # loading the dataframe with filter on columns is faster than filtering columns on df
+                df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
         elif prefix is None:
             df = await get_dataframe(ctx, bulk_id)
             _check_df_columns_type_legacy(df)

@@ -321,7 +321,10 @@ class DaskBulkStorage:
         session_path_wo_protocol = self._build_path_from_session(session, with_protocol=False)
         self._fs.mkdirs(session_path_wo_protocol, exist_ok=True)
         with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
-           json.dump({"columns": list(pdf)}, outfile)
+            json.dump({
+                "columns": list(pdf),
+                "dtypes": [str(dt) for dt in pdf.dtypes]
+            }, outfile)
 
         session_path = self._build_path_from_session(session)
 
@@ -330,6 +333,7 @@ class DaskBulkStorage:
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
     def get_session_parquet_files(self, session):
+        """return the parquet files of the specified session"""
         session_path = self._build_path_from_session(session, with_protocol=False)
         with suppress(FileNotFoundError):
             session_files = [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
@@ -411,6 +415,29 @@ class DaskBulkStorage:
         session: the session to commit
         from_bulk_id: id of the bulk to add to seesion. Used when updating a record.
         """
+
+        bulk_id = BulkId.new_bulk_id()
+        base_path = self._get_blob_path(session.recordId, bulk_id)
+
+        merge_needed = False
+        tmp_cat = {}
+        if from_bulk_id:
+            tmp_cat = self.build_catalog(
+                self._get_blob_path(session.recordId, from_bulk_id))  # TODO async
+
+        for files in self._get_next_files_list(session):
+            meta = SessionFileMeta(self._fs, files[0].replace('.parquet', '.meta'))
+            new_entries = {col_name: {'files': files, 'dtype': dtype}
+                           for col_name, dtype in zip(meta.columns, meta.dtypes)}
+            if tmp_cat.keys() & new_entries.keys():
+                merge_needed = True
+                break
+            tmp_cat.update(new_entries)
+
+        if not merge_needed:
+            self.save_catalog(base_path, tmp_cat)  # TODO async
+            return bulk_id  # If no merge is needed, we stop here
+
         # load all session chunks
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
         if not dfs:
@@ -419,15 +446,6 @@ class DaskBulkStorage:
         # load the data of a precedent version of the record.
         if from_bulk_id:
             dfs.insert(0, self._load_bulk(session.recordId, from_bulk_id))
-        
-        def needs_merge(chunks: List[dd.DataFrame]):
-            while chunks:
-                ddf, *chunks = chunks
-                for other in chunks:
-                    common_cols = ddf.columns.intersection(other.columns)
-                    if not common_cols.empty:
-                        return True
-            return False
 
         def commit_async(chunks: List[dd.DataFrame], base_path, storage_options):
             client = get_client()
@@ -457,18 +475,6 @@ class DaskBulkStorage:
             #client.gather(futures)
             return futures, catalog
 
-        bulk_id = BulkId.new_bulk_id()
-        base_path = self._get_blob_path(session.recordId, bulk_id)
-
-        merge_needed = await self._submit_with_trace(needs_merge, dfs)
-        if not merge_needed:
-            catalog = self.build_catalog(self._build_path_from_session(session), force_build=True) # TODO async
-            if from_bulk_id:
-                prev_catalog = self.build_catalog(self._get_blob_path(session.recordId, from_bulk_id))  # TODO async
-                if prev_catalog: # else exception ?
-                    catalog.update(prev_catalog)
-            self.save_catalog(base_path, catalog) # TODO async
-            return bulk_id
 
         futures, catalog =  await self._submit_with_trace(commit_async, dfs, base_path, self._parameters.storage_options)
         await self.client.gather(futures)
