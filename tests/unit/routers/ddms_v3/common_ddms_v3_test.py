@@ -315,13 +315,14 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
     moc_delete_records = mock.AsyncMock(return_value=Response())
 
     with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc_get_record), \
-         mock.patch.object(StorageRecordServiceClientMock, "get_all_record_versions", moc_get_all_record_versions), \
          mock.patch.object(StorageRecordServiceClientMock, "get_record_version", moc_get_record), \
+         mock.patch.object(StorageRecordServiceClientMock, "get_all_record_versions", moc_get_all_record_versions), \
          mock.patch.object(StorageRecordServiceClientMock, "create_or_update_records", moc_create_or_update_records), \
          mock.patch("app.routers.bulk.bulk_routes.set_bulk_field_and_send_record", moc_create_or_update_records), \
          mock.patch.object(StorageRecordServiceClientMock, "delete_record", moc_delete_records):
 
         response = client.post(f"{base_url}", json=[record_to_test])
+
         validation_test_restricted_record_id(record_id, record_id_to_test, response, error_response=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         response = client.get(f"{base_url}/{record_id_to_test}")
@@ -341,28 +342,23 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
             response = client.post(f'{base_url}/{record_id_to_test}/sessions',
                                    json={"fromVersion": 11351351, 'mode': 'update'})
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
             session_id = "56df654df654df65"
             response = client.post(f'{base_url}/{record_id_to_test}/sessions/{session_id}/data',
                                    data=chunk.to_json(orient='split'),
                                    headers={'Content-Type': 'application/json'})
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
             response = client.patch(f'{base_url}/{record_id_to_test}/sessions/{session_id}', json={'state': 'abandon'})
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
             response = client.get(f'{base_url}/{record_id_to_test}/sessions')
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
             response = client.get(f'{base_url}/{record_id_to_test}/sessions/{session_id}')
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
             response = client.delete(f'{base_url}/{record_id_to_test}/sessions/{session_id}')
             validation_test_restricted_record_id(record_id, record_id_to_test, response, ok_response=status.HTTP_204_NO_CONTENT)
             #DATA
             moc_record = Record(
                 id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-                kind="test",
+                kind="namespace:osdu:Well:2.7.112",
                 acl={"owners": ["test"], "viewers": ["test"]},
                 version=1976,
                 legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
@@ -374,10 +370,8 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
                 headers = {'content-type': 'application/json'}
                 response = client.post(f'{base_url}/{record_id_to_test}/data', data=data, headers=headers)
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
                 response = client.get(f'{base_url}/{record_id_to_test}/data?orient=split',
                                       headers={'Accept': 'application/json'})
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
                 response = client.get(f'{base_url}/{record_id_to_test}/versions/{version}/data')
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
