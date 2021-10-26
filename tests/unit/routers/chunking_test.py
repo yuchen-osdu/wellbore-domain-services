@@ -771,7 +771,8 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     assert chunk_response_1.status_code == expected_code
 
 
-def test_legacy_logs_int_columns(setup_client):
+@pytest.mark.parametrize("columns", [[int(42), float(-42)], []])
+def test_legacy_logs_int_columns(setup_client, columns):
     """
         Ensure legacy v2 Log containing columns name as int type are correctly converted to string
         to ensure to_parquet is possible.
@@ -783,7 +784,7 @@ def test_legacy_logs_int_columns(setup_client):
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
 
-    json_data = {t: np.random.rand(10) for t in [int(42), float(-42)]}
+    json_data = {t: np.random.rand(10) for t in columns}
     df_data = pd.DataFrame(json_data)
     data_to_send = df_data.to_json(orient='split', date_format='iso')
 
@@ -1037,24 +1038,6 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
                    record_id=record_id,
                    session_mode='update',
                    data_format='parquet')
-
-
-def test_receive_empty_log_bulk_in_parquet(setup_client):
-    client = setup_client
-    entity_type = 'Log'
-    record_id = _create_record(client, entity_type)
-    base_url = Definitions[entity_type]['base_url']
-    write_response = client.post(f'{base_url}/{record_id}/data', data=b"{}", headers={'content-type': 'application/json'})
-    assert write_response.status_code == 200
-    chunking_url = Definitions[entity_type]['chunking_url']
-    get_response_no_data = client.get(f'{chunking_url}/{record_id}/data',
-                                      headers={'content-type': 'application/x-parquet'})
-    assert get_response_no_data.status_code == 200
-    f = io.BytesIO(get_response_no_data.content)
-    f.seek(0)
-    df = pd.read_parquet(f)
-    assert df.empty is True
-
 
 
 
