@@ -109,7 +109,7 @@ class DaskBulkStorage:
     client: DaskDistributedClient = None
     """ Dask client """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """ use `create` to create instance """
         self._parameters = None
         self._fs = None
@@ -146,21 +146,33 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
-    def _encode_record_id(self, record_id: str) -> str:
+    @staticmethod
+    def encode_record_id(record_id: str) -> str:
         return hashlib.sha1(record_id.encode()).hexdigest()
 
     def _get_base_directory(self, protocol=True):
         return f'{self.protocol}://{self.base_directory}' if protocol else self.base_directory
 
+    def _get_entity_path(self, record_id: str, with_protocol=True) -> str:
+        """Return the entity id path from the record_id."""
+        encoded_id = self.encode_record_id(record_id)
+        return f'{self._get_base_directory(with_protocol)}/{encoded_id}'
+
+    def _get_bulk_path(self, record_id: str, with_protocol=True) -> str:
+        """Return the bulk folder path from the record_id."""
+        return f'{self._get_entity_path(record_id, with_protocol)}/bulk'
+
+    def _get_bulk_id_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
+        """Return the bulk id path from the record_id."""
+        return f'{self._get_bulk_path(record_id, with_protocol)}/{bulk_id}'
+
     def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
         """Return the bulk path from the bulk_id."""
-        encoded_id = self._encode_record_id(record_id)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/bulk/{bulk_id}/data'
+        return f'{self._get_bulk_id_path(record_id, bulk_id, with_protocol)}/data'
 
     def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
         """Return the session path."""
-        encoded_id = self._encode_record_id(session.recordId)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/session/{session.id}/data'
+        return f'{self._get_entity_path(session.recordId, with_protocol)}/session/{session.id}/data'
 
     def _load(self, path, **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
@@ -186,17 +198,18 @@ class DaskBulkStorage:
         """
         schemas = self.get_catalog(bulk_path)
         if schemas is None:
+            # if there is no catalog it means that we can read the all folder as a parquet dataset.
             return self._load(bulk_path, columns=columns)
 
         if columns:
-             # if the user request columns that does not exists, we ignore them
+            # if the user request columns that does not exists, we ignore them
             columns = set(schemas).intersection(columns)
         else:
             # request all columns
-            columns = schemas
+            columns = schemas # TODO should we limit the number of columns to read ?
 
-        files_to_load = {}
         # find columns that we can load together
+        files_to_load = {}
         for col_name in columns:
             files_list = schemas[col_name]["files"]
             group_by = hash("".join(files_list))
@@ -217,7 +230,7 @@ class DaskBulkStorage:
     def read_stat(self, record_id: str, bulk_id: str):
         """Return some meta data about the bulk."""
         file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
-        schema = self.build_catalog(file_path, force_build=False)
+        schema = self.build_catalog(file_path, record_id=record_id, force_build=False)
 
         schema_dict = {vn: item['dtype'] for vn, item in schema.items()}
         return {
@@ -381,7 +394,7 @@ class DaskBulkStorage:
         return None
 
     @capture_timings('build_catalog')
-    def build_catalog(self, path, force_build=False):
+    def build_catalog(self, path: str, record_id: str, force_build: bool=False):
         path = self.trim_protocol(path)
         if not force_build:
             cat = self.get_catalog(path)
@@ -389,25 +402,29 @@ class DaskBulkStorage:
                 return cat
 
         files = [f for f in self._fs.ls(path) if f.endswith('.parquet')]
-        data = [pa.ParquetDataset(f, filesystem=self._fs) for f in files]
-        schemas = {}
-        
+        data = [pa.ParquetDataset(f, filesystem=self._fs) for f in files] # TODO in parallele
+        catalog = {}
+
+        entity_path = self._get_entity_path(record_id, with_protocol=False)
+        assert all(f.startswith(entity_path) for f in files) # TODO security check
+
         def is_special_column(name) -> bool:
             return name.startswith('__') and name.endswith('__')
-            
+
         for file, dataset in zip(files, data):
             schema = dataset.read_pandas().schema
             # filter special dask and pandas column '__null_dask_index__', '__index_level_0__'
             schema_dict = {x: str(y) for x, y in zip(
                 schema.names, schema.types) if not is_special_column(x)}
             file_with_proto = f'{self.protocol}://{file}'
+ 
             for col_name, _meta in schema_dict.items():
-                if col_name not in schemas:
-                    schemas[col_name] = {"files": [file_with_proto], 'dtype': _meta}
+                if col_name not in catalog:
+                    catalog[col_name] = {"files": [file_with_proto], 'dtype': _meta}
                 else:
-                    schemas[col_name]["files"].append(file_with_proto)
+                    catalog[col_name]["files"].append(file_with_proto)
 
-        return schemas
+        return catalog
 
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         """
@@ -423,7 +440,8 @@ class DaskBulkStorage:
         tmp_cat = {}
         if from_bulk_id:
             tmp_cat = self.build_catalog(
-                self._get_blob_path(session.recordId, from_bulk_id))  # TODO async
+                self._get_blob_path(session.recordId, from_bulk_id),
+                record_id=from_bulk_id)  # TODO async
 
         for files in self._get_next_files_list(session):
             meta = SessionFileMeta(self._fs, files[0].replace('.parquet', '.meta'))
