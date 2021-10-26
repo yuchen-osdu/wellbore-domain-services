@@ -176,11 +176,29 @@ class DataFrameRender:
             selected.extend(natsorted(matching_columns))
         return selected
 
+
+    @staticmethod
+    def apply_filter(df, filters):
+        op_fcts = {
+            'eq' : lambda df, col, val : df[col] == val,
+            'lte': lambda df, col, val : df[col] <= val,
+            'lt': lambda df, col, val : df[col] < int(val),
+            'gt': lambda df, col, val : df[col] > int(val),
+            'gte': lambda df, col, val : df[col] >= val,
+        }
+        for col_name, ops in filters.items():
+            for op, value in ops.items():
+                fct = op_fcts[op]
+                df = df.loc[fct(df, col_name, value)]
+        return df
+
     @staticmethod
     @with_trace('process_params')
     async def process_params(df, params: GetDataParams):
         if isinstance(df, pd.DataFrame):
             df = dd.from_pandas(df, npartitions=1)
+
+        df = DataFrameRender.apply_filter(df, params.get_filters())
 
         if params.curves:
             selection = list(map(str.strip, params.curves.split(',')))
@@ -200,12 +218,14 @@ class DataFrameRender:
             nb_rows: int = 0
             if stat and not params.limit and not params.offset:
                 nb_rows = stat['num_rows']
+                columns = natsorted(list(stat['schema']))
             else:
                 nb_rows = await DataFrameRender.get_size(df)
+                columns = list(df.columns)
 
             return {
                 "numberOfRows": nb_rows,
-                "columns": list(df.columns)
+                "columns": columns
             }
 
         pdf = await DataFrameRender.compute(df)

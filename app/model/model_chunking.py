@@ -41,11 +41,18 @@ class GetDataParams:
             description='The "describe" query option allows clients to request a description of the matching result. '
             '(number of rows, columns name)',
             example='false'),
+        filter: Optional[List[str]] = Query(
+            default=None,
+            description='The "filter" query parameter allows clients to filter data following the pattern $colomn_name:$operation:$value.'
+            'supported operation : eq, gt, gte, lt, lte',
+            exemple='MD:lt:1000'
+        )
     ) -> None:
         self.offset = offset
         self.limit = limit
         self.curves = curves
         self.describe = describe
+        self.filter = filter
         # orient if json ?
 
     def get_curves_list(self) -> List[str]:
@@ -56,3 +63,27 @@ class GetDataParams:
             # remove duplicates but maintain order
             return list(dict.fromkeys(curves))
         return []
+
+    def get_filters(self) :
+        """return the parsed filter query
+        { 
+            'col_name_1' : {
+                'lt': 10,
+                'gt': 50
+            },
+            'col_name_2': {...}
+        }
+        """
+        if not self.filter:
+            return {}
+        valid_op = {'lt', 'lte', 'gt', 'gte', 'eq'} # TODO should be initialized ones, add other operation like in, startwith, like...
+        filters = {}
+        for f in self.filter:
+            col_name, op, *value = f.split(':')  # TODO handle exception
+            if op not in valid_op:
+                continue  # TODO raise ?
+            new_filter = {op: "".join(value)}
+            if col_name not in filters:
+                filters[col_name] = {}
+            filters[col_name].update(new_filter)
+        return filters
