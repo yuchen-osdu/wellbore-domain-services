@@ -26,6 +26,7 @@ from pyarrow.lib import ArrowException, ArrowInvalid
 from app.bulk_persistence import BulkId
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.traces import wrap_trace_process
+from app.bulk_persistence.dask.bulk_catalog import BulkCatalog
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
                                              do_merge, join_dataframes,
                                              worker_capture_timing_handlers)
@@ -196,29 +197,22 @@ class DaskBulkStorage:
             load columns from parquet files in the bulk_path
             return a Future<dd.DataFrame>
         """
-        schemas = self.get_catalog(bulk_path)
-        if schemas is None:
-            # if there is no catalog it means that we can read the all folder as a parquet dataset.
+        catalog = self.get_catalog(bulk_path)
+        if catalog is None:
+            # if there is no catalog it means that we can read the all folder as a parquet dataset. (legacy behavior)
             return self._load(bulk_path, columns=columns)
-
-        if columns:
-            # if the user request columns that does not exists, we ignore them
-            columns = set(schemas).intersection(columns)
-        else:
-            # request all columns
-            columns = schemas # TODO should we limit the number of columns to read ?
+        
+        schemas = catalog.columns
+        
+        # if the user request columns that does not exists, we ignore them
+        # if columns is None, load all columns
+        # TODO should we limit the number of columns to read ?
+        columns = set(schemas).intersection(columns) if columns else schemas
 
         # find columns that we can load together
-        files_to_load = {}
-        for col_name in columns:
-            files_list = schemas[col_name]["files"]
-            group_by = hash("".join(files_list))
-            if group_by in files_to_load:
-                files_to_load[group_by]["vars"].append(col_name)
-            else:
-                files_to_load[group_by] = {"files" : files_list, "vars": [col_name]}
+        files_to_load = catalog.get_columns_files_groupped_by_files(columns)
 
-        dfs = [self._load(path=f["files"], columns=f["vars"]) for f in files_to_load.values()]
+        dfs = [self._load(path=f["paths"], columns=f["columns"]) for f in files_to_load]
         if len(dfs) == 1:
             return dfs[0]
         return self._submit_with_trace(join_dataframes, dfs)
@@ -230,9 +224,9 @@ class DaskBulkStorage:
     def read_stat(self, record_id: str, bulk_id: str):
         """Return some meta data about the bulk."""
         file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
-        schema = self.build_catalog(file_path, record_id=record_id, force_build=False)
+        catalog = self.build_catalog(file_path, record_id=record_id, force_build=False)
 
-        schema_dict = {vn: item['dtype'] for vn, item in schema.items()}
+        schema_dict = {vn: item.dtype for vn, item in catalog.columns.items()}
         return {
             "num_rows": 0, # TODO
             "schema": schema_dict
@@ -336,7 +330,8 @@ class DaskBulkStorage:
         with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
             json.dump({
                 "columns": list(pdf),
-                "dtypes": [str(dt) for dt in pdf.dtypes]
+                "dtypes": [str(dt) for dt in pdf.dtypes],
+                "nb_rows": len(pdf.index)
             }, outfile)
 
         session_path = self._build_path_from_session(session)
@@ -376,25 +371,26 @@ class DaskBulkStorage:
 
             yield [f'{self.protocol}://{file.path}' for file in file_list]
 
-    def trim_protocol(self, path):
+    def trim_protocol(self, path: str)-> str:
         return path.lstrip(f'{self.protocol}://')
 
-    def save_catalog(self, path, catalog):
+    def save_catalog(self, path: str, catalog: BulkCatalog) -> str:
         path = self.trim_protocol(path)
         meta_path = f'{path}/_meta.json'
         with self._fs.open(meta_path, 'w') as outfile:
-            json.dump(catalog, outfile)
+            json.dump(catalog.as_dict(), outfile)
 
-    def get_catalog(self, path):
+    def get_catalog(self, path: str) -> BulkCatalog:
         path = self.trim_protocol(path)
         meta_path = f'{path}/_meta.json'
         if self._fs.exists(meta_path):
             with self._fs.open(meta_path) as json_file:
-                return json.load(json_file)
+                data = json.load(json_file)
+                return BulkCatalog.from_dict(data)
         return None
 
     @capture_timings('build_catalog')
-    def build_catalog(self, path: str, record_id: str, force_build: bool=False):
+    def build_catalog(self, path: str, force_build: bool=False) -> BulkCatalog:
         path = self.trim_protocol(path)
         if not force_build:
             cat = self.get_catalog(path)
@@ -402,27 +398,29 @@ class DaskBulkStorage:
                 return cat
 
         files = [f for f in self._fs.ls(path) if f.endswith('.parquet')]
-        data = [pa.ParquetDataset(f, filesystem=self._fs) for f in files] # TODO in parallele
-        catalog = {}
+        datasets = [pa.ParquetDataset(f, filesystem=self._fs) for f in files] # TODO in parallele
 
-        entity_path = self._get_entity_path(record_id, with_protocol=False)
-        assert all(f.startswith(entity_path) for f in files) # TODO security check
+        catalog = BulkCatalog()
+
+        #entity_path = self._get_entity_path(record_id, with_protocol=False)
+        #assert all(f.startswith(entity_path) for f in files) # TODO security check
 
         def is_special_column(name) -> bool:
+            """special dask and pandas column '__null_dask_index__', '__index_level_0__'"""
             return name.startswith('__') and name.endswith('__')
 
-        for file, dataset in zip(files, data):
+        for file, dataset in zip(files, datasets):
             schema = dataset.read_pandas().schema
-            # filter special dask and pandas column '__null_dask_index__', '__index_level_0__'
             schema_dict = {x: str(y) for x, y in zip(
                 schema.names, schema.types) if not is_special_column(x)}
             file_with_proto = f'{self.protocol}://{file}'
+            # TODO check if we can get the number of rows here
  
-            for col_name, _meta in schema_dict.items():
-                if col_name not in catalog:
-                    catalog[col_name] = {"files": [file_with_proto], 'dtype': _meta}
+            for col_name, dtype in schema_dict.items():
+                if col_name not in catalog.columns:
+                    catalog.columns[col_name] = BulkCatalog.ColumnInfo(paths=[file_with_proto], dtype=dtype)
                 else:
-                    catalog[col_name]["files"].append(file_with_proto)
+                    catalog.columns[col_name].paths.append(file_with_proto) # TODO check dtype
 
         return catalog
 
@@ -437,20 +435,22 @@ class DaskBulkStorage:
         base_path = self._get_blob_path(session.recordId, bulk_id)
 
         merge_needed = False
-        tmp_cat = {}
+        tmp_cat = BulkCatalog()
         if from_bulk_id:
-            tmp_cat = self.build_catalog(
-                self._get_blob_path(session.recordId, from_bulk_id),
-                record_id=from_bulk_id)  # TODO async
+            tmp_cat = self.build_catalog(self._get_blob_path(session.recordId, from_bulk_id))  # TODO async
 
         for files in self._get_next_files_list(session):
-            meta = SessionFileMeta(self._fs, files[0].replace('.parquet', '.meta'))
-            new_entries = {col_name: {'files': files, 'dtype': dtype}
+            #meta = SessionFileMeta(self._fs, files[0])
+            metas = [SessionFileMeta(self._fs, file) for file in files]
+            # all the files have the same schemas so we can retrieve the dtype and columns from the filrst one
+            meta = metas[0]
+            new_entries = {col_name: {'paths': files, 'dtype': dtype}
                            for col_name, dtype in zip(meta.columns, meta.dtypes)}
-            if tmp_cat.keys() & new_entries.keys():
+            nb_rows = sum((m.nb_rows for m in metas)) # TODO
+            if tmp_cat.columns.keys() & new_entries.keys():
                 merge_needed = True
                 break
-            tmp_cat.update(new_entries)
+            tmp_cat.columns.update(new_entries)
 
         if not merge_needed:
             self.save_catalog(base_path, tmp_cat)  # TODO async
@@ -475,7 +475,7 @@ class DaskBulkStorage:
                     continue
 
                 path = f'{base_path}/part_{len(futures)}.parquet'
-                catalog.update({cn: {'dtype': str(dt), 'files': [path] } for cn, dt in ddf.dtypes.items()})
+                catalog.update({cn: {'dtype': str(dt), 'paths': [path] } for cn, dt in ddf.dtypes.items()})
 
                 to_merge = [ddf]
                 for i, other in enumerate(chunks):
@@ -490,13 +490,13 @@ class DaskBulkStorage:
                 # save to parquet
                 futures.append(client.submit(dask_to_parquet, to_merge[0], path, storage_options))
 
-            #client.gather(futures)
             return futures, catalog
 
 
         futures, catalog =  await self._submit_with_trace(commit_async, dfs, base_path, self._parameters.storage_options)
         await self.client.gather(futures)
 
+        catalog = BulkCatalog.from_dict({'columns': catalog}) # TODO
         self.save_catalog(base_path, catalog) # TODO async
 
         return bulk_id

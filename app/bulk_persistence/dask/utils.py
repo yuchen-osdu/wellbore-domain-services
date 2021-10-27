@@ -59,6 +59,7 @@ class SessionFileMeta:
         meta = self._read_meta(file_path)
         self.columns = meta['columns']
         self.dtypes = meta['dtypes']
+        self.nb_rows = meta['nb_rows']
         self.path = file_path
 
     def _read_meta(self, file_path):
