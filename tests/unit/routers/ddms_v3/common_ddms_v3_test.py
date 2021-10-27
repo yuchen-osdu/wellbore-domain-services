@@ -274,14 +274,14 @@ tests_parameters_restricted_well = [
         r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9",
         {
             "id": "namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            "kind": "namespace:osdu:Well:2.7.112",
+            "kind": "namespace:osdu:master-data--Well:2.7.112",
             "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
             "data": {}
         },
         Well(
             id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            kind="namespace:osdu:Well:2.7.112",
+            kind="namespace:osdu:master-data--Well:2.7.112",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             version=1976,
             legal={
@@ -334,31 +334,28 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
         response = client.get(f'{base_url}/{record_id_to_test}/versions/{version}')
         validation_test_restricted_record_id(record_id, record_id_to_test, response)
 
-        response = client.delete(f'{base_url}/{record_id_to_test}')
-        validation_test_restricted_record_id(record_id, record_id_to_test, response, ok_response=status.HTTP_204_NO_CONTENT)
-
         if base_url == "/ddms/v3/welllogs" or base_url == "/ddms/v3/wellboretrajectories":
-            #SESSION
+            # Session
             response = client.post(f'{base_url}/{record_id_to_test}/sessions',
                                    json={"fromVersion": 11351351, 'mode': 'update'})
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
+
             session_id = "56df654df654df65"
             response = client.post(f'{base_url}/{record_id_to_test}/sessions/{session_id}/data',
                                    data=chunk.to_json(orient='split'),
                                    headers={'Content-Type': 'application/json'})
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
-            response = client.patch(f'{base_url}/{record_id_to_test}/sessions/{session_id}', json={'state': 'abandon'})
-            validation_test_restricted_record_id(record_id, record_id_to_test, response)
+
             response = client.get(f'{base_url}/{record_id_to_test}/sessions')
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
+
             response = client.get(f'{base_url}/{record_id_to_test}/sessions/{session_id}')
             validation_test_restricted_record_id(record_id, record_id_to_test, response)
-            response = client.delete(f'{base_url}/{record_id_to_test}/sessions/{session_id}')
-            validation_test_restricted_record_id(record_id, record_id_to_test, response, ok_response=status.HTTP_204_NO_CONTENT)
-            #DATA
+
+            # Data
             moc_record = Record(
                 id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-                kind="namespace:osdu:Well:2.7.112",
+                kind="namespace:osdu:master-data--Well:2.7.112",
                 acl={"owners": ["test"], "viewers": ["test"]},
                 version=1976,
                 legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
@@ -368,10 +365,13 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
             with mock.patch.object(StorageRecordServiceClientMock, "get_record",  mock.AsyncMock(return_value=moc_record)):
                 data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
                 headers = {'content-type': 'application/json'}
+
                 response = client.post(f'{base_url}/{record_id_to_test}/data', data=data, headers=headers)
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
+
                 response = client.get(f'{base_url}/{record_id_to_test}/data?orient=split',
                                       headers={'Accept': 'application/json'})
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
+
                 response = client.get(f'{base_url}/{record_id_to_test}/versions/{version}/data')
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
