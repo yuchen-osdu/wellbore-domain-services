@@ -4,12 +4,8 @@ from fastapi import HTTPException
 from starlette import status
 from starlette.requests import Request
 
-from app.clients.storage_service_client import get_storage_record_service
-from app.converter.converter_utils import ConverterUtils
-from typing import Tuple, Optional
+from typing import Tuple
 
-from app.routers.record_utils import fetch_record
-from app.utils import Context, get_ctx
 
 OSDU_WELL_VERSION_REGEX = re.compile(r'^([\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+):([0-9]*)$')
 OSDU_WELL_REGEX = re.compile(r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')
@@ -30,13 +26,11 @@ OSDU_WELLBOREMARKERSET_VERSION_REGEX = re.compile(
 OSDU_WELLBOREMARKERSET_REGEX = re.compile(
     r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$')
 
-entities_regex = [["wells", "Well"],
-            ["wellbores", "Wellbore"],
-            ["welllogs", "WelLog"],
-            ["wellboretrajectories", "WellboreTrajectory"],
-            ["wellboremarkersets", "WellboreMarkerSet"]]
-
-entity_id_names = ["record_id", "wellid", "wellboreid", "welllogid", "wellboretrajectoryid", "wellboremarkersetid"]
+entity_names = [["wells", "master-data--Well"],
+            ["wellbores", "master-data--Wellbore"],
+            ["welllogs", "work-product-component--WellLog"],
+            ["wellboretrajectories", "work-product-component--WellboreTrajectory"],
+            ["wellboremarkersets", "work-product-component--WellboreMarkerSet"]]
 
 class DMSV3RouterUtils:
     @staticmethod
@@ -76,23 +70,15 @@ class DMSV3RouterUtils:
 
 
     @staticmethod
-    async def is_osdu_right_entity_id(request: Request):
+    async def is_osdu_right_entity_id(record, request: Request):
         url = request.url.path
-        record_id = None
-        for record_id_name in entity_id_names:
-            record_id_in_param = request.scope.get("path_params").get(record_id_name)
-            if record_id_in_param:
-                record_id = record_id_in_param
-        ctx = get_ctx()
-        storage_client = await get_storage_record_service(ctx)
-        record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
-        kind_elements = record.kind.split(":")
-        entity = kind_elements[2]
-        if record_id and "/ddms/v2/" not in url:
-            for entity_regex in entities_regex:
-                if "/ddms/v3/"+entity_regex[0]+"/" in url:
-                    matches = entity_regex[1] == entity
+        if "/ddms/v2/" not in url and record is not None:
+            kind_elements = record.kind.split(":")
+            entity = kind_elements[2]
+            for entity_name in entity_names:
+                if "/ddms/v3/"+entity_name[0]+"/" in url:
+                    matches = entity_name[1] == entity
                     if not matches:
-                        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_regex[0])
+                        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_name[0])
 
 

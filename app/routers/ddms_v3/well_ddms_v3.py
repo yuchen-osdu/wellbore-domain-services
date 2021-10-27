@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from fastapi import APIRouter, Depends, Response, status, Body, HTTPException
+from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
 from odes_storage.models import (
@@ -27,6 +28,7 @@ from app.utils import get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
+from ..record_utils import fetch_record
 
 router = APIRouter()
 
@@ -95,8 +97,10 @@ async def del_osdu_well(wellid: str, ctx: Context = Depends(get_ctx)):
     },
 )
 async def get_osdu_well_versions(
-    wellid: str, ctx: Context = Depends(get_ctx)
+    wellid: str, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
+    record = await fetch_record(ctx, wellid)
+    await DMSV3RouterUtils.is_osdu_right_entity_id(record, request)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(
         id=wellid, data_partition_id=ctx.partition_id
@@ -115,12 +119,13 @@ async def get_osdu_well_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_well_version(
-    wellid: str, version: int, ctx: Context = Depends(get_ctx)
+    wellid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Well:
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record_version(
         id=wellid, version=version, data_partition_id=ctx.partition_id
     )
+    await DMSV3RouterUtils.is_osdu_right_entity_id(well_record, request)
     return from_record(Well, well_record)
 
 

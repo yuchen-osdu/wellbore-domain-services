@@ -3,12 +3,15 @@ from enum import Enum
 from typing import Dict, Optional, Union, List
 from asyncio import gather
 
+from starlette.requests import Request
+
 from app.bulk_persistence import resolve_tenant
 from app.clients import StorageRecordServiceClient
 from app.persistence.sessions_storage import (Session,
                                               SessionInternal,
                                               SessionsStorage,
                                               SessionUpdateMode)
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
@@ -116,6 +119,7 @@ async def get_session_dependencies():
     response_model=Session
 )
 async def create_session(record_id: str,
+                         request: Request,
                          create_rq: CreateDataSessionRequest = None,
                          with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> Session:
     """
@@ -124,9 +128,10 @@ async def create_session(record_id: str,
     check that version exists if fromVersion is passed
     The user should be able to passe a record meta data (data.curves) to be patch at the end.
     """
+    # fetch latest version
+    record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
+    await DMSV3RouterUtils.is_osdu_right_entity_id(record, request)
     if create_rq.fromVersion == 0:
-        # fetch latest version
-        record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
         create_rq.fromVersion = record.version
     else:
         # check version exists
@@ -157,7 +162,10 @@ async def create_session(record_id: str,
 )
 async def get_session(record_id: str,
                       session_id: str,
+                      request: Request,
                       with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> Session:
+    record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
+    await DMSV3RouterUtils.is_osdu_right_entity_id(record, request)
     i_session = await with_storages.get_session(record_id, session_id)
     return i_session.session
 
@@ -181,7 +189,10 @@ async def delete_session(record_id: str,
     response_model=List[Session]
 )
 async def list_session(record_id: str,
+                       request: Request,
                        with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> List[Session]:
+    record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
+    await DMSV3RouterUtils.is_osdu_right_entity_id(record, request)
     session_ids = await with_storages.sessions_storage.list_sessions(with_storages.tenant, record_id)
 
     get_session_tasks = [
