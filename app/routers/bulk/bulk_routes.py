@@ -151,9 +151,9 @@ async def get_data_version(
             raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
             columns = None
+            stat = dask_blob_storage.read_stat(record_id, bulk_id)
+            existing_col = set(stat['schema'])
             if data_param.curves:
-                stat = dask_blob_storage.read_stat(record_id, bulk_id)
-                existing_col = set(stat['schema'])
                 columns = DataFrameRender.get_matching_column(
                     data_param.get_curves_list(), existing_col) # add curve needed for filtering
                 stat['schema'] = { k: stat['schema'][k] for k in columns }
@@ -162,9 +162,12 @@ async def get_data_version(
             
             if data_param.filter:
                 # get column needed for filtering which are not yet in columns
-                filter_columns = set(data_param.get_filters()).intersection(columns or []) # TODO if filter columns does not exist skip, raise ?
+                filter_columns = [c for c in data_param.get_filters().keys() if c in existing_col] # TODO if filter columns does not exist skip, raise ?
+                if not filter_columns:
+                    raise Exception()
                 if columns:
                     columns.extend(filter_columns)
+                    columns = set(columns)
                 else:
                     columns = filter_columns
 

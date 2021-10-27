@@ -182,12 +182,14 @@ class DataFrameRender:
         op_fcts = {
             'eq' : lambda df, col, val : df[col] == val,
             'lte': lambda df, col, val : df[col] <= val,
-            'lt': lambda df, col, val : df[col] < int(val),
-            'gt': lambda df, col, val : df[col] > int(val),
+            'lt': lambda df, col, val : df[col] < val,
+            'gt': lambda df, col, val : df[col] > val,
             'gte': lambda df, col, val : df[col] >= val,
         }
         for col_name, ops in filters.items():
             for op, value in ops.items():
+                if df[col_name].dtype == object:
+                    value = str(value)
                 fct = op_fcts[op]
                 df = df.loc[fct(df, col_name, value)]
         return df
