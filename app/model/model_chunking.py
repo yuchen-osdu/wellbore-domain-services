@@ -77,11 +77,11 @@ class GetDataParams:
         # TODO check if filter columns exist
         if not self.filter:
             return {}
-        valid_op = {'lt', 'lte', 'gt', 'gte', 'eq'} # TODO should be initialized ones, add other operation like in, startwith, like...
+        valid_op = {'lt', 'lte', 'gt', 'gte', 'eq', 'in'} # TODO should be initialized ones, add other operation like in, startwith, like...
         filters = {}
         for f in self.filter:
             col_name, op, *value = f.split(':')  # TODO handle exception regular expression
-            if op not in valid_op:
+            if op.lower() not in valid_op:
                 continue  # TODO raise ?
             value = "".join(value)
             try:

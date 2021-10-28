@@ -185,11 +185,15 @@ class DataFrameRender:
             'lt': lambda df, col, val : df[col] < val,
             'gt': lambda df, col, val : df[col] > val,
             'gte': lambda df, col, val : df[col] >= val,
+            'in': lambda df, col, val : df[col].isin(val)
         }
         for col_name, ops in filters.items():
             for op, value in ops.items():
                 if df[col_name].dtype == object:
-                    value = str(value)
+                    if isinstance(value, tuple):
+                        value = [str(v) for v in value]
+                    else:
+                        value = str(value)
                 fct = op_fcts[op]
                 df = df.loc[fct(df, col_name, value)]
         return df
