@@ -56,22 +56,33 @@ class SessionFileMeta:
         self.start = float(start)  # data time support ?
         self.end = float(end)
         self.time, self.shape, tail = tail.split('.')
-        meta = self._read_meta(file_path)
-        self.columns = meta['columns']
-        self.dtypes = meta['dtypes']
-        self.nb_rows = meta['nb_rows']
+        self._meta = None
         self.path = file_path
 
-    def _read_meta(self, file_path):
-        path, _ = os.path.splitext(file_path)
-        with self._fs.open(path + '.meta') as meta_file:
-            return json.load(meta_file)
+    def _read_meta(self):
+        if not self._meta:
+            path, _ = os.path.splitext(self.path)
+            with self._fs.open(path + '.meta') as meta_file:
+                self._meta = json.load(meta_file)
+        return self._meta
+
+    @property
+    def columns(self):
+        return self._read_meta()['columns']
+    
+    @property
+    def dtypes(self):
+        return self._read_meta()['dtypes']
+    
+    @property
+    def nb_rows(self):
+        return self._read_meta()['nb_rows']
 
     def overlap(self, other: 'SessionFileMeta'):
         """Returns True if indexes overlap."""
         return self.end >= other.start and other.end >= self.start
 
-    def has_common_columns(self, other):
+    def has_common_columns(self, other: 'SessionFileMeta'):
         """Returns True if contains common columns with others."""
         return share_items(self.columns, other.columns)
 
