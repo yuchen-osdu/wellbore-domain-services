@@ -1038,6 +1038,27 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
                    session_mode='update',
                    data_format='parquet')
 
+
+@pytest.mark.parametrize("entity_type", ['WellLog'])
+@pytest.mark.parametrize("accept_content_header", ['application/parquet', 'application/json'])
+def test_none_in_index_error(setup_client, entity_type, accept_content_header):
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    df = generate_df(['COLUMN_MD', 'COLUMN_X', '__index_level_0__'], range(50))
+    data_to_send = df.to_parquet(engine="pyarrow")
+
+    write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                 data=data_to_send,
+                                 headers={'content-type': 'application/parquet'})
+    assert write_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content_header})
+    assert get_response.status_code == 200
+    result_df = _create_df_from_response(get_response)
+
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
 #  - index: check if dataframe has an index
