@@ -14,10 +14,12 @@
 
 # This script executes the test and copies reports to the provided output directory
 # To call this script from the service working directory
-# ./dist/testing/integration/build-aws/run-tests.sh "./reports/"
+# ./dist/testing/tests/integration/build-aws/run-tests.sh "./reports/"
 echo '********* Running Wellbore DDMS integration tests  *********'
 
-echo $(pwd)
+SCRIPT_SOURCE_DIR=$(dirname "$0")
+echo "Script source location"
+echo "$SCRIPT_SOURCE_DIR"
 
 AWS_COGNITO_PWD=$ADMIN_PASSWORD
 AWS_COGNITO_USER=$ADMIN_USER
@@ -36,14 +38,15 @@ token=$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id
 #### RUN INTEGRATION TEST #########################################################################
 
 
-cd deployment/osdu-core/os-wellbore-domain-services/testing
+pushd "$SCRIPT_SOURCE_DIR"/../../../
+echo $(pwd)
 python3 -m venv env
 source env/bin/activate
-python3 -m pip install -r ./aws-test/build-aws/requirements.txt
+python3 -m pip install -r ./tests/aws-test/build-aws/requirements.txt
 rm -rf test-reports/
 mkdir test-reports
 
-cd integration
+cd tests/integration
 acl_domain='example.com'
 legal_tag='opendes-sdmstestlegaltag'
 

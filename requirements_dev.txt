@@ -5,6 +5,7 @@
 #    pip-compile requirements_dev.in
 #
 --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
+--extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
 
 anyio==3.2.1
     # via
@@ -74,6 +75,7 @@ isodate==0.6.0
     #   openapi-schema-validator
 jsonschema==3.2.0
     # via
+    #   -c requirements.txt
     #   -r requirements_dev.in
     #   openapi-schema-validator
     #   openapi-spec-validator
@@ -126,7 +128,9 @@ pyparsing==2.4.7
     #   -c requirements.txt
     #   packaging
 pyrsistent==0.18.0
-    # via jsonschema
+    # via
+    #   -c requirements.txt
+    #   jsonschema
 pytest==6.2.4
     # via
     #   -r requirements_dev.in
