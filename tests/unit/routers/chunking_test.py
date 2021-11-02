@@ -5,12 +5,13 @@ from tempfile import TemporaryDirectory
 from fastapi import Header
 from fastapi.testclient import TestClient
 import pytest
-import numpy as np
 import pandas as pd
 import pandas.api.types as ptypes
 import pyarrow.parquet as pq
 import pyarrow as pa
 import platform
+import numpy as np
+from pandas.testing import assert_frame_equal
 
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -23,6 +24,7 @@ from app.clients.storage_service_blob_storage import StorageRecordServiceBlobSto
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.helper import traces
+from app.routers.bulk.utils import DataFrameRender
 from app.utils import Context, DaskClient
 from app import conf
 
@@ -1038,8 +1040,67 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
                    session_mode='update',
                    data_format='parquet')
 
-# todo:
-#  - concurrent sessions using fromVersion in Integrations tests
+
+op_fcts = {
+    'eq': lambda df, col, val: df[col] == val,
+    'lte': lambda df, col, val: df[col] <= val,
+    'lt': lambda df, col, val: df[col] < val,
+    'gt': lambda df, col, val: df[col] > val,
+    'gte': lambda df, col, val: df[col] >= val,
+    'in': lambda df, col, val: df[col].isin(val)
+}
+
+#todo: one simple dataframe for all tests, by fixture
+
+@pytest.fixture()
+def dataframe_for_filters():
+    dic = {
+        "A": range(10),
+        "B": np.arange(10.0),
+        "C": [str(i) for i in range(10)],
+        "D": [i%2 == 0 for i in range(10)]
+    }
+    return pd.DataFrame(dic, index=range(10))
+
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("params, expected", [
+    (['A:lt:5'], lambda df: df.loc[df['A'] < 5]),
+    (['A:lte:5'], lambda df: df.loc[df['A'] <= 5]),
+    (['A:eq:5'], lambda df: df.loc[df['A'] == 5]),
+    (['A:gt:5'], lambda df: df.loc[df['A'] > 5]),
+    (['A:gte:5'], lambda df: df.loc[df['A'] >= 5]),
+    (['A:in:5,6,7'], lambda df: df.loc[df['A'].isin([5, 6, 7])]),
+    (['B:lt:5.0'], lambda df: df.loc[df['B'] < 5.0]),
+    (['B:lte:5.0'], lambda df: df.loc[df['B'] <= 5.0]),
+    (['B:eq:5.0'], lambda df: df.loc[df['B'] == 5.0]),
+    (['B:gt:5.0'], lambda df: df.loc[df['B'] > 5.0]),
+    (['B:gte:5.0'], lambda df: df.loc[df['B'] >= 5.0]),
+    (['B:in:5.0,6.0,7.0'], lambda df: df.loc[df['B'].isin([5.0, 6.0, 7.0])]),
+    (['C:eq:5'], lambda df: df.loc[df['A'] == 5]),
+    (['C:in:5,6,7'], lambda df: df.loc[df['C'].isin(['5', '6', '7'])]),
+    (['D:eq:True'], lambda df: df.loc[df['D'] == True]),
+    (['D:eq:False'], lambda df: df.loc[df['D'] == False]),
+    (['A:lt:5', 'B:gte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] >= 5.0) & (df['D'] == True)])
+])
+def test_get_bulk_data_with_filters(setup_client, entity_type, params, expected, dataframe_for_filters):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    headers = {'content-type': 'application/x-parquet'}
+    chunking_url = Definitions[entity_type]['chunking_url']
+    response_send_data = client.post(f'{chunking_url}/{record_id}/data',
+                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_send_data.status_code == 200
+
+    header_get_data = {'Accept': 'application/parquet'}
+
+    response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
+               params={'filter': params})
+    df = _create_df_from_response(response_get_data)
+    assert_frame_equal(df, expected(dataframe_for_filters))
+
+
+# todo - concurrent sessions using fromVersion in Integrations tests
 #  - index: check if dataframe has an index
 #  - test timeout ?
 #  - how to choose the index?
