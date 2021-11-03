@@ -1047,7 +1047,11 @@ def test_none_in_index_error(setup_client, entity_type, accept_content_header):
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
+    # A column named '__index_level_0__' is internally used by PyArrow to save the index.
+    # Sending column named the same way as regular column causes problems to read them with Dask.
     df = generate_df(['COLUMN_MD', 'COLUMN_X', '__index_level_0__'], range(50))
+    # df = df.set_index('COLUMN_MD')
+
     data_to_send = df.to_parquet(engine="pyarrow")
 
     write_response = client.post(f'{chunking_url}/{record_id}/data',

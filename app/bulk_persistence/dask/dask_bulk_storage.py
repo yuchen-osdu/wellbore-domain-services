@@ -251,6 +251,9 @@ class DaskBulkStorage:
         if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
             raise BulkNotProcessable("Index should be numeric or datetime")
 
+        if '__index_level_0__' in df.columns:
+            raise BulkNotProcessable("Invalid column name")
+
     @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
     @with_trace('save_blob')
