@@ -20,10 +20,14 @@ from odes_storage.models import (
     RecordVersions,
 )
 
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.osdu_model import WellboreTrajectory110 as WellboreTrajectory
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
+from app.routers.bulk.utils import with_dask_blob_storage
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLBORETRAJECTORY_VERSION_REGEX
+from app.routers.delete.delete_bulk_data import delete_record
 from app.utils import Context
 from app.utils import get_ctx
 from app.model.model_utils import to_record, from_record
@@ -72,13 +76,19 @@ async def get_wellbore_trajectory_osdu(
         },
     },
 )
-async def del_osdu_wellboreTrajectory(wellboretrajectoryid: str, ctx: Context = Depends(get_ctx)):
-    storage_client = await get_storage_record_service(ctx)
+async def del_osdu_wellboreTrajectory(wellboretrajectoryid: str,
+                                      purge: bool,
+                                      ctx: Context = Depends(get_ctx),
+                                      bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+                                      dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage)):
     wellboretrajectoryid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBORETRAJECTORY_VERSION_REGEX,
                                                                   wellboretrajectoryid)
-    await storage_client.delete_record(
-        id=wellboretrajectoryid, data_partition_id=ctx.partition_id
-    )
+    await delete_record(record_id=wellboretrajectoryid,
+                        purge=purge,
+                        ctx=ctx,
+                        bulk_uri_access=bulk_uri_access,
+                        dask_blob_storage=dask_blob_storage)
+
 
 
 @router.get(

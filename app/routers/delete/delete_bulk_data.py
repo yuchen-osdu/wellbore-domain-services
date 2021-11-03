@@ -11,14 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import hashlib
-import sys
-
-from fastapi import (
-    APIRouter,
-    Depends,
-    Response,
-    status)
 
 from app.bulk_persistence import resolve_tenant
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -26,18 +18,13 @@ import asyncio
 
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_client import get_storage_record_service
-from app.helper.traces import with_trace
-from app.routers.bulk.bulk_uri_dependencies import (get_bulk_id_access, BulkIdAccess)
-from app.routers.bulk.utils import with_dask_blob_storage
-from app.routers.common_parameters import REQUIRED_ROLES_WRITE
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
+
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 
-router = APIRouter()
 
-
-@with_trace('_get_bulk_uri_from_version')
 async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess, record_id: str, index: int,
                                      record_versions):
     version = record_versions.versions[index]
@@ -46,7 +33,6 @@ async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess
     return bulk_uri
 
 
-@with_trace('_get_bulk_uris_of_versions_from_record_id')
 async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
                                                     bulk_uri_access: BulkIdAccess,
                                                     storage_client: StorageRecordServiceClient,
@@ -60,26 +46,12 @@ async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
     return record_bulk_uris
 
 
-@router.delete("/record/{record_id}",
-               summary="The API performs a logical soft or hard deletion of the given v3 record.",
-               description="If 'purge' argument is set to 'true' (HARD Delete): "
-                           "It will first find all versions which has bulkURI, "
-                           "delete meta data using storage service then bulk data using blob storage service. "
-                           "If 'purge' argument is set to 'false' (SOFT Delete): "
-                           "It will only delete meta data using storage service."
-                           "{}".format(REQUIRED_ROLES_WRITE),
-               operation_id="delete_record",
-               status_code=status.HTTP_204_NO_CONTENT,
-               response_class=Response,
-               responses={status.HTTP_404_NOT_FOUND: {"description": "Record not found"},
-                          status.HTTP_204_NO_CONTENT: {"description": "Record deleted successfully"}
-                          })
 async def delete_record(
         record_id: str,
         purge: bool,
-        ctx: Context = Depends(get_ctx),
-        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-        dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage)):
+        ctx: Context,
+        bulk_uri_access: BulkIdAccess,
+        dask_blob_storage: DaskBulkStorage):
     storage_client = await get_storage_record_service(ctx)
 
     if not purge:
