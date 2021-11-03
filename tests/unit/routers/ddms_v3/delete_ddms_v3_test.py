@@ -37,11 +37,13 @@ from tests.unit.test_utils import create_mock_class, nope_logger_fixture
 StorageRecordServiceClientMock = mock.AsyncMock()
 BlobStorageMock = mock.AsyncMock()
 
+
 @pytest.fixture
 def logger_fixture():
     from app.helper import logger
     logger._LOGGER = mock.MagicMock()
     yield logger._LOGGER
+
 
 @pytest.fixture
 def client_delete(logger_fixture):
@@ -81,12 +83,6 @@ def client_delete(logger_fixture):
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
 
-record_versions = RecordVersions(record_id='opendes:work-product-component--WellLog:00001234',
-                                 versions=[1972724675421999416275969243854301388, 1972724691719041369425630371084748387,
-                                           1972724692685381136056789571749686596, 1972724693418066907321024541915238319,
-                                           1972724692685381136056789571458786590, 1972724691719041369425637411084748854,
-                                           1972724691719041369425637411084487596, 1972724691719041369425637411257894562
-                                           ])
 record_bulk_uris = ['59c1ab7b-3bc9-4963-976d-815952bc8ddc', None, None, '87be6134-1b8f-43c0-a7f6-384a6a323f60', None,
                     '356eb799-ba19-49ea-814c-cdd8cf87553b', None, 'a764776c-a389-415b-a92c-af8366ce6901']
 list_objects = ['bulk/59c1ab7b-3bc9-4963-976d-815952bc8ddc/data/part.0.parquet',
@@ -94,9 +90,19 @@ list_objects = ['bulk/59c1ab7b-3bc9-4963-976d-815952bc8ddc/data/part.0.parquet',
                 'bulk/356eb799-ba19-49ea-814c-cdd8cf87553b/data/part.0.parquet',
                 'bulk/a764776c-a389-415b-a92c-af8366ce6901/data/part.0.parquet']
 
+versions = [1972724675421999416275969243854301388, 1972724691719041369425630371084748387,
+            1972724692685381136056789571749686596, 1972724693418066907321024541915238319,
+            1972724692685381136056789571458786590, 1972724691719041369425637411084748854,
+            1972724691719041369425637411084487596, 1972724691719041369425637411257894562]
 
-def test_delete_purge_record(client_delete, logger_fixture):
-    record_id = "opendes:work-product-component--WellLog:00001234"
+v3_entities = ["welllogs", "wellboretrajectories"]
+
+
+@pytest.mark.parametrize("v3_entity", v3_entities)
+def test_delete_purge_record(client_delete, logger_fixture, v3_entity):
+    record_id = f'opendes:work-product-component--{v3_entity}:00001234'
+    record_versions = RecordVersions(record_id=record_id,
+                                     versions=versions)
     mock_storage_service_delete_record = mock.AsyncMock(return_value=status.HTTP_204_NO_CONTENT,
                                                         side_effect=status.HTTP_404_NOT_FOUND)
     mock_blob_storage = mock.AsyncMock(return_value=status.HTTP_204_NO_CONTENT,
@@ -113,9 +119,8 @@ def test_delete_purge_record(client_delete, logger_fixture):
          mock.patch.object(BlobStorageMock, "list_objects", mock_storage_list_objects), \
          mock.patch.object(BlobStorageMock, "delete", mock_blob_storage), \
          mock.patch.object(delete_bulk_data, "_get_bulk_uri_from_version", mock_get_bulk_uri_from_version):
-
         response = client_delete.delete(
-            f"/ddms/v3/record/{record_id}?purge=true",
+            f"/ddms/v3/{v3_entity}/{record_id}?purge=true",
             headers={"data-partition-id": "testing_partition"},
         )
         assert response.status_code == status.HTTP_204_NO_CONTENT

@@ -79,7 +79,7 @@ async def get_welllog_osdu(
     },
 )
 async def del_osdu_welllog(welllogid: str,
-                           purge: bool,
+                           purge: bool = False,
                            ctx: Context = Depends(get_ctx),
                            bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
                            dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage)):

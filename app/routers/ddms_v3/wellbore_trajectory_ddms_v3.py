@@ -77,7 +77,7 @@ async def get_wellbore_trajectory_osdu(
     },
 )
 async def del_osdu_wellboreTrajectory(wellboretrajectoryid: str,
-                                      purge: bool,
+                                      purge: bool = False,
                                       ctx: Context = Depends(get_ctx),
                                       bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
                                       dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage)):
