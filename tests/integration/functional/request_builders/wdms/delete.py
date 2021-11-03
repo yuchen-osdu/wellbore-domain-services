@@ -19,7 +19,7 @@ def build_request_delete_purge_record() -> RequestRunner:
     rq_proto = Request(
         name='Delete log',
         method='DELETE',
-        url='{{base_url}}/ddms/v3/record/{{record_id}}?purge={{purge}}',
+        url='{{base_url}}/ddms/v3/{{v3_entity}}/{{record_id}}?purge={{purge}}',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
