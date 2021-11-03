@@ -169,6 +169,14 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
+- strict-rfc3339 (from http://www.danielrichman.co.uk/libraries/strict-rfc3339.html)
+
+========================================================================
+GPL-3.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- strict-rfc3339 (from http://www.danielrichman.co.uk/libraries/strict-rfc3339.html)
 
 ========================================================================
 ISC
