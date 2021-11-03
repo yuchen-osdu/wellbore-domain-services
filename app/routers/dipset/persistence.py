@@ -206,7 +206,7 @@ def dip_to_series(dip: Dip) -> pd.Series:
 def _check_attributes(row: pd.Series, attribute_key: str, attribute_unit: str):
     types_data = [int, float, np.int64, np.float64]
     return (ValueWithUnit(unitKey=attribute_unit, value=row[attribute_key])
-            if type(row[attribute_key]) in types_data and not math.isnan(row[attribute_key])
+            if attribute_key in row and type(row[attribute_key]) in types_data and not math.isnan(row[attribute_key])
             else None)
 
 def series_to_dip(row: pd.Series):
