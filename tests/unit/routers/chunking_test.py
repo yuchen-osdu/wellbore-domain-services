@@ -1,5 +1,6 @@
 import asyncio
 import io
+import math
 from tempfile import TemporaryDirectory
 
 from fastapi import Header
@@ -1055,12 +1056,12 @@ op_fcts = {
 @pytest.fixture()
 def dataframe_for_filters():
     dic = {
-        "A": range(10),
-        "B": np.arange(10.0),
-        "C": [str(i) for i in range(10)],
-        "D": [i%2 == 0 for i in range(10)]
+        "A": range(20),
+        "B": np.arange(20.0),
+        "C": [str(i) for i in range(20)],
+        "D": [i%2 == 0 for i in range(20)]
     }
-    return pd.DataFrame(dic, index=range(10))
+    return pd.DataFrame(dic, index=range(20))
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
@@ -1081,7 +1082,8 @@ def dataframe_for_filters():
     (['C:in:5,6,7'], lambda df: df.loc[df['C'].isin(['5', '6', '7'])]),
     (['D:eq:True'], lambda df: df.loc[df['D'] == True]),
     (['D:eq:False'], lambda df: df.loc[df['D'] == False]),
-    (['A:lt:5', 'B:gte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] >= 5.0) & (df['D'] == True)])
+    (['A:lt:5', 'B:gte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] >= 5.0) & (df['D'] == True)]),
+    (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])
 ])
 def test_get_bulk_data_with_filters(setup_client, entity_type, params, expected, dataframe_for_filters):
     client = setup_client
@@ -1098,6 +1100,53 @@ def test_get_bulk_data_with_filters(setup_client, entity_type, params, expected,
                params={'filter': params})
     df = _create_df_from_response(response_get_data)
     assert_frame_equal(df, expected(dataframe_for_filters))
+
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("filter, limit, expected", [(['A:gt:5'], 5, lambda df: df.loc[df['A'] > 5]),
+                                                     (['A:lt:5'], 5, lambda df: df.loc[df['A'] < 5]),
+                                                     (['C:eq:5'], 5, lambda df: df.loc[df['A'] == 5]),
+                                                     (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], 5, lambda df: df.loc[(df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])])
+def test_get_bulk_data_with_filters_curves_offset(setup_client, entity_type, filter, limit, expected, dataframe_for_filters):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    headers = {'content-type': 'application/x-parquet'}
+    chunking_url = Definitions[entity_type]['chunking_url']
+    response_send_data = client.post(f'{chunking_url}/{record_id}/data',
+                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_send_data.status_code == 200
+
+    header_get_data = {'Accept': 'application/parquet'}
+    curve = ['A,B']
+    for i in range(0, math.ceil(20/limit)):
+        response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
+                   params={'filter': filter, 'curves': curve, 'offset': i*limit, 'limit': limit})
+        df = _create_df_from_response(response_get_data)
+        df_expected = expected(dataframe_for_filters).iloc[i*limit:(i+1)*limit][['A', 'B']]
+        assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("filter, limit, curves, expected", [(['A:gt:5'], 5, ['A,B'], [5, 5, 4, 0]),
+                                                            (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
+                                                            (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
+                                                            (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0])
+                                                            ])
+def test_get_bulk_data_with_filters_curves_offset_describe(setup_client, entity_type, filter, limit, expected, dataframe_for_filters, curves):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    headers = {'content-type': 'application/x-parquet'}
+    chunking_url = Definitions[entity_type]['chunking_url']
+    response_send_data = client.post(f'{chunking_url}/{record_id}/data',
+                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_send_data.status_code == 200
+
+    header_get_data = {'Accept': 'application/parquet'}
+    for i in range(0, math.ceil(20/limit)):
+        response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
+                   params={'filter': filter, 'curves': curves, 'offset': i*limit, 'limit': limit, 'describe': True})
+        assert response_get_data.json()['numberOfRows'] == expected[i]
+        assert response_get_data.json()['columns'] == curves[0].split(',')
 
 
 # todo - concurrent sessions using fromVersion in Integrations tests
