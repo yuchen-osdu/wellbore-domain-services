@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-import os
 from itertools import zip_longest
 from logging import INFO
 from typing import List
 
+import dask.dataframe as dd
+
 from app.helper.logger import get_logger
 from app.utils import capture_timings
-
-import dask.dataframe as dd
 
 
 def worker_make_log_captured_timing_handler(level=INFO):
@@ -46,45 +44,6 @@ def by_pairs(iterable):
     """Yield successive 2 elements from iterable.
     Fill with None if less than 2 items in iterable."""
     return zip_longest(*[iter(iterable)] * 2, fillvalue=None)
-
-
-class SessionFileMeta:
-    def __init__(self, fs, file_path: str) -> None:
-        self._fs = fs
-        file_name = os.path.basename(file_path)
-        start, end, tail = file_name.split('_')
-        self.start = float(start)  # data time support ?
-        self.end = float(end)
-        self.time, self.shape, tail = tail.split('.')
-        self._meta = None
-        self.path = file_path
-
-    def _read_meta(self):
-        if not self._meta:
-            path, _ = os.path.splitext(self.path)
-            with self._fs.open(path + '.meta') as meta_file:
-                self._meta = json.load(meta_file)
-        return self._meta
-
-    @property
-    def columns(self):
-        return self._read_meta()['columns']
-    
-    @property
-    def dtypes(self):
-        return self._read_meta()['dtypes']
-    
-    @property
-    def nb_rows(self):
-        return self._read_meta()['nb_rows']
-
-    def overlap(self, other: 'SessionFileMeta'):
-        """Returns True if indexes overlap."""
-        return self.end >= other.start and other.end >= self.start
-
-    def has_common_columns(self, other: 'SessionFileMeta'):
-        """Returns True if contains common columns with others."""
-        return share_items(self.columns, other.columns)
 
 
 @capture_timings("set_index", handlers=worker_capture_timing_handlers)

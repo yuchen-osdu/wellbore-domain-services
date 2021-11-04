@@ -14,34 +14,33 @@
 
 import hashlib
 import json
+import os
 import time
 from contextlib import suppress
 from functools import wraps
 from operator import attrgetter
 from typing import List
-import os
 
 import fsspec
 import pandas as pd
-from pyarrow.lib import ArrowException, ArrowInvalid
+import pyarrow.parquet as pa
 from app.bulk_persistence import BulkId
+from app.bulk_persistence.dask.bulk_catalog import BulkCatalog
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.traces import wrap_trace_process
-from app.bulk_persistence.dask.bulk_catalog import BulkCatalog
 from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
-                                             do_merge, join_dataframes, set_index, share_items,
+                                             do_merge, set_index, share_items,
                                              worker_capture_timing_handlers)
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-import pyarrow.parquet as pa
+from pyarrow.lib import ArrowException, ArrowInvalid
 
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
-from dask.distributed import WorkerPlugin, get_client
-from dask.distributed import scheduler
+from dask.distributed import WorkerPlugin, get_client, scheduler
 
 
 def internal_bulk_exceptions(target):
@@ -323,7 +322,8 @@ class DaskBulkStorage:
         if isinstance(pdf.index, pd.DatetimeIndex):
             first_idx, last_idx = pdf.index[0].value, pdf.index[-1].value
         idx_range = f'{first_idx}_{last_idx}'
-        shape = hashlib.sha1('_'.join(map(str, pdf)).encode()).hexdigest()
+        shape_str = '_'.join(f'{cn}:{dt}' for cn, dt in pdf.dtypes.items())
+        shape = hashlib.sha1(shape_str.encode()).hexdigest()
         cur_time = round(time.time() * 1000)
         filename = f'{idx_range}_{cur_time}.{shape}'  # do not change the name without updating SessionFileMeta
 
@@ -509,7 +509,8 @@ class DaskBulkStorage:
 
             return futures, catalog
 
-        futures, catalog =  await self._submit_with_trace(commit_async, dfs, base_path, self._parameters.storage_options)
+        futures, catalog =  await self._submit_with_trace(commit_async, dfs, base_path,
+                                                          self._parameters.storage_options)
         await self.client.gather(futures)
 
         root_dir = self._get_entity_path(session.recordId, with_protocol=True)
