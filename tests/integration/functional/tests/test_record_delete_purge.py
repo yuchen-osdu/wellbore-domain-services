@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import pytest
+from .fixtures import with_wdms_env
 from .test_chunking import ParquetSerializer, JsonSerializer, generate_df, build_request
 from ..request_builders.wdms.crud.osdu_wellboretrajectory import build_request_create_osdu_wellboretrajectory
 from ..request_builders.wdms.crud.osdu_welllog import build_request_create_osdu_welllog
