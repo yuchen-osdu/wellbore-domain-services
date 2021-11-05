@@ -21,7 +21,6 @@ from .wdms import error_cases
 from .wdms import model_extensibility
 from .wdms import recursive_delete
 from .wdms import search_apis
-from .wdms import delete
 
 
 def build_request(path: Union[str, List[str]], sep: str = ".") -> "RequestRunner":
@@ -231,8 +230,6 @@ def build_request(path: Union[str, List[str]], sep: str = ".") -> "RequestRunner
         return version.build_request_version()
     if n_path == "status":
         return status.build_request_status()
-    if n_path == "delete":
-        return delete.build_request_delete_purge_record()
 
     raise ValueError(f'No request matches the path {n_path}')
 
