@@ -22,7 +22,7 @@ from fastapi.openapi.utils import get_openapi
 from app import __version__, __build_number__, __app_name__
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
-from app.errors.exception_handlers import add_exception_handlers
+from app.errors.exception_handlers import add_exception_handlers, create_custom_http_exception_handler
 from app.modules import discoverer
 
 from app.helper import traces, logger
@@ -127,7 +127,7 @@ async def startup_event():
     # seems that the lock is not in the same event loop as requests
     # so we need to wait instead of just fire a task
     asyncio.create_task(DaskClient.create())
-
+    create_custom_http_exception_handler(wdms_app, logger)
     # init executor pool
     logger.get_logger().info("Startup process pool executor")
 

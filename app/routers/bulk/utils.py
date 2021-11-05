@@ -75,10 +75,7 @@ def get_check_input_df_func(request: Request):
 
 def _check_df_columns_type_legacy(df: pd.DataFrame):
     """ If given dataframe contains columns name which is not a string, cast it  """
-    if any((type(t) is not str for t in df.columns)):
-        get_ctx().logger.warning("_check_df_columns_type_legacy() - df columns type casted")
-        df.columns = map(str, df.columns)
-    return True
+    df.columns = df.columns.astype(str)
 
 
 def _check_df_columns_type(df: pd.DataFrame):
@@ -195,11 +192,17 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('df_render')
-    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None):
+    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
+            nb_rows: int = 0
+            if stat and not params.limit and not params.offset:
+                nb_rows = stat['num_rows']
+            else:
+                nb_rows = await DataFrameRender.get_size(df)
+
             return {
-                "numberOfRows": await DataFrameRender.get_size(df),
-                "columns": [c for c in df.columns]
+                "numberOfRows": nb_rows,
+                "columns": list(df.columns)
             }
 
         pdf = await DataFrameRender.compute(df)

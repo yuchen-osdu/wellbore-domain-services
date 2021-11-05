@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "70a5e097-8abf-425d-bc1a-5e8b4fabddf2",
-		"name": "Core dependencies test",
+		"_postman_id": "036eb323-faba-4f88-8e23-e4ca346a70f9",
+		"name": "Core dependencies",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -20,9 +20,9 @@
 									"    pm.response.to.be.ok;",
 									"    pm.response.to.be.withBody;",
 									"    pm.response.to.be.json;",
-									"    console.log(\"Groups :\" + JSON.stringify(pm.response.json().groups));",
 									"    pm.expect(pm.response.json().groups).to.not.be.empty;",
 									"    pm.test(testName, () => true);",
+									"    console.log(pm.response.json())",
 									"}catch(e){",
 									"    console.log(resobj);",
 									"    pm.test(testName, () => {throw new Error(e.message)});",

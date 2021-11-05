@@ -12,7 +12,7 @@ The following software have components provided under the terms of this license:
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - boto3 (from https://github.com/boto/boto3)
 - botocore (from https://github.com/boto/botocore)
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - cryptography (from https://github.com/pyca/cryptography)
 - google-api-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
 - google-auth (from https://github.com/googleapis/google-auth-library-python)
@@ -31,14 +31,13 @@ The following software have components provided under the terms of this license:
 - opencensus (from https://github.com/census-instrumentation/opencensus-python)
 - opencensus-context (from https://github.com/census-instrumentation/opencensus-python/tree/master/context/opencensus-context)
 - opencensus-ext-azure (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure)
-- opencensus-ext-logging (from )
+- opencensus-ext-logging (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-logging)
 - opencensus-ext-ocagent (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent)
 - opencensus-ext-stackdriver (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver)
 - opencensus-proto (from https://github.com/census-instrumentation/opencensus-proto/tree/master/gen-python)
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org)
 - pep517 (from https://github.com/takluyver/pep517)
-- proto-plus (from https://github.com/googleapis/proto-plus-python.git)
 - pyarrow (from https://arrow.apache.org/)
 - pytest-asyncio (from https://github.com/pytest-dev/pytest-asyncio)
 - pytest-dependency (from https://github.com/RKrahl/pytest-dependency)
@@ -52,6 +51,7 @@ The following software have components provided under the terms of this license:
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
 - structlog (from http://www.structlog.org/)
 - tblib (from https://github.com/ionelmc/python-tblib)
+- toposort (from https://bitbucket.org/ericvsmith/toposort)
 - tornado (from http://www.tornadoweb.org/)
 - yarl (from https://github.com/aio-libs/yarl/)
 
@@ -60,7 +60,6 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- colorama (from https://github.com/tartley/colorama)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
@@ -83,7 +82,6 @@ The following software have components provided under the terms of this license:
 - asgiref (from http://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
-- colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
 - dask (from http://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
@@ -104,7 +102,7 @@ The following software have components provided under the terms of this license:
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- pip-tools (from http://pypi.python.org/pypi/pip-tools/1.8.1rc3)
+- pip-tools (from https://github.com/jazzband/pip-tools/)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
@@ -152,7 +150,7 @@ GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 
 ========================================================================
@@ -167,10 +165,18 @@ GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
+- strict-rfc3339 (from http://www.danielrichman.co.uk/libraries/strict-rfc3339.html)
+
+========================================================================
+GPL-3.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- strict-rfc3339 (from http://www.danielrichman.co.uk/libraries/strict-rfc3339.html)
 
 ========================================================================
 ISC
@@ -228,12 +234,11 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis)
-- anyio (from https://pypi.org/project/anyio/3.3.0/)
+- anyio (from https://pypi.org/project/anyio/3.3.4/)
 - asgiref (from http://github.com/django/asgiref/)
-- atomicwrites (from https://github.com/untitaker/python-atomicwrites)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
-- azure-core (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/core/azure-core)
+- azure-core (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core)
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
 - azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/identity/azure-identity)
 - azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
@@ -246,7 +251,7 @@ The following software have components provided under the terms of this license:
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi (from http://cffi.readthedocs.org)
 - charset-normalizer (from https://github.com/ousret/charset_normalizer)
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - fastapi (from https://github.com/tiangolo/fastapi)
 - grpcio (from https://grpc.io)
 - h11 (from https://github.com/python-hyper/h11)
@@ -320,7 +325,7 @@ Python-2.0
 The following software have components provided under the terms of this license:
 
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - google-auth (from https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
@@ -355,13 +360,6 @@ WTFPL
 The following software have components provided under the terms of this license:
 
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
-
-========================================================================
-X11
-========================================================================
-The following software have components provided under the terms of this license:
-
-- numpy (from http://www.numpy.org)
 
 ========================================================================
 ZPL-2.1

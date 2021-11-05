@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from request_runner import RequestRunner, Request
+from ....request_runner import RequestRunner, Request
 
 
 def build_request_recursive_del_setup_end() -> RequestRunner:

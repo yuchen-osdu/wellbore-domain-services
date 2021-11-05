@@ -20,11 +20,11 @@ import pandas as pd
 
 import pytest
 from tests.unit.test_utils import ctx_fixture, nope_logger_fixture
+from tests.unit.generate_data import generate_df
 import mock
 
 from app.utils import DaskException
 from app.utils import DaskClient
-from dask.utils import parse_bytes
 from app.helper import logger
 from app.bulk_persistence.dask.dask_bulk_storage import (BulkNotFound,
                                                          BulkNotProcessable,
@@ -33,20 +33,6 @@ from app.bulk_persistence.dask.dask_bulk_storage import (BulkNotFound,
 from app.persistence.sessions_storage import (Session, SessionState,
                                               SessionUpdateMode)
 
-
-def generate_df(columns, index):
-    def gen_values(col_name, size):
-        if col_name.startswith('float'):
-            return np.random.random_sample(size=size)
-        if col_name.startswith('str'):
-            return [f'string_value_{i}' for i in range(size)]
-        if col_name.startswith('date'):
-            return (np.datetime64('2021-01-01') + days for days in range(size))
-        return np.random.randint(-100, 1000, size=size)
-
-    df = pd.DataFrame({c: gen_values(c, len(index))
-                       for c in columns}, index=index)
-    return df
 
 
 @pytest.fixture(scope="module")
