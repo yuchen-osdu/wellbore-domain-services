@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from request_runner import RequestRunner, Request
+from wdms_client.request_runner import RequestRunner, Request
 
 
 def build_request_delete_purge_record() -> RequestRunner:
