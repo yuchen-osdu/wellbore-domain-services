@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import pytest
+
+from wdms_client.request_builders.wdms.crud.osdu_wellboretrajectory import build_request_create_osdu_wellboretrajectory
+from wdms_client.request_builders.wdms.crud.osdu_welllog import build_request_create_osdu_welllog
 from .fixtures import with_wdms_env
 from .test_chunking import ParquetSerializer, JsonSerializer, generate_df, build_request
-from ..request_builders.wdms.crud.osdu_wellboretrajectory import build_request_create_osdu_wellboretrajectory
-from ..request_builders.wdms.crud.osdu_welllog import build_request_create_osdu_welllog
 from ..request_builders.wdms.delete import build_request_delete_purge_record, build_request_get_record
-from ..request_runner import RequestRunner
+from wdms_client.request_runner import RequestRunner
 
 entity_type_dict = {
     "welllog": {"entity": "welllogs", "version": "v3"},
