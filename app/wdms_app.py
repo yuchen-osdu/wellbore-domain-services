@@ -21,7 +21,6 @@ from fastapi.openapi.utils import get_openapi
 
 from app import __version__, __build_number__, __app_name__
 from app.auth.auth import require_opendes_authorized_user
-from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers
 from app.modules import discoverer

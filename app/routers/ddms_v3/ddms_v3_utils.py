@@ -68,9 +68,8 @@ class DMSV3RouterUtils:
     def is_osdu_versioned_well_id(entity_id: str) -> Tuple[bool, str, str]:
         return DMSV3RouterUtils.is_osdu_versioned_entity_id(OSDU_WELL_VERSION_REGEX, entity_id)
 
-
     @staticmethod
-    async def is_osdu_right_entity_id(record, request: Request):
+    def is_osdu_right_entity_id(record, request: Request):
         url = request.url.path
         if "/ddms/v2/" not in url and record is not None:
             kind_elements = record.kind.split(":")
