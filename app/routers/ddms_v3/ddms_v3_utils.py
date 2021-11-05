@@ -69,15 +69,14 @@ class DMSV3RouterUtils:
         return DMSV3RouterUtils.is_osdu_versioned_entity_id(OSDU_WELL_VERSION_REGEX, entity_id)
 
     @staticmethod
-    def is_osdu_right_entity_id(record, request: Request):
-        url = request.url.path
+    def is_osdu_right_entity_id(record, url):
         if "/ddms/v2/" not in url and record is not None:
             kind_elements = record.kind.split(":")
-            entity = kind_elements[2]
-            for entity_name in entity_names:
-                if "/ddms/v3/"+entity_name[0]+"/" in url:
-                    matches = entity_name[1] == entity
+            entity_in_kind = kind_elements[2]
+            for entity_name_url, entity_name_kind in entity_names:
+                if "/ddms/v3/"+entity_name_url in url:
+                    matches = entity_name_kind == entity_in_kind
                     if not matches:
-                        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_name[0])
+                        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_name_url)
 
 
