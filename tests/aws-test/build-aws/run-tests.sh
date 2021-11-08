@@ -27,7 +27,7 @@ client_id=$AWS_COGNITO_CLIENT_ID
 svc_url=$WELLBORE_DDMS_URL
 tenant='opendes'
 acl_domain='example.com'
-legal_tag='opendes-sdmstestlegaltag'
+legal_tag='opendes-wellddmstestlegaltag'
 
 
 #### RUN INTEGRATION TEST #########################################################################
@@ -47,13 +47,45 @@ rm -rf test-reports/
 mkdir test-reports
 
 cd tests/integration
-acl_domain='example.com'
-legal_tag='opendes-sdmstestlegaltag'
+
+echo $LEGAL_URL
+echo $WELLBORE_DDMS_URL
+
+echo 'Register Legal tag before Integration Tests ...'
+curl --location --request POST "$LEGAL_URL"'legaltags' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer '"$token" \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+        "name": "wellddmstestlegaltag",
+        "description": "legal tag for Wellbore DMS Service Integration tests",
+        "properties": {
+            "countryOfOrigin":["US"],
+            "contractId":"A1234",
+            "expirationDate":"2099-01-25",
+            "dataType":"Public Domain Data", 
+            "originator":"MyCompany",
+            "securityClassification":"Public",
+            "exportClassification":"EAR99",
+            "personalData":"No Personal Data"
+        }
+}'
+
 
 python3 gen_postman_env.py --token $token --base_url $svc_url --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
 
 pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
 
 TEST_EXIT_CODE=$?
+
+echo Delete legaltag after Integration Tests...
+curl --location --request DELETE "$LEGAL_URL"'legaltags/opendes-wellddmstestlegaltag' \
+--header 'Authorization: Bearer '"$token" \
+--header 'data-partition-id: opendes' \
+--header 'Content-Type: application/json'
+
 deactivate
+
+
 exit $TEST_EXIT_CODE
