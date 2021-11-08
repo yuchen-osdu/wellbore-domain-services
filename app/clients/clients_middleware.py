@@ -76,7 +76,7 @@ async def client_middleware(request, call_next):
         if ctx.app_key:
             request.headers[conf.APP_KEY_HEADER_NAME] = ctx.app_key
         if ctx.x_user_id:
-            request.headers[conf.X_USER_ID] = ctx.x_user_id
+            request.headers[conf.X_USER_ID_HEADER_NAME] = ctx.x_user_id
 
         response = None
         try:
