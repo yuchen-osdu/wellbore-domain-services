@@ -20,6 +20,7 @@ RUN pip install -r requirements.txt
 
 COPY ./app /app
 COPY provider/os-wellbore-ddms-aws/build-aws/entrypoint.sh .
+COPY provider/os-wellbore-ddms-aws/build-aws/osdu_api.ini .
 COPY provider/os-wellbore-ddms-aws/build-aws/ssl.sh .
 ENV PYTHONPATH=./
 
