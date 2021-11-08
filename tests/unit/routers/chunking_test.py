@@ -1055,14 +1055,12 @@ def test_none_in_index_error(setup_client, entity_type, accept_content_header):
 
     data_to_send = df.to_parquet(engine="pyarrow")
 
-    write_response = client.post(f'{chunking_url}/{record_id}/data',
-                                 data=data_to_send,
-                                 headers={'content-type': 'application/parquet'})
-    assert write_response.status_code == 200
+    from app.bulk_persistence.dask.errors import BulkNotProcessable
 
-    get_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content_header})
-    assert get_response.status_code == 200
-    result_df = _create_df_from_response(get_response)
+    with pytest.raises(BulkNotProcessable, match="Invalid column name"):
+        write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                     data=data_to_send,
+                                     headers={'content-type': 'application/parquet'})
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests

@@ -251,6 +251,8 @@ class DaskBulkStorage:
         if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
             raise BulkNotProcessable("Index should be numeric or datetime")
 
+        # A column named '__index_level_0__' is internally used by PyArrow to save the index.
+        # Save a df with column named the same way as regular column causes problems to read them with Dask.
         if '__index_level_0__' in df.columns:
             raise BulkNotProcessable("Invalid column name")
 
