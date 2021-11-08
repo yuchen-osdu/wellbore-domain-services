@@ -181,6 +181,7 @@ class DataFrameRender:
     def apply_filter(df, filters):
         op_fcts = {
             'eq' : lambda df, col, val : df[col] == val,
+            'neq' : lambda df, col, val : df[col] != val,
             'lte': lambda df, col, val : df[col] <= val,
             'lt': lambda df, col, val : df[col] < val,
             'gt': lambda df, col, val : df[col] > val,
