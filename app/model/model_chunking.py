@@ -45,10 +45,12 @@ class GetDataParams:
             example='false'),
         filter: Optional[List[str]] = Query(
             default=None,
-            description='The "filter" query parameter allows clients to filter data following the pattern $colomn_name:$operator:$value.'
-            'supported operation : eq, gt, gte, lt, lte.'
-            'link to Filtering API Design :https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon',
-            exemple='MD:lt:1000'
+            description="""
+The "filter" query parameter allows clients to filter data following the pattern $column_name:$operator:$value
+<br/>supported operation : eq, neq, gt, gte, lt, lte
+<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).
+<br/>exemple='MD:lt:1000'
+"""
         )
     ) -> None:
         self.offset = offset

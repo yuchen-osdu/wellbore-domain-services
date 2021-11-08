@@ -159,13 +159,12 @@ async def get_data_version(
                 stat['schema'] = { k: stat['schema'][k] for k in columns }
             elif data_param.describe:
                 stat = dask_blob_storage.read_stat(record_id, bulk_id)
-            # todo: send data < a data <b how to handle it
             if data_param.filter:
                 # get column needed for filtering which are not yet in columns
                 filters = data_param.get_filters()
                 filter_columns = [c for c in filters.keys() if c in existing_col] # TODO if filter columns does not exist skip, raise ?
                 if not filter_columns:
-                    raise FilterError('The columns to be filtered do not exist') # todo raise exception
+                    raise FilterError('The columns to be filtered do not exist')
                 valid_filers = {c: filters[c] for c in filter_columns}  #todo: simplify here ?
 
                 if columns:
