@@ -310,7 +310,9 @@ def format_routes(prefix, tags):
         # route path must start with prefix
         if r.path.startswith(prefix):
             # route must have one of the selected tags
-            if hasattr(r,"tags"):
+            if tags is None:
+                r.include_in_schema = True
+            elif hasattr(r,"tags"):
                 for t in r.tags:
                     if t in tags:
                         # add route to the spec
