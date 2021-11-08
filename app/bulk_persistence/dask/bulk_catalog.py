@@ -14,7 +14,7 @@
 
 import os
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from app.utils import capture_timings
 
@@ -29,6 +29,8 @@ class BulkCatalog:
         dtype: str
 
     columns: Dict[str, ColumnInfo] = field(default_factory=dict)
+    nb_rows: int = 0
+    index_path: Optional[str] = None
 
     def get_columns_files_groupped_by_files(self, columns, root_path='') -> List[Dict]:
         """return the paths to load the data of the requested columns"""
@@ -48,17 +50,20 @@ class BulkCatalog:
     @capture_timings('as_dict')
     def as_dict(self) -> dict:
         """return the dict representation of the catalog"""
-        return {"columns": {
-            c : {
+        return {
+            "columns": {c: {
                 "paths": v.paths,
                 "dtype": v.dtype
-            } for c,v in self.columns.items()
-        }}
+            } for c, v in self.columns.items()},
+            "nb_rows": self.nb_rows,
+            "index_path": self.index_path
+        }
         #return dataclasses.asdict(self)
 
     @staticmethod
     def from_dict(catalog_as_dict: dict) -> "BulkCatalog":
         """construct a Catalog from a dict"""
-        return BulkCatalog(columns={
+        catalog_as_dict['columns'] = {
             c: BulkCatalog.ColumnInfo(**v) for c, v in catalog_as_dict['columns'].items()
-        })
+        }
+        return BulkCatalog(**catalog_as_dict)

@@ -80,7 +80,7 @@ async def post_data(record_id: str,
         fetch_record(ctx, record_id),
         save_blob()
     )
-    
+
     return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record, bulk_uri_access=bulk_uri_access)
 
 
