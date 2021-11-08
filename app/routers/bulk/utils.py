@@ -200,11 +200,12 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('process_params')
-    async def process_params(df, params: GetDataParams):
+    async def process_params(df, params: GetDataParams, filters):
         if isinstance(df, pd.DataFrame):
             df = dd.from_pandas(df, npartitions=1)
 
-        df = DataFrameRender.apply_filter(df, params.get_filters())
+        if filters:
+            df = DataFrameRender.apply_filter(df, filters)
 
         if params.curves:
             selection = list(map(str.strip, params.curves.split(',')))

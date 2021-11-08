@@ -34,3 +34,10 @@ class BulkNotProcessable(BulkError):
 
     def __init__(self, bulk_id):
         self.message = f'bulk {bulk_id} not processable'
+
+
+class FilterError(BulkError):
+    http_status = status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    def __init__(self, reason):
+        self.message = f'filter error: {reason}'

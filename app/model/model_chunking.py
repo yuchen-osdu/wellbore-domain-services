@@ -16,6 +16,8 @@ from typing import Optional, List
 
 from fastapi import Query
 
+from app.bulk_persistence.dask.errors import FilterError
+
 
 class GetDataParams:
     ''' All parameters to query welllog data. '''
@@ -43,8 +45,9 @@ class GetDataParams:
             example='false'),
         filter: Optional[List[str]] = Query(
             default=None,
-            description='The "filter" query parameter allows clients to filter data following the pattern $colomn_name:$operation:$value.'
-            'supported operation : eq, gt, gte, lt, lte',
+            description='The "filter" query parameter allows clients to filter data following the pattern $colomn_name:$operator:$value.'
+            'supported operation : eq, gt, gte, lt, lte.'
+            'link to Filtering API Design :https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon',
             exemple='MD:lt:1000'
         )
     ) -> None:
@@ -90,5 +93,7 @@ class GetDataParams:
                 new_filter = {op: value}
             if col_name not in filters:
                 filters[col_name] = {}
+            if op in filters[col_name]:
+                raise FilterError('Same operator on the same column')
             filters[col_name].update(new_filter)
         return filters

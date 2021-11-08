@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
+from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
 
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
@@ -144,7 +144,7 @@ async def get_data_version(
 ):
     record = await fetch_record(ctx, record_id, version)
     bulk_id, prefix = bulk_uri_access.get_bulk_uri(record=record) # TODO PATH logv2
-
+    valid_filers = None
     stat = None
     try:
         if bulk_id is None:
@@ -162,13 +162,15 @@ async def get_data_version(
             # todo: send data < a data <b how to handle it
             if data_param.filter:
                 # get column needed for filtering which are not yet in columns
-                filter_columns = [c for c in data_param.get_filters().keys() if c in existing_col] # TODO if filter columns does not exist skip, raise ?
+                filters = data_param.get_filters()
+                filter_columns = [c for c in filters.keys() if c in existing_col] # TODO if filter columns does not exist skip, raise ?
                 if not filter_columns:
-                    raise Exception() # todo raise exception
+                    raise FilterError('The columns to be filtered do not exist') # todo raise exception
+                valid_filers = {c: filters[c] for c in filter_columns}  #todo: simplify here ?
+
                 if columns:
                     columns.extend(filter_columns)
                     columns = set(columns)
-
 
             if data_param.describe and not data_param.offset and not data_param.limit and not data_param.filter:
                 import pandas as pd
@@ -183,7 +185,7 @@ async def get_data_version(
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
-        df = await DataFrameRender.process_params(df, data_param)
+        df = await DataFrameRender.process_params(df, data_param, filters=valid_filers)
         return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
