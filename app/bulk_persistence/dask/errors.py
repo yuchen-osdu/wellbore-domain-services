@@ -37,7 +37,7 @@ class BulkNotProcessable(BulkError):
 
 
 class FilterError(BulkError):
-    http_status = status.HTTP_422_UNPROCESSABLE_ENTITY
+    http_status = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, reason):
         self.message = f'filter error: {reason}'

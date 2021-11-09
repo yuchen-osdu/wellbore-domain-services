@@ -9,6 +9,7 @@ import dask.dataframe as dd
 import pandas as pd
 from natsort import natsorted
 
+from app.bulk_persistence.dask.errors import FilterError
 from app.clients.storage_service_client import get_storage_record_service
 from app.bulk_persistence import DataframeSerializerAsync
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
@@ -179,7 +180,8 @@ class DataFrameRender:
 
     @staticmethod
     def apply_filter(df, filters):
-        op_fcts = {
+
+        operator_to_function = {
             'eq' : lambda df, col, val : df[col] == val,
             'neq' : lambda df, col, val : df[col] != val,
             'lte': lambda df, col, val : df[col] <= val,
@@ -188,15 +190,19 @@ class DataFrameRender:
             'gte': lambda df, col, val : df[col] >= val,
             'in': lambda df, col, val : df[col].isin(val)
         }
-        for col_name, ops in filters.items():
-            for op, value in ops.items():
+        for col_name, operation in filters.items():
+            for operator, value in operation.items():
                 if df[col_name].dtype == object:
                     if isinstance(value, tuple):
                         value = [str(v) for v in value]
                     else:
                         value = str(value)
-                fct = op_fcts[op]
-                df = df.loc[fct(df, col_name, value)]
+
+                filter_function = operator_to_function[operator]
+                try:
+                    df = df.loc[filter_function(df, col_name, value)]
+                except Exception:
+                    raise FilterError('the value is not valid')
         return df
 
     @staticmethod

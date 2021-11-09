@@ -22,6 +22,8 @@ from app.bulk_persistence.dask.errors import FilterError
 class GetDataParams:
     ''' All parameters to query welllog data. '''
 
+    FilterOperators = {'lt', 'lte', 'gt', 'gte', 'eq', 'neq', 'in'}
+
     def __init__(
         self,
         offset: Optional[int] = Query(
@@ -43,33 +45,35 @@ class GetDataParams:
             description='The "describe" query option allows clients to request a description of the matching result. '
             '(number of rows, columns name)',
             example='false'),
-        filter: Optional[List[str]] = Query(
+        bulk_filter: Optional[List[str]] = Query(
             default=None,
+            alias='filter',
             description="""
 The "filter" query parameter allows clients to filter data following the pattern $column_name:$operator:$value
-<br/>supported operation : eq, neq, gt, gte, lt, lte
+<br/>supported operation : """ + ''.join(FilterOperators) + """
 <br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).
-<br/>exemple='MD:lt:1000'
-"""
-        )
+""",
+            example='MD:lt:1000'
+
+    )
     ) -> None:
         self.offset = offset
         self.limit = limit
         self.curves = curves
         self.describe = describe
-        self.filter = filter
+        self.bulk_filter = bulk_filter
         # orient if json ?
 
     def get_curves_list(self) -> List[str]:
         """parse the curves query parameter and return the list of requested curves"""
         if self.curves:
-            # split and remove emty
+            # split and remove empty
             curves = list(filter(None, map(str.strip, self.curves.split(','))))
             # remove duplicates but maintain order
             return list(dict.fromkeys(curves))
         return []
 
-    def get_filters(self) :
+    def get_filters(self) -> dict:
         """return the parsed filter query
         { 
             'col_name_1' : {
@@ -79,20 +83,17 @@ The "filter" query parameter allows clients to filter data following the pattern
             'col_name_2': {...}
         }
         """
-        # TODO check if filter columns exist
-        if not self.filter:
+        if not self.bulk_filter:
             return {}
-        valid_op = {'lt', 'lte', 'gt', 'gte', 'eq', 'neq', 'in'} # TODO should be initialized ones, add other operation like in, startwith, like...
         filters = {}
-        for f in self.filter:
-            col_name, op, *value = f.split(':')  # TODO handle exception regular expression
-            if op.lower() not in valid_op:
-                continue  # TODO raise ?
-            value = "".join(value)
+        for f in self.bulk_filter:
+            col_name, op, *value = f.split(':', maxsplit=2)  # TODO handle exception regular expression
+            if op.lower() not in self.FilterOperators:
+                raise FilterError(f'Operator {op} does not supported')
             try:
-                new_filter = {op: eval(value)}
+                new_filter = {op: ast.literal_eval(value[0])}
             except:
-                new_filter = {op: value}
+                new_filter = {op: value[0]}
             if col_name not in filters:
                 filters[col_name] = {}
             if op in filters[col_name]:

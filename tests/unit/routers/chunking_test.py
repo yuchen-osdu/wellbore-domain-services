@@ -1081,9 +1081,14 @@ def dataframe_for_filters():
     (['B:gt:5.0'], lambda df: df.loc[df['B'] > 5.0]),
     (['B:gte:5.0'], lambda df: df.loc[df['B'] >= 5.0]),
     (['B:in:5.0,6.0,7.0'], lambda df: df.loc[df['B'].isin([5.0, 6.0, 7.0])]),
+    (['C:gt:5'], lambda df: df.loc[df['C'] > '5']),
+    (['C:gte:5'], lambda df: df.loc[df['C'] >= '5']),
+    (['C:lt:5'], lambda df: df.loc[df['C'] < '5']),
+    (['C:lte:5'], lambda df: df.loc[df['C'] <= '5']),
     (['C:eq:5'], lambda df: df.loc[df['C'] == '5']),
     (['C:neq:5'], lambda df: df.loc[df['C'] != '5']),
     (['C:in:5,6,7'], lambda df: df.loc[df['C'].isin(['5', '6', '7'])]),
+    (['C:eq:abc:def'], lambda df: df.loc[df['C'] == 'abc:def']),
     (['D:eq:True'], lambda df: df.loc[df['D'] == True]),
     (['D:neq:True'], lambda df: df.loc[df['D'] != True]),
     (['D:eq:False'], lambda df: df.loc[df['D'] == False]),
@@ -1153,6 +1158,30 @@ def test_get_bulk_data_with_filters_curves_offset_describe(setup_client, entity_
         assert response_get_data.json()['numberOfRows'] == expected[i]
         assert response_get_data.json()['columns'] == curves[0].split(',')
 
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("params, content", [
+    (['M:lt:5'], 'The columns to be filtered do not exist'),
+    (['A:xx:5'], 'Operator xx does not supported'),
+    (['A:lt:5', 'A:lt:7'], 'Same operator on the same column'),
+    (['A:lt:5+'], 'the value is not valid')
+])
+def test_get_bulk_data_with_filters_fail(setup_client, entity_type, params, content, dataframe_for_filters):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    headers = {'content-type': 'application/x-parquet'}
+    chunking_url = Definitions[entity_type]['chunking_url']
+    response_send_data = client.post(f'{chunking_url}/{record_id}/data',
+                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_send_data.status_code == 200
+
+    header_get_data = {'Accept': 'application/parquet'}
+
+    response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
+               params={'filter': params})
+
+    assert response_get_data.json()['detail'] == content
+    assert response_get_data.status_code == 400
 
 # todo - concurrent sessions using fromVersion in Integrations tests
 #  - index: check if dataframe has an index

@@ -144,7 +144,7 @@ async def get_data_version(
 ):
     record = await fetch_record(ctx, record_id, version)
     bulk_id, prefix = bulk_uri_access.get_bulk_uri(record=record) # TODO PATH logv2
-    valid_filers = None
+    valid_filters = None
     stat = None
     try:
         if bulk_id is None:
@@ -157,15 +157,13 @@ async def get_data_version(
                 columns = DataFrameRender.get_matching_column(
                     data_param.get_curves_list(), existing_col) # add curve needed for filtering
                 stat['schema'] = { k: stat['schema'][k] for k in columns }
-            elif data_param.describe:
-                stat = dask_blob_storage.read_stat(record_id, bulk_id)
-            if data_param.filter:
+            if data_param.bulk_filter:
                 # get column needed for filtering which are not yet in columns
                 filters = data_param.get_filters()
                 filter_columns = [c for c in filters.keys() if c in existing_col] # TODO if filter columns does not exist skip, raise ?
                 if not filter_columns:
                     raise FilterError('The columns to be filtered do not exist')
-                valid_filers = {c: filters[c] for c in filter_columns}  #todo: simplify here ?
+                valid_filters = {c: filters[c] for c in filter_columns}
 
                 if columns:
                     columns.extend(filter_columns)
@@ -184,7 +182,7 @@ async def get_data_version(
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
-        df = await DataFrameRender.process_params(df, data_param, filters=valid_filers)
+        df = await DataFrameRender.process_params(df, data_param, filters=valid_filters)
         return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
