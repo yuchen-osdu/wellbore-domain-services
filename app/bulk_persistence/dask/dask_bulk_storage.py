@@ -246,14 +246,23 @@ class DaskBulkStorage:
             raise BulkNotProcessable("Empty data")
 
         if not df.index.is_unique:
-            raise BulkNotProcessable("Duplicated index found")
+            raise BulkNotProcessable("Duplicated index values detected")
 
         if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
             raise BulkNotProcessable("Index should be numeric or datetime")
 
-        # A column named '__index_level_0__' is internally used by PyArrow to save the index.
-        # Save a df with column named the same way as regular column causes problems to read them with Dask.
-        if '__index_level_0__' in df.columns:
+        DaskBulkStorage._check_reserved_columns_name(df)
+
+    @staticmethod
+    def _check_reserved_columns_name(df):
+        """
+        There are reserved name for columns which are internally used by Pandas/Dask with PyArrow to save the index.
+        Save a df containing reserved name as regular columns lead to inability to read parquet file then.
+
+        At the stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
+        """
+        df_columns = set(df.columns)
+        if '__index_level_0__' in df_columns or '__null_dask_index__' in df_columns:
             raise BulkNotProcessable("Invalid column name")
 
     @internal_bulk_exceptions
