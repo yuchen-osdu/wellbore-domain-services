@@ -1042,17 +1042,6 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
                    data_format='parquet')
 
 
-op_fcts = {
-    'eq': lambda df, col, val: df[col] == val,
-    'lte': lambda df, col, val: df[col] <= val,
-    'lt': lambda df, col, val: df[col] < val,
-    'gt': lambda df, col, val: df[col] > val,
-    'gte': lambda df, col, val: df[col] >= val,
-    'in': lambda df, col, val: df[col].isin(val)
-}
-
-#todo: one simple dataframe for all tests, by fixture
-
 @pytest.fixture()
 def dataframe_for_filters():
     dic = {
