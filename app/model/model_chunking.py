@@ -50,7 +50,7 @@ class GetDataParams:
             alias='filter',
             description="""
 The "filter" query parameter allows clients to filter data following the pattern $column_name:$operator:$value
-<br/>supported operation : """ + ''.join(FilterOperators) + """
+<br/>supported operation : """ + ','.join(FilterOperators) + """
 <br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).
 """,
             example='MD:lt:1000'
