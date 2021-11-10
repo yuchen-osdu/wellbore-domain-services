@@ -35,7 +35,7 @@ import app.conf as conf
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
-# Initialize routes
+# Initialize route filters for documentation
 environment_dict = os.environ.copy()
 conf.Config = conf.ConfigurationContainer.with_load_all(
     environment_dict=environment_dict,
@@ -43,10 +43,12 @@ conf.Config = conf.ConfigurationContainer.with_load_all(
 )
 prefix = conf.Config.get('openapi_filter_prefix')
 tags = conf.Config.get('openapi_filter_tags')
-if tags:
-    tags = tags.split(',')
-format_routes(wdms_app, prefix, tags)
-
+# Filter and reformat routes only if a prefix is provided
+if prefix:
+    # Make a tags list from the comma separated env var if needed
+    if tags:
+        tags = tags.split(',')
+    format_routes(wdms_app, prefix, tags)
 
 @pytest.fixture
 def client(ctx_fixture):

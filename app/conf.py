@@ -180,7 +180,7 @@ class ConfigurationContainer:
     openapi_filter_prefix: EnvVar = EnvVar(
         key='OPENAPI_FILTER_PREFIX',
         description='Only display APIS with this path prefix in the swagger spec. If empty, all APIs are displayed.',
-        default='/')
+        default=None)
 
     openapi_filter_tags: EnvVar = EnvVar(
         key='OPENAPI_FILTER_TAGS',
