@@ -76,10 +76,7 @@ def get_check_input_df_func(request: Request):
 
 def _check_df_columns_type_legacy(df: pd.DataFrame):
     """ If given dataframe contains columns name which is not a string, cast it  """
-    if any((type(t) is not str for t in df.columns)):
-        get_ctx().logger.warning("_check_df_columns_type_legacy() - df columns type casted")
-        df.columns = map(str, df.columns)
-    return True
+    df.columns = df.columns.astype(str)
 
 
 def _check_df_columns_type(df: pd.DataFrame):

@@ -6,13 +6,13 @@ from tempfile import TemporaryDirectory
 from fastapi import Header
 from fastapi.testclient import TestClient
 import pytest
+import numpy as np
 import pandas as pd
+from pandas.testing import assert_frame_equal
 import pandas.api.types as ptypes
 import pyarrow.parquet as pq
 import pyarrow as pa
 import platform
-import numpy as np
-from pandas.testing import assert_frame_equal
 
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -774,7 +774,8 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     assert chunk_response_1.status_code == expected_code
 
 
-def test_legacy_logs_int_columns(setup_client):
+@pytest.mark.parametrize("columns", [[int(42), float(-42)], []])
+def test_legacy_logs_int_columns(setup_client, columns):
     """
         Ensure legacy v2 Log containing columns name as int type are correctly converted to string
         to ensure to_parquet is possible.
@@ -786,7 +787,7 @@ def test_legacy_logs_int_columns(setup_client):
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
 
-    json_data = {t: np.random.rand(10) for t in [int(42), float(-42)]}
+    json_data = {t: np.random.rand(10) for t in columns}
     df_data = pd.DataFrame(json_data)
     data_to_send = df_data.to_json(orient='split', date_format='iso')
 
@@ -1173,6 +1174,10 @@ def test_get_bulk_data_with_filters_fail(setup_client, entity_type, params, cont
     assert response_get_data.status_code == 400
 
 # todo - concurrent sessions using fromVersion in Integrations tests
+
+
+# todo:
+#  - concurrent sessions using fromVersion in Integrations tests
 #  - index: check if dataframe has an index
 #  - test timeout ?
 #  - how to choose the index?
