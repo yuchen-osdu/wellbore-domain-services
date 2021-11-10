@@ -5,6 +5,7 @@
 #    pip-compile requirements.in
 #
 --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
+--extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
 
 adal==1.2.7
     # via azure-datalake-store
@@ -37,6 +38,7 @@ async-timeout==3.0.1
 attrs==21.2.0
     # via
     #   aiohttp
+    #   jsonschema
     #   osdu-core-lib-python
 azure-common==1.1.27
     # via
@@ -191,7 +193,9 @@ idna==3.2
     #   rfc3986
     #   yarl
 importlib-metadata==4.8.1
-    # via click
+    # via
+    #   click
+    #   jsonschema
 isodate==0.6.0
     # via msrest
 jmespath==0.10.0
@@ -202,6 +206,8 @@ jsonbender==0.9.3
     # via -r requirements.in
 jsonpath-ng==1.5.3
     # via -r requirements.in
+jsonschema==3.2.0
+    # via osdu-api
 locket==0.2.1
     # via partd
 msal==1.12.0
@@ -249,9 +255,11 @@ opencensus-ext-stackdriver==0.7.4
     # via -r requirements.in
 opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
+osdu-api==0.12.1
+    # via osdu-core-lib-python-aws
 osdu-core-lib-python==1.1.0
     # via -r requirements.in
-osdu-core-lib-python-aws==0.0.3
+osdu-core-lib-python-aws==0.0.6
     # via -r requirements.in
 osdu-core-lib-python-azure==1.2.1
     # via -r requirements.in
@@ -308,6 +316,8 @@ pyjwt[crypto]==2.1.0
     #   osdu-core-lib-python-gcp
 pyparsing==2.4.7
     # via packaging
+pyrsistent==0.18.0
+    # via jsonschema
 python-dateutil==2.8.2
     # via
     #   adal
@@ -327,6 +337,7 @@ pyyaml==5.4.1
     # via
     #   dask
     #   distributed
+    #   osdu-api
 requests==2.26.0
     # via
     #   adal
@@ -361,6 +372,7 @@ six==1.16.0
     #   grpcio
     #   isodate
     #   jsonpath-ng
+    #   jsonschema
     #   protobuf
     #   python-dateutil
     #   python-multipart
@@ -382,6 +394,8 @@ toolz==0.11.1
     #   dask
     #   distributed
     #   partd
+toposort==1.6
+    # via osdu-api
 tornado==6.1
     # via distributed
 typing-extensions==3.10.0.0

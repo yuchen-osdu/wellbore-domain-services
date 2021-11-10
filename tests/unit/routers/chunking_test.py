@@ -770,7 +770,8 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     assert chunk_response_1.status_code == expected_code
 
 
-def test_legacy_logs_int_columns(setup_client):
+@pytest.mark.parametrize("columns", [[int(42), float(-42)], []])
+def test_legacy_logs_int_columns(setup_client, columns):
     """
         Ensure legacy v2 Log containing columns name as int type are correctly converted to string
         to ensure to_parquet is possible.
@@ -782,7 +783,7 @@ def test_legacy_logs_int_columns(setup_client):
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
 
-    json_data = {t: np.random.rand(10) for t in [int(42), float(-42)]}
+    json_data = {t: np.random.rand(10) for t in columns}
     df_data = pd.DataFrame(json_data)
     data_to_send = df_data.to_json(orient='split', date_format='iso')
 
@@ -1036,6 +1037,8 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
                    record_id=record_id,
                    session_mode='update',
                    data_format='parquet')
+
+
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
