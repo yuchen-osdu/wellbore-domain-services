@@ -160,7 +160,7 @@ async def get_data_version(
             if data_param.bulk_filter:
                 # get column needed for filtering which are not yet in columns
                 filters = data_param.get_filters()
-                filter_columns = [c for c in filters.keys() if c in existing_col] # TODO if filter columns does not exist skip, raise ?
+                filter_columns = [c for c in filters.keys() if c in existing_col]
                 if not filter_columns:
                     raise FilterError('The columns to be filtered do not exist')
                 valid_filters = {c: filters[c] for c in filter_columns}
@@ -169,7 +169,7 @@ async def get_data_version(
                     columns.extend(filter_columns)
                     columns = set(columns)
 
-            if data_param.describe and not data_param.offset and not data_param.limit and not data_param.filter:
+            if data_param.describe and not data_param.offset and not data_param.limit and not data_param.bulk_filter:
                 import pandas as pd
                 # optimization: create a fake dataset when describe on all rows
                 df = pd.DataFrame()
