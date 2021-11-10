@@ -247,20 +247,19 @@ def make_async_do_nothing():
 
 # Format selected routes for spec generation
 def format_routes(app, prefix, tags):
-    for r in app.routes:
+    for route in app.routes:
         # non selected routes are hidden
-        r.include_in_schema = False
+        route.include_in_schema = False
         # route path must start with prefix
-        if r.path.startswith(prefix):
+        if route.path.startswith(prefix):
             # use all tags if no tag filter is provided
             if not tags:
-                r.include_in_schema = True
+                route.include_in_schema = True
             # otherwise route must have one of the selected tags
-            elif hasattr(r,"tags"):
-                for t in r.tags:
-                    if t in tags:
-                        # add route to the spec
-                        r.include_in_schema = True
-                        # strip prefix from the formatted route path
-                        r.path_format = r.path.removeprefix(prefix)
-                        break
+            elif hasattr(route,"tags"):
+                if any(tag in tags for tag in route.tags):
+                    # add route to the spec
+                    route.include_in_schema = True
+                    # strip prefix from the formatted route path
+                    route.path_format = route.path.removeprefix(prefix)
+                    break
