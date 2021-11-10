@@ -23,12 +23,11 @@ OPENAPI_PATH = 'spec/generated/openapi.json'
 import os
 import pytest
 import rapidjson as json
-from tests.unit.test_utils import ctx_fixture
+from tests.unit.test_utils import ctx_fixture, format_routes
 from fastapi.testclient import TestClient
 from openapi_spec_validator import validate_spec
 
 from app.helper import traces
-from app.utils import format_routes
 from app.wdms_app import wdms_app
 import app.conf as conf
 
