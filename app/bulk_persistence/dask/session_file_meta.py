@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import time
+from typing import List
 
 import pandas as pd
 from app.bulk_persistence.dask.utils import share_items
@@ -42,27 +43,27 @@ class SessionFileMeta:
         return self._meta
 
     @property
-    def columns(self):
+    def columns(self) -> List[str]:
+        """Return the column names"""
         return self._read_meta()['columns']
-    
+
     @property
-    def dtypes(self):
+    def dtypes(self) -> List[str]:
         return self._read_meta()['dtypes']
-    
+
     @property
-    def nb_rows(self):
+    def nb_rows(self) -> int:
         return self._read_meta()['nb_rows']
 
     @property
-    def index_hash(self):
+    def index_hash(self) -> str:
         return self._read_meta()['index_hash']
-        
 
-    def overlap(self, other: 'SessionFileMeta'):
+    def overlap(self, other: 'SessionFileMeta') -> bool:
         """Returns True if indexes overlap."""
         return self.end >= other.start and other.end >= self.start
 
-    def has_common_columns(self, other: 'SessionFileMeta'):
+    def has_common_columns(self, other: 'SessionFileMeta') -> bool:
         """Returns True if contains common columns with others."""
         return share_items(self.columns, other.columns)
 
