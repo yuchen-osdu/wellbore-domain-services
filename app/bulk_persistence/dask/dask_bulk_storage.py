@@ -19,6 +19,7 @@ from contextlib import suppress
 from functools import wraps
 from operator import attrgetter
 from typing import List
+import re
 
 import fsspec
 import pandas as pd
@@ -262,7 +263,9 @@ class DaskBulkStorage:
         At the stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
         """
         df_columns = set(df.columns)
-        if '__index_level_0__' in df_columns or '__null_dask_index__' in df_columns:
+        pyarrow_reserved_columns_found = list(filter(lambda v: re.match(r'__index_level_\d+__', v), df_columns))
+        
+        if pyarrow_reserved_columns_found or '__null_dask_index__' in df_columns:
             raise BulkNotProcessable("Invalid column name")
 
     @internal_bulk_exceptions
