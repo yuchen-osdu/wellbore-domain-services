@@ -16,7 +16,6 @@ import hashlib
 import json
 import time
 from contextlib import suppress
-from functools import wraps
 from operator import attrgetter
 from typing import List
 
@@ -24,47 +23,20 @@ import fsspec
 import pandas as pd
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
-from dask.distributed import scheduler
-from pyarrow.lib import ArrowException, ArrowInvalid
+from pyarrow.lib import ArrowException
 import pyarrow.parquet as pa
 
 from app.bulk_persistence import BulkId
-from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
-from app.bulk_persistence.dask.traces import wrap_trace_process
-from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
-                                             do_merge, 
-                                             worker_capture_timing_handlers)
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
+
+from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
+from .traces import wrap_trace_process
+from .utils import SessionFileMeta, by_pairs, do_merge, worker_capture_timing_handlers
 from .dask_worker_plugin import DaskWorkerPlugin
-
-
-def internal_bulk_exceptions(target):
-    """
-    Decoration to handler exceptions that should be not exposed to outside world. e.g. Pyarrow or Dask exceptions
-    """
-
-    @wraps(target)
-    async def async_inner(*args, **kwargs):
-        try:
-            return await target(*args, **kwargs)
-        except ArrowInvalid as e:
-            get_logger().exception(f"Pyarrow ArrowInvalid when running {target.__name__}")
-            raise BulkNotProcessable(f"Unable to process bulk - {str(e)}")
-        except ArrowException:
-            get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
-            raise BulkNotProcessable("Unable to process bulk - Arrow")
-        except scheduler.KilledWorker:
-            get_logger().exception(f"Dask worker raised exception when running '{target.__name__}'")
-            raise BulkNotProcessable("Unable to process bulk- Dask")
-        except Exception:
-            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
-            raise
-
-    return async_inner
 
 
 def pandas_to_parquet(pdf, path, opt):
