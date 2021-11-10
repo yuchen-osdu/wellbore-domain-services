@@ -22,7 +22,12 @@ from typing import List
 
 import fsspec
 import pandas as pd
+import dask.dataframe as dd
+from dask.distributed import Client as DaskDistributedClient
+from dask.distributed import scheduler
 from pyarrow.lib import ArrowException, ArrowInvalid
+import pyarrow.parquet as pa
+
 from app.bulk_persistence import BulkId
 from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.traces import wrap_trace_process
@@ -34,12 +39,7 @@ from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-import pyarrow.parquet as pa
-
-import dask.dataframe as dd
-from dask.distributed import Client as DaskDistributedClient
-from dask.distributed import WorkerPlugin
-from dask.distributed import scheduler
+from .dask_worker_plugin import DaskWorkerPlugin
 
 
 def internal_bulk_exceptions(target):
@@ -65,28 +65,6 @@ def internal_bulk_exceptions(target):
             raise
 
     return async_inner
-
-
-class DefaultWorkerPlugin(WorkerPlugin):
-
-    def __init__(self, logger=None, register_fsspec_implementation=None) -> None:
-        self.worker = None
-        global _LOGGER
-        _LOGGER = logger
-
-        self._register_fsspec_implementation = register_fsspec_implementation
-        super().__init__()
-        get_logger().debug("WorkerPlugin initialised")
-
-    def setup(self, worker):
-        self.worker = worker
-        if self._register_fsspec_implementation:
-            self._register_fsspec_implementation()
-
-    def transition(self, key, start, finish, *args, **kwargs):
-        if finish == 'error':
-            # exc = self.worker.exceptions[key]
-            get_logger().exception(f"Task '{key}' has failed with exception")
 
 
 def pandas_to_parquet(pdf, path, opt):
@@ -116,7 +94,7 @@ class DaskBulkStorage:
                 parameters.register_fsspec_implementation()
 
             await DaskBulkStorage.client.register_worker_plugin(
-                DefaultWorkerPlugin,
+                DaskWorkerPlugin,
                 name="LoggerWorkerPlugin",
                 logger=get_logger(),
                 register_fsspec_implementation=parameters.register_fsspec_implementation)
