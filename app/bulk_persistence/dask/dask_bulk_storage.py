@@ -27,6 +27,7 @@ from pyarrow.lib import ArrowException
 import pyarrow.parquet as pa
 
 from app.bulk_persistence import BulkId
+from app.bulk_persistence.dask.session_file_meta import SessionFileMeta
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
@@ -35,7 +36,7 @@ from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
 from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import wrap_trace_process
-from .utils import SessionFileMeta, by_pairs, do_merge, worker_capture_timing_handlers
+from .utils import by_pairs, do_merge, worker_capture_timing_handlers
 from .dask_worker_plugin import DaskWorkerPlugin
 
 
