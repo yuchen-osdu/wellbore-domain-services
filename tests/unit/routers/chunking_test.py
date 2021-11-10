@@ -1044,7 +1044,7 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("forbidden_columns_name", ['__index_level_0__', '__null_dask_index__'])
 @pytest.mark.parametrize("use_custom_index", [True, False])
-def test_none_in_index_error(setup_client, entity_type, forbidden_columns_name, use_custom_index):
+def test_none_in_index_error(setup_client, entity_type, reserved_columns_name, use_custom_index):
 
     client = setup_client
     record_id = _create_record(client, entity_type)
@@ -1052,7 +1052,7 @@ def test_none_in_index_error(setup_client, entity_type, forbidden_columns_name, 
 
     # A column named '__index_level_0__' is internally used by PyArrow to save the index.
     # Sending column named the same way as regular column causes problems to read them with Dask.
-    df = generate_df(['float-COLUMN_MD', 'COLUMN_X', forbidden_columns_name], range(50))
+    df = generate_df(['float-COLUMN_MD', 'COLUMN_X', reserved_columns_name], range(50))
 
     if use_custom_index:
         df = df.set_index('float-COLUMN_MD')
