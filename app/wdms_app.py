@@ -300,23 +300,3 @@ def add_modules_router(router):
         log.warning(f'Failed to add `{name}` router. {error}')
     except:
         log.warning(f'Failed to add `{name}` router. {sys.exc_info()[0]}')
-
-
-# Format selected routes for spec generation
-def format_routes(prefix, tags):
-    for r in wdms_app.routes:
-        # non selected routes are hidden
-        r.include_in_schema = False
-        # route path must start with prefix
-        if r.path.startswith(prefix):
-            # route must have one of the selected tags
-            if tags is None:
-                r.include_in_schema = True
-            elif hasattr(r,"tags"):
-                for t in r.tags:
-                    if t in tags:
-                        # add route to the spec
-                        r.include_in_schema = True
-                        # strip prefix from the formatted route path
-                        r.path_format = r.path.removeprefix(prefix)
-                        break
