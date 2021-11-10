@@ -1042,7 +1042,7 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-@pytest.mark.parametrize("forbidden_columns_name", ['__index_level_0__', '__null_dask_index__'])
+@pytest.mark.parametrize("reserved_columns_name", ['__index_level_0__', '__null_dask_index__'])
 @pytest.mark.parametrize("use_custom_index", [True, False])
 def test_none_in_index_error(setup_client, entity_type, reserved_columns_name, use_custom_index):
 
