@@ -20,6 +20,7 @@ The updated spec file must then be committed with the latest changes.
 
 OPENAPI_PATH = 'spec/generated/openapi.json'
 
+import os
 import pytest
 import rapidjson as json
 from tests.unit.test_utils import ctx_fixture
@@ -27,10 +28,24 @@ from fastapi.testclient import TestClient
 from openapi_spec_validator import validate_spec
 
 from app.helper import traces
+from app.utils import format_routes
 from app.wdms_app import wdms_app
+import app.conf as conf
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
+
+# Initialize routes
+environment_dict = os.environ.copy()
+conf.Config = conf.ConfigurationContainer.with_load_all(
+    environment_dict=environment_dict,
+    contextual_loader=None
+)
+prefix = conf.Config.get('openapi_filter_prefix')
+tags = conf.Config.get('openapi_filter_tags')
+if tags:
+    tags = tags.split(',')
+format_routes(wdms_app, prefix, tags)
 
 
 @pytest.fixture
