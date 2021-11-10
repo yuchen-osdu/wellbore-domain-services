@@ -16,6 +16,8 @@ from itertools import zip_longest
 from logging import INFO
 from typing import List
 
+import pyarrow.parquet as pa
+
 import dask.dataframe as dd
 
 from app.helper.logger import get_logger
@@ -79,3 +81,10 @@ import re
 import numpy as np
 re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
+@capture_timings("get_num_rows", handlers=worker_capture_timing_handlers)
+def get_num_rows(dataset: pa.ParquetDataset) -> int:
+    """Returns the number of rows from a pyarrow ParquetDataset"""
+    metadata = dataset.common_metadata
+    if metadata and metadata.num_rows > 0:
+        return metadata.num_rows
+    return sum((piece.get_metadata().num_rows for piece in dataset.pieces))
