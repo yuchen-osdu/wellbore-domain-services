@@ -29,19 +29,13 @@ from openapi_spec_validator import validate_spec
 
 from app.helper import traces
 from app.wdms_app import wdms_app
-import app.conf as conf
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
 # Initialize route filters for documentation
-environment_dict = os.environ.copy()
-conf.Config = conf.ConfigurationContainer.with_load_all(
-    environment_dict=environment_dict,
-    contextual_loader=None
-)
-prefix = conf.Config.get('openapi_filter_prefix')
-tags = conf.Config.get('openapi_filter_tags')
+prefix = os.environ.get('OPENAPI_FILTER_PREFIX')
+tags = os.environ.get('OPENAPI_FILTER_TAGS')
 # Filter and reformat routes only if a prefix is provided
 if prefix:
     # Make a tags list from the comma separated env var if needed

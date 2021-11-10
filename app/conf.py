@@ -177,16 +177,6 @@ class ConfigurationContainer:
         description='specify the base path for the openapi doc, in case deployed beind a proxy',
         default='/api/os-wellbore-ddms')
 
-    openapi_filter_prefix: EnvVar = EnvVar(
-        key='OPENAPI_FILTER_PREFIX',
-        description='Only display APIS with this path prefix in the swagger spec. If empty, all APIs are displayed.',
-        default=None)
-
-    openapi_filter_tags: EnvVar = EnvVar(
-        key='OPENAPI_FILTER_TAGS',
-        description='Comma separated list of tags to display in the swagger spec. If empty, all tags are displayed.',
-        default=None)
-
     custom_catalog_timeout: EnvVar = EnvVar(
         key='CUSTOM_CATALOG_TIMEOUT',
         description='Timeout to invalidate custom catalog in seconds',
@@ -202,7 +192,6 @@ class ConfigurationContainer:
         key='MIN_WORKER_MEMORY',
         description='Min amount of memory for one worker',
         default="512Mi")
-
 
     _environment_dict: Dict = os.environ
 
