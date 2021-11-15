@@ -14,10 +14,10 @@
 
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders.wdms.crud.osdu_welllog import (
+from wdms_client.request_builders.wdms.crud.osdu_welllog import (
     build_request_create_osdu_welllog,
     build_request_delete_osdu_welllog)
-from ..request_builders.wdms.session import (
+from wdms_client.request_builders.wdms.session import (
     build_create_session,
     build_delete_session,
     build_get_session,

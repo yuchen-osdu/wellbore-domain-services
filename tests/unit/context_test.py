@@ -31,7 +31,7 @@ def context_base():
 
 
 def test_context_repr(context_base):
-    expected = '{"tracer": null, "logger": "logger", "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "partition_id", "app_key": "app_key", "api_key": "api_key"}'
+    expected = '{"tracer": null, "logger": "logger", "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "partition_id", "app_key": "app_key", "api_key": "api_key", "x_user_id": null}'
 
     assert str(context_base) == expected
     assert repr(context_base) == expected

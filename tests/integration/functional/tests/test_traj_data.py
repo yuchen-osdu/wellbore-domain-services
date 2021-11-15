@@ -1,6 +1,6 @@
 import pytest
 from .fixtures import with_wdms_env
-from ..request_builders.wdms.crud.trajectory import  build_request_create_trajectory, build_request_delete_trajectory, build_request_add_trajectory_bulk_data, build_request_get_trajectory_bulk_data
+from wdms_client.request_builders.wdms.crud.trajectory import  build_request_create_trajectory, build_request_delete_trajectory, build_request_add_trajectory_bulk_data, build_request_get_trajectory_bulk_data
 
 
 @pytest.fixture(scope='module')

@@ -95,6 +95,13 @@ class TracingMiddleware(BaseHTTPMiddleware):
             attribute_key=conf.PARTITION_ID_HEADER_NAME,
             attribute_value=partition_id)
 
+        ctx_x_user_id = get_or_create_ctx().x_user_id
+        x_user_id = ctx_x_user_id if ctx_x_user_id is not None \
+            else request.headers.get(conf.X_USER_ID_HEADER_NAME)
+        tracer.add_attribute_to_current_span(
+            attribute_key='user-id',
+            attribute_value=x_user_id)
+
         request_content_type = request.headers.get("Content-type")
         tracer.add_attribute_to_current_span(attribute_key="request.header Content-type",
                                              attribute_value=request_content_type)

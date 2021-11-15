@@ -297,7 +297,7 @@ async def _get_trajectory_data(
     except UnknownChannelsException as key_error:  # unknown channels
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(key_error)) from key_error
     except InvalidBulkException as ex:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str("Bulk is invalid")) from ex
 
     content = await DataframeSerializerAsync().to_json(df, orient=orient)
     return Response(content=content, media_type=MimeTypes.JSON.type)

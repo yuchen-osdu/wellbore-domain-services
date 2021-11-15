@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..request_builders.wdms.about import build_request_about
-from ..request_builders.wdms.status import build_request_status
-from ..request_builders.wdms.version import build_request_version
+from wdms_client.request_builders.wdms.about import build_request_about
+from wdms_client.request_builders.wdms.status import build_request_status
+from wdms_client.request_builders.wdms.version import build_request_version
 from .fixtures import with_wdms_env
 import pytest
 
 
-@pytest.mark.tag('basic', 'smoke')
+@pytest.mark.tag('basic', 'smoke', 'about')
 def test_about(with_wdms_env):
     result = build_request_about().call(with_wdms_env)
     result.assert_ok()

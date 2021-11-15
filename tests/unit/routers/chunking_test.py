@@ -10,11 +10,13 @@ import pandas as pd
 import pandas.api.types as ptypes
 import pyarrow.parquet as pq
 import pyarrow as pa
+import platform
 
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence.dask.errors import BulkNotProcessable
 
 from app.clients import StorageRecordServiceClient
 from app.persistence.sessions_storage import SessionsStorage, SessionState
@@ -24,6 +26,7 @@ from app.middleware import require_data_partition_id
 from app.helper import traces
 from app.utils import Context, DaskClient
 from app import conf
+
 
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 from tests.unit.test_utils import nope_logger_fixture
@@ -771,7 +774,8 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     assert chunk_response_1.status_code == expected_code
 
 
-def test_legacy_logs_int_columns(setup_client):
+@pytest.mark.parametrize("columns", [[int(42), float(-42)], []])
+def test_legacy_logs_int_columns(setup_client, columns):
     """
         Ensure legacy v2 Log containing columns name as int type are correctly converted to string
         to ensure to_parquet is possible.
@@ -783,7 +787,7 @@ def test_legacy_logs_int_columns(setup_client):
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
 
-    json_data = {t: np.random.rand(10) for t in [int(42), float(-42)]}
+    json_data = {t: np.random.rand(10) for t in columns}
     df_data = pd.DataFrame(json_data)
     data_to_send = df_data.to_json(orient='split', date_format='iso')
 
@@ -928,6 +932,137 @@ def test_parquet_maintain_float_type(setup_client, entity_type):
         res_df = _create_df_from_response(get_response)
         pd.testing.assert_frame_equal(df[[curve]], res_df)
 
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_send_json_parquet_in_one_session(setup_client, entity_type):
+    """ send data in json format first and then in parquet format in one session,
+        check if the session can be committed successfully """
+
+    client = setup_client
+    record_id = _create_record(client,  entity_type)
+
+    # Create a session
+    chunking_url = Definitions[entity_type]['chunking_url']
+    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'overwrite'})
+    assert create_session_response.status_code == 200
+    session_data = create_session_response.json()
+    session_id = session_data['id']
+
+    # append first chunk - JSON
+    chunk_1 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(5, 10))
+    response_chunk_1 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   json=chunk_1.to_dict(orient='split'))
+
+    assert response_chunk_1.status_code == 200
+
+    # append first chunk - PARQUET
+    chunk_2 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(15, 20))
+    headers = {'content-type': 'application/x-parquet'}
+    response_chunk_2 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   data=chunk_2.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_chunk_2.status_code == 200
+
+    # COMMIT session
+    commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
+                                               json={'state': 'commit'})
+
+    assert_commit_session_status_code(commit_session_response)
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_send_parquet_json_in_one_session(setup_client, entity_type):
+    """ send data in parquet format first and then in json format in one session,
+    check if the session can be committed successfully  """
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+
+    # Create a session
+    chunking_url = Definitions[entity_type]['chunking_url']
+    create_session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'overwrite'})
+    assert create_session_response.status_code == 200
+    session_data = create_session_response.json()
+    session_id = session_data['id']
+
+    # append first chunk - PARQUET
+    chunk_1 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(15, 20))
+    headers = {'content-type': 'application/x-parquet'}
+
+    response_chunk_1 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   data=chunk_1.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_chunk_1.status_code == 200
+
+    # append first chunk - JSON
+    chunk_2 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(5, 10))
+    response_chunk_2 = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                                   json=chunk_2.to_dict(orient='split'))
+
+    assert response_chunk_2.status_code == 200
+
+    # COMMIT session
+    commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
+                                           json={'state': 'commit'})
+
+    assert_commit_session_status_code(commit_session_response)
+
+
+def assert_commit_session_status_code(commit_session_response):
+    """
+     in Windows, dtypes of the dataframe created from Request for parquet are int32, while for json are int64.
+     send json and parquet no matter what the order is in one session cause 422 exception because of dtypes incoherence.
+    """
+
+    if platform.system() == 'Windows':
+        assert commit_session_response.status_code == 422
+    else:
+        assert commit_session_response.status_code == 200
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_send_parquet_json_with_two_session(setup_client, entity_type):
+    """ send parquet and json separately with two session, check if each session can be committed successfully"""
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    # append chunk - JSON
+    _create_chunks(client=client,
+                   entity_type=entity_type,
+                   cols_ranges=[
+                       (['COLUMN_MD', 'COLUMN_X'], range(5, 10)),
+                       (['COLUMN_MD', 'COLUMN_X'], range(15, 20))],
+                   record_id=record_id,
+                   session_mode='overwrite',
+                   data_format='json')
+
+    # append chunk - PARQUET
+    _create_chunks(client=client,
+                   entity_type=entity_type,
+                   cols_ranges=[
+                       (['COLUMN_MD', 'COLUMN_X'], range(5, 10))],
+                   record_id=record_id,
+                   session_mode='update',
+                   data_format='parquet')
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+@pytest.mark.parametrize("reserved_columns_name", ['__index_level_0__', '__null_dask_index__'])
+@pytest.mark.parametrize("use_custom_index", [True, False])
+def test_none_in_index_error(setup_client, entity_type, reserved_columns_name, use_custom_index):
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    # A column named '__index_level_0__' is internally used by PyArrow to save the index.
+    # Sending column named the same way as regular column causes problems to read them with Dask.
+    df = generate_df(['float-COLUMN_MD', 'COLUMN_X', reserved_columns_name], range(50))
+
+    if use_custom_index:
+        df = df.set_index('float-COLUMN_MD')
+
+    with pytest.raises(BulkNotProcessable, match="Invalid column name"):
+        client.post(f'{chunking_url}/{record_id}/data',
+                    data=df.to_parquet(engine="pyarrow"),
+                    headers={'content-type': 'application/parquet'})
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests

@@ -3,7 +3,7 @@ from .fixtures import with_wdms_env
 
 from jsonschema import validate
 
-from ..request_builders.wdms.crud.trajectory import build_request_create_trajectory_with_id, \
+from wdms_client.request_builders.wdms.crud.trajectory import build_request_create_trajectory_with_id, \
     build_request_get_trajectory, build_request_get_trajectory_bulk_data, build_request_add_trajectory_bulk_data, \
     build_request_create_trajectory, build_request_delete_trajectory
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import Query
 
@@ -47,3 +47,12 @@ class GetDataParams:
         self.curves = curves
         self.describe = describe
         # orient if json ?
+
+    def get_curves_list(self) -> List[str]:
+        """parse the curves query parameter and return the list of requested curves"""
+        if self.curves:
+            # split and remove emty
+            curves = list(filter(None, map(str.strip, self.curves.split(','))))
+            # remove duplicates but maintain order
+            return list(dict.fromkeys(curves))
+        return []

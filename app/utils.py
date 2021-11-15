@@ -202,7 +202,8 @@ class Context:
         '_api_key',
         '_user',
         '_app_injector',
-        '_attr_dict'
+        '_attr_dict',
+        '_x_user_id'
     ]
 
     def __init__(self,
@@ -217,6 +218,7 @@ class Context:
                  api_key: Optional[str] = None,
                  user: Optional[User] = None,
                  app_injector: Optional[AppInjector] = None,
+                 x_user_id: Optional[str] = None,
                  **keys):
 
         self._tracer = tracer
@@ -230,6 +232,7 @@ class Context:
         self._api_key = api_key
         self._user = user
         self._app_injector = app_injector
+        self._x_user_id = x_user_id
 
         # pass
         self._attr_dict = keys or {}
@@ -250,7 +253,7 @@ class Context:
     @classmethod
     def set_current_with_value(cls, tracer=None, logger=None, correlation_id=None, request_id=None, auth=None,
                                partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                               dev_mode=Config.dev_mode.value,
+                               dev_mode=Config.dev_mode.value, x_user_id=None,
                                **keys) -> 'Context':
         """
         clone the current context with the given values, set the new ctx as current and returns it
@@ -269,6 +272,7 @@ class Context:
                                      user=user,
                                      app_injector=app_injector,
                                      dev_mode=dev_mode,
+                                     x_user_id=x_user_id,
                                      **keys)
         new_ctx.set_current()
         return new_ctx
@@ -301,6 +305,7 @@ class Context:
             api_key=self._api_key,
             user=self._user,
             app_injector=self._app_injector,
+            x_user_id=self._x_user_id,
             **self._attr_dict)
 
     def with_correlation_id(self, correlation_id):
@@ -321,6 +326,11 @@ class Context:
     def with_partition_id(self, partition_id):
         clone = self.__copy__()
         clone._partition_id = partition_id
+        return clone
+
+    def with_x_user_id(self, x_user_id):
+        clone = self.__copy__()
+        clone._x_user_id = x_user_id
         return clone
 
     def with_user(self, user):
@@ -345,7 +355,7 @@ class Context:
 
     def with_value(self, tracer=None, logger=None, correlation_id=None, request_id=None, auth=None,
                    partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                   dev_mode=Config.dev_mode.value, **keys) -> 'Context':
+                   dev_mode=Config.dev_mode.value, x_user_id=None, **keys) -> 'Context':
         """ Clone context, adding all keys in future logs """
         cloned = self.__class__(
             tracer=tracer or self._tracer,
@@ -359,6 +369,7 @@ class Context:
             api_key=api_key or self._api_key,
             user=user or self._user,
             app_injector=app_injector or self._app_injector,
+            x_user_id=x_user_id or self._x_user_id,
             **self._attr_dict)
 
         if keys is not None:
@@ -409,6 +420,11 @@ class Context:
     def app_injector(self) -> Optional[AppInjector]:
         return self._app_injector
 
+    @property
+    def x_user_id(self) -> Optional[str]:
+        return self._x_user_id
+
+
     def __dict__(self):
         return {
             "tracer": self.tracer,
@@ -418,7 +434,8 @@ class Context:
             "dev_mode": self.dev_mode,
             "partition_id": self.partition_id,
             "app_key": self.app_key,
-            "api_key": self.api_key
+            "api_key": self.api_key,
+            "x_user_id": self.x_user_id,
         }
 
     def __repr__(self):
