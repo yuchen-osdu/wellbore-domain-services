@@ -13,6 +13,11 @@
 # limitations under the License.
 
 from fastapi import status, HTTPException
+from dask.distributed import scheduler
+from pyarrow.lib import ArrowException, ArrowInvalid
+from functools import wraps
+
+from app.helper.logger import get_logger
 
 
 class BulkError(Exception):
@@ -34,3 +39,28 @@ class BulkNotProcessable(BulkError):
 
     def __init__(self, bulk_id):
         self.message = f'bulk {bulk_id} not processable'
+
+
+def internal_bulk_exceptions(target):
+    """
+    Decoration to handler exceptions that should be not exposed to outside world. e.g. Pyarrow or Dask exceptions
+    """
+
+    @wraps(target)
+    async def async_inner(*args, **kwargs):
+        try:
+            return await target(*args, **kwargs)
+        except ArrowInvalid as e:
+            get_logger().exception(f"Pyarrow ArrowInvalid when running {target.__name__}")
+            raise BulkNotProcessable(f"Unable to process bulk - {str(e)}")
+        except ArrowException:
+            get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
+            raise BulkNotProcessable("Unable to process bulk - Arrow")
+        except scheduler.KilledWorker:
+            get_logger().exception(f"Dask worker raised exception when running '{target.__name__}'")
+            raise BulkNotProcessable("Unable to process bulk- Dask")
+        except Exception:
+            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
+            raise
+
+    return async_inner
