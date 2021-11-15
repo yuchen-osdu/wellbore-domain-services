@@ -262,4 +262,4 @@ def format_routes(app, prefix, tags):
                     route.include_in_schema = True
                     # strip prefix from the formatted route path
                     route.path_format = route.path.removeprefix(prefix)
-                    break
+
