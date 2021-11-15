@@ -160,7 +160,7 @@ DDMS_V3_PATH = '/ddms/v3'
 ALPHA_APIS_PREFIX = '/alpha'
 basic_dependencies = [
     Depends(require_data_partition_id, use_cache=False),
-    Depends(require_opendes_authorized_user, use_cache=False)
+    Depends(require_opendes_authorized_user, use_cache=False),
 ]
 
 wdms_app.include_router(probes.router)
