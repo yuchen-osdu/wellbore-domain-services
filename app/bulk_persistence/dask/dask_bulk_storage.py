@@ -15,8 +15,8 @@
 import hashlib
 import json
 import os
+import re
 from contextlib import suppress
-from functools import wraps
 from operator import attrgetter
 from typing import List, Optional
 
@@ -29,66 +29,23 @@ from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
 from app.bulk_persistence.dask.session_file_meta import (SessionFileMeta,
                                                          get_output_file_name)
 from app.bulk_persistence.dask.traces import wrap_trace_process
-from app.bulk_persistence.dask.utils import (by_pairs, get_num_rows, do_merge, set_index,
-                                             share_items,
+from app.bulk_persistence.dask.utils import (by_pairs, do_merge, get_num_rows,
+                                             set_index, share_items,
                                              worker_capture_timing_handlers)
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-from pyarrow.lib import ArrowException, ArrowInvalid
+from pyarrow.lib import ArrowException
 
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
-from dask.distributed import WorkerPlugin, get_client, scheduler
 
-
-def internal_bulk_exceptions(target):
-    """
-    Decoration to handler exceptions that should be not exposed to outside world. e.g. Pyarrow or Dask exceptions
-    """
-
-    @wraps(target)
-    async def async_inner(*args, **kwargs):
-        try:
-            return await target(*args, **kwargs)
-        except ArrowInvalid as e:
-            get_logger().exception(f"Pyarrow ArrowInvalid when running {target.__name__}")
-            raise BulkNotProcessable(f"Unable to process bulk - {str(e)}")
-        except ArrowException:
-            get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
-            raise BulkNotProcessable("Unable to process bulk - Arrow")
-        except scheduler.KilledWorker:
-            get_logger().exception(f"Dask worker raised exception when running '{target.__name__}'")
-            raise BulkNotProcessable("Unable to process bulk- Dask")
-        except Exception:
-            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
-            raise
-
-    return async_inner
-
-
-class DefaultWorkerPlugin(WorkerPlugin):
-
-    def __init__(self, logger=None, register_fsspec_implementation=None) -> None:
-        self.worker = None
-        global _LOGGER
-        _LOGGER = logger
-
-        self._register_fsspec_implementation = register_fsspec_implementation
-        super().__init__()
-        get_logger().debug("WorkerPlugin initialised")
-
-    def setup(self, worker):
-        self.worker = worker
-        if self._register_fsspec_implementation:
-            self._register_fsspec_implementation()
-
-    def transition(self, key, start, finish, *args, **kwargs):
-        if finish == 'error':
-            # exc = self.worker.exceptions[key]
-            get_logger().exception(f"Task '{key}' has failed with exception")
+from .dask_worker_plugin import DaskWorkerPlugin
+from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
+from .traces import wrap_trace_process
+from .utils import by_pairs, do_merge, worker_capture_timing_handlers
 
 
 def pandas_to_parquet(pdf, path, storage_options):
@@ -135,7 +92,7 @@ class DaskBulkStorage:
                 parameters.register_fsspec_implementation()
 
             await DaskBulkStorage.client.register_worker_plugin(
-                DefaultWorkerPlugin,
+                DaskWorkerPlugin,
                 name="LoggerWorkerPlugin",
                 logger=get_logger(),
                 register_fsspec_implementation=parameters.register_fsspec_implementation)
@@ -292,10 +249,26 @@ class DaskBulkStorage:
             raise BulkNotProcessable("Empty data")
 
         if not df.index.is_unique:
-            raise BulkNotProcessable("Duplicated index found")
+            raise BulkNotProcessable("Duplicated index values detected")
 
         if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
             raise BulkNotProcessable("Index should be numeric or datetime")
+
+        DaskBulkStorage._check_reserved_columns_name(df)
+
+    @staticmethod
+    def _check_reserved_columns_name(df):
+        """
+        There are reserved name for columns which are internally used by Pandas/Dask with PyArrow to save the index.
+        Save a df containing reserved name as regular columns lead to inability to read parquet file then.
+
+        At the stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
+        """
+        df_columns = set(df.columns)
+        pyarrow_reserved_columns_found = list(filter(lambda v: re.match(r'__index_level_\d+__', v), df_columns))
+        
+        if pyarrow_reserved_columns_found or '__null_dask_index__' in df_columns:
+            raise BulkNotProcessable("Invalid column name")
 
     @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)

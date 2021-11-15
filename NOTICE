@@ -279,7 +279,7 @@ The following software have components provided under the terms of this license:
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from http://www.structlog.org/)
 - toml (from https://github.com/uiri/toml)
-- tomli (from https://pypi.org/project/tomli/1.2.1/)
+- tomli (from https://pypi.org/project/tomli/1.2.2/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)
