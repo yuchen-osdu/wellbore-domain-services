@@ -1,21 +1,18 @@
-from typing import Tuple, Callable
+from typing import Tuple, Callable, Iterable
 import re
 
 import pandas as pd
-from pandas import DataFrame as PandasDataframe
 
 from app.bulk_persistence.dask.errors import BulkNotProcessable
 
-ValidationResult = Tuple[bool, str]
+ValidationResult = Tuple[bool, str]  # Tuple (is_dataframe_valid, failure_reason)
+
 ValidationSuccess = (True, '')
 
-DataframeType = PandasDataframe  # Union[PandasDataframe, DaskDataFrame]
-# TODO for now, only supports validation on Pandas dataframe, need to accept Dask dataframe as input as well?
-
-DataFrameValidationFunc = Callable[[DataframeType], ValidationResult]
+DataFrameValidationFunc = Callable[[pd.DataFrame], ValidationResult]
 
 
-def assert_df_validate(df: DataframeType,
+def assert_df_validate(df: pd.DataFrame,
                        validator_func: DataFrameValidationFunc,
                        *other_validator_funcs):
     """ call one or more validation function and throw BulkNotProcessable in case of invalid, run all validation before
@@ -38,7 +35,7 @@ def no_validation(_) -> ValidationResult:
     return ValidationSuccess
 
 
-def auto_cast_columns_to_string(df: DataframeType) -> ValidationResult:
+def auto_cast_columns_to_string(df: pd.DataFrame) -> ValidationResult:
     """
     If given dataframe contains columns name which is not a string, cast it
     return always returns validation success
@@ -47,7 +44,7 @@ def auto_cast_columns_to_string(df: DataframeType) -> ValidationResult:
     return ValidationSuccess
 
 
-def columns_type_must_be_string(df: DataframeType) -> ValidationResult:
+def columns_type_must_be_string(df: pd.DataFrame) -> ValidationResult:
     """ Ensure given dataframe contains columns name as string only as described by WellLog schemas """
     if all((type(t) is str for t in df.columns)):
         return ValidationSuccess
@@ -55,7 +52,7 @@ def columns_type_must_be_string(df: DataframeType) -> ValidationResult:
     return False, 'All columns type should be string'
 
 
-def validate_index(df: DataframeType) -> ValidationResult:
+def validate_index(df: pd.DataFrame) -> ValidationResult:
     """ Ensure index """
     if len(df.index) == 0:
         return False, "Empty data"
@@ -66,19 +63,22 @@ def validate_index(df: DataframeType) -> ValidationResult:
     return ValidationSuccess
 
 
-def columns_not_in_reserved_names(df: DataframeType) -> ValidationResult:
+PandasReservedIndexColRegexp = re.compile(r'__index_level_\d+__')
+
+
+def any_reserved_column_name(names: Iterable[str]) -> bool:
     """
         There are reserved name for columns which are internally used by Pandas/Dask with PyArrow to save the index.
         Save a df containing reserved name as regular columns lead to inability to read parquet file then.
 
         At the stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
+        return: True is any column uses a reserved name
     """
-    df_columns = set(df.columns)
-    pyarrow_reserved_columns_found = list(filter(lambda v: re.match(r'__index_level_\d+__', v), df_columns))
+    return any((PandasReservedIndexColRegexp.match(name) or name == '__null_dask_index__' for name in names))
 
-    if pyarrow_reserved_columns_found:
-        return False, f'Invalid column name: {",".join(pyarrow_reserved_columns_found)}'
 
-    if '__null_dask_index__' in df_columns:
-        return False, f'Invalid column name: __null_dask_index__'
+def columns_not_in_reserved_names(df: pd.DataFrame) -> ValidationResult:
+    if any_reserved_column_name(df.columns):
+        return False, 'Invalid column name'
+
     return ValidationSuccess

@@ -9,6 +9,7 @@ from app.bulk_persistence.dataframe_validators import (
     auto_cast_columns_to_string,
     columns_type_must_be_string,
     columns_not_in_reserved_names,
+    any_reserved_column_name,
     validate_index,
     assert_df_validate
 )
@@ -124,3 +125,27 @@ def test_validators_composition():
     assert "validation1" in error_msg
     assert "validation2" in error_msg
     assert "validation3" not in error_msg
+
+
+@pytest.mark.parametrize("columns,expected", [
+    # valid cases
+    (["A", "B"], False),
+    (["__index_level_A__", "B"], False),
+
+    # invalid cases with reserved name
+    (["A", "__index_level_0__"], True),
+    (["__index_level_1__", "B"], True),
+    (["__null_dask_index__", "B"], True)
+])
+def test_any_reserved_column_name(columns, expected):
+    assert any_reserved_column_name(columns) == expected
+
+
+def test_perf_500k_column_check():
+    from datetime import datetime
+
+    columns = [str(x) for x in range(500_000)]
+    ts = datetime.now()
+    assert not any_reserved_column_name(columns)
+    elapsed = (datetime.now()-ts).total_seconds()
+    print('500k column check done in', elapsed, 's')
