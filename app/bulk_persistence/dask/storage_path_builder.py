@@ -31,7 +31,7 @@ class StoragePathBuilder:
         return hashlib.sha1(record_id.encode()).hexdigest()
 
     @staticmethod
-    def build_base_path(base_directory: str, protocol: Optional[str]) -> str:
+    def build_base_path(base_directory: str, protocol: Optional[str] = None) -> str:
         """return the base directory, add the protocol if requested"""
         return f'{protocol}://{base_directory}' if protocol else base_directory
 
@@ -53,7 +53,7 @@ class StoragePathBuilder:
         return path[sep_idx + 3:], path[:sep_idx]
 
     @staticmethod
-    def build_entity_path(base_directory: str, record_id, protocol: Optional[str]) -> str:
+    def build_entity_path(base_directory: str, record_id, protocol: Optional[str] = None) -> str:
         """Return the entity path.
         (path where all data relateed to an entity are saved"""
         encoded_id = StoragePathBuilder.hash_record_id(record_id)
@@ -61,25 +61,25 @@ class StoragePathBuilder:
         return join(base_path, encoded_id)
 
     @staticmethod
-    def build_entity_blob_path(base_directory: str, record_id, protocol: Optional[str]) -> str:
+    def build_entity_blob_path(base_directory: str, record_id, protocol: Optional[str] = None) -> str:
         """return the path where blob are stored for the specified entity"""
         entity_path = StoragePathBuilder.build_entity_path(base_directory, record_id, protocol)
         return join(entity_path, 'bulk')
 
     @staticmethod
-    def build_entity_session_path(base_directory: str, record_id, protocol: Optional[str]) -> str:
+    def build_entity_session_path(base_directory: str, record_id, protocol: Optional[str] = None) -> str:
         """return the path where sessions are stored for the specified entity"""
         entity_path = StoragePathBuilder.build_entity_path(base_directory, record_id, protocol)
         return join(entity_path, 'session')
 
     @staticmethod
-    def build_blob_path(base_directory: str, record_id: str, bulk_id: str, protocol: Optional[str]) -> str:
+    def build_blob_path(base_directory: str, record_id: str, bulk_id: str, protocol: Optional[str] = None) -> str:
         """Return the path corresponding to the specified bulk."""
         entity_blob_path = StoragePathBuilder.build_entity_blob_path(base_directory, record_id, protocol)
-        return join(entity_blob_path, 'bulk', bulk_id, 'data')
+        return join(entity_blob_path, bulk_id, 'data')
 
     @staticmethod
-    def build_session_path(base_directory: str, session_id: str, record_id: str, protocol: Optional[str]) -> str:
+    def build_session_path(base_directory: str, session_id: str, record_id: str, protocol: Optional[str] = None) -> str:
         """Return the path corresponding to the specified session."""
         entity_session_path = StoragePathBuilder.build_entity_session_path(base_directory, record_id, protocol)
         return join(entity_session_path, session_id, 'data')
@@ -94,7 +94,8 @@ class StoragePathBuilder:
         if isinstance(dataframe.index, pd.DatetimeIndex):
             first_idx, last_idx = dataframe.index[0].value, dataframe.index[-1].value
 
-        shape_str = '_'.join(f'{cn}:{dt}' for cn, dt in dataframe.dtypes.items())
+        #shape_str = '_'.join(f'{cn}:{dt}' for cn, dt in dataframe.dtypes.items())
+        shape_str = '_'.join(f'{cn}' for cn, dt in dataframe.dtypes.items())
         shape = hashlib.sha1(shape_str.encode()).hexdigest()
         cur_time = round(time() * 1000)
         return f'{first_idx}_{last_idx}_{cur_time}.{shape}'
