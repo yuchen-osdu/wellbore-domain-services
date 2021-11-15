@@ -44,7 +44,8 @@ from app.routers.ddms_v3 import (
     well_ddms_v3,
     welllog_ddms_v3,
     wellbore_trajectory_ddms_v3,
-    markerset_ddms_v3)
+    markerset_ddms_v3,
+    delete_v3)
 from app.routers.bulk import bulk_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
@@ -192,6 +193,7 @@ ddms_v3_routes_groups = [
     (welllog_ddms_v3, "WellLog"),
     (wellbore_trajectory_ddms_v3, "Trajectory v3"),
     (markerset_ddms_v3, "Marker"),
+    (delete_v3, "Delete records V3")
 
 ]
 for v3_api, tag in ddms_v3_routes_groups:
@@ -209,6 +211,7 @@ wdms_app.include_router(fast_search_v3.router, prefix=DDMS_V3_PATH, tags=['fast-
 wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH, tags=['ALPHA feature: search v3'],
                         dependencies=basic_dependencies)
 
+wdms_app.include_router(delete_v3.router, prefix=DDMS_V3_PATH, tags=["Delete records V3"], dependencies=basic_dependencies)
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
 v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check), Depends(set_osdu_bulk_id_access)]
