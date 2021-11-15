@@ -76,11 +76,6 @@ def do_merge(df1: dd.DataFrame, df2: dd.DataFrame):
     return df1.join(df2, how='outer')  # join seems faster when there no columns in common
 
 
-
-import re
-import numpy as np
-re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
-
 @capture_timings("get_num_rows", handlers=worker_capture_timing_handlers)
 def get_num_rows(dataset: pa.ParquetDataset) -> int:
     """Returns the number of rows from a pyarrow ParquetDataset"""

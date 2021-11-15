@@ -82,7 +82,7 @@ def _check_df_columns_type(df: pd.DataFrame):
     """ Ensure given dataframe contains columns name as string only as described by WellLog schemas """
     if any((type(t) is not str for t in df.columns)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=f'All columns type should be string')
+                            detail="All columns type should be string")
     return True
 
 
@@ -176,43 +176,6 @@ class DataFrameRender:
         return selected
 
     @staticmethod
-    def unpack_array(df, user_selection: List[str]):
-
-        def unnesting(df: pd.DataFrame, col: str, s: slice, col_names):
-            # TODO handle duplicate columns
-            df1 = pd.DataFrame([v[s] for v in df[col]],
-                               index=df.index, columns=col_names)
-            return pd.concat([df, df1], axis=1)
-            #return df1.join(df.drop(col, 1), how='left')
-
-        to_remove = set()
-
-        for sel in user_selection:
-            m_sel = DataFrameRender.re_array_selection.match(sel)
-            var_name = m_sel['name'] if m_sel else None
-            if var_name and var_name in df.columns: # we looked for var[...] but we only find 'var' so we need to unpack var
-                if df[var_name].dtype == 'object':
-                    start = int(m_sel['start']) #TODO handle int conversion error
-                    stop = int(m_sel['stop']) if m_sel['stop'] else start + 1
-                    r, sl = range(start, stop), slice(start, stop)
-
-                    meta = {c: str(i.dtype) for c, i in df.items()}
-                    new_col_meta = {f'{var_name}[{c}]':'f8' for c in r}  # TODO find proper dtype
-                    meta.update(new_col_meta)
-                    
-                    new_df = df.map_partitions(unnesting, var_name, s=sl, meta=meta, col_names=list(new_col_meta))
-                    
-                    cols_order = df.columns.to_list()
-                    idx = cols_order.index(var_name)
-                    cols_order[idx:idx] = list(new_col_meta) # insert new column at the right place
-
-                    df = new_df[cols_order]
-                    to_remove.add(var_name)
-        df = df.drop(list(to_remove), axis=1)
-        return df
-
-
-    @staticmethod
     @with_trace('process_params')
     async def process_params(df, params: GetDataParams):
         if isinstance(df, pd.DataFrame):
@@ -222,7 +185,6 @@ class DataFrameRender:
             selection = params.get_curves_list()
             columns = DataFrameRender.get_matching_column(selection, set(df.columns))
             df = df[columns]  # columns are ordered as the user requested
-            df = DataFrameRender.unpack_array(df, selection)
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
@@ -239,10 +201,14 @@ class DataFrameRender:
                 nb_rows = stat['num_rows']
             else:
                 nb_rows = await DataFrameRender.get_size(df)
+            
+            columns = list(df.columns)
+            if len(df.columns) == 0 and stat:
+                columns = natsorted(list(stat['schema']))
 
             return {
                 "numberOfRows": nb_rows,
-                "columns": list(df.columns)
+                "columns": columns
             }
 
         pdf = await DataFrameRender.compute(df)

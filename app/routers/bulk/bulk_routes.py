@@ -160,10 +160,11 @@ async def get_data_version(
             elif data_param.describe:
                 stat = await dask_blob_storage.read_stat(record_id, bulk_id)
             
-            if data_param.describe and not data_param.offset and not data_param.limit:
+            if data_param.describe and not data_param.curves:
                 import pandas as pd
-                # optimization: create a fake dataset when describe on all rows
-                df = pd.DataFrame()
+                # optimization: create a fake dataset when describe on all columns
+                index = await dask_blob_storage.load_index(record_id, bulk_id)
+                df = pd.DataFrame(index=index)
             else:
                 # loading the dataframe with filter on columns is faster than filtering columns on df
                 df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
