@@ -1152,9 +1152,9 @@ def test_get_bulk_data_with_filters_curves_offset_describe(setup_client, entity_
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
 @pytest.mark.parametrize("params, content", [
     (['M:lt:5'], 'The columns to be filtered do not exist'),
-    (['A:xx:5'], 'Operator xx does not supported'),
+    (['A:xx:5'], 'Operator xx is not supported'),
     (['A:lt:5', 'A:lt:7'], 'Same operator on the same column'),
-    (['A:lt:5+'], 'the value is not valid')
+    (['A:lt:5+'], 'the value is not valid for this operation')
 ])
 def test_get_bulk_data_with_filters_fail(setup_client, entity_type, params, content, dataframe_for_filters):
     client = setup_client

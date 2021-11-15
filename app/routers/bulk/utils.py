@@ -198,8 +198,8 @@ class DataFrameRender:
                 filter_function = operator_to_function[operator]
                 try:
                     df = df.loc[filter_function(df, col_name, value)]
-                except Exception:
-                    raise FilterError('the value is not valid')
+                except ValueError:
+                    raise FilterError('the value is not valid for this operation')
         return df
 
     @staticmethod
@@ -226,7 +226,6 @@ class DataFrameRender:
     @with_trace('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
-            nb_rows: int = 0
             if stat and not params.limit and not params.offset:
                 nb_rows = stat['num_rows']
                 columns = natsorted(list(stat['schema']))

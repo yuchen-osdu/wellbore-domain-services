@@ -40,6 +40,8 @@ from app.helper.traces import with_trace
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
+import pandas as pd
+
 router = APIRouter()  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",
@@ -151,14 +153,16 @@ async def get_data_version(
             raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
             columns = None
-            stat = dask_blob_storage.read_stat(record_id, bulk_id)
-            existing_col = set(stat['schema'])
             if data_param.curves:
+                stat = dask_blob_storage.read_stat(record_id, bulk_id)
+                existing_col = set(stat['schema'])
                 columns = DataFrameRender.get_matching_column(
                     data_param.get_curves_list(), existing_col) # add curve needed for filtering
                 stat['schema'] = { k: stat['schema'][k] for k in columns }
             if data_param.bulk_filter:
                 # get column needed for filtering which are not yet in columns
+                stat = dask_blob_storage.read_stat(record_id, bulk_id)
+                existing_col = set(stat['schema'])
                 filters = data_param.get_filters()
                 filter_columns = [c for c in filters.keys() if c in existing_col]
                 if not filter_columns:
@@ -168,9 +172,9 @@ async def get_data_version(
                 if columns:
                     columns.extend(filter_columns)
                     columns = set(columns)
-
+            if data_param.describe:
+                stat = dask_blob_storage.read_stat(record_id, bulk_id)
             if data_param.describe and not data_param.offset and not data_param.limit and not data_param.bulk_filter:
-                import pandas as pd
                 # optimization: create a fake dataset when describe on all rows
                 df = pd.DataFrame()
             else:

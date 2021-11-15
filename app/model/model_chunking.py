@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import ast
+import operator
 from typing import Optional, List
 
 from fastapi import Query
@@ -87,16 +88,19 @@ The "filter" query parameter allows clients to filter data following the pattern
             return {}
         filters = {}
         for f in self.bulk_filter:
-            col_name, op, *value = f.split(':', maxsplit=2)  # TODO handle exception regular expression
+            col_name, op, value = f.split(':', maxsplit=2)  # TODO handle exception regular expression
             if op.lower() not in self.FilterOperators:
-                raise FilterError(f'Operator {op} does not supported')
+                raise FilterError(f'Operator {op} is not supported')
             try:
-                new_filter = {op: ast.literal_eval(value[0])}
-            except:
-                new_filter = {op: value[0]}
+                new_filter = {op: ast.literal_eval(value)}
+            except ValueError:
+                new_filter = {op : value}
+            except SyntaxError:
+                new_filter = {op : value}
             if col_name not in filters:
                 filters[col_name] = {}
             if op in filters[col_name]:
                 raise FilterError('Same operator on the same column')
             filters[col_name].update(new_filter)
         return filters
+
