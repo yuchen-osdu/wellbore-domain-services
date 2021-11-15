@@ -16,6 +16,7 @@ from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence.dask.errors import BulkNotProcessable
 
 from app.clients import StorageRecordServiceClient
 from app.persistence.sessions_storage import SessionsStorage, SessionState
@@ -1040,6 +1041,26 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
                    data_format='parquet')
 
 
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+@pytest.mark.parametrize("reserved_columns_name", ['__index_level_0__', '__null_dask_index__'])
+@pytest.mark.parametrize("use_custom_index", [True, False])
+def test_none_in_index_error(setup_client, entity_type, reserved_columns_name, use_custom_index):
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    # A column named '__index_level_0__' is internally used by PyArrow to save the index.
+    # Sending column named the same way as regular column causes problems to read them with Dask.
+    df = generate_df(['float-COLUMN_MD', 'COLUMN_X', reserved_columns_name], range(50))
+
+    if use_custom_index:
+        df = df.set_index('float-COLUMN_MD')
+
+    with pytest.raises(BulkNotProcessable, match="Invalid column name"):
+        client.post(f'{chunking_url}/{record_id}/data',
+                    data=df.to_parquet(engine="pyarrow"),
+                    headers={'content-type': 'application/parquet'})
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests

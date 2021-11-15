@@ -19,6 +19,7 @@ from contextlib import suppress
 from functools import wraps
 from operator import attrgetter
 from typing import List
+import re
 
 import fsspec
 import pandas as pd
@@ -246,10 +247,26 @@ class DaskBulkStorage:
             raise BulkNotProcessable("Empty data")
 
         if not df.index.is_unique:
-            raise BulkNotProcessable("Duplicated index found")
+            raise BulkNotProcessable("Duplicated index values detected")
 
         if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
             raise BulkNotProcessable("Index should be numeric or datetime")
+
+        DaskBulkStorage._check_reserved_columns_name(df)
+
+    @staticmethod
+    def _check_reserved_columns_name(df):
+        """
+        There are reserved name for columns which are internally used by Pandas/Dask with PyArrow to save the index.
+        Save a df containing reserved name as regular columns lead to inability to read parquet file then.
+
+        At the stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
+        """
+        df_columns = set(df.columns)
+        pyarrow_reserved_columns_found = list(filter(lambda v: re.match(r'__index_level_\d+__', v), df_columns))
+        
+        if pyarrow_reserved_columns_found or '__null_dask_index__' in df_columns:
+            raise BulkNotProcessable("Invalid column name")
 
     @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
