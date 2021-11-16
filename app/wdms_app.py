@@ -179,20 +179,20 @@ wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"
 wdms_app.include_router(ddms_v2.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
 
 ddms_v2_routes_groups = [
-    (well_ddms_v2, "Well"),
-    (wellbore_ddms_v2, "Wellbore"),
-    (logset_ddms_v2, "Logset"),
-    (trajectory_ddms_v2, "Trajectory"),
-    (marker_ddms_v2, "Marker"),
-    (log_ddms_v2, "Log"),
-    (dipset_ddms_v2, "Dipset"),
-    (dip_ddms_v2, "Dips"),
+    (well_ddms_v2, "Well", Entity.WELL),
+    (wellbore_ddms_v2, "Wellbore", Entity.WELLBORE),
+    (logset_ddms_v2, "Logset", Entity.LOGSET),
+    (trajectory_ddms_v2, "Trajectory", Entity.TRAJECTORY),
+    (marker_ddms_v2, "Marker", Entity.MARKER),
+    (log_ddms_v2, "Log", Entity.LOG),
+    (dipset_ddms_v2, "Dipset", Entity.DIPSET),
+    (dip_ddms_v2, "Dips", Entity.DIP),
 ]
-for v2_api, tag in ddms_v2_routes_groups:
+for v2_api, tag, entity_type in ddms_v2_routes_groups:
     wdms_app.include_router(v2_api.router,
                             prefix=DDMS_V2_PATH,
                             tags=[tag],
-                            dependencies=basic_dependencies)
+                            dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V2"))])
 
 ddms_v3_routes_groups = [
     (wellbore_ddms_v3, "Wellbore", Entity.WELLBORE),
@@ -258,12 +258,12 @@ wdms_app.include_router(
     sessions.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
-    dependencies=basic_dependencies)
+    dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
 wdms_app.include_router(
     bulk_routes.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
-    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access)])
+    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access), Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
 
 # The multiple instantiation of bulk_utils router create some duplicates operation_id
 update_operation_ids(wdms_app)
