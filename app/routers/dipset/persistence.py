@@ -35,7 +35,7 @@ from app.model.model_curated import (
 )
 from app.model.model_utils import from_record, to_record
 from app.routers.dipset.dip_model import Dip
-from app.bulk_persistence import get_dataframe, create_and_store_dataframe, BulkId
+from app.bulk_persistence import get_dataframe, create_and_store_dataframe, BulkURI
 
 async def create_missing_logs(ctx, my_dipset: dipset):
     """
@@ -246,9 +246,9 @@ def df_to_dips(dataframe: pd.DataFrame) -> List[Dip]:
 
 
 #TODO refactor duplicate with trajectory
-async def write_bulk(ctx, dataframe: pd.DataFrame) -> str:
+async def write_bulk(ctx, dataframe: pd.DataFrame) -> BulkURI:
     bulk_id = await create_and_store_dataframe(ctx, dataframe)
-    return BulkId.bulk_urn_encode(bulk_id)
+    return BulkURI.from_bulk_storage_V0(bulk_id)
 
 
 async def write_dipset_data(ctx, dataframe: pd.DataFrame, ds: Union[dipset, str]) -> dipset:
@@ -260,7 +260,8 @@ async def write_dipset_data(ctx, dataframe: pd.DataFrame, ds: Union[dipset, str]
     dataframe.sort_values(by=["reference", "azimuth"], inplace=True, ignore_index=True)
 
     # Write data in storage and update dipset bulk URI
-    my_dipset.data.bulkURI = await write_bulk(ctx, dataframe)
+    bulk_uri = await write_bulk(ctx, dataframe)
+    my_dipset.data.bulkURI = bulk_uri.encode()
 
     # Create or update logs
     await create_missing_logs(ctx, my_dipset)
@@ -294,9 +295,9 @@ async def read_dipset_data(ctx, ds: Union[dipset, str]) -> Tuple[dipset, pd.Data
         return my_dipset, pd.DataFrame()
 
     # Fetch data
-    bulk_uri, _prefix = BulkId.bulk_urn_decode(my_dipset.data.bulkURI)
+    bulk_uri = BulkURI.decode(my_dipset.data.bulkURI)
     # TODO use prefix to know how to read the bulk 
-    df = await get_dataframe(ctx, bulk_uri)
+    df = await get_dataframe(ctx, bulk_uri.bulk_id)
 
     return my_dipset, df
 

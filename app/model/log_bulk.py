@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional, Union
 
 from jsonpath_ng import parse as parse_jsonpath
 from jsonpath_ng.jsonpath import Parent as JsonParent
 from odes_storage.models import Record
 
-from app.bulk_persistence import BulkId
+from app.bulk_persistence.bulk_uri import BulkURI
 
 
 class LogBulkHelper:
@@ -33,33 +33,26 @@ class LogBulkHelper:
         return record.data
 
     @classmethod
-    def _set_bulk_id_in_wks(cls, record: Record, bulk_id, prefix: str) -> None:
-        """ for now it used externalIds, to _get_bulk_id_from_wksbe updated once schema is fixed with log.data.bulkId """
-        bulk_urn = BulkId.bulk_urn_encode(bulk_id, prefix=prefix)
-        cls._get_record_data_dict(record).setdefault('log', {})['bulkURI'] = bulk_urn
-
-    @classmethod
-    def _get_bulk_id_from_wks(cls, record: Record) -> Optional[str]:
+    def _get_bulk_uri_from_wks(cls, record: Record) -> Optional[str]:
         bulk_uri = (
             cls._get_record_data_dict(record)
             .get("log", {})
             .get("bulkURI", None)
         )
-        return BulkId.bulk_urn_decode(bulk_uri) if bulk_uri else (None, None)
+        return bulk_uri
 
     @classmethod
-    def update_bulk_id(
-        cls, record: Record, bulk_id, custom_bulk_id_path: Optional[str] = None, prefix: Optional[str] = None
-    ):
+    def update_bulk_uri(cls, record: Record, bulk_uri: BulkURI, custom_bulk_id_path: Optional[str] = None):
         """
         Update bulk id within a log record. Note that the custom path cannot be applied when using a strict structured model
         It creates the field if not exist
         :param record: record to update.
-        :param bulk_id: bulk reference (id, uri ...) to set
+        :param bulk_uri: either already encode uri as string or BulkURI
         :param custom_bulk_id_path: !! incompatible with log model
         """
+        uri_value = bulk_uri.encode()
         if custom_bulk_id_path is None:  # what about empty string ?
-            cls._set_bulk_id_in_wks(record, bulk_id, prefix)
+            cls._get_record_data_dict(record).setdefault('log', {})['bulkURI'] = uri_value
         else:
             record_dict = {"data": record.data}
 
@@ -67,28 +60,23 @@ class LogBulkHelper:
             field_name = custom_bulk_id_path.split(".")[-1]
             json_exp = parse_jsonpath(custom_bulk_id_path).child(JsonParent())
 
-            json_exp.find(record_dict)[0].value[
-                field_name
-            ] = BulkId.bulk_urn_encode(bulk_id, prefix=prefix)
+            json_exp.find(record_dict)[0].value[field_name] = uri_value
             # if only support existing field, it can be done with a simple update call
             # parse_jsonpath(custom_bulk_id_path).update(record, bulk_ref)
             record.data = record_dict["data"]
 
     @classmethod
-    def get_bulk_id(
-        cls, record: Record, custom_bulk_id_path: Optional[str] = None
-    ) -> Tuple[Optional[str], Optional[str]]:
+    def get_bulk_uri(cls, record: Record, custom_bulk_id_path: Optional[str] = None) -> BulkURI:
         """
         :param record:
         :param custom_bulk_id_path: !! incompatible with log model
-        :return: bulk id if any else None
+        :return: BulkURI, could be invalid if none
         """
         if custom_bulk_id_path is None:  # what about empty string ?
-            return cls._get_bulk_id_from_wks(record)
+            return BulkURI.decode(cls._get_bulk_uri_from_wks(record))
 
         record_dict = {"data": record.data}
         matches = parse_jsonpath(custom_bulk_id_path).find(record_dict)
         if len(matches) > 0:
-            return BulkId.bulk_urn_decode(matches[0].value)
-        return None, None
-        
+            return BulkURI.decode(matches[0].value)
+        return BulkURI.invalid()
