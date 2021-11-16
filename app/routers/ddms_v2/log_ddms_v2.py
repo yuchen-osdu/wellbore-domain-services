@@ -38,6 +38,7 @@ from odes_storage.models import (
 from pydantic import BaseModel, Field
 
 from app.bulk_persistence import DataframeSerializerAsync, DataframeSerializerSync, JSONOrient, MimeTypes, get_dataframe
+from app.bulk_persistence.bulk_uri import BulkURI
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.log_bulk import LogBulkHelper
 from app.model.model_curated import log
@@ -196,7 +197,8 @@ async def _write_log_data(
         fetch_record(ctx, logid),
     )
     # update the record
-    LogBulkHelper.update_bulk_id(log_record, bulk_id, bulk_path)
+    bulk_uri = BulkURI.from_bulk_storage_V0(bulk_id=bulk_id)
+    LogBulkHelper.update_bulk_uri(log_record, bulk_uri, bulk_path)
 
     # push new version on the storage
     return await update_records(ctx, [log_record])
@@ -408,12 +410,12 @@ async def get_log_data_statistics(logid: str,
     # we may use an optimistic cache here
     log_record = await fetch_record(ctx, logid)  # use dict to support the custom path
 
-    bulk_id, _prefix = LogBulkHelper.get_bulk_id(log_record, bulk_id_path)
-    if bulk_id is None:
-        content = '{}'  # no bulk
-    else:
-        df = await get_dataframe(ctx, bulk_id)
+    bulk_uri = LogBulkHelper.get_bulk_uri(log_record, bulk_id_path)
+    if bulk_uri.is_valid():
+        df = await get_dataframe(ctx, bulk_uri.bulk_id)
         content = df.describe(include="all").to_json()
+    else:
+        content = '{}'  # no bulk
 
     return Response(content=content, media_type=MimeTypes.JSON.type)
 

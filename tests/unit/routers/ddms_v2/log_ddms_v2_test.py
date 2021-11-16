@@ -95,8 +95,8 @@ class TestHelper:
         return record
 
     @staticmethod
-    def get_bulk_id_from_record(record) -> str:
-        return LogBulkHelper.get_bulk_id(record)
+    def get_bulk_id_from_record(record):
+        return LogBulkHelper.get_bulk_uri(record)
 
 
 @pytest.fixture
