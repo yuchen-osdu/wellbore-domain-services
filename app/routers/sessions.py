@@ -131,7 +131,7 @@ async def create_session(record_id: str,
     """
     # fetch latest version
     record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
-    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
+    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.state)
     if create_rq.fromVersion == 0:
         create_rq.fromVersion = record.version
     else:
@@ -166,7 +166,7 @@ async def get_session(record_id: str,
                       request: Request,
                       with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> Session:
     record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
-    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
+    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.state)
     i_session = await with_storages.get_session(record_id, session_id)
     return i_session.session
 
@@ -193,7 +193,7 @@ async def list_session(record_id: str,
                        request: Request,
                        with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> List[Session]:
     record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
-    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
+    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.state)
     session_ids = await with_storages.sessions_storage.list_sessions(with_storages.tenant, record_id)
 
     get_session_tasks = [

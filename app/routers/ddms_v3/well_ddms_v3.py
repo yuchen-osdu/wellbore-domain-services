@@ -100,7 +100,7 @@ async def get_osdu_well_versions(
     wellid: str, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
     record = await fetch_record(ctx, wellid)
-    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
+    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.state)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(
         id=wellid, data_partition_id=ctx.partition_id
@@ -125,7 +125,7 @@ async def get_osdu_well_version(
     well_record = await storage_client.get_record_version(
         id=wellid, version=version, data_partition_id=ctx.partition_id
     )
-    DMSV3RouterUtils.is_osdu_right_entity_id(well_record, request.url.path)
+    DMSV3RouterUtils.is_osdu_right_entity_id(well_record, request.state)
     return from_record(Well, well_record)
 
 

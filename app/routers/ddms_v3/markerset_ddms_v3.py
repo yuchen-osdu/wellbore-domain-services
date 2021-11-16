@@ -52,7 +52,7 @@ async def get_wellbore_markerset_osdu(
     wellboreMarkerset_record = await storage_client.get_record(
         id=wellboremarkersetid, data_partition_id=ctx.partition_id
     )
-    DMSV3RouterUtils.is_osdu_right_entity_id(wellboreMarkerset_record, request.url.path)
+    DMSV3RouterUtils.is_osdu_right_entity_id(wellboreMarkerset_record, request.state)
     return from_record(WellboreMarkerSet, wellboreMarkerset_record)
 
 
@@ -94,7 +94,7 @@ async def get_osdu_wellboreMarkerset_versions(
         wellboremarkersetid: str, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
     record = await fetch_record(ctx, wellboremarkersetid)
-    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
+    DMSV3RouterUtils.is_osdu_right_entity_id(record, request.state)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(
         id=wellboremarkersetid, data_partition_id=ctx.partition_id
@@ -121,7 +121,7 @@ async def get_osdu_wellboreMarkerset_version(
     wellboreMarkerset_record = await storage_client.get_record_version(
         id=wellboremarkersetid, version=version, data_partition_id=ctx.partition_id
     )
-    DMSV3RouterUtils.is_osdu_right_entity_id(wellboreMarkerset_record, request.url.path)
+    DMSV3RouterUtils.is_osdu_right_entity_id(wellboreMarkerset_record, request.state)
     return from_record(WellboreMarkerSet, wellboreMarkerset_record)
 
 

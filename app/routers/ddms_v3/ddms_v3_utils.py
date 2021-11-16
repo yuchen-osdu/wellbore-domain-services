@@ -6,6 +6,7 @@ from starlette.requests import Request
 
 from typing import Tuple
 
+from app.model.entity_utils import get_kind_meta
 
 OSDU_WELL_VERSION_REGEX = re.compile(r'^([\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+):([0-9]*)$')
 OSDU_WELL_REGEX = re.compile(r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')
@@ -26,11 +27,12 @@ OSDU_WELLBOREMARKERSET_VERSION_REGEX = re.compile(
 OSDU_WELLBOREMARKERSET_REGEX = re.compile(
     r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$')
 
-entity_names = {"wells": "master-data--Well",
-                "wellbores": "master-data--Wellbore",
-                "welllogs": "work-product-component--WellLog",
-                "wellboretrajectories": "work-product-component--WellboreTrajectory",
-                "wellboremarkersets": "work-product-component--WellboreMarkerSet"}
+entity_names = {"well": "master-data--Well",
+                "wellbore": "master-data--Wellbore",
+                "welllog": "work-product-component--WellLog",
+                "trajectory": "work-product-component--WellboreTrajectory",
+                "marker": "work-product-component--WellboreMarkerSet"}
+
 
 class DMSV3RouterUtils:
     @staticmethod
@@ -69,13 +71,14 @@ class DMSV3RouterUtils:
         return DMSV3RouterUtils.is_osdu_versioned_entity_id(OSDU_WELL_VERSION_REGEX, entity_id)
 
     @staticmethod
-    def is_osdu_right_entity_id(record, url):
-        if "/ddms/v2/" not in url and record is not None:
-            pattern = "/ddms/v3/(.*?)/"
-            entity_in_url = re.search(pattern, url).group(1)
-            kind_elements = record.kind.split(":")
-            entity_in_kind = kind_elements[2]
-            if entity_in_url in entity_names:
-                matches = entity_names[entity_in_url] == entity_in_kind
+    def is_osdu_right_entity_id(record=None, state=None):
+        version = state.version
+        entity = state.entity_type
+        if entity and record and version == "V3":
+            kind_elements = get_kind_meta(record.kind)
+            entity_in_kind = kind_elements.entity_type
+            if entity.value in entity_names:
+                matches = entity_names[entity.value] == entity_in_kind
                 if not matches:
-                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_in_url)
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                        detail="Id is not OSDU " + entity.value)
