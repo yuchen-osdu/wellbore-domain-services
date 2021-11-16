@@ -27,18 +27,19 @@ from dask.distributed import Client as DaskDistributedClient
 from pyarrow.lib import ArrowException
 import pyarrow.parquet as pa
 
-from app.bulk_persistence import BulkId
-from app.bulk_persistence.dask.session_file_meta import SessionFileMeta
+from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
+
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
-from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
 from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import wrap_trace_process
 from .utils import by_pairs, do_merge, worker_capture_timing_handlers
 from .dask_worker_plugin import DaskWorkerPlugin
+from .session_file_meta import SessionFileMeta
+from ..bulk_id import new_bulk_id
 
 
 def pandas_to_parquet(pdf, path, opt):
@@ -215,7 +216,7 @@ class DaskBulkStorage:
         """
         df_columns = set(df.columns)
         pyarrow_reserved_columns_found = list(filter(lambda v: re.match(r'__index_level_\d+__', v), df_columns))
-        
+
         if pyarrow_reserved_columns_found or '__null_dask_index__' in df_columns:
             raise BulkNotProcessable("Invalid column name")
 
@@ -224,7 +225,7 @@ class DaskBulkStorage:
     @with_trace('save_blob')
     async def save_blob(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
-        bulk_id = bulk_id or BulkId.new_bulk_id()
+        bulk_id = bulk_id or new_bulk_id()
 
         if isinstance(ddf, pd.DataFrame):
             self._check_incoming_chunk(ddf)
