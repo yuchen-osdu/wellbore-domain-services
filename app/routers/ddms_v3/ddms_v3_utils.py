@@ -72,8 +72,8 @@ class DMSV3RouterUtils:
 
     @staticmethod
     def raise_if_not_osdu_right_entity_kind(record=None, state=None):
-        version = state.version if "version" in state.keys() else None
-        entity = state.entity_type if "entity_type" in state.keys() else None
+        version = state.version if hasattr(state, 'version') else None
+        entity = state.entity_type if hasattr(state, 'entity_type') else None
         if entity and record and version == "V3":
             kind_elements = get_kind_meta(record.kind)
             entity_in_kind = kind_elements.entity_type
