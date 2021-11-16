@@ -8,6 +8,7 @@ from fastapi.responses import Response
 import dask.dataframe as dd
 import pandas as pd
 from natsort import natsorted
+import ast
 
 from app.bulk_persistence.dask.errors import FilterError
 from app.clients.storage_service_client import get_storage_record_service
@@ -189,15 +190,19 @@ class DataFrameRender:
         }
         for col_name, operation in filters.items():
             for operator, value in operation.items():
+                try:
+                    new_value = ast.literal_eval(value)
+                except (ValueError, SyntaxError):
+                    new_value = value
                 if df[col_name].dtype == object:
-                    if isinstance(value, tuple):
-                        value = [str(v) for v in value]
+                    if isinstance(new_value, tuple):
+                        new_value = [str(v) for v in new_value]
                     else:
-                        value = str(value)
+                        new_value = str(new_value)
 
                 filter_function = operator_to_function[operator]
                 try:
-                    df = df.loc[filter_function(df, col_name, value)]
+                    df = df.loc[filter_function(df, col_name, new_value)]
                 except ValueError:
                     raise FilterError('the value is not valid for this operation')
         return df
@@ -205,6 +210,7 @@ class DataFrameRender:
     @staticmethod
     @with_trace('process_params')
     async def process_params(df, params: GetDataParams, filters):
+        # pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
         if isinstance(df, pd.DataFrame):
             df = dd.from_pandas(df, npartitions=1)
 

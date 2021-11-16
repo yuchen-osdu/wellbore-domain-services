@@ -146,47 +146,43 @@ async def get_data_version(
 ):
     record = await fetch_record(ctx, record_id, version)
     bulk_id, prefix = bulk_uri_access.get_bulk_uri(record=record) # TODO PATH logv2
-    valid_filters = None
+    filters = None
     stat = None
     try:
         if bulk_id is None:
             raise BulkNotFound(record_id=record_id, bulk_id=None)
         if prefix == BULK_URN_PREFIX_VERSION:
-            columns = None
+            columns_to_load = None
+            stat = dask_blob_storage.read_stat(record_id, bulk_id)
+            existing_col = set(stat['schema'])
             if data_param.curves:
-                stat = dask_blob_storage.read_stat(record_id, bulk_id)
-                existing_col = set(stat['schema'])
-                columns = DataFrameRender.get_matching_column(
+                columns_to_load = DataFrameRender.get_matching_column(
                     data_param.get_curves_list(), existing_col) # add curve needed for filtering
-                stat['schema'] = { k: stat['schema'][k] for k in columns }
+                stat['schema'] = { k: stat['schema'][k] for k in columns_to_load }
             if data_param.bulk_filter:
                 # get column needed for filtering which are not yet in columns
-                stat = dask_blob_storage.read_stat(record_id, bulk_id)
-                existing_col = set(stat['schema'])
                 filters = data_param.get_filters()
-                filter_columns = [c for c in filters.keys() if c in existing_col]
-                if not filter_columns:
-                    raise FilterError('The columns to be filtered do not exist')
-                valid_filters = {c: filters[c] for c in filter_columns}
 
-                if columns:
-                    columns.extend(filter_columns)
-                    columns = set(columns)
-            if data_param.describe:
-                stat = dask_blob_storage.read_stat(record_id, bulk_id)
+                for c in filters.keys():
+                    if c not in existing_col:
+                        raise FilterError(f'The column:{c} to be filtered does not exist')
+
+                if columns_to_load:
+                    columns_to_load.extend(filters)
+                    columns_to_load = set(columns_to_load)
             if data_param.describe and not data_param.offset and not data_param.limit and not data_param.bulk_filter:
                 # optimization: create a fake dataset when describe on all rows
                 df = pd.DataFrame()
             else:
                 # loading the dataframe with filter on columns is faster than filtering columns on df
-                df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
+                df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns_to_load)
         elif prefix is None:
             df = await get_dataframe(ctx, bulk_id)
             _check_df_columns_type_legacy(df)
         else:
             raise BulkNotFound(record_id=record_id, bulk_id=bulk_id)
 
-        df = await DataFrameRender.process_params(df, data_param, filters=valid_filters)
+        df = await DataFrameRender.process_params(df, data_param, filters=filters)
         return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
