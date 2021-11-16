@@ -87,7 +87,6 @@ steps:
     set -e
 
     insecure_flag=""
-    test_alpha_feature_flag=""
     checkCert="True"
 
     # Depending on the value of 'skipCertValidation' we add the '--insecure' option to newman
@@ -99,21 +98,12 @@ steps:
       insecure_flag="--insecure"
       checkCert=""
 
-      # in that case it means dev env, in that case enable test on alpha feature
-      echo "skipCertValidation case: adding --test-alpha-feature flag to e2e tests to enable test on alpha features."
-      test_alpha_feature_flag="--test-alpha-feature"
     fi
 
     # Depending on the value of environmentName, activate test on alpha feature
     envName="${{ parameters.environmentName }}"
-    if [ "$envName" = "evd" ] || [ "$envName" = "dev" ] || [ "$envName" = "qa" ];
-    then
-      echo "Env = $envName: adding --test-alpha-feature flag to e2e tests to enable test on alpha features."
-      test_alpha_feature_flag="--test-alpha-feature"
-    fi
 
     echo "##vso[task.setvariable variable=insecure_flag]${insecure_flag}"
-    echo "##vso[task.setvariable variable=test_alpha_feature_flag]${test_alpha_feature_flag}"
     echo "##vso[task.setvariable variable=checkCert]${checkCert}"
 
   displayName: 'Create test variables'
@@ -152,7 +142,6 @@ steps:
         -o junit_suite_name="wdms_integration_$(testReportBaseName)" --environment=generated/postman_environment.json \
         --retry-on-error=502 \
         $(insecure_flag) \
-        $(test_alpha_feature_flag) \
         --param=ENVIRONMENT_NAME:$ENVIRONMENT_NAME
     deactivate
   displayName: 'RUN INTEGRATION-E2E'
