@@ -14,9 +14,11 @@
 
 from fastapi import (
     APIRouter,
-    Body, Depends,
+    Body,
+    Depends,
     Response,
-    status)
+    status,
+    HTTPException)
 
 
 from odes_storage.models import (CreateUpdateRecordsResponse, List,
@@ -133,6 +135,27 @@ async def get_osdu_welllog_version(
     return from_record(WellLog, welllog_record)
 
 
+def consistency_check(wl: WellLog):
+    if not wl.data:
+        return
+
+    curve_ids = set()
+
+    # check all curve ids are unique
+    if wl.data.Curves and any(curve.CurveID in curve_ids or curve_ids.add(curve.CurveID) for curve in wl.data.Curves):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Two curves can't have same CurveID"
+        )
+
+    # check the referenceCurveID in curves
+    if wl.data.ReferenceCurveID and wl.data.ReferenceCurveID not in curve_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"ReferenceCurveID {wl.data.ReferenceCurveID} not found in wellLog Curves"
+        )
+
+
 @router.post(
     WELL_LOGS_API_BASE_PATH,
     response_model=CreateUpdateRecordsResponse,
@@ -149,6 +172,9 @@ async def post_welllog_osdu(
         welllogs: List[WellLog] = Body(..., example=load_schema_example("wellLog_v3.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
+
+    [consistency_check(w) for w in welllogs]
+
     storage_client = await get_storage_record_service(ctx)
 
     return await storage_client.create_or_update_records(
