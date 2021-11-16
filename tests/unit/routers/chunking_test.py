@@ -1063,7 +1063,6 @@ def dataframe_for_filters():
     (['A:neq:5'], lambda df: df.loc[df['A'] != 5]),
     (['A:gt:5'], lambda df: df.loc[df['A'] > 5]),
     (['A:gte:5'], lambda df: df.loc[df['A'] >= 5]),
-    (['A:gte:5', 'E:gte:5.0'], lambda df: df.loc[df['A'] >= 5]),
     (['A:in:5,6,7'], lambda df: df.loc[df['A'].isin([5, 6, 7])]),
     (['B:lt:5.0'], lambda df: df.loc[df['B'] < 5.0]),
     (['B:lte:5.0'], lambda df: df.loc[df['B'] <= 5.0]),
