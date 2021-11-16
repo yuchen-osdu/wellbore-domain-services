@@ -26,11 +26,11 @@ OSDU_WELLBOREMARKERSET_VERSION_REGEX = re.compile(
 OSDU_WELLBOREMARKERSET_REGEX = re.compile(
     r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$')
 
-entity_names = [["wells", "master-data--Well"],
-            ["wellbores", "master-data--Wellbore"],
-            ["welllogs", "work-product-component--WellLog"],
-            ["wellboretrajectories", "work-product-component--WellboreTrajectory"],
-            ["wellboremarkersets", "work-product-component--WellboreMarkerSet"]]
+entity_names = {"wells": "master-data--Well",
+                "wellbores": "master-data--Wellbore",
+                "welllogs": "work-product-component--WellLog",
+                "wellboretrajectories": "work-product-component--WellboreTrajectory",
+                "wellboremarkersets": "work-product-component--WellboreMarkerSet"}
 
 class DMSV3RouterUtils:
     @staticmethod
@@ -71,12 +71,13 @@ class DMSV3RouterUtils:
     @staticmethod
     def is_osdu_right_entity_id(record, url):
         if "/ddms/v2/" not in url and record is not None:
+            pattern = "/ddms/v3/(.*?)/"
+            entity_in_url = re.search(pattern, url).group(1)
             kind_elements = record.kind.split(":")
             entity_in_kind = kind_elements[2]
-            for entity_name_url, entity_name_kind in entity_names:
-                if "/ddms/v3/"+entity_name_url in url:
-                    matches = entity_name_kind == entity_in_kind
-                    if not matches:
-                        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_name_url)
+            if entity_in_url in entity_names:
+                matches = entity_names[entity_in_url] == entity_in_kind
+                if not matches:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU "+entity_in_url)
 
 

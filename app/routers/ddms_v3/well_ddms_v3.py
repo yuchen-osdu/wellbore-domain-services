@@ -28,7 +28,7 @@ from app.utils import get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
-from ..record_utils import fetch_record
+from app.routers.record_utils import fetch_record
 
 router = APIRouter()
 

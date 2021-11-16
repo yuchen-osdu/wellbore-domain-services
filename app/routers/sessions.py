@@ -12,6 +12,7 @@ from app.persistence.sessions_storage import (Session,
                                               SessionsStorage,
                                               SessionUpdateMode)
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
+from app.routers.record_utils import fetch_record
 from app.utils import Context
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
@@ -129,7 +130,7 @@ async def create_session(record_id: str,
     The user should be able to passe a record meta data (data.curves) to be patch at the end.
     """
     # fetch latest version
-    record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
+    record = await fetch_record(record_id=record_id, ctx=with_storages.ctx)
     DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
     if create_rq.fromVersion == 0:
         create_rq.fromVersion = record.version
