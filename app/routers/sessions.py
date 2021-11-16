@@ -130,7 +130,7 @@ async def create_session(record_id: str,
     The user should be able to passe a record meta data (data.curves) to be patch at the end.
     """
     # fetch latest version
-    record = await fetch_record(record_id=record_id, ctx=with_storages.ctx)
+    record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
     DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
     if create_rq.fromVersion == 0:
         create_rq.fromVersion = record.version
@@ -165,7 +165,7 @@ async def get_session(record_id: str,
                       session_id: str,
                       request: Request,
                       with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> Session:
-    record = fetch_record(record_id=record_id, ctx=with_storages.ctx)
+    record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
     DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
     i_session = await with_storages.get_session(record_id, session_id)
     return i_session.session
@@ -192,7 +192,7 @@ async def delete_session(record_id: str,
 async def list_session(record_id: str,
                        request: Request,
                        with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> List[Session]:
-    record = await fetch_record(record_id=record_id, ctx=with_storages.ctx)
+    record = await with_storages.storage_service_client.get_record(record_id, with_storages.ctx.partition_id)
     DMSV3RouterUtils.is_osdu_right_entity_id(record, request.url.path)
     session_ids = await with_storages.sessions_storage.list_sessions(with_storages.tenant, record_id)
 
