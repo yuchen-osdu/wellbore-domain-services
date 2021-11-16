@@ -93,9 +93,7 @@ The "filter" query parameter allows clients to filter data following the pattern
                 raise FilterError(f'Operator {op} is not supported')
             try:
                 new_filter = {op: ast.literal_eval(value)}
-            except ValueError:
-                new_filter = {op : value}
-            except SyntaxError:
+            except (ValueError, SyntaxError):
                 new_filter = {op : value}
             if col_name not in filters:
                 filters[col_name] = {}
