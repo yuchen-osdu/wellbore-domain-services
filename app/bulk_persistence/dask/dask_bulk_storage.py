@@ -27,7 +27,7 @@ import pyarrow.parquet as pa
 
 from app.bulk_persistence import BulkId
 from app.bulk_persistence.dask.session_file_meta import SessionFileMeta
-from app.bulk_persistence.dask.storage_path_builder import StoragePathBuilder
+import app.bulk_persistence.dask.storage_path_builder as pathBuilder
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
@@ -106,14 +106,14 @@ class DaskBulkStorage:
         """Return a dask Dataframe of a record at the specified version.
         returns a Future<dd.DataFrame>
         """
-        blob_path = StoragePathBuilder.build_blob_path(
+        blob_path = pathBuilder.record_bulk_path(
             self.base_directory, record_id, bulk_id, self.protocol)
         return self._load(blob_path, columns=columns)
 
     @with_trace('read_stat')
     def read_stat(self, record_id: str, bulk_id: str):
         """Return some meta data about the bulk."""
-        file_path = StoragePathBuilder.build_blob_path(self.base_directory, record_id, bulk_id)
+        file_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
         dataset = pa.ParquetDataset(file_path, filesystem=self._fs)
         schema = dataset.read_pandas().schema
         schema_dict = {x: str(y) for (x, y) in zip(schema.names, schema.types)}
@@ -216,8 +216,7 @@ class DaskBulkStorage:
             ddf = dd.from_pandas(ddf, npartitions=1)
             ddf = await self.client.scatter(ddf)
 
-        path = StoragePathBuilder.build_blob_path(self.base_directory, record_id, bulk_id,
-                                                  self.protocol)
+        path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         try:
             await self._save_with_dask(path, ddf)
         except OSError:
@@ -232,21 +231,21 @@ class DaskBulkStorage:
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]
 
-        filename = StoragePathBuilder.build_chunk_filename(pdf)
-        session_path = StoragePathBuilder.build_session_path(
+        filename = pathBuilder.build_chunk_filename(pdf)
+        session_path = pathBuilder.record_session_path(
             self.base_directory, session.id, session.recordId)
 
         self._fs.mkdirs(session_path, exist_ok=True)
         with self._fs.open(f'{session_path}/{filename}.meta', 'w') as outfile:
             json.dump({"columns": list(pdf.columns)}, outfile)
 
-        session_path = StoragePathBuilder.add_protocol(session_path, self.protocol)
+        session_path = pathBuilder.add_protocol(session_path, self.protocol)
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
     def get_session_parquet_files(self, session):
-        session_path = StoragePathBuilder.build_session_path(
+        session_path = pathBuilder.record_session_path(
             self.base_directory, session.id, session.recordId)
         with suppress(FileNotFoundError):
             session_files = [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
