@@ -129,14 +129,17 @@ class DaskBulkStorage:
     @with_trace('read_stat')
     def read_stat(self, record_id: str, bulk_id: str):
         """Return some meta data about the bulk."""
-        file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
-        dataset = pa.ParquetDataset(file_path, filesystem=self._fs)
-        schema = dataset.read_pandas().schema
-        schema_dict = {x: str(y) for (x, y) in zip(schema.names, schema.types)}
-        return {
-            "num_rows": dataset.metadata.num_rows,
-            "schema": schema_dict
-        }
+        try:
+            file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
+            dataset = pa.ParquetDataset(file_path, filesystem=self._fs)
+            schema = dataset.read_pandas().schema
+            schema_dict = {x: str(y) for (x, y) in zip(schema.names, schema.types)}
+            return {
+                "num_rows": dataset.metadata.num_rows,
+                "schema": schema_dict
+            }
+        except OSError:
+            raise BulkNotFound(record_id, bulk_id)
 
     def _submit_with_trace(self, target_func, *args, **kwargs):
         """
