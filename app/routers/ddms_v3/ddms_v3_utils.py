@@ -81,4 +81,4 @@ class DMSV3RouterUtils:
                 matches = entity_names[entity.value] == entity_in_kind
                 if not matches:
                     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                        detail="Id is not OSDU " + entity.value)
+                                        detail="Record is not an OSDU " + entity.value)
