@@ -14,6 +14,18 @@ The `spec` directory contains the OpenAPI specification files for Wellbore DMS.
 
 Under `spec/generated`, the OpenAPI in JSON format is saved as-is.
 
+## Generating a partial OpenAPI for documentation purposes
+
+The OpenAPI specification in `spec/generated` folder is re-created at every API change as part of the spec unit tests.
+These unit tests can also be used to generate a partial OpenAPI spec by setting the OPENAPI_FILTER_PREFIX and the OPENAPI_FILTER_TAGS environment variables.
+
+Example:
+```
+export OPENAPI_FILTER_PREFIX='/ddms/v3'
+export OPENAPI_FILTER_TAGS='Wellbore,WellLog'
+python -m pytest ./tests/unit/spec/
+```
+
 ## Publishing to community documentation repo
 A sanitized version of the OpenAPI specification including only the OSDU v3 APIs is published
 in the [platform/api/Wellbore-DDMS](https://community.opengroup.org/osdu/documentation/-/tree/master/platform/api/Wellbore-DDMS)

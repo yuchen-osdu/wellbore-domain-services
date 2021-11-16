@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .bulk_id import BulkId
+from .bulk_uri import BulkURI
 from .dataframe_persistence import create_and_store_dataframe, get_dataframe
 from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerSync
 from .json_orient import JSONOrient
