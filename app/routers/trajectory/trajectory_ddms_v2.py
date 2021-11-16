@@ -236,7 +236,8 @@ async def post_traj_data(
     trajectory_record = await fetch_trajectory_record(ctx, trajectoryid)
     record = from_record(Trajectory, trajectory_record)
 
-    record.data.bulkURI = await persistence.write_bulk(ctx, df)
+    bulk_uri = await persistence.write_bulk(ctx, df)
+    record.data.bulkURI = bulk_uri.encode()
 
     # update record's channels
     if not record.data.channels:
