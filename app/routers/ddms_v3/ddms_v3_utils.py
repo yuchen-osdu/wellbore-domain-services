@@ -71,7 +71,7 @@ class DMSV3RouterUtils:
         return DMSV3RouterUtils.is_osdu_versioned_entity_id(OSDU_WELL_VERSION_REGEX, entity_id)
 
     @staticmethod
-    def raise_if_not_osdu_right_entity_kind(record=None, state=None):
+    def raise_if_not_osdu_right_entity_kind(record, state):
         version = state.version if hasattr(state, 'version') else None
         entity = state.entity_type if hasattr(state, 'entity_type') else None
         if entity and record and version == "V3":
