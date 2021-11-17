@@ -14,7 +14,7 @@ def parse_filter(col_filter: str) -> Tuple[str,str,str]:
     expression should be in the form <column_name>:<operator>:<value>
 
     >>> parse_filter('A:eq') 
-    Exception: Invalid filter expression A:eq
+    FilterError: Invalid filter expression A:eq
     >>> parse_filter('A:eq:2') 
     ('A', 'eq', '2')
     """
@@ -30,11 +30,11 @@ def get_parsed_filters(bulk_filter: List[str]) -> dict:
     >>> get_parsed_filters(['A:lt:2', 'B:lt:2', 'A:gt:3'])
     {'a': {'lt': '2', 'gt': '3'}, 'b': {'lt': '2'}}
     >>> get_parsed_filters(['A'])
-    Exception: Invalid filter expression A
+    FilterError: Invalid filter expression A
     >>> get_parsed_filters(['A:=:2'])
-    Exception: Operator = is not supported
+    FilterError: Operator = is not supported
     >>> get_parsed_filters(['A:eq:2', 'A:eq:3'])
-    Exception: Same operator on the same column
+    FilterError: Same operator on the same column
     """
     filter_dict = {}
     for col_name, operator, value in (parse_filter(f) for f in bulk_filter):
