@@ -11,14 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""
+This module groups function related to bulk catalog.
+A catalog contains metadata of the chunks
+"""
+import json
 import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from app.utils import capture_timings
 
+from . import storage_path_builder as pathBuilder
 
+
+# TODO
+# is Catalog a good naming ?
+# choose a proper name for the catalog now it is "_meta.json"
 @dataclass
 class BulkCatalog:
     "represent the bulk catalog"
@@ -67,3 +76,23 @@ class BulkCatalog:
             c: BulkCatalog.ColumnInfo(**v) for c, v in catalog_as_dict['columns'].items()
         }
         return BulkCatalog(**catalog_as_dict)
+
+CATALOG_FILE_NAME = '_meta.json'
+
+def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> str:
+    """save a bulk catalog to a json file in the given folder path"""
+    folder_path, _ = pathBuilder.remove_protocol(folder_path)
+    meta_path = pathBuilder.join(folder_path, CATALOG_FILE_NAME)
+    with filesystem.open(meta_path, 'w') as outfile:
+        json.dump(catalog.as_dict(), outfile)
+
+
+def load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
+    """load a bulk catalog from a json file in the given folder path"""
+    folder_path, _ = pathBuilder.remove_protocol(folder_path)
+    meta_path = pathBuilder.join(folder_path, CATALOG_FILE_NAME)
+    if filesystem.exists(meta_path):  # TODO may be faster with EAFP !
+        with filesystem.open(meta_path) as json_file:
+            data = json.load(json_file)
+            return BulkCatalog.from_dict(data)
+    return None

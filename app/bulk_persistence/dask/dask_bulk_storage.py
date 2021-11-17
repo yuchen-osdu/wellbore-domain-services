@@ -15,7 +15,6 @@
 import hashlib
 import json
 import os
-import re
 from contextlib import suppress
 from operator import attrgetter
 from typing import List, Optional
@@ -44,7 +43,7 @@ from ..dataframe_validators import (assert_df_validate, validate_index,
                                     columns_not_in_reserved_names, is_reserved_column_name)
 from . import storage_path_builder as pathBuilder
 from ..bulk_id import new_bulk_id
-from .bulk_catalog import BulkCatalog
+from .bulk_catalog import BulkCatalog, load_bulk_catalog, save_bulk_catalog
 
 
 def pandas_to_parquet(pdf, path, storage_options):
@@ -154,7 +153,7 @@ class DaskBulkStorage:
         """
         bulk_path = pathBuilder.record_bulk_path(
             self.base_directory, record_id, bulk_id, self.protocol)
-        catalog = self.get_catalog(bulk_path)
+        catalog = load_bulk_catalog(self._fs, bulk_path)
         if catalog is None:
             # No catalog means that we can read the folder as a parquet dataset. (legacy behavior)
             return self._load(bulk_path, columns=columns)
@@ -297,32 +296,12 @@ class DaskBulkStorage:
         for files in cache.values():
             yield [f'{self.protocol}://{file.path}' for file in files]
 
-    def trim_protocol(self, path: str)-> str:
-        return path.lstrip(f'{self.protocol}://')
-
-    @capture_timings('save_catalog')
-    def save_catalog(self, path: str, catalog: BulkCatalog) -> str:
-        path = self.trim_protocol(path)
-        meta_path = f'{path}/_meta.json' # TODO catalog name ?
-        with self._fs.open(meta_path, 'w') as outfile:
-            json.dump(catalog.as_dict(), outfile)
-
-    @capture_timings('get_catalog')
-    def get_catalog(self, path: str) -> BulkCatalog:
-        path = self.trim_protocol(path)
-        meta_path = f'{path}/_meta.json'
-        if self._fs.exists(meta_path):
-            with self._fs.open(meta_path) as json_file:
-                data = json.load(json_file)
-                return BulkCatalog.from_dict(data)
-        return None
-
     @capture_timings('build_catalog')
     async def build_catalog(self, path: str, record_id, force_build: bool=False) -> BulkCatalog: # TODO remove force build
         # add record_id/bulk_id ? into the catalog
-        path = self.trim_protocol(path)
+        path, _ = pathBuilder.remove_protocol(path)
         if not force_build:
-            cat = self.get_catalog(path)
+            cat = load_bulk_catalog(self._fs, path)
             if cat:
                 return cat
 
@@ -400,7 +379,8 @@ class DaskBulkStorage:
 
         async def save_index(folder, index:pd.Index):
             index_folder = os.path.join(folder, '__index__')
-            self._fs.mkdirs(self.trim_protocol(index_folder)) # for local storage
+            index_folder_wo_protocol, _ = pathBuilder.remove_protocol(index_folder)
+            self._fs.mkdirs(index_folder_wo_protocol) # for local storage
             index_path = os.path.join(index_folder, 'index.parquet')
             await self._save_with_pandas(index_path, pd.DataFrame(index=index))
             return index_path
@@ -456,7 +436,7 @@ class DaskBulkStorage:
             self.base_directory, session.recordId, bulk_id, self.protocol)
         catalog = await self._build_catalog_from_session(session, bulk_id, from_bulk_id)
         if catalog and catalog.columns:
-            self.save_catalog(commit_path, catalog)  # TODO async
+            save_bulk_catalog(self._fs, commit_path, catalog)  # TODO async
             return bulk_id  # If no merge is needed, we stop here
 
         raise BulkNotProcessable("No data to commit")
