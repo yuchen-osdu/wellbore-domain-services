@@ -200,7 +200,7 @@ class DaskBulkStorage:
         bulk_id = bulk_id or new_bulk_id()
 
         if isinstance(ddf, pd.DataFrame):
-            assert_df_validate(ddf, validate_index, columns_not_in_reserved_names)
+            assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
             ddf = dd.from_pandas(ddf, npartitions=1)
             ddf = await self.client.scatter(ddf)
 
@@ -214,7 +214,7 @@ class DaskBulkStorage:
     @capture_timings('session_add_chunk')
     @with_trace('session_add_chunk')
     async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
-        assert_df_validate(pdf, validate_index, columns_not_in_reserved_names)
+        assert_df_validate(dataframe=pdf, validation_funcs=[validate_index, columns_not_in_reserved_names])
 
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]

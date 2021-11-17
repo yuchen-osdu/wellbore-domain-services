@@ -94,15 +94,19 @@ def test_valid_index():
         assert is_valid
 
 
+def test_assert_df_validate_empty_succeed():
+    assert_df_validate(pd.DataFrame(), [])
+
+
 def test_assert_df_validate_single():
     validation_fn = Mock(return_value=(True, "validation ok"))
-    assert_df_validate(pd.DataFrame(), validation_fn)
+    assert_df_validate(pd.DataFrame(), [validation_fn])
     validation_fn.assert_called_once()
 
 
 def test_validators_composition_success():
     df = pd.DataFrame({'A': [10], 'B': [20]}).set_index('A')
-    assert_df_validate(df, validate_index, columns_not_in_reserved_names)
+    assert_df_validate(df, [validate_index, columns_not_in_reserved_names])
 
 
 def test_validators_composition():
@@ -113,7 +117,7 @@ def test_validators_composition():
 
     # WHEN
     with pytest.raises(BulkNotProcessable) as ex_info:
-        assert_df_validate(pd.DataFrame(), validation_1, validation_2, validation_3)
+        assert_df_validate(pd.DataFrame(), [validation_1, validation_2, validation_3])
 
     # THEN all validations where called
     validation_1.assert_called_once()
@@ -139,13 +143,3 @@ def test_validators_composition():
 ])
 def test_any_reserved_column_name(columns, expected):
     assert any_reserved_column_name(columns) == expected
-
-
-def test_perf_500k_column_check():
-    from datetime import datetime
-
-    columns = [str(x) for x in range(500_000)]
-    ts = datetime.now()
-    assert not any_reserved_column_name(columns)
-    elapsed = (datetime.now()-ts).total_seconds()
-    print('500k column check done in', elapsed, 's')

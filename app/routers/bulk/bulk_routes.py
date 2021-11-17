@@ -15,10 +15,11 @@
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
+from osdu.core.api.storage.exceptions import ResourceNotFoundException
+
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
-
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
 from app.utils import Context, OpenApiHandler, get_ctx
@@ -28,18 +29,22 @@ from app.routers.common_parameters import (
     REQUIRED_ROLES_READ,
     REQUIRED_ROLES_WRITE,
     json_orient_parameter)
-from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSessionStateValue,
-                                  WithSessionStorages, get_session_dependencies)
+from app.routers.sessions import (
+    SessionInternal,
+    UpdateSessionState,
+    UpdateSessionStateValue,
+    WithSessionStorages,
+    get_session_dependencies)
 from app.routers.record_utils import fetch_record
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
-from app.routers.bulk.utils import (with_dask_blob_storage, get_df_validation_func, get_df_from_request,
-                                    set_bulk_field_and_send_record, DataFrameRender)
+from app.routers.bulk.utils import (
+    with_dask_blob_storage,
+    get_df_validation_func,
+    get_df_from_request,
+    set_bulk_field_and_send_record,
+    DataFrameRender)
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
-
-
 from app.helper.traces import with_trace
-
-from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -75,7 +80,7 @@ async def post_data(record_id: str,
     async def save_blob():
         df = await get_df_from_request(request, orient)
         try:
-            assert_df_validate(df, df_validation_func)
+            assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
         except BulkError as ex:
             ex.raise_as_http()
         return await dask_blob_storage.save_blob(df, record_id)
@@ -116,7 +121,7 @@ async def post_chunk_data(record_id: str,
 
     df = await get_df_from_request(request, orient)
     try:
-        assert_df_validate(df, df_validation_func)
+        assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
     except BulkError as ex:
         ex.raise_as_http()
     await dask_blob_storage.session_add_chunk(i_session.session, df)

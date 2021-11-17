@@ -1,4 +1,4 @@
-from typing import Tuple, Callable, Iterable
+from typing import Tuple, Callable, Iterable, List
 import re
 
 import pandas as pd
@@ -12,13 +12,13 @@ ValidationSuccess = (True, '')
 DataFrameValidationFunc = Callable[[pd.DataFrame], ValidationResult]
 
 
-def assert_df_validate(df: pd.DataFrame,
-                       validator_func: DataFrameValidationFunc,
-                       *other_validator_funcs):
+def assert_df_validate(dataframe: pd.DataFrame,
+                       validation_funcs: List[DataFrameValidationFunc]):
     """ call one or more validation function and throw BulkNotProcessable in case of invalid, run all validation before
      returning """
-    validation_funcs = [validator_func, *other_validator_funcs]
-    all_validity, all_reasons = zip(*[fn(df) for fn in validation_funcs])
+    if not validation_funcs:
+        return
+    all_validity, all_reasons = zip(*[fn(dataframe) for fn in validation_funcs])
 
     if not all(all_validity):
         # raise exception with all invalid reasons
@@ -71,7 +71,7 @@ def any_reserved_column_name(names: Iterable[str]) -> bool:
         There are reserved name for columns which are internally used by Pandas/Dask with PyArrow to save the index.
         Save a df containing reserved name as regular columns lead to inability to read parquet file then.
 
-        At the stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
+        At this stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
         return: True is any column uses a reserved name
     """
     return any((PandasReservedIndexColRegexp.match(name) or name == '__null_dask_index__' for name in names))
