@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hashlib
 import json
-import time
 from contextlib import suppress
 from operator import attrgetter
 from typing import List
-import re
 
 import fsspec
 import pandas as pd
@@ -38,7 +35,9 @@ from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import wrap_trace_process
 from .utils import by_pairs, do_merge, worker_capture_timing_handlers
 from .dask_worker_plugin import DaskWorkerPlugin
+from ..dataframe_validators import assert_df_validate, validate_index, columns_not_in_reserved_names
 from .session_file_meta import SessionFileMeta
+from . import storage_path_builder as pathBuilder
 from ..bulk_id import new_bulk_id
 
 
@@ -87,22 +86,6 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
-    def _encode_record_id(self, record_id: str) -> str:
-        return hashlib.sha1(record_id.encode()).hexdigest()
-
-    def _get_base_directory(self, protocol=True):
-        return f'{self.protocol}://{self.base_directory}' if protocol else self.base_directory
-
-    def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
-        """Return the bulk path from the bulk_id."""
-        encoded_id = self._encode_record_id(record_id)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/bulk/{bulk_id}/data'
-
-    def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
-        """Return the session path."""
-        encoded_id = self._encode_record_id(session.recordId)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/session/{session.id}/data'
-
     def _load(self, path, **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
         path : string or list
@@ -124,13 +107,15 @@ class DaskBulkStorage:
         """Return a dask Dataframe of a record at the specified version.
         returns a Future<dd.DataFrame>
         """
-        return self._load(self._get_blob_path(record_id, bulk_id), columns=columns)
+        blob_path = pathBuilder.record_bulk_path(
+            self.base_directory, record_id, bulk_id, self.protocol)
+        return self._load(blob_path, columns=columns)
 
     @with_trace('read_stat')
     def read_stat(self, record_id: str, bulk_id: str):
         """Return some meta data about the bulk."""
         try:
-            file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
+            file_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
             dataset = pa.ParquetDataset(file_path, filesystem=self._fs)
             schema = dataset.read_pandas().schema
             schema_dict = {x: str(y) for (x, y) in zip(schema.names, schema.types)}
@@ -195,34 +180,6 @@ class DaskBulkStorage:
         return await self._submit_with_trace(pandas_to_parquet, f_pdf, path,
                                              self._parameters.storage_options)
 
-    @staticmethod
-    def _check_incoming_chunk(df):
-        # TODO should we test if is_monotonic?, unique ?
-        if len(df.index) == 0:
-            raise BulkNotProcessable("Empty data")
-
-        if not df.index.is_unique:
-            raise BulkNotProcessable("Duplicated index values detected")
-
-        if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
-            raise BulkNotProcessable("Index should be numeric or datetime")
-
-        DaskBulkStorage._check_reserved_columns_name(df)
-
-    @staticmethod
-    def _check_reserved_columns_name(df):
-        """
-        There are reserved name for columns which are internally used by Pandas/Dask with PyArrow to save the index.
-        Save a df containing reserved name as regular columns lead to inability to read parquet file then.
-
-        At the stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
-        """
-        df_columns = set(df.columns)
-        pyarrow_reserved_columns_found = list(filter(lambda v: re.match(r'__index_level_\d+__', v), df_columns))
-
-        if pyarrow_reserved_columns_found or '__null_dask_index__' in df_columns:
-            raise BulkNotProcessable("Invalid column name")
-
     @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
     @with_trace('save_blob')
@@ -231,11 +188,11 @@ class DaskBulkStorage:
         bulk_id = bulk_id or new_bulk_id()
 
         if isinstance(ddf, pd.DataFrame):
-            self._check_incoming_chunk(ddf)
+            assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
             ddf = dd.from_pandas(ddf, npartitions=1)
             ddf = await self.client.scatter(ddf)
 
-        path = self._get_blob_path(record_id, bulk_id)
+        path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         try:
             await self._save_with_dask(path, ddf)
         except OSError:
@@ -245,34 +202,27 @@ class DaskBulkStorage:
     @capture_timings('session_add_chunk')
     @with_trace('session_add_chunk')
     async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
-        self._check_incoming_chunk(pdf)
+        assert_df_validate(dataframe=pdf, validation_funcs=[validate_index, columns_not_in_reserved_names])
 
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]
 
-        # generate a file name sorted by starting index
-        # dask reads and sort files by 'natural_key' So the file name impact the final result
-        first_idx, last_idx = pdf.index[0], pdf.index[-1]
-        if isinstance(pdf.index, pd.DatetimeIndex):
-            first_idx, last_idx = pdf.index[0].value, pdf.index[-1].value
-        idx_range = f'{first_idx}_{last_idx}'
-        shape = hashlib.sha1('_'.join(map(str, pdf)).encode()).hexdigest()
-        t = round(time.time() * 1000)
-        filename = f'{idx_range}_{t}.{shape}'
+        filename = pathBuilder.build_chunk_filename(pdf)
+        session_path = pathBuilder.record_session_path(
+            self.base_directory, session.id, session.recordId)
 
-        session_path_wo_protocol = self._build_path_from_session(session, with_protocol=False)
-        self._fs.mkdirs(session_path_wo_protocol, exist_ok=True)
-        with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
-            json.dump({"columns": list(pdf)}, outfile)
+        self._fs.mkdirs(session_path, exist_ok=True)
+        with self._fs.open(f'{session_path}/{filename}.meta', 'w') as outfile:
+            json.dump({"columns": list(pdf.columns)}, outfile)
 
-        session_path = self._build_path_from_session(session)
-
+        session_path = pathBuilder.add_protocol(session_path, self.protocol)
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
     def get_session_parquet_files(self, session):
-        session_path = self._build_path_from_session(session, with_protocol=False)
+        session_path = pathBuilder.record_session_path(
+            self.base_directory, session.id, session.recordId)
         with suppress(FileNotFoundError):
             session_files = [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
             return session_files

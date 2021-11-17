@@ -15,10 +15,11 @@
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
+from osdu.core.api.storage.exceptions import ResourceNotFoundException
+
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
-
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
 from app.utils import Context, OpenApiHandler, get_ctx
@@ -28,16 +29,22 @@ from app.routers.common_parameters import (
     REQUIRED_ROLES_READ,
     REQUIRED_ROLES_WRITE,
     json_orient_parameter)
-from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSessionStateValue,
-                                  WithSessionStorages, get_session_dependencies)
+from app.routers.sessions import (
+    SessionInternal,
+    UpdateSessionState,
+    UpdateSessionStateValue,
+    WithSessionStorages,
+    get_session_dependencies)
 from app.routers.record_utils import fetch_record
-from app.routers.bulk.utils import (with_dask_blob_storage, get_check_input_df_func, get_df_from_request,
-                                    set_bulk_field_and_send_record, DataFrameRender, _check_df_columns_type_legacy)
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
-
+from app.routers.bulk.utils import (
+    with_dask_blob_storage,
+    get_df_validation_func,
+    get_df_from_request,
+    set_bulk_field_and_send_record,
+    DataFrameRender)
+from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
 from app.helper.traces import with_trace
-
-from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -66,13 +73,16 @@ async def post_data(record_id: str,
                     orient: JSONOrient = Depends(json_orient_parameter),
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-                    check_input_df_func=Depends(get_check_input_df_func),
+                    df_validation_func=Depends(get_df_validation_func),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
                     ):
     @with_trace("save_blob")
     async def save_blob():
         df = await get_df_from_request(request, orient)
-        check_input_df_func(df)
+        try:
+            assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
+        except BulkError as ex:
+            ex.raise_as_http()
         return await dask_blob_storage.save_blob(df, record_id)
 
     record, bulk_id = await asyncio.gather(
@@ -101,7 +111,7 @@ async def post_chunk_data(record_id: str,
                           orient: JSONOrient = Depends(json_orient_parameter),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-                          check_input_df_func=Depends(get_check_input_df_func),
+                          df_validation_func=Depends(get_df_validation_func),
                           ):
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
@@ -110,7 +120,10 @@ async def post_chunk_data(record_id: str,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
     df = await get_df_from_request(request, orient)
-    check_input_df_func(df)
+    try:
+        assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
+    except BulkError as ex:
+        ex.raise_as_http()
     await dask_blob_storage.session_add_chunk(i_session.session, df)
 
 
@@ -155,7 +168,7 @@ async def get_data_version(
         bulk_id = bulk_uri.bulk_id
         if bulk_uri.is_bulk_storage_V0():
             df = await get_dataframe(ctx, bulk_id)
-            _check_df_columns_type_legacy(df)
+            auto_cast_columns_to_string(df)
         else:
             columns = None
             if data_param.curves:
