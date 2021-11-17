@@ -153,10 +153,8 @@ def event_loop():  # all tests will share the same loop
 
 @pytest.fixture
 def dasked_test_app(init_fixtures):
-    from app.wdms_app import wdms_app, enable_alpha_feature
+    from app.wdms_app import wdms_app
     from app.wdms_app import app_injector
-
-    enable_alpha_feature()
 
     with TemporaryDirectory() as tmp_dir:
         local_blob_storage = LocalFSBlobStorage(directory=tmp_dir)
