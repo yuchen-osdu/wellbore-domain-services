@@ -9,6 +9,8 @@ import dask.dataframe as dd
 import pandas as pd
 from natsort import natsorted
 
+from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
+    no_validation, DataFrameValidationFunc
 from app.clients.storage_service_client import get_storage_record_service
 from app.bulk_persistence import DataframeSerializerAsync
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
@@ -42,7 +44,7 @@ async def set_v3_input_dataframe_check(request: Request):
      Inject into request state (c.f. https://www.starlette.io/requests/#other-state)
      the check function. It aims for v3 bulk APIs
     """
-    request.state.check_input_df_func = _check_df_columns_type
+    request.state.check_input_df_func = columns_type_must_be_string
 
 
 async def set_legacy_input_dataframe_check(request: Request):
@@ -54,12 +56,12 @@ async def set_legacy_input_dataframe_check(request: Request):
      """
     content_type = request.headers.get('Content-Type')
     if content_type == 'application/x-parquet':
-        request.state.check_input_df_func = _check_df_columns_type
+        request.state.check_input_df_func = columns_type_must_be_string
     else:
-        request.state.check_input_df_func = _check_df_columns_type_legacy
+        request.state.check_input_df_func = auto_cast_columns_to_string
 
 
-def get_check_input_df_func(request: Request):
+def get_df_validation_func(request: Request) -> DataFrameValidationFunc:
     """
     Retrieve from request state (c.f. https://www.starlette.io/requests/#other-state) the injected input check function.
     This function is injected when mounting the bulk router into the fastApi app as router's 'dependencies'
@@ -67,23 +69,12 @@ def get_check_input_df_func(request: Request):
 
     NOTE: attribute name 'check_input_df_func' which contains the function should be IDENTICAL
     that defined in above functions
+
+    return: guarantee to return a not None dataframe validation function
     """
     if not request.state.check_input_df_func:
-        return lambda x: True
+        return no_validation
     return request.state.check_input_df_func
-
-
-def _check_df_columns_type_legacy(df: pd.DataFrame):
-    """ If given dataframe contains columns name which is not a string, cast it  """
-    df.columns = df.columns.astype(str)
-
-
-def _check_df_columns_type(df: pd.DataFrame):
-    """ Ensure given dataframe contains columns name as string only as described by WellLog schemas """
-    if any((type(t) is not str for t in df.columns)):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail="All columns type should be string")
-    return True
 
 
 @with_trace("get_df_from_request")

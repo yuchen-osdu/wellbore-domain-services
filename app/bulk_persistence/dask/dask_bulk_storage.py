@@ -40,6 +40,7 @@ from .traces import wrap_trace_process
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, share_items)
 from .session_file_meta import SessionFileMeta, get_output_file_name
+from ..dataframe_validators import assert_df_validate, validate_index, columns_not_in_reserved_names
 from . import storage_path_builder as pathBuilder
 from ..bulk_id import new_bulk_id
 from .bulk_catalog import BulkCatalog
@@ -212,34 +213,6 @@ class DaskBulkStorage:
         return await self._submit_with_trace(pandas_to_parquet, dataframe_scatter, path,
                                              self._parameters.storage_options)
 
-    @staticmethod
-    def _check_incoming_chunk(df):
-        # TODO should we test if is_monotonic?
-        if len(df.index) == 0:
-            raise BulkNotProcessable("Empty data")
-
-        if not df.index.is_unique:
-            raise BulkNotProcessable("Duplicated index values detected")
-
-        if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
-            raise BulkNotProcessable("Index should be numeric or datetime")
-
-        DaskBulkStorage._check_reserved_columns_name(df)
-
-    @staticmethod
-    def _check_reserved_columns_name(df):
-        """
-        There are reserved name for columns which are internally used by Pandas/Dask with PyArrow to save the index.
-        Save a df containing reserved name as regular columns lead to inability to read parquet file then.
-
-        At the stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
-        """
-        df_columns = set(df.columns)
-        pyarrow_reserved_columns_found = list(filter(lambda v: re.match(r'__index_level_\d+__', v), df_columns))
-
-        if pyarrow_reserved_columns_found or '__null_dask_index__' in df_columns:
-            raise BulkNotProcessable("Invalid column name")
-
     @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
     @with_trace('save_blob')
@@ -248,7 +221,7 @@ class DaskBulkStorage:
         bulk_id = bulk_id or new_bulk_id()
 
         if isinstance(ddf, pd.DataFrame):
-            self._check_incoming_chunk(ddf)
+            assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
             ddf = dd.from_pandas(ddf, npartitions=1)
             ddf = await self.client.scatter(ddf)
 
@@ -261,9 +234,9 @@ class DaskBulkStorage:
 
     @capture_timings('session_add_chunk')
     @with_trace('session_add_chunk')
-    async def session_add_chunk(self, session: Session, pdf: pd.DataFrame) -> None:
+    async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
         """add new chunk to the given session"""
-        self._check_incoming_chunk(pdf)
+        assert_df_validate(dataframe=pdf, validation_funcs=[validate_index, columns_not_in_reserved_names])
 
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]
