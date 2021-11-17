@@ -26,7 +26,6 @@ from app.clients.storage_service_blob_storage import StorageRecordServiceBlobSto
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.helper import traces
-from app.routers.bulk.utils import DataFrameRender
 from app.utils import Context, DaskClient
 from app import conf
 

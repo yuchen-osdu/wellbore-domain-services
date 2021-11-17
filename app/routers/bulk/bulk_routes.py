@@ -15,8 +15,6 @@
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from osdu.core.api.storage.exceptions import ResourceNotFoundException
-
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
