@@ -70,7 +70,7 @@ class SessionFileMeta:
 
 def get_output_file_name(dataframe: pd.DataFrame) -> str: # rename to generate_chunk_file_name
     '''Return chunk file name sorted by starting index
-    not idempotent function
+    This funtion is not idempotent
 
     Note 1: do not change the name without updating SessionFileMeta
     Note 2: dask reads and sort files by 'natural_key' So the file name impact the final result
