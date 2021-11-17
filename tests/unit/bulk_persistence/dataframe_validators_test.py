@@ -85,7 +85,7 @@ def test_valid_index():
         'increasing_int': [1, 2, 3],
         'decreasing_int': [3, 2, 1],
         'increasing_float': [1.1, 2.2, 3.3],
-        '': [datetime.datetime(2000, 1, 1), datetime.datetime(2000, 1, 2), datetime.datetime(2000, 1, 3)]
+        'datetime_index': [datetime.datetime(2000, 1, 1), datetime.datetime(2000, 1, 2), datetime.datetime(2000, 1, 3)]
     }
 
     for column_name in input_data.keys():
