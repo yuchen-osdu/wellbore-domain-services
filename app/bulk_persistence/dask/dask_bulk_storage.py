@@ -40,6 +40,7 @@ from .traces import wrap_trace_process
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, share_items)
 from .session_file_meta import SessionFileMeta, get_output_file_name
+from . import storage_path_builder as pathBuilder
 from ..bulk_id import new_bulk_id
 from .bulk_catalog import BulkCatalog
 
@@ -106,35 +107,7 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
-    @staticmethod
-    def encode_record_id(record_id: str) -> str:
-        return hashlib.sha1(record_id.encode()).hexdigest()
-
-    def _get_base_directory(self, protocol=True):
-        return f'{self.protocol}://{self.base_directory}' if protocol else self.base_directory
-
-    def _get_entity_path(self, record_id: str, with_protocol=True) -> str:
-        """Return the entity id path from the record_id."""
-        encoded_id = self.encode_record_id(record_id)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}'
-
-    def _get_bulk_path(self, record_id: str, with_protocol=True) -> str:
-        """Return the bulk folder path from the record_id."""
-        return f'{self._get_entity_path(record_id, with_protocol)}/bulk'
-
-    def _get_bulk_id_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
-        """Return the bulk id path from the record_id."""
-        return f'{self._get_bulk_path(record_id, with_protocol)}/{bulk_id}'
-
-    def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
-        """Return the bulk path from the bulk_id."""
-        return f'{self._get_bulk_id_path(record_id, bulk_id, with_protocol)}/data'
-
-    def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
-        """Return the session path."""
-        return f'{self._get_entity_path(session.recordId, with_protocol)}/session/{session.id}/data'
-
-    def _load(self, path, **kwargs): # -> 'Future<dd.DataFrame>':
+    def _load(self, path, **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
         path : string or list
         **kwargs: dict (of dicts) Passthrough key-word arguments for read backend.
@@ -163,7 +136,7 @@ class DaskBulkStorage:
         columns = catalog.columns.keys() & columns if columns else catalog.columns
 
         # find columns that we can load together
-        root_dir = self._get_entity_path(record_id, with_protocol=True)
+        root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
         files_to_load = catalog.get_columns_files_groupped_by_files(columns, root_dir)
 
         dfs = [self._load(path=f["paths"], columns=f["columns"]) for f in files_to_load]
@@ -177,7 +150,8 @@ class DaskBulkStorage:
         """Load columns from parquet files in the bulk_path.
         Returns: Future<dd.DataFrame>
         """
-        bulk_path = self._get_blob_path(record_id, bulk_id)
+        bulk_path = pathBuilder.record_bulk_path(
+            self.base_directory, record_id, bulk_id, self.protocol)
         catalog = self.get_catalog(bulk_path)
         if catalog is None:
             # No catalog means that we can read the folder as a parquet dataset. (legacy behavior)
@@ -187,7 +161,7 @@ class DaskBulkStorage:
     @with_trace('read_stat')
     async def read_stat(self, record_id: str, bulk_id: str):
         """Return some meta data about the bulk."""
-        file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
+        file_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
         catalog = await self.build_catalog(file_path, record_id)
 
         schema_dict = {vn: item.dtype for vn, item in catalog.columns.items()}
@@ -278,7 +252,7 @@ class DaskBulkStorage:
             ddf = dd.from_pandas(ddf, npartitions=1)
             ddf = await self.client.scatter(ddf)
 
-        path = self._get_blob_path(record_id, bulk_id)
+        path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         try:
             await self._save_with_dask(path, ddf)
         except OSError as os_error:
@@ -294,10 +268,13 @@ class DaskBulkStorage:
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]
         filename = get_output_file_name(pdf)
+        #filename = pathBuilder.build_chunk_filename(pdf)
 
-        session_path_wo_protocol = self._build_path_from_session(session, with_protocol=False)
-        self._fs.mkdirs(session_path_wo_protocol, exist_ok=True)  # only for local
-        with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
+        session_path = pathBuilder.record_session_path(
+            self.base_directory, session.id, session.recordId)
+
+        self._fs.mkdirs(session_path, exist_ok=True)  # only for local
+        with self._fs.open(f'{session_path}/{filename}.meta', 'w') as outfile:
             json.dump({
                 "columns": list(pdf),
                 "dtypes": [str(dt) for dt in pdf.dtypes],
@@ -305,14 +282,15 @@ class DaskBulkStorage:
                 "index_hash": hashlib.sha1(pdf.index.values).hexdigest()
             }, outfile)
 
-        session_path = self._build_path_from_session(session)
+        session_path = pathBuilder.add_protocol(session_path, self.protocol)
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
-    def get_session_parquet_files(self, session) -> List[str]:
+    def get_session_parquet_files(self, session):
         """return the parquet files of the specified session"""
-        session_path = self._build_path_from_session(session, with_protocol=False)
+        session_path = pathBuilder.record_session_path(
+            self.base_directory, session.id, session.recordId)
         with suppress(FileNotFoundError):
             return [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
         return []
@@ -374,7 +352,7 @@ class DaskBulkStorage:
             if cat:
                 return cat
 
-        root_dir = self._get_entity_path(record_id, with_protocol=False)
+        root_dir = pathBuilder.record_path(self.base_directory, record_id)
 
         files = self._fs.ls(path)
         is_dask_folder = any((f.endswith('_common_metadata') for f in files))
@@ -405,10 +383,10 @@ class DaskBulkStorage:
 
     async def load_index(self, record_id: str, bulk_id: str) -> pd.Index:
         """load the dataframe index of the specified record"""
-        prev_version_path = self._get_blob_path(record_id, bulk_id)
+        prev_version_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         cat = await self.build_catalog(prev_version_path, record_id)
         if cat.index_path:
-            root_dir = self._get_entity_path(record_id, with_protocol=True)
+            root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
             future_df = self._load(f'{root_dir}/{cat.index_path}')
         else: # only read the one column to get the index. It doesn't seems possible to get the index directly.
             first_column = next(iter(cat.columns))
@@ -443,8 +421,8 @@ class DaskBulkStorage:
     @capture_timings('_build_catalog_from_session')
     async def _build_catalog_from_session(self, session: Session, bulk_id: str, from_bulk_id: str = None) -> Optional[BulkCatalog]:
         """ build the catalog from the session."""
-        commit_path = self._get_blob_path(session.recordId, bulk_id)
-        root_dir = self._get_entity_path(session.recordId, with_protocol=True)
+        commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
+        root_dir = pathBuilder.record_path(self.base_directory, session.recordId, self.protocol)
 
         index = await self._compute_index_of_session(session, from_bulk_id)
         if index is None:
@@ -464,8 +442,9 @@ class DaskBulkStorage:
         catalog.nb_rows = len(index)
 
         if from_bulk_id:
-            prev_version_path = self._get_blob_path(session.recordId, from_bulk_id)
-            catalog = await self.build_catalog(prev_version_path, session.recordId)  # TODO async
+            prev_version_path = pathBuilder.record_bulk_path(
+                self.base_directory, session.recordId, from_bulk_id, self.protocol)
+            catalog = await self.build_catalog(prev_version_path, session.recordId)
 
         merge_file_counter = 0
         for files in self._get_next_files_list(session):
@@ -503,11 +482,11 @@ class DaskBulkStorage:
         from_bulk_id: id of the bulk to add to seesion. Used when updating a record.
         """
         bulk_id = new_bulk_id()
-        base_path = self._get_blob_path(session.recordId, bulk_id)
-
+        commit_path = pathBuilder.record_bulk_path(
+            self.base_directory, session.recordId, bulk_id, self.protocol)
         catalog = await self._build_catalog_from_session(session, bulk_id, from_bulk_id)
         if catalog and catalog.columns:
-            self.save_catalog(base_path, catalog)  # TODO async
+            self.save_catalog(commit_path, catalog)  # TODO async
             return bulk_id  # If no merge is needed, we stop here
 
         raise BulkNotProcessable("No data to commit")
