@@ -40,7 +40,8 @@ from .traces import wrap_trace_process
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, share_items)
 from .session_file_meta import SessionFileMeta, get_output_file_name
-from ..dataframe_validators import assert_df_validate, validate_index, columns_not_in_reserved_names
+from ..dataframe_validators import (assert_df_validate, validate_index,
+                                    columns_not_in_reserved_names, is_reserved_column_name)
 from . import storage_path_builder as pathBuilder
 from ..bulk_id import new_bulk_id
 from .bulk_catalog import BulkCatalog
@@ -335,17 +336,13 @@ class DaskBulkStorage:
             self._map_with_trace(lambda f: pa.ParquetDataset(f, filesystem=self._fs), files))
         relative_paths = (os.path.relpath(f, root_dir) for f in files)
 
-        def is_special_column(name) -> bool:
-            """special dask and pandas column '__null_dask_index__', '__index_level_0__'"""
-            return name.startswith('__') and name.endswith('__')
-
         catalog = BulkCatalog()
         catalog.nb_rows = max(get_num_rows(d) for d in datasets)  # TODO check: we may have to call load index ?
 
         schemas = (d.read_pandas().schema for d in datasets)
         for file, schema in zip(relative_paths, schemas):
             filtered_columns = ((x, str(y)) for x, y in zip(schema.names, schema.types)
-                               if not is_special_column(x))
+                               if not is_reserved_column_name(x))
             for name, dtype in filtered_columns:
                 catalog.columns.setdefault(name, BulkCatalog.ColumnInfo(
                     paths=[], dtype=dtype)).paths.append(file)
