@@ -68,16 +68,18 @@ class SessionFileMeta:
         return share_items(self.columns, other.columns)
 
 
-def get_output_file_name(pdf: pd.DataFrame) -> str:
+def get_output_file_name(dataframe: pd.DataFrame) -> str: # rename to generate_chunk_file_name
     '''Return chunk file name sorted by starting index
+    not idempotent function
+
     Note 1: do not change the name without updating SessionFileMeta
     Note 2: dask reads and sort files by 'natural_key' So the file name impact the final result
     '''
-    first_idx, last_idx = pdf.index[0], pdf.index[-1]
-    if isinstance(pdf.index, pd.DatetimeIndex):
-        first_idx, last_idx = pdf.index[0].value, pdf.index[-1].value
+    first_idx, last_idx = dataframe.index[0], dataframe.index[-1]
+    if isinstance(dataframe.index, pd.DatetimeIndex):
+        first_idx, last_idx = dataframe.index[0].value, dataframe.index[-1].value
 
-    shape_str = '_'.join(f'{cn}:{dt}' for cn, dt in pdf.dtypes.items())
+    shape_str = '_'.join(f'{cn}:{dt}' for cn, dt in dataframe.dtypes.items())
     shape = hashlib.sha1(shape_str.encode()).hexdigest()
     cur_time = round(time.time() * 1000)
     return f'{first_idx}_{last_idx}_{cur_time}.{shape}'
