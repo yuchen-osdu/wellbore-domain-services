@@ -22,30 +22,26 @@ from typing import List, Optional
 
 import fsspec
 import pandas as pd
+import dask.dataframe as dd
+from dask.distributed import Client as DaskDistributedClient
+from pyarrow.lib import ArrowException
 import pyarrow.parquet as pa
-from app.bulk_persistence import BulkId
-from app.bulk_persistence.dask.bulk_catalog import BulkCatalog
-from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
-from app.bulk_persistence.dask.session_file_meta import (SessionFileMeta,
-                                                         get_output_file_name)
-from app.bulk_persistence.dask.traces import wrap_trace_process
-from app.bulk_persistence.dask.utils import (by_pairs, do_merge, get_num_rows,
-                                             set_index, share_items,
-                                             worker_capture_timing_handlers)
+
+from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
+
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
-from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-from pyarrow.lib import ArrowException
-
-import dask.dataframe as dd
-from dask.distributed import Client as DaskDistributedClient
 
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import wrap_trace_process
-from .utils import by_pairs, do_merge, worker_capture_timing_handlers
+from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
+                    get_num_rows, set_index, share_items)
+from .session_file_meta import SessionFileMeta, get_output_file_name
+from ..bulk_id import new_bulk_id
+from .bulk_catalog import BulkCatalog
 
 
 def pandas_to_parquet(pdf, path, storage_options):
@@ -225,21 +221,21 @@ class DaskBulkStorage:
         except OSError as exp:
             raise BulkNotFound(record_id, bulk_id) from exp
 
-    def _save_with_dask(self, path, ddf):
+    def _save_with_dask(self, path, dataframe):
         """Save the dataframe to a parquet file(s).
         ddf: dd.DataFrame or Future<dd.DataFrame>
         returns a Future<None>
         """
-        return self._submit_with_trace(dask_to_parquet, ddf, path,
+        return self._submit_with_trace(dask_to_parquet, dataframe, path,
                                        storage_options=self._parameters.storage_options)
 
-    async def _save_with_pandas(self, path, pdf: dd.DataFrame):
+    async def _save_with_pandas(self, path, dataframe: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
         pdf: pd.DataFrame or Future<pd.DataFrame>
         returns a Future<None>
         """
-        f_pdf = await self.client.scatter(pdf)
-        return await self._submit_with_trace(pandas_to_parquet, f_pdf, path,
+        dataframe_scatter = await self.client.scatter(dataframe)
+        return await self._submit_with_trace(pandas_to_parquet, dataframe_scatter, path,
                                              self._parameters.storage_options)
 
     @staticmethod
@@ -266,7 +262,7 @@ class DaskBulkStorage:
         """
         df_columns = set(df.columns)
         pyarrow_reserved_columns_found = list(filter(lambda v: re.match(r'__index_level_\d+__', v), df_columns))
-        
+
         if pyarrow_reserved_columns_found or '__null_dask_index__' in df_columns:
             raise BulkNotProcessable("Invalid column name")
 
@@ -275,7 +271,7 @@ class DaskBulkStorage:
     @with_trace('save_blob')
     async def save_blob(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
-        bulk_id = bulk_id or BulkId.new_bulk_id()
+        bulk_id = bulk_id or new_bulk_id()
 
         if isinstance(ddf, pd.DataFrame):
             self._check_incoming_chunk(ddf)
@@ -506,7 +502,7 @@ class DaskBulkStorage:
         session: the session to commit
         from_bulk_id: id of the bulk to add to seesion. Used when updating a record.
         """
-        bulk_id = BulkId.new_bulk_id()
+        bulk_id = new_bulk_id()
         base_path = self._get_blob_path(session.recordId, bulk_id)
 
         catalog = await self._build_catalog_from_session(session, bulk_id, from_bulk_id)

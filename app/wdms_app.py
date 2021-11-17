@@ -134,9 +134,6 @@ async def startup_event():
     for _ in range(POOL_EXECUTOR_MAX_WORKER):
         asyncio.create_task(run_in_pool_executor(executor_startup_task))
 
-    if Config.alpha_feature_enabled.value:
-        enable_alpha_feature()
-
     add_modules_routers()
 
 
@@ -260,14 +257,6 @@ wdms_app.include_router(
 
 # The multiple instantiation of bulk_utils router create some duplicates operation_id
 update_operation_ids(wdms_app)
-
-
-# ------------- add alpha feature: ONLY MOUNTED IN DEV AND DA ENVs
-def enable_alpha_feature():
-    """ must be called to enable and activate alpha feature"""
-    # logger.get_logger().warning("Enabling alpha feature")
-    # include alpha routers down below #
-    pass
 
 
 # order is last executed first
