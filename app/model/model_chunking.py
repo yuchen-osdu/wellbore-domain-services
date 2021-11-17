@@ -16,8 +16,7 @@ from typing import Optional, List
 
 from fastapi import Query
 
-from app.bulk_persistence.dask.errors import FilterError
-
+from app.model.filter import get_parsed_filters
 
 class GetDataParams:
     ''' All parameters to query welllog data. '''
@@ -83,17 +82,6 @@ The "filter" query parameter allows clients to filter data following the pattern
             'col_name_2': {...}
         }
         """
-        if not self.bulk_filter:
-            return {}
-        filters = {}
-        for f in self.bulk_filter:
-            col_name, op, value = f.split(':', maxsplit=2)  # TODO handle exception regular expression
-            if op.lower() not in self.FilterOperators:
-                raise FilterError(f'Operator {op} is not supported')
-            if col_name not in filters:
-                filters[col_name] = {}
-            if op in filters[col_name]:
-                raise FilterError('Same operator on the same column')
-            filters[col_name].update({op : value})
-        return filters
+        return get_parsed_filters(self.bulk_filter)
+
 
