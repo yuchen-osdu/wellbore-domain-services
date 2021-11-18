@@ -38,10 +38,10 @@ from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import wrap_trace_process
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, share_items)
-from .session_file_meta import SessionFileMeta, generate_chunk_filename, build_chunk_metadata
 from ..dataframe_validators import (assert_df_validate, validate_index,
                                     columns_not_in_reserved_names, is_reserved_column_name)
 from . import storage_path_builder as pathBuilder
+from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
 from .bulk_catalog import BulkCatalog, load_bulk_catalog, save_bulk_catalog
 
@@ -240,56 +240,17 @@ class DaskBulkStorage:
 
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]
-        filename = generate_chunk_filename(pdf)
-        #filename = pathBuilder.build_chunk_filename(pdf)
+        filename = session_meta.generate_chunk_filename(pdf)
 
         session_path = pathBuilder.record_session_path(
             self.base_directory, session.id, session.recordId)
 
         self._fs.mkdirs(session_path, exist_ok=True)  # only for local
         with self._fs.open(f'{session_path}/{filename}.meta', 'w') as outfile:
-            json.dump(build_chunk_metadata(pdf), outfile)
+            json.dump(session_meta.build_chunk_metadata(pdf), outfile)
 
         session_path = pathBuilder.add_protocol(session_path, self.protocol)
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
-
-    @capture_timings('get_session_parquet_files')
-    @with_trace('get_session_parquet_files')
-    def get_session_parquet_files(self, session):
-        """Returns parquet files of the specified session"""
-        session_path = pathBuilder.record_session_path(
-            self.base_directory, session.id, session.recordId)
-        with suppress(FileNotFoundError):
-            return [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
-        return []
-
-    def _get_next_files_list(self, session: Session):
-        """Group session files in lists of files that can be read directly with dask
-        File can be grouped if they have the same schemas and no overlap between indexes
-        """
-        session_files = [SessionFileMeta(self._fs, f) for f in self.get_session_parquet_files(session)]
-        session_files = sorted(session_files, key=attrgetter('time'))
-        cache = {}
-        columns_in_cache = set()
-        while session_files:
-            cur, *session_files = session_files
-            if cur.shape in cache:
-                if any(cur.overlap(f) for f in cache[cur.shape]):
-                    yield [f'{self.protocol}://{file.path}' for file in cache[cur.shape]]
-                    cache[cur.shape] = [cur]
-                else:
-                    cache[cur.shape].append(cur)
-            else:
-                if not columns_in_cache.isdisjoint(cur.columns):
-                    match = next(metas[0] for metas in cache.values() if cur.has_common_columns(metas[0]))
-                    yield [f'{self.protocol}://{file.path}' for file in cache[match.shape]]
-                    columns_in_cache = columns_in_cache.difference(match.columns)
-                    del cache[match.shape]
-                cache[cur.shape] = [cur]
-            columns_in_cache.update(cur.columns)
-
-        for files in cache.values():
-            yield [f'{self.protocol}://{file.path}' for file in files]
 
     @capture_timings('build_catalog')
     async def build_catalog(self, path: str, record_id, force_build: bool=False) -> BulkCatalog: # TODO remove force build
@@ -341,7 +302,7 @@ class DaskBulkStorage:
     async def _compute_index_of_session(self, session: Session, from_bulk_id: str) -> pd.Index:
         """Combine all session indexes + previous version index"""
         # list one file per different index.
-        metas = (SessionFileMeta(self._fs, f) for f in self.get_session_parquet_files(session))
+        metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
         indexes_paths = {m.index_hash: m.path for m in metas}.values()
         if len(indexes_paths) == 0:
             return None # there is no files in this session
@@ -366,8 +327,8 @@ class DaskBulkStorage:
     @capture_timings('_build_catalog_from_session')
     async def _build_catalog_from_session(self, session: Session, bulk_id: str, from_bulk_id: str = None) -> Optional[BulkCatalog]:
         """ build the catalog from the session."""
-        commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
         root_dir = pathBuilder.record_path(self.base_directory, session.recordId, self.protocol)
+        commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
         index = await self._compute_index_of_session(session, from_bulk_id)
         if index is None:
@@ -393,9 +354,9 @@ class DaskBulkStorage:
             catalog = await self.build_catalog(prev_version_path, session.recordId)
 
         merge_file_counter = 0
-        for files in self._get_next_files_list(session):
+        for files in session_meta.get_next_chunk_files(self._fs, self.base_directory, session):
             # files share the same schemas so we retrieve the meta data from the first one
-            meta = SessionFileMeta(self._fs, files[0])
+            meta = session_meta.SessionFileMeta(self._fs, files[0])
             rel_files = [os.path.relpath(file, root_dir) for file in files]
             new_entries = {col_name: BulkCatalog.ColumnInfo(paths=rel_files, dtype=dtype)
                            for col_name, dtype in zip(meta.columns, meta.dtypes)}

@@ -16,10 +16,15 @@ import hashlib
 import json
 import os
 import time
-from typing import List
+from contextlib import suppress
+from operator import attrgetter
+from typing import Generator, List
 
 import pandas as pd
 from app.bulk_persistence.dask.utils import share_items
+from app.persistence.sessions_storage import Session
+
+from . import storage_path_builder as pathBuilder
 
 
 class SessionFileMeta:
@@ -117,3 +122,41 @@ def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
         "nb_rows": len(dataframe.index), # TODO remove ?
         "index_hash": hashlib.sha1(dataframe.index.values).hexdigest()
     }
+
+
+def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
+    """Return metadata objects for a given session"""
+    session_path = pathBuilder.record_session_path(base_directory, session.id, session.recordId)
+    with suppress(FileNotFoundError):
+        return [SessionFileMeta(filesystem, f)
+                for f in filesystem.ls(session_path) if f.endswith(".parquet")]
+    return []
+
+
+def get_next_chunk_files(filesystem, base_directory, session: Session) -> Generator[List[str], None, None]:
+    """Generator which groups session chunk files in lists of files that can be read directly with dask
+    File can be grouped if they have the same schemas and no overlap between indexes
+    """
+    session_files = get_chunks_metadata(filesystem, base_directory, session)
+    session_files.sort(key=attrgetter('time'))
+    cache = {}
+    columns_in_cache = set()
+    while session_files:
+        cur, *session_files = session_files
+        if cur.shape in cache:
+            if any(cur.overlap(f) for f in cache[cur.shape]):
+                yield [f'{filesystem.protocol}://{file.path}' for file in cache[cur.shape]]
+                cache[cur.shape] = [cur]
+            else:
+                cache[cur.shape].append(cur)
+        else:
+            if not columns_in_cache.isdisjoint(cur.columns):
+                match = next(metas[0] for metas in cache.values() if cur.has_common_columns(metas[0]))
+                yield [f'{filesystem.protocol}://{file.path}' for file in cache[match.shape]]
+                columns_in_cache = columns_in_cache.difference(match.columns)
+                del cache[match.shape]
+            cache[cur.shape] = [cur]
+        columns_in_cache.update(cur.columns)
+
+    for files in cache.values():
+        yield [f'{filesystem.protocol}://{file.path}' for file in files]
