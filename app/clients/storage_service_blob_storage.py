@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
 import uuid
 from asyncio import gather, iscoroutinefunction
 from typing import List
@@ -64,8 +65,8 @@ class StorageRecordServiceBlobStorage:
 
 
     @staticmethod
-    def _get_record_folder(id: str, data_partition: str):
-        encoded_id = hash(id)
+    def _get_record_folder(record_id: str, data_partition: str):
+        encoded_id = hashlib.md5(record_id.encode()).hexdigest()
         folder = f'{data_partition or "global"}_r_{encoded_id}'
         return folder
 
