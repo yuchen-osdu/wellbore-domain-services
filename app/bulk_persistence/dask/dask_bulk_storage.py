@@ -38,7 +38,7 @@ from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import wrap_trace_process
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, share_items)
-from .session_file_meta import SessionFileMeta, get_output_file_name
+from .session_file_meta import SessionFileMeta, generate_chunk_filename, build_chunk_metadata
 from ..dataframe_validators import (assert_df_validate, validate_index,
                                     columns_not_in_reserved_names, is_reserved_column_name)
 from . import storage_path_builder as pathBuilder
@@ -138,7 +138,7 @@ class DaskBulkStorage:
 
         # find columns that we can load together
         root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
-        files_to_load = catalog.get_columns_files_groupped_by_files(columns, root_dir)
+        files_to_load = catalog.get_paths_for_columns(columns, root_dir)
 
         dfs = [self._load(path=f["paths"], columns=f["columns"]) for f in files_to_load]
         if len(dfs) == 1:
@@ -240,7 +240,7 @@ class DaskBulkStorage:
 
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]
-        filename = get_output_file_name(pdf)
+        filename = generate_chunk_filename(pdf)
         #filename = pathBuilder.build_chunk_filename(pdf)
 
         session_path = pathBuilder.record_session_path(
@@ -248,12 +248,7 @@ class DaskBulkStorage:
 
         self._fs.mkdirs(session_path, exist_ok=True)  # only for local
         with self._fs.open(f'{session_path}/{filename}.meta', 'w') as outfile:
-            json.dump({
-                "columns": list(pdf),
-                "dtypes": [str(dt) for dt in pdf.dtypes],
-                "nb_rows": len(pdf.index), # TODO remove
-                "index_hash": hashlib.sha1(pdf.index.values).hexdigest()
-            }, outfile)
+            json.dump(build_chunk_metadata(pdf), outfile)
 
         session_path = pathBuilder.add_protocol(session_path, self.protocol)
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
@@ -261,7 +256,7 @@ class DaskBulkStorage:
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
     def get_session_parquet_files(self, session):
-        """return the parquet files of the specified session"""
+        """Returns parquet files of the specified session"""
         session_path = pathBuilder.record_session_path(
             self.base_directory, session.id, session.recordId)
         with suppress(FileNotFoundError):
@@ -270,7 +265,7 @@ class DaskBulkStorage:
 
     def _get_next_files_list(self, session: Session):
         """Group session files in lists of files that can be read directly with dask
-        File can be grouped if they have the same columns (shape) and no overlap of indexes
+        File can be grouped if they have the same schemas and no overlap between indexes
         """
         session_files = [SessionFileMeta(self._fs, f) for f in self.get_session_parquet_files(session)]
         session_files = sorted(session_files, key=attrgetter('time'))
@@ -332,17 +327,19 @@ class DaskBulkStorage:
 
     async def load_index(self, record_id: str, bulk_id: str) -> pd.Index:
         """load the dataframe index of the specified record"""
-        prev_version_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
-        cat = await self.build_catalog(prev_version_path, record_id)
-        if cat.index_path:
+        bulk_path = pathBuilder.record_bulk_path(
+            self.base_directory, record_id, bulk_id, self.protocol)
+        catalog = await self.build_catalog(bulk_path, record_id)
+        if catalog.index_path:
             root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
-            future_df = self._load(f'{root_dir}/{cat.index_path}')
-        else: # only read the one column to get the index. It doesn't seems possible to get the index directly.
-            first_column = next(iter(cat.columns))
+            future_df = self._load(f'{root_dir}/{catalog.index_path}')
+        else: # only read one column to get the index. It doesn't seems possible to get the index directly.
+            first_column = next(iter(catalog.columns)) # TODO if no column ?
             future_df = self._load_bulk(record_id, bulk_id, [first_column])
         return await self._submit_with_trace(lambda df: df.index.compute(), future_df)
 
     async def _compute_index_of_session(self, session: Session, from_bulk_id: str) -> pd.Index:
+        """Combine all session indexes + previous version index"""
         # list one file per different index.
         metas = (SessionFileMeta(self._fs, f) for f in self.get_session_parquet_files(session))
         indexes_paths = {m.index_hash: m.path for m in metas}.values()
@@ -351,11 +348,10 @@ class DaskBulkStorage:
 
         def read_parquet_index(path, storage_options) -> pd.Index:
             return read_with_pandas(path, storage_options=storage_options).index
-
+        # read indexes
         indexes = [self._submit_with_trace(
             read_parquet_index, f'{self.protocol}://{file}', self._parameters.storage_options)
             for file in indexes_paths]
-
         if from_bulk_id:
             indexes.append(await self.load_index(session.recordId, from_bulk_id))
 

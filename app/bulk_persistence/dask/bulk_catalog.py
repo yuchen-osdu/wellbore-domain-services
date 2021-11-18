@@ -18,7 +18,7 @@ A catalog contains metadata of the chunks
 import json
 import os
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional
 
 from app.utils import capture_timings
 
@@ -41,19 +41,15 @@ class BulkCatalog:
     nb_rows: int = 0
     index_path: Optional[str] = None
 
-    def get_columns_files_groupped_by_files(self, columns, root_path='') -> List[Dict]:
-        """return the paths to load the data of the requested columns"""
+    def get_paths_for_columns(self, columns: Iterable[str], root_path: str = '') -> List[Dict]:
+        """Returns the paths to load data of the requested columns grouped by paths"""
         groupped_files = {}
         for col_name in columns:
             files_list = self.columns[col_name].paths
-            group_by = hash("".join(files_list))
-            if group_by in groupped_files:
-                groupped_files[group_by]["columns"].append(col_name)
-            else:
-                groupped_files[group_by] = {
-                    "paths": [os.path.join(root_path, f) for f in files_list],
-                    "columns": [col_name]
-                }
+            groupped_files.setdefault(hash(tuple(files_list)), {
+                "paths": [os.path.join(root_path, f) for f in files_list],
+                "columns": []
+            })["columns"].append(col_name)
         return list(groupped_files.values())
 
     @capture_timings('as_dict')

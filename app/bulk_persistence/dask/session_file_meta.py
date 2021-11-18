@@ -49,14 +49,17 @@ class SessionFileMeta:
 
     @property
     def dtypes(self) -> List[str]:
+        """Return the column dtypes"""
         return self._read_meta()['dtypes']
 
     @property
     def nb_rows(self) -> int:
+        """Retrun the number of rows of the chunk"""
         return self._read_meta()['nb_rows']
 
     @property
     def index_hash(self) -> str:
+        """Retrun the index hash"""
         return self._read_meta()['index_hash']
 
     def overlap(self, other: 'SessionFileMeta') -> bool:
@@ -68,13 +71,29 @@ class SessionFileMeta:
         return share_items(self.columns, other.columns)
 
 
-def get_output_file_name(dataframe: pd.DataFrame) -> str: # rename to generate_chunk_file_name
-    '''Return chunk file name sorted by starting index
-    This funtion is not idempotent
+def generate_chunk_filename(dataframe: pd.DataFrame) -> str:
+    """Generate a chunk filename composed of information from the given dataframe
+    {first_index}_{last_index}_{time}.{shape}
+    The shape is a hash of columns names + columns dtypes
+    If chunks have same shape, dask can read them together.
 
-    Note 1: do not change the name without updating SessionFileMeta
-    Note 2: dask reads and sort files by 'natural_key' So the file name impact the final result
-    '''
+    Warnings:
+        - This funtion is not idempotent !
+        - Do not modify the name without updating the class SessionFileMeta !
+          Indeed, SessionFileMeta parse information from the chunk filename
+        - Filenames impacts partitions order in Dask as it order them by 'natural key'
+          Thats why the start index is in the first position
+
+    Raises:
+        IndexError - if empty dataframe
+
+    >>> generate_chunk_filename(pd.DataFrame({'A': range(10), 'B': range(10)}, index=range(10)))
+    '0_9_1637223437910.526782c41fe12c3249046fedcc45563ef3662250'
+    >>> generate_chunk_filename(pd.DataFrame({'A': range(10), 'B': range(10)}, index=range(10,20)))
+    '10_19_1637223490719.526782c41fe12c3249046fedcc45563ef3662250'
+    >>> generate_chunk_filename(pd.DataFrame({'A': []}, index=[]))
+    IndexError: index 0 is out of bounds for axis 0 with size 0
+    """
     first_idx, last_idx = dataframe.index[0], dataframe.index[-1]
     if isinstance(dataframe.index, pd.DatetimeIndex):
         first_idx, last_idx = dataframe.index[0].value, dataframe.index[-1].value
@@ -83,3 +102,18 @@ def get_output_file_name(dataframe: pd.DataFrame) -> str: # rename to generate_c
     shape = hashlib.sha1(shape_str.encode()).hexdigest()
     cur_time = round(time.time() * 1000)
     return f'{first_idx}_{last_idx}_{cur_time}.{shape}'
+
+
+def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
+    """Returns dataframe metadata
+    Other metadata such as start_index or stop_index are saved into the chunk filename
+
+    >>> build_chunk_metadata(pd.DataFrame({'A': [1,2,3], 'B': [4,5,6]}, index=[0,1,2]))
+    {'columns': ['A', 'B'], 'dtypes': ['int64', 'int64'], 'nb_rows': 3, 'index_hash': 'ab2fa50ae23ce035bad2e77ec5e0be05c2f4b816'}
+    """
+    return {
+        "columns": list(dataframe.columns),
+        "dtypes": [str(dt) for dt in dataframe.dtypes],
+        "nb_rows": len(dataframe.index), # TODO remove ?
+        "index_hash": hashlib.sha1(dataframe.index.values).hexdigest()
+    }
