@@ -30,7 +30,7 @@ parameters:
    type: object #List of string
  - name: app_name
    type: string
-   default: os-wellbore-ddms
+   default: 'os-wellbore-ddms'
 
 steps:
 - ${{ each acr_name in parameters.acr_names }}:
@@ -43,5 +43,5 @@ steps:
       inlineScript: |
         set -e
         az acr login --name ${{ acr_name }}
-        docker tag wdms-osdu:$(tag_name) ${{ acr_name }}.azurecr.io/${{ parameters.app_name }}:$(tag_name)
+        docker tag $(app):$(tag_name) ${{ acr_name }}.azurecr.io/${{ parameters.app_name }}:$(tag_name)
         docker push ${{ acr_name }}.azurecr.io/${{ parameters.app_name }}:$(tag_name)
