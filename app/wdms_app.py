@@ -16,13 +16,14 @@ from os import getpid
 import asyncio
 from time import sleep
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.openapi.utils import get_openapi
 
 from app import __version__, __build_number__, __app_name__
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers, create_custom_http_exception_handler
+from app.model.entity_utils import Entity
 from app.modules import discoverer
 
 from app.helper import traces, logger
@@ -113,6 +114,13 @@ def executor_startup_task():
     sleep(0.2)  # to keep executor "busy"
 
 
+def make_entity_type_dependency(entity_type: Entity, version: str):
+    def _set_entity_type(request: Request):
+        request.state.entity_type = entity_type
+        request.state.version = version
+    return _set_entity_type
+
+
 @base_app.on_event("startup")
 async def startup_event():
     service_name = Config.service_name.value
@@ -168,34 +176,33 @@ wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"
 wdms_app.include_router(ddms_v2.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
 
 ddms_v2_routes_groups = [
-    (well_ddms_v2, "Well"),
-    (wellbore_ddms_v2, "Wellbore"),
-    (logset_ddms_v2, "Logset"),
-    (trajectory_ddms_v2, "Trajectory"),
-    (marker_ddms_v2, "Marker"),
-    (log_ddms_v2, "Log"),
-    (dipset_ddms_v2, "Dipset"),
-    (dip_ddms_v2, "Dips"),
+    (well_ddms_v2, "Well", Entity.WELL),
+    (wellbore_ddms_v2, "Wellbore", Entity.WELLBORE),
+    (logset_ddms_v2, "Logset", Entity.LOGSET),
+    (trajectory_ddms_v2, "Trajectory", Entity.TRAJECTORY),
+    (marker_ddms_v2, "Marker", Entity.MARKER),
+    (log_ddms_v2, "Log", Entity.LOG),
+    (dipset_ddms_v2, "Dipset", Entity.DIPSET),
+    (dip_ddms_v2, "Dips", Entity.DIP),
 ]
-for v2_api, tag in ddms_v2_routes_groups:
+for v2_api, tag, entity_type in ddms_v2_routes_groups:
     wdms_app.include_router(v2_api.router,
                             prefix=DDMS_V2_PATH,
                             tags=[tag],
-                            dependencies=basic_dependencies)
+                            dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V2"))])
 
 ddms_v3_routes_groups = [
-    (wellbore_ddms_v3, "Wellbore"),
-    (well_ddms_v3, "Well"),
-    (welllog_ddms_v3, "WellLog"),
-    (wellbore_trajectory_ddms_v3, "Trajectory v3"),
-    (markerset_ddms_v3, "Marker"),
-
+    (wellbore_ddms_v3, "Wellbore", Entity.WELLBORE),
+    (well_ddms_v3, "Well", Entity.WELL),
+    (welllog_ddms_v3, "WellLog", Entity.WELL_LOG),
+    (wellbore_trajectory_ddms_v3, "Trajectory v3", Entity.TRAJECTORY),
+    (markerset_ddms_v3, "Marker", Entity.MARKER),
 ]
-for v3_api, tag in ddms_v3_routes_groups:
+for v3_api, tag, entity_type in ddms_v3_routes_groups:
     wdms_app.include_router(v3_api.router,
                             prefix=DDMS_V3_PATH,
                             tags=[tag],
-                            dependencies=basic_dependencies)
+                            dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
 
 wdms_app.include_router(search.router, prefix='/ddms', tags=['search'], dependencies=basic_dependencies)
 wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search'], dependencies=basic_dependencies)
@@ -203,9 +210,9 @@ wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search']
 wdms_app.include_router(search_v3.router, prefix=DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies)
 wdms_app.include_router(fast_search_v3.router, prefix=DDMS_V3_PATH, tags=['fast-search v3'],
                         dependencies=basic_dependencies)
-wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH, tags=['ALPHA feature: search v3'],
+wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH,
+                        tags=['ALPHA feature: search v3'],
                         dependencies=basic_dependencies)
-
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
 v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check), Depends(set_osdu_bulk_id_access)]
@@ -218,14 +225,14 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         sessions.router,
         prefix=bulk_prefix + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["WellLog"],
-        dependencies=basic_dependencies,
+        dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))],
         include_in_schema=is_visible)
 
     wdms_app.include_router(
         bulk_routes.router,
         prefix=bulk_prefix + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["WellLog"],
-        dependencies=v3_bulk_dependencies,
+        dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))],
         include_in_schema=is_visible)
 
     # wellbore trajectory bulk v3 APIs
@@ -233,14 +240,14 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         sessions.router,
         prefix=bulk_prefix + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["Trajectory v3"],
-        dependencies=basic_dependencies,
+        dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3"))],
         include_in_schema=is_visible)
 
     wdms_app.include_router(
         bulk_routes.router,
         prefix=bulk_prefix + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["Trajectory v3"],
-        dependencies=v3_bulk_dependencies,
+        dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3"))],
         include_in_schema=is_visible)
 
 # log bulk v2 APIs
@@ -248,12 +255,12 @@ wdms_app.include_router(
     sessions.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
-    dependencies=basic_dependencies)
+    dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
 wdms_app.include_router(
     bulk_routes.router,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=alpha_tags,
-    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access)])
+    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access), Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
 
 # The multiple instantiation of bulk_utils router create some duplicates operation_id
 update_operation_ids(wdms_app)

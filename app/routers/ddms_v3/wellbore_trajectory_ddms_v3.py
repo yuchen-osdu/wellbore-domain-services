@@ -19,11 +19,13 @@ from odes_storage.models import (
     List,
     RecordVersions,
 )
+from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.osdu_model import WellboreTrajectory110 as WellboreTrajectory
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLBORETRAJECTORY_VERSION_REGEX
+from app.routers.record_utils import fetch_record
 from app.utils import Context
 from app.utils import get_ctx
 from app.model.model_utils import to_record, from_record
@@ -45,7 +47,7 @@ WELLBORE_TRAJECTORIES_API_BASE_PATH = '/wellboretrajectories'
     },
 )
 async def get_wellbore_trajectory_osdu(
-    wellboretrajectoryid: str, ctx: Context = Depends(get_ctx)
+    wellboretrajectoryid: str, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreTrajectory:
     storage_client = await get_storage_record_service(ctx)
     wellboretrajectoryid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBORETRAJECTORY_VERSION_REGEX,
@@ -54,6 +56,7 @@ async def get_wellbore_trajectory_osdu(
     wellboreTrajectory_record = await storage_client.get_record(
         id=wellboretrajectoryid, data_partition_id=ctx.partition_id
     )
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreTrajectory_record, request.state)
     return from_record(WellboreTrajectory, wellboreTrajectory_record)
 
 
@@ -92,8 +95,10 @@ async def del_osdu_wellboreTrajectory(wellboretrajectoryid: str, ctx: Context = 
     },
 )
 async def get_osdu_wellboreTrajectory_versions(
-    wellboretrajectoryid: str, ctx: Context = Depends(get_ctx)
+    wellboretrajectoryid: str, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
+    record = await fetch_record(ctx, wellboretrajectoryid)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     wellboretrajectoryid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBORETRAJECTORY_VERSION_REGEX,
                                                                   wellboretrajectoryid)
     storage_client = await get_storage_record_service(ctx)
@@ -114,7 +119,7 @@ async def get_osdu_wellboreTrajectory_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_wellboreTrajectory_version(
-    wellboretrajectoryid: str, version: int, ctx: Context = Depends(get_ctx)
+    wellboretrajectoryid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreTrajectory:
     storage_client = await get_storage_record_service(ctx)
     wellboretrajectoryid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBORETRAJECTORY_VERSION_REGEX,
@@ -122,6 +127,7 @@ async def get_osdu_wellboreTrajectory_version(
     wellboreTrajectory_record = await storage_client.get_record_version(
         id=wellboretrajectoryid, version=version, data_partition_id=ctx.partition_id
     )
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreTrajectory_record, request.state)
     return from_record(WellboreTrajectory, wellboreTrajectory_record)
 
 
