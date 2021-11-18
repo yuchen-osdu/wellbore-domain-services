@@ -13,24 +13,68 @@
 # limitations under the License.
 
 from fastapi import status, HTTPException
+from dask.distributed import scheduler
+from pyarrow.lib import ArrowException, ArrowInvalid
+from functools import wraps
+
+from app.helper.logger import get_logger
 
 
 class BulkError(Exception):
     http_status: int
 
     def raise_as_http(self):
-        raise HTTPException(status_code=self.http_status, detail=str(self))
+        raise HTTPException(status_code=self.http_status, detail=str(self)) from self
 
 
 class BulkNotFound(BulkError):
     http_status = status.HTTP_404_NOT_FOUND
 
-    def __init__(self, record_id, bulk_id):
-        self.message = f'bulk {bulk_id} for record {record_id} not found'
+    def __init__(self, record_id=None, bulk_id=None, message=None):
+        ex_message = 'bulk '
+        if bulk_id:
+            ex_message += f'{bulk_id} '
+        if record_id:
+            ex_message += f'for record {record_id} '
+        ex_message += 'not found'
+        if message:
+            ex_message += ': ' + message
+        super().__init__(ex_message)
 
 
 class BulkNotProcessable(BulkError):
     http_status = status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    def __init__(self, bulk_id):
-        self.message = f'bulk {bulk_id} not processable'
+    def __init__(self, bulk_id=None, message=None):
+        ex_message = 'bulk '
+        if bulk_id:
+            ex_message += f'{bulk_id} '
+        ex_message += 'not processable'
+        if message:
+            ex_message += ': ' + message
+        super().__init__(ex_message)
+
+
+def internal_bulk_exceptions(target):
+    """
+    Decoration to handler exceptions that should be not exposed to outside world. e.g. Pyarrow or Dask exceptions
+    """
+
+    @wraps(target)
+    async def async_inner(*args, **kwargs):
+        try:
+            return await target(*args, **kwargs)
+        except ArrowInvalid as e:
+            get_logger().exception(f"Pyarrow ArrowInvalid when running {target.__name__}")
+            raise BulkNotProcessable(f"Unable to process bulk - {str(e)}")
+        except ArrowException:
+            get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
+            raise BulkNotProcessable("Unable to process bulk - Arrow")
+        except scheduler.KilledWorker:
+            get_logger().exception(f"Dask worker raised exception when running '{target.__name__}'")
+            raise BulkNotProcessable("Unable to process bulk- Dask")
+        except Exception:
+            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
+            raise
+
+    return async_inner

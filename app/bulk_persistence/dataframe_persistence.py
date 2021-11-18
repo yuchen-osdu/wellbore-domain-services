@@ -25,7 +25,7 @@ from .blob_storage import (
     create_and_write_blob,
     read_blob,
 )
-from .bulk_id import BulkId
+from .bulk_id import new_bulk_id
 from .mime_types import MimeTypes
 from .tenant_provider import resolve_tenant
 from ..helper.traces import with_trace
@@ -33,10 +33,10 @@ from ..helper.traces import with_trace
 
 async def create_and_store_dataframe(ctx: Context, df: pd.DataFrame) -> str:
     """Store bulk on a blob storage"""
-    new_bulk_id = BulkId.new_bulk_id()
+    bulk_id = new_bulk_id()
     tenant = await resolve_tenant(ctx.partition_id)
     async with create_and_write_blob(
-        df, file_exporter=BlobFileExporters.PARQUET, blob_id=new_bulk_id
+        df, file_exporter=BlobFileExporters.PARQUET, blob_id=bulk_id
     ) as bulkblob:
         storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
         await storage.upload(
