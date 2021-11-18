@@ -28,11 +28,14 @@ parameters:
    type: string
  - name: acr_names
    type: object #List of string
+ - name: app_name
+   type: string
+   default: os-wellbore-ddms
 
 steps:
 - ${{ each acr_name in parameters.acr_names }}:
   - task: AzureCLI@2
-    displayName: 'push image to acr "${{ acr_name }}""'
+    displayName: 'push to "${{ acr_name }}"'
     inputs:
       azureSubscription: ${{ parameters.azureSubscription }}
       scriptType: bash
@@ -40,5 +43,5 @@ steps:
       inlineScript: |
         set -e
         az acr login --name ${{ acr_name }}
-        docker tag wdms-osdu:$(tag_name) ${{ acr_name }}.azurecr.io/os-wellbore-ddms:$(tag_name)
-        docker push ${{ acr_name }}.azurecr.io/os-wellbore-ddms:$(tag_name)
+        docker tag wdms-osdu:$(tag_name) ${{ acr_name }}.azurecr.io/${{ parameters.app_name }}:$(tag_name)
+        docker push ${{ acr_name }}.azurecr.io/${{ parameters.app_name }}:$(tag_name)
