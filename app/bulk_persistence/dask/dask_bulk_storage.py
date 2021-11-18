@@ -225,18 +225,6 @@ class DaskBulkStorage:
             return session_files
         return []
 
-    @capture_timings('delete_entity')
-    @with_trace('delete_entity')
-    async def delete_entity(self, record_id: str):
-        path = self._get_entity_path(record_id, with_protocol=False)
-        self._fs.rm(path, recursive=True)
-
-    @capture_timings('delete_bulk')
-    @with_trace('delete_bulk')
-    async def delete_bulk(self, record_id: str, bulk_id: str):
-        path = self._get_bulk_id_path(record_id=record_id, bulk_id=bulk_id, with_protocol=False)
-        self._fs.rm(path, recursive=True)
-
     def _get_next_files_list(self, session: Session):
         """Group session files in lists of files that can be read directly with dask
         File can be grouped if they have the same columns (shape) and no overlap of indexes

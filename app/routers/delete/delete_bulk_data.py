@@ -16,13 +16,13 @@ from app.bulk_persistence import resolve_tenant
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import asyncio
 
+from app.bulk_persistence.dask.storage_path_builder import hash_record_id
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_client import get_storage_record_service
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 
 
 async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess, record_id: str, index: int,
@@ -50,8 +50,7 @@ async def delete_record(
         record_id: str,
         purge: bool,
         ctx: Context,
-        bulk_uri_access: BulkIdAccess,
-        dask_blob_storage: DaskBulkStorage):
+        bulk_uri_access: BulkIdAccess):
     storage_client = await get_storage_record_service(ctx)
 
     if not purge:
@@ -65,7 +64,7 @@ async def delete_record(
 
         tenant = await resolve_tenant(ctx.partition_id)
         blob_storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
-        encode_record_id = dask_blob_storage.encode_record_id(record_id)
+        encode_record_id = hash_record_id(record_id)
         bulk_file_names = await blob_storage.list_objects(tenant=tenant,
                                                      prefix=encode_record_id)
 
