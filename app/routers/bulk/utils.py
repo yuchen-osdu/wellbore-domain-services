@@ -201,9 +201,7 @@ class DataFrameRender:
     @staticmethod
     @with_trace('process_params')
     async def process_params(df, params: GetDataParams, filters):
-        """
-        pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
-        """
+        # pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
         if isinstance(df, pd.DataFrame):
             df = dd.from_pandas(df, npartitions=1)
 

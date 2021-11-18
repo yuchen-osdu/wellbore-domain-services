@@ -181,9 +181,9 @@ async def get_data_version(
                 # get column needed for filtering which are not yet in columns
                 filters = data_param.get_filters()
 
-                invalid_columns = [c for c in filters.keys() if c not in existing_col]
-                if invalid_columns:
-                    raise FilterError(f"The columns:{invalid_columns} to be filtered do not exist")
+                for c in filters.keys():
+                    if c not in existing_col:
+                        raise FilterError(f'The column:{c} to be filtered does not exist')
 
                 if columns_to_load:
                     columns_to_load.extend(filters)
