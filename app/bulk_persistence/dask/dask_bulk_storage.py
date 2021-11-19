@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hashlib
 import json
 import os
-from contextlib import suppress
-from operator import attrgetter
 from typing import List, Optional
 
 import fsspec
@@ -108,18 +105,17 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
-    def _load(self, path, **kwargs) -> dd.DataFrame:
+    def _read_parquet(self, path: Tuple[str, List[str]], **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
-        path : string or list
-        **kwargs: dict (of dicts) Passthrough key-word arguments for read backend.
-
-        read_parquet parameters:
-          chunksize='25M': if chunk are too small, we aggregate them until we reach chunksize
-          aggregate_files=True: because we are passing a list of path when commiting a session,
-                                aggregate_files is needed when paths are different
-
+        Args:
+            path (Tuple[str, List[str]]): a file, a folder or a list of files
+            **kwargs dict (of dicts): Passthrough key-word arguments for read backend.
         Returns:
-            Future<dd.DataFrame>
+            Future<dd.DataFrame>: dask dataframe
+        Dask read_parquet parameters:
+            chunksize='25M': if chunk are too small, we aggregate them until we reach chunksize
+            aggregate_files=True: because we are passing a list of path when commiting a session,
+                                  aggregate_files is needed when paths are different
         """
         return self._submit_with_trace(dd.read_parquet, path,
                                        engine='pyarrow-dataset',
@@ -129,35 +125,33 @@ class DaskBulkStorage:
                                        **kwargs)
 
     def _load_bulk_from_catalog(self, catalog: BulkCatalog, record_id: str, columns: List[str] = None):
-        """Load data from information contains in the catalog
+        """Load data from information contained in the catalog
             - if the user request columns that does not exists, we ignore them
-            - if columns is None -> load all columns
+            - if columns is None, we load all columns
         Returns: Future<dd.dataframe>
         """
-        columns = catalog.columns.keys() & columns if columns else catalog.columns
-
         # find columns that we can load together
+        columns = catalog.columns.keys() & columns if columns else catalog.columns
         root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
         files_to_load = catalog.get_paths_for_columns(columns, root_dir)
-
-        dfs = [self._load(path=f["paths"], columns=f["columns"]) for f in files_to_load]
+        # read all chunk for requested columns
+        dfs = [self._read_parquet(path=f["paths"], columns=f["columns"]) for f in files_to_load]
         if len(dfs) == 1:
             return dfs[0]
+        # if multiple dataframe, concat them together
         dfs = self._map_with_trace(set_index, dfs)
-        return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer')
-        #return self._submit_with_trace(join_dataframes, dfs)
+        return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer') # or concat or join?
 
     def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None):
         """Load columns from parquet files in the bulk_path.
         Returns: Future<dd.DataFrame>
         """
-        bulk_path = pathBuilder.record_bulk_path(
-            self.base_directory, record_id, bulk_id, self.protocol)
+        bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         catalog = load_bulk_catalog(self._fs, bulk_path)
-        if catalog is None:
-            # No catalog means that we can read the folder as a parquet dataset. (legacy behavior)
-            return self._load(bulk_path, columns=columns)
-        return self._load_bulk_from_catalog(catalog, record_id, columns)
+        if catalog is not None:
+            return self._load_bulk_from_catalog(catalog, record_id, columns)
+        # No catalog means that we can read the folder as a parquet dataset. (legacy behavior)
+        return self._read_parquet(bulk_path, columns=columns)
 
     @with_trace('read_stat')
     async def read_stat(self, record_id: str, bulk_id: str):
@@ -253,32 +247,35 @@ class DaskBulkStorage:
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
     @capture_timings('build_catalog')
-    async def build_catalog(self, path: str, record_id, force_build: bool=False) -> BulkCatalog: # TODO remove force build
-        # add record_id/bulk_id ? into the catalog
+    async def build_catalog(self, path: str, record_id) -> BulkCatalog:
+        # TODO add record_id/bulk_id ? into the catalog
         path, _ = pathBuilder.remove_protocol(path)
-        if not force_build:
-            cat = load_bulk_catalog(self._fs, path)
-            if cat:
-                return cat
+        catalog = load_bulk_catalog(self._fs, path) # TODO async ?
+        if catalog:
+            return catalog
 
-        root_dir = pathBuilder.record_path(self.base_directory, record_id)
-
+        # For legacy bulk, construct a catalog on the fly : TODO should we persist it ?
         files = self._fs.ls(path)
         is_dask_folder = any((f.endswith('_common_metadata') for f in files))
         parquet_files = (f for f in files if f.endswith('.parquet'))
         files = [path] if is_dask_folder else list(parquet_files)
-        datasets = await self.client.gather(
-            self._map_with_trace(lambda f: pa.ParquetDataset(f, filesystem=self._fs), files))
+
+        futures_datasets = [self._submit_with_trace(pa.ParquetDataset, f, self._fs) for f in files]
+        datasets = await self.client.gather(futures_datasets)
+
+        root_dir = pathBuilder.record_path(self.base_directory, record_id)
         relative_paths = (os.path.relpath(f, root_dir) for f in files)
 
+        schemas = (d.read_pandas().schema for d in datasets)
+        
         catalog = BulkCatalog()
         catalog.nb_rows = max(get_num_rows(d) for d in datasets)  # TODO check: we may have to call load index ?
 
-        schemas = (d.read_pandas().schema for d in datasets)
         for file, schema in zip(relative_paths, schemas):
-            filtered_columns = ((x, str(y)) for x, y in zip(schema.names, schema.types)
-                               if not is_reserved_column_name(x))
-            for name, dtype in filtered_columns:
+            columns = ((name, str(dtype))
+                       for name, dtype in zip(schema.names, schema.types)
+                       if not is_reserved_column_name(name))
+            for name, dtype in columns:
                 catalog.columns.setdefault(name, BulkCatalog.ColumnInfo(
                     paths=[], dtype=dtype)).paths.append(file)
                 # if dtype != catalog.columns[name].dtype:
@@ -293,7 +290,7 @@ class DaskBulkStorage:
         catalog = await self.build_catalog(bulk_path, record_id)
         if catalog.index_path:
             root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
-            future_df = self._load(f'{root_dir}/{catalog.index_path}')
+            future_df = self._read_parquet(f'{root_dir}/{catalog.index_path}')
         else: # only read one column to get the index. It doesn't seems possible to get the index directly.
             first_column = next(iter(catalog.columns)) # TODO if no column ?
             future_df = self._load_bulk(record_id, bulk_id, [first_column])
@@ -364,7 +361,7 @@ class DaskBulkStorage:
             if share_items(catalog.columns, new_entries):
                 common = catalog.columns.keys() & new_entries
                 df1 = self._load_bulk_from_catalog(catalog, session.recordId, columns=common)
-                df2 = self._load(files, columns=common)
+                df2 = self._read_parquet(files, columns=common)
                 merged_df = self._submit_with_trace(do_merge, df1, df2)
                 merged_df_path = os.path.join(commit_path, f'part_{merge_file_counter}.parquet')
                 merge_file_counter += 1

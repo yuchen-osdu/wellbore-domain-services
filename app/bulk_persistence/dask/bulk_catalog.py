@@ -73,7 +73,9 @@ class BulkCatalog:
         }
         return BulkCatalog(**catalog_as_dict)
 
+
 CATALOG_FILE_NAME = '_meta.json'
+
 
 def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> str:
     """save a bulk catalog to a json file in the given folder path"""
