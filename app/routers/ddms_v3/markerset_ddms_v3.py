@@ -22,7 +22,7 @@ from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import to_record, from_record
-from app.model.osdu_model import WellboreMarkerSet
+from app.model.osdu_model import WellboreMarkerSet110 as WellboreMarkerSet
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLBOREMARKERSET_VERSION_REGEX
 from app.routers.record_utils import fetch_record

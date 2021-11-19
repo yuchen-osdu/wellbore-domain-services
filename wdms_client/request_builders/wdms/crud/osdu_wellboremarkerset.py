@@ -349,6 +349,13 @@ def build_request_create_osdu_wellboremarkerset() -> RequestRunner:
         "VerticalReferenceID": "Example VerticalReferenceID",
         "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
       },
+      "AvailableMarkerProperties": [
+        {
+          "MarkerPropertyTypeID": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+          "MarkerPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:ft:",
+          "Name": "MissingThickness"
+        }
+      ],
       "Markers": [
         {
           "MarkerName": "Example MarkerName",
@@ -653,6 +660,13 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
             "VerticalReferenceID": "Example VerticalReferenceID",
             "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
           },
+          "AvailableMarkerProperties": [
+              {
+                  "MarkerPropertyTypeID": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+                  "MarkerPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:ft:",
+                  "Name": "MissingThickness"
+              }
+          ],
           "Markers": [
             {
               "MarkerName": "Example MarkerName",

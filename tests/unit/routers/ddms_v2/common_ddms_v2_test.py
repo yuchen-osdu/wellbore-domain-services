@@ -83,7 +83,7 @@ tests_parameters = [
     )),
     ('/ddms/v3/wellboremarkersets', WellboreMarkerSet(
         id=r"namespace:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="namespace:osdu:work-product-component--WellboreMarkerSet:1.0.0",
+        kind="namespace:osdu:work-product-component--WellboreMarkerSet:1.1.0",
         acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
         legal={
             "legaltags": ["string"],
