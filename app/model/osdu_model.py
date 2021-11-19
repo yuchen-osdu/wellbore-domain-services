@@ -71,37 +71,6 @@ class LogServiceDateInterval(DDMSBaseModel):
     EndDate: Optional[datetime] = None
 
 
-class AvailableTrajectoryStationProperty(DDMSBaseModel):
-    """
-    A set of properties describing a trajectory station property which is available for this instance of a WellboreTrajectory.
-    """
-
-    TrajectoryStationPropertyTypeID: Optional[
-        constr(
-            regex=r'^[\w\-\.]+:reference-data\-\-TrajectoryStationPropertyType:[\w\-\.\:\%]+:[0-9]*$'
-        )
-    ] = Field(
-        None,
-        description='The reference to a trajectory station property type - of if interpreted as channels, the curve or channel name type, identifying e.g. MD, Inclination, Azimuth. This is a relationship to a reference-data--TrajectoryStationPropertyType record id.',
-        example='partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:',
-        title='Trajectory Station Property Type ID',
-    )
-    StationPropertyUnitID: Optional[
-        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
-    ] = Field(
-        None,
-        description='Unit of Measure for the station properties of type TrajectoryStationPropertyType.',
-        example='partition-id:reference-data--UnitOfMeasure:dega:',
-        title='Station Property Unit ID',
-    )
-    Name: Optional[str] = Field(
-        None,
-        description='The name of the curve (e.g. column in a CSV document) as originally found. If absent The name of the TrajectoryCurveType is intended to be used.',
-        example='AzimuthTN',
-        title='Name',
-    )
-
-
 class Owner(DDMSBaseModel):
     __root__: constr(
         regex=r'^[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$'
@@ -1181,7 +1150,7 @@ class Curve110(DDMSBaseModel):
     NullValue: Optional[bool] = Field(
         None, description='Indicates that there is no measurement within the curve'
     )
-    DepthCoding: Optional[constr(regex='^REGULAR|DISCRETE$')] = Field(
+    DepthCoding: Optional[constr(regex=r'^REGULAR|DISCRETE$')] = Field(
         None,
         description='DEPRECATED: Replaced by boolean data.IsRegular. The Coding of the depth.',
     )
@@ -1197,34 +1166,34 @@ class Curve110(DDMSBaseModel):
         description='DEPRECATED: populate data.SamplingStart or data.SamplingStop instead, for informational purposes data.BottomMeasuredDepth. SamplingStart and SamplingStop support other domains than depth.',
     )
     DepthUnit: Optional[
-        constr(regex='^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='DEPRECATED: use the meta[] to specify the sampling UnitOfMeasure (AbstractMetaItem of kind "Unit"; propertyNames["TopMeasuredDepth", "BottomMeasuredDepth"]). Originally: Unit of Measure for Top and Base depth.',
     )
     CurveUnit: Optional[
-        constr(regex='^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(None, description='Unit of Measure for the Log Curve')
     Mnemonic: Optional[str] = Field(
         None,
         description='The Mnemonic of the Log Curve is the value as received either from Raw Providers or from Internal Processing team',
     )
     LogCurveTypeID: Optional[
-        constr(regex='^[\w\-\.]+:reference-data\-\-LogCurveType:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-LogCurveType:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='The related record id of the Log Curve Type - which is the standard mnemonic chosen by the company - OSDU provides an initial list',
     )
     LogCurveBusinessValueID: Optional[
         constr(
-            regex='^[\w\-\.]+:reference-data\-\-LogCurveBusinessValue:[\w\-\.\:\%]+:[0-9]*$'
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveBusinessValue:[\w\-\.\:\%]+:[0-9]*$'
         )
     ] = Field(
         None, description='The related record id of the Log Curve Business Value Type.'
     )
     LogCurveMainFamilyID: Optional[
         constr(
-            regex='^[\w\-\.]+:reference-data\-\-LogCurveMainFamily:[\w\-\.\:\%]+:[0-9]*$'
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveMainFamily:[\w\-\.\:\%]+:[0-9]*$'
         )
     ] = Field(
         None,
@@ -1232,7 +1201,7 @@ class Curve110(DDMSBaseModel):
     )
     LogCurveFamilyID: Optional[
         constr(
-            regex='^[\w\-\.]+:reference-data\-\-LogCurveFamily:[\w\-\.\:\%]+:[0-9]*$'
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveFamily:[\w\-\.\:\%]+:[0-9]*$'
         )
     ] = Field(
         None,
@@ -1649,7 +1618,7 @@ class WellLogData110(
         None, description='Type of mud at time of logging (oil, water based,...)'
     )
     HoleTypeLogging: Optional[
-        constr(regex='^OPENHOLE|CASEDHOLE|CEMENTEDHOLE$')
+        constr(regex=r'^OPENHOLE|CASEDHOLE|CEMENTEDHOLE$')
     ] = Field(
         None,
         description='Description of the hole related type of logging - POSSIBLE VALUE : OpenHole / CasedHole / CementedHole',
@@ -2396,13 +2365,13 @@ class Marker110(DDMSBaseModel):
         description='The name of the Marker interpreter (could be a person or vendor).',
     )
     MarkerTypeID: Optional[
-        constr(regex='^[\w\-\.]+:reference-data\-\-MarkerType:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-MarkerType:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='Marker Type Reference Type. Possible values - Biostratigraphy, Lithostratigraphy, seismic, depth of well, sequence, flow unit',
     )
     FeatureTypeID: Optional[
-        constr(regex='^[\w\-\.]+:reference-data\-\-FeatureType:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-FeatureType:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='Feature Type Reference Type. Possible values - Base, top, fault, salt, reef, sea floor',
