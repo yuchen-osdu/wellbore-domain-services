@@ -1097,6 +1097,8 @@ def test_get_bulk_data_with_filters(setup_client, entity_type, params, expected,
 
     response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
                params={'filter': params})
+
+    assert response_get_data.status_code == 200
     df = _create_df_from_response(response_get_data)
     assert_frame_equal(df, expected(dataframe_for_filters))
 
@@ -1120,6 +1122,8 @@ def test_get_bulk_data_with_filters_curves_offset(setup_client, entity_type, fil
     for i in range(0, math.ceil(20/limit)):
         response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
                    params={'filter': filter, 'curves': curve, 'offset': i*limit, 'limit': limit})
+
+        assert response_get_data.status_code == 200
         df = _create_df_from_response(response_get_data)
         df_expected = expected(dataframe_for_filters).iloc[i*limit:(i+1)*limit][['A', 'B']]
         assert_frame_equal(df, df_expected)
@@ -1144,6 +1148,8 @@ def test_get_bulk_data_with_filters_curves_offset_describe(setup_client, entity_
     for i in range(0, math.ceil(20/limit)):
         response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
                    params={'filter': filter, 'curves': curves, 'offset': i*limit, 'limit': limit, 'describe': True})
+
+        assert response_get_data.status_code == 200
         assert response_get_data.json()['numberOfRows'] == expected[i]
         assert response_get_data.json()['columns'] == curves[0].split(',')
 
