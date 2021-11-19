@@ -53,7 +53,7 @@ tests_parameters = [
     ('/ddms/v2/wells', well(id='123456', data={})),
     ('/ddms/v3/wellbores',         Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
-            kind="namespace:osdu:Wellbore:2.7.112",
+            kind="namespace:osdu:master-data--Wellbore:2.7.112",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             legal={
                 "legaltags": ["string"],
@@ -63,7 +63,7 @@ tests_parameters = [
         )),
     ('/ddms/v3/wells', Well(
         id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="namespace:osdu:Well:2.7.112",
+        kind="namespace:osdu:master-data--Well:2.7.112",
         acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
         legal={
             "legaltags": ["string"],
@@ -73,7 +73,7 @@ tests_parameters = [
     )),
     ('/ddms/v3/welllogs', WellLog(
         id=r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="namespace:osdu:WellLog:2.7.112",
+        kind="namespace:osdu:work-product-component--WellLog:2.7.112",
         acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
         legal={
             "legaltags": ["string"],
@@ -83,7 +83,7 @@ tests_parameters = [
     )),
     ('/ddms/v3/wellboremarkersets', WellboreMarkerSet(
         id=r"namespace:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="namespace:osdu:WellboreMarkerSet:1.0.0",
+        kind="namespace:osdu:work-product-component--WellboreMarkerSet:1.0.0",
         acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
         legal={
             "legaltags": ["string"],
@@ -95,7 +95,7 @@ tests_parameters = [
     )),
     ('/ddms/v3/wellboretrajectories', WellboreTrajectory(
         id=r"namespace:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="namespace:osdu:WellboreTrajectory:2.7.112",
+        kind="namespace:osdu:work-product-component--WellboreTrajectory:2.7.112",
         acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
         legal={
             "legaltags": ["string"],

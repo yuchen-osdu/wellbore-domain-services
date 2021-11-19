@@ -15,12 +15,15 @@
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
+from osdu.core.api.storage.exceptions import ResourceNotFoundException
+
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
 
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
@@ -28,8 +31,12 @@ from app.routers.common_parameters import (
     REQUIRED_ROLES_READ,
     REQUIRED_ROLES_WRITE,
     json_orient_parameter)
-from app.routers.sessions import (SessionInternal, UpdateSessionState, UpdateSessionStateValue,
-                                  WithSessionStorages, get_session_dependencies)
+from app.routers.sessions import (
+    SessionInternal,
+    UpdateSessionState,
+    UpdateSessionStateValue,
+    WithSessionStorages,
+    get_session_dependencies)
 from app.routers.record_utils import fetch_record
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import (
@@ -88,7 +95,7 @@ async def post_data(record_id: str,
         fetch_record(ctx, record_id),
         save_blob()
     )
-    
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record, bulk_uri_access=bulk_uri_access)
 
 
@@ -112,6 +119,9 @@ async def post_chunk_data(record_id: str,
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           df_validation_func=Depends(get_df_validation_func),
                           ):
+    if hasattr(request.state, 'version') and request.state.version != "V2":
+        record = await fetch_record(with_session.ctx, record_id)
+        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
         raise HTTPException(
@@ -153,6 +163,7 @@ async def get_data_version(
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
     record = await fetch_record(ctx, record_id, version)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
         bulk_uri = bulk_uri_access.get_bulk_uri(record=record)  # TODO PATH logv2
     except ValueError:
@@ -232,6 +243,9 @@ async def get_data(
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
+    if hasattr(request.state, 'version') and request.state.version != "V2":
+        record = await fetch_record(ctx, record_id)
+        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, bulk_uri_access)
 
 
@@ -243,6 +257,7 @@ async def get_data(
 async def complete_session(
     record_id: str,
     session_id: str,
+    request: Request,
     update_request: UpdateSessionState,
     with_session: WithSessionStorages = Depends(get_session_dependencies),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
@@ -261,6 +276,7 @@ async def complete_session(
                 _internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
 
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
+                DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
                 previous_bulk_id = None
 
                 if i_session.session.mode == SessionUpdateMode.Update:

@@ -20,7 +20,7 @@ bulk_routes_path = [(route.path, route.methods) for route in router.routes]
 @pytest.fixture()
 def dependencies_check_app(dasked_test_app):
     from app.routers.bulk.utils import set_v3_input_dataframe_check, set_legacy_input_dataframe_check
-
+    from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
     async def expected_legacy_check_func():
         raise ArithmeticError("I'm raising for legacy injection")
 
