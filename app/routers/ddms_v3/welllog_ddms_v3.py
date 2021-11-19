@@ -27,13 +27,11 @@ from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import WellLog110 as WellLog
 
 from app.utils import Context, get_ctx, load_schema_example
-from .ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLLOG_VERSION_REGEX
-from ..bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
-from ..bulk.utils import with_dask_blob_storage
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLLOG_VERSION_REGEX
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
 
-from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from ..delete.delete_bulk_data import delete_record
-from ...bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from app.routers.delete.delete_bulk_data import delete_record
 
 router = APIRouter()
 
@@ -81,15 +79,13 @@ async def get_welllog_osdu(
 async def del_osdu_welllog(welllogid: str,
                            purge: bool = False,
                            ctx: Context = Depends(get_ctx),
-                           bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage)):
+                           bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
     welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
                                                                   welllogid)
     await delete_record(record_id=welllogid,
                         purge=purge,
                         ctx=ctx,
-                        bulk_uri_access=bulk_uri_access,
-                        dask_blob_storage=dask_blob_storage)
+                        bulk_uri_access=bulk_uri_access)
 
 
 @router.get(
