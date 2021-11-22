@@ -363,7 +363,7 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
                           'wdms': {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}},
             )
             with mock.patch.object(StorageRecordServiceClientMock, "get_record",  mock.AsyncMock(return_value=moc_record)), \
-                 mock.patch("app.bulk_persistence.dask.dask_bulk_storage.DaskBulkStorage.save_blob",  mock.AsyncMock(return_value=0)):
+                 mock.patch("app.bulk_persistence.dask.dask_bulk_storage.DaskBulkStorage.save_bulk",  mock.AsyncMock(return_value=0)):
                 data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
                 headers = {'content-type': 'application/json'}
 

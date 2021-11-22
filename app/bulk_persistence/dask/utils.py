@@ -14,11 +14,11 @@
 
 from itertools import zip_longest
 from logging import INFO
-from typing import List
-
-import pyarrow.parquet as pa
+from typing import List, Optional
 
 import dask.dataframe as dd
+import pandas as pd
+import pyarrow.parquet as pa
 
 from app.helper.logger import get_logger
 from app.utils import capture_timings
@@ -64,7 +64,7 @@ def join_dataframes(dfs: List[dd.DataFrame]):
 
 
 @capture_timings("do_merge", handlers=worker_capture_timing_handlers)
-def do_merge(df1: dd.DataFrame, df2: dd.DataFrame):
+def do_merge(df1: dd.DataFrame, df2: Optional[dd.DataFrame]):
     """Combine the 2 dask dataframe. Updates df1 with df2 values if overlap."""
     if df2 is None:
         return df1
@@ -75,7 +75,6 @@ def do_merge(df1: dd.DataFrame, df2: dd.DataFrame):
         return df2.combine_first(df1)
     return df1.join(df2, how='outer')  # join seems faster when there no columns in common
 
-
 @capture_timings("get_num_rows", handlers=worker_capture_timing_handlers)
 def get_num_rows(dataset: pa.ParquetDataset) -> int:
     """Returns the number of rows from a pyarrow ParquetDataset"""
@@ -83,3 +82,10 @@ def get_num_rows(dataset: pa.ParquetDataset) -> int:
     if metadata and metadata.num_rows > 0:
         return metadata.num_rows
     return sum((piece.get_metadata().num_rows for piece in dataset.pieces))
+
+
+@capture_timings("merge_pandas_index", handlers=worker_capture_timing_handlers)
+def merge_pandas_index(idx1: pd.Index, idx2: Optional[pd.Index]):
+    return idx1.union(idx2) if idx2 is not None else idx1
+
+

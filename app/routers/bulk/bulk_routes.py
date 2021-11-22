@@ -84,7 +84,7 @@ async def post_data(record_id: str,
             assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
         except BulkError as ex:
             ex.raise_as_http()
-        return await dask_blob_storage.save_blob(df, record_id)
+        return await dask_blob_storage.save_bulk(df, record_id)
 
     record, bulk_id = await asyncio.gather(
         fetch_record(ctx, record_id),
@@ -276,7 +276,7 @@ async def complete_session(
                         try:
                             df = await get_dataframe(ctx, previous_bulk_uri.bulk_id)
                             # convert old bulk to new one
-                            previous_bulk_id = await dask_blob_storage.save_blob(df, record_id=record_id)
+                            previous_bulk_id = await dask_blob_storage.save_bulk(df, record_id=record_id)
                         except ResourceNotFoundException:
                             BulkNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
                     else:

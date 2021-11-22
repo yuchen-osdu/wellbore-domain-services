@@ -14,7 +14,7 @@
 
 import json
 import os
-from typing import List, Optional
+from typing import Callable, List, Optional, Tuple
 
 import fsspec
 import pandas as pd
@@ -34,7 +34,7 @@ from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import wrap_trace_process
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
-                    get_num_rows, set_index, share_items)
+                    get_num_rows, set_index, merge_pandas_index)
 from ..dataframe_validators import (assert_df_validate, validate_index,
                                     columns_not_in_reserved_names, is_reserved_column_name)
 from . import storage_path_builder as pathBuilder
@@ -47,8 +47,12 @@ def pandas_to_parquet(pdf, path, storage_options):
     return pdf.to_parquet(path, index=True, engine='pyarrow', storage_options=storage_options)
 
 
-def read_with_pandas(path, storage_options):
-    return pd.read_parquet(path, engine='pyarrow', storage_options=storage_options)
+def read_with_pandas(path, **kwargs):
+    return pd.read_parquet(path, engine='pyarrow', **kwargs)
+
+
+def read_parquet_index(path, **kwargs) -> pd.Index:
+    return read_with_pandas(path, **kwargs).index
 
 
 def dask_to_parquet(ddf, path, storage_options):
@@ -124,7 +128,7 @@ class DaskBulkStorage:
                                        aggregate_files=True,
                                        **kwargs)
 
-    def _load_bulk_from_catalog(self, catalog: BulkCatalog, record_id: str, columns: List[str] = None):
+    def _load_bulk_from_catalog(self, catalog: BulkCatalog, record_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Load data from information contained in the catalog
             - if the user request columns that does not exists, we ignore them
             - if columns is None, we load all columns
@@ -142,7 +146,7 @@ class DaskBulkStorage:
         dfs = self._map_with_trace(set_index, dfs)
         return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer') # or concat or join?
 
-    def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None):
+    def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Load columns from parquet files in the bulk_path.
         Returns: Future<dd.DataFrame>
         """
@@ -155,9 +159,8 @@ class DaskBulkStorage:
 
     @with_trace('read_stat')
     async def read_stat(self, record_id: str, bulk_id: str):
-        """Return some meta data about the bulk."""
-        file_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
-        catalog = await self.build_catalog(file_path, record_id)
+        """Returns some meta data about the bulk."""
+        catalog = await self.get_record_bulk_catalog(record_id, bulk_id)
 
         schema_dict = {vn: item.dtype for vn, item in catalog.columns.items()}
         return {
@@ -184,7 +187,7 @@ class DaskBulkStorage:
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
     @with_trace('load_bulk')
     async def load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
-        """Return a dask Dataframe of a record at the specified version."""
+        """Returns a dask Dataframe of a record at the specified version."""
         try:
             return await self._load_bulk(record_id, bulk_id, columns=columns)
         except OSError as exp:
@@ -193,7 +196,7 @@ class DaskBulkStorage:
     def _save_with_dask(self, path, dataframe):
         """Save the dataframe to a parquet file(s).
         ddf: dd.DataFrame or Future<dd.DataFrame>
-        returns a Future<None>
+        Returns a Future<None>
         """
         return self._submit_with_trace(dask_to_parquet, dataframe, path,
                                        storage_options=self._parameters.storage_options)
@@ -201,16 +204,16 @@ class DaskBulkStorage:
     async def _save_with_pandas(self, path, dataframe: dd.DataFrame):
         """Save the dataframe to a parquet file(s).
         pdf: pd.DataFrame or Future<pd.DataFrame>
-        returns a Future<None>
+        Returns a Future<None>
         """
         dataframe_scatter = await self.client.scatter(dataframe)
         return await self._submit_with_trace(pandas_to_parquet, dataframe_scatter, path,
                                              self._parameters.storage_options)
 
     @internal_bulk_exceptions
-    @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
-    @with_trace('save_blob')
-    async def save_blob(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
+    @capture_timings('save_bulk', handlers=worker_capture_timing_handlers)
+    @with_trace('save_bulk')
+    async def save_bulk(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
         bulk_id = bulk_id or new_bulk_id()
 
@@ -246,15 +249,18 @@ class DaskBulkStorage:
         session_path = pathBuilder.add_protocol(session_path, self.protocol)
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
-    @capture_timings('build_catalog')
-    async def build_catalog(self, path: str, record_id) -> BulkCatalog:
-        # TODO add record_id/bulk_id ? into the catalog
-        path, _ = pathBuilder.remove_protocol(path)
-        catalog = load_bulk_catalog(self._fs, path) # TODO async ?
+    async def get_record_bulk_catalog(self, record_id:str, bulk_id:str) -> BulkCatalog:
+        bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
+        catalog = load_bulk_catalog(self._fs, bulk_path) # TODO async ?
         if catalog:
             return catalog
-
         # For legacy bulk, construct a catalog on the fly : TODO should we persist it ?
+        return await self._build_catalog_from_path(bulk_path, record_id)
+
+    @capture_timings('_build_catalog_from_path')
+    async def _build_catalog_from_path(self, path: str, record_id: str) -> BulkCatalog:
+        # TODO add record_id/bulk_id ? into the catalog
+        path, _ = pathBuilder.remove_protocol(path)
         files = self._fs.ls(path)
         is_dask_folder = any((f.endswith('_common_metadata') for f in files))
         parquet_files = (f for f in files if f.endswith('.parquet'))
@@ -267,7 +273,7 @@ class DaskBulkStorage:
         relative_paths = (os.path.relpath(f, root_dir) for f in files)
 
         schemas = (d.read_pandas().schema for d in datasets)
-        
+
         catalog = BulkCatalog()
         catalog.nb_rows = max(get_num_rows(d) for d in datasets)  # TODO check: we may have to call load index ?
 
@@ -285,9 +291,7 @@ class DaskBulkStorage:
 
     async def load_index(self, record_id: str, bulk_id: str) -> pd.Index:
         """load the dataframe index of the specified record"""
-        bulk_path = pathBuilder.record_bulk_path(
-            self.base_directory, record_id, bulk_id, self.protocol)
-        catalog = await self.build_catalog(bulk_path, record_id)
+        catalog = await self.get_record_bulk_catalog(record_id, bulk_id)
         if catalog.index_path:
             root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
             future_df = self._read_parquet(f'{root_dir}/{catalog.index_path}')
@@ -296,59 +300,47 @@ class DaskBulkStorage:
             future_df = self._load_bulk(record_id, bulk_id, [first_column])
         return await self._submit_with_trace(lambda df: df.index.compute(), future_df)
 
-    async def _compute_index_of_session(self, session: Session, from_bulk_id: str) -> pd.Index:
-        """Combine all session indexes + previous version index"""
-        # list one file per different index.
+    async def _build_index_session(self, session: Session, from_bulk_id: str) -> pd.Index:
+        """Combine all chunks indexes + previous version index"""
         metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
-        indexes_paths = {m.index_hash: m.path for m in metas}.values()
-        if len(indexes_paths) == 0:
+        # list one file per different index_hash.
+        chunks_meta_with_different_indexes = {m.index_hash: m for m in metas}.values()
+        if len(chunks_meta_with_different_indexes) == 0:
             return None # there is no files in this session
-
-        def read_parquet_index(path, storage_options) -> pd.Index:
-            return read_with_pandas(path, storage_options=storage_options).index
         # read indexes
-        indexes = [self._submit_with_trace(
-            read_parquet_index, f'{self.protocol}://{file}', self._parameters.storage_options)
-            for file in indexes_paths]
+        indexes = [self._submit_with_trace(read_parquet_index, f'{self.protocol}://{m.path}',
+                                           storage_options=self._parameters.storage_options,
+                                           columns=[m.columns[0]])
+                   for m in chunks_meta_with_different_indexes]
         if from_bulk_id:
             indexes.append(await self.load_index(session.recordId, from_bulk_id))
 
-        def merge_index(idx1: pd.Index, idx2: Optional[pd.Index]):
-            return idx1.union(idx2) if idx2 is not None else idx1
-
         while len(indexes) > 1:
-            indexes = [self._submit_with_trace(merge_index, x,y)
+            indexes = [self._submit_with_trace(merge_pandas_index, x,y)
                        for x, y in by_pairs(indexes)]
         return await indexes[0]
 
     @capture_timings('_build_catalog_from_session')
-    async def _build_catalog_from_session(self, session: Session, bulk_id: str, from_bulk_id: str = None) -> Optional[BulkCatalog]:
+    async def _build_catalog_from_session(self, session: Session, bulk_id: str, from_bulk_id: str = None) -> BulkCatalog:
         """ build the catalog from the session."""
         root_dir = pathBuilder.record_path(self.base_directory, session.recordId, self.protocol)
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
-        index = await self._compute_index_of_session(session, from_bulk_id)
+        index = await self._build_index_session(session, from_bulk_id)
         if index is None:
             raise BulkNotProcessable("No data to commit")
-
-        async def save_index(folder, index:pd.Index):
-            index_folder = os.path.join(folder, '__index__')
-            index_folder_wo_protocol, _ = pathBuilder.remove_protocol(index_folder)
-            self._fs.mkdirs(index_folder_wo_protocol) # for local storage
-            index_path = os.path.join(index_folder, 'index.parquet')
-            await self._save_with_pandas(index_path, pd.DataFrame(index=index))
-            return index_path
-
-        index_path = await save_index(commit_path, index)
+        # save_index
+        index_folder = os.path.join(commit_path, '__index__')
+        self._fs.mkdirs(pathBuilder.remove_protocol(index_folder)[0]) # for local storage
+        index_path = os.path.join(index_folder, 'index.parquet')
+        await self._save_with_pandas(index_path, pd.DataFrame(index=index))
 
         catalog = BulkCatalog()
         catalog.index_path = os.path.relpath(index_path, root_dir)
         catalog.nb_rows = len(index)
 
         if from_bulk_id:
-            prev_version_path = pathBuilder.record_bulk_path(
-                self.base_directory, session.recordId, from_bulk_id, self.protocol)
-            catalog = await self.build_catalog(prev_version_path, session.recordId)
+            catalog = await self.get_record_bulk_catalog(session.recordId, from_bulk_id)
 
         merge_file_counter = 0
         for files in session_meta.get_next_chunk_files(self._fs, self.base_directory, session):
@@ -357,19 +349,19 @@ class DaskBulkStorage:
             rel_files = [os.path.relpath(file, root_dir) for file in files]
             new_entries = {col_name: BulkCatalog.ColumnInfo(paths=rel_files, dtype=dtype)
                            for col_name, dtype in zip(meta.columns, meta.dtypes)}
-            # if column exists in the catalog, merge is needed
-            if share_items(catalog.columns, new_entries):
-                common = catalog.columns.keys() & new_entries
-                df1 = self._load_bulk_from_catalog(catalog, session.recordId, columns=common)
-                df2 = self._read_parquet(files, columns=common)
+            # if some columns exist in the catalog, merge is needed
+            cols_in_catalog = catalog.columns.keys() & new_entries
+            if len(cols_in_catalog) > 0:
+                df1 = self._load_bulk_from_catalog(catalog, session.recordId, columns=cols_in_catalog)
+                df2 = self._read_parquet(files, columns=cols_in_catalog)
                 merged_df = self._submit_with_trace(do_merge, df1, df2)
-                merged_df_path = os.path.join(commit_path, f'part_{merge_file_counter}.parquet')
+                merged_df_path = pathBuilder.join(commit_path, f'part_{merge_file_counter}.parquet')
                 merge_file_counter += 1
-                # pb here, wait -> cannot resolve conflict in parallele!
-                await self._save_with_dask(merged_df_path, merged_df)
+                await self._save_with_dask(merged_df_path, merged_df) # pb here, wait -> cannot resolve conflict in parallele!
+
                 # update new catalog entries with the new path
                 rel_files = [os.path.relpath(merged_df_path, root_dir)]
-                for colname in common:
+                for colname in cols_in_catalog:
                     new_entries[colname].paths = rel_files
 
             catalog.columns.update(new_entries)
@@ -380,11 +372,16 @@ class DaskBulkStorage:
     @with_trace('session_commit')
     @internal_bulk_exceptions
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
-        """
-        Commit a session
-        session: the session to commit
-        from_bulk_id: id of the bulk to add to seesion. Used when updating a record.
-        """
+        """Commit the session
+        Args:
+            session (Session): The session To commit
+            from_bulk_id (str, optional): Bulk id of a previous record version.
+                                          Used On session mode update. Defaults to None.
+        Raises:
+            BulkNotProcessable: If session is empty
+        Returns:
+            str: identifier of the new bulk
+        """        
         bulk_id = new_bulk_id()
         commit_path = pathBuilder.record_bulk_path(
             self.base_directory, session.recordId, bulk_id, self.protocol)
