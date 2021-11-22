@@ -20,7 +20,6 @@ from fastapi import (
     status,
     HTTPException)
 
-
 from odes_storage.models import (CreateUpdateRecordsResponse, List,
                                  RecordVersions)
 
@@ -32,6 +31,8 @@ from app.utils import Context, get_ctx, load_schema_example
 from .ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLLOG_VERSION_REGEX
 
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+
+from app.consistency import welllog_consistency_check, UniqueCurveIdException, ReferenceCurveNotFoundException
 
 router = APIRouter()
 
@@ -129,27 +130,6 @@ async def get_osdu_welllog_version(
     return from_record(WellLog, welllog_record)
 
 
-def consistency_check(wl: WellLog):
-    if not wl.data:
-        return
-
-    curve_ids = set()
-
-    # check all curve ids are unique
-    if wl.data.Curves and any(curve.CurveID in curve_ids or curve_ids.add(curve.CurveID) for curve in wl.data.Curves):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Two curves can't have same CurveID"
-        )
-
-    # check the referenceCurveID in curves
-    if wl.data.ReferenceCurveID and wl.data.ReferenceCurveID not in curve_ids:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"ReferenceCurveID {wl.data.ReferenceCurveID} not found in wellLog Curves"
-        )
-
-
 @router.post(
     WELL_LOGS_API_BASE_PATH,
     response_model=CreateUpdateRecordsResponse,
@@ -167,7 +147,19 @@ async def post_welllog_osdu(
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
 
-    [consistency_check(w) for w in welllogs]
+    try:
+        for w in welllogs:
+            welllog_consistency_check(w)
+    except UniqueCurveIdException:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Two curves can't have same CurveID"
+        )
+    except ReferenceCurveNotFoundException:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"ReferenceCurveID {w.data.ReferenceCurveID} not found in wellLog Curves"
+        )
 
     storage_client = await get_storage_record_service(ctx)
 
