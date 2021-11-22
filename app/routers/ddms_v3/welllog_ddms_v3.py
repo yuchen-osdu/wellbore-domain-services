@@ -159,12 +159,12 @@ async def post_welllog_osdu(
         except DuplicatedCurveIdException:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"All CurveID in WellLog[{idx}] are not unique"
+                detail=f"All CurveID in WellLog[{idx}] should be unique"
             )
         except ReferenceCurveIdNotFoundException:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"WellLog[{idx}] doesn't have a curve with a curveID value equal to the ReferenceCurveID value: '{w.data.ReferenceCurveID}'"
+                detail=f"WellLog[{idx}] should have a curve with a curveID value equal to the ReferenceCurveID value: '{w.data.ReferenceCurveID}'"
             )
 
     storage_client = await get_storage_record_service(ctx)

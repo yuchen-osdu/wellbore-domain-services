@@ -12,14 +12,19 @@ class ReferenceCurveIdNotFoundException(RuntimeError):
 
 
 def welllog_consistency_check(wl: WellLog):
-    """Check if Is wellLog  consistent.
+    """Check if wellLog is consistent.
 
     Each curves in data.Curves must have a unique CurveID.
     Welllog must have a curve whose curveID value is equal to the  wellLog's ReferenceCurveID value
 
-    raise DuplicatedCurveIdException when CurveID are not unique
-    raise ReferenceCurveIdNotFoundException in case there is no curve id  egale to ReferenceCurveID
-    raise:
+    Args:
+        wl (Welllog): wellLog object to be verified
+
+    Returns:
+
+    Raises:
+        DuplicatedCurveIdException: All CurveIDs are not unique.
+        ReferenceCurveIdNotFoundException: No curve whose curveID value are equal to ReferenceCurveID value.
     """
     if not wl.data:
         return
