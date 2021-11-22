@@ -55,6 +55,13 @@ class BulkNotProcessable(BulkError):
         super().__init__(ex_message)
 
 
+class FilterError(BulkError):
+    http_status = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, reason):
+        self.message = f'filter error: {reason}'
+
+
 def internal_bulk_exceptions(target):
     """
     Decoration to handler exceptions that should be not exposed to outside world. e.g. Pyarrow or Dask exceptions
