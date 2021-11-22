@@ -1,1 +1,1 @@
-from .welllog_consistency import welllog_consistency_check, UniqueCurveIdException, ReferenceCurveNotFoundException
+from .welllog_consistency import welllog_consistency_check, DuplicatedCurveIdException, ReferenceCurveIdNotFoundException

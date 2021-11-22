@@ -1,7 +1,7 @@
 import pytest
 from app.model.osdu_model import WellLog110, AbstractLegalTags100, AbstractAccessControlList100, WellLogData110, \
     Curve110
-from app.consistency import welllog_consistency_check, UniqueCurveIdException, ReferenceCurveNotFoundException
+from app.consistency import welllog_consistency_check, DuplicatedCurveIdException, ReferenceCurveIdNotFoundException
 
 KIND = "osdu:wks:work-product-component--WellLog:1.0.0"
 LEGAL = AbstractLegalTags100(legaltags=["legal_tag"], otherRelevantDataCountries=["FR"], status="compliant")
@@ -51,7 +51,7 @@ def test_consistency_check(data):
     )
 ])
 def test_consistency_inconsistent_curves_welllog(data):
-    with pytest.raises(UniqueCurveIdException) as excinfo:
+    with pytest.raises(DuplicatedCurveIdException) as excinfo:
         welllog_consistency_check(
             WellLog110(kind=KIND, legal=LEGAL, acl=ACL, data=data
                        )
@@ -78,7 +78,7 @@ def test_consistency_inconsistent_curves_welllog(data):
     )
 ])
 def test_consistency_inconsistent_reference_id_welllog(data):
-    with pytest.raises(ReferenceCurveNotFoundException) as excinfo:
+    with pytest.raises(ReferenceCurveIdNotFoundException) as excinfo:
         welllog_consistency_check(
             WellLog110(kind=KIND, legal=LEGAL, acl=ACL, data=data
                        )

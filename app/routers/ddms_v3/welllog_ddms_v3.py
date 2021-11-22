@@ -34,7 +34,7 @@ from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLLOG_VER
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.record_utils import fetch_record
 
-from app.consistency import welllog_consistency_check, UniqueCurveIdException, ReferenceCurveNotFoundException
+from app.consistency import welllog_consistency_check, DuplicatedCurveIdException, ReferenceCurveIdNotFoundException
 
 router = APIRouter()
 
@@ -153,19 +153,19 @@ async def post_welllog_osdu(
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
 
-    try:
-        for w in welllogs:
+    for idx, w in enumerate(welllogs):
+        try:
             welllog_consistency_check(w)
-    except UniqueCurveIdException:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Two curves can't have same CurveID"
-        )
-    except ReferenceCurveNotFoundException:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"ReferenceCurveID {w.data.ReferenceCurveID} not found in wellLog Curves"
-        )
+        except DuplicatedCurveIdException:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"All CurveID in WellLog[{idx}] are not unique"
+            )
+        except ReferenceCurveIdNotFoundException:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"WellLog[{idx}] doesn't have a curve with a curveID value equal to the ReferenceCurveID value: '{w.data.ReferenceCurveID}'"
+            )
 
     storage_client = await get_storage_record_service(ctx)
 

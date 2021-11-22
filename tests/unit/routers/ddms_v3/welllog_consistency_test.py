@@ -55,31 +55,27 @@ wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
 
 
 @pytest.mark.parametrize("data", [
-    {
-        "ReferenceCurveID": "MD",
-        "Curves": [
-            {"CurveID": "GR"},
-            {"CurveID": "MD"}
-        ]
-    },
-    {
-        "Curves": [
-            {"CurveID": "MD"},
-            {"CurveID": "GR"}
-        ]
-    },
-    {
-        "Curves": [
-        ]
-    },
-    {
-        "TopMeasuredDepth":"1000"
-    }
+    [
+        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "GR"}, {"CurveID": "MD"}]},
+        {"ReferenceCurveID": "TVD", "Curves": [{"CurveID": "TVD"}, {"CurveID": "INCL"}]},
+    ],
+    [
+        {"Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+        {"Curves": [{"CurveID": "A"}, {"CurveID": "B"}]}
+    ],
+    [
+        {"Curves": []}
+    ],
+    [
+        {"TopMeasuredDepth": "1000"},
+        {"Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+        {"Curves": []}
+    ]
 ])
 def test_post_consistent_welllog(client, data):
 
     response = client.post(
-        "/ddms/v3/welllogs",
+        url="/ddms/v3/welllogs",
         data=json.dumps(
             [{
                 "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
@@ -91,53 +87,59 @@ def test_post_consistent_welllog(client, data):
                     "owners": ["foo@bar.com"],
                     "viewers": ["foo@bar.com"]
                 },
-                "data": data
-            }]
+                "data": d
+            } for d in data]
         ),
         headers={'content-type': 'application/json'})
 
     assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.parametrize("data, expected", [
+@pytest.mark.parametrize("well_log_data, expected", [
     (
-        {
-            "ReferenceCurveID": "MD",
-            "Curves": [
-                {"CurveID": "MD"},
-                {"CurveID": "ZONE_NAME"},
-                {"CurveID": "ZONE_NAME"}
-            ]
-        },
-        (status.HTTP_400_BAD_REQUEST, "Two curves can\'t have same CurveID")
+        [
+            {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+            {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "A"}, {"CurveID": "A"}]}
+        ],
+        (
+            status.HTTP_400_BAD_REQUEST,
+            "All CurveID in WellLog[1] are not unique"
+        )
     ),
     (
-        {
-            "ReferenceCurveID": "MD",
-            "Curves": [
-                {"CurveID": "A"},
-                {"CurveID": "B"}
-            ]
-        },
-        (status.HTTP_400_BAD_REQUEST, "ReferenceCurveID MD not found in wellLog Curves")
+        [
+            {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+            {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "A"}, {"CurveID": "B"}]}
+        ],
+        (
+            status.HTTP_400_BAD_REQUEST,
+            "WellLog[1] doesn't have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
+        )
     ),
     (
-        {
-            "ReferenceCurveID": "MD",
-            "Curves": []
-        },
-        (status.HTTP_400_BAD_REQUEST, "ReferenceCurveID MD not found in wellLog Curves")
+        [
+            {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+            {"ReferenceCurveID": "MD","Curves": []}
+        ],
+        (
+            status.HTTP_400_BAD_REQUEST,
+            "WellLog[1] doesn't have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
+        )
     ),
     (
-        {
-            "ReferenceCurveID": "MD"
-        },
-        (status.HTTP_400_BAD_REQUEST, "ReferenceCurveID MD not found in wellLog Curves")
+        [
+            {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+            {"ReferenceCurveID": "MD"}
+        ],
+        (
+            status.HTTP_400_BAD_REQUEST,
+            "WellLog[1] doesn't have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
+        )
     )
 ])
-def test_post_inconsistent_welllog(client, data, expected):
+def test_post_inconsistent_welllog(client, well_log_data, expected):
     response = client.post(
-        "/ddms/v3/welllogs",
+        url="/ddms/v3/welllogs",
         data=json.dumps(
             [{
                 "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
@@ -150,7 +152,7 @@ def test_post_inconsistent_welllog(client, data, expected):
                     "viewers": ["foo@bar.com"]
                 },
                 "data": data
-            }]),
+            } for data in well_log_data]),
         headers={'content-type': 'application/json'})
 
     assert response.status_code == expected[0]
