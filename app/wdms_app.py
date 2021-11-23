@@ -198,6 +198,8 @@ ddms_v3_routes_groups = [
     (wellbore_trajectory_ddms_v3, "Trajectory v3", Entity.TRAJECTORY),
     (markerset_ddms_v3, "Marker", Entity.MARKER),
 ]
+
+
 for v3_api, tag, entity_type in ddms_v3_routes_groups:
     wdms_app.include_router(v3_api.router,
                             prefix=DDMS_V3_PATH,
