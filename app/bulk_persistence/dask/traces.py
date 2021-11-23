@@ -1,9 +1,14 @@
+from typing import Callable
+
+from dask.distributed import Client
+
 from opencensus.trace.span import SpanKind
 from opencensus.trace import tracer as open_tracer
 from opencensus.trace.samplers import AlwaysOnSampler
 
-from app.helper.traces import create_exporter
 from app.conf import Config
+from app.helper.traces import create_exporter
+from app.utils import get_ctx
 
 _EXPORTER = None
 
@@ -26,3 +31,17 @@ def wrap_trace_process(*args, **kwargs):
     with tracer.span(name=f"Dask Worker - {target_func.__name__}") as span:
         span.span_kind = SpanKind.CLIENT
         return target_func(*args, **kwargs)
+
+
+def submit_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
+    """Submit given target_func to Distributed Dask workers and add tracing required stuff"""
+    kwargs['span_context'] = get_ctx().tracer.span_context
+    kwargs['target_func'] = target_func
+    return dask_client.submit(wrap_trace_process, *args, **kwargs)
+
+
+def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
+    """Submit given target_func to Distributed Dask workers and add tracing required stuff"""
+    kwargs['span_context'] = get_ctx().tracer.span_context
+    kwargs['target_func'] = target_func
+    return dask_client.map(wrap_trace_process, *args, **kwargs)

@@ -16,8 +16,8 @@ This module groups function related to bulk catalog.
 A catalog contains metadata of the chunks
 """
 import json
-import os
 from dataclasses import dataclass, field
+from collections import namedtuple
 from typing import Dict, Iterable, List, Optional
 
 from app.utils import capture_timings
@@ -25,12 +25,23 @@ from app.utils import capture_timings
 from . import storage_path_builder as pathBuilder
 
 
-# TODO
-# is Catalog a good naming ?
-# choose a proper name for the catalog now it is "_meta.json"
 @dataclass
 class BulkCatalog:
-    "represent the bulk catalog"
+    """Represent a bulk catalog
+    Exemple:
+        {
+            'columns' : {
+                'A' : {
+                    'paths' : ['folder/file1.parquet', 'folder/file2.parquet']
+                    'dtype: 'Float32'
+                }
+                'B' : { ... }
+            },
+            nb_rows: 1000,
+            index_path: 'folder/wdms_index/index.parquet
+        }
+    """
+
     @dataclass
     class ColumnInfo:
         """store files where the column is present and the dtype"""
@@ -41,15 +52,40 @@ class BulkCatalog:
     nb_rows: int = 0
     index_path: Optional[str] = None
 
-    def get_paths_for_columns(self, columns: Iterable[str], root_path: str = '') -> List[Dict]:
-        """Returns the paths to load data of the requested columns grouped by paths"""
+    def add_column_info(self, col_name: str, column_info: ColumnInfo, check_dtype: bool = False):
+        """Add column information to the catalog.
+        If the column already exist in the catalog, merge information.
+        Args:
+            col_name (str): column name
+            column_info (ColumnInfo): column information to add in the catalog
+            check_dtype (bool, optional): check if dtype are equal before merging column info. Defaults to False.
+        Exemples:
+        >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file1'], 'int32'))
+        >>> cat.columns
+        {'A': BulkCatalog.ColumnInfo(paths=['file1'], dtype='int32')}
+        >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file2', 'file3'], 'int32'))
+        >>> cat.columns
+        {'A': BulkCatalog.ColumnInfo(paths=['file1', 'file2', 'file3'], dtype='int32')}
+        """
+        if col_name in self.columns:
+            if check_dtype:
+                assert self.columns[col_name].dtype == column_info.dtype # TODO proper exception
+            self.columns[col_name].paths.extend(column_info.paths) # TODO check if file already exists ?
+        else:
+            self.columns[col_name] = column_info
+
+    ColumnsPaths = namedtuple('ColumnsPaths', ['columns', 'paths'])
+
+    def get_paths_for_columns(self, columns: Iterable[str], root_path: str = '') -> List[ColumnsPaths]:
+        """Returns the paths to load data of the requested columns grouped by paths
+        Warning: it implies that paths are identicaly formated (a/b vs a\\b)
+        """
         groupped_files = {}
         for col_name in columns:
             files_list = self.columns[col_name].paths
-            groupped_files.setdefault(tuple(files_list), {
-                "paths": [os.path.join(root_path, f) for f in files_list],
-                "columns": []
-            })["columns"].append(col_name)
+            paths = [pathBuilder.join(root_path, f) for f in files_list]
+            default = self.ColumnsPaths(columns=[], paths=paths)
+            groupped_files.setdefault(tuple(files_list), default).columns.append(col_name)
         return groupped_files.values()
 
     @capture_timings('as_dict')
@@ -74,17 +110,20 @@ class BulkCatalog:
         return BulkCatalog(**catalog_as_dict)
 
 
-CATALOG_FILE_NAME = '_meta.json'
+CATALOG_FILE_NAME = 'bulk_catalog.json'
 
-
+@capture_timings('save_bulk_catalog')
 def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> str:
     """save a bulk catalog to a json file in the given folder path"""
     folder_path, _ = pathBuilder.remove_protocol(folder_path)
     meta_path = pathBuilder.join(folder_path, CATALOG_FILE_NAME)
     with filesystem.open(meta_path, 'w') as outfile:
-        json.dump(catalog.as_dict(), outfile)
+        data = json.dumps(catalog.as_dict())
+        outfile.write(data)
+        #json.dump(catalog.as_dict(), outfile) # writting with dump is slow ?
 
 
+@capture_timings('load_bulk_catalog')
 def load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
     """load a bulk catalog from a json file in the given folder path"""
     folder_path, _ = pathBuilder.remove_protocol(folder_path)

@@ -84,8 +84,7 @@ def get_num_rows(dataset: pa.ParquetDataset) -> int:
     return sum((piece.get_metadata().num_rows for piece in dataset.pieces))
 
 
-@capture_timings("merge_pandas_index", handlers=worker_capture_timing_handlers)
-def merge_pandas_index(idx1: pd.Index, idx2: Optional[pd.Index]):
+@capture_timings("index_union", handlers=worker_capture_timing_handlers)
+def index_union(idx1: pd.Index, idx2: Optional[pd.Index]):
+    """Union of two Index object (check pd.Index.union doc string for more details)"""
     return idx1.union(idx2) if idx2 is not None else idx1
-
-

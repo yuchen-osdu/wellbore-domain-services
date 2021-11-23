@@ -28,13 +28,13 @@ from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
-from app.utils import DaskClient, capture_timings, get_ctx
+from app.utils import DaskClient, capture_timings
 
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
-from .traces import wrap_trace_process
+from .traces import map_with_trace, submit_with_trace
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
-                    get_num_rows, set_index, merge_pandas_index)
+                    get_num_rows, set_index, index_union)
 from ..dataframe_validators import (assert_df_validate, validate_index,
                                     columns_not_in_reserved_names, is_reserved_column_name)
 from . import storage_path_builder as pathBuilder
@@ -109,6 +109,12 @@ class DaskBulkStorage:
     def base_directory(self) -> str:
         return self._parameters.base_directory
 
+    def _submit_with_trace(self, target_func: Callable, *args, **kwargs):
+        return submit_with_trace(self.client, target_func, *args, **kwargs)
+
+    def _map_with_trace(self, target_func: Callable, *args, **kwargs):
+        return map_with_trace(self.client, target_func, *args, **kwargs)
+
     def _read_parquet(self, path: Tuple[str, List[str]], **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
         Args:
@@ -139,12 +145,12 @@ class DaskBulkStorage:
         root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
         files_to_load = catalog.get_paths_for_columns(columns, root_dir)
         # read all chunk for requested columns
-        dfs = [self._read_parquet(path=f["paths"], columns=f["columns"]) for f in files_to_load]
+        dfs = [self._read_parquet(path=f.paths, columns=f.columns) for f in files_to_load]
         if len(dfs) == 1:
             return dfs[0]
         # if multiple dataframe, concat them together
         dfs = self._map_with_trace(set_index, dfs)
-        return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer') # or concat or join?
+        return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer') # concat or join?
 
     def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Load columns from parquet files in the bulk_path.
@@ -160,29 +166,13 @@ class DaskBulkStorage:
     @with_trace('read_stat')
     async def read_stat(self, record_id: str, bulk_id: str):
         """Returns some meta data about the bulk."""
-        catalog = await self.get_record_bulk_catalog(record_id, bulk_id)
+        catalog = await self.get_bulk_catalog(record_id, bulk_id)
 
         schema_dict = {vn: item.dtype for vn, item in catalog.columns.items()}
         return {
             "num_rows": catalog.nb_rows,
             "schema": schema_dict
         }
-
-    def _submit_with_trace(self, target_func, *args, **kwargs):
-        """
-             Submit given target_func to Distributed Dask workers and add tracing required stuff
-        """
-        kwargs['span_context'] = get_ctx().tracer.span_context
-        kwargs['target_func'] = target_func
-        return self.client.submit(wrap_trace_process, *args, **kwargs)
-
-    def _map_with_trace(self, target_func, *args, **kwargs):
-        """
-             Submit given target_func to Distributed Dask workers and add tracing required stuff
-        """
-        kwargs['span_context'] = get_ctx().tracer.span_context
-        kwargs['target_func'] = target_func
-        return self.client.map(wrap_trace_process, *args, **kwargs)
 
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
     @with_trace('load_bulk')
@@ -249,7 +239,8 @@ class DaskBulkStorage:
         session_path = pathBuilder.add_protocol(session_path, self.protocol)
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
-    async def get_record_bulk_catalog(self, record_id:str, bulk_id:str) -> BulkCatalog:
+    @capture_timings('get_bulk_catalog')
+    async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
         catalog = load_bulk_catalog(self._fs, bulk_path) # TODO async ?
         if catalog:
@@ -284,16 +275,14 @@ class DaskBulkStorage:
                        for name, dtype in zip(schema.names, schema.types)
                        if not is_reserved_column_name(name))
             for name, dtype in columns:
-                column_info = BulkCatalog.ColumnInfo(paths=[], dtype=dtype)
-                catalog.columns.setdefault(name, column_info).paths.append(file) # add function add_column in catalog class ?
-                # if dtype != catalog.columns[name].dtype:
-                #     raise # TODO check dtype
+                catalog.add_column_info(name, BulkCatalog.ColumnInfo(paths=[file], dtype=dtype))
 
         return catalog
 
+    @capture_timings('load_index')
     async def load_index(self, record_id: str, bulk_id: str) -> pd.Index:
         """load the dataframe index of the specified record"""
-        catalog = await self.get_record_bulk_catalog(record_id, bulk_id)
+        catalog = await self.get_bulk_catalog(record_id, bulk_id)
         if catalog.index_path:
             root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
             future_df = self._read_parquet(f'{root_dir}/{catalog.index_path}')
@@ -302,6 +291,7 @@ class DaskBulkStorage:
             future_df = self._load_bulk(record_id, bulk_id, [first_column])
         return await self._submit_with_trace(lambda df: df.index.compute(), future_df)
 
+    @capture_timings('_build_session_index')
     async def _build_session_index(self, session: Session, from_bulk_id: str) -> pd.Index:
         """Combine all chunks indexes + previous version index"""
         metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
@@ -319,12 +309,11 @@ class DaskBulkStorage:
             indexes.append(await self.load_index(session.recordId, from_bulk_id))
         # merge all indexes
         while len(indexes) > 1:
-            indexes = [self._submit_with_trace(merge_pandas_index, x,y)
-                       for x, y in by_pairs(indexes)]
+            indexes = [self._submit_with_trace(index_union, x, y) for x, y in by_pairs(indexes)]
         return await indexes[0]
 
-    @capture_timings('_build_catalog_from_session')
-    async def _build_catalog_from_session(
+    @capture_timings('_fill_catalog_columns_info')
+    async def _fill_catalog_columns_info(
         self, catalog: BulkCatalog, session: Session, bulk_id: str
     ) -> Optional[BulkCatalog]:
         """ build the catalog from the session."""
@@ -384,7 +373,7 @@ class DaskBulkStorage:
 
         if from_bulk_id:
             # update session: we start from the previous catalog
-            catalog = await self.get_record_bulk_catalog(session.recordId, from_bulk_id)
+            catalog = await self.get_bulk_catalog(session.recordId, from_bulk_id)
         else:
             catalog = BulkCatalog()
 
@@ -396,7 +385,7 @@ class DaskBulkStorage:
         index_path = await self._save_session_index(commit_path, index)
         catalog.index_path = os.path.relpath(index_path, root_dir)
 
-        await self._build_catalog_from_session(catalog, session, bulk_id)
+        await self._fill_catalog_columns_info(catalog, session, bulk_id)
         save_bulk_catalog(self._fs, commit_path, catalog)  # TODO async
         return bulk_id
 
