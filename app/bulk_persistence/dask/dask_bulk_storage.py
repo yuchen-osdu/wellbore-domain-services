@@ -165,7 +165,10 @@ class DaskBulkStorage:
 
     @with_trace('read_stat')
     async def read_stat(self, record_id: str, bulk_id: str):
-        """Returns some meta data about the bulk."""
+        """Returns some meta data about the bulk.
+        Raises:
+            BulkNotFound: If bulk folder doesn't exists
+        """
         catalog = await self.get_bulk_catalog(record_id, bulk_id)
 
         schema_dict = {vn: item.dtype for vn, item in catalog.columns.items()}

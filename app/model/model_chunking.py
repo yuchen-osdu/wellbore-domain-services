@@ -16,9 +16,12 @@ from typing import Optional, List
 
 from fastapi import Query
 
+from app.model.filter import get_parsed_filters
 
 class GetDataParams:
     ''' All parameters to query welllog data. '''
+
+    FilterOperators = {'lt', 'lte', 'gt', 'gte', 'eq', 'neq', 'in'}
 
     def __init__(
         self,
@@ -41,18 +44,44 @@ class GetDataParams:
             description='The "describe" query option allows clients to request a description of the matching result. '
             '(number of rows, columns name)',
             example='false'),
+        bulk_filter: Optional[List[str]] = Query(
+            default=None,
+            alias='filter',
+            description="""
+The "filter" query parameter allows clients to filter data following the pattern $column_name:$operator:$value
+<br/>supported operation : """ + ','.join(sorted(list(FilterOperators))) + """
+<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).
+""",
+            example='MD:lt:1000'
+
+    )
     ) -> None:
         self.offset = offset
         self.limit = limit
         self.curves = curves
         self.describe = describe
+        self.bulk_filter = bulk_filter
         # orient if json ?
 
     def get_curves_list(self) -> List[str]:
         """parse the curves query parameter and return the list of requested curves"""
         if self.curves:
-            # split and remove emty
+            # split and remove empty
             curves = list(filter(None, map(str.strip, self.curves.split(','))))
             # remove duplicates but maintain order
             return list(dict.fromkeys(curves))
         return []
+
+    def get_filters(self) -> dict:
+        """return the parsed filter query
+        { 
+            'col_name_1' : {
+                'lt': 10,
+                'gt': 50
+            },
+            'col_name_2': {...}
+        }
+        """
+        return get_parsed_filters(self.bulk_filter)
+
+
