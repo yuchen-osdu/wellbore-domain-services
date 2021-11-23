@@ -191,7 +191,7 @@ async def get_data_version(
 async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
     dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
     columns_to_load = None
-    stat = dask_blob_storage.read_stat(record_id, bulk_id)
+    stat = await dask_blob_storage.read_stat(record_id, bulk_id)
     existing_col = set(stat['schema'])
     if data_param.curves:
         columns_to_load = DataFrameRender.get_matching_column(
