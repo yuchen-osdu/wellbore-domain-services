@@ -14,6 +14,7 @@
 
 from fastapi import APIRouter, Depends, status, Response, Body, HTTPException
 import starlette.status
+from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
 from odes_storage.models import (
@@ -28,6 +29,7 @@ from app.utils import get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
+from app.routers.record_utils import fetch_record
 
 router = APIRouter()
 
@@ -54,8 +56,8 @@ async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
 async def get_wellbore_osdu(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
-    is_osdu_versionned, osdu_id, version = DMSV3RouterUtils.is_osdu_versionned_wellbore_id(wellboreid)
-    if is_osdu_versionned:
+    is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versioned_wellbore_id(wellboreid)
+    if is_osdu_versioned:
         return await get_osdu_wellbore(osdu_id, ctx)
     if DMSV3RouterUtils.is_osdu_wellbore_id(wellboreid):
         return await get_osdu_wellbore(wellboreid, ctx)
@@ -96,8 +98,10 @@ async def del_osdu_wellbore(wellboreid: str, ctx: Context = Depends(get_ctx)):
     },
 )
 async def get_osdu_wellbore_versions(
-    wellboreid: str, ctx: Context = Depends(get_ctx)
+    wellboreid: str, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
+    record = await fetch_record(ctx, wellboreid)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(
         id=wellboreid, data_partition_id=ctx.partition_id
@@ -116,12 +120,13 @@ async def get_osdu_wellbore_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_wellbore_version(
-    wellboreid: str, version: int, ctx: Context = Depends(get_ctx)
+    wellboreid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
     storage_client = await get_storage_record_service(ctx)
     wellbore_record = await storage_client.get_record_version(
         id=wellboreid, version=version, data_partition_id=ctx.partition_id
     )
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellbore_record, request.state)
     return from_record(Wellbore, wellbore_record)
 
 

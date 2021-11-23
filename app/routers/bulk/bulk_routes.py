@@ -19,9 +19,11 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkError, BulkNotFound
+from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
+
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
@@ -45,6 +47,10 @@ from app.routers.bulk.utils import (
     DataFrameRender)
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
 from app.helper.traces import with_trace
+
+from osdu.core.api.storage.exceptions import ResourceNotFoundException
+
+import pandas as pd
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -89,7 +95,7 @@ async def post_data(record_id: str,
         fetch_record(ctx, record_id),
         save_blob()
     )
-    
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record, bulk_uri_access=bulk_uri_access)
 
 
@@ -113,6 +119,9 @@ async def post_chunk_data(record_id: str,
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           df_validation_func=Depends(get_df_validation_func),
                           ):
+    if hasattr(request.state, 'version') and request.state.version != "V2":
+        record = await fetch_record(with_session.ctx, record_id)
+        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
         raise HTTPException(
@@ -151,16 +160,17 @@ async def get_data_version(
     data_param: GetDataParams = Depends(),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
-    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
     record = await fetch_record(ctx, record_id, version)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
         bulk_uri = bulk_uri_access.get_bulk_uri(record=record)  # TODO PATH logv2
     except ValueError:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI')
 
+    filters = None
     stat = None
     try:
         if not bulk_uri.is_valid():
@@ -170,21 +180,41 @@ async def get_data_version(
             df = await get_dataframe(ctx, bulk_id)
             auto_cast_columns_to_string(df)
         else:
-            columns = None
-            if data_param.curves:
-                stat = dask_blob_storage.read_stat(record_id, bulk_id)
-                existing_col = set(stat['schema'])
-                columns = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
-            elif data_param.describe:
-                stat = dask_blob_storage.read_stat(record_id, bulk_id)
+            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters)
 
-            # loading the dataframe with filter on columns is faster than filtering columns on df
-            df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns)
-
-        df = await DataFrameRender.process_params(df, data_param)
+        df = await DataFrameRender.process_params(df, data_param, filters=filters)
         return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
+
+
+async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
+    dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+    columns_to_load = None
+    stat = dask_blob_storage.read_stat(record_id, bulk_id)
+    existing_col = set(stat['schema'])
+    if data_param.curves:
+        columns_to_load = DataFrameRender.get_matching_column(
+            data_param.get_curves_list(), existing_col)  # add curve needed for filtering
+        stat['schema'] = {k: stat['schema'][k] for k in columns_to_load}
+    if data_param.bulk_filter:
+        # get column needed for filtering which are not yet in columns
+        filters = data_param.get_filters()
+
+        invalid_columns = [c for c in filters.keys() if c not in existing_col]
+        if invalid_columns:
+            raise FilterError(f'The columns:{invalid_columns} to be filtered do not exist')
+
+        if columns_to_load:
+            columns_to_load.extend(filters)
+            columns_to_load = set(columns_to_load)
+    if data_param.describe and not data_param.offset and not data_param.limit and not data_param.bulk_filter:
+        # optimization: create a fake dataset when describe on all rows
+        df = pd.DataFrame()
+    else:
+        # loading the dataframe with filter on columns is faster than filtering columns on df
+        df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns_to_load)
+    return df, filters, stat
 
 
 @router.get(
@@ -211,10 +241,12 @@ async def get_data(
     ctrl_p: GetDataParams = Depends(),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
-    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, dask_blob_storage, bulk_uri_access)
+    if hasattr(request.state, 'version') and request.state.version != "V2":
+        record = await fetch_record(ctx, record_id)
+        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
+    return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, bulk_uri_access)
 
 
 @router.patch(
@@ -225,6 +257,7 @@ async def get_data(
 async def complete_session(
     record_id: str,
     session_id: str,
+    request: Request,
     update_request: UpdateSessionState,
     with_session: WithSessionStorages = Depends(get_session_dependencies),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
@@ -243,6 +276,7 @@ async def complete_session(
                 _internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
 
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
+                DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
                 previous_bulk_id = None
 
                 if i_session.session.mode == SessionUpdateMode.Update:

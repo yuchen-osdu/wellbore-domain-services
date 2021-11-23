@@ -23,6 +23,7 @@ class Entity(Enum):
     MARKER = 'marker'
     TRAJECTORY = 'trajectory'
     WELL = 'well'
+    WELL_LOG = 'welllog'
     WELLBORE = 'wellbore'
     DIP = 'dip'
     DIPSET = 'dipSet'

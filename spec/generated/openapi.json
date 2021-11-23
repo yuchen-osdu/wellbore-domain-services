@@ -8527,6 +8527,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -9129,6 +9144,21 @@
               "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
               "title": "Describe",
               "type": "boolean"
+            }
+          },
+          {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
             }
           },
           {
@@ -17162,6 +17192,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -17767,6 +17812,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -18311,6 +18371,21 @@
               "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
               "title": "Describe",
               "type": "boolean"
+            }
+          },
+          {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
             }
           },
           {
@@ -18916,6 +18991,21 @@
               "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
               "title": "Describe",
               "type": "boolean"
+            }
+          },
+          {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
             }
           },
           {
