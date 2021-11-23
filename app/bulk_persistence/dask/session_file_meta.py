@@ -18,14 +18,13 @@ import os
 import time
 from contextlib import suppress
 from operator import attrgetter
-from typing import Generator, List
+from typing import Dict, Generator, List
 
 import pandas as pd
 from app.bulk_persistence.dask.utils import share_items
 from app.persistence.sessions_storage import Session
 
-from . import storage_path_builder as pathBuilder
-
+from .storage_path_builder import add_protocol, record_session_path
 
 class SessionFileMeta:
     """The class extract information about chunks."""
@@ -49,22 +48,27 @@ class SessionFileMeta:
 
     @property
     def columns(self) -> List[str]:
-        """Return the column names"""
+        """Returns the column names"""
         return self._read_meta()['columns']
 
     @property
     def dtypes(self) -> List[str]:
-        """Return the column dtypes"""
+        """Returns the column dtypes"""
         return self._read_meta()['dtypes']
 
     @property
     def nb_rows(self) -> int:
-        """Retrun the number of rows of the chunk"""
+        """Retruns the number of rows of the chunk"""
         return self._read_meta()['nb_rows']
 
     @property
+    def path_with_protocol(self) -> str:
+        """Returns chunk path with protocol"""
+        return add_protocol(self.path, self._fs.protocol)
+
+    @property
     def index_hash(self) -> str:
-        """Retrun the index hash"""
+        """Retruns the index hash"""
         return self._read_meta()['index_hash']
 
     def overlap(self, other: 'SessionFileMeta') -> bool:
@@ -126,7 +130,7 @@ def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
 
 def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
     """Return metadata objects for a given session"""
-    session_path = pathBuilder.record_session_path(base_directory, session.id, session.recordId)
+    session_path = record_session_path(base_directory, session.id, session.recordId)
     with suppress(FileNotFoundError):
         return [SessionFileMeta(filesystem, f)
                 for f in filesystem.ls(session_path) if f.endswith(".parquet")]
@@ -137,26 +141,23 @@ def get_next_chunk_files(filesystem, base_directory, session: Session) -> Genera
     """Generator which groups session chunk files in lists of files that can be read directly with dask
     File can be grouped if they have the same schemas and no overlap between indexes
     """
-    session_files = get_chunks_metadata(filesystem, base_directory, session)
-    session_files.sort(key=attrgetter('time'))
-    cache = {}
-    columns_in_cache = set()
-    while session_files:
-        cur, *session_files = session_files
-        if cur.shape in cache:
-            if any(cur.overlap(f) for f in cache[cur.shape]):
-                yield [f'{filesystem.protocol}://{file.path}' for file in cache[cur.shape]]
-                cache[cur.shape] = [cur]
-            else:
-                cache[cur.shape].append(cur)
-        else:
-            if not columns_in_cache.isdisjoint(cur.columns):
-                match = next(metas[0] for metas in cache.values() if cur.has_common_columns(metas[0]))
-                yield [f'{filesystem.protocol}://{file.path}' for file in cache[match.shape]]
-                columns_in_cache = columns_in_cache.difference(match.columns)
-                del cache[match.shape]
-            cache[cur.shape] = [cur]
-        columns_in_cache.update(cur.columns)
+    chunks_info = get_chunks_metadata(filesystem, base_directory, session)
+    chunks_info.sort(key=attrgetter('time'))
+    cache: Dict[str, SessionFileMeta] = {}
+    columns_in_cache = set()  # keep track of colunms present in the cache
+    for chunk in chunks_info:
+        if chunk.shape in cache: # if other chunks with same shape
+            if any(chunk.overlap(c) for c in cache[chunk.shape]):  # rows overlaps
+                yield [file.path_with_protocol for file in cache[chunk.shape]]
+                del cache[chunk.shape]
+        elif not columns_in_cache.isdisjoint(chunk.columns): # else if columns conflicts
+            conflicting_chunk = next(metas[0] for metas in cache.values()
+                                     if chunk.has_common_columns(metas[0]))
+            yield [file.path_with_protocol for file in cache[conflicting_chunk.shape]]
+            columns_in_cache = columns_in_cache.difference(conflicting_chunk.columns)
+            del cache[conflicting_chunk.shape]
+        cache.setdefault(chunk.shape, []).append(chunk)
+        columns_in_cache.update(chunk.columns)
 
     for files in cache.values():
-        yield [f'{filesystem.protocol}://{file.path}' for file in files]
+        yield [file.path_with_protocol for file in files]

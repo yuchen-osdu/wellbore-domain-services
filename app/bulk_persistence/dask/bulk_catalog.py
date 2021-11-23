@@ -46,11 +46,11 @@ class BulkCatalog:
         groupped_files = {}
         for col_name in columns:
             files_list = self.columns[col_name].paths
-            groupped_files.setdefault(hash(tuple(files_list)), {
+            groupped_files.setdefault(tuple(files_list), {
                 "paths": [os.path.join(root_path, f) for f in files_list],
                 "columns": []
             })["columns"].append(col_name)
-        return list(groupped_files.values())
+        return groupped_files.values()
 
     @capture_timings('as_dict')
     def as_dict(self) -> dict:
