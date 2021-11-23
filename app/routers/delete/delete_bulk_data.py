@@ -66,7 +66,7 @@ async def delete_record(
         blob_storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
         encode_record_id = hash_record_id(record_id)
         bulk_file_names = await blob_storage.list_objects(tenant=tenant,
-                                                     prefix=encode_record_id)
+                                                          prefix=encode_record_id)
 
         tasks = [blob_storage.delete(tenant=tenant, object_name=bulk_file_name)
                  for bulk_file_name in bulk_file_names
