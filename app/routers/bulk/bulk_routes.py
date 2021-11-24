@@ -19,6 +19,7 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
 
 from app.bulk_persistence.mime_types import MimeTypes
@@ -57,6 +58,14 @@ OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}
 
 
+async def get_body_from_request(request: Request):
+    # done inside a func so the content might be garbage collected sooner
+    chunks = []
+    async for chunk in request.stream():
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
 @OpenApiHandler.set(operation_id=OPERATION_IDS["record_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
 @router.post(
     '/{record_id}/data',
@@ -81,21 +90,54 @@ async def post_data(record_id: str,
                     df_validation_func=Depends(get_df_validation_func),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
                     ):
-    @with_trace("save_blob")
-    async def save_blob():
-        df = await get_df_from_request(request, orient)
-        try:
-            assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
-        except BulkError as ex:
-            ex.raise_as_http()
-        return await dask_blob_storage.save_bulk(df, record_id)
 
-    record, bulk_id = await asyncio.gather(
-        fetch_record(ctx, record_id),
-        save_blob()
-    )
+    """
+    Handle a post data outside of a session. The given bulk will fully replace any existing one
+    """
+    content_type = request.headers.get('Content-Type', '')
+    if not content_type:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Content-Type is missing')
+
+    # launch record fetch
+    future_record = asyncio.create_task(fetch_record(ctx, record_id))
+
+    body_content = await get_body_from_request(request)
+    if not body_content:
+        future_record.cancel()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='empty body')
+
+    record = await future_record
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
-    return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record, bulk_uri_access=bulk_uri_access)
+
+    # process and store the data
+    try:
+        bulk_storage = DaskBulkStorageFullWorkerDelegated(dask_blob_storage)
+
+        # fire the process
+        post_data_future = asyncio.create_task(bulk_storage.post_data_without_session(
+            body_content,
+            content_type,
+            orient.value,
+            df_validation_func,
+            record_id
+        ))
+
+        # TODO to be tested: we may unref the body content so it could be garbage collected at this point
+        body_content = None
+
+        # wait for the result
+        bulk_id, basic_describe = await post_data_future
+    except BulkError as ex:
+        ex.raise_as_http()
+
+    # update record
+    update_record_response = await set_bulk_field_and_send_record(ctx=ctx,
+                                                                  bulk_id=bulk_id,
+                                                                  record=record,
+                                                                  bulk_uri_access=bulk_uri_access)
+    return update_record_response
+    # TODO proposal: construct add basic describe of data that has been stored
+    # return PostDataResponse(**update_record_response.dict(exclude_unset=True, by_alias=True), dataStat=basic_describe)
 
 
 @OpenApiHandler.set(operation_id=OPERATION_IDS["chunk_data"], request_body=REQUEST_DATA_BODY_SCHEMA)

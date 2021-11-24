@@ -55,6 +55,10 @@ class BulkNotProcessable(BulkError):
         super().__init__(ex_message)
 
 
+class BulkSaveException(BulkError):
+    http_status = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
 class FilterError(BulkError):
     http_status = status.HTTP_400_BAD_REQUEST
 
