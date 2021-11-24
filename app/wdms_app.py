@@ -213,7 +213,7 @@ for v3_api, tag, entity_type in ddms_v3_routes_groups_with_bulk:
     wdms_app.include_router(v3_api.router,
                             prefix=DDMS_V3_PATH,
                             tags=[tag],
-                            dependencies=[*basic_dependencies, v3_bulk_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
+                            dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
 
 wdms_app.include_router(search.router, prefix='/ddms', tags=['search'], dependencies=basic_dependencies)
 wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search'], dependencies=basic_dependencies)
