@@ -284,16 +284,21 @@ class DaskBulkStorage:
         return catalog
 
     @capture_timings('load_index')
-    async def load_index(self, record_id: str, bulk_id: str) -> pd.Index:
+    async def _future_load_index(self, record_id: str, bulk_id: str) -> pd.Index:
         """load the dataframe index of the specified record"""
         catalog = await self.get_bulk_catalog(record_id, bulk_id)
         if catalog.index_path:
             root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
             future_df = self._read_parquet(f'{root_dir}/{catalog.index_path}')
         else: # only read one column to get the index. It doesn't seems possible to get the index directly.
-            first_column = next(iter(catalog.columns)) # TODO if no column ?
+            first_column = next(iter(catalog.columns))
             future_df = self._load_bulk(record_id, bulk_id, [first_column])
-        return await self._submit_with_trace(lambda df: df.index.compute(), future_df)
+        return self._submit_with_trace(lambda df: df.index.compute(), future_df)
+
+    @capture_timings('load_index')
+    async def load_index(self, record_id: str, bulk_id: str) -> pd.Index:
+        future_index = await self._future_load_index(record_id, bulk_id)
+        return await future_index
 
     @capture_timings('_build_session_index')
     async def _build_session_index(self, session: Session, from_bulk_id: str) -> pd.Index:
@@ -310,7 +315,7 @@ class DaskBulkStorage:
                    for m in chunks_meta_with_different_indexes]
         if from_bulk_id:
             # read the index of previous version
-            indexes.append(await self.load_index(session.recordId, from_bulk_id))
+            indexes.append(await self._future_load_index(session.recordId, from_bulk_id))
         # merge all indexes
         while len(indexes) > 1:
             indexes = [self._submit_with_trace(index_union, x, y) for x, y in by_pairs(indexes)]
@@ -390,7 +395,7 @@ class DaskBulkStorage:
 
         index = await self._build_session_index(session, from_bulk_id)
         if index is None:
-            raise BulkNotProcessable("No data to commit")
+            raise BulkNotProcessable(message="No data to commit")
 
         if from_bulk_id:
             # update session: we start from the previous catalog

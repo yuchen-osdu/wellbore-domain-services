@@ -19,6 +19,7 @@ import json
 from dataclasses import dataclass, field
 from collections import namedtuple
 from typing import Dict, Iterable, List, Optional
+from app.bulk_persistence.dask.errors import BulkNotProcessable
 
 from app.utils import capture_timings
 
@@ -44,7 +45,7 @@ class BulkCatalog:
 
     @dataclass
     class ColumnInfo:
-        """store files where the column is present and the dtype"""
+        """Stores chunk files where the column is present and the dtype"""
         paths: List[str]
         dtype: str
 
@@ -59,6 +60,8 @@ class BulkCatalog:
             col_name (str): column name
             column_info (ColumnInfo): column information to add in the catalog
             check_dtype (bool, optional): check if dtype are equal before merging column info. Defaults to False.
+        Raises:
+            BulkNotProcessable: If check_type True and column type is different from existing one
         Exemples:
         >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file1'], 'int32'))
         >>> cat.columns
@@ -66,11 +69,14 @@ class BulkCatalog:
         >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file2', 'file3'], 'int32'))
         >>> cat.columns
         {'A': BulkCatalog.ColumnInfo(paths=['file1', 'file2', 'file3'], dtype='int32')}
+        >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file4'], 'int64'), True)
+        BulkNotProcessable: bulk not processable: column A has different dtypes, int32 vs int64
         """
         if col_name in self.columns:
-            if check_dtype:
-                assert self.columns[col_name].dtype == column_info.dtype # TODO proper exception
-            self.columns[col_name].paths.extend(column_info.paths) # TODO check if file already exists ?
+            if check_dtype and self.columns[col_name].dtype != column_info.dtype:
+                raise BulkNotProcessable(message=f"column {col_name} has different dtypes,"
+                                         f" {self.columns[col_name].dtype} vs {column_info.dtype}")
+            self.columns[col_name].paths.extend(column_info.paths)  # TODO check if file already exists ?
         else:
             self.columns[col_name] = column_info
 
@@ -99,7 +105,6 @@ class BulkCatalog:
             "nb_rows": self.nb_rows,
             "index_path": self.index_path
         }
-        #return dataclasses.asdict(self)
 
     @staticmethod
     def from_dict(catalog_as_dict: dict) -> "BulkCatalog":

@@ -58,7 +58,7 @@ class SessionFileMeta:
 
     @property
     def nb_rows(self) -> int:
-        """Retruns the number of rows of the chunk"""
+        """Returns the number of rows of the chunk"""
         return self._read_meta()['nb_rows']
 
     @property
@@ -68,7 +68,7 @@ class SessionFileMeta:
 
     @property
     def index_hash(self) -> str:
-        """Retruns the index hash"""
+        """Returns the index hash"""
         return self._read_meta()['index_hash']
 
     def overlap(self, other: 'SessionFileMeta') -> bool:
@@ -123,7 +123,7 @@ def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
     return {
         "columns": list(dataframe.columns),
         "dtypes": [str(dt) for dt in dataframe.dtypes],
-        "nb_rows": len(dataframe.index), # TODO remove ?
+        "nb_rows": len(dataframe.index),
         "index_hash": hashlib.sha1(dataframe.index.values).hexdigest()
     }
 
@@ -137,7 +137,9 @@ def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[Se
     return []
 
 
-def get_next_chunk_files(filesystem, base_directory, session: Session) -> Generator[List[str], None, None]:
+def get_next_chunk_files(
+    filesystem, base_directory, session: Session
+) -> Generator[List[str], None, None]:
     """Generator which groups session chunk files in lists of files that can be read directly with dask
     File can be grouped if they have the same schemas and no overlap between indexes
     """
