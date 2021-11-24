@@ -76,20 +76,15 @@ def test_post_consistent_welllog(client, data):
 
     response = client.post(
         url="/ddms/v3/welllogs",
-        data=json.dumps(
-            [{
-                "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
-                "legal": {
-                    "legaltags": ["foo"],
-                    "otherRelevantDataCountries": ["FR"]
-                },
-                "acl": {
-                    "owners": ["foo@bar.com"],
-                    "viewers": ["foo@bar.com"]
-                },
-                "data": d
-            } for d in data]
-        ),
+        json=[{
+            "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
+            "legal": {
+                "legaltags": ["foo"],
+                "otherRelevantDataCountries": ["FR"]},
+            "acl": {
+                "owners": ["foo@bar.com"],
+                "viewers": ["foo@bar.com"]},
+            "data": d} for d in data],
         headers={'content-type': 'application/json'})
 
     assert response.status_code == status.HTTP_200_OK
@@ -103,7 +98,7 @@ def test_post_consistent_welllog(client, data):
         ],
         (
             status.HTTP_400_BAD_REQUEST,
-            "All CurveID in WellLog[1] are not unique"
+            "All CurveID in WellLog[1] should be unique"
         )
     ),
     (
@@ -113,7 +108,7 @@ def test_post_consistent_welllog(client, data):
         ],
         (
             status.HTTP_400_BAD_REQUEST,
-            "WellLog[1] doesn't have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
+            "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
         )
     ),
     (
@@ -123,7 +118,7 @@ def test_post_consistent_welllog(client, data):
         ],
         (
             status.HTTP_400_BAD_REQUEST,
-            "WellLog[1] doesn't have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
+            "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
         )
     ),
     (
@@ -133,28 +128,23 @@ def test_post_consistent_welllog(client, data):
         ],
         (
             status.HTTP_400_BAD_REQUEST,
-            "WellLog[1] doesn't have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
+            "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'"
         )
     )
 ])
 def test_post_inconsistent_welllog(client, well_log_data, expected):
     response = client.post(
         url="/ddms/v3/welllogs",
-        data=json.dumps(
-            [{
-                "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
-                "legal": {
-                    "legaltags": ["foo"],
-                    "otherRelevantDataCountries": ["FR"]
-                },
-                "acl": {
-                    "owners": ["foo@bar.com"],
-                    "viewers": ["foo@bar.com"]
-                },
-                "data": data
-            } for data in well_log_data]),
+        json=[{
+            "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
+            "legal": {
+                "legaltags": ["foo"],
+                "otherRelevantDataCountries": ["FR"]},
+            "acl": {
+                "owners": ["foo@bar.com"],
+                "viewers": ["foo@bar.com"]},
+            "data": data} for data in well_log_data],
         headers={'content-type': 'application/json'})
 
     assert response.status_code == expected[0]
     assert expected[1] in response.json().get("detail")
-
