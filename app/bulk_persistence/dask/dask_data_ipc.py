@@ -17,7 +17,7 @@ import uuid
 import asyncio
 from io import BytesIO
 from contextlib import asynccontextmanager, contextmanager, suppress
-from typing import Union, AsyncGenerator
+from typing import Union, AsyncGenerator, AsyncContextManager, ContextManager
 
 
 from app.utils import get_wdms_temp_dir
@@ -97,14 +97,14 @@ class DaskNativeDataIPC:
         self._client = dask_client
 
     @asynccontextmanager
-    async def set(self, data: Union[bytes, AsyncGenerator[bytes, None]]):
+    async def set(self, data: Union[bytes, AsyncGenerator[bytes, None]]) -> AsyncContextManager:
         if type(data) is not bytes:  # basic type check
             data = await _real_all_from_async_gen(data)
 
         yield await self._client.scatter(data)
 
     @contextmanager
-    def get(self, ipc_ref):
+    def get(self, ipc_ref) -> ContextManager:
         yield BytesIO(ipc_ref)
 
 
@@ -147,38 +147,59 @@ class DaskLocalFileDataIPC:
         self._base_folder = base_folder or get_wdms_temp_dir()
         self._io_chunk_size = io_chunk_size
 
-    async def _write_to_file(self, file, chunk_data: bytes):
-        if self._io_chunk_size > 0:
-            # loop and release the event loop
-            dump_size = self._io_chunk_size
-            for i in range(0, len(chunk_data), dump_size):
-                file.write(chunk_data[i:i + dump_size])
-                # as Disk I/O cannot really be async, read/write 1MB at a time then release the event loop
-                await asyncio.sleep(0)
-        else:
-            # write it all at once
-            file.write(chunk_data)
+    class _AsyncSetterContextManager:
+        # done this way rather than @asynccontextmanager to release memory as soon as it's possible
+        def __init__(self, base_folder: str, data: Union[bytes, AsyncGenerator[bytes, None]], chunk_size: int):
+            self._base_folder = base_folder
+            self._data = data
+            self._file_path = None
+            self._io_chunk_size = chunk_size
 
-    @asynccontextmanager
-    async def set(self, data: Union[bytes, AsyncGenerator[bytes, None]]):
-        filepath = path.join(self._base_folder, 'ipc_' + str(uuid.uuid4()))
-        try:
-            with open(filepath, 'wb') as f:
-                if type(data) is bytes:  # basic type check
-                    await self._write_to_file(f, data)
-                else:
-                    async for data_chunk in data:
-                        # async generator provided: iterate on chunks
-                        await self._write_to_file(f, data_chunk)
+        def _clean(self):
+            if self._file_path:
+                with suppress(Exception):
+                    remove(self._file_path)
+                self._file_path = None
 
-                yield filepath
-        finally:
-            # clean up file in any case
-            with suppress(Exception):
-                remove(filepath)
+        async def _write_to_file(self, file, chunk_data: bytes):
+            if self._io_chunk_size > 0:
+                # loop and release the event loop
+                dump_size = self._io_chunk_size
+                for i in range(0, len(chunk_data), dump_size):
+                    file.write(chunk_data[i:i + dump_size])
+                    # as Disk I/O cannot really be async, read/write 1MB at a time then release the event loop
+                    await asyncio.sleep(0)
+            else:
+                # write it all at once
+                file.write(chunk_data)
+
+        async def __aenter__(self):
+            filepath = path.join(self._base_folder, 'ipc_' + str(uuid.uuid4()))
+            try:
+                with open(filepath, 'wb') as f:
+                    self._file_path = filepath
+                    if type(self._data) is bytes: # basic type check
+                        # data are bytes
+                        await self._write_to_file(f, self._data)
+                    else:
+                        # data is passed as a async generator
+                        async for data_chunk in self._data:
+                            # async generator provided: iterate on chunks
+                            await self._write_to_file(f, data_chunk)
+                    self._data = None  # unref so it can be freed
+                    return filepath
+            except:  # clean up file in any case on write failure
+                self._clean()
+                raise
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            self._clean()
+
+    def set(self, data: Union[bytes, AsyncGenerator[bytes, None]]) -> AsyncContextManager:
+        return self._AsyncSetterContextManager(self._base_folder, data, self._io_chunk_size)
 
     @contextmanager
-    def get(self, ipc_ref):
+    def get(self, ipc_ref) -> ContextManager:
         with open(ipc_ref, 'rb') as f:
             yield f
 
@@ -188,11 +209,11 @@ class DaskNoneDataIPC:
     ipc_type = 'none'
 
     @asynccontextmanager
-    async def set(self, data: Union[bytes, AsyncGenerator[bytes, None]]):
+    async def set(self, data: Union[bytes, AsyncGenerator[bytes, None]]) -> AsyncContextManager:
         if type(data) is not bytes:  # basic type check
             data = await _real_all_from_async_gen(data)
         yield data
 
     @contextmanager
-    def get(self, ipc_ref):
+    def get(self, ipc_ref) -> ContextManager:
         yield BytesIO(ipc_ref)
