@@ -208,7 +208,7 @@ async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataP
         if columns_to_load:
             columns_to_load.extend(filters)
             columns_to_load = set(columns_to_load)
-    if data_param.describe and not data_param.curves:
+    if columns_to_load is None and data_param.describe:
         import pandas as pd
         # optimization: create a fake dataset when describe on all columns
         index = await dask_blob_storage.load_index(record_id, bulk_id)
