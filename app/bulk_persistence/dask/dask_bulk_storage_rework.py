@@ -1,6 +1,6 @@
 # TODO this is a temporary name
 
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Union, AsyncGenerator
 import pandas as pd
 from pydantic import BaseModel, Field
 
@@ -94,14 +94,10 @@ def write_bulk_without_session(file_like_data,
 
         :throw: BulkNotProcessable, BulkSaveException
         """
-
-    _, protocol = StoragePathBuilder.remove_protocol(bulk_base_path)
-    assert protocol, 'protocol must be specified'
-
     # 1- deserialize to pandas dataframe
     df = deserialize(file_like_data, content_type, orient)
 
-    # 2- perf input dataframe validation
+    # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, validate_index])
 
     # 3- build blob filename and final full blob path
@@ -112,7 +108,8 @@ def write_bulk_without_session(file_like_data,
     # 4- save/upload the dataframe
     try:
         # TODO will exist
-        DataframeSerializerSync.to_parquet(df, full_file_path, storage_options=storage_options)
+        # TODO to replace with DataframeSerializerSync.to_parquet(df, full_file_path, storage_options=storage_options)
+        df.to_parquet(full_file_path, index=True, engine='pyarrow', storage_options=storage_options)
     except Exception as e:
         raise BulkSaveException('Unexpected error and save bulk') from e
 
@@ -160,7 +157,7 @@ class DaskBulkStorageFullWorkerDelegated:
     @capture_timings('post_data_without_session', handlers=worker_capture_timing_handlers)
     @with_trace('post_data_without_session')
     async def post_data_without_session(self,
-                                        data: bytes,
+                                        data: Union[bytes, AsyncGenerator[bytes, None]],
                                         content_type: str,
                                         orient: str,
                                         df_validator_func,
@@ -180,8 +177,8 @@ class DaskBulkStorageFullWorkerDelegated:
         self.ensure_dir_tree_exists(bulk_base_path)
 
         async with self._get_data_ipc().set(data) as ipc_data_descriptor:
-            # unref data
-            data = None
+            data = None  # unref data
+
             df_describe = await submit_with_trace(
                 self.client,
                 write_bulk_without_session,

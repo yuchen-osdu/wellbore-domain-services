@@ -1,0 +1,110 @@
+# TODO this is a temporary name
+
+
+import pytest
+import pandas as pd
+from io import BytesIO, StringIO
+from unittest.mock import patch
+
+from app.bulk_persistence.dask.dask_bulk_storage_rework import (basic_describe,
+                                                                DataframeBasicDescribe,
+                                                                write_bulk_without_session)
+from app.bulk_persistence.dask.errors import BulkNotProcessable, BulkSaveException
+from app.bulk_persistence.dataframe_validators import no_validation
+
+from tests.unit.test_utils import temp_directory
+
+
+def dataframe_to_format(df, data_format: str, as_stream=False):
+    if 'parquet' in data_format:
+        data = df.to_parquet(engine="pyarrow")
+        return BytesIO(data) if as_stream else data
+    elif 'json' in data_format:
+        data = df.to_json(orient='split', date_format='iso')
+        return StringIO(data) if as_stream else data
+    else:
+        raise ValueError(f"Unknown content-type: '{data_format}'")
+
+
+def test_basic_describe():
+    df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+
+    assert basic_describe(df) == DataframeBasicDescribe(
+        rowCount=3,
+        columnCount=2,
+        columns=['A', 'B'],
+        indexStart=0,
+        indexEnd=2
+    )
+
+
+def test_basic_describe_truncates_columns():
+    df = pd.DataFrame({str(i): [i] for i in range(100)})
+
+    result = basic_describe(df)
+    assert result.column_count == 100
+    assert len(result.columns) == 21
+
+
+# so far post_data and add_chunk takes same input, validate similarly and throw same exceptions
+@pytest.mark.parametrize("method_to_test", [write_bulk_without_session])
+def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
+    # unsupported content type
+    with pytest.raises(BulkNotProcessable):
+        method_to_test(BytesIO(b'123'), 'invalid_content_type', '', no_validation, '', None)
+
+    # empty input as json format
+    with pytest.raises(BulkNotProcessable):
+        method_to_test(BytesIO(b''), 'application/json', '', no_validation, '', None)
+
+    # empty input as parquet format
+    with pytest.raises(BulkNotProcessable):
+        method_to_test(BytesIO(b''), 'application/x-parquet', '', no_validation, '', None)
+
+    # custom validation failure
+    with pytest.raises(BulkNotProcessable):
+        data = pd.DataFrame({'1': [10], '2': [20]}).to_parquet(engine='pyarrow')
+        method_to_test(BytesIO(data), 'application/x-parquet', '',
+                                      lambda _: (False, "some error"), '', None)
+
+    # index not numerical
+    with pytest.raises(BulkNotProcessable):
+        df = pd.DataFrame({'1': ['A'], '2': ['B']})
+        df.set_index('1')
+        data = pd.DataFrame(df).to_parquet(engine='pyarrow')
+        method_to_test(BytesIO(data), 'application/x-parquet', '',
+                                      lambda _: (False, "some error"), '', None)
+
+    # index not unique
+    with pytest.raises(BulkNotProcessable):
+        df = pd.DataFrame({'A': [1, 1], 'B': [2, 2]})
+        df.set_index('A')
+        data = df.to_parquet(engine='pyarrow')
+        method_to_test(BytesIO(data), 'application/x-parquet', '',
+                                      lambda _: (False, "some error"), '', None)
+
+    # save error
+    data = pd.DataFrame({'A': [1], 'B': [4]}).to_parquet(engine='pyarrow', index=True)
+    with patch.object(pd.DataFrame, 'to_parquet', side_effect=lambda *args, **kwargs: 0/0):
+        with pytest.raises(BulkSaveException):
+            method_to_test(BytesIO(data), 'application/x-parquet', '', no_validation, temp_directory, None)
+
+
+@pytest.mark.parametrize("content_type", [
+    'application/x-parquet',
+    'application/json'
+])
+def test_write_bulk_without_session_success(content_type):
+    df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+    data = dataframe_to_format(df, content_type, True)
+    with patch.object(pd.DataFrame, 'to_parquet') as mock_method:
+        result = write_bulk_without_session(data, content_type, 'split', no_validation,
+                                               'my_path', {'storage_opt1': 42})
+        mock_method.assert_called_once()
+
+        args, kwargs = mock_method.call_args_list[0]
+        assert args[0].startswith('my_path')
+        assert kwargs['storage_options'] == {'storage_opt1': 42}
+
+        assert result == basic_describe(df)
+

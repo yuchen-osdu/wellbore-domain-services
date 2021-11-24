@@ -47,23 +47,12 @@ from app.routers.bulk.utils import (
     set_bulk_field_and_send_record,
     DataFrameRender)
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
-from app.helper.traces import with_trace
 
-
-import pandas as pd
 
 router = APIRouter()  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}
-
-
-async def get_body_from_request(request: Request):
-    # done inside a func so the content might be garbage collected sooner
-    chunks = []
-    async for chunk in request.stream():
-        chunks.append(chunk)
-    return b"".join(chunks)
 
 
 @OpenApiHandler.set(operation_id=OPERATION_IDS["record_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
@@ -98,35 +87,21 @@ async def post_data(record_id: str,
     if not content_type:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Content-Type is missing')
 
-    # launch record fetch
-    future_record = asyncio.create_task(fetch_record(ctx, record_id))
-
-    body_content = await get_body_from_request(request)
-    if not body_content:
-        future_record.cancel()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='empty body')
-
-    record = await future_record
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
     # process and store the data
     try:
+        # TODO temporary built new storage from current one
         bulk_storage = DaskBulkStorageFullWorkerDelegated(dask_blob_storage)
 
-        # fire the process
-        post_data_future = asyncio.create_task(bulk_storage.post_data_without_session(
-            body_content,
+        bulk_id, basic_describe = await bulk_storage.post_data_without_session(
+            request.stream(),  # this consume the body stream
             content_type,
             orient.value,
             df_validation_func,
             record_id
-        ))
-
-        # TODO to be tested: we may unref the body content so it could be garbage collected at this point
-        body_content = None
-
-        # wait for the result
-        bulk_id, basic_describe = await post_data_future
+        )
     except BulkError as ex:
         ex.raise_as_http()
 
