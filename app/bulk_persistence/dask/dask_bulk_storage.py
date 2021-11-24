@@ -15,6 +15,7 @@
 import json
 import os
 from typing import Callable, List, Optional, Tuple
+import uuid
 
 import fsspec
 import pandas as pd
@@ -316,39 +317,52 @@ class DaskBulkStorage:
         return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
-    async def _fill_catalog_columns_info(
-        self, catalog: BulkCatalog, session: Session, bulk_id: str
-    ) -> Optional[BulkCatalog]:
+    async def _fill_catalog_columns_info(self, catalog: BulkCatalog, session: Session, bulk_id: str) -> Optional[BulkCatalog]:
         """ build the catalog from the session."""
         root_dir = pathBuilder.record_path(self.base_directory, session.recordId, self.protocol)
-        commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
-
-        merge_file_counter = 0
         for files in session_meta.get_next_chunk_files(self._fs, self.base_directory, session):
             # files share the same schemas so we retrieve the meta data from the first one
             meta = session_meta.SessionFileMeta(self._fs, files[0])
             rel_files = [os.path.relpath(file, root_dir) for file in files]
             new_entries = {col_name: BulkCatalog.ColumnInfo(paths=rel_files, dtype=dtype)
                            for col_name, dtype in zip(meta.columns, meta.dtypes)}
-            # if some columns exist in the catalog, merge is needed
             cols_in_catalog = catalog.columns.keys() & new_entries
             if len(cols_in_catalog) > 0:
-                df1 = self._load_bulk_from_catalog(catalog, session.recordId, columns=cols_in_catalog)
-                df2 = self._read_parquet(files, columns=cols_in_catalog)
-                merged_df = self._submit_with_trace(do_merge, df1, df2)
-                merged_df_path = pathBuilder.join(commit_path, f'part_{merge_file_counter}.parquet')
-                merge_file_counter += 1
-                await self._save_with_dask(merged_df_path, merged_df) # pb here, wait -> cannot resolve conflict in parallele!
-
-                # update new catalog entries with the new path
-                rel_files = [os.path.relpath(merged_df_path, root_dir)]
-                for colname in cols_in_catalog:
-                    new_entries[colname].paths = rel_files
+                # if some columns already exist in the catalog, merge is needed
+                # pb here, wait -> cannot resolve conflict in parallele!
+                await self._resolve_conflict_catalog(catalog, session.recordId, bulk_id, files, cols_in_catalog)
+                new_entries = {k: v for k,v in new_entries.items() if k not in cols_in_catalog}
 
             catalog.columns.update(new_entries)
 
         return catalog
 
+    @capture_timings('_resolve_conflict_catalog')
+    async def _resolve_conflict_catalog(
+        self, catalog: BulkCatalog, record_id: str, bulk_id: str, files: List[str], cols_to_merge: List[str]
+    ) -> None:
+        """Merge columns between chunks found in the catalog and chunks files.
+        Merged result is save in a new parquet dataset (dask folder) and the catalog is updated with the new path
+        Args:
+            catalog (BulkCatalog): catalog to update and where input columns are read
+            record_id (str): record id to retreive path
+            bulk_id (str): record bulk id to retreive the commit path
+            files (List[str]): chunk files to merge with chunks from the catalog
+            cols_to_merge (List[str]): the columns to merge
+        """
+        commit_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
+        root_dir = pathBuilder.record_path(self.base_directory, record_id, self.protocol)
+
+        df1 = self._load_bulk_from_catalog(catalog, record_id, columns=cols_to_merge)
+        df2 = self._read_parquet(files, columns=cols_to_merge)
+        merged_df = self._submit_with_trace(do_merge, df1, df2)
+        merged_df_path = pathBuilder.join(commit_path, f'{uuid.uuid4()}.parquet')
+        await self._save_with_dask(merged_df_path, merged_df)
+        rel_files = [os.path.relpath(merged_df_path, root_dir)]
+        for colname in cols_to_merge:
+            catalog.columns[colname].paths = rel_files # TODO dtype ?
+
+    @capture_timings('_save_session_index')
     async def _save_session_index(self, path: str, index: pd.Index) -> str:
         index_folder = os.path.join(path, '__index__')
         self._fs.mkdirs(pathBuilder.remove_protocol(index_folder)[0]) # for local storage
@@ -374,15 +388,16 @@ class DaskBulkStorage:
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
         root_dir = pathBuilder.record_path(self.base_directory, session.recordId, self.protocol)
 
+        index = await self._build_session_index(session, from_bulk_id)
+        if index is None:
+            raise BulkNotProcessable("No data to commit")
+
         if from_bulk_id:
             # update session: we start from the previous catalog
             catalog = await self.get_bulk_catalog(session.recordId, from_bulk_id)
         else:
             catalog = BulkCatalog()
 
-        index = await self._build_session_index(session, from_bulk_id)
-        if index is None:
-            raise BulkNotProcessable("No data to commit")
 
         catalog.nb_rows = len(index)
         index_path = await self._save_session_index(commit_path, index)
