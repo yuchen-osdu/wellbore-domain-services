@@ -213,7 +213,7 @@ class DaskBulkStorage:
 
         if isinstance(ddf, pd.DataFrame):
             assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
-            ddf = dd.from_pandas(ddf, npartitions=1)
+            ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
             ddf = await self.client.scatter(ddf)
 
         path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)

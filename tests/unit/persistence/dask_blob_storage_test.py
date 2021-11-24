@@ -95,6 +95,18 @@ async def test_save_bulk(dask_storage: DaskBulkStorage):
 
 
 @pytest.mark.asyncio
+async def test_save_blob_with_same_data_at_once(dask_storage: DaskBulkStorage):
+    df_ref = generate_df(['A', 'B', 'C'], range(100))
+
+    record_id = 'test_save_bulk_record_id'
+    concurrent_save_bulks = 5
+
+    routines = [dask_storage.save_bulk(df_ref, record_id=f'{record_id}-{i}') for i in range(concurrent_save_bulks)]
+    bulk_ids = await asyncio.gather(*routines)
+    assert len(bulk_ids) == concurrent_save_bulks
+
+
+@pytest.mark.asyncio
 async def test_session_append_rows(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     for idx in range(0, 1000, 100):
@@ -164,7 +176,7 @@ async def test_session_update_add_new_columns_shifted(test_session, dask_storage
     
     bulk_id = await dask_storage.save_bulk(A, record_id=test_session.recordId)
 
-    #await dask_storage.session_add_chunk(test_session, B)
+    # await dask_storage.session_add_chunk(test_session, B)
     await dask_storage.session_add_chunk(test_session, C)
 
     new_bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)

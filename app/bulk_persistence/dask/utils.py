@@ -26,16 +26,17 @@ from app.utils import capture_timings
 
 def worker_make_log_captured_timing_handler(level=INFO):
     """log captured timing from the worker subprocess (no access to context)"""
+
     def log_captured_timing(tag, wall, cpu):
         logger = get_logger()
         if logger:
             logger.log(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
+
     return log_captured_timing
 
 
 worker_capture_timing_handlers = [worker_make_log_captured_timing_handler(INFO)]
 
-##
 
 def share_items(seq1, seq2):
     """Returns True if seq1 contains common items with seq2."""
@@ -74,6 +75,7 @@ def do_merge(df1: dd.DataFrame, df2: Optional[dd.DataFrame]):
     if share_items(df1.columns, df2.columns):
         return df2.combine_first(df1)
     return df1.join(df2, how='outer')  # join seems faster when there no columns in common
+
 
 @capture_timings("get_num_rows", handlers=worker_capture_timing_handlers)
 def get_num_rows(dataset: pa.ParquetDataset) -> int:
