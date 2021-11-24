@@ -227,11 +227,10 @@ class DataFrameRender:
     @with_trace('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
-            if stat and not params.limit and not params.offset:
-                nb_rows = stat['num_rows']
+            nb_rows = await DataFrameRender.get_size(df)
+            if params.curves is None and stat:
                 columns = natsorted(list(stat['schema']))
             else:
-                nb_rows = await DataFrameRender.get_size(df)
                 columns = list(df.columns)
 
             return {
