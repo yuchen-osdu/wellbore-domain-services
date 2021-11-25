@@ -152,12 +152,6 @@ class DataframeSerializerAsync:
         func = partial(DataframeSerializerSync.to_json, df, orient, *args, **kwargs)
         return await asyncio.get_event_loop().run_in_executor(self.executor, func)
 
-    @with_trace("CSV bulk serialization")
-    async def to_csv(self, df: pd.DataFrame, *args, **kwargs) -> Optional[str]:
-        df = df.fillna("NaN")
-        func = partial(df.to_csv, *args, **kwargs)
-        return await asyncio.get_event_loop().run_in_executor(self.executor, func)
-
     @with_trace("Parquet bulk deserialization")
     async def read_parquet(self, data) -> pd.DataFrame:
         return await asyncio.get_event_loop().run_in_executor(
