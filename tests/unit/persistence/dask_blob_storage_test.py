@@ -61,6 +61,8 @@ def test_session(mode=SessionUpdateMode.Overwrite) -> Session:
 
 async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
     df = await DaskBulkStorage.client.compute(ddf)
+    assert not set(pdf.columns) ^ set(df.columns) # check contains same columns
+    df = df[pdf.columns]
     df.index.name = None
     check_freq = True
     if isinstance(df.index, pd.DatetimeIndex):

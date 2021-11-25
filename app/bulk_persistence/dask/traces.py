@@ -56,7 +56,7 @@ def submit_with_trace(dask_client: Client, target_func: Callable, *args, **kwarg
 
 def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
     """Submit given target_func to Distributed Dask workers and add tracing required stuff
-    
+
     Note: 'dask_task_key' is manually created to easy reading of Dask's running tasks: it will display
         the effective targeted function instead of 'wrap_trace_process' used to enable tracing into Dask workers.
     """

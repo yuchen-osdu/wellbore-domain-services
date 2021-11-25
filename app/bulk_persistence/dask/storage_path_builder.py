@@ -41,7 +41,12 @@ def add_protocol(path: str, protocol: str) -> str:
 
 def remove_protocol(path: str) -> Tuple[str, str]:
     """remove protocol for path if any, return tuple[path, protocol].
-    If no protocol in path then protocol='' """
+    If no protocol in path then protocol=''
+    >>> remove_protocol('s3://path/to/my/file')
+    ('path/to/my/file', 's3')
+    >>> remove_protocol('path/to/my/file')
+    ('path/to/my/file', '')
+    """
     if '://' not in path:
         return path, ''
     sep_idx = path.index('://')
