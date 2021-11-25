@@ -19,7 +19,6 @@ import rapidjson
 
 import structlog
 from structlog.contextvars import merge_contextvars
-from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.trace import config_integration
 
 from app.conf import Config
@@ -103,6 +102,7 @@ def init_logger(service_name):
 
 
 def create_azure_logger(service_name):
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
     """
     Create logger with two handlers:
      - AzureLogHandler: to see Dependencies, Requests, Traces and Exception into Azure monitoring
