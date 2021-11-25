@@ -27,14 +27,12 @@ _dataframe_sample = DataFrame(
 body_description = """
 Contains the data corresponding to the dataframe. The header "Content-Type" must be set accordingly to the format sent:
 <br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).
-<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
- In that case 'orient' parameter must be provided 
+<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient "split"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
 """
-body_description += '.\n Examples in JSON for data with {} rows and {} columns with different _orient_: '.format(
+body_description += '.\n Examples in JSON for data with {} rows and {} columns: '.format(
                 _dataframe_sample.shape[0],
                 _dataframe_sample.shape[1])
-body_description += ''.join([f'\n* {o}:  <br/>`{_dataframe_sample.to_json(None, orient=o)}`<br/>&nbsp;'
-                     for o in JSONOrient])
+body_description += f'\n<br/>`{_dataframe_sample.to_json(None, orient="split")}`<br/>&nbsp;'
 
 
 REQUEST_DATA_BODY_SCHEMA = {
