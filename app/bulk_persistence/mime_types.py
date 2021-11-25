@@ -23,6 +23,8 @@ class MimeType(NamedTuple):
     alternative_types: List[str] = []
 
     def match(self, str_value: str) -> bool:
+        if not str_value:
+            return False
         normalized_value = str_value.lower()
         return any(
             (
