@@ -38,12 +38,9 @@ from .utils import by_pairs, do_merge, worker_capture_timing_handlers
 from .dask_worker_plugin import DaskWorkerPlugin
 from ..dataframe_validators import assert_df_validate, validate_index, columns_not_in_reserved_names
 from .session_file_meta import SessionFileMeta
+from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from ..bulk_id import new_bulk_id
-
-
-def pandas_to_parquet(pdf, path, opt):
-    return pdf.to_parquet(path, index=True, engine='pyarrow', storage_options=opt)
 
 
 class DaskBulkStorage:
@@ -183,8 +180,8 @@ class DaskBulkStorage:
         returns a Future<None>
         """
         f_pdf = await self.client.scatter(pdf)
-        return await self._submit_with_trace(pandas_to_parquet, f_pdf, path,
-                                             self._parameters.storage_options)
+        return await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, path,
+                                             storage_options=self._parameters.storage_options)
 
     @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
