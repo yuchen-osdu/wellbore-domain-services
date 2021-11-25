@@ -39,5 +39,5 @@ router = APIRouter()
 async def post_del_multiple_osdu_records(record_ids: List[str], ctx: Context = Depends(get_ctx)):
     storage_client = await get_storage_record_service(ctx)
     await storage_client.delete_records(
-        any=record_ids, data_partition_id=ctx.partition_id
+        request_body=record_ids, data_partition_id=ctx.partition_id
     )

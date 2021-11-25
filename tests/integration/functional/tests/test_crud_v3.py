@@ -119,7 +119,13 @@ def test_crud_delete_records(with_wdms_env):
     for kind in kind_list:
         result = build_request(f'crud.{kind}.create_{kind}').call(with_wdms_env)
         resobj = result.get_response_obj()
+        with_wdms_env.set(f'{kind}_record_id', resobj.recordIds[0])
         record_ids.append(resobj.recordIds[0])
-        with_wdms_env.set(f'record_ids', json.dumps(record_ids))  # stored the record id for the following tests
+        result = build_request(f'crud.{kind}.get_{kind}').call(with_wdms_env)
+        result.assert_status_code(200)
+    with_wdms_env.set(f'record_ids', json.dumps(record_ids))  # stored the record id for the following tests
     result = build_request_delete_osdu_records().call(with_wdms_env)
     result.assert_status_code(204)
+    for kind in kind_list:
+        result = build_request(f'crud.{kind}.get_{kind}').call(with_wdms_env)
+        result.assert_status_code(404)
