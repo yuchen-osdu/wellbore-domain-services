@@ -10,7 +10,7 @@ from app.conf import Config
 
 # imports from bulk_persistence
 from .. import MimeTypes, DataframeSerializerSync
-from ..dataframe_validators import DataFrameValidationFunc, assert_df_validate, validate_index
+from ..dataframe_validators import DataFrameValidationFunc, assert_df_validate, validate_index, columns_not_in_reserved_names
 from ..bulk_id import new_bulk_id
 from .traces import wrap_trace_process
 from .errors import internal_bulk_exceptions, BulkNotProcessable, BulkSaveException
@@ -96,7 +96,7 @@ def write_bulk_without_session(file_like_data,
     df = deserialize(file_like_data, content_type, orient)
 
     # 2- input dataframe validation
-    assert_df_validate(df, [df_validator_func, validate_index])
+    assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
 
     # 3- build blob filename and final full blob path
     # TODO to be reviewed: may want to create catalog here similarly to a session with a single chunk

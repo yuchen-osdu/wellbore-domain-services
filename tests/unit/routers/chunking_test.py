@@ -1190,6 +1190,7 @@ def test_get_bulk_data_with_filters_fail(setup_client, entity_type, params, cont
 
 # todo - concurrent sessions using fromVersion in Integrations tests
 
+
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("reserved_columns_name", ['__index_level_0__', '__null_dask_index__'])
 @pytest.mark.parametrize("use_custom_index", [True, False])
@@ -1206,10 +1207,10 @@ def test_none_in_index_error(setup_client, entity_type, reserved_columns_name, u
     if use_custom_index:
         df = df.set_index('float-COLUMN_MD')
 
-    with pytest.raises(BulkNotProcessable, match="Invalid column name"):
-        client.post(f'{chunking_url}/{record_id}/data',
-                    data=df.to_parquet(engine="pyarrow"),
-                    headers={'content-type': 'application/parquet'})
+    response_get_data = client.post(f'{chunking_url}/{record_id}/data',
+                                    data=df.to_parquet(engine="pyarrow"),
+                                    headers={'content-type': 'application/parquet'})
+    assert response_get_data.status_code == 422
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
