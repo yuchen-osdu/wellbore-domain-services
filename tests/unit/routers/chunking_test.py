@@ -80,12 +80,8 @@ def _create_df_from_response(response):
     content_type = response.headers.get('content-type')
     if content_type == 'application/x-parquet':
         return pd.read_parquet(f)
-    elif content_type == 'text/csv; charset=utf-8':
-        return pd.read_csv(f, index_col=0)
     elif content_type == 'application/json':
         return pd.read_json(f, dtype=True, orient='split', convert_axes=False).replace("NaN", np.NaN)
-    elif content_type == 'application/csv':
-        return pd.read_csv(f, dtype=True).replace("NaN", np.NaN)
     else:
         raise ValueError(f"Unknown content-type: '{content_type}'")
 
@@ -227,7 +223,6 @@ def test_post_data_merge_extension_properties(setup_client):
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
     'application/json',
-    'text/csv; charset=utf-8',
 ])
 @pytest.mark.parametrize("columns", [
     ['MD', 'X'],
@@ -334,7 +329,6 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
 ])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    'text/csv; charset=utf-8',
     'application/json',
 ])
 @pytest.mark.parametrize("columns", [
@@ -437,7 +431,6 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    'text/csv; charset=utf-8',
     'application/json',
 ])
 def test_add_curve_by_chunk_different_cols(setup_client, entity_type, data_format, accept_content):
@@ -466,7 +459,6 @@ def test_add_curve_by_chunk_different_cols(setup_client, entity_type, data_forma
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    'text/csv; charset=utf-8',
     'application/json',
 ])
 def test_add_curve_by_chunk_same_cols(setup_client, entity_type, data_format, accept_content):
