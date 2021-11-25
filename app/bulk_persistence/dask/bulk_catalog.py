@@ -33,7 +33,7 @@ class BulkCatalog:
     Exemple:
         {
             'record_id': '7507fb30-9cfa-4506-9cd8-6cbacbcda740',
-            'base_directory': 'buket',
+            'base_directory': 'bucket',
             'protocol': 's3'
             'nb_rows': 1000,
             'index_path': 'folder/wdms_index/index.parquet,

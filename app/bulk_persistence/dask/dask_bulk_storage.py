@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import json
-import os
 from typing import Callable, List, Optional, Tuple
 import uuid
 
@@ -170,7 +169,6 @@ class DaskBulkStorage:
             BulkNotFound: If bulk folder doesn't exists
         """
         catalog = await self.get_bulk_catalog(record_id, bulk_id)
-
         schema_dict = {vn: item.dtype for vn, item in catalog.columns.items()}
         return {
             "num_rows": catalog.nb_rows,
@@ -248,7 +246,8 @@ class DaskBulkStorage:
         catalog = load_bulk_catalog(self._fs, bulk_path) # TODO async ?
         if catalog:
             return catalog
-        # For legacy bulk, construct a catalog on the fly : TODO should we persist it ?
+
+        # For legacy bulk, construct a catalog on the fly
         try:
             return await self._build_catalog_from_path(bulk_path, record_id)
         except FileNotFoundError as e:
@@ -380,9 +379,9 @@ class DaskBulkStorage:
 
     @capture_timings('_save_session_index')
     async def _save_session_index(self, path: str, index: pd.Index) -> str:
-        index_folder = os.path.join(path, '_wdms_index_')
+        index_folder = pathBuilder.join(path, '_wdms_index_')
         self._fs.mkdirs(pathBuilder.remove_protocol(index_folder)[0]) # for local storage
-        index_path = os.path.join(index_folder, 'index.parquet')
+        index_path = pathBuilder.join(index_folder, 'index.parquet')
         await self._save_with_pandas(index_path, pd.DataFrame(index=index))
         return index_path
 
@@ -401,8 +400,6 @@ class DaskBulkStorage:
             str: identifier of the new bulk
         """
         bulk_id = new_bulk_id()
-        commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
-        root_dir = pathBuilder.record_path(self.base_directory, session.recordId, self.protocol)
 
         index = await self._build_session_index(session, from_bulk_id)
         if index is None:
@@ -414,6 +411,7 @@ class DaskBulkStorage:
         else:
             catalog = BulkCatalog(session.recordId, self.base_directory, self.protocol)
 
+        commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
         catalog.nb_rows = len(index)
         index_path = await self._save_session_index(commit_path, index)

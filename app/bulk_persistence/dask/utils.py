@@ -53,7 +53,7 @@ def by_pairs(iterable):
 def set_index(ddf: dd.DataFrame):
     """Set index of the dask dataFrame only if needed."""
     if not ddf.known_divisions:
-        return ddf.set_index(ddf.index, sorted=True).persist()
+        return ddf.set_index(ddf.index, sorted=True)
     return ddf
 
 
