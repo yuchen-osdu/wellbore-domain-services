@@ -12,42 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
+from app.model.model_chunking import GetDataParams
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
+from app.utils import Context, OpenApiHandler, get_ctx
+from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
+                                           REQUIRED_ROLES_READ,
+                                           REQUIRED_ROLES_WRITE,
+                                           json_orient_parameter)
+
+from app.routers.record_utils import fetch_record
+from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
+from app.routers.bulk.utils import (with_dask_blob_storage,
+                                    get_df_validation_func,
+                                    get_df_from_request,
+                                    set_bulk_field_and_send_record,
+                                    DataFrameRender)
+
+# imports for session manipulation
+from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
+from app.routers.sessions import (SessionInternal,
+                                  UpdateSessionState,
+                                  UpdateSessionStateValue,
+                                  WithSessionStorages,
+                                  get_session_dependencies)
+
+# imports from bulk persistence
+from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
-
 from app.bulk_persistence.mime_types import MimeTypes
-from app.model.model_chunking import GetDataParams
-from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
-from app.utils import Context, OpenApiHandler, get_ctx
-from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
-from app.routers.common_parameters import (
-    REQUEST_DATA_BODY_SCHEMA,
-    REQUIRED_ROLES_READ,
-    REQUIRED_ROLES_WRITE,
-    json_orient_parameter)
-from app.routers.sessions import (
-    SessionInternal,
-    UpdateSessionState,
-    UpdateSessionStateValue,
-    WithSessionStorages,
-    get_session_dependencies)
-from app.routers.record_utils import fetch_record
-from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
-from app.routers.bulk.utils import (
-    with_dask_blob_storage,
-    get_df_validation_func,
-    get_df_from_request,
-    set_bulk_field_and_send_record,
-    DataFrameRender)
-from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
-
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -100,8 +99,8 @@ async def post_data(record_id: str,
             content_type,
             orient.value,
             df_validation_func,
-            record_id
-        )
+            record_id)
+
     except BulkError as ex:
         ex.raise_as_http()
 

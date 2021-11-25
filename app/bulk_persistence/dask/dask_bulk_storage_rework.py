@@ -67,13 +67,11 @@ def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
     else:
         cols = full_cols
 
-    return DataframeBasicDescribe(
-        rowCount=len(df.index),
-        columnCount=len(full_cols),
-        columns=cols,
-        indexStart=int(df.index[0]),
-        indexEnd=int(df.index[-1])
-    )
+    return DataframeBasicDescribe(rowCount=len(df.index),
+                                  columnCount=len(full_cols),
+                                  columns=cols,
+                                  indexStart=int(df.index[0]),
+                                  indexEnd=int(df.index[-1]))
 
 
 def write_bulk_without_session(file_like_data,
@@ -179,14 +177,13 @@ class DaskBulkStorageFullWorkerDelegated:
         async with self._get_data_ipc().set(data) as ipc_data_descriptor:
             data = None  # unref data
 
-            df_describe = await submit_with_trace(
-                self.client,
-                write_bulk_without_session,
-                ipc_data_descriptor,
-                content_type,
-                orient,
-                df_validator_func,
-                bulk_base_path,
-                self.storage_options)
+            df_describe = await submit_with_trace(self.client,
+                                                  write_bulk_without_session,
+                                                  ipc_data_descriptor,
+                                                  content_type,
+                                                  orient,
+                                                  df_validator_func,
+                                                  bulk_base_path,
+                                                  self.storage_options)
 
         return bulk_id, df_describe
