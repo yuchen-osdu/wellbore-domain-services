@@ -30,7 +30,8 @@ async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess
     version = record_versions.versions[index]
     record_from_version = await fetch_record(ctx, record_id, version)
     obj_bulk_uri = bulk_uri_access.get_bulk_uri(record=record_from_version)
-    return obj_bulk_uri.encode()
+    if obj_bulk_uri.is_valid():
+        return obj_bulk_uri.encode()
 
 
 async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
