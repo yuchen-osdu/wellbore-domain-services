@@ -285,7 +285,8 @@ class DaskBulkStorage:
                        for name, dtype in zip(schema.names, schema.types)
                        if not is_reserved_column_name(name))
             for name, dtype in columns:
-                catalog.add_column_info(name, BulkCatalog.ColumnInfo(paths=[file], dtype=dtype))
+                info = BulkCatalog.ColumnInfo(paths=[catalog.relative_path(file)], dtype=dtype)
+                catalog.add_column_info(name, info)
 
         return catalog
 
@@ -333,11 +334,14 @@ class DaskBulkStorage:
         self, catalog: BulkCatalog, session: Session, bulk_id: str
     ) -> Optional[BulkCatalog]:
         """ build the catalog from the session."""
-        for files in session_meta.get_next_chunk_files(self._fs, self.base_directory, session):
-            # files share the same schemas so we retrieve the meta data from the first one
-            meta = session_meta.SessionFileMeta(self._fs, files[0])
-            new_entries = {col_name: BulkCatalog.ColumnInfo(paths=files, dtype=dtype)
-                           for col_name, dtype in zip(meta.columns, meta.dtypes)}
+        for chunks_metas in session_meta.get_next_chunk_files(self._fs, self.base_directory, session):
+            # chunks share the same schemas (columns + dtypes) so we get them from the first one
+            columns_dtypes = zip(chunks_metas[0].columns, chunks_metas[0].dtypes)
+            files = [m.path_with_protocol for m in chunks_metas]
+            relative_paths = [catalog.relative_path(f) for f in files]
+            # here it's fine that all ColumnInfo shares the same paths as its immutable
+            new_entries = {col_name: BulkCatalog.ColumnInfo(paths=relative_paths, dtype=dtype)
+                           for col_name, dtype in columns_dtypes}
             cols_in_catalog = catalog.columns.keys() & new_entries
             if len(cols_in_catalog) > 0:
                 # if some columns already exist in the catalog, merge is needed
@@ -345,8 +349,7 @@ class DaskBulkStorage:
                 await self._resolve_conflict_catalog(catalog, bulk_id, files, cols_in_catalog)
                 new_entries = {k: v for k,v in new_entries.items() if k not in cols_in_catalog}
 
-            for col_name, col_info in new_entries.items():
-                catalog.set_column_info(col_name, col_info)
+            catalog.update_column_info(new_entries)
 
         return catalog
 
@@ -373,9 +376,9 @@ class DaskBulkStorage:
         
         merged_df = await merged_df
         dtypes = merged_df.dtypes
-        for col_name in cols_to_merge:
-            info = BulkCatalog.ColumnInfo(paths=[merged_df_path], dtype=str(dtypes[col_name])) # TODO if dtype change ?
-            catalog.set_column_info(col_name, info)
+        relative_paths = [catalog.relative_path(merged_df_path)]
+        catalog.update_column_info({c: BulkCatalog.ColumnInfo(paths=relative_paths, dtype=str(dtypes[c]))
+                                    for c in cols_to_merge})
 
     @capture_timings('_save_session_index')
     async def _save_session_index(self, path: str, index: pd.Index) -> str:

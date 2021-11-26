@@ -139,7 +139,7 @@ def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[Se
 
 def get_next_chunk_files(
     filesystem, base_directory, session: Session
-) -> Generator[List[str], None, None]:
+) -> Generator[List[SessionFileMeta], None, None]:
     """Generator which groups session chunk files in lists of files that can be read directly with dask
     File can be grouped if they have the same schemas and no overlap between indexes
     """
@@ -150,16 +150,15 @@ def get_next_chunk_files(
     for chunk in chunks_info:
         if chunk.shape in cache: # if other chunks with same shape
             if any(chunk.overlap(c) for c in cache[chunk.shape]):  # rows overlaps
-                yield [file.path_with_protocol for file in cache[chunk.shape]]
+                yield cache[chunk.shape]
                 del cache[chunk.shape]
         elif not columns_in_cache.isdisjoint(chunk.columns): # else if columns conflicts
             conflicting_chunk = next(metas[0] for metas in cache.values()
                                      if chunk.has_common_columns(metas[0]))
-            yield [file.path_with_protocol for file in cache[conflicting_chunk.shape]]
+            yield cache[conflicting_chunk.shape]
             columns_in_cache = columns_in_cache.difference(conflicting_chunk.columns)
             del cache[conflicting_chunk.shape]
         cache.setdefault(chunk.shape, []).append(chunk)
         columns_in_cache.update(chunk.columns)
 
-    for files in cache.values():
-        yield [file.path_with_protocol for file in files]
+    yield from cache.values()

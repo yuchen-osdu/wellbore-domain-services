@@ -16,6 +16,7 @@ This module groups function related to bulk catalog.
 A catalog contains metadata of the chunks
 """
 import json
+import os
 from collections import namedtuple
 from contextlib import suppress
 from dataclasses import dataclass, field
@@ -24,7 +25,8 @@ from typing import Dict, Iterable, List, Optional
 from app.bulk_persistence.dask.errors import BulkNotProcessable
 from app.utils import capture_timings
 
-from .storage_path_builder import join, remove_protocol, record_path, add_protocol
+from .storage_path_builder import (add_protocol, join, record_path,
+                                   remove_protocol)
 
 
 @dataclass
@@ -63,26 +65,28 @@ class BulkCatalog:
     nb_rows: int = 0
     index_path: Optional[str] = None
 
-    def record_base_path(self):
-        return record_path(self.base_directory, self.record_id, self.protocol)
-
-    def relative_path(self, path):
-        import os
-        return os.path.relpath(add_protocol(path, self.protocol), self.record_base_path())
-
     def get_index_path(self):
+        """Returns the full index path (the index path is saved as relative path)"""
         if self.index_path:
             return join(self.record_base_path(), self.index_path)
         return None
-    
-    def set_index_path(self, index_path):
+
+    def set_index_path(self, index_path: str):
+        """Helper that save the index path and convert it to relative path if not"""
         self.index_path = self.relative_path(index_path)
 
-    def set_column_info(self, col_name: str, column_info: ColumnInfo):
-        if col_name in self.columns:
-            del self.columns[col_name]
-        self.add_column_info(col_name, column_info)
-        
+    def record_base_path(self):
+        """Returns the catalog entity base path"""
+        return record_path(self.base_directory, self.record_id, self.protocol)
+
+    def relative_path(self, path: str):
+        """Returns the relative path for catalog paths"""
+        return os.path.relpath(add_protocol(path, self.protocol), self.record_base_path())
+
+    def update_column_info(self, columns_info: Dict[str, ColumnInfo]):
+        """insert or replace column information with the given"""
+        self.columns.update(columns_info)
+
     def add_column_info(self, col_name: str, column_info: ColumnInfo, check_dtype: bool = False):
         """Add column information to the catalog.
         If the column already exist in the catalog, merge information.
@@ -102,15 +106,13 @@ class BulkCatalog:
         >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file4'], 'int64'), True)
         BulkNotProcessable: bulk not processable: column A has different dtypes, int32 vs int64
         """
-        new_column_info = self.ColumnInfo(paths=[self.relative_path(p) for p in column_info.paths],
-                                          dtype=column_info.dtype)
         if col_name in self.columns:
-            if check_dtype and self.columns[col_name].dtype != new_column_info.dtype:
+            if check_dtype and self.columns[col_name].dtype != column_info.dtype:
                 raise BulkNotProcessable(message=f"column {col_name} has different dtypes,"
-                                         f" {self.columns[col_name].dtype} vs {new_column_info.dtype}")
-            self.columns[col_name].paths.extend(new_column_info.paths)  # TODO check if file already exists ?
+                                         f" {self.columns[col_name].dtype} vs {column_info.dtype}")
+            self.columns[col_name].paths.extend(column_info.paths) # TODO create new list ?
         else:
-            self.columns[col_name] = new_column_info
+            self.columns[col_name] = column_info
 
     ColumnsPaths = namedtuple('ColumnsPaths', ['columns', 'paths'])
 
