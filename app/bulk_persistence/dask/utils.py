@@ -25,16 +25,17 @@ import dask.dataframe as dd
 
 def worker_make_log_captured_timing_handler(level=INFO):
     """log captured timing from the worker subprocess (no access to context)"""
+
     def log_captured_timing(tag, wall, cpu):
         logger = get_logger()
         if logger:
             logger.log(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
+
     return log_captured_timing
 
 
 worker_capture_timing_handlers = [worker_make_log_captured_timing_handler(INFO)]
 
-##
 
 def share_items(seq1, seq2):
     """Returns True if seq1 contains common items with seq2."""
@@ -45,31 +46,6 @@ def by_pairs(iterable):
     """Yield successive 2 elements from iterable.
     Fill with None if less than 2 items in iterable."""
     return zip_longest(*[iter(iterable)] * 2, fillvalue=None)
-
-
-class SessionFileMeta:
-    def __init__(self, fs, file_path: str) -> None:
-        self._fs = fs
-        file_name = os.path.basename(file_path)
-        start, end, tail = file_name.split('_')
-        self.start = float(start)  # data time support ?
-        self.end = float(end)
-        self.time, self.shape, tail = tail.split('.')
-        self.columns = self._get_columns(file_path)  # TODO lazy load
-        self.path = file_path
-
-    def _get_columns(self, file_path):
-        path, _ = os.path.splitext(file_path)
-        with self._fs.open(path + '.meta') as meta_file:
-            return json.load(meta_file)['columns']
-
-    def overlap(self, other: 'SessionFileMeta'):
-        """Returns True if indexes overlap."""
-        return self.end >= other.start and other.end >= self.start
-
-    def has_common_columns(self, other):
-        """Returns True if contains common columns with others."""
-        return share_items(self.columns, other.columns)
 
 
 @capture_timings("set_index", handlers=worker_capture_timing_handlers)
@@ -94,4 +70,3 @@ def do_merge(df1: dd.DataFrame, df2: dd.DataFrame):
         ddf = df1.join(df2, how='outer')  # join seems faster when there no columns in common
 
     return ddf
-    

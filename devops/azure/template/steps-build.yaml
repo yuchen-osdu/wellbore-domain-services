@@ -62,7 +62,7 @@ steps:
       done
 
 - task: Bash@3
-  displayName: 'build image'
+  displayName: 'build $(app) image'
   inputs:
     targetType: 'inline'
     script: |
@@ -70,8 +70,8 @@ steps:
       echo $current_utc_date
 
       echo ----- BUILD IMAGE ------------
-      docker build -t=wdms-osdu:$(tag_name) \
-                   -t=wdms-osdu:latest \
+      docker build -t=$(app):$(tag_name) \
+                   -t=$(app):latest \
                    --rm . -f ./build/Dockerfile \
                    --build-arg PIP_WHEEL_DIR=python-packages \
                    --build-arg build_date="$current_utc_date" \

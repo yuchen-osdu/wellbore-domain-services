@@ -12,85 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hashlib
 import json
-import time
+import uuid
 from contextlib import suppress
-from functools import wraps
 from operator import attrgetter
 from typing import List
 
 import fsspec
 import pandas as pd
-from pyarrow.lib import ArrowException, ArrowInvalid
-from app.bulk_persistence import BulkId
-from app.bulk_persistence.dask.errors import BulkNotFound, BulkNotProcessable
-from app.bulk_persistence.dask.traces import wrap_trace_process
-from app.bulk_persistence.dask.utils import (SessionFileMeta, by_pairs,
-                                             do_merge, 
-                                             worker_capture_timing_handlers)
+import dask.dataframe as dd
+from dask.distributed import Client as DaskDistributedClient
+from pyarrow.lib import ArrowException
+import pyarrow.parquet as pa
+
+from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
+
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
-from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-import pyarrow.parquet as pa
 
-import dask.dataframe as dd
-from dask.distributed import Client as DaskDistributedClient
-from dask.distributed import WorkerPlugin
-from dask.distributed import scheduler
-
-
-def internal_bulk_exceptions(target):
-    """
-    Decoration to handler exceptions that should be not exposed to outside world. e.g. Pyarrow or Dask exceptions
-    """
-
-    @wraps(target)
-    async def async_inner(*args, **kwargs):
-        try:
-            return await target(*args, **kwargs)
-        except ArrowInvalid as e:
-            get_logger().exception(f"Pyarrow ArrowInvalid when running {target.__name__}")
-            raise BulkNotProcessable(f"Unable to process bulk - {str(e)}")
-        except ArrowException:
-            get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
-            raise BulkNotProcessable("Unable to process bulk - Arrow")
-        except scheduler.KilledWorker:
-            get_logger().exception(f"Dask worker raised exception when running '{target.__name__}'")
-            raise BulkNotProcessable("Unable to process bulk- Dask")
-        except Exception:
-            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
-            raise
-
-    return async_inner
-
-
-class DefaultWorkerPlugin(WorkerPlugin):
-
-    def __init__(self, logger=None, register_fsspec_implementation=None) -> None:
-        self.worker = None
-        global _LOGGER
-        _LOGGER = logger
-
-        self._register_fsspec_implementation = register_fsspec_implementation
-        super().__init__()
-        get_logger().debug("WorkerPlugin initialised")
-
-    def setup(self, worker):
-        self.worker = worker
-        if self._register_fsspec_implementation:
-            self._register_fsspec_implementation()
-
-    def transition(self, key, start, finish, *args, **kwargs):
-        if finish == 'error':
-            # exc = self.worker.exceptions[key]
-            get_logger().exception(f"Task '{key}' has failed with exception")
-
-
-def pandas_to_parquet(pdf, path, opt):
-    return pdf.to_parquet(path, index=True, engine='pyarrow', storage_options=opt)
+from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
+from .traces import wrap_trace_process, _create_func_key
+from .utils import by_pairs, do_merge, worker_capture_timing_handlers
+from .dask_worker_plugin import DaskWorkerPlugin
+from ..dataframe_validators import assert_df_validate, validate_index, columns_not_in_reserved_names
+from .session_file_meta import SessionFileMeta
+from .. import DataframeSerializerSync
+from . import storage_path_builder as pathBuilder
+from ..bulk_id import new_bulk_id
 
 
 class DaskBulkStorage:
@@ -116,7 +66,7 @@ class DaskBulkStorage:
                 parameters.register_fsspec_implementation()
 
             await DaskBulkStorage.client.register_worker_plugin(
-                DefaultWorkerPlugin,
+                DaskWorkerPlugin,
                 name="LoggerWorkerPlugin",
                 logger=get_logger(),
                 register_fsspec_implementation=parameters.register_fsspec_implementation)
@@ -133,22 +83,6 @@ class DaskBulkStorage:
     @property
     def base_directory(self) -> str:
         return self._parameters.base_directory
-
-    def _encode_record_id(self, record_id: str) -> str:
-        return hashlib.sha1(record_id.encode()).hexdigest()
-
-    def _get_base_directory(self, protocol=True):
-        return f'{self.protocol}://{self.base_directory}' if protocol else self.base_directory
-
-    def _get_blob_path(self, record_id: str, bulk_id: str, with_protocol=True) -> str:
-        """Return the bulk path from the bulk_id."""
-        encoded_id = self._encode_record_id(record_id)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/bulk/{bulk_id}/data'
-
-    def _build_path_from_session(self, session: Session, with_protocol=True) -> str:
-        """Return the session path."""
-        encoded_id = self._encode_record_id(session.recordId)
-        return f'{self._get_base_directory(with_protocol)}/{encoded_id}/session/{session.id}/data'
 
     def _load(self, path, **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
@@ -171,27 +105,37 @@ class DaskBulkStorage:
         """Return a dask Dataframe of a record at the specified version.
         returns a Future<dd.DataFrame>
         """
-        return self._load(self._get_blob_path(record_id, bulk_id), columns=columns)
+        blob_path = pathBuilder.record_bulk_path(
+            self.base_directory, record_id, bulk_id, self.protocol)
+        return self._load(blob_path, columns=columns)
 
     @with_trace('read_stat')
     def read_stat(self, record_id: str, bulk_id: str):
         """Return some meta data about the bulk."""
-        file_path = self._get_blob_path(record_id, bulk_id, with_protocol=False)
-        dataset = pa.ParquetDataset(file_path, filesystem=self._fs)
-        schema = dataset.read_pandas().schema
-        schema_dict = {x: str(y) for (x, y) in zip(schema.names, schema.types)}
-        return {
-            "num_rows": dataset.metadata.num_rows,
-            "schema": schema_dict
-        }
+        try:
+            file_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
+            dataset = pa.ParquetDataset(file_path, filesystem=self._fs)
+            schema = dataset.read_pandas().schema
+            schema_dict = {x: str(y) for (x, y) in zip(schema.names, schema.types)}
+            return {
+                "num_rows": dataset.metadata.num_rows,
+                "schema": schema_dict
+            }
+        except OSError:
+            raise BulkNotFound(record_id, bulk_id)
 
     def _submit_with_trace(self, target_func, *args, **kwargs):
         """
              Submit given target_func to Distributed Dask workers and add tracing required stuff
+
+             Note: 'dask_task_key' is manually created to easy reading of Dask's running tasks: it will display
+             the effective targeted function instead of 'wrap_trace_process' used to enable tracing into Dask workers.
         """
+        dask_task_key = _create_func_key(target_func, *args, **kwargs)
         kwargs['span_context'] = get_ctx().tracer.span_context
         kwargs['target_func'] = target_func
-        return self.client.submit(wrap_trace_process, *args, **kwargs)
+
+        return self.client.submit(wrap_trace_process, *args, key=dask_task_key, **kwargs)
 
     def _map_with_trace(self, target_func, *args, **kwargs):
         """
@@ -236,34 +180,22 @@ class DaskBulkStorage:
         returns a Future<None>
         """
         f_pdf = await self.client.scatter(pdf)
-        return await self._submit_with_trace(pandas_to_parquet, f_pdf, path,
-                                             self._parameters.storage_options)
-
-    @staticmethod
-    def _check_incoming_chunk(df):
-        # TODO should we test if is_monotonic?, unique ?
-        if len(df.index) == 0:
-            raise BulkNotProcessable("Empty data")
-
-        if not df.index.is_unique:
-            raise BulkNotProcessable("Duplicated index found")
-
-        if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
-            raise BulkNotProcessable("Index should be numeric or datetime")
+        return await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, path,
+                                             storage_options=self._parameters.storage_options)
 
     @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
     @with_trace('save_blob')
     async def save_blob(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
-        bulk_id = bulk_id or BulkId.new_bulk_id()
+        bulk_id = bulk_id or new_bulk_id()
 
         if isinstance(ddf, pd.DataFrame):
-            self._check_incoming_chunk(ddf)
-            ddf = dd.from_pandas(ddf, npartitions=1)
+            assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
+            ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
             ddf = await self.client.scatter(ddf)
 
-        path = self._get_blob_path(record_id, bulk_id)
+        path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         try:
             await self._save_with_dask(path, ddf)
         except OSError:
@@ -273,34 +205,27 @@ class DaskBulkStorage:
     @capture_timings('session_add_chunk')
     @with_trace('session_add_chunk')
     async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
-        self._check_incoming_chunk(pdf)
+        assert_df_validate(dataframe=pdf, validation_funcs=[validate_index, columns_not_in_reserved_names])
 
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]
 
-        # generate a file name sorted by starting index
-        # dask reads and sort files by 'natural_key' So the file name impact the final result
-        first_idx, last_idx = pdf.index[0], pdf.index[-1]
-        if isinstance(pdf.index, pd.DatetimeIndex):
-            first_idx, last_idx = pdf.index[0].value, pdf.index[-1].value
-        idx_range = f'{first_idx}_{last_idx}'
-        shape = hashlib.sha1('_'.join(map(str, pdf)).encode()).hexdigest()
-        t = round(time.time() * 1000)
-        filename = f'{idx_range}_{t}.{shape}'
+        filename = pathBuilder.build_chunk_filename(pdf)
+        session_path = pathBuilder.record_session_path(
+            self.base_directory, session.id, session.recordId)
 
-        session_path_wo_protocol = self._build_path_from_session(session, with_protocol=False)
-        self._fs.mkdirs(session_path_wo_protocol, exist_ok=True)
-        with self._fs.open(f'{session_path_wo_protocol}/{filename}.meta', 'w') as outfile:
-            json.dump({"columns": list(pdf)}, outfile)
+        self._fs.mkdirs(session_path, exist_ok=True)
+        with self._fs.open(f'{session_path}/{filename}.meta', 'w') as outfile:
+            json.dump({"columns": list(pdf.columns)}, outfile)
 
-        session_path = self._build_path_from_session(session)
-
+        session_path = pathBuilder.add_protocol(session_path, self.protocol)
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
     @capture_timings('get_session_parquet_files')
     @with_trace('get_session_parquet_files')
     def get_session_parquet_files(self, session):
-        session_path = self._build_path_from_session(session, with_protocol=False)
+        session_path = pathBuilder.record_session_path(
+            self.base_directory, session.id, session.recordId)
         with suppress(FileNotFoundError):
             session_files = [f for f in self._fs.ls(session_path) if f.endswith(".parquet")]
             return session_files

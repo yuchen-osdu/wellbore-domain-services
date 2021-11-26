@@ -1,3 +1,6 @@
+from dask.utils import funcname
+from dask.base import tokenize
+
 from opencensus.trace.span import SpanKind
 from opencensus.trace import tracer as open_tracer
 from opencensus.trace.samplers import AlwaysOnSampler
@@ -23,6 +26,13 @@ def wrap_trace_process(*args, **kwargs):
                                 sampler=AlwaysOnSampler(),
                                 exporter=_EXPORTER)
 
-    with tracer.span(name=f"Dask Worker - {target_func.__name__}") as span:
+    with tracer.span(name=f"Dask Worker - {funcname(target_func)}") as span:
         span.span_kind = SpanKind.CLIENT
         return target_func(*args, **kwargs)
+
+
+def _create_func_key(func, *args, **kwargs):
+    """
+     Inspired by Dask code, it returns a hashed key based on function name and given arguments
+    """
+    return funcname(func) + "-" + tokenize(func, kwargs, *args)

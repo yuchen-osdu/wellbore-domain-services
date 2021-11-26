@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pandas as pd
-from app.bulk_persistence import BulkId, NoBulkException, UnknownChannelsException, InvalidBulkException
+from app.bulk_persistence import BulkURI, NoBulkException, UnknownChannelsException, InvalidBulkException
 from app.model.model_curated import trajectory as Trajectory
 
 from app.bulk_persistence import get_dataframe, create_and_store_dataframe
@@ -46,11 +46,11 @@ class Persistence:
             raise NoBulkException
 
         try:
-            bulkid, _prefix = BulkId.bulk_urn_decode(record.data.bulkURI)
+            bulk_uri = BulkURI.decode(record.data.bulkURI)
             # TODO use prefix to know how to read the bulk
-            df = await get_dataframe(ctx, bulkid)
+            df = await get_dataframe(ctx, bulk_uri.bulk_id)
         except Exception as ex:
-            raise InvalidBulkException(ex)
+            raise InvalidBulkException(ex) from ex
 
         if not channels:
             return df
@@ -60,8 +60,7 @@ class Persistence:
         except KeyError as key_error:  # unknown channels
             raise UnknownChannelsException(key_error)
 
-
     @classmethod
-    async def write_bulk(cls, ctx, dataframe: pd.DataFrame) -> str:
+    async def write_bulk(cls, ctx, dataframe: pd.DataFrame) -> BulkURI:
         bulk_id = await create_and_store_dataframe(ctx, dataframe)
-        return BulkId.bulk_urn_encode(bulk_id)
+        return BulkURI.from_bulk_storage_V0(bulk_id)

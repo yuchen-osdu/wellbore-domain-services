@@ -60,6 +60,7 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- colorama (from https://github.com/tartley/colorama)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
@@ -78,10 +79,13 @@ BSD-3-Clause
 The following software have components provided under the terms of this license:
 
 - HeapDict (from http://stutzbachenterprises.com/)
+- Jinja2 (from http://jinja.pocoo.org/)
+- MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
 - adlfs (from https://github.com/hayesgb/adlfs/)
 - asgiref (from http://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
+- colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
 - dask (from http://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
@@ -169,14 +173,6 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
-- strict-rfc3339 (from http://www.danielrichman.co.uk/libraries/strict-rfc3339.html)
-
-========================================================================
-GPL-3.0-or-later
-========================================================================
-The following software have components provided under the terms of this license:
-
-- strict-rfc3339 (from http://www.danielrichman.co.uk/libraries/strict-rfc3339.html)
 
 ========================================================================
 ISC
@@ -234,7 +230,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis)
-- anyio (from https://pypi.org/project/anyio/3.3.4/)
+- anyio (from https://pypi.org/project/anyio/3.4.0/)
 - asgiref (from http://github.com/django/asgiref/)
 - attrs (from https://attrs.readthedocs.io/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -285,7 +281,7 @@ The following software have components provided under the terms of this license:
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from http://www.structlog.org/)
 - toml (from https://github.com/uiri/toml)
-- tomli (from https://pypi.org/project/tomli/1.2.1/)
+- tomli (from https://pypi.org/project/tomli/1.2.2/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)
