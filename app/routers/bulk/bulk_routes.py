@@ -134,21 +134,39 @@ async def post_chunk_data(record_id: str,
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           df_validation_func=Depends(get_df_validation_func),
                           ):
+    content_type = request.headers.get('Content-Type', '')
+    if not content_type:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Content-Type is missing')
+
     if hasattr(request.state, 'version') and request.state.version != "V2":
         record = await fetch_record(with_session.ctx, record_id)
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
+
+    # fetch the session
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
-    df = await get_df_from_request(request, orient)
+    # process and store the data chunk
     try:
-        assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
+        # TODO temporary built new storage from current one
+        bulk_storage = DaskBulkStorageFullWorkerDelegated(dask_blob_storage)
+
+        bulk_id, basic_describe = await bulk_storage.add_chunk_in_session(
+            request.stream(),  # this consume the body stream
+            content_type,
+            orient.value,
+            df_validation_func,
+            record_id,
+            i_session.session.id)
+
     except BulkError as ex:
         ex.raise_as_http()
-    await dask_blob_storage.session_add_chunk(i_session.session, df)
+
+    # TODO define what to return
+    return {}
 
 
 @router.get(
