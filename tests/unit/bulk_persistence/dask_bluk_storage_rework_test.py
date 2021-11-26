@@ -49,22 +49,25 @@ def test_basic_describe_truncates_columns():
 # so far post_data and add_chunk takes same input, validate similarly and throw same exceptions
 @pytest.mark.parametrize("method_to_test", [write_bulk_without_session])
 def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
+    def as_bytes_io(content):
+        return BytesIO(content)
+
     # unsupported content type
     with pytest.raises(BulkNotProcessable):
-        method_to_test(BytesIO(b'123'), 'invalid_content_type', '', no_validation, '', None)
+        method_to_test(b'123', as_bytes_io, 'invalid_content_type', '', no_validation, '', None)
 
     # empty input as json format
     with pytest.raises(BulkNotProcessable):
-        method_to_test(BytesIO(b''), 'application/json', '', no_validation, '', None)
+        method_to_test(b'', as_bytes_io, 'application/json', '', no_validation, '', None)
 
     # empty input as parquet format
     with pytest.raises(BulkNotProcessable):
-        method_to_test(BytesIO(b''), 'application/x-parquet', '', no_validation, '', None)
+        method_to_test(b'', as_bytes_io, 'application/x-parquet', '', no_validation, '', None)
 
     # custom validation failure
     with pytest.raises(BulkNotProcessable):
         data = pd.DataFrame({'1': [10], '2': [20]}).to_parquet(engine='pyarrow')
-        method_to_test(BytesIO(data), 'application/x-parquet', '',
+        method_to_test(data, as_bytes_io, 'application/x-parquet', '',
                                       lambda _: (False, "some error"), '', None)
 
     # index not numerical
@@ -72,7 +75,7 @@ def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
         df = pd.DataFrame({'1': ['A'], '2': ['B']})
         df.set_index('1')
         data = pd.DataFrame(df).to_parquet(engine='pyarrow')
-        method_to_test(BytesIO(data), 'application/x-parquet', '',
+        method_to_test(data, as_bytes_io, 'application/x-parquet', '',
                                       lambda _: (False, "some error"), '', None)
 
     # index not unique
@@ -80,14 +83,14 @@ def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
         df = pd.DataFrame({'A': [1, 1], 'B': [2, 2]})
         df.set_index('A')
         data = df.to_parquet(engine='pyarrow')
-        method_to_test(BytesIO(data), 'application/x-parquet', '',
+        method_to_test(data, as_bytes_io, 'application/x-parquet', '',
                                       lambda _: (False, "some error"), '', None)
 
     # save error
     data = pd.DataFrame({'A': [1], 'B': [4]}).to_parquet(engine='pyarrow', index=True)
     with patch.object(pd.DataFrame, 'to_parquet', side_effect=lambda *args, **kwargs: 0/0):
         with pytest.raises(BulkSaveException):
-            method_to_test(BytesIO(data), 'application/x-parquet', '', no_validation, temp_directory, None)
+            method_to_test(data, as_bytes_io, 'application/x-parquet', '', no_validation, temp_directory, None)
 
 
 @pytest.mark.parametrize("content_type", [
@@ -98,7 +101,7 @@ def test_write_bulk_without_session_success(content_type):
     df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
     data = dataframe_to_format(df, content_type, True)
     with patch.object(pd.DataFrame, 'to_parquet') as mock_method:
-        result = write_bulk_without_session(data, content_type, 'split', no_validation,
+        result = write_bulk_without_session(data, lambda x: x, content_type, 'split', no_validation,
                                                'my_path', {'storage_opt1': 42})
         mock_method.assert_called_once()
 

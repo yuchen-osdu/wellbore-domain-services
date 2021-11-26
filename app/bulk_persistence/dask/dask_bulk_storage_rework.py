@@ -10,7 +10,8 @@ from app.conf import Config
 
 # imports from bulk_persistence
 from .. import MimeTypes, DataframeSerializerSync
-from ..dataframe_validators import DataFrameValidationFunc, assert_df_validate, validate_index, columns_not_in_reserved_names
+from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
+                                    columns_not_in_reserved_names)
 from ..bulk_id import new_bulk_id
 from .traces import wrap_trace_process
 from .errors import internal_bulk_exceptions, BulkNotProcessable, BulkSaveException
@@ -74,7 +75,8 @@ def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
                                   indexEnd=int(df.index[-1]))
 
 
-def write_bulk_without_session(file_like_data,
+def write_bulk_without_session(data_handle,
+                               data_getter,
                                content_type: str,
                                orient: str,
                                df_validator_func: DataFrameValidationFunc,
@@ -82,7 +84,8 @@ def write_bulk_without_session(file_like_data,
                                storage_options) -> DataframeBasicDescribe:
     """
         process post data outside of a session - write data straight to blob storage
-        :param file_like_data: dataframe as input ipc raw bytes wrapped (file-like obj)
+        :param data_handle: dataframe as input ipc raw bytes wrapped (file-like obj)
+        :param data_getter: function to get data from the handle
         :param content_type: content type value (supports json and parquet)
         :param orient: in content json, orient must be provided.
         :param df_validator_func: option validation callable function.
@@ -93,7 +96,9 @@ def write_bulk_without_session(file_like_data,
         :throw: BulkNotProcessable, BulkSaveException
         """
     # 1- deserialize to pandas dataframe
-    df = deserialize(file_like_data, content_type, orient)
+    with data_getter(data_handle) as file_like_data:
+        df = deserialize(file_like_data, content_type, orient)
+    data_handle = None  # unref
 
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
@@ -158,11 +163,12 @@ class DaskBulkStorageFullWorkerDelegated:
                                         data: Union[bytes, AsyncGenerator[bytes, None]],
                                         content_type: str,
                                         orient: str,
-                                        df_validator_func,
+                                        df_validator_func: DataFrameValidationFunc,
                                         record_id: str,
                                         bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
         """
-        process post data outside of a session, delegate the entire work in Dask worker
+        process post data outside of a session, delegate the entire work in Dask worker. It constructs the path
+        for the bulk in current context, prepare and
         :throw:
             - BulkNotProcessable: in case on invalid input data
             - BulkSaveException: if store operation fails for some reasons
@@ -174,12 +180,13 @@ class DaskBulkStorageFullWorkerDelegated:
         # ensure directory exists for local storage, do nothing on remote storage
         self.ensure_dir_tree_exists(bulk_base_path)
 
-        async with self._get_data_ipc().set(data) as ipc_data_descriptor:
+        async with self._get_data_ipc().set(data) as (data_handle, data_getter):
             data = None  # unref data
 
             df_describe = await submit_with_trace(self.client,
                                                   write_bulk_without_session,
-                                                  ipc_data_descriptor,
+                                                  data_handle,
+                                                  data_getter,
                                                   content_type,
                                                   orient,
                                                   df_validator_func,

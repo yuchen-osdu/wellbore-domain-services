@@ -16,10 +16,10 @@ async def data_async_gen(data=b"123456789", chunk_size=3):
 
 async def assert_ipc_forward_equal(ipc, expected_data):
     # set in IPC
-    async with ipc.set(data_async_gen()) as data_ref:
+    async with ipc.set(data_async_gen()) as (data_ref, getter):
 
         # fetch from IPC
-        with ipc.get(data_ref) as file_like_data:
+        with getter(data_ref) as file_like_data:
 
             # THEN assert is the data expected
             assert file_like_data.read() == expected_data
@@ -63,15 +63,15 @@ async def test_dask_native_ipc_basic_usage():
     ipc_obj = DaskNativeDataIPC(dask_client=client)
 
     # worker function, simply read and return the data
-    def worker_func(ipc, ipc_data_ref):
-        with ipc.get(ipc_data_ref) as file_like_data:
+    def worker_func(ipc_data_ref, ipc_data_get_func):
+        with ipc_data_get_func(ipc_data_ref) as file_like_data:
             return file_like_data.read()
 
     # set in IPC
-    async with ipc_obj.set(b"123456789") as data_ref:
+    async with ipc_obj.set(b"123456789") as (data_ref, getter):
 
         # WHEN submit task to dask client
-        result = await client.submit(worker_func, DaskNativeDataIPC(), data_ref)
+        result = await client.submit(worker_func, data_ref, getter)
 
         # THEN worker as fetch and read the expected data
         assert result == b"123456789"
@@ -113,8 +113,8 @@ async def test_file_data_ipc_write_clean_up_files():
                 pass
 
             # WHEN doing regular usage
-            async with DaskLocalFileDataIPC().set(b"42") as ref:
-                with DaskLocalFileDataIPC().get(ref) as file_data:
+            async with DaskLocalFileDataIPC().set(b"42") as (ref, getter):
+                with getter(ref) as file_data:
                     file_data.read()
 
             # WHEN exception occurs post write
@@ -133,3 +133,9 @@ async def test_file_data_ipc_write_clean_up_files():
             all_removed_files = {c[0][0] for c in remove_mock.call_args_list}
             assert all_opened_files == all_removed_files
 
+
+@pytest.mark.asyncio
+async def test_data_ipc_new():
+    async with DaskNoneDataIPC().set(b"42") as (ref, getter):
+        with getter(ref) as file_data:
+            assert file_data.read() == b"42"

@@ -17,7 +17,7 @@ import uuid
 import asyncio
 from io import BytesIO
 from contextlib import asynccontextmanager, contextmanager, suppress
-from typing import Union, AsyncGenerator, AsyncContextManager, ContextManager
+from typing import Union, AsyncGenerator, AsyncContextManager
 
 
 from app.utils import get_wdms_temp_dir
@@ -36,17 +36,18 @@ improving efficiency. Here's a note from Dask: `Note that it is often better to 
 testing and development.
 
 Data is expected to flow is one for now, from main to worker. In main producer set the data asynchronously using a 
-context manager and pass the result as argument to the worker:
+context manager. The `set` method return an handle and getter pointer function. The data can then be fetched using the
+ getter function given the handle: and pass the result as argument to the worker:
 
 .. code-block:: python
-        async with ipc_data.set(data_to_pass_to_worker) as ipc_data_ref:
-            dask.client.submit(some_func, ipc_data_ref, ...)
+        async with ipc_data.set(data_to_pass_to_worker) as (ipc_data_handle, ipc_data_getter_func):
+            dask.client.submit(some_func, ipc_data_handle, ipc_data_getter_func, ...)
 
 
 Inside the worker, the data is fetched synchronously as a file_like object:
 
 .. code-block:: python
-        with ipc_data.get(ipc_data_ref) as file_like_data:
+        with ipc_data_getter_func(ipc_data_handle) as file_like_data:
             actual_data: bytes = file_like_data.read()
 
 """
@@ -60,39 +61,51 @@ async def _real_all_from_async_gen(gen: AsyncGenerator[bytes, None]) -> bytes:
     return b"".join(chunks)
 
 
+@contextmanager
+def ipc_data_getter_from_bytes(ipc_ref):
+    """ get data as file_like given data handle as direct bytes. To use with 'with' statement. """
+    yield BytesIO(ipc_ref)
+
+
+@contextmanager
+def ipc_data_getter_from_file(ipc_ref):
+    """ get data as file_like given data handle from a file. To use with 'with' statement. """
+    with open(ipc_ref, 'rb') as f:
+        yield f
+
+
 class DaskNativeDataIPC:
     """
     The class is meant to wrap the way data is transferred from/to a process to/from the Dask worker processes.
     This implementation uses Dask native way using scatter which is not really efficient for significant among of data
     above 2MB.
 
-    `get` is asynchronous, `set` is synchronous. `set` returns a read only file-like object
+    `get` is asynchronous and must be used with 'async with statement' providing a tuple (data_handle, getter_func)
 
     Parameters
     ----------
-    dask_client: dask distributed client. Can be `None` for data fetcher since ref carries what needed.
+    dask_client: dask distributed client.
 
     Examples
     --------
 
     Must be used with context manager:
     .. code-block:: python
-        def worker_fn(prepared_data):
-            with DaskDirectIPC(dask_client).get(data) as file_like_data:
-                data = file_like_data.read()
-
-
         async def producer_fn():
             data: bytes = ....
-            async with DaskDirectIPC(dask_client).set(data) as prepared_data:
+            async with DaskDirectIPC(dask_client).set(data) as (data_hdl, getter_func):
                 # submit that to Dask workers
-                dask_client.submit(worker_fn, prepared_data)
+                dask_client.submit(worker_fn, data_hdl, getter_func)
 
+
+        def worker_fn(data_hdl, getter_func):
+            with getter_func(data_hdl) as file_like_data:
+                data = file_like_data.read()
     """
 
     ipc_type = 'dask_native'
 
-    def __init__(self, dask_client=None):
+    def __init__(self, dask_client):
         """ build a dask native ipc """
         self._client = dask_client
 
@@ -101,11 +114,8 @@ class DaskNativeDataIPC:
         if type(data) is not bytes:  # basic type check
             data = await _real_all_from_async_gen(data)
 
-        yield await self._client.scatter(data)
-
-    @contextmanager
-    def get(self, ipc_ref) -> ContextManager:
-        yield BytesIO(ipc_ref)
+        scattered_data = await self._client.scatter(data)
+        yield scattered_data, ipc_data_getter_from_bytes
 
 
 class DaskLocalFileDataIPC:
@@ -129,16 +139,16 @@ class DaskLocalFileDataIPC:
     Must be used with context manager:
 
     .. code-block:: python
-        def worker_fn(prepared_data):
-            with DaskLocalFileIPC('.').get(data) as file_like_data:
-                data = file_like_data.read()
-
-
         async def producer_fn():
             data: bytes = ....
-            async with DaskLocalFileIPC('.').set(data) as prepared_data:
+            async with DaskLocalFileIPC('.').set(data) as (data_hdl, getter_func):
                 # submit that to Dask workers
-                dask_client.submit(worker_fn, prepared_data)
+                dask_client.submit(worker_fn, data_hdl, getter_func)
+
+
+        def worker_fn(data_hdl, getter_func):
+            with getter_func(data_hdl) as file_like_data:
+                data = file_like_data.read()
     """
 
     ipc_type = 'local_file'
@@ -156,6 +166,7 @@ class DaskLocalFileDataIPC:
             self._io_chunk_size = chunk_size
 
         def _clean(self):
+            # delete file if any
             if self._file_path:
                 with suppress(Exception):
                     remove(self._file_path)
@@ -178,7 +189,7 @@ class DaskLocalFileDataIPC:
             try:
                 with open(filepath, 'wb') as f:
                     self._file_path = filepath
-                    if type(self._data) is bytes: # basic type check
+                    if type(self._data) is bytes:  # basic type check
                         # data are bytes
                         await self._write_to_file(f, self._data)
                     else:
@@ -187,7 +198,7 @@ class DaskLocalFileDataIPC:
                             # async generator provided: iterate on chunks
                             await self._write_to_file(f, data_chunk)
                     self._data = None  # unref so it can be freed
-                    return filepath
+                    return filepath, ipc_data_getter_from_file
             except:  # clean up file in any case on write failure
                 self._clean()
                 raise
@@ -198,11 +209,6 @@ class DaskLocalFileDataIPC:
     def set(self, data: Union[bytes, AsyncGenerator[bytes, None]]) -> AsyncContextManager:
         return self._AsyncSetterContextManager(self._base_folder, data, self._io_chunk_size)
 
-    @contextmanager
-    def get(self, ipc_ref) -> ContextManager:
-        with open(ipc_ref, 'rb') as f:
-            yield f
-
 
 class DaskNoneDataIPC:
     """ Utility, when no multiprocess, do nothing just pass, get data as it """
@@ -212,8 +218,4 @@ class DaskNoneDataIPC:
     async def set(self, data: Union[bytes, AsyncGenerator[bytes, None]]) -> AsyncContextManager:
         if type(data) is not bytes:  # basic type check
             data = await _real_all_from_async_gen(data)
-        yield data
-
-    @contextmanager
-    def get(self, ipc_ref) -> ContextManager:
-        yield BytesIO(ipc_ref)
+        yield data, ipc_data_getter_from_bytes
