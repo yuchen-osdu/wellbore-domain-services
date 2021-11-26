@@ -191,18 +191,29 @@ for v2_api, tag, entity_type in ddms_v2_routes_groups:
                             tags=[tag],
                             dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V2"))])
 
-ddms_v3_routes_groups = [
+ddms_v3_routes_groups_without_bulk = [
     (wellbore_ddms_v3, "Wellbore", Entity.WELLBORE),
     (well_ddms_v3, "Well", Entity.WELL),
-    (welllog_ddms_v3, "WellLog", Entity.WELL_LOG),
-    (wellbore_trajectory_ddms_v3, "Trajectory v3", Entity.TRAJECTORY),
-    (markerset_ddms_v3, "Marker", Entity.MARKER),
+    (markerset_ddms_v3, "Marker", Entity.MARKER)
 ]
-for v3_api, tag, entity_type in ddms_v3_routes_groups:
+
+ddms_v3_routes_groups_with_bulk = [
+    (welllog_ddms_v3, "WellLog", Entity.WELL_LOG),
+    (wellbore_trajectory_ddms_v3, "Trajectory v3", Entity.TRAJECTORY)
+]
+
+for v3_api, tag, entity_type in ddms_v3_routes_groups_without_bulk:
     wdms_app.include_router(v3_api.router,
                             prefix=DDMS_V3_PATH,
                             tags=[tag],
                             dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
+
+v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check), Depends(set_osdu_bulk_id_access)]
+for v3_api, tag, entity_type in ddms_v3_routes_groups_with_bulk:
+    wdms_app.include_router(v3_api.router,
+                            prefix=DDMS_V3_PATH,
+                            tags=[tag],
+                            dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
 
 wdms_app.include_router(search.router, prefix='/ddms', tags=['search'], dependencies=basic_dependencies)
 wdms_app.include_router(fast_search.router, prefix='/ddms', tags=['fast-search'], dependencies=basic_dependencies)
@@ -215,7 +226,6 @@ wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_
                         dependencies=basic_dependencies)
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
-v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check), Depends(set_osdu_bulk_id_access)]
 
 for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, alpha_tags, False),
                                            (DDMS_V3_PATH, [], True)

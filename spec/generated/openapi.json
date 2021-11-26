@@ -17845,6 +17845,16 @@
             }
           },
           {
+            "in": "query",
+            "name": "purge",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Purge",
+              "type": "boolean"
+            }
+          },
+          {
             "description": "identifier of the data partition to query",
             "in": "header",
             "name": "data-partition-id",
@@ -18984,6 +18994,16 @@
             "schema": {
               "title": "Welllogid",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "purge",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Purge",
+              "type": "boolean"
             }
           },
           {

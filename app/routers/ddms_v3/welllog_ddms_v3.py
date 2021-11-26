@@ -29,9 +29,11 @@ from app.model.osdu_model import WellLog110 as WellLog
 
 from app.utils import Context, get_ctx, load_schema_example
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLLOG_VERSION_REGEX
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
 
-from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.record_utils import fetch_record
+from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from app.routers.delete.delete_bulk_data import delete_record
 
 router = APIRouter()
 
@@ -77,13 +79,16 @@ async def get_welllog_osdu(
         },
     },
 )
-async def del_osdu_welllog(welllogid: str, ctx: Context = Depends(get_ctx)):
-    storage_client = await get_storage_record_service(ctx)
+async def del_osdu_welllog(welllogid: str,
+                           purge: bool = False,
+                           ctx: Context = Depends(get_ctx),
+                           bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
     welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
                                                                   welllogid)
-    await storage_client.delete_record(
-        id=welllogid, data_partition_id=ctx.partition_id
-    )
+    await delete_record(record_id=welllogid,
+                        purge=purge,
+                        ctx=ctx,
+                        bulk_uri_access=bulk_uri_access)
 
 
 @router.get(
