@@ -130,6 +130,10 @@ class DaskBulkStorageFullWorkerDelegated:
         self._parameters = dask_bulk_storage._parameters
         self._fs = dask_bulk_storage._fs
         self.client = dask_bulk_storage.client
+        if Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
+            self._data_ipc = DaskLocalFileDataIPC()
+        else:
+            self._data_ipc = DaskNativeDataIPC(self.client)
 
     @property
     def protocol(self) -> str:
@@ -142,12 +146,6 @@ class DaskBulkStorageFullWorkerDelegated:
     @property
     def storage_options(self):
         return self._parameters.storage_options
-
-    def _get_data_ipc(self):
-        """ return inter process data transfer implementation """
-        if Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
-            return DaskLocalFileDataIPC()
-        return DaskNativeDataIPC(self.client)
 
     def ensure_dir_tree_exists(self, path: str):
         path_wo_protocol, protocol = StoragePathBuilder.remove_protocol(path)
@@ -180,7 +178,7 @@ class DaskBulkStorageFullWorkerDelegated:
         # ensure directory exists for local storage, do nothing on remote storage
         self.ensure_dir_tree_exists(bulk_base_path)
 
-        async with self._get_data_ipc().set(data) as (data_handle, data_getter):
+        async with self._data_ipc.set(data) as (data_handle, data_getter):
             data = None  # unref data
 
             df_describe = await submit_with_trace(self.client,

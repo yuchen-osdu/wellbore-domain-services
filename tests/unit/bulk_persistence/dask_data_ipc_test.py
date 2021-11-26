@@ -2,7 +2,7 @@ import pytest
 from mock import AsyncMock
 from unittest.mock import patch, mock_open
 from contextlib import suppress
-from tests.unit.test_utils import temp_directory, side_effect_raise
+from tests.unit.test_utils import temp_directory, nope_logger_fixture, side_effect_raise
 
 
 from dask.distributed import Client
@@ -34,7 +34,7 @@ async def test_none_data_ipc_handle_async_generator_and_bytes(in_data):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("in_data", [b"123456789", data_async_gen()])
-async def test_file_data_ipc_handle_async_generator_and_bytes(temp_directory, in_data):
+async def test_file_data_ipc_handle_async_generator_and_bytes(nope_logger_fixture, temp_directory, in_data):
     ipc_obj = DaskLocalFileDataIPC(base_folder=temp_directory)
     await assert_ipc_forward_equal(ipc_obj, b"123456789")
 
@@ -84,7 +84,7 @@ async def test_dask_native_ipc_basic_usage():
     data_async_gen(b"abcdefghijklmnopqrstuvwyxz", 10),  # async gen with chunk size equal to write chunk size
     data_async_gen(b"abcdefghijklmnopqrstuvwyxz", 15),  # async gen with chunk size greater than write chunk size
 ])
-async def test_file_data_ipc_write_by_chunk(in_data):
+async def test_file_data_ipc_write_by_chunk(nope_logger_fixture, in_data):
     max_write_at_once_size = 10
     ipc_obj = DaskLocalFileDataIPC(base_folder="", io_chunk_size=max_write_at_once_size)
     with patch("builtins.open", mock_open(read_data=b"")) as mock_file:
@@ -103,7 +103,26 @@ async def test_file_data_ipc_write_by_chunk(in_data):
 
 
 @pytest.mark.asyncio
-async def test_file_data_ipc_write_clean_up_files():
+async def test_file_data_ipc_track_file_count_and_size(nope_logger_fixture, temp_directory):
+    ipc_obj = DaskLocalFileDataIPC(base_folder=temp_directory)
+
+    async with ipc_obj.set(b"0123456789"):
+        assert DaskLocalFileDataIPC.total_size_in_file == 10
+        assert DaskLocalFileDataIPC.total_files_count == 1
+
+        async with ipc_obj.set(b"01234"):
+            assert DaskLocalFileDataIPC.total_size_in_file == 15
+            assert DaskLocalFileDataIPC.total_files_count == 2
+
+        assert DaskLocalFileDataIPC.total_size_in_file == 10
+        assert DaskLocalFileDataIPC.total_files_count == 1
+
+    assert DaskLocalFileDataIPC.total_size_in_file == 0
+    assert DaskLocalFileDataIPC.total_files_count == 0
+
+
+@pytest.mark.asyncio
+async def test_file_data_ipc_write_clean_up_files(nope_logger_fixture):
     with patch("builtins.open", mock_open(read_data=b"")) as open_mock:
         # due to the wierdo of mock patch, using this path since patching 'os.remove' not working ...
         with patch("app.bulk_persistence.dask.dask_data_ipc.remove") as remove_mock:
