@@ -1,6 +1,9 @@
 # TODO this is a temporary name
 
 from typing import Optional, Tuple, List, Union, AsyncGenerator
+import json
+
+import fsspec
 import pandas as pd
 from pydantic import BaseModel, Field
 
@@ -120,6 +123,61 @@ def write_bulk_without_session(data_handle,
     return basic_describe(df)
 
 
+def add_chunk_in_session(data_handle,
+                         data_getter,
+                         content_type: str,
+                         orient: str,
+                         df_validator_func: DataFrameValidationFunc,
+                         record_session_path: str,
+                         storage_options) -> DataframeBasicDescribe:
+    """
+        process add chunk data inside of a session
+        :param data_handle: input ipc raw bytes wrapped (file-like obj)
+        :param data_getter: input ipc raw bytes wrapped (file-like obj)
+        :param content_type: content type value (supports json and parquet)
+        :param orient: in content json, orient must be provided.
+        :param df_validator_func: option validation callable function.
+        :param record_session_path: base path to the session associated to the record.
+        :param storage_options: storage options
+        :return: basic describe of the dataframe
+
+        :throw: BulkNotProcessable, BulkSaveException
+
+        """
+    # 1- deserialize
+    with data_getter(data_handle) as file_like_data:
+        df = deserialize(file_like_data, content_type, orient)
+    data_handle = None  # unref
+
+    # 2- perf some check
+    assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
+
+    # sort column by names # TODO could it be avoided ? then we could keep input untouched and save serialization step?
+    df = df[sorted(df.columns)]
+
+    # 3- build blob filename and final full blob path
+    filename = session_meta.generate_chunk_filename(df)
+
+    # 4- build and push chunk meta file
+    meta_file_path, protocol = StoragePathBuilder.remove_protocol(f'{record_session_path}/{filename}.meta')
+    # TODO ctor each time (so trigger a do_connect each time), avoidable?
+    fs = fsspec.filesystem(protocol, **(storage_options if storage_options else {}))
+    with fs.open(meta_file_path, 'w') as outfile:
+        json.dump(session_meta.build_chunk_metadata(df), outfile)
+
+    # 5- save/upload the dataframe
+    parquet_file_path = f'{record_session_path}/{filename}.parquet'
+    try:
+        # TODO will exist
+        # TODO to replace with DataframeSerializerSync.to_parquet(df, full_file_path, storage_options=storage_options)
+        df.to_parquet(parquet_file_path, index=True, engine='pyarrow', storage_options=storage_options)
+    except Exception as e:
+        raise BulkSaveException('Unexpected error and save bulk') from e
+
+    # 6- return basic describe
+    return basic_describe(df)
+
+
 class DaskBulkStorageFullWorkerDelegated:
     """
         Perform bulk storage and delegate all treatment in Dask workers.
@@ -189,6 +247,45 @@ class DaskBulkStorageFullWorkerDelegated:
                                                   orient,
                                                   df_validator_func,
                                                   bulk_base_path,
+                                                  self.storage_options)
+
+        return bulk_id, df_describe
+
+    @internal_bulk_exceptions
+    @capture_timings('add_chunk_in_session', handlers=worker_capture_timing_handlers)
+    @with_trace('add_chunk_in_session')
+    async def add_chunk_in_session(self,
+                                   data: Union[bytes, AsyncGenerator[bytes, None]],
+                                   content_type: str,
+                                   orient: str,
+                                   df_validator_func: DataFrameValidationFunc,
+                                   record_id: str,
+                                   session_id: str,
+                                   bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
+        """
+        add a chunk data inside a session, delegate the entire work in Dask worker
+        :throw:
+            - BulkNotProcessable: in case on invalid input data
+            - BulkSaveException: if store operation fails for some reasons
+        """
+
+        bulk_id = bulk_id or new_bulk_id()
+        base_path = StoragePathBuilder.record_session_path(self.base_directory, session_id, record_id, self.protocol)
+
+        # ensure directory exists for local storage, do nothing on remote storage
+        self.ensure_dir_tree_exists(base_path)
+
+        async with self._data_ipc.set(data) as (data_handle, data_getter):
+            data = None  # unref data
+
+            df_describe = await submit_with_trace(self.client,
+                                                  add_chunk_in_session,
+                                                  data_handle,
+                                                  data_getter,
+                                                  content_type,
+                                                  orient,
+                                                  df_validator_func,
+                                                  base_path,
                                                   self.storage_options)
 
         return bulk_id, df_describe
