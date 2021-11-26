@@ -15,11 +15,11 @@
 from wdms_client.request_runner import RequestRunner, Request
 
 
-def build_request_delete_purge_record() -> RequestRunner:
+def build_request_delete_purge_record(record_id: str, v3_entity: str, purge: str) -> RequestRunner:
     rq_proto = Request(
         name='Delete log',
         method='DELETE',
-        url='{{base_url}}/ddms/v3/{{v3_entity}}/{{record_id}}?purge={{purge}}',
+        url='{{base_url}}/ddms/v3/' + f'{v3_entity}/' + f'{record_id}?purge=' + f'{purge}',
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
@@ -29,11 +29,11 @@ def build_request_delete_purge_record() -> RequestRunner:
     )
     return RequestRunner(rq_proto)
 
-def build_request_get_record() -> RequestRunner:
+def build_request_get_record(base_url_v3_record: str, record_id: str) -> RequestRunner:
     rq_proto = Request(
         name="Get record",
         method="GET",
-        url="{{base_url_v3_record}}/{{record_id}}",
+        url=f'{base_url_v3_record}/' + f'{record_id}',
         headers={
             "accept": "application/json",
             "data-partition-id": "{{data_partition}}",
