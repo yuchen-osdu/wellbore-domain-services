@@ -186,13 +186,13 @@ class DaskLocalFileDataIPC:
         async def _write_to_file(self, file, chunk_data: bytes) -> int:
             """ write the  """
             if self._io_chunk_size == 0 or len(chunk_data) < self._io_chunk_size:  # write it all at once
-                return file.write(chunk_data)
+                return file.write(chunk_data) or 0
 
             # loop and release the event loop
             dump_size = self._io_chunk_size
             written_size = 0
             for i in range(0, len(chunk_data), dump_size):
-                written_size += file.write(chunk_data[i:i + dump_size])
+                written_size += file.write(chunk_data[i:i + dump_size]) or 0
                 # as Disk I/O cannot really be async, read/write one chunk at a time then release the event loop
                 await asyncio.sleep(0)
             return written_size
@@ -205,7 +205,7 @@ class DaskLocalFileDataIPC:
                     self._file_path = filepath
                     if type(self._data) is bytes:  # basic type check
                         # data are bytes
-                        self._file_size = await self._write_to_file(f, self._data) or 0
+                        self._file_size = await self._write_to_file(f, self._data)
                     else:
                         # data is passed as a async generator
                         async for data_chunk in self._data:
