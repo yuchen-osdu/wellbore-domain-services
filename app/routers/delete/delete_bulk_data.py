@@ -47,6 +47,12 @@ async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
     return record_bulk_uris
 
 
+def task_done(future_result):
+    if future_result.exception():
+        get_ctx().logger.exception(
+            f"Exception on bulk versions deletion: {future_result.exception().detail}")
+
+
 async def delete_record(
         record_id: str,
         purge: bool,
@@ -76,10 +82,6 @@ async def delete_record(
         for task in tasks:
             # create_task => ensure_future
             delete_result = asyncio.ensure_future(task)
-
-            def task_done(future_result):
-                if future_result.exception():
-                    get_ctx().logger.exception(
-                        f"Exception on bulk versions deletion: {future_result.exception().detail}")
+            task_done(delete_result)
 
             delete_result.add_done_callback(task_done)
