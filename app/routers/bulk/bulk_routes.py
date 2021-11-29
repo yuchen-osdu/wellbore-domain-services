@@ -48,7 +48,6 @@ from app.routers.bulk.utils import (
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
 from app.helper.traces import with_trace
 
-from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 import pandas as pd
 

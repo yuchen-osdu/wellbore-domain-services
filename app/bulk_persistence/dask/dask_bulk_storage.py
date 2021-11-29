@@ -64,7 +64,8 @@ def dask_to_parquet(ddf, path, storage_options):
     try:
         return dd.to_parquet(ddf, path, **to_parquet_args, schema="infer")
     except ArrowException: # ArrowInvalid
-        # In some conditions, the schema is not properly infered. As a workaround, passing schema={} solve the issue.
+        # In some conditions, the schema is not properly infered.
+        # As a workaround, passing schema={} solve the issue.
         return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
 
 
@@ -115,6 +116,9 @@ class DaskBulkStorage:
     def _map_with_trace(self, target_func: Callable, *args, **kwargs):
         return map_with_trace(self.client, target_func, *args, **kwargs)
 
+    def _relative_path(self, record_id: str, path: str) -> str:
+        return pathBuilder.record_relative_path(self.base_directory, record_id, path, self.protocol)
+
     def _read_parquet(self, path: Tuple[str, List[str]], **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
         Args:
@@ -142,7 +146,8 @@ class DaskBulkStorage:
         """
         # find columns that we can load together
         columns = catalog.columns.keys() & columns if columns else catalog.columns
-        files_to_load = catalog.get_paths_for_columns(columns)
+        record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
+        files_to_load = catalog.get_paths_for_columns(columns, record_path)
         # read all chunk for requested columns
         dfs = [self._read_parquet(path=f.paths, columns=f.columns) for f in files_to_load]
         if len(dfs) == 1:
@@ -178,7 +183,16 @@ class DaskBulkStorage:
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
     @with_trace('load_bulk')
     async def load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
-        """Returns a dask Dataframe of a record at the specified version."""
+        """Returns a dask Dataframe of a record at the specified version.
+        Args:
+            record_id (str): the record id on which belongs the bulk.
+            bulk_id (str): the bulk id to load.
+            columns (List[str], optional): columns to load. If None all all available columns. Defaults to None.
+        Raises:
+            BulkNotFound: If bulk data cannot be found.
+        Returns:
+            dd.DataFrame: a lazy loaded dask dataframe representing the bulk data.
+        """
         try:
             return await self._load_bulk(record_id, bulk_id, columns=columns)
         except OSError as exp:
@@ -277,7 +291,7 @@ class DaskBulkStorage:
 
         schemas = (d.read_pandas().schema for d in datasets)
 
-        catalog = BulkCatalog(record_id, self.base_directory, self.protocol)
+        catalog = BulkCatalog(record_id)
         catalog.nb_rows = max(get_num_rows(d) for d in datasets)
 
         for file, schema in zip(files, schemas):
@@ -285,17 +299,16 @@ class DaskBulkStorage:
                        for name, dtype in zip(schema.names, schema.types)
                        if not is_reserved_column_name(name))
             for name, dtype in columns:
-                info = BulkCatalog.ColumnInfo(paths=[catalog.relative_path(file)], dtype=dtype)
+                info = BulkCatalog.ColumnInfo(paths=[self._relative_path(record_id, file)], dtype=dtype)
                 catalog.add_column_info(name, info)
 
         return catalog
 
-    @capture_timings('load_index')
     async def _future_load_index(self, record_id: str, bulk_id: str) -> pd.Index:
         """load the dataframe index of the specified record"""
         catalog = await self.get_bulk_catalog(record_id, bulk_id)
-        index_path = catalog.get_index_path()
-        if index_path:
+        if catalog.index_path:
+            index_path = pathBuilder.full_path(self.base_directory, record_id, catalog.index_path)
             future_df = self._read_parquet(index_path)
         else: # only read one column to get the index. It doesn't seems possible to get the index directly.
             first_column = next(iter(catalog.columns))
@@ -338,7 +351,7 @@ class DaskBulkStorage:
             # chunks share the same schemas (columns + dtypes) so we get them from the first one
             columns_dtypes = zip(chunks_metas[0].columns, chunks_metas[0].dtypes)
             files = [m.path_with_protocol for m in chunks_metas]
-            relative_paths = [catalog.relative_path(f) for f in files]
+            relative_paths = [self._relative_path(catalog.record_id, f) for f in files]
             # here it's fine that all ColumnInfo shares the same paths as its immutable
             new_entries = {col_name: BulkCatalog.ColumnInfo(paths=relative_paths, dtype=dtype)
                            for col_name, dtype in columns_dtypes}
@@ -376,7 +389,7 @@ class DaskBulkStorage:
         
         merged_df = await merged_df
         dtypes = merged_df.dtypes
-        relative_paths = [catalog.relative_path(merged_df_path)]
+        relative_paths = [self._relative_path(catalog.record_id, merged_df_path)]
         catalog.update_column_info({c: BulkCatalog.ColumnInfo(paths=relative_paths, dtype=str(dtypes[c]))
                                     for c in cols_to_merge})
 
@@ -412,13 +425,13 @@ class DaskBulkStorage:
             # update session: we start from the previous catalog
             catalog = await self.get_bulk_catalog(session.recordId, from_bulk_id)
         else:
-            catalog = BulkCatalog(session.recordId, self.base_directory, self.protocol)
+            catalog = BulkCatalog(session.recordId)
 
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
         catalog.nb_rows = len(index)
         index_path = await self._save_session_index(commit_path, index)
-        catalog.set_index_path(index_path)
+        index.index_path = self._relative_path(session.recordId, index_path)
 
         await self._fill_catalog_columns_info(catalog, session, bulk_id)
         save_bulk_catalog(self._fs, commit_path, catalog)  # TODO async

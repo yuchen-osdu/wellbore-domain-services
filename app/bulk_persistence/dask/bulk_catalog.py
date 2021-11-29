@@ -25,8 +25,7 @@ from typing import Dict, Iterable, List, Optional
 from app.bulk_persistence.dask.errors import BulkNotProcessable
 from app.utils import capture_timings
 
-from .storage_path_builder import (add_protocol, join, record_path,
-                                   remove_protocol)
+from .storage_path_builder import (join, remove_protocol)
 
 
 @dataclass
@@ -35,8 +34,6 @@ class BulkCatalog:
     Exemple:
         {
             'record_id': '7507fb30-9cfa-4506-9cd8-6cbacbcda740',
-            'base_directory': 'bucket',
-            'protocol': 's3'
             'nb_rows': 1000,
             'index_path': 'folder/wdms_index/index.parquet,
             'columns' : {
@@ -59,29 +56,9 @@ class BulkCatalog:
         dtype: str
 
     record_id: str
-    base_directory: str
-    protocol: str
     columns: Dict[str, ColumnInfo] = field(default_factory=dict)
     nb_rows: int = 0
     index_path: Optional[str] = None
-
-    def get_index_path(self):
-        """Returns the full index path (the index path is saved as relative path)"""
-        if self.index_path:
-            return join(self.record_base_path(), self.index_path)
-        return None
-
-    def set_index_path(self, index_path: str):
-        """Helper that save the index path and convert it to relative path if not"""
-        self.index_path = self.relative_path(index_path)
-
-    def record_base_path(self):
-        """Returns the catalog entity base path"""
-        return record_path(self.base_directory, self.record_id, self.protocol)
-
-    def relative_path(self, path: str):
-        """Returns the relative path for catalog paths"""
-        return os.path.relpath(add_protocol(path, self.protocol), self.record_base_path())
 
     def update_column_info(self, columns_info: Dict[str, ColumnInfo]):
         """insert or replace column information with the given"""
@@ -116,27 +93,25 @@ class BulkCatalog:
 
     ColumnsPaths = namedtuple('ColumnsPaths', ['columns', 'paths'])
 
-    def get_paths_for_columns(self, columns: Iterable[str]) -> List[ColumnsPaths]:
+    def get_paths_for_columns(self, columns: Iterable[str], base_path: str) -> List[ColumnsPaths]:
         """Returns the paths to load data of the requested columns grouped by paths
         Warning: it implies that paths are identicaly formated (a/b vs a\\b)
         """
         groupped_files = {}
-        root_dir = self.record_base_path()
 
         for col_name in columns:
             files_list = self.columns[col_name].paths
-            paths = [join(root_dir, f) for f in files_list]
-            default = self.ColumnsPaths(columns=[], paths=paths)
+            default = self.ColumnsPaths(columns=[], paths=files_list)
             groupped_files.setdefault(tuple(files_list), default).columns.append(col_name)
-        return groupped_files.values()
+
+        return [self.ColumnsPaths(columns=cp.columns, paths=[join(base_path, f) for f in cp.paths])
+                for cp in groupped_files.values()]
 
     @capture_timings('as_dict')
     def as_dict(self) -> dict:
         """return the dict representation of the catalog"""
         return {
             "record_id": self.record_id,
-            "base_directory": self.base_directory,
-            "protocol": self.protocol,
             "nb_rows": self.nb_rows,
             "index_path": self.index_path,
             "columns": {c: {

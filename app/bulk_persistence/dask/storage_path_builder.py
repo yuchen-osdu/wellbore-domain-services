@@ -17,7 +17,7 @@ Utility functions that gathers method to build path for bulk storage
 """
 
 import hashlib
-from os.path import join
+from os.path import join, relpath
 from typing import Optional, Tuple
 
 
@@ -63,33 +63,34 @@ def record_path(
     return join(base_path, encoded_id)
 
 
-def record_bulks_root_path(
-    base_directory: str, record_id, protocol: Optional[str] = None
-) -> str:
-    """return the path where blob are stored for the specified entity"""
-    entity_path = record_path(base_directory, record_id, protocol)
-    return join(entity_path, 'bulk')
-
-
-def record_sessions_root_path(
-    base_directory: str, record_id, protocol: Optional[str] = None
-) -> str:
-    """return the path where sessions are stored for the specified entity"""
-    entity_path = record_path(base_directory, record_id, protocol)
-    return join(entity_path, 'session')
-
-
 def record_bulk_path(
     base_directory: str, record_id: str, bulk_id: str, protocol: Optional[str] = None
 ) -> str:
     """Return the path corresponding to the specified bulk."""
-    entity_blob_path = record_bulks_root_path(base_directory, record_id, protocol)
-    return join(entity_blob_path, bulk_id, 'data')
+    entity_path = record_path(base_directory, record_id, protocol)
+    return join(entity_path, 'bulk', bulk_id, 'data')
 
 
 def record_session_path(
     base_directory: str, session_id: str, record_id: str, protocol: Optional[str] = None
 ) -> str:
     """Return the path corresponding to the specified session."""
-    entity_session_path = record_sessions_root_path(base_directory, record_id, protocol)
-    return join(entity_session_path, session_id, 'data')
+    entity_path = record_path(base_directory, record_id, protocol)
+    return join(entity_path, 'session', session_id, 'data')
+
+
+def record_relative_path(
+    base_directory: str, record_id: str, path: str, protocol: Optional[str] = None
+) -> str:
+    """Returns the path relative to the specified record."""
+    base_path = record_path(base_directory, record_id, protocol)
+    if protocol:
+        path = add_protocol(path, protocol)
+    return relpath(path, base_path)
+
+
+def full_path(
+    base_directory: str, record_id: str, rel_path: str, protocol: Optional[str] = None
+) -> str:
+    """Returns the full path of a record from a relative path"""
+    return join(record_path(base_directory, record_id, protocol), rel_path)
