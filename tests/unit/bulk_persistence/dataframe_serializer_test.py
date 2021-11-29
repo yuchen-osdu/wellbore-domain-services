@@ -20,12 +20,12 @@ import pandas as pd
 import json
 import pytest
 from io import StringIO, BytesIO
+from unittest.mock import patch
 
 from tempfile import SpooledTemporaryFile
 
 Reference_df = pd.DataFrame([[1., 10, 11], [2., 20, 21], [3., 30, 31]], columns=['ref', 'a', 'b'])
 CONSTANT_DATA_JSON = '/data.json'
-
 
 # we're building it manually as we want to spot any change from anywhere that could occur (in pandas for instance)
 # we want format to be stable
@@ -181,3 +181,60 @@ def test_to_json_to_file_like():
     str_buf.seek(0)
     actual_dict = json.loads(str_buf.read())
     assert actual_dict == data_dict
+
+
+def test_to_parquet_to_buffer():
+    result = DataframeSerializerSync.to_parquet(Reference_df)
+
+    actual_df = pd.read_parquet(BytesIO(result))
+    assert_dataframe_equals(Reference_df, actual_df)
+
+
+def test_to_parquet_to_file_like():
+    str_buf = BytesIO()
+
+    result = DataframeSerializerSync.to_parquet(Reference_df, path_or_buf=str_buf)
+    assert result is None
+
+    str_buf.seek(0)
+    actual_df = pd.read_parquet(str_buf)
+    assert_dataframe_equals(Reference_df, actual_df)
+
+
+def test_to_parquet_forward_storage_options():
+    with patch.object(pd.DataFrame, 'to_parquet') as mock_to_parquet:
+        DataframeSerializerSync.to_parquet(Reference_df, storage_options={"custom_opt": "custom_value"})
+        mock_to_parquet.assert_called_once()
+        _, kwargs = mock_to_parquet.call_args_list[0]
+        assert kwargs['storage_options'] == {"custom_opt": "custom_value"}
+
+
+@pytest.mark.parametrize("indexes", [['a', 'b', 'c'], [1, 2, 3], [1.1, 2.2, 3.3]])
+@pytest.mark.parametrize("orient", ['split', 'columns'])
+def test_case_json_keeps_index_types(indexes, orient):
+    origin_df = pd.DataFrame([[1., 10], [2., 20], [3., 30]], columns=['1', '2'], index=indexes)
+    json_content = origin_df.to_json(orient=orient)
+
+    # WHEN
+    actual_df = DataframeSerializerSync.read_json(json_content, orient=orient)
+
+    # THEN columns and index are still string type
+    assert actual_df.columns.tolist() == ['1', '2']
+
+    # THEN index same type
+    assert actual_df.index.tolist() == indexes
+
+
+@pytest.mark.parametrize("orient", ['split', 'columns'])
+def test_case_json_no_datetime_convert(orient):
+    origin_df = pd.DataFrame([[1., 10], [2., 20], [3., 30]],
+                             columns=['3/11/2000', '3/12/2000'],
+                             index=['3/11/2000', '3/12/2000', '3/13/2000'])
+    json_content = origin_df.to_json(orient=orient)
+
+    # WHEN
+    actual_df = DataframeSerializerSync.read_json(json_content, orient=orient)
+
+    # THEN index are both string no convert to date time type
+    assert actual_df.index.dtype == 'object'
+    assert actual_df.columns.dtype == 'object'

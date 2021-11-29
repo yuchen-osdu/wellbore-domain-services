@@ -66,7 +66,7 @@ Writes data to the associated record. It creates a new version.
 Payload is expected to contain the entire bulk which will replace as latest version
 any previous bulk. Previous bulk versions are accessible via the get bulk data version API.
 Support JSON and Parquet format ('Content_Type' must be set accordingly).
-In case of JSON the orient must be set accordingly. Support http chunked encoding transfer.
+Support http chunked encoding transfer.
 """ + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["record_data"],
     responses={
@@ -75,7 +75,6 @@ In case of JSON the orient must be set accordingly. Support http chunked encodin
         })
 async def post_data(record_id: str,
                     request: Request,
-                    orient: JSONOrient = Depends(json_orient_parameter),
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                     df_validation_func=Depends(get_df_validation_func),
@@ -83,7 +82,7 @@ async def post_data(record_id: str,
                     ):
     @with_trace("save_blob")
     async def save_blob():
-        df = await get_df_from_request(request, orient)
+        df = await get_df_from_request(request)
         try:
             assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
         except BulkError as ex:
@@ -105,7 +104,7 @@ async def post_data(record_id: str,
     description="Send a data chunk. Session must be complete/commit once all chunks are sent. "
                 "This will create a new and single version aggregating all and previous bulk."
                 "Support JSON and Parquet format ('Content_Type' must be set accordingly). "
-                "In case of JSON the orient must be set accordingly. Support http chunked encoding."
+                "Support http chunked encoding."
     + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["chunk_data"],
     responses={400: {"description": "Record not found"}}
@@ -113,7 +112,6 @@ async def post_data(record_id: str,
 async def post_chunk_data(record_id: str,
                           session_id: str,
                           request: Request,
-                          orient: JSONOrient = Depends(json_orient_parameter),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           df_validation_func=Depends(get_df_validation_func),
@@ -127,7 +125,7 @@ async def post_chunk_data(record_id: str,
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
-    df = await get_df_from_request(request, orient)
+    df = await get_df_from_request(request)
     try:
         assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
     except BulkError as ex:

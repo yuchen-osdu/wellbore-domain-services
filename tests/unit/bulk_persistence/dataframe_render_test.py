@@ -123,7 +123,7 @@ async def test_get_df_from_request_json(basic_dataframe):
     request = RequestMock({"Content-Type": "application/json"},
                           basic_dataframe.to_json(orient='split'))
 
-    actual_df = await get_df_from_request(request, orient='split')
+    actual_df = await get_df_from_request(request)
     assert_frame_equal(basic_dataframe, actual_df)
 
 
@@ -136,6 +136,6 @@ async def test_get_df_from_request_json(basic_dataframe):
 async def test_get_df_from_request_invalid_raise(content_type, status):
     request = RequestMock({"Content-Type": content_type}, b'some invalid data')
     with pytest.raises(HTTPException) as ex_info:
-        await get_df_from_request(request, orient='split')
+        await get_df_from_request(request)
     exception = ex_info.value
     assert exception.status_code == status
