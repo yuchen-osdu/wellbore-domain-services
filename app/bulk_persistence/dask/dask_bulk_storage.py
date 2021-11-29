@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import uuid
 from contextlib import suppress
 from operator import attrgetter
 from typing import List
@@ -32,17 +33,14 @@ from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
 
 from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
-from .traces import wrap_trace_process
+from .traces import wrap_trace_process, _create_func_key
 from .utils import by_pairs, do_merge, worker_capture_timing_handlers
 from .dask_worker_plugin import DaskWorkerPlugin
 from ..dataframe_validators import assert_df_validate, validate_index, columns_not_in_reserved_names
 from .session_file_meta import SessionFileMeta
+from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from ..bulk_id import new_bulk_id
-
-
-def pandas_to_parquet(pdf, path, opt):
-    return pdf.to_parquet(path, index=True, engine='pyarrow', storage_options=opt)
 
 
 class DaskBulkStorage:
@@ -129,10 +127,15 @@ class DaskBulkStorage:
     def _submit_with_trace(self, target_func, *args, **kwargs):
         """
              Submit given target_func to Distributed Dask workers and add tracing required stuff
+
+             Note: 'dask_task_key' is manually created to easy reading of Dask's running tasks: it will display
+             the effective targeted function instead of 'wrap_trace_process' used to enable tracing into Dask workers.
         """
+        dask_task_key = _create_func_key(target_func, *args, **kwargs)
         kwargs['span_context'] = get_ctx().tracer.span_context
         kwargs['target_func'] = target_func
-        return self.client.submit(wrap_trace_process, *args, **kwargs)
+
+        return self.client.submit(wrap_trace_process, *args, key=dask_task_key, **kwargs)
 
     def _map_with_trace(self, target_func, *args, **kwargs):
         """
@@ -177,8 +180,8 @@ class DaskBulkStorage:
         returns a Future<None>
         """
         f_pdf = await self.client.scatter(pdf)
-        return await self._submit_with_trace(pandas_to_parquet, f_pdf, path,
-                                             self._parameters.storage_options)
+        return await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, path,
+                                             storage_options=self._parameters.storage_options)
 
     @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
@@ -189,7 +192,7 @@ class DaskBulkStorage:
 
         if isinstance(ddf, pd.DataFrame):
             assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
-            ddf = dd.from_pandas(ddf, npartitions=1)
+            ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
             ddf = await self.client.scatter(ddf)
 
         path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)

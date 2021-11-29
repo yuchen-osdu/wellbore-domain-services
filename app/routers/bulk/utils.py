@@ -8,7 +8,9 @@ from fastapi.responses import Response
 import dask.dataframe as dd
 import pandas as pd
 from natsort import natsorted
+import ast
 
+from app.bulk_persistence.dask.errors import FilterError
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
     no_validation, DataFrameValidationFunc
 from app.clients.storage_service_client import get_storage_record_service
@@ -55,7 +57,7 @@ async def set_legacy_input_dataframe_check(request: Request):
         - json: backward compatibility required, the check function will cast column name type as string
      """
     content_type = request.headers.get('Content-Type')
-    if content_type == 'application/x-parquet':
+    if MimeTypes.PARQUET.match(content_type):
         request.state.check_input_df_func = columns_type_must_be_string
     else:
         request.state.check_input_df_func = auto_cast_columns_to_string
@@ -78,7 +80,7 @@ def get_df_validation_func(request: Request) -> DataFrameValidationFunc:
 
 
 @with_trace("get_df_from_request")
-async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
+async def get_df_from_request(request: Request) -> pd.DataFrame:
     """ Extract dataframe from request """
 
     ct = request.headers.get('Content-Type', '')
@@ -93,7 +95,7 @@ async def get_df_from_request(request: Request, orient: Optional[str] = None) ->
     if MimeTypes.JSON.match(ct):
         content = await request.body()  # request.stream()
         try:
-            return await DataframeSerializerAsync().read_json(content, orient, convert_axes=False)
+            return await DataframeSerializerAsync().read_json(content, JSONOrient.split)
         except ValueError:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail='invalid body')  # TODO
@@ -164,11 +166,49 @@ class DataFrameRender:
             selected.extend(natsorted(matching_columns))
         return selected
 
+
+    @staticmethod
+    def apply_filter(df, filters):
+
+        operator_to_function = {
+            'eq' : lambda df, col, val : df[col] == val,
+            'neq' : lambda df, col, val : df[col] != val,
+            'lte': lambda df, col, val : df[col] <= val,
+            'lt': lambda df, col, val : df[col] < val,
+            'gt': lambda df, col, val : df[col] > val,
+            'gte': lambda df, col, val : df[col] >= val,
+            'in': lambda df, col, val : df[col].isin(val)
+        }
+        for col_name, operation in filters.items():
+            for operator, value in operation.items():
+                try:
+                    new_value = ast.literal_eval(value)
+                except (ValueError, SyntaxError):
+                    new_value = value
+                if df[col_name].dtype == object:
+                    if isinstance(new_value, tuple):
+                        new_value = [str(v) for v in new_value]
+                    else:
+                        new_value = str(new_value)
+
+                filter_function = operator_to_function[operator]
+                try:
+                    df = df.loc[filter_function(df, col_name, new_value)]
+                except ValueError:
+                    raise FilterError('the value is not valid for this operation')
+        return df
+
     @staticmethod
     @with_trace('process_params')
-    async def process_params(df, params: GetDataParams):
+    async def process_params(df, params: GetDataParams, filters):
+        """
+        pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
+        """
         if isinstance(df, pd.DataFrame):
             df = dd.from_pandas(df, npartitions=1)
+
+        if filters:
+            df = DataFrameRender.apply_filter(df, filters)
 
         if params.curves:
             selection = list(map(str.strip, params.curves.split(',')))
@@ -185,22 +225,23 @@ class DataFrameRender:
     @with_trace('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
-            nb_rows: int = 0
             if stat and not params.limit and not params.offset:
                 nb_rows = stat['num_rows']
+                columns = natsorted(list(stat['schema']))
             else:
                 nb_rows = await DataFrameRender.get_size(df)
+                columns = list(df.columns)
 
             return {
                 "numberOfRows": nb_rows,
-                "columns": list(df.columns)
+                "columns": columns
             }
 
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO
 
         if not accept or MimeTypes.PARQUET.type in accept:
-            content = await DataframeSerializerAsync().to_parquet(pdf, engine="pyarrow")
+            content = await DataframeSerializerAsync().to_parquet(pdf)
             return Response(content, media_type=MimeTypes.PARQUET.type)
 
         if MimeTypes.JSON.type in accept:
@@ -211,7 +252,7 @@ class DataFrameRender:
             content = await DataframeSerializerAsync().to_csv(pdf)
             return Response(content, media_type=MimeTypes.CSV.type)
 
-        content = await DataframeSerializerAsync().to_parquet(pdf, engine="pyarrow")
+        content = await DataframeSerializerAsync().to_parquet(pdf)
         return Response(content, media_type=MimeTypes.PARQUET.type)
 
 

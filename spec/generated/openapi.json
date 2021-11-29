@@ -8569,6 +8569,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -8632,7 +8647,7 @@
         ]
       },
       "post": {
-        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_data_alpha_ddms_v2_logs__record_id__data_post",
         "parameters": [
           {
@@ -8642,21 +8657,6 @@
             "schema": {
               "title": "Record Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -8686,7 +8686,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -8999,7 +8999,7 @@
     },
     "/alpha/ddms/v2/logs/{record_id}/sessions/{session_id}/data": {
       "post": {
-        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_chunk_data_alpha_ddms_v2_logs__record_id__sessions__session_id__data_post",
         "parameters": [
           {
@@ -9018,21 +9018,6 @@
             "schema": {
               "title": "Session Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -9062,7 +9047,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -9171,6 +9156,21 @@
               "description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)",
               "title": "Describe",
               "type": "boolean"
+            }
+          },
+          {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
             }
           },
           {
@@ -17204,6 +17204,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -17267,7 +17282,7 @@
         ]
       },
       "post": {
-        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_data_ddms_v3_wellboretrajectories__record_id__data_post",
         "parameters": [
           {
@@ -17277,21 +17292,6 @@
             "schema": {
               "title": "Record Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -17321,7 +17321,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -17634,7 +17634,7 @@
     },
     "/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data": {
       "post": {
-        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_chunk_data_ddms_v3_wellboretrajectories__record_id__sessions__session_id__data_post",
         "parameters": [
           {
@@ -17653,21 +17653,6 @@
             "schema": {
               "title": "Session Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -17697,7 +17682,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -17809,6 +17794,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -17884,6 +17884,16 @@
             "schema": {
               "title": "Wellboretrajectoryid",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "purge",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Purge",
+              "type": "boolean"
             }
           },
           {
@@ -18346,6 +18356,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -18409,7 +18434,7 @@
         ]
       },
       "post": {
-        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_data_ddms_v3_welllogs__record_id__data_post",
         "parameters": [
           {
@@ -18419,21 +18444,6 @@
             "schema": {
               "title": "Record Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -18463,7 +18473,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -18776,7 +18786,7 @@
     },
     "/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data": {
       "post": {
-        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_chunk_data_ddms_v3_welllogs__record_id__sessions__session_id__data_post",
         "parameters": [
           {
@@ -18795,21 +18805,6 @@
             "schema": {
               "title": "Session Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -18839,7 +18834,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -18951,6 +18946,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -19026,6 +19036,16 @@
             "schema": {
               "title": "Welllogid",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "purge",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Purge",
+              "type": "boolean"
             }
           },
           {
