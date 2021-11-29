@@ -592,6 +592,34 @@
         "title": "Artefact",
         "type": "object"
       },
+      "AvailableMarkerProperty": {
+        "additionalProperties": false,
+        "description": "A set of properties describing a marker property which is available for this instance of a WellboreMarkerSet.",
+        "properties": {
+          "MarkerPropertyTypeID": {
+            "description": "The reference to a marker property type - or if interpreted as CSV columns, the 'well-known column type. It is a relationship to a reference-data--MarkerPropertyType record id.",
+            "example": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-MarkerPropertyType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Marker Property Type ID",
+            "type": "string"
+          },
+          "MarkerPropertyUnitID": {
+            "description": "Unit of Measure for the marker properties of type MarkerPropertyType.",
+            "example": "partition-id:reference-data--UnitOfMeasure:ft:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Marker Property Unit ID",
+            "type": "string"
+          },
+          "Name": {
+            "description": "The name of the marker property (e.g. column in a CSV document) as originally found. If absent The name of the MarkerPropertyType is intended to be used.",
+            "example": "MissingThickness",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "AvailableMarkerProperty",
+        "type": "object"
+      },
       "AvailableTrajectoryStationProperty": {
         "additionalProperties": false,
         "description": "A set of properties describing a trajectory station property which is available for this instance of a WellboreTrajectory.",
@@ -2480,7 +2508,7 @@
         "title": "MainFamilyCatalogItem",
         "type": "object"
       },
-      "Marker": {
+      "Marker110": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
@@ -2526,6 +2554,11 @@
             "title": "Markerobservationnumber",
             "type": "number"
           },
+          "MarkerSubSeaVerticalDepth": {
+            "description": "The Marker's TVD converted to a Sub-Sea Vertical depth, i.e., below Mean Sea Level. Note that TVD values above MSL are negative. This is the same as true vertical depth referenced to the vertical CRS MSL depth.",
+            "title": "Markersubseaverticaldepth",
+            "type": "number"
+          },
           "MarkerTypeID": {
             "description": "Marker Type Reference Type. Possible values - Biostratigraphy, Lithostratigraphy, seismic, depth of well, sequence, flow unit",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-MarkerType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
@@ -2557,7 +2590,7 @@
             "type": "number"
           }
         },
-        "title": "Marker",
+        "title": "Marker110",
         "type": "object"
       },
       "MetaItem": {
@@ -4703,7 +4736,7 @@
         "title": "Wellbore",
         "type": "object"
       },
-      "WellboreMarkerSet": {
+      "WellboreMarkerSet110": {
         "additionalProperties": false,
         "description": "Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.",
         "properties": {
@@ -4739,7 +4772,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellboreMarkerSetData"
+            "$ref": "#/components/schemas/WellboreMarkerSetData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -4750,7 +4783,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
+            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -4806,10 +4839,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellboreMarkerSet",
+        "title": "WellboreMarkerSet110",
         "type": "object"
       },
-      "WellboreMarkerSetData": {
+      "WellboreMarkerSetData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4827,6 +4860,14 @@
               "type": "string"
             },
             "title": "Authorids",
+            "type": "array"
+          },
+          "AvailableMarkerProperties": {
+            "description": "The array of MarkerProperty definitions describing the available properties for this instance of WellboreMarkerSet.",
+            "items": {
+              "$ref": "#/components/schemas/AvailableMarkerProperty"
+            },
+            "title": "Available Marker Properties",
             "type": "array"
           },
           "BusinessActivities": {
@@ -4890,8 +4931,9 @@
             "type": "array"
           },
           "Markers": {
+            "description": "The array of marker meta data in this set.",
             "items": {
-              "$ref": "#/components/schemas/Marker"
+              "$ref": "#/components/schemas/Marker110"
             },
             "title": "Markers",
             "type": "array"
@@ -4976,16 +5018,16 @@
               }
             ],
             "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all marker measured depths of the Wellbore Marker Set Markers array.",
-            "title": "Verticalmeasurement"
+            "title": "Vertical Measurement"
           },
           "WellboreID": {
-            "description": "Wellbore ID",
+            "description": "The Wellbore ID, to which the markers in this set belong.",
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+:[0-9]*$",
-            "title": "Wellboreid",
+            "title": "Wellbore ID",
             "type": "string"
           }
         },
-        "title": "WellboreMarkerSetData",
+        "title": "WellboreMarkerSetData110",
         "type": "object"
       },
       "WellborePurpose": {
@@ -16374,7 +16416,7 @@
             "application/json": {
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 },
                 "title": "Wellboremarkersets",
                 "type": "array"
@@ -16505,7 +16547,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 }
               }
             },
@@ -16640,7 +16682,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 }
               }
             },
