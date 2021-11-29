@@ -10,6 +10,7 @@ import pytest
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
+from app.bulk_persistence import MimeTypes
 from app.bulk_persistence.dask.dask_bulk_storage_rework import (basic_describe,
                                                                 DataframeBasicDescribe,
                                                                 write_bulk_without_session,
@@ -63,16 +64,16 @@ def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
 
     # empty input as json format
     with pytest.raises(BulkNotProcessable):
-        method_to_test(b'', as_bytes_io, 'application/json', '', no_validation, '', None)
+        method_to_test(b'', as_bytes_io, MimeTypes.JSON, '', no_validation, '', None)
 
     # empty input as parquet format
     with pytest.raises(BulkNotProcessable):
-        method_to_test(b'', as_bytes_io, 'application/x-parquet', '', no_validation, '', None)
+        method_to_test(b'', as_bytes_io, MimeTypes.PARQUET, '', no_validation, '', None)
 
     # custom validation failure
     with pytest.raises(BulkNotProcessable):
         data = pd.DataFrame({'1': [10], '2': [20]}).to_parquet(engine='pyarrow')
-        method_to_test(data, as_bytes_io, 'application/x-parquet', '',
+        method_to_test(data, as_bytes_io, MimeTypes.PARQUET, '',
                                       lambda _: (False, "some error"), '', None)
 
     # index not numerical
@@ -80,7 +81,7 @@ def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
         df = pd.DataFrame({'1': ['A'], '2': ['B']})
         df.set_index('1')
         data = pd.DataFrame(df).to_parquet(engine='pyarrow')
-        method_to_test(data, as_bytes_io, 'application/x-parquet', '',
+        method_to_test(data, as_bytes_io, MimeTypes.PARQUET, '',
                                       lambda _: (False, "some error"), '', None)
 
     # index not unique
@@ -88,23 +89,23 @@ def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
         df = pd.DataFrame({'A': [1, 1], 'B': [2, 2]})
         df.set_index('A')
         data = df.to_parquet(engine='pyarrow')
-        method_to_test(data, as_bytes_io, 'application/x-parquet', '',
+        method_to_test(data, as_bytes_io, MimeTypes.PARQUET, '',
                                       lambda _: (False, "some error"), '', None)
 
     # save error
     data = pd.DataFrame({'A': [1], 'B': [4]}).to_parquet(engine='pyarrow', index=True)
     with patch.object(pd.DataFrame, 'to_parquet', side_effect=lambda *args, **kwargs: 0/0):
         with pytest.raises(BulkSaveException):
-            method_to_test(data, as_bytes_io, 'application/x-parquet', '', no_validation, temp_directory, None)
+            method_to_test(data, as_bytes_io, MimeTypes.PARQUET, '', no_validation, temp_directory, None)
 
 
 @pytest.mark.parametrize("content_type", [
-    'application/x-parquet',
-    'application/json'
+    MimeTypes.PARQUET,
+    MimeTypes.JSON
 ])
 def test_write_bulk_without_session_success(content_type):
     df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
-    data = dataframe_to_format(df, content_type, True)
+    data = dataframe_to_format(df, content_type.type, True)
     with patch.object(pd.DataFrame, 'to_parquet') as mock_method:
         result = write_bulk_without_session(data, lambda x: x, content_type, 'split', no_validation,
                                                'my_path', {'storage_opt1': 42})
@@ -118,13 +119,13 @@ def test_write_bulk_without_session_success(content_type):
 
 
 @pytest.mark.parametrize("content_type", [
-    'application/x-parquet',
-    'application/json'
+    MimeTypes.PARQUET,
+    MimeTypes.JSON
 ])
 def test_write_chunk_in_session_success(content_type, temp_directory):
     # GIVEN
     df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
-    data = dataframe_to_format(df, content_type, True)
+    data = dataframe_to_format(df, content_type.type, True)
 
     # WHEN
     result = add_chunk_in_session(data, lambda x: x, content_type, 'split', no_validation, temp_directory, None)

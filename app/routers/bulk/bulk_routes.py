@@ -94,8 +94,8 @@ async def post_data(record_id: str,
 
         bulk_id, basic_describe = await bulk_storage.post_data_without_session(
             request.stream(),  # this consume the body stream
-            content_type.type,
-            orient.value,
+            content_type,
+            orient,
             df_validation_func,
             record_id)
 
@@ -151,8 +151,8 @@ async def post_chunk_data(record_id: str,
 
         bulk_id, basic_describe = await bulk_storage.add_chunk_in_session(
             request.stream(),  # this consume the body stream
-            content_type.type,
-            orient.value,
+            content_type,
+            orient,
             df_validation_func,
             record_id,
             i_session.session.id)
