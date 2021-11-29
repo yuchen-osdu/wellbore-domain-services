@@ -14,10 +14,11 @@
 
 from fastapi import (
     APIRouter,
-    Body, Depends,
+    Body,
+    Depends,
     Response,
-    status)
-
+    status,
+    HTTPException)
 
 from odes_storage.models import (CreateUpdateRecordsResponse, List,
                                  RecordVersions)
@@ -34,6 +35,8 @@ from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_acc
 from app.routers.record_utils import fetch_record
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.delete.delete_bulk_data import delete_record
+
+from app.consistency import welllog_consistency_check, DuplicatedCurveIdException, ReferenceCurveIdNotFoundException
 
 router = APIRouter()
 
@@ -154,6 +157,21 @@ async def post_welllog_osdu(
         welllogs: List[WellLog] = Body(..., example=load_schema_example("wellLog_v3.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
+
+    for idx, w in enumerate(welllogs):
+        try:
+            welllog_consistency_check(w)
+        except DuplicatedCurveIdException:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"All CurveID in WellLog[{idx}] should be unique"
+            )
+        except ReferenceCurveIdNotFoundException:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"WellLog[{idx}] should have a curve with a curveID value equal to the ReferenceCurveID value: '{w.data.ReferenceCurveID}'"
+            )
+
     storage_client = await get_storage_record_service(ctx)
 
     return await storage_client.create_or_update_records(
