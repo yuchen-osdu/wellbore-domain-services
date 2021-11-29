@@ -22,7 +22,8 @@ from app.utils import Context, OpenApiHandler, get_ctx
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_READ,
                                            REQUIRED_ROLES_WRITE,
-                                           json_orient_parameter)
+                                           json_orient_parameter,
+                                           write_bulk_content_type)
 
 from app.routers.record_utils import fetch_record
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
@@ -41,12 +42,13 @@ from app.routers.sessions import (SessionInternal,
                                   get_session_dependencies)
 
 # imports from bulk persistence
-from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
+from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate, \
+    DataFrameValidationFunc
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
-from app.bulk_persistence.mime_types import MimeTypes
+from app.bulk_persistence.mime_types import MimeTypes, MimeType
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -73,19 +75,15 @@ In case of JSON the orient must be set accordingly. Support http chunked encodin
 async def post_data(record_id: str,
                     request: Request,
                     orient: JSONOrient = Depends(json_orient_parameter),
+                    content_type: MimeType = Depends(write_bulk_content_type),
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-                    df_validation_func=Depends(get_df_validation_func),
-                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-                    ):
+                    df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
+                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
 
     """
     Handle a post data outside of a session. The given bulk will fully replace any existing one
     """
-    content_type = request.headers.get('Content-Type', '')
-    if not content_type:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Content-Type is missing')
-
     record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
@@ -96,7 +94,7 @@ async def post_data(record_id: str,
 
         bulk_id, basic_describe = await bulk_storage.post_data_without_session(
             request.stream(),  # this consume the body stream
-            content_type,
+            content_type.type,
             orient.value,
             df_validation_func,
             record_id)
@@ -130,14 +128,11 @@ async def post_chunk_data(record_id: str,
                           session_id: str,
                           request: Request,
                           orient: JSONOrient = Depends(json_orient_parameter),
+                          content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-                          df_validation_func=Depends(get_df_validation_func),
+                          df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func)
                           ):
-    content_type = request.headers.get('Content-Type', '')
-    if not content_type:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Content-Type is missing')
-
     if hasattr(request.state, 'version') and request.state.version != "V2":
         record = await fetch_record(with_session.ctx, record_id)
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
@@ -156,7 +151,7 @@ async def post_chunk_data(record_id: str,
 
         bulk_id, basic_describe = await bulk_storage.add_chunk_in_session(
             request.stream(),  # this consume the body stream
-            content_type,
+            content_type.type,
             orient.value,
             df_validation_func,
             record_id,

@@ -1,14 +1,25 @@
-from fastapi import Query
-from app.bulk_persistence import JSONOrient
+from fastapi import Query, Request, HTTPException
 from pandas import DataFrame
 
-__all__ = ["json_orient_parameter", "REQUEST_DATA_BODY_SCHEMA", "REQUIRED_ROLES_READ", "REQUIRED_ROLES_WRITE"]
+from app.bulk_persistence.mime_types import MimeType, MimeTypes
+from app.bulk_persistence import JSONOrient
 
 
 def json_orient_parameter(
         orient: JSONOrient = Query(JSONOrient.split, description='format for JSON only.')
 ) -> JSONOrient:
     return orient
+
+
+WRITE_BULK_SUPPORTED_MIME_TYPES = [MimeTypes.JSON, MimeTypes.PARQUET]
+
+
+def write_bulk_content_type(request: Request) -> MimeType:
+    content_type = request.headers.get('Content-Type', None)
+    try:
+        return next(m for m in WRITE_BULK_SUPPORTED_MIME_TYPES if m.match(content_type))
+    except:
+        raise HTTPException(status_code=400, detail=f'Content-Type invalid: "{content_type}"')
 
 
 _dataframe_sample = DataFrame(
