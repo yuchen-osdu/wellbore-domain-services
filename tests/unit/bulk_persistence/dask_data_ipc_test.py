@@ -79,10 +79,10 @@ async def test_dask_native_ipc_basic_usage():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("in_data", [
-    b"abcdefghijklmnopqrstuvwyxz",  # direct bytes
-    data_async_gen(b"abcdefghijklmnopqrstuvwyxz", 5),  # async gen with chunk size smaller than write chunk size
-    data_async_gen(b"abcdefghijklmnopqrstuvwyxz", 10),  # async gen with chunk size equal to write chunk size
-    data_async_gen(b"abcdefghijklmnopqrstuvwyxz", 15),  # async gen with chunk size greater than write chunk size
+    b"01234567890123456789012345",  # direct bytes
+    data_async_gen(b"01234567890123456789012345", 5),  # async gen with chunk size smaller than write chunk size
+    data_async_gen(b"01234567890123456789012345", 10),  # async gen with chunk size equal to write chunk size
+    data_async_gen(b"01234567890123456789012345", 15),  # async gen with chunk size greater than write chunk size
 ])
 async def test_file_data_ipc_write_by_chunk(nope_logger_fixture, in_data):
     max_write_at_once_size = 10
@@ -99,7 +99,7 @@ async def test_file_data_ipc_write_by_chunk(nope_logger_fixture, in_data):
             assert all((len(c) <= max_write_at_once_size) for c in chunks_pass_in_write)
 
             # THEN all content written = input data
-            assert b"".join(chunks_pass_in_write) == b"abcdefghijklmnopqrstuvwyxz"
+            assert b"".join(chunks_pass_in_write) == b"01234567890123456789012345"
 
 
 @pytest.mark.asyncio
