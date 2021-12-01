@@ -16,19 +16,28 @@ This module groups function related to bulk catalog.
 A catalog contains metadata of the chunks
 """
 import json
-import os
-from collections import namedtuple
 from contextlib import suppress
-from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional
+from dataclasses import dataclass
+from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 
 from app.bulk_persistence.dask.errors import BulkNotProcessable
+from app.bulk_persistence.dask.traces import submit_with_trace
 from app.utils import capture_timings
 
-from .storage_path_builder import (join, remove_protocol)
+from dask.distributed import get_client
+
+from .storage_path_builder import join, remove_protocol
+from .utils import worker_capture_timing_handlers
 
 
 @dataclass
+class ChunkGroup:
+    """A chunk group represent a chunk list having exactly the same shemas
+    (columns labels and dtypes)"""
+    labels: Set[str]
+    paths: List[str]
+    dtypes: List[str]
+
 class BulkCatalog:
     """Represent a bulk catalog
     Exemple:
@@ -45,94 +54,110 @@ class BulkCatalog:
             },
         }
     """
+    def __init__(self, record_id:str) -> None:
+        self.record_id: str = record_id # TODO remove
+        self.nb_rows: int = 0
+        self.index_path: Optional[str] = None
+        self.columns: List[ChunkGroup] = []
 
-    @dataclass
-    class ColumnInfo:
-        """Stores chunk files where the column is present and the dtype
-        All path in paths should be relatives to the record folder to not allow an entity
-        to point to a chunk that does not belong to the same record.
+    @property
+    def all_columns_dtypes(self) -> Dict[str, str]:
+        """Returns all columns with their dtype
+        Returns:
+            Dict[str, str]:  a dict { column label : column dtype }
         """
-        paths: List[str]
-        dtype: str
+        res = {}
+        for col_group in self.columns:
+            res.update({cn:dt for cn, dt in zip(col_group.labels, col_group.dtypes)})
+        return res
 
-    record_id: str
-    columns: Dict[str, ColumnInfo] = field(default_factory=dict)
-    nb_rows: int = 0
-    index_path: Optional[str] = None
-
-    def update_column_info(self, columns_info: Dict[str, ColumnInfo]):
-        """insert or replace column information with the given"""
-        self.columns.update(columns_info)
-
-    def add_column_info(self, col_name: str, column_info: ColumnInfo, check_dtype: bool = False):
-        """Add column information to the catalog.
-        If the column already exist in the catalog, merge information.
-        Args:
-            col_name (str): column name
-            column_info (ColumnInfo): column information to add in the catalog
-            check_dtype (bool, optional): check if dtype are equal before merging column info. Defaults to False.
-        Raises:
-            BulkNotProcessable: If check_type True and column type is different from existing one
-        Exemples:
-        >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file1'], 'int32'))
-        >>> cat.columns
-        {'A': BulkCatalog.ColumnInfo(paths=['file1'], dtype='int32')}
-        >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file2', 'file3'], 'int32'))
-        >>> cat.columns
-        {'A': BulkCatalog.ColumnInfo(paths=['file1', 'file2', 'file3'], dtype='int32')}
-        >>> cat.add_column_info('A', BulkCatalog.ColumnInfo(['file4'], 'int64'), True)
-        BulkNotProcessable: bulk not processable: column A has different dtypes, int32 vs int64
-        """
-        if col_name in self.columns:
-            if check_dtype and self.columns[col_name].dtype != column_info.dtype:
-                raise BulkNotProcessable(message=f"column {col_name} has different dtypes,"
-                                         f" {self.columns[col_name].dtype} vs {column_info.dtype}")
-            self.columns[col_name].paths.extend(column_info.paths) # TODO create new list ?
+    def add_chunk(self, chunk_group: ChunkGroup) -> None:
+        """Add ChunkGroup to the catalog."""
+        if len(chunk_group.labels) == 0:
+            return
+        keys = frozenset(chunk_group.labels)
+        chunk_group_with_same_schema = next((x for x in self.columns if len(
+            keys) == len(x.labels) and all(l in keys for l in x.labels)), None)
+        if chunk_group_with_same_schema:
+            chunk_group_with_same_schema.paths.extend(chunk_group.paths)
         else:
-            self.columns[col_name] = column_info
+            self.columns.append(chunk_group)
 
-    ColumnsPaths = namedtuple('ColumnsPaths', ['columns', 'paths'])
-
-    def get_paths_for_columns(self, columns: Iterable[str], base_path: str) -> List[ColumnsPaths]:
-        """Returns the paths to load data of the requested columns grouped by paths
-        Warning: it implies that paths are identicaly formated (a/b vs a\\b)
+    def remove_columns_info(self, labels: Iterable[str]) -> None:
+        """Removes columns information
+        Args:
+            labels (Iterable[str]): columns labels to remove
         """
-        groupped_files = {}
+        clean_needed = False
+        labels_set = frozenset(labels)
 
-        for col_name in columns:
-            files_list = self.columns[col_name].paths
-            default = self.ColumnsPaths(columns=[], paths=files_list)
-            groupped_files.setdefault(tuple(files_list), default).columns.append(col_name)
+        for col_group in self.columns:
+            remaining_columns = {col: dt for col, dt in zip(
+                col_group.labels, col_group.dtypes) if col not in labels_set}
+            if len(remaining_columns) != len(col_group.labels):
+                col_group.labels = set(remaining_columns.keys())
+                col_group.dtypes = list(remaining_columns.values())
+                clean_needed = clean_needed or len(col_group.labels) == 0
+        if clean_needed:
+            self.columns = [c for c in self.columns if c.labels]
 
-        return [self.ColumnsPaths(columns=cp.columns, paths=[join(base_path, f) for f in cp.paths])
-                for cp in groupped_files.values()]
+    def change_columns_info(self, chunk_group: ChunkGroup) -> None:
+        """Replace column information with the given one
+        Args:
+            chunk_group (ChunkGroup): new column information
+        """
+        self.remove_columns_info(chunk_group.labels)
+        self.add_chunk(chunk_group)
 
-    @capture_timings('as_dict')
+    class ColumnsPaths(NamedTuple):
+        labels: Set[str]
+        paths: List[str]
+    
+    def get_paths_for_columns(self, labels: Iterable[str], base_path: str) -> List[ColumnsPaths]:
+        """Returns the paths to load data of the requested columns grouped by paths"""
+        groupped_files = []
+
+        for col_group in self.columns:
+            matching_columns = col_group.labels.intersection(labels)
+            if matching_columns:
+                groupped_files.append(self.ColumnsPaths(
+                    labels=matching_columns,
+                    paths=[join(base_path, f) for f in col_group.paths])
+                )
+        return groupped_files
+
+    @capture_timings('as_dict', handlers=worker_capture_timing_handlers)
     def as_dict(self) -> dict:
-        """return the dict representation of the catalog"""
+        """Returns the dict representation of the catalog"""
         return {
             "record_id": self.record_id,
             "nb_rows": self.nb_rows,
             "index_path": self.index_path,
-            "columns": {c: {
-                "paths": v.paths,
-                "dtype": v.dtype
-            } for c, v in self.columns.items()},
+            'columns': [{
+                'labels': list(c.labels),
+                'paths': c.paths,
+                'dtypes': c.dtypes
+            } for c in self.columns],
         }
 
-    @staticmethod
-    def from_dict(catalog_as_dict: dict) -> "BulkCatalog":
+    @classmethod
+    def from_dict(cls, catalog_as_dict: dict) -> "BulkCatalog":
         """construct a Catalog from a dict"""
-        catalog_as_dict['columns'] = {
-            c: BulkCatalog.ColumnInfo(**v) for c, v in catalog_as_dict['columns'].items()
-        }
-        return BulkCatalog(**catalog_as_dict)
+        catalog = cls(record_id=catalog_as_dict['record_id'])
+        catalog.nb_rows = catalog_as_dict['nb_rows']
+        catalog.index_path = catalog_as_dict['index_path']
+        catalog.columns = [
+            ChunkGroup(set(c['labels']), c['paths'], c['dtypes'])
+            for c in catalog_as_dict['columns']
+        ]
+        return catalog
+
 
 
 CATALOG_FILE_NAME = 'bulk_catalog.json'
 
-@capture_timings('save_bulk_catalog')
-def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> str:
+@capture_timings('save_bulk_catalog', handlers=worker_capture_timing_handlers)
+def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> None:
     """save a bulk catalog to a json file in the given folder path"""
     folder_path, _ = remove_protocol(folder_path)
     meta_path = join(folder_path, CATALOG_FILE_NAME)
@@ -142,7 +167,7 @@ def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> str
         #json.dump(catalog.as_dict(), outfile) # don't know why json.dump is slower (local windows)
 
 
-@capture_timings('load_bulk_catalog')
+@capture_timings('load_bulk_catalog', handlers=worker_capture_timing_handlers)
 def load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
     """load a bulk catalog from a json file in the given folder path"""
     folder_path, _ = remove_protocol(folder_path)
@@ -152,3 +177,12 @@ def load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
             data = json.load(json_file)
             return BulkCatalog.from_dict(data)
     return None
+
+
+
+async def async_load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
+    return await submit_with_trace(get_client(), load_bulk_catalog, filesystem, folder_path)
+
+
+async def async_save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> None:
+    return await submit_with_trace(get_client(), save_bulk_catalog, filesystem, folder_path, catalog)

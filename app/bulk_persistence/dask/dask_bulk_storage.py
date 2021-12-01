@@ -41,7 +41,7 @@ from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
-from .bulk_catalog import BulkCatalog, load_bulk_catalog, save_bulk_catalog
+from .bulk_catalog import BulkCatalog, ChunkGroup, load_bulk_catalog, save_bulk_catalog
 
 
 def read_with_pandas(path, **kwargs):
@@ -141,19 +141,20 @@ class DaskBulkStorage:
             - if columns is None, we load all columns
         Returns: Future<dd.dataframe>
         """
-        # find columns that we can load together
-        columns = catalog.columns.keys() & columns if columns else catalog.columns
+        if columns is None:
+            columns = catalog.all_columns_dtypes.keys()
         record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
         files_to_load = catalog.get_paths_for_columns(columns, record_path)
         # read all chunk for requested columns
-        dfs = [self._read_parquet(path=f.paths, columns=f.columns) for f in files_to_load]
-        if len(dfs) == 1:
+        dfs = [self._read_parquet(path=f.paths, columns=f.labels) for f in files_to_load]
+        if len(dfs) == 1: # TODO manage error if len is 0
             return dfs[0]
-        # if multiple dataframe, concat them together
+
+        # if multiple dataframes, concat them together
         dfs = self._map_with_trace(set_index, dfs)
         return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer') # concat or join?
 
-    def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
+    async def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Load columns from parquet files in the bulk_path.
         Returns: Future<dd.DataFrame>
         """
@@ -171,7 +172,7 @@ class DaskBulkStorage:
             BulkNotFound: If bulk folder doesn't exists
         """
         catalog = await self.get_bulk_catalog(record_id, bulk_id)
-        schema_dict = {vn: item.dtype for vn, item in catalog.columns.items()}
+        schema_dict = catalog.all_columns_dtypes
         return {
             "num_rows": catalog.nb_rows,
             "schema": schema_dict
@@ -191,7 +192,8 @@ class DaskBulkStorage:
             dd.DataFrame: a lazy loaded dask dataframe representing the bulk data.
         """
         try:
-            return await self._load_bulk(record_id, bulk_id, columns=columns)
+            future_df = await self._load_bulk(record_id, bulk_id, columns=columns)
+            return await future_df
         except OSError as exp:
             raise BulkNotFound(record_id, bulk_id) from exp
 
@@ -292,12 +294,10 @@ class DaskBulkStorage:
         catalog.nb_rows = max(get_num_rows(d) for d in datasets)
 
         for file, schema in zip(files, schemas):
-            columns = ((name, str(dtype))
-                       for name, dtype in zip(schema.names, schema.types)
-                       if not is_reserved_column_name(name))
-            for name, dtype in columns:
-                info = BulkCatalog.ColumnInfo(paths=[self._relative_path(record_id, file)], dtype=dtype)
-                catalog.add_column_info(name, info)
+            columns = {name: str(dtype) for name, dtype in zip(schema.names, schema.types)
+                       if not is_reserved_column_name(name)}
+            chunk_group = ChunkGroup(set(columns.keys()), [self._relative_path(record_id, file)], list(columns.values()))
+            catalog.add_chunk(chunk_group)
 
         return catalog
 
@@ -308,8 +308,8 @@ class DaskBulkStorage:
             index_path = pathBuilder.full_path(self.base_directory, record_id, catalog.index_path)
             future_df = self._read_parquet(index_path)
         else: # only read one column to get the index. It doesn't seems possible to get the index directly.
-            first_column = next(iter(catalog.columns))
-            future_df = self._load_bulk(record_id, bulk_id, [first_column])
+            first_column = next(iter(catalog.all_columns_dtypes))
+            future_df = await self._load_bulk(record_id, bulk_id, [first_column])
         return self._submit_with_trace(lambda df: df.index.compute(), future_df)
 
     @capture_timings('load_index')
@@ -344,22 +344,26 @@ class DaskBulkStorage:
         self, catalog: BulkCatalog, session: Session, bulk_id: str
     ) -> Optional[BulkCatalog]:
         """ build the catalog from the session."""
+        catalog_columns = set(catalog.all_columns_dtypes)
         for chunks_metas in session_meta.get_next_chunk_files(self._fs, self.base_directory, session):
-            # chunks share the same schemas (columns + dtypes) so we get them from the first one
-            columns_dtypes = zip(chunks_metas[0].columns, chunks_metas[0].dtypes)
             files = [m.path_with_protocol for m in chunks_metas]
             relative_paths = [self._relative_path(catalog.record_id, f) for f in files]
-            # here it's fine that all ColumnInfo shares the same paths as its immutable
-            new_entries = {col_name: BulkCatalog.ColumnInfo(paths=relative_paths, dtype=dtype)
-                           for col_name, dtype in columns_dtypes}
-            cols_in_catalog = catalog.columns.keys() & new_entries
-            if len(cols_in_catalog) > 0:
-                # if some columns already exist in the catalog, merge is needed
-                # pb here, wait -> cannot resolve conflict in parallele!
-                await self._resolve_conflict_catalog(catalog, bulk_id, files, cols_in_catalog)
-                new_entries = {k: v for k,v in new_entries.items() if k not in cols_in_catalog}
+            # chunks share the same schemas (columns + dtypes) so we get them from the first one
+            labels = set(chunks_metas[0].columns)
+            dtypes = chunks_metas[0].dtypes
+            conflicting_col = catalog_columns.intersection(chunks_metas[0].columns)
 
-            catalog.update_column_info(new_entries)
+            # if some columns already exist in the catalog, merge is needed
+            if len(conflicting_col) > 0:
+                # filter out the conflicting columns
+                labels_dtypes = {label: dtype for label, dtype in zip(labels, dtypes) if label not in conflicting_col}
+                labels = set(labels_dtypes.keys())
+                dtypes = list(labels_dtypes.values())
+                # pb here, wait -> cannot resolve conflict in parallele!
+                await self._resolve_conflict_catalog(catalog, bulk_id, files, conflicting_col)
+
+            catalog.add_chunk(ChunkGroup(labels, relative_paths, dtypes))
+            catalog_columns.update(chunks_metas[0].columns)
 
         return catalog
 
@@ -385,10 +389,11 @@ class DaskBulkStorage:
         await self._save_with_dask(merged_df_path, merged_df)
         
         merged_df = await merged_df
-        dtypes = merged_df.dtypes
+        dtypes = [str(dt) for dt in merged_df.dtypes]
+        labels = set(merged_df.columns)
         relative_paths = [self._relative_path(catalog.record_id, merged_df_path)]
-        catalog.update_column_info({c: BulkCatalog.ColumnInfo(paths=relative_paths, dtype=str(dtypes[c]))
-                                    for c in cols_to_merge})
+        chunk_group = ChunkGroup(labels=labels, paths=relative_paths, dtypes=dtypes)
+        catalog.change_columns_info(chunk_group)
 
     @capture_timings('_save_session_index')
     async def _save_session_index(self, path: str, index: pd.Index) -> str:
