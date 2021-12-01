@@ -48,7 +48,7 @@ def deserialize(file_like_data,
     """
     try:
         if content_type == MimeTypes.JSON:
-            return DataframeSerializerSync.read_json(file_like_data, orient=orient, convert_axes=False)
+            return DataframeSerializerSync.read_json(file_like_data, orient=orient)
         elif content_type == MimeTypes.PARQUET:
             return DataframeSerializerSync.read_parquet(file_like_data)
         else:
@@ -83,7 +83,6 @@ def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
 def write_bulk_without_session(data_handle,
                                data_getter,
                                content_type: MimeType,
-                               orient: Optional[Union[str, JSONOrient]],
                                df_validator_func: DataFrameValidationFunc,
                                bulk_base_path: str,
                                storage_options) -> DataframeBasicDescribe:
@@ -92,7 +91,6 @@ def write_bulk_without_session(data_handle,
         :param data_handle: dataframe as input ipc raw bytes wrapped (file-like obj)
         :param data_getter: function to get data from the handle
         :param content_type: content type value as mime type (supports json and parquet)
-        :param orient: in content json, orient must be provided.
         :param df_validator_func: option validation callable function.
         :param bulk_base_path: base path of the final object on blob storage.
         :param storage_options: storage options
@@ -102,7 +100,7 @@ def write_bulk_without_session(data_handle,
         """
     # 1- deserialize to pandas dataframe
     with data_getter(data_handle) as file_like_data:
-        df = deserialize(file_like_data, content_type, orient)
+        df = deserialize(file_like_data, content_type, JSONOrient.split)
     data_handle = None  # unref
 
     # 2- input dataframe validation
@@ -128,7 +126,6 @@ def write_bulk_without_session(data_handle,
 def add_chunk_in_session(data_handle,
                          data_getter,
                          content_type: MimeType,
-                         orient: Optional[Union[str, JSONOrient]],
                          df_validator_func: DataFrameValidationFunc,
                          record_session_path: str,
                          storage_options) -> DataframeBasicDescribe:
@@ -148,7 +145,7 @@ def add_chunk_in_session(data_handle,
         """
     # 1- deserialize
     with data_getter(data_handle) as file_like_data:
-        df = deserialize(file_like_data, content_type, orient)
+        df = deserialize(file_like_data, content_type, JSONOrient.split)
     data_handle = None  # unref
 
     # 2- perf some check
@@ -220,7 +217,6 @@ class DaskBulkStorageFullWorkerDelegated:
     async def post_data_without_session(self,
                                         data: Union[bytes, AsyncGenerator[bytes, None]],
                                         content_type: MimeType,
-                                        orient: Optional[Union[str, JSONOrient]],
                                         df_validator_func: DataFrameValidationFunc,
                                         record_id: str,
                                         bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
@@ -246,7 +242,6 @@ class DaskBulkStorageFullWorkerDelegated:
                                                   data_handle,
                                                   data_getter,
                                                   content_type,
-                                                  orient,
                                                   df_validator_func,
                                                   bulk_base_path,
                                                   self.storage_options)
@@ -259,7 +254,6 @@ class DaskBulkStorageFullWorkerDelegated:
     async def add_chunk_in_session(self,
                                    data: Union[bytes, AsyncGenerator[bytes, None]],
                                    content_type: MimeType,
-                                   orient: Optional[Union[str, JSONOrient]],
                                    df_validator_func: DataFrameValidationFunc,
                                    record_id: str,
                                    session_id: str,
@@ -285,7 +279,6 @@ class DaskBulkStorageFullWorkerDelegated:
                                                   data_handle,
                                                   data_getter,
                                                   content_type,
-                                                  orient,
                                                   df_validator_func,
                                                   base_path,
                                                   self.storage_options)

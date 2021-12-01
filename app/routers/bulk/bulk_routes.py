@@ -74,7 +74,6 @@ Support http chunked encoding transfer.
         })
 async def post_data(record_id: str,
                     request: Request,
-                    orient: JSONOrient = Depends(json_orient_parameter),
                     content_type: MimeType = Depends(write_bulk_content_type),
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
@@ -95,7 +94,6 @@ async def post_data(record_id: str,
         bulk_id, basic_describe = await bulk_storage.post_data_without_session(
             request.stream(),  # this consume the body stream
             content_type,
-            orient,
             df_validation_func,
             record_id)
 
@@ -127,7 +125,6 @@ async def post_data(record_id: str,
 async def post_chunk_data(record_id: str,
                           session_id: str,
                           request: Request,
-                          orient: JSONOrient = Depends(json_orient_parameter),
                           content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
@@ -152,7 +149,6 @@ async def post_chunk_data(record_id: str,
         bulk_id, basic_describe = await bulk_storage.add_chunk_in_session(
             request.stream(),  # this consume the body stream
             content_type,
-            orient,
             df_validation_func,
             record_id,
             i_session.session.id)

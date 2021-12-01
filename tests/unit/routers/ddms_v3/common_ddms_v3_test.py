@@ -370,7 +370,7 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
                 response = client.post(f'{base_url}/{record_id_to_test}/data', data=data, headers=headers)
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
 
-                response = client.get(f'{base_url}/{record_id_to_test}/data?orient=split',
+                response = client.get(f'{base_url}/{record_id_to_test}/data',
                                       headers={'Accept': 'application/json'})
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
 
