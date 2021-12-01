@@ -57,7 +57,7 @@ async def set_legacy_input_dataframe_check(request: Request):
         - json: backward compatibility required, the check function will cast column name type as string
      """
     content_type = request.headers.get('Content-Type')
-    if content_type == 'application/x-parquet':
+    if MimeTypes.PARQUET.match(content_type):
         request.state.check_input_df_func = columns_type_must_be_string
     else:
         request.state.check_input_df_func = auto_cast_columns_to_string
@@ -80,7 +80,7 @@ def get_df_validation_func(request: Request) -> DataFrameValidationFunc:
 
 
 @with_trace("get_df_from_request")
-async def get_df_from_request(request: Request, orient: Optional[str] = None) -> pd.DataFrame:
+async def get_df_from_request(request: Request) -> pd.DataFrame:
     """ Extract dataframe from request """
 
     ct = request.headers.get('Content-Type', '')
@@ -95,7 +95,7 @@ async def get_df_from_request(request: Request, orient: Optional[str] = None) ->
     if MimeTypes.JSON.match(ct):
         content = await request.body()  # request.stream()
         try:
-            return await DataframeSerializerAsync().read_json(content, orient, convert_axes=False)
+            return await DataframeSerializerAsync().read_json(content, JSONOrient.split)
         except ValueError:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail='invalid body')  # TODO
@@ -242,7 +242,7 @@ class DataFrameRender:
         pdf.index.name = None  # TODO
 
         if not accept or MimeTypes.PARQUET.type in accept:
-            content = await DataframeSerializerAsync().to_parquet(pdf, engine="pyarrow")
+            content = await DataframeSerializerAsync().to_parquet(pdf)
             return Response(content, media_type=MimeTypes.PARQUET.type)
 
         if MimeTypes.JSON.type in accept:
@@ -253,7 +253,7 @@ class DataFrameRender:
             content = await DataframeSerializerAsync().to_csv(pdf)
             return Response(content, media_type=MimeTypes.CSV.type)
 
-        content = await DataframeSerializerAsync().to_parquet(pdf, engine="pyarrow")
+        content = await DataframeSerializerAsync().to_parquet(pdf)
         return Response(content, media_type=MimeTypes.PARQUET.type)
 
 

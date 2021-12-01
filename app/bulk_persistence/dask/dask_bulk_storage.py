@@ -37,14 +37,11 @@ from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
 from ..dataframe_validators import (assert_df_validate, validate_index,
                                     columns_not_in_reserved_names, is_reserved_column_name)
+from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
 from .bulk_catalog import BulkCatalog, load_bulk_catalog, save_bulk_catalog
-
-
-def pandas_to_parquet(pdf, path, storage_options):
-    return pdf.to_parquet(path, index=True, engine='pyarrow', storage_options=storage_options)
 
 
 def read_with_pandas(path, **kwargs):
@@ -206,14 +203,14 @@ class DaskBulkStorage:
         return self._submit_with_trace(dask_to_parquet, dataframe, path,
                                        storage_options=self._parameters.storage_options)
 
-    async def _save_with_pandas(self, path, dataframe: dd.DataFrame):
+    async def _save_with_pandas(self, path, dataframe: pd.DataFrame):
         """Save the dataframe to a parquet file(s).
         pdf: pd.DataFrame or Future<pd.DataFrame>
         Returns a Future<None>
         """
-        dataframe_scatter = await self.client.scatter(dataframe)
-        return await self._submit_with_trace(pandas_to_parquet, dataframe_scatter, path,
-                                             self._parameters.storage_options)
+        f_pdf = await self.client.scatter(dataframe)
+        return await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, path,
+                                             storage_options=self._parameters.storage_options)
 
     @internal_bulk_exceptions
     @capture_timings('save_bulk', handlers=worker_capture_timing_handlers)

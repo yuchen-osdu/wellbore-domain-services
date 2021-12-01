@@ -65,7 +65,7 @@ Writes data to the associated record. It creates a new version.
 Payload is expected to contain the entire bulk which will replace as latest version
 any previous bulk. Previous bulk versions are accessible via the get bulk data version API.
 Support JSON and Parquet format ('Content_Type' must be set accordingly).
-In case of JSON the orient must be set accordingly. Support http chunked encoding transfer.
+Support http chunked encoding transfer.
 """ + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["record_data"],
     responses={
@@ -119,7 +119,7 @@ async def post_data(record_id: str,
     description="Send a data chunk. Session must be complete/commit once all chunks are sent. "
                 "This will create a new and single version aggregating all and previous bulk."
                 "Support JSON and Parquet format ('Content_Type' must be set accordingly). "
-                "In case of JSON the orient must be set accordingly. Support http chunked encoding."
+                "Support http chunked encoding."
     + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["chunk_data"],
     responses={400: {"description": "Record not found"}}

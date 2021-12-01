@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 
 import pytest
+
+from wdms_client.request_builders.wdms.delete_records import build_request_delete_osdu_records
 from .fixtures import with_wdms_env
 from wdms_client.request_builders import build_request, get_cleaned_ref_and_res
-
 
 kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog', 'osdu_wellboretrajectory', 'osdu_wellboremarkerset']
 
@@ -63,7 +65,7 @@ def test_crud_record_versions(with_wdms_env, kind):
     # get specific version of the record
     result = build_request(f'crud.{kind}.get_{kind}_specific_version').call(
         with_wdms_env,
-        **{f'{kind}_record_version': resobj.versions[len(resobj.versions)-1]}  # set/pass version to fetch
+        **{f'{kind}_record_version': resobj.versions[len(resobj.versions) - 1]}  # set/pass version to fetch
     )
 
     result.assert_ok()
@@ -109,3 +111,21 @@ def test_crud_get_as_record(delfi_id, kind, with_wdms_env):
     # Get it as osdu wellbore with delfi id
     result = build_request(f'crud.osdu_{kind}.get_osdu_{kind}').call(with_wdms_env)
     result.assert_status_code(400)
+
+
+@pytest.mark.tag('basic', 'crud', 'smoke')
+def test_crud_delete_records(with_wdms_env):
+    record_ids = []
+    for kind in kind_list:
+        result = build_request(f'crud.{kind}.create_{kind}').call(with_wdms_env)
+        resobj = result.get_response_obj()
+        with_wdms_env.set(f'{kind}_record_id', resobj.recordIds[0])
+        record_ids.append(resobj.recordIds[0])
+        result = build_request(f'crud.{kind}.get_{kind}').call(with_wdms_env)
+        result.assert_status_code(200)
+    with_wdms_env.set(f'record_ids', json.dumps(record_ids))  # stored the record id for the following tests
+    result = build_request_delete_osdu_records().call(with_wdms_env)
+    result.assert_status_code(204)
+    for kind in kind_list:
+        result = build_request(f'crud.{kind}.get_{kind}').call(with_wdms_env)
+        result.assert_status_code(404)
