@@ -90,8 +90,5 @@ def internal_bulk_exceptions(target):
         except scheduler.KilledWorker:
             get_logger().exception(f"Dask worker has been killed when running '{target.__name__}'")
             raise InternalBulkError("Out of memory")
-        except Exception:
-            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
-            raise
 
     return async_inner

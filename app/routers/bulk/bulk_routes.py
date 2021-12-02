@@ -19,7 +19,7 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError, internal_bulk_exceptions
+from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
 
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
@@ -191,7 +191,6 @@ async def get_data_version(
         ex.raise_as_http()
 
 
-@internal_bulk_exceptions
 async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
     dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
     columns_to_load = None

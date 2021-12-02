@@ -200,8 +200,8 @@ class DataFrameRender:
         return df
 
     @staticmethod
-    @with_trace('process_params')
     @internal_bulk_exceptions
+    @with_trace('process_params')
     async def process_params(df, params: GetDataParams, filters):
         """
         pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
@@ -224,8 +224,8 @@ class DataFrameRender:
         return df
 
     @staticmethod
-    @with_trace('df_render')
     @internal_bulk_exceptions
+    @with_trace('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
             if stat and not params.limit and not params.offset:
