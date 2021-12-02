@@ -42,16 +42,21 @@ class BulkCatalog:
     """Represent a bulk catalog
     Exemple:
         {
-            'record_id': '7507fb30-9cfa-4506-9cd8-6cbacbcda740',
-            'nb_rows': 1000,
-            'index_path': 'folder/wdms_index/index.parquet,
-            'columns' : {
-                'A' : {
-                    'paths' : ['folder/file1.parquet', 'folder/file2.parquet']
-                    'dtype: 'Float32'
+            "record_id": "7507fb30-9cfa-4506-9cd8-6cbacbcda740",
+            "nb_rows": 1000,
+            "index_path": "folder/wdms_index/index.parquet,
+            "columns" : [
+                {
+                    "labels": ["A", "B"],
+                    "paths": ["folder/file1.parquet", "folder/file2.parquet"],
+                    "dtypes": ["Int64, "Float32"]
+                },
+                {
+                    "labels": ["C"],
+                    "paths": ["folder/file3.parquet"],
+                    "dtypes": ["Float32"]
                 }
-                'B' : { ... }
-            },
+            ],
         }
     """
     def __init__(self, record_id:str) -> None:
