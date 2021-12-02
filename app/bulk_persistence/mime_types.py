@@ -57,8 +57,6 @@ class MimeTypes:
 
     JSON = MimeType(type="application/json", extension=".json")
 
-    CSV = MimeType(type="text/csv", extension=".csv")
-
     MSGPACK = MimeType(
         type="application/x-msgpack",
         extension=".msgpack",

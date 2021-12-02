@@ -137,7 +137,7 @@ async def post_chunk_data(record_id: str,
     '/{record_id}/versions/{version}/data',
     summary='Returns data of the specified version.',
     description='Returns the data of a specific version according to the specified query parameters.'
-    ' Multiple media types response are available ("application/json", text/csv", "application/x-parquet")'
+    ' Multiple media types response are available ("application/json", "application/x-parquet")'
     ' The desired format can be specify in "Accept" header. The default is Parquet.'
     ' When bulk statistics are requested using "describe" parameter, the response is always provided in JSON'
     + REQUIRED_ROLES_READ,
@@ -147,7 +147,6 @@ async def post_chunk_data(record_id: str,
         200: {"content": {
             MimeTypes.JSON.type: {},
             MimeTypes.PARQUET.type: {},
-            MimeTypes.CSV.type: {},
         }}
     }
 )
@@ -220,7 +219,7 @@ async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataP
     "/{record_id}/data",
     summary='Returns the data according to the specified query parameters.',
     description='Returns the data according to the specified query parameters.'
-    ' Multiple media types response are available ("application/json", text/csv", "application/x-parquet").'
+    ' Multiple media types response are available ("application/json", "application/x-parquet").'
     ' The desired format can be specify in "Accept" header. The default is Parquet.'
     ' When bulk statistics are requested using "describe" parameter, the response is always provided in JSON.'
     + REQUIRED_ROLES_READ,
@@ -230,7 +229,6 @@ async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataP
         200: {"content": {
             MimeTypes.JSON.type: {},
             MimeTypes.PARQUET.type: {},
-            MimeTypes.CSV.type: {},
         }}
     }
 )

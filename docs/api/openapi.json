@@ -592,6 +592,34 @@
         "title": "Artefact",
         "type": "object"
       },
+      "AvailableMarkerProperty": {
+        "additionalProperties": false,
+        "description": "A set of properties describing a marker property which is available for this instance of a WellboreMarkerSet.",
+        "properties": {
+          "MarkerPropertyTypeID": {
+            "description": "The reference to a marker property type - or if interpreted as CSV columns, the 'well-known column type. It is a relationship to a reference-data--MarkerPropertyType record id.",
+            "example": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-MarkerPropertyType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Marker Property Type ID",
+            "type": "string"
+          },
+          "MarkerPropertyUnitID": {
+            "description": "Unit of Measure for the marker properties of type MarkerPropertyType.",
+            "example": "partition-id:reference-data--UnitOfMeasure:ft:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Marker Property Unit ID",
+            "type": "string"
+          },
+          "Name": {
+            "description": "The name of the marker property (e.g. column in a CSV document) as originally found. If absent The name of the MarkerPropertyType is intended to be used.",
+            "example": "MissingThickness",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "AvailableMarkerProperty",
+        "type": "object"
+      },
       "AvailableTrajectoryStationProperty": {
         "additionalProperties": false,
         "description": "A set of properties describing a trajectory station property which is available for this instance of a WellboreTrajectory.",
@@ -2480,7 +2508,7 @@
         "title": "MainFamilyCatalogItem",
         "type": "object"
       },
-      "Marker": {
+      "Marker110": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
@@ -2526,6 +2554,11 @@
             "title": "Markerobservationnumber",
             "type": "number"
           },
+          "MarkerSubSeaVerticalDepth": {
+            "description": "The Marker's TVD converted to a Sub-Sea Vertical depth, i.e., below Mean Sea Level. Note that TVD values above MSL are negative. This is the same as true vertical depth referenced to the vertical CRS MSL depth.",
+            "title": "Markersubseaverticaldepth",
+            "type": "number"
+          },
           "MarkerTypeID": {
             "description": "Marker Type Reference Type. Possible values - Biostratigraphy, Lithostratigraphy, seismic, depth of well, sequence, flow unit",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-MarkerType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
@@ -2557,7 +2590,7 @@
             "type": "number"
           }
         },
-        "title": "Marker",
+        "title": "Marker110",
         "type": "object"
       },
       "MetaItem": {
@@ -4703,7 +4736,7 @@
         "title": "Wellbore",
         "type": "object"
       },
-      "WellboreMarkerSet": {
+      "WellboreMarkerSet110": {
         "additionalProperties": false,
         "description": "Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.",
         "properties": {
@@ -4739,7 +4772,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellboreMarkerSetData"
+            "$ref": "#/components/schemas/WellboreMarkerSetData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -4750,7 +4783,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
+            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -4806,10 +4839,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellboreMarkerSet",
+        "title": "WellboreMarkerSet110",
         "type": "object"
       },
-      "WellboreMarkerSetData": {
+      "WellboreMarkerSetData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4827,6 +4860,14 @@
               "type": "string"
             },
             "title": "Authorids",
+            "type": "array"
+          },
+          "AvailableMarkerProperties": {
+            "description": "The array of MarkerProperty definitions describing the available properties for this instance of WellboreMarkerSet.",
+            "items": {
+              "$ref": "#/components/schemas/AvailableMarkerProperty"
+            },
+            "title": "Available Marker Properties",
             "type": "array"
           },
           "BusinessActivities": {
@@ -4890,8 +4931,9 @@
             "type": "array"
           },
           "Markers": {
+            "description": "The array of marker meta data in this set.",
             "items": {
-              "$ref": "#/components/schemas/Marker"
+              "$ref": "#/components/schemas/Marker110"
             },
             "title": "Markers",
             "type": "array"
@@ -4976,16 +5018,16 @@
               }
             ],
             "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all marker measured depths of the Wellbore Marker Set Markers array.",
-            "title": "Verticalmeasurement"
+            "title": "Vertical Measurement"
           },
           "WellboreID": {
-            "description": "Wellbore ID",
+            "description": "The Wellbore ID, to which the markers in this set belong.",
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+:[0-9]*$",
-            "title": "Wellboreid",
+            "title": "Wellbore ID",
             "type": "string"
           }
         },
-        "title": "WellboreMarkerSetData",
+        "title": "WellboreMarkerSetData110",
         "type": "object"
       },
       "WellborePurpose": {
@@ -9043,6 +9085,67 @@
         ]
       }
     },
+    "/ddms/v3/records/delete": {
+      "post": {
+        "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_del_multiple_osdu_records",
+        "parameters": [
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Record Ids",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Records deleted successfully"
+          },
+          "404": {
+            "description": "record/s not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete records. The API performs a logical deletion of the given records. ",
+        "tags": [
+          "Delete records V3"
+        ]
+      }
+    },
     "/ddms/v3/wellboremarkersets": {
       "post": {
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
@@ -9066,7 +9169,7 @@
             "application/json": {
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 },
                 "title": "Wellboremarkersets",
                 "type": "array"
@@ -9197,7 +9300,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 }
               }
             },
@@ -9332,7 +9435,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 }
               }
             },
@@ -9851,7 +9954,7 @@
     },
     "/ddms/v3/wellboretrajectories/{record_id}/data": {
       "get": {
-        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_ddms_v3_wellboretrajectories__record_id__data_get",
         "parameters": [
           {
@@ -9915,6 +10018,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -9948,8 +10066,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -9978,7 +10095,7 @@
         ]
       },
       "post": {
-        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_data_ddms_v3_wellboretrajectories__record_id__data_post",
         "parameters": [
           {
@@ -9988,21 +10105,6 @@
             "schema": {
               "title": "Record Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -10032,7 +10134,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -10345,7 +10447,7 @@
     },
     "/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data": {
       "post": {
-        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_chunk_data_ddms_v3_wellboretrajectories__record_id__sessions__session_id__data_post",
         "parameters": [
           {
@@ -10364,21 +10466,6 @@
             "schema": {
               "title": "Session Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -10408,7 +10495,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -10447,7 +10534,7 @@
     },
     "/ddms/v3/wellboretrajectories/{record_id}/versions/{version}/data": {
       "get": {
-        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_version_ddms_v3_wellboretrajectories__record_id__versions__version__data_get",
         "parameters": [
           {
@@ -10520,6 +10607,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -10553,8 +10655,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -10595,6 +10696,16 @@
             "schema": {
               "title": "Wellboretrajectoryid",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "purge",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Purge",
+              "type": "boolean"
             }
           },
           {
@@ -10993,7 +11104,7 @@
     },
     "/ddms/v3/welllogs/{record_id}/data": {
       "get": {
-        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_ddms_v3_welllogs__record_id__data_get",
         "parameters": [
           {
@@ -11057,6 +11168,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -11090,8 +11216,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -11120,7 +11245,7 @@
         ]
       },
       "post": {
-        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nIn case of JSON the orient must be set accordingly. Support http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_data_ddms_v3_welllogs__record_id__data_post",
         "parameters": [
           {
@@ -11130,21 +11255,6 @@
             "schema": {
               "title": "Record Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -11174,7 +11284,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -11487,7 +11597,7 @@
     },
     "/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data": {
       "post": {
-        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). In case of JSON the orient must be set accordingly. Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_chunk_data_ddms_v3_welllogs__record_id__sessions__session_id__data_post",
         "parameters": [
           {
@@ -11506,21 +11616,6 @@
             "schema": {
               "title": "Session Id",
               "type": "string"
-            }
-          },
-          {
-            "description": "format for JSON only.",
-            "in": "query",
-            "name": "orient",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/JSONOrient"
-                }
-              ],
-              "default": "split",
-              "description": "format for JSON only."
             }
           },
           {
@@ -11550,7 +11645,7 @@
               }
             }
           },
-          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n In that case 'orient' parameter must be provided \n.\n Examples in JSON for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_1\":{\"0\":1111.1,\"1\":1111.2,\"2\":1111.3,\"3\":1111.4,\"4\":1111.5},\"col_2\":{\"0\":2222.1,\"1\":2222.2,\"2\":2222.3,\"3\":2222.4,\"4\":2222.5}}`<br/>&nbsp;",
+          "description": "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n<br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n.\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;",
           "required": true
         },
         "responses": {
@@ -11589,7 +11684,7 @@
     },
     "/ddms/v3/welllogs/{record_id}/versions/{version}/data": {
       "get": {
-        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_version_ddms_v3_welllogs__record_id__versions__version__data_get",
         "parameters": [
           {
@@ -11662,6 +11757,21 @@
             }
           },
           {
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "example": "MD:lt:1000",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "Filter",
+              "type": "array"
+            }
+          },
+          {
             "description": "format for JSON only.",
             "in": "query",
             "name": "orient",
@@ -11695,8 +11805,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -11737,6 +11846,16 @@
             "schema": {
               "title": "Welllogid",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "purge",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Purge",
+              "type": "boolean"
             }
           },
           {

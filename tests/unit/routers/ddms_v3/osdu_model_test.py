@@ -18,7 +18,7 @@ import os
 from typing import Type
 from pydantic import BaseModel, ValidationError
 from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet, \
-    WellLog110, WellboreTrajectory110
+    WellLog110, WellboreTrajectory110, WellboreMarkerSet110
 
 
 test_parameters = [
@@ -34,6 +34,7 @@ test_parameters = [
     (WellboreTrajectory110, "WellboreTrajectory_unit.json", None),
     (WellboreTrajectory110, "WellboreTrajectory110_unit.json", None),
     (WellboreMarkerSet, "WellboreMarkerSet_unit.json", None),
+    (WellboreMarkerSet110, "WellboreMarkerSet110_unit.json", None),
 ]
 
 
