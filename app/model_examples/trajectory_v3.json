@@ -1,0 +1,112 @@
+  {
+    "acl": {
+      "owners": [
+        "string"
+      ],
+      "viewers": [
+        "string"
+      ]
+    },
+    "ancestry": {
+      "parents": []
+    },
+    "createTime": "2020-12-16T11:46:20.163Z",
+    "createUser": "some-user@some-company-cloud.com",
+    "data": {
+      "AcquisitionDate": "2021-12-02T15:24:57.617Z",
+      "AcquisitionRemark": "string",
+      "ActiveIndicator": true,
+      "AppliedOperations": [
+        "string"
+      ],
+      "Artefacts": [
+        {
+          "ResourceID": "string",
+          "ResourceKind": "string",
+          "RoleID": "string"
+        }
+      ],
+      "AuthorIDs": [
+        "string"
+      ],
+      "AvailableTrajectoryStationProperties": [
+        {
+          "Name": "AzimuthTN",
+          "StationPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:dega:",
+          "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:"
+        }
+      ],
+      "AzimuthReferenceType": "string",
+      "BaseDepthMeasuredDepth": 0,
+      "BusinessActivities": [
+        "string"
+      ],
+      "CalculationMethodType": "string",
+      "CompanyID": "string",
+      "CreationDateTime": "2021-12-02T15:24:57.617Z",
+      "Datasets": [
+        "string"
+      ],
+      "Description": "string",
+      "ExistenceKind": "string",
+      "ExtensionProperties": {},
+      "ExtrapolatedMeasuredDepth": 0,
+      "GeoContexts": [
+        "string"
+      ],
+      "GeographicCRSID": "namespace:reference-data--CoordinateReferenceSystem:GeodeticCRS.EPSG.4326:",
+      "IsDiscoverable": true,
+      "IsExtendedLoad": true,
+      "LineageAssertions": [
+        {
+          "ID": "string",
+          "LineageRelationshipType": "string"
+        }
+      ],
+      "Name": "string",
+      "ProjectedCRSID": "namespace:reference-data--CoordinateReferenceSystem:ProjectedCRS.EPSG.32615:",
+      "ResourceCurationStatus": "string",
+      "ResourceHomeRegionID": "string",
+      "ResourceHostRegionIDs": [
+        "string"
+      ],
+      "ResourceLifecycleStatus": "string",
+      "ResourceSecurityClassification": "string",
+      "ServiceCompanyID": "string",
+      "Source": "string",
+      "SpatialArea": "string",
+      "SpatialPoint": "string",
+      "SubmitterName": "string",
+      "SurveyReferenceIdentifier": "string",
+      "SurveyToolTypeID": "string",
+      "SurveyType": "string",
+      "SurveyVersion": "string",
+      "Tags": [
+        "string"
+      ],
+      "TieMeasuredDepth": 0,
+      "TopDepthMeasuredDepth": 0,
+      "VerticalMeasurement": "string",
+      "WellboreID": "string"
+    },
+    "id": "namespace:work-product-component--WellboreTrajectory:606f224a-ef1f-5690-9843-d26cd7e33e10",
+    "kind": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
+    "legal": {
+      "legaltags": [
+        "string"
+      ],
+      "otherRelevantDataCountries": [
+        "string"
+      ],
+      "status": "string"
+    },
+    "meta": [
+      "string"
+    ],
+    "modifyTime": "2020-12-16T11:52:24.477Z",
+    "modifyUser": "some-user@some-company-cloud.com",
+    "tags": {
+      "NameOfKey": "String value"
+    },
+    "version": 1562066009929332
+  }

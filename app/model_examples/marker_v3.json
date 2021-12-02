@@ -1,0 +1,111 @@
+  {
+    "acl": {
+      "owners": [
+        "string"
+      ],
+      "viewers": [
+        "string"
+      ]
+    },
+    "ancestry": {
+      "parents": []
+    },
+    "createTime": "2020-12-16T11:46:20.163Z",
+    "createUser": "some-user@some-company-cloud.com",
+    "data": {
+      "Artefacts": [
+        {
+          "ResourceID": "string",
+          "ResourceKind": "string",
+          "RoleID": "string"
+        }
+      ],
+      "AuthorIDs": [
+        "string"
+      ],
+      "AvailableMarkerProperties": [
+        {
+          "MarkerPropertyTypeID": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+          "MarkerPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:ft:",
+          "Name": "MissingThickness"
+        }
+      ],
+      "BusinessActivities": [
+        "string"
+      ],
+      "CreationDateTime": "2021-12-02T15:19:19.271Z",
+      "Datasets": [
+        "string"
+      ],
+      "Description": "string",
+      "ExistenceKind": "string",
+      "ExtensionProperties": {},
+      "GeoContexts": [
+        "string"
+      ],
+      "IsDiscoverable": true,
+      "IsExtendedLoad": true,
+      "LineageAssertions": [
+        {
+          "ID": "string",
+          "LineageRelationshipType": "string"
+        }
+      ],
+      "Markers": [
+        {
+          "FeatureName": "string",
+          "FeatureTypeID": "string",
+          "GeologicalAge": "string",
+          "MarkerDate": "2021-12-02T15:19:19.271Z",
+          "MarkerInterpreter": "string",
+          "MarkerMeasuredDepth": 0,
+          "MarkerName": "string",
+          "MarkerObservationNumber": 0,
+          "MarkerSubSeaVerticalDepth": 0,
+          "MarkerTypeID": "string",
+          "Missing": "string",
+          "NegativeVerticalDelta": 0,
+          "PositiveVerticalDelta": 0,
+          "SurfaceDipAngle": 0,
+          "SurfaceDipAzimuth": 0
+        }
+      ],
+      "Name": "string",
+      "ResourceCurationStatus": "string",
+      "ResourceHomeRegionID": "string",
+      "ResourceHostRegionIDs": [
+        "string"
+      ],
+      "ResourceLifecycleStatus": "string",
+      "ResourceSecurityClassification": "string",
+      "Source": "string",
+      "SpatialArea": "string",
+      "SpatialPoint": "string",
+      "SubmitterName": "string",
+      "Tags": [
+        "string"
+      ],
+      "VerticalMeasurement": "string",
+      "WellboreID": "string"
+    },
+    "id": "namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c",
+    "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
+    "legal": {
+      "legaltags": [
+        "string"
+      ],
+      "otherRelevantDataCountries": [
+        "string"
+      ],
+      "status": "string"
+    },
+    "meta": [
+      "string"
+    ],
+    "modifyTime": "2020-12-16T11:52:24.477Z",
+    "modifyUser": "some-user@some-company-cloud.com",
+    "tags": {
+      "NameOfKey": "String value"
+    },
+    "version": 1562066009929332
+  }
