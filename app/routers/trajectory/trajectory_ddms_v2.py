@@ -236,7 +236,8 @@ async def post_traj_data(
     trajectory_record = await fetch_trajectory_record(ctx, trajectoryid)
     record = from_record(Trajectory, trajectory_record)
 
-    record.data.bulkURI = await persistence.write_bulk(ctx, df)
+    bulk_uri = await persistence.write_bulk(ctx, df)
+    record.data.bulkURI = bulk_uri.encode()
 
     # update record's channels
     if not record.data.channels:
@@ -297,7 +298,7 @@ async def _get_trajectory_data(
     except UnknownChannelsException as key_error:  # unknown channels
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(key_error)) from key_error
     except InvalidBulkException as ex:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str("Bulk is invalid")) from ex
 
     content = await DataframeSerializerAsync().to_json(df, orient=orient)
     return Response(content=content, media_type=MimeTypes.JSON.type)

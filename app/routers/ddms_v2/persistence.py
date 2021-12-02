@@ -31,12 +31,12 @@ class Persistence:
         record: Record,
         bulk_id_path: str,
     ) -> pd.DataFrame:
-        bulk_id, _prefix = LogBulkHelper.get_bulk_id(record, bulk_id_path)
+        bulk_uri = LogBulkHelper.get_bulk_uri(record, bulk_id_path)
         # TODO use prefix to know how to read the bulk
-        if bulk_id is None:
+        if not bulk_uri.is_valid():
             return pd.DataFrame()
 
-        return await get_dataframe(ctx, bulk_id)
+        return await get_dataframe(ctx, bulk_uri.bulk_id)
 
     @classmethod
     async def write_bulk(cls, ctx: Context, dataframe) -> str:

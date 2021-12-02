@@ -101,13 +101,6 @@ class ConfigurationContainer:
         default='undefined'
     )
 
-    # TODO: based on environment name, hardcoded values here are temporary until chunking feature release
-    alpha_feature_enabled: EnvVar = EnvVar(
-        key='ENVIRONMENT_NAME',
-        description='enable alpha features',
-        default='',
-        factory=lambda x: x.lower() in ['evd', 'dev', 'qa'])
-
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
         description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm',
@@ -394,4 +387,4 @@ CORRELATION_ID_HEADER_NAME = 'correlation-id'
 REQUEST_ID_HEADER_NAME = 'Request-ID'
 PARTITION_ID_HEADER_NAME = 'data-partition-id'
 MODULES_PATH_PREFIX = 'app.modules'
-X_USER_ID = 'x-user-id'
+X_USER_ID_HEADER_NAME = 'x-user-id'

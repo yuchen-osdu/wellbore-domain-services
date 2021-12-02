@@ -23,6 +23,7 @@ parameters:
   centralAzureSubscription: '' #Subscription to a central ACR from which to pull the container
   sourceACRName: ''
   imageTag: ''
+  appName: 'os-wellbore-ddms'
 
 steps:
   - task: AzureCLI@2
@@ -40,5 +41,5 @@ steps:
 
         echo "az acr login -n ${{ parameters.sourceACRName }}"
         az acr login -n ${{ parameters.sourceACRName }}
-        echo "docker pull ${{ parameters.sourceACRName}}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }}"
-        docker pull ${{ parameters.sourceACRName}}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }}
+        echo "docker pull ${{ parameters.sourceACRName}}.azurecr.io/${{ parameters.appName }}:${{ parameters.imageTag }}"
+        docker pull ${{ parameters.sourceACRName}}.azurecr.io/${{ parameters.appName }}:${{ parameters.imageTag }}

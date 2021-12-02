@@ -23,6 +23,8 @@ class MimeType(NamedTuple):
     alternative_types: List[str] = []
 
     def match(self, str_value: str) -> bool:
+        if not str_value:
+            return False
         normalized_value = str_value.lower()
         return any(
             (
@@ -54,8 +56,6 @@ class MimeTypes:
     )
 
     JSON = MimeType(type="application/json", extension=".json")
-
-    CSV = MimeType(type="text/csv", extension=".csv")
 
     MSGPACK = MimeType(
         type="application/x-msgpack",

@@ -15,13 +15,11 @@
 import asyncio
 from functools import partial
 from io import BytesIO
-from typing import Union, AnyStr, IO, Optional, List, Dict
+from typing import Union, Optional, List, Dict
 
-from pathlib import Path
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel
-from pandas import DataFrame as DataframeClass
 
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes
@@ -35,9 +33,7 @@ class DataframeSerializerSync:
     then provide unified the way to handle various topics float/double precision, compression etc...
     """
 
-    # todo may be unified with the work from storage.blob_storage
-
-    SupportedFormat = [MimeTypes.JSON]  # , MimeTypes.MSGPACK]
+    SupportedFormat = [MimeTypes.JSON, MimeTypes.PARQUET]
     """ these are supported format through wellbore ddms APIs """
 
     @classmethod
@@ -60,7 +56,7 @@ class DataframeSerializerSync:
 
     @classmethod
     def to_json(cls,
-                df: DataframeClass,
+                df: pd.DataFrame,
                 orient: Union[str, JSONOrient] = JSONOrient.split,
                 **kwargs) -> Optional[str]:
         """
@@ -74,7 +70,17 @@ class DataframeSerializerSync:
         return df.fillna("NaN").to_json(orient=orient.value, **kwargs)
 
     @classmethod
-    def read_parquet(cls, data) -> DataframeClass:
+    def to_parquet(cls, df: pd.DataFrame, path_or_buf=None, *, storage_options=None):
+        """
+        :param df: dataframe to dump
+        :param path_or_buf: str or file-like object, default None, see Pandas.Dataframe.to_parquet
+        :param storage_options: storage_options, default None
+        :return: None or buffer
+        """
+        return df.to_parquet(path_or_buf, index=True, engine='pyarrow', storage_options=storage_options)
+
+    @classmethod
+    def read_parquet(cls, data) -> pd.DataFrame:
         """
         :param data: bytes, path object or file-like object
         :return: dataframe
@@ -86,15 +92,46 @@ class DataframeSerializerSync:
         return pd.read_parquet(data)
 
     @classmethod
-    def read_json(cls, data, orient: Union[str, JSONOrient], convert_axes: Optional[bool] = None) -> DataframeClass:
+    def read_json(cls, data, orient: Union[str, JSONOrient]) -> pd.DataFrame:
         """
-        :param data: bytes str content (valid JSON str), path object or file-like object
+        :param data: bytes str content (valid JSON str), path object or file-like object. It won't convert axes. In case
+                     of orient='columns' since the indexes type is lost, it will still try to coerce index into 'int'
+                     then 'float' then try convert to date time. 'Columns' will remain as string type.
+                     For orient 'split' no convert at all.
         :param orient:
         :return: dataframe
         """
         orient = JSONOrient.get(orient)
 
-        return pd.read_json(path_or_buf=data, orient=orient.value, convert_axes=convert_axes).replace("NaN", np.NaN)
+        df = pd.read_json(
+            path_or_buf=data, orient=orient.value, convert_axes=False
+        ).replace("NaN", np.NaN)
+
+        # this is a conner case, orient 'columns' implies to have all columns and index values to be passed as string
+        # in JSON content.
+        # In that case, their original types are lost. Since parameter 'convert_axes' is set to False, pandas won't
+        # try to infer the types of the columns and index.
+        # Regarding columns, it remains OK since WDMS enforces them to be string. Then, using orient 'columns' will cast
+        # them to string 'by design'.
+        # For the index values it's problematic. In main cases, those are integer values and it matters to have them
+        # back to the original type if possible.
+        #
+        # Here's the tradeoff to handle the case orient='columns':
+        # - no convert on columns, so remains as string type
+        # - try to coerce index to 'float64' or 'int64'
+        #
+        # This is similar to what is done in Pandas but only for index:
+        # see https://github.com/pandas-dev/pandas/blob/master/pandas/io/json/_json.py#L916
+        if orient == JSONOrient.columns:
+            for dtype in ['int64', 'float64']:
+                try:
+                    # try to coerce index type as int then float
+                    df.index = df.index.astype(dtype)
+                    return df
+                except (TypeError, ValueError, OverflowError):
+                    continue
+
+        return df
 
 
 class DataframeSerializerAsync:
@@ -102,34 +139,27 @@ class DataframeSerializerAsync:
         self.executor = pool_executor
 
     @with_trace("Parquet bulk serialization")
-    async def to_parquet(self, df: DataframeClass, *args, **kwargs) -> DataframeClass:
-
-        func = partial(df.to_parquet, *args, **kwargs)
+    async def to_parquet(self, df: pd.DataFrame, *, storage_options=None) -> pd.DataFrame:
+        func = partial(DataframeSerializerSync.to_parquet, df, storage_options=storage_options)
         return await asyncio.get_event_loop().run_in_executor(self.executor, func)
 
     @with_trace("JSON bulk serialization")
     async def to_json(self,
-                      df: DataframeClass,
+                      df: pd.DataFrame,
                       orient: Union[str, JSONOrient] = JSONOrient.split,
                       *args, **kwargs) -> Optional[str]:
 
         func = partial(DataframeSerializerSync.to_json, df, orient, *args, **kwargs)
         return await asyncio.get_event_loop().run_in_executor(self.executor, func)
 
-    @with_trace("CSV bulk serialization")
-    async def to_csv(self, df: DataframeClass, *args, **kwargs) -> Optional[str]:
-        df = df.fillna("NaN")
-        func = partial(df.to_csv, *args, **kwargs)
-        return await asyncio.get_event_loop().run_in_executor(self.executor, func)
-
     @with_trace("Parquet bulk deserialization")
-    async def read_parquet(self, data) -> DataframeClass:
+    async def read_parquet(self, data) -> pd.DataFrame:
         return await asyncio.get_event_loop().run_in_executor(
             self.executor, DataframeSerializerSync.read_parquet, data
         )
 
     @with_trace("Parquet JSON deserialization")
-    async def read_json(self, data, orient: Union[str, JSONOrient], convert_axes: Optional[bool] = None) -> DataframeClass:
+    async def read_json(self, data, orient: Union[str, JSONOrient]) -> pd.DataFrame:
         return await asyncio.get_event_loop().run_in_executor(
-            self.executor, DataframeSerializerSync.read_json, data, orient, convert_axes
+            self.executor, DataframeSerializerSync.read_json, data, orient
         )

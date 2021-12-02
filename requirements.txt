@@ -120,7 +120,7 @@ cryptography==3.4.7
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
     #   pyjwt
-dask[distributed]==2021.7.2
+dask[distributed]==2021.10.0
     # via
     #   -r requirements.in
     #   distributed
@@ -128,7 +128,7 @@ decorator==5.0.9
     # via
     #   gcsfs
     #   jsonpath-ng
-distributed==2021.07.2
+distributed==2021.10.0
     # via dask
 fastapi==0.68.1
     # via
@@ -198,6 +198,8 @@ importlib-metadata==4.8.1
     #   jsonschema
 isodate==0.6.0
     # via msrest
+jinja2==3.0.3
+    # via distributed
 jmespath==0.10.0
     # via
     #   boto3
@@ -210,6 +212,8 @@ jsonschema==3.2.0
     # via osdu-api
 locket==0.2.1
     # via partd
+markupsafe==2.0.1
+    # via jinja2
 msal==1.12.0
     # via
     #   azure-identity
@@ -269,7 +273,7 @@ osdu-core-lib-python-ibm==1.3.0
     # via -r requirements.in
 osdu-data-ecosystem-search==0.3.3
     # via -r requirements.in
-osdu-data-ecosystem-storage==1.2.0
+osdu-data-ecosystem-storage==1.3.0
     # via -r requirements.in
 osdu-log-recognition-lib==0.0.9
     # via -r requirements.in

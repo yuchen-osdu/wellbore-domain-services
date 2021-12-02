@@ -44,7 +44,7 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
         api_key = request.headers.get('x-api-key', None)
         app_key = request.headers.get(conf.APP_KEY_HEADER_NAME, None)
         partition_id = request.headers.get('data-partition-id', None)
-        x_user_id = request.headers.get(conf.X_USER_ID, None)
+        x_user_id = request.headers.get(conf.X_USER_ID_HEADER_NAME, None)
         correlation_id = request.headers.get(conf.CORRELATION_ID_HEADER_NAME, str(uuid.uuid4()))
         request_id = request.headers.get(conf.REQUEST_ID_HEADER_NAME, str(uuid.uuid4()))
         anonymous_user = User(email='anonymous', authenticated=False)

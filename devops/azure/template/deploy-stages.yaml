@@ -103,3 +103,9 @@ stages:
                 authenticationTemplate: ${{ environment.authenticationTemplate }}
                 authenticationTemplateParameters: ${{ environment.authenticationTemplateParameters }}
                 environmentName: ${{ environment.name }}
+
+    - ${{ each postDeployTemplate in environment.postDeployTemplates }}:
+        - template: ${{ postDeployTemplate.template }}
+          parameters:
+            ${{ each parameter in postDeployTemplate.parameters }}:
+              ${{ parameter.key }}: ${{ parameter.value }}

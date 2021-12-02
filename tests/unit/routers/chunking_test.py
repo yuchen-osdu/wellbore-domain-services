@@ -1,5 +1,6 @@
 import asyncio
 import io
+import math
 from tempfile import TemporaryDirectory
 
 from fastapi import Header
@@ -7,6 +8,7 @@ from fastapi.testclient import TestClient
 import pytest
 import numpy as np
 import pandas as pd
+from pandas.testing import assert_frame_equal
 import pandas.api.types as ptypes
 import pyarrow.parquet as pq
 import pyarrow as pa
@@ -16,6 +18,7 @@ from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence.dask.errors import BulkNotProcessable
 
 from app.clients import StorageRecordServiceClient
 from app.persistence.sessions_storage import SessionsStorage, SessionState
@@ -77,12 +80,8 @@ def _create_df_from_response(response):
     content_type = response.headers.get('content-type')
     if content_type == 'application/x-parquet':
         return pd.read_parquet(f)
-    elif content_type == 'text/csv; charset=utf-8':
-        return pd.read_csv(f, index_col=0)
     elif content_type == 'application/json':
         return pd.read_json(f, dtype=True, orient='split', convert_axes=False).replace("NaN", np.NaN)
-    elif content_type == 'application/csv':
-        return pd.read_csv(f, dtype=True).replace("NaN", np.NaN)
     else:
         raise ValueError(f"Unknown content-type: '{content_type}'")
 
@@ -149,10 +148,8 @@ def event_loop():  # all tests will share the same loop
 
 @pytest.fixture
 def dasked_test_app(init_fixtures):
-    from app.wdms_app import wdms_app, enable_alpha_feature
+    from app.wdms_app import wdms_app
     from app.wdms_app import app_injector
-
-    enable_alpha_feature()
 
     with TemporaryDirectory() as tmp_dir:
         local_blob_storage = LocalFSBlobStorage(directory=tmp_dir)
@@ -226,7 +223,6 @@ def test_post_data_merge_extension_properties(setup_client):
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
     'application/json',
-    'text/csv; charset=utf-8',
 ])
 @pytest.mark.parametrize("columns", [
     ['MD', 'X'],
@@ -333,7 +329,6 @@ def test_send_all_data_once_post_data_v2_get_data_v3(setup_client,
 ])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    'text/csv; charset=utf-8',
     'application/json',
 ])
 @pytest.mark.parametrize("columns", [
@@ -436,7 +431,6 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    'text/csv; charset=utf-8',
     'application/json',
 ])
 def test_add_curve_by_chunk_different_cols(setup_client, entity_type, data_format, accept_content):
@@ -465,7 +459,6 @@ def test_add_curve_by_chunk_different_cols(setup_client, entity_type, data_forma
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
 @pytest.mark.parametrize("accept_content", [
     'application/x-parquet',
-    'text/csv; charset=utf-8',
     'application/json',
 ])
 def test_add_curve_by_chunk_same_cols(setup_client, entity_type, data_format, accept_content):
@@ -651,7 +644,9 @@ def test_session_unknown_record(setup_client, entity_type):
     chunking_url = Definitions[entity_type]['chunking_url']
 
     session_response = client.post(f'{chunking_url}/123456/sessions', json={'mode': 'update'})
+
     assert session_response.status_code == 404
+
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -771,7 +766,8 @@ def test_session_chunk_int(setup_client, entity_type, content_type_header, creat
     assert chunk_response_1.status_code == expected_code
 
 
-def test_legacy_logs_int_columns(setup_client):
+@pytest.mark.parametrize("columns", [[int(42), float(-42)], []])
+def test_legacy_logs_int_columns(setup_client, columns):
     """
         Ensure legacy v2 Log containing columns name as int type are correctly converted to string
         to ensure to_parquet is possible.
@@ -783,7 +779,7 @@ def test_legacy_logs_int_columns(setup_client):
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
 
-    json_data = {t: np.random.rand(10) for t in [int(42), float(-42)]}
+    json_data = {t: np.random.rand(10) for t in columns}
     df_data = pd.DataFrame(json_data)
     data_to_send = df_data.to_json(orient='split', date_format='iso')
 
@@ -1037,6 +1033,160 @@ def test_send_parquet_json_with_two_session(setup_client, entity_type):
                    record_id=record_id,
                    session_mode='update',
                    data_format='parquet')
+
+
+@pytest.fixture()
+def dataframe_for_filters():
+    dic = {
+        "A": range(20),
+        "B": np.arange(20.0),
+        "C": [str(i) for i in range(20)],
+        "D": [i%2 == 0 for i in range(20)]
+    }
+    return pd.DataFrame(dic, index=range(20))
+
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("params, expected", [
+    (['A:lt:5'], lambda df: df.loc[df['A'] < 5]),
+    (['A:lte:5'], lambda df: df.loc[df['A'] <= 5]),
+    (['A:eq:5'], lambda df: df.loc[df['A'] == 5]),
+    (['A:neq:5'], lambda df: df.loc[df['A'] != 5]),
+    (['A:gt:5'], lambda df: df.loc[df['A'] > 5]),
+    (['A:gte:5'], lambda df: df.loc[df['A'] >= 5]),
+    (['A:in:5,6,7'], lambda df: df.loc[df['A'].isin([5, 6, 7])]),
+    (['B:lt:5.0'], lambda df: df.loc[df['B'] < 5.0]),
+    (['B:lte:5.0'], lambda df: df.loc[df['B'] <= 5.0]),
+    (['B:eq:5.0'], lambda df: df.loc[df['B'] == 5.0]),
+    (['B:neq:5.0'], lambda df: df.loc[df['B'] != 5.0]),
+    (['B:gt:5.0'], lambda df: df.loc[df['B'] > 5.0]),
+    (['B:gte:5.0'], lambda df: df.loc[df['B'] >= 5.0]),
+    (['B:in:5.0,6.0,7.0'], lambda df: df.loc[df['B'].isin([5.0, 6.0, 7.0])]),
+    (['C:gt:5'], lambda df: df.loc[df['C'] > '5']),
+    (['C:gte:5'], lambda df: df.loc[df['C'] >= '5']),
+    (['C:gte:5s+++'], lambda df: df.loc[df['C'] >= '5s+++']),
+    (['C:eq:sss'], lambda df: df.loc[df['C'] >= 'sss']),
+    (['C:lt:5'], lambda df: df.loc[df['C'] < '5']),
+    (['C:lte:5'], lambda df: df.loc[df['C'] <= '5']),
+    (['C:eq:5'], lambda df: df.loc[df['C'] == '5']),
+    (['C:neq:5'], lambda df: df.loc[df['C'] != '5']),
+    (['C:in:5,6,7'], lambda df: df.loc[df['C'].isin(['5', '6', '7'])]),
+    (['C:eq:abc:def'], lambda df: df.loc[df['C'] == 'abc:def']),
+    (['D:eq:True'], lambda df: df.loc[df['D'] == True]),
+    (['D:neq:True'], lambda df: df.loc[df['D'] != True]),
+    (['D:eq:False'], lambda df: df.loc[df['D'] == False]),
+    (['A:lt:5', 'B:gte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] >= 5.0) & (df['D'] == True)]),
+    (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])
+])
+def test_get_bulk_data_with_filters(setup_client, entity_type, params, expected, dataframe_for_filters):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    headers = {'content-type': 'application/x-parquet'}
+    chunking_url = Definitions[entity_type]['chunking_url']
+    response_send_data = client.post(f'{chunking_url}/{record_id}/data',
+                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_send_data.status_code == 200
+
+    header_get_data = {'Accept': 'application/parquet'}
+
+    response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
+               params={'filter': params})
+    df = _create_df_from_response(response_get_data)
+    assert_frame_equal(df, expected(dataframe_for_filters))
+
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("filter, limit, expected", [(['A:gt:5'], 5, lambda df: df.loc[df['A'] > 5]),
+                                                     (['A:lt:5'], 5, lambda df: df.loc[df['A'] < 5]),
+                                                     (['C:eq:5'], 5, lambda df: df.loc[df['A'] == 5]),
+                                                     (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], 5, lambda df: df.loc[(df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])])
+def test_get_bulk_data_with_filters_curves_offset(setup_client, entity_type, filter, limit, expected, dataframe_for_filters):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    headers = {'content-type': 'application/x-parquet'}
+    chunking_url = Definitions[entity_type]['chunking_url']
+    response_send_data = client.post(f'{chunking_url}/{record_id}/data',
+                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_send_data.status_code == 200
+
+    header_get_data = {'Accept': 'application/parquet'}
+    curve = ['A,B']
+    for i in range(0, math.ceil(20/limit)):
+        response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
+                   params={'filter': filter, 'curves': curve, 'offset': i*limit, 'limit': limit})
+        df = _create_df_from_response(response_get_data)
+        df_expected = expected(dataframe_for_filters).iloc[i*limit:(i+1)*limit][['A', 'B']]
+        assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("filter, limit, curves, expected", [(['A:gt:5'], 5, ['A,B'], [5, 5, 4, 0]),
+                                                            (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
+                                                            (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
+                                                            (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0])
+                                                            ])
+def test_get_bulk_data_with_filters_curves_offset_describe(setup_client, entity_type, filter, limit, expected, dataframe_for_filters, curves):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    headers = {'content-type': 'application/x-parquet'}
+    chunking_url = Definitions[entity_type]['chunking_url']
+    response_send_data = client.post(f'{chunking_url}/{record_id}/data',
+                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_send_data.status_code == 200
+
+    header_get_data = {'Accept': 'application/parquet'}
+    for i in range(0, math.ceil(20/limit)):
+        response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
+                   params={'filter': filter, 'curves': curves, 'offset': i*limit, 'limit': limit, 'describe': True})
+        assert response_get_data.json()['numberOfRows'] == expected[i]
+        assert response_get_data.json()['columns'] == curves[0].split(',')
+
+
+@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("params, content", [
+    (['M:lt:5'], "The columns:['M'] to be filtered do not exist"),
+    (['A:xx:5'], 'Operator xx is not supported'),
+    (['A:lt:5', 'A:lt:7'], 'Same operator on the same column'),
+])
+def test_get_bulk_data_with_filters_fail(setup_client, entity_type, params, content, dataframe_for_filters):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    headers = {'content-type': 'application/x-parquet'}
+    chunking_url = Definitions[entity_type]['chunking_url']
+    response_send_data = client.post(f'{chunking_url}/{record_id}/data',
+                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+    assert response_send_data.status_code == 200
+
+    header_get_data = {'Accept': 'application/parquet'}
+
+    response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
+               params={'filter': params})
+
+    assert response_get_data.json()['detail'] == content
+    assert response_get_data.status_code == 400
+
+# todo - concurrent sessions using fromVersion in Integrations tests
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+@pytest.mark.parametrize("reserved_columns_name", ['__index_level_0__', '__null_dask_index__'])
+@pytest.mark.parametrize("use_custom_index", [True, False])
+def test_none_in_index_error(setup_client, entity_type, reserved_columns_name, use_custom_index):
+
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    # A column named '__index_level_0__' is internally used by PyArrow to save the index.
+    # Sending column named the same way as regular column causes problems to read them with Dask.
+    df = generate_df(['float-COLUMN_MD', 'COLUMN_X', reserved_columns_name], range(50))
+
+    if use_custom_index:
+        df = df.set_index('float-COLUMN_MD')
+
+    with pytest.raises(BulkNotProcessable, match="Invalid column name"):
+        client.post(f'{chunking_url}/{record_id}/data',
+                    data=df.to_parquet(engine="pyarrow"),
+                    headers={'content-type': 'application/parquet'})
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests

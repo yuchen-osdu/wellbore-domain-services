@@ -75,7 +75,12 @@ def build_request_get_versions_of_osdu_wellboremarkerset() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_create_osdu_wellboremarkerset() -> RequestRunner:
+def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestRunner:
+    if b_use_fixed_id:
+        id_field = '"id": "{{data_partition}}:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",'
+    else:
+        id_field = ''
+
     rq_proto = Request(
         name="Create OSDU wellboremarkerset",
         method="POST",
@@ -87,9 +92,8 @@ def build_request_create_osdu_wellboremarkerset() -> RequestRunner:
             "Connection": "{{header_connection}}",
             "Authorization": "Bearer {{token}}",
         },
-        payload=r"""[{
+        payload='[{' + id_field + r"""
   "acl": {{record_acl}}, "legal": {{record_legal}},
-  "id": "{{data_partition}}:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
   "kind": "{{osduWellboreMarkerSetKind}}",
   "tags": {
     "NameOfKey": "String value"
@@ -349,6 +353,13 @@ def build_request_create_osdu_wellboremarkerset() -> RequestRunner:
         "VerticalReferenceID": "Example VerticalReferenceID",
         "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
       },
+      "AvailableMarkerProperties": [
+        {
+          "MarkerPropertyTypeID": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+          "MarkerPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:ft:",
+          "Name": "MissingThickness"
+        }
+      ],
       "Markers": [
         {
           "MarkerName": "Example MarkerName",
@@ -653,6 +664,13 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
             "VerticalReferenceID": "Example VerticalReferenceID",
             "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
           },
+          "AvailableMarkerProperties": [
+              {
+                  "MarkerPropertyTypeID": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+                  "MarkerPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:ft:",
+                  "Name": "MissingThickness"
+              }
+          ],
           "Markers": [
             {
               "MarkerName": "Example MarkerName",

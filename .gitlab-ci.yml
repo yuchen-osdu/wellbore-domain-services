@@ -90,6 +90,16 @@ verify_existing_requirements:
 
     expire_in: 2 days
 
+
+compile-and-unit-test:
+  artifacts:
+    when: always
+    paths:
+      - all-requirements.txt
+      - spec/generated/openapi.json
+
+
+
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
