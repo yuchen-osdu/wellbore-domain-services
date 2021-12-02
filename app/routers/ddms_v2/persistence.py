@@ -22,7 +22,7 @@ from app.utils import Context
 from app.model.log_bulk import LogBulkHelper
 
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
-from helper.traces import with_trace
+from app.helper.traces import with_trace
 
 
 class Persistence:
