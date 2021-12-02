@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Response, status, Body
 
 from odes_storage.models import (
     CreateUpdateRecordsResponse,
@@ -30,6 +30,7 @@ from app.routers.record_utils import fetch_record
 from app.routers.delete.delete_bulk_data import delete_record
 from app.utils import Context
 from app.utils import get_ctx
+from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 
 router = APIRouter()
@@ -150,7 +151,7 @@ async def get_osdu_wellboreTrajectory_version(
     },
 )
 async def post_wellboreTrajectory_osdu(
-    wellboretrajectories: List[WellboreTrajectory], ctx: Context = Depends(get_ctx)
+    wellboretrajectories: List[WellboreTrajectory] = Body(..., example= load_schema_example("wellbore_v3.json")), ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
 
     storage_client = await get_storage_record_service(ctx)
