@@ -25,7 +25,7 @@ from odes_storage.exceptions import UnexpectedResponse
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.utils import Context
-from helper.traces import with_trace
+from app.helper.traces import with_trace
 
 
 @dataclass
