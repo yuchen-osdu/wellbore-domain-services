@@ -1,10 +1,10 @@
   {
     "acl": {
       "owners": [
-        "string"
+        "data.default.owners@{{datapartitionid}}.{{domain}}"
       ],
       "viewers": [
-        "string"
+        "data.default.viewers@{{datapartitionid}}.{{domain}}"
       ]
     },
     "ancestry": {
@@ -91,13 +91,12 @@
     "id": "namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c",
     "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
     "legal": {
-      "legaltags": [
-        "string"
-      ],
-      "otherRelevantDataCountries": [
-        "string"
-      ],
-      "status": "string"
+        "legaltags": [
+            "{{legaltags}}"
+        ],
+        "otherRelevantDataCountries": [
+            "FR", "US"
+        ]
     },
     "meta": [
       "string"

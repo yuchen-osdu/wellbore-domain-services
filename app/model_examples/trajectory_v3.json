@@ -1,10 +1,10 @@
   {
     "acl": {
       "owners": [
-        "string"
+        "data.default.owners@{{datapartitionid}}.{{domain}}"
       ],
       "viewers": [
-        "string"
+        "data.default.viewers@{{datapartitionid}}.{{domain}}"
       ]
     },
     "ancestry": {
@@ -92,13 +92,12 @@
     "id": "namespace:work-product-component--WellboreTrajectory:606f224a-ef1f-5690-9843-d26cd7e33e10",
     "kind": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
     "legal": {
-      "legaltags": [
-        "string"
-      ],
-      "otherRelevantDataCountries": [
-        "string"
-      ],
-      "status": "string"
+        "legaltags": [
+            "{{legaltags}}"
+        ],
+        "otherRelevantDataCountries": [
+            "FR", "US"
+        ]
     },
     "meta": [
       "string"
