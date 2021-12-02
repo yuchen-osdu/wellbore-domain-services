@@ -10,7 +10,8 @@ import pandas as pd
 from natsort import natsorted
 import ast
 
-from app.bulk_persistence.dask.errors import FilterError
+from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
     no_validation, DataFrameValidationFunc
 from app.clients.storage_service_client import get_storage_record_service
@@ -200,6 +201,7 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('process_params')
+    @internal_bulk_exceptions
     async def process_params(df, params: GetDataParams, filters):
         """
         pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
@@ -223,6 +225,7 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('df_render')
+    @internal_bulk_exceptions
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
             if stat and not params.limit and not params.offset:
@@ -239,6 +242,7 @@ class DataFrameRender:
 
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO
+        trace_dataframe_attributes(pdf)
 
         if not accept or MimeTypes.PARQUET.type in accept:
             content = await DataframeSerializerAsync().to_parquet(pdf)

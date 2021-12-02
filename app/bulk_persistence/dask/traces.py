@@ -1,3 +1,4 @@
+import pandas as pd
 from dask.utils import funcname
 from dask.base import tokenize
 
@@ -6,6 +7,7 @@ from opencensus.trace import tracer as open_tracer
 from opencensus.trace.samplers import AlwaysOnSampler
 
 from app.helper.traces import create_exporter
+from app.utils import get_or_create_ctx
 from app.conf import Config
 
 _EXPORTER = None
@@ -36,3 +38,24 @@ def _create_func_key(func, *args, **kwargs):
      Inspired by Dask code, it returns a hashed key based on function name and given arguments
     """
     return funcname(func) + "-" + tokenize(func, kwargs, *args)
+
+
+def trace_dataframe_attributes(df: pd.DataFrame):
+    """
+        Add dataframe shape into current tracing span if tracer exists
+    """
+    tracer = get_or_create_ctx().tracer
+    if tracer is None:
+        return
+
+    rows_count, cols_count = df.shape
+    tracer.add_attribute_to_current_span(
+        attribute_key="df rows count",
+        attribute_value=rows_count)
+
+    tracer.add_attribute_to_current_span(
+        attribute_key="df columns count",
+        attribute_value=cols_count)
+
+
+
