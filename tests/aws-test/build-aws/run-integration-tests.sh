@@ -13,14 +13,13 @@ python3 -m pip install -r requirements.txt
 python3 -m pip install -r requirements_dev.txt
 python3 -m pip install wheel pytest pytest-cov
 
+export AWS_COGNITO_AUTH_PARAMS_USER=${ADMIN_USER} #set by env script
+export AWS_COGNITO_AUTH_PARAMS_PASSWORD=${ADMIN_PASSWORD} #set by codebuild 
 svc_url=$WELLBORE_DDMS_URL
 tenant='opendes'
 acl_domain='example.com'
 legal_tag='opendes-wellddmstestlegaltag'
 svctoken=$(python3 tests/aws-test/build-aws/aws_jwt_client.py)
-
-echo $LEGAL_URL
-echo $WELLBORE_DDMS_URL
 
 echo 'Register Legal tag before Integration Tests ...'
 curl --location --request POST "$LEGAL_URL"'legaltags' \
