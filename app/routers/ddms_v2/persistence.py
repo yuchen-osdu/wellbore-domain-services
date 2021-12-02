@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import pandas as pd
-from opencensus.trace.span import SpanKind
 
 from odes_storage.models import Record
 
@@ -22,9 +21,13 @@ from app.bulk_persistence import get_dataframe
 from app.utils import Context
 from app.model.log_bulk import LogBulkHelper
 
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes
+from helper.traces import with_trace
+
 
 class Persistence:
     @classmethod
+    @with_trace("read_bulk")
     async def read_bulk(
         cls,
         ctx: Context,
@@ -36,10 +39,16 @@ class Persistence:
         if not bulk_uri.is_valid():
             return pd.DataFrame()
 
-        return await get_dataframe(ctx, bulk_uri.bulk_id)
+        result_df = await get_dataframe(ctx, bulk_uri.bulk_id)
+        trace_dataframe_attributes(result_df)
+        return result_df
 
     @classmethod
+    @with_trace("write_bulk")
     async def write_bulk(cls, ctx: Context, dataframe) -> str:
-        with ctx.tracer.span(name=f'write bulk') as span:
-            span.span_kind = SpanKind.CLIENT
+        trace_dataframe_attributes(dataframe)
+        try:
             return await create_and_store_dataframe(ctx, dataframe)
+        except Exception:
+            ctx.logger.exception("write_bulk")
+            raise
