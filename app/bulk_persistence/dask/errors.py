@@ -55,6 +55,16 @@ class BulkNotProcessable(BulkError):
         super().__init__(ex_message)
 
 
+class InternalBulkError(BulkError):
+    http_status = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    def __init__(self, message=None):
+        ex_message = 'Internal bulk error'
+        if message:
+            ex_message += ': ' + message
+        super().__init__(ex_message)
+
+
 class FilterError(BulkError):
     http_status = status.HTTP_400_BAD_REQUEST
 
@@ -78,8 +88,8 @@ def internal_bulk_exceptions(target):
             get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
             raise BulkNotProcessable("Unable to process bulk - Arrow")
         except scheduler.KilledWorker:
-            get_logger().exception(f"Dask worker raised exception when running '{target.__name__}'")
-            raise BulkNotProcessable("Unable to process bulk- Dask")
+            get_logger().exception(f"Dask worker has been killed when running '{target.__name__}'")
+            raise InternalBulkError("Out of memory")
         except Exception:
             get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
             raise
