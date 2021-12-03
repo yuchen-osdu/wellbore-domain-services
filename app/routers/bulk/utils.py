@@ -249,10 +249,6 @@ class DataFrameRender:
             content = await DataframeSerializerAsync().to_json(pdf, index=True, date_format='iso', orient=orient.value)
             return Response(content, media_type=MimeTypes.JSON.type)
 
-        if MimeTypes.CSV.type in accept:
-            content = await DataframeSerializerAsync().to_csv(pdf)
-            return Response(content, media_type=MimeTypes.CSV.type)
-
         content = await DataframeSerializerAsync().to_parquet(pdf)
         return Response(content, media_type=MimeTypes.PARQUET.type)
 

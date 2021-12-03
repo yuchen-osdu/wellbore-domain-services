@@ -592,6 +592,34 @@
         "title": "Artefact",
         "type": "object"
       },
+      "AvailableMarkerProperty": {
+        "additionalProperties": false,
+        "description": "A set of properties describing a marker property which is available for this instance of a WellboreMarkerSet.",
+        "properties": {
+          "MarkerPropertyTypeID": {
+            "description": "The reference to a marker property type - or if interpreted as CSV columns, the 'well-known column type. It is a relationship to a reference-data--MarkerPropertyType record id.",
+            "example": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-MarkerPropertyType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Marker Property Type ID",
+            "type": "string"
+          },
+          "MarkerPropertyUnitID": {
+            "description": "Unit of Measure for the marker properties of type MarkerPropertyType.",
+            "example": "partition-id:reference-data--UnitOfMeasure:ft:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Marker Property Unit ID",
+            "type": "string"
+          },
+          "Name": {
+            "description": "The name of the marker property (e.g. column in a CSV document) as originally found. If absent The name of the MarkerPropertyType is intended to be used.",
+            "example": "MissingThickness",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "AvailableMarkerProperty",
+        "type": "object"
+      },
       "AvailableTrajectoryStationProperty": {
         "additionalProperties": false,
         "description": "A set of properties describing a trajectory station property which is available for this instance of a WellboreTrajectory.",
@@ -715,6 +743,106 @@
           }
         },
         "title": "ByGeoPolygon",
+        "type": "object"
+      },
+      "Catalog": {
+        "properties": {
+          "family_catalog": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogItem"
+            },
+            "title": "Family Catalog",
+            "type": "array"
+          },
+          "main_family_catalog": {
+            "items": {
+              "$ref": "#/components/schemas/MainFamilyCatalogItem"
+            },
+            "title": "Main Family Catalog",
+            "type": "array"
+          }
+        },
+        "required": [
+          "family_catalog"
+        ],
+        "title": "Catalog",
+        "type": "object"
+      },
+      "CatalogItem": {
+        "properties": {
+          "family": {
+            "default": "",
+            "title": "Family",
+            "type": "string"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "unit",
+          "rule"
+        ],
+        "title": "CatalogItem",
+        "type": "object"
+      },
+      "CatalogRecord": {
+        "example": {
+          "acl": {
+            "owners": [
+              "abc@domain.com, cde@domain.com"
+            ],
+            "viewers": [
+              "abc@domain.com, cde@domain.com"
+            ]
+          },
+          "data": {
+            "family_catalog": [
+              {
+                "family": "Medium Resistivity",
+                "rule": "MEDR",
+                "unit": "ohm.m"
+              }
+            ],
+            "main_family_catalog": [
+              {
+                "Family": "Medium Resistivity",
+                "MainFamily": "Resistivity",
+                "Unit": "OHMM"
+              }
+            ]
+          },
+          "legal": {
+            "legaltags": [
+              "opendes-public-usa-dataset-1"
+            ],
+            "otherRelevantDataCountries": [
+              "US"
+            ]
+          }
+        },
+        "properties": {
+          "acl": {
+            "$ref": "#/components/schemas/StorageAcl"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Catalog"
+          },
+          "legal": {
+            "$ref": "#/components/schemas/odes_storage__models__Legal"
+          }
+        },
+        "required": [
+          "acl",
+          "legal",
+          "data"
+        ],
+        "title": "CatalogRecord",
         "type": "object"
       },
       "Coordinate": {
@@ -2228,6 +2356,57 @@
           }
         ]
       },
+      "GuessRequest": {
+        "example": {
+          "description": "LDTD Gamma Ray",
+          "label": "GRD",
+          "log_unit": "GAPI"
+        },
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "log_unit": {
+            "title": "Log Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "title": "GuessRequest",
+        "type": "object"
+      },
+      "GuessResponse": {
+        "properties": {
+          "base_unit": {
+            "title": "Base Unit",
+            "type": "string"
+          },
+          "family": {
+            "title": "Family",
+            "type": "string"
+          },
+          "family_type": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Family Type",
+            "type": "array"
+          },
+          "log_unit": {
+            "title": "Log Unit",
+            "type": "string"
+          }
+        },
+        "title": "GuessResponse",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "errors": {
@@ -2261,35 +2440,6 @@
         ],
         "title": "Kind",
         "type": "string"
-      },
-      "Legal": {
-        "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
-        "properties": {
-          "legaltags": {
-            "description": "The list of legal tags, see compliance API.",
-            "items": {
-              "type": "string"
-            },
-            "title": "Legal Tags",
-            "type": "array"
-          },
-          "otherRelevantDataCountries": {
-            "description": "The list of other relevant data countries using the ISO 2-letter codes, see compliance API.",
-            "items": {
-              "type": "string"
-            },
-            "title": "Other Relevant Data Countries",
-            "type": "array"
-          },
-          "status": {
-            "description": "The legal status.",
-            "title": "Legal Status",
-            "type": "string"
-          }
-        },
-        "title": "Legal",
-        "type": "object"
       },
       "LineageAssertion": {
         "additionalProperties": false,
@@ -2335,7 +2485,30 @@
         "title": "LogServiceDateInterval",
         "type": "object"
       },
-      "Marker": {
+      "MainFamilyCatalogItem": {
+        "properties": {
+          "Family": {
+            "title": "Family",
+            "type": "string"
+          },
+          "MainFamily": {
+            "title": "Mainfamily",
+            "type": "string"
+          },
+          "Unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "MainFamily",
+          "Family",
+          "Unit"
+        ],
+        "title": "MainFamilyCatalogItem",
+        "type": "object"
+      },
+      "Marker110": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
@@ -2381,6 +2554,11 @@
             "title": "Markerobservationnumber",
             "type": "number"
           },
+          "MarkerSubSeaVerticalDepth": {
+            "description": "The Marker's TVD converted to a Sub-Sea Vertical depth, i.e., below Mean Sea Level. Note that TVD values above MSL are negative. This is the same as true vertical depth referenced to the vertical CRS MSL depth.",
+            "title": "Markersubseaverticaldepth",
+            "type": "number"
+          },
           "MarkerTypeID": {
             "description": "Marker Type Reference Type. Possible values - Biostratigraphy, Lithostratigraphy, seismic, depth of well, sequence, flow unit",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-MarkerType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
@@ -2412,7 +2590,7 @@
             "type": "number"
           }
         },
-        "title": "Marker",
+        "title": "Marker110",
         "type": "object"
       },
       "MetaItem": {
@@ -2968,6 +3146,30 @@
           "max"
         ],
         "title": "StatsColumn",
+        "type": "object"
+      },
+      "StorageAcl": {
+        "properties": {
+          "owners": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Owners",
+            "type": "array"
+          },
+          "viewers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Viewers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "viewers",
+          "owners"
+        ],
+        "title": "StorageAcl",
         "type": "object"
       },
       "TagDictionary": {
@@ -4534,7 +4736,7 @@
         "title": "Wellbore",
         "type": "object"
       },
-      "WellboreMarkerSet": {
+      "WellboreMarkerSet110": {
         "additionalProperties": false,
         "description": "Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.",
         "properties": {
@@ -4570,7 +4772,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellboreMarkerSetData"
+            "$ref": "#/components/schemas/WellboreMarkerSetData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -4581,7 +4783,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
+            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -4637,10 +4839,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellboreMarkerSet",
+        "title": "WellboreMarkerSet110",
         "type": "object"
       },
-      "WellboreMarkerSetData": {
+      "WellboreMarkerSetData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4658,6 +4860,14 @@
               "type": "string"
             },
             "title": "Authorids",
+            "type": "array"
+          },
+          "AvailableMarkerProperties": {
+            "description": "The array of MarkerProperty definitions describing the available properties for this instance of WellboreMarkerSet.",
+            "items": {
+              "$ref": "#/components/schemas/AvailableMarkerProperty"
+            },
+            "title": "Available Marker Properties",
             "type": "array"
           },
           "BusinessActivities": {
@@ -4721,8 +4931,9 @@
             "type": "array"
           },
           "Markers": {
+            "description": "The array of marker meta data in this set.",
             "items": {
-              "$ref": "#/components/schemas/Marker"
+              "$ref": "#/components/schemas/Marker110"
             },
             "title": "Markers",
             "type": "array"
@@ -4807,16 +5018,16 @@
               }
             ],
             "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all marker measured depths of the Wellbore Marker Set Markers array.",
-            "title": "Verticalmeasurement"
+            "title": "Vertical Measurement"
           },
           "WellboreID": {
-            "description": "Wellbore ID",
+            "description": "The Wellbore ID, to which the markers in this set belong.",
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+:[0-9]*$",
-            "title": "Wellboreid",
+            "title": "Wellbore ID",
             "type": "string"
           }
         },
-        "title": "WellboreMarkerSetData",
+        "title": "WellboreMarkerSetData110",
         "type": "object"
       },
       "WellborePurpose": {
@@ -5281,6 +5492,35 @@
         ],
         "title": "WellboreType"
       },
+      "app__model__model_curated__Legal": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "properties": {
+          "legaltags": {
+            "description": "The list of legal tags, see compliance API.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Legal Tags",
+            "type": "array"
+          },
+          "otherRelevantDataCountries": {
+            "description": "The list of other relevant data countries using the ISO 2-letter codes, see compliance API.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Other Relevant Data Countries",
+            "type": "array"
+          },
+          "status": {
+            "description": "The legal status.",
+            "title": "Legal Status",
+            "type": "string"
+          }
+        },
+        "title": "Legal",
+        "type": "object"
+      },
       "app__model__model_curated__Tags": {
         "title": "Tags",
         "type": "string"
@@ -5582,7 +5822,7 @@
           "legal": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Legal"
+                "$ref": "#/components/schemas/app__model__model_curated__Legal"
               }
             ],
             "description": "The dip-set's legal tags",
@@ -5911,7 +6151,7 @@
           "legal": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Legal"
+                "$ref": "#/components/schemas/app__model__model_curated__Legal"
               }
             ],
             "description": "The log's legal tags",
@@ -6373,7 +6613,7 @@
           "legal": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Legal"
+                "$ref": "#/components/schemas/app__model__model_curated__Legal"
               }
             ],
             "description": "The log-set's legal tags",
@@ -6519,7 +6759,7 @@
           "legal": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Legal"
+                "$ref": "#/components/schemas/app__model__model_curated__Legal"
               }
             ],
             "description": "The marker's legal tags",
@@ -6865,6 +7105,26 @@
         "title": "namedProperty",
         "type": "object"
       },
+      "odes_storage__models__Legal": {
+        "properties": {
+          "legaltags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Legaltags",
+            "type": "array"
+          },
+          "otherRelevantDataCountries": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Otherrelevantdatacountries",
+            "type": "array"
+          }
+        },
+        "title": "Legal",
+        "type": "object"
+      },
       "projectedPosition": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
@@ -6961,7 +7221,7 @@
           "legal": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Legal"
+                "$ref": "#/components/schemas/app__model__model_curated__Legal"
               }
             ],
             "description": "The trajectory's legal tags",
@@ -7332,7 +7592,7 @@
           "legal": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Legal"
+                "$ref": "#/components/schemas/app__model__model_curated__Legal"
               }
             ],
             "description": "The geological interpretation's legal tags",
@@ -7719,7 +7979,7 @@
           "legal": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Legal"
+                "$ref": "#/components/schemas/app__model__model_curated__Legal"
               }
             ],
             "description": "The geological interpretation's legal tags",
@@ -8245,7 +8505,7 @@
     },
     "/alpha/ddms/v2/logs/{record_id}/data": {
       "get": {
-        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_alpha_ddms_v2_logs__record_id__data_get",
         "parameters": [
           {
@@ -8357,8 +8617,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -8826,7 +9085,7 @@
     },
     "/alpha/ddms/v2/logs/{record_id}/versions/{version}/data": {
       "get": {
-        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_version_alpha_ddms_v2_logs__record_id__versions__version__data_get",
         "parameters": [
           {
@@ -8947,8 +9206,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -16156,7 +16414,7 @@
             "application/json": {
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 },
                 "title": "Wellboremarkersets",
                 "type": "array"
@@ -16287,7 +16545,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 }
               }
             },
@@ -16422,7 +16680,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet"
+                  "$ref": "#/components/schemas/WellboreMarkerSet110"
                 }
               }
             },
@@ -16941,7 +17199,7 @@
     },
     "/ddms/v3/wellboretrajectories/{record_id}/data": {
       "get": {
-        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_ddms_v3_wellboretrajectories__record_id__data_get",
         "parameters": [
           {
@@ -17053,8 +17311,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -17522,7 +17779,7 @@
     },
     "/ddms/v3/wellboretrajectories/{record_id}/versions/{version}/data": {
       "get": {
-        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_version_ddms_v3_wellboretrajectories__record_id__versions__version__data_get",
         "parameters": [
           {
@@ -17643,8 +17900,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -18093,7 +18349,7 @@
     },
     "/ddms/v3/welllogs/{record_id}/data": {
       "get": {
-        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_ddms_v3_welllogs__record_id__data_get",
         "parameters": [
           {
@@ -18205,8 +18461,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -18674,7 +18929,7 @@
     },
     "/ddms/v3/welllogs/{record_id}/versions/{version}/data": {
       "get": {
-        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", text/csv\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
+        "description": "Returns the data of a specific version according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\") The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_version_ddms_v3_welllogs__record_id__versions__version__data_get",
         "parameters": [
           {
@@ -18795,8 +19050,7 @@
               "application/json": {
                 "schema": {}
               },
-              "application/x-parquet": {},
-              "text/csv": {}
+              "application/x-parquet": {}
             },
             "description": "Successful Response"
           },
@@ -19434,6 +19688,128 @@
         "summary": "Get the given version of the Well using OSDU well schema",
         "tags": [
           "Well"
+        ]
+      }
+    },
+    "/log-recognition/family": {
+      "post": {
+        "description": "Find the most probable family and unit using family assignment rule based catalogs. User defined catalog will have the priority.",
+        "operationId": "family",
+        "parameters": [
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuessRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuessResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Recognize family and unit",
+        "tags": [
+          "log-recognition"
+        ]
+      }
+    },
+    "/log-recognition/upload-catalog": {
+      "put": {
+        "description": "Upload user-defined catalog with family assignment rules for specific partition ID. \n            If there is an existing catalog, it will be replaced. It takes maximum of 5 mins to replace the existing catalog. \n            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog. <p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "upload-catalog",
+        "parameters": [
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogRecord"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUpdateRecordsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload user-defined catalog with family assignment rules",
+        "tags": [
+          "log-recognition"
         ]
       }
     },
