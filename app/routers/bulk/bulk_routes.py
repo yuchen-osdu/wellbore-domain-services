@@ -24,7 +24,7 @@ from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterErro
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
-from app.utils import Context, OpenApiHandler, get_ctx
+from app.utils import Context, OpenApiHandler, get_ctx, get_or_create_ctx
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
     REQUEST_DATA_BODY_SCHEMA,
@@ -51,6 +51,8 @@ from app.helper.traces import with_trace
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 import pandas as pd
+
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -84,6 +86,7 @@ async def post_data(record_id: str,
     @with_trace("save_blob")
     async def save_blob():
         df = await get_df_from_request(request)
+        trace_dataframe_attributes(df)
         try:
             assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
         except BulkError as ex:
@@ -127,6 +130,8 @@ async def post_chunk_data(record_id: str,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
     df = await get_df_from_request(request)
+    trace_dataframe_attributes(df)
+
     try:
         assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
     except BulkError as ex:

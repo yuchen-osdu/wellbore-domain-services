@@ -146,6 +146,7 @@ class DaskBulkStorage:
         return self.client.map(wrap_trace_process, *args, **kwargs)
 
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
+    @internal_bulk_exceptions
     @with_trace('load_bulk')
     async def load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Return a dask Dataframe of a record at the specified version."""
@@ -183,8 +184,8 @@ class DaskBulkStorage:
         return await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, path,
                                              storage_options=self._parameters.storage_options)
 
-    @internal_bulk_exceptions
     @capture_timings('save_blob', handlers=worker_capture_timing_handlers)
+    @internal_bulk_exceptions
     @with_trace('save_blob')
     async def save_blob(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
@@ -203,6 +204,7 @@ class DaskBulkStorage:
         return bulk_id
 
     @capture_timings('session_add_chunk')
+    @internal_bulk_exceptions
     @with_trace('session_add_chunk')
     async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
         assert_df_validate(dataframe=pdf, validation_funcs=[validate_index, columns_not_in_reserved_names])
@@ -255,8 +257,8 @@ class DaskBulkStorage:
             yield [f'{self.protocol}://{file.path}' for file in file_list]
 
     @capture_timings('session_commit')
-    @with_trace('session_commit')
     @internal_bulk_exceptions
+    @with_trace('session_commit')
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         dfs = [self._load(pf) for pf in self._get_next_files_list(session)]
         if not dfs:

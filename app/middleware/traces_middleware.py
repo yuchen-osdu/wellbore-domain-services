@@ -155,6 +155,9 @@ class TracingMiddleware(BaseHTTPMiddleware):
             try:
                 response = await call_next(request)
                 return response
+            except Exception:
+                ctx.logger.exception(f"Exception occurred when calling: {request.url.path}")
+                raise
             finally:
                 status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
                 ctx.logger.info(utils.process_message(request, status))
