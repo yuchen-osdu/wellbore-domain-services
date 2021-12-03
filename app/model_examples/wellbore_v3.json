@@ -25,9 +25,14 @@
             },
             "country": "United States of America",
             "operator": "Francois Vinyes",
-            "uwi": "33-089-00300-00-01",
             "wellboreType": "bypass"
         },
+        "FacilityNameAliases": [
+                {
+                    "AliasName": "33-089-00300-00-01",
+                    "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                }
+        ],
         "SpatialLocation": {
             "Wgs84Coordinates": {
             "features": [{
