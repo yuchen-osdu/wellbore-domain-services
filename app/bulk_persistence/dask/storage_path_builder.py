@@ -79,13 +79,10 @@ def record_session_path(
     return join(entity_path, 'session', session_id, 'data')
 
 
-def record_relative_path(
-    base_directory: str, record_id: str, path: str, protocol: Optional[str] = None
-) -> str:
+def record_relative_path(base_directory: str, record_id: str, path: str) -> str:
     """Returns the path relative to the specified record."""
-    base_path = record_path(base_directory, record_id, protocol)
-    if protocol:
-        path = add_protocol(path, protocol)
+    base_path = record_path(base_directory, record_id)
+    path, _proto = remove_protocol(path)
     return relpath(path, base_path)
 
 

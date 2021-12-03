@@ -19,7 +19,9 @@ def test_empty_catalog():
     catalog = BulkCatalog("id")
     assert len(catalog.all_columns_dtypes) == 0
     d = catalog.as_dict()
-    assert d["record_id"] == "id"
+    assert d["recordId"] == "id"
+    assert d["nbRows"] == 0
+    assert d["indexPath"] == None
 
 
 def test_add_multiple_chunk_group_same_schemas():

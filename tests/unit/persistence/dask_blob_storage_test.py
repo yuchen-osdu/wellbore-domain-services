@@ -275,6 +275,16 @@ async def test_bad_columns_requested(test_session, dask_storage: DaskBulkStorage
 
 
 @pytest.mark.asyncio
+async def test_load_index(test_session, dask_storage: DaskBulkStorage):
+    await dask_storage.session_add_chunk(test_session, generate_df(['A'], range(10)))
+    await dask_storage.session_add_chunk(test_session, generate_df(['B'], range(10, 20)))
+    bulk_id = await dask_storage.session_commit(test_session)
+    index = await dask_storage.load_index(test_session.recordId, bulk_id)
+    expected_index = pd.Index(range(0, 20))
+    assert index.equals(expected_index)
+
+
+@pytest.mark.asyncio
 async def test_all_type(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['dateD', 'floatB', 'intA', 'strC'], range(5))
 

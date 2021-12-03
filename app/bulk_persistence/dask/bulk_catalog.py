@@ -41,9 +41,9 @@ class BulkCatalog:
     """Represent a bulk catalog
     Example:
         {
-            "record_id": "7507fb30-9cfa-4506-9cd8-6cbacbcda740",
-            "nb_rows": 1000,
-            "index_path": "folder/wdms_index/index.parquet,
+            "recordId": "7507fb30-9cfa-4506-9cd8-6cbacbcda740",
+            "nbRows": 1000,
+            "indexPath": "folder/wdms_index/index.parquet,
             "columns" : [
                 {
                     "labels": ["A", "B"],
@@ -135,9 +135,9 @@ class BulkCatalog:
     def as_dict(self) -> dict:
         """Returns the dict representation of the catalog"""
         return {
-            "record_id": self.record_id,
-            "nb_rows": self.nb_rows,
-            "index_path": self.index_path,
+            "recordId": self.record_id,
+            "nbRows": self.nb_rows,
+            "indexPath": self.index_path,
             'columns': [{
                 'labels': list(c.labels),
                 'paths': c.paths,
@@ -148,12 +148,12 @@ class BulkCatalog:
     @classmethod
     def from_dict(cls, catalog_as_dict: dict) -> "BulkCatalog":
         """construct a Catalog from a dict"""
-        catalog = cls(record_id=catalog_as_dict['record_id'])
-        catalog.nb_rows = catalog_as_dict['nb_rows']
-        catalog.index_path = catalog_as_dict['index_path']
+        catalog = cls(record_id=catalog_as_dict["recordId"])
+        catalog.nb_rows = catalog_as_dict["nbRows"]
+        catalog.index_path = catalog_as_dict["indexPath"]
         catalog.columns = [
-            ChunkGroup(set(c['labels']), c['paths'], c['dtypes'])
-            for c in catalog_as_dict['columns']
+            ChunkGroup(set(c["labels"]), c["paths"], c["dtypes"])
+            for c in catalog_as_dict["columns"]
         ]
         return catalog
 

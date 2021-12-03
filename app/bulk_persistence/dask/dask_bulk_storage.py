@@ -114,7 +114,7 @@ class DaskBulkStorage:
         return map_with_trace(self.client, target_func, *args, **kwargs)
 
     def _relative_path(self, record_id: str, path: str) -> str:
-        return pathBuilder.record_relative_path(self.base_directory, record_id, path, self.protocol)
+        return pathBuilder.record_relative_path(self.base_directory, record_id, path)
 
     def _read_parquet(self, path: Tuple[str, List[str]], **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
