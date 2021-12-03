@@ -10,9 +10,13 @@
         },
         "data": {
             "FacilityName": "{{wellName}}",
-            "ExtensionProperties": {
-                "UWI": "20-000-00000-00"
-            }
+            "FacilityNameAliases": [
+                {
+                    "AliasName": "20-000-00000-00",
+                    "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                }
+            ],
+            "ExtensionProperties": {}
         },
         "id": "{{datapartitionid}}:master-data--Well:{{wellId}}",
         "kind": "osdu:wks:master-data--Well:1.0.0",
