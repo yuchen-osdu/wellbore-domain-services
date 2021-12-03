@@ -147,7 +147,10 @@ class DaskBulkStorage:
         files_to_load = catalog.get_paths_for_columns(columns, record_path)
         # read all chunk for requested columns
         dfs = [self._read_parquet(path=f.paths, columns=f.labels) for f in files_to_load]
-        if len(dfs) == 1: # TODO manage error if len is 0
+        if not dfs:
+            raise RuntimeError("cannot find requested columns")
+
+        if len(dfs) == 1:
             return dfs[0]
 
         # if multiple dataframes, concat them together
@@ -194,7 +197,7 @@ class DaskBulkStorage:
         try:
             future_df = await self._load_bulk(record_id, bulk_id, columns=columns)
             return await future_df
-        except OSError as exp:
+        except (OSError, RuntimeError) as exp:
             raise BulkNotFound(record_id, bulk_id) from exp
 
     def _save_with_dask(self, path, dataframe):
@@ -256,7 +259,7 @@ class DaskBulkStorage:
     @capture_timings('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
-        catalog = load_bulk_catalog(self._fs, bulk_path) # TODO async ?
+        catalog = load_bulk_catalog(self._fs, bulk_path)
         if catalog:
             return catalog
 
@@ -387,7 +390,7 @@ class DaskBulkStorage:
 
         merged_df_path = pathBuilder.join(commit_path, f'{uuid.uuid4()}.parquet')
         await self._save_with_dask(merged_df_path, merged_df)
-        
+
         merged_df = await merged_df
         dtypes = [str(dt) for dt in merged_df.dtypes]
         labels = set(merged_df.columns)
@@ -436,7 +439,7 @@ class DaskBulkStorage:
         index.index_path = self._relative_path(session.recordId, index_path)
 
         await self._fill_catalog_columns_info(catalog, session, bulk_id)
-        save_bulk_catalog(self._fs, commit_path, catalog)  # TODO async
+        save_bulk_catalog(self._fs, commit_path, catalog)
         return bulk_id
 
 

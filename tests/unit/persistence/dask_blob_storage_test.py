@@ -265,6 +265,16 @@ async def test_empty_session_commit(test_session, dask_storage: DaskBulkStorage)
 
 
 @pytest.mark.asyncio
+async def test_bad_columns_requested(test_session, dask_storage: DaskBulkStorage):
+    await dask_storage.session_add_chunk(test_session, generate_df(['A'], range(10)))
+    bulk_id = await dask_storage.session_commit(test_session)
+    await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A'])
+    with pytest.raises(BulkNotFound):
+        await dask_storage.load_bulk(test_session.recordId, bulk_id, ['B'])
+    await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A', 'B'])
+
+
+@pytest.mark.asyncio
 async def test_all_type(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['dateD', 'floatB', 'intA', 'strC'], range(5))
 
