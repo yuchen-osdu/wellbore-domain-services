@@ -324,6 +324,7 @@ class DaskBulkStorage:
         return await future_index
 
     @capture_timings('_build_session_index')
+    @with_trace('_build_session_index')
     async def _build_session_index(self, session: Session, from_bulk_id: str) -> pd.Index:
         """Combine all chunks indexes + previous version index"""
         metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
@@ -345,6 +346,7 @@ class DaskBulkStorage:
         return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
+    @with_trace('_fill_catalog_columns_info')
     async def _fill_catalog_columns_info(
         self, catalog: BulkCatalog, session: Session, bulk_id: str
     ) -> Optional[BulkCatalog]:
@@ -373,6 +375,7 @@ class DaskBulkStorage:
         return catalog
 
     @capture_timings('_resolve_conflict_catalog')
+    @with_trace('_resolve_conflict_catalog')
     async def _resolve_conflict_catalog(
         self, catalog: BulkCatalog, bulk_id: str, files: List[str], cols_to_merge: List[str]
     ) -> None:
@@ -438,7 +441,7 @@ class DaskBulkStorage:
 
         catalog.nb_rows = len(index)
         index_path = await self._save_session_index(commit_path, index)
-        index.index_path = self._relative_path(session.recordId, index_path)
+        catalog.index_path = self._relative_path(session.recordId, index_path)
 
         await self._fill_catalog_columns_info(catalog, session, bulk_id)
         save_bulk_catalog(self._fs, commit_path, catalog)
