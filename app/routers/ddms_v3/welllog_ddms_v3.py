@@ -26,23 +26,17 @@ from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import from_record, to_record
-
 from app.model.osdu_model import WellLog110 as WellLog
 
 from app.utils import Context, get_ctx, load_schema_example
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLLOG_VERSION_REGEX
-
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
 
 from app.routers.record_utils import fetch_record
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.delete.delete_bulk_data import delete_record
 
-from  app.consistency import (
-    welllog_consistency_check,
-    DuplicatedCurveIdException,
-    ReferenceCurveIdNotFoundException)
-
+from app.consistency import check_welllog_consistency, DuplicatedCurveIdException, ReferenceCurveIdNotFoundException
 
 router = APIRouter()
 
@@ -167,7 +161,7 @@ async def post_welllog_osdu(
 
     for idx, w in enumerate(welllogs):
         try:
-            welllog_consistency_check(w)
+            check_welllog_consistency(w)
         except DuplicatedCurveIdException:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
