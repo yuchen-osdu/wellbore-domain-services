@@ -29,7 +29,6 @@ from app.routers.record_utils import fetch_record
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
-                                    get_df_from_request,
                                     set_bulk_field_and_send_record,
                                     DataFrameRender)
 
@@ -42,15 +41,13 @@ from app.routers.sessions import (SessionInternal,
                                   get_session_dependencies)
 
 # imports from bulk persistence
-from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate, \
-    DataFrameValidationFunc
+from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, DataFrameValidationFunc
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 
-from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 
 router = APIRouter()  # router dedicated to bulk APIs
 
