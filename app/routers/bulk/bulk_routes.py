@@ -50,6 +50,8 @@ from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFu
 from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes
+
 router = APIRouter()  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",

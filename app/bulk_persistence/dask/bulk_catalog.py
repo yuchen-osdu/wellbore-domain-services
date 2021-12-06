@@ -20,11 +20,10 @@ from contextlib import suppress
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 
-from app.bulk_persistence.dask.errors import BulkNotProcessable
+from dask.distributed import get_client
+
 from app.bulk_persistence.dask.traces import submit_with_trace
 from app.utils import capture_timings
-
-from dask.distributed import get_client
 
 from .storage_path_builder import join, remove_protocol
 from .utils import worker_capture_timing_handlers
@@ -40,11 +39,11 @@ class ChunkGroup:
 
 class BulkCatalog:
     """Represent a bulk catalog
-    Exemple:
+    Example:
         {
-            "record_id": "7507fb30-9cfa-4506-9cd8-6cbacbcda740",
-            "nb_rows": 1000,
-            "index_path": "folder/wdms_index/index.parquet,
+            "recordId": "7507fb30-9cfa-4506-9cd8-6cbacbcda740",
+            "nbRows": 1000,
+            "indexPath": "folder/wdms_index/index.parquet,
             "columns" : [
                 {
                     "labels": ["A", "B"],
@@ -59,8 +58,9 @@ class BulkCatalog:
             ],
         }
     """
-    def __init__(self, record_id:str) -> None:
-        self.record_id: str = record_id # TODO remove
+
+    def __init__(self, record_id: str) -> None:
+        self.record_id: str = record_id  # TODO remove
         self.nb_rows: int = 0
         self.index_path: Optional[str] = None
         self.columns: List[ChunkGroup] = []
@@ -73,7 +73,7 @@ class BulkCatalog:
         """
         res = {}
         for col_group in self.columns:
-            res.update({cn:dt for cn, dt in zip(col_group.labels, col_group.dtypes)})
+            res.update({cn: dt for cn, dt in zip(col_group.labels, col_group.dtypes)})
         return res
 
     def add_chunk(self, chunk_group: ChunkGroup) -> None:
@@ -120,24 +120,24 @@ class BulkCatalog:
     
     def get_paths_for_columns(self, labels: Iterable[str], base_path: str) -> List[ColumnsPaths]:
         """Returns the paths to load data of the requested columns grouped by paths"""
-        groupped_files = []
+        grouped_files = []
 
         for col_group in self.columns:
             matching_columns = col_group.labels.intersection(labels)
             if matching_columns:
-                groupped_files.append(self.ColumnsPaths(
+                grouped_files.append(self.ColumnsPaths(
                     labels=matching_columns,
                     paths=[join(base_path, f) for f in col_group.paths])
                 )
-        return groupped_files
+        return grouped_files
 
     @capture_timings('as_dict', handlers=worker_capture_timing_handlers)
     def as_dict(self) -> dict:
         """Returns the dict representation of the catalog"""
         return {
-            "record_id": self.record_id,
-            "nb_rows": self.nb_rows,
-            "index_path": self.index_path,
+            "recordId": self.record_id,
+            "nbRows": self.nb_rows,
+            "indexPath": self.index_path,
             'columns': [{
                 'labels': list(c.labels),
                 'paths': c.paths,
@@ -148,12 +148,12 @@ class BulkCatalog:
     @classmethod
     def from_dict(cls, catalog_as_dict: dict) -> "BulkCatalog":
         """construct a Catalog from a dict"""
-        catalog = cls(record_id=catalog_as_dict['record_id'])
-        catalog.nb_rows = catalog_as_dict['nb_rows']
-        catalog.index_path = catalog_as_dict['index_path']
+        catalog = cls(record_id=catalog_as_dict["recordId"])
+        catalog.nb_rows = catalog_as_dict["nbRows"]
+        catalog.index_path = catalog_as_dict["indexPath"]
         catalog.columns = [
-            ChunkGroup(set(c['labels']), c['paths'], c['dtypes'])
-            for c in catalog_as_dict['columns']
+            ChunkGroup(set(c["labels"]), c["paths"], c["dtypes"])
+            for c in catalog_as_dict["columns"]
         ]
         return catalog
 
@@ -167,13 +167,13 @@ def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> Non
     folder_path, _ = remove_protocol(folder_path)
     meta_path = join(folder_path, CATALOG_FILE_NAME)
     with filesystem.open(meta_path, 'w') as outfile:
-        data = json.dumps(catalog.as_dict())
+        data = json.dumps(catalog.as_dict(), indent=0)
         outfile.write(data)
-        #json.dump(catalog.as_dict(), outfile) # don't know why json.dump is slower (local windows)
+        # json.dump(catalog.as_dict(), outfile) # don't know why json.dump is slower (local windows)
 
 
 @capture_timings('load_bulk_catalog', handlers=worker_capture_timing_handlers)
-def load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
+def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalog]:
     """load a bulk catalog from a json file in the given folder path"""
     folder_path, _ = remove_protocol(folder_path)
     meta_path = join(folder_path, CATALOG_FILE_NAME)
@@ -182,7 +182,6 @@ def load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
             data = json.load(json_file)
             return BulkCatalog.from_dict(data)
     return None
-
 
 
 async def async_load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:

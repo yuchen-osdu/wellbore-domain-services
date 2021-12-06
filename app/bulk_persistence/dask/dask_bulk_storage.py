@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import json
 from typing import Callable, List, Optional, Tuple
 import uuid
@@ -114,7 +115,7 @@ class DaskBulkStorage:
         return map_with_trace(self.client, target_func, *args, **kwargs)
 
     def _relative_path(self, record_id: str, path: str) -> str:
-        return pathBuilder.record_relative_path(self.base_directory, record_id, path, self.protocol)
+        return pathBuilder.record_relative_path(self.base_directory, record_id, path)
 
     def _read_parquet(self, path: Tuple[str, List[str]], **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
@@ -147,7 +148,10 @@ class DaskBulkStorage:
         files_to_load = catalog.get_paths_for_columns(columns, record_path)
         # read all chunk for requested columns
         dfs = [self._read_parquet(path=f.paths, columns=f.labels) for f in files_to_load]
-        if len(dfs) == 1: # TODO manage error if len is 0
+        if not dfs:
+            raise RuntimeError("cannot find requested columns")
+
+        if len(dfs) == 1:
             return dfs[0]
 
         # if multiple dataframes, concat them together
@@ -179,6 +183,7 @@ class DaskBulkStorage:
         }
 
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
+    @internal_bulk_exceptions
     @with_trace('load_bulk')
     async def load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Returns a dask Dataframe of a record at the specified version.
@@ -194,7 +199,7 @@ class DaskBulkStorage:
         try:
             future_df = await self._load_bulk(record_id, bulk_id, columns=columns)
             return await future_df
-        except OSError as exp:
+        except (OSError, RuntimeError) as exp:
             raise BulkNotFound(record_id, bulk_id) from exp
 
     def _save_with_dask(self, path, dataframe):
@@ -214,8 +219,8 @@ class DaskBulkStorage:
         return await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, path,
                                              storage_options=self._parameters.storage_options)
 
-    @internal_bulk_exceptions
     @capture_timings('save_bulk', handlers=worker_capture_timing_handlers)
+    @internal_bulk_exceptions
     @with_trace('save_bulk')
     async def save_bulk(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
@@ -234,6 +239,7 @@ class DaskBulkStorage:
         return bulk_id
 
     @capture_timings('session_add_chunk')
+    @internal_bulk_exceptions
     @with_trace('session_add_chunk')
     async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
         """add new chunk to the given session"""
@@ -256,7 +262,7 @@ class DaskBulkStorage:
     @capture_timings('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
-        catalog = load_bulk_catalog(self._fs, bulk_path) # TODO async ?
+        catalog = load_bulk_catalog(self._fs, bulk_path)
         if catalog:
             return catalog
 
@@ -319,6 +325,7 @@ class DaskBulkStorage:
         return await future_index
 
     @capture_timings('_build_session_index')
+    @with_trace('_build_session_index')
     async def _build_session_index(self, session: Session, from_bulk_id: str) -> pd.Index:
         """Combine all chunks indexes + previous version index"""
         metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
@@ -340,6 +347,7 @@ class DaskBulkStorage:
         return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
+    @with_trace('_fill_catalog_columns_info')
     async def _fill_catalog_columns_info(
         self, catalog: BulkCatalog, session: Session, bulk_id: str
     ) -> Optional[BulkCatalog]:
@@ -368,6 +376,7 @@ class DaskBulkStorage:
         return catalog
 
     @capture_timings('_resolve_conflict_catalog')
+    @with_trace('_resolve_conflict_catalog')
     async def _resolve_conflict_catalog(
         self, catalog: BulkCatalog, bulk_id: str, files: List[str], cols_to_merge: List[str]
     ) -> None:
@@ -387,7 +396,7 @@ class DaskBulkStorage:
 
         merged_df_path = pathBuilder.join(commit_path, f'{uuid.uuid4()}.parquet')
         await self._save_with_dask(merged_df_path, merged_df)
-        
+
         merged_df = await merged_df
         dtypes = [str(dt) for dt in merged_df.dtypes]
         labels = set(merged_df.columns)
@@ -404,8 +413,8 @@ class DaskBulkStorage:
         return index_path
 
     @capture_timings('session_commit')
-    @with_trace('session_commit')
     @internal_bulk_exceptions
+    @with_trace('session_commit')
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         """Commit the session
         Args:
@@ -432,11 +441,12 @@ class DaskBulkStorage:
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
         catalog.nb_rows = len(index)
-        index_path = await self._save_session_index(commit_path, index)
-        index.index_path = self._relative_path(session.recordId, index_path)
-
-        await self._fill_catalog_columns_info(catalog, session, bulk_id)
-        save_bulk_catalog(self._fs, commit_path, catalog)  # TODO async
+        index_path, _ = await asyncio.gather(
+            self._save_session_index(commit_path, index),
+            self._fill_catalog_columns_info(catalog, session, bulk_id)
+        )
+        catalog.index_path = self._relative_path(session.recordId, index_path)
+        save_bulk_catalog(self._fs, commit_path, catalog)
         return bulk_id
 
 

@@ -26,6 +26,7 @@ from .blob_storage import (
     read_blob,
 )
 from .bulk_id import new_bulk_id
+from app.bulk_persistence.dask.errors import internal_bulk_exceptions
 from .mime_types import MimeTypes
 from .tenant_provider import resolve_tenant
 from ..helper.traces import with_trace
@@ -49,6 +50,7 @@ async def create_and_store_dataframe(ctx: Context, df: pd.DataFrame) -> str:
         return bulkblob.id
 
 
+@internal_bulk_exceptions
 @with_trace('get_dataframe')
 async def get_dataframe(ctx: Context, bulk_id: str) -> pd.DataFrame:
     """ fetch bulk from a blob storage, provide column major """
