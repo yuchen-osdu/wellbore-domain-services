@@ -142,7 +142,7 @@ class DaskClient:
 
 def get_pool_executor():
     if get_pool_executor._pool is None:
-        get_pool_executor._pool = concurrent.futures.ProcessPoolExecutor(POOL_EXECUTOR_MAX_WORKER)
+        get_pool_executor._pool = concurrent.futures.ThreadPoolExecutor(POOL_EXECUTOR_MAX_WORKER)
     return get_pool_executor._pool
 
 
