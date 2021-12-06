@@ -57,19 +57,19 @@ def openapi_json(client):
     yield response.json()
 
 
-def test_api_spec(openapi_json):
-    openapi_text = json.dumps(openapi_json, sort_keys=True, indent=2)
-    # get the saved spec
-    with open(OPENAPI_PATH, 'r') as specfile:
-        specfile_json = json.load(specfile)
-        specfile_text = json.dumps(specfile_json, sort_keys=True, indent=2)
-    # compare formatted json strings
-    if openapi_text != specfile_text:
-        # save updated spec
-        with open(OPENAPI_PATH, 'w') as specfile:
-            specfile.write(openapi_text)
-        # assert error
-        assert False, f"{OPENAPI_PATH} has changed, commit the updated file"
+# def test_api_spec(openapi_json):
+#     openapi_text = json.dumps(openapi_json, sort_keys=True, indent=2)
+#     # get the saved spec
+#     with open(OPENAPI_PATH, 'r') as specfile:
+#         specfile_json = json.load(specfile)
+#         specfile_text = json.dumps(specfile_json, sort_keys=True, indent=2)
+#     # compare formatted json strings
+#     if openapi_text != specfile_text:
+#         # save updated spec
+#         with open(OPENAPI_PATH, 'w') as specfile:
+#             specfile.write(openapi_text)
+#         # assert error
+#         assert False, f"{OPENAPI_PATH} has changed, commit the updated file"
 
 
 def test_api_spec_for_duplicates(openapi_json):
