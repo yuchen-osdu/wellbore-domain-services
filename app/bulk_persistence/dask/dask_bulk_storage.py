@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import json
 from typing import Callable, List, Optional, Tuple
 import uuid
@@ -440,10 +441,11 @@ class DaskBulkStorage:
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
         catalog.nb_rows = len(index)
-        index_path = await self._save_session_index(commit_path, index)
+        index_path, _ = await asyncio.gather(
+            self._save_session_index(commit_path, index),
+            self._fill_catalog_columns_info(catalog, session, bulk_id)
+        )
         catalog.index_path = self._relative_path(session.recordId, index_path)
-
-        await self._fill_catalog_columns_info(catalog, session, bulk_id)
         save_bulk_catalog(self._fs, commit_path, catalog)
         return bulk_id
 
