@@ -21,6 +21,7 @@ from ..bulk_id import new_bulk_id
 from .traces import wrap_trace_process
 from .errors import internal_bulk_exceptions, BulkNotProcessable, BulkSaveException
 from .utils import worker_capture_timing_handlers
+from .traces import trace_dataframe_attributes
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import storage_path_builder as StoragePathBuilder
 from . import session_file_meta as session_meta
@@ -105,6 +106,8 @@ def write_bulk_without_session(data_handle,
 
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
+    # TODO this requires a context, not available in worker, use info from basic describe after return?
+    # trace_dataframe_attributes(df)
 
     # 3- build blob filename and final full blob path
     # TODO to be reviewed: may want to create catalog here similarly to a session with a single chunk
@@ -150,6 +153,8 @@ def add_chunk_in_session(data_handle,
 
     # 2- perf some check
     assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
+    # TODO this requires a context, not available in worker, use info from basic describe after return?
+    # trace_dataframe_attributes(df)
 
     # sort column by names # TODO could it be avoided ? then we could keep input untouched and save serialization step?
     df = df[sorted(df.columns)]
