@@ -1,6 +1,7 @@
 from typing import Callable
 
 from dask.distributed import Client
+import pandas as pd
 from dask.utils import funcname
 from dask.base import tokenize
 
@@ -10,7 +11,7 @@ from opencensus.trace.samplers import AlwaysOnSampler
 
 from app.conf import Config
 from app.helper.traces import create_exporter
-from app.utils import get_ctx
+from app.utils import get_ctx, get_or_create_ctx
 
 _EXPORTER = None
 
@@ -64,3 +65,21 @@ def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
     kwargs['span_context'] = get_ctx().tracer.span_context
     kwargs['target_func'] = target_func
     return dask_client.map(wrap_trace_process, *args, key=dask_task_key, **kwargs)
+
+
+def trace_dataframe_attributes(df: pd.DataFrame):
+    """
+        Add dataframe shape into current tracing span if tracer exists
+    """
+    tracer = get_or_create_ctx().tracer
+    if tracer is None:
+        return
+
+    rows_count, cols_count = df.shape
+    tracer.add_attribute_to_current_span(
+        attribute_key="df rows count",
+        attribute_value=rows_count)
+
+    tracer.add_attribute_to_current_span(
+        attribute_key="df columns count",
+        attribute_value=cols_count)
