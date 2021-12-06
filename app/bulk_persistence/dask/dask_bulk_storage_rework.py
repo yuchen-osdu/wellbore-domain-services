@@ -182,6 +182,9 @@ def add_chunk_in_session(data_handle,
     return basic_describe(df)
 
 
+# TODO
+TEMP_FORCE_IPC_WITH_FILE = True
+
 class DaskBulkStorageFullWorkerDelegated:
     """
         Perform bulk storage and delegate all treatment in Dask workers.
@@ -192,7 +195,7 @@ class DaskBulkStorageFullWorkerDelegated:
         self._parameters = dask_bulk_storage._parameters
         self._fs = dask_bulk_storage._fs
         self.client = dask_bulk_storage.client
-        if Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
+        if TEMP_FORCE_IPC_WITH_FILE or Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
             self._data_ipc = DaskLocalFileDataIPC()
         else:
             self._data_ipc = DaskNativeDataIPC(self.client)
