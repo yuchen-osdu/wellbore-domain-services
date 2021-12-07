@@ -328,23 +328,62 @@ class DaskBulkStorage:
     @with_trace('_build_session_index')
     async def _build_session_index(self, session: Session, from_bulk_id: str) -> pd.Index:
         """Combine all chunks indexes + previous version index"""
-        metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
-        # list one file per different index_hash.
-        chunks_meta_with_different_indexes = {m.index_hash: m for m in metas}.values()
-        if len(chunks_meta_with_different_indexes) == 0:
-            return None # there is no files in this session
-        # read chunks indexes
-        indexes = [self._submit_with_trace(read_parquet_index, m.path_with_protocol,
-                                           storage_options=self._parameters.storage_options,
-                                           columns=[m.columns[0]])
-                   for m in chunks_meta_with_different_indexes]
+        def impl_build_session_index(chunk_metas, storage_options, previous_index):
+            import dask.bag as db
+            from operator import attrgetter
+            fold_args = {'initial': previous_index} if previous_index is not None else {}
+            return db.from_sequence(
+                # 1 read chunks meta data
+                chunk_metas
+                #session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
+            ).distinct(
+                # 2 select chunks that have different indexes
+                key=attrgetter('index_hash')
+            ).map(
+                # 3 read the indexes
+                lambda m: read_parquet_index(m.path_with_protocol, storage_options=storage_options, columns=[m.columns[0]])
+            ).fold(
+                # 4 merge indexes together
+                binop=index_union, combine=index_union, **fold_args
+            ).compute()
+
+        previous_index = None
         if from_bulk_id:
             # read the index of previous version
-            indexes.append(await self._future_load_index(session.recordId, from_bulk_id))
-        # merge all indexes
-        while len(indexes) > 1:
-            indexes = [self._submit_with_trace(index_union, x, y) for x, y in by_pairs(indexes)]
-        return await indexes[0]
+            previous_index = await self._future_load_index(session.recordId, from_bulk_id)
+        chunk_metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
+        if len(chunk_metas) == 0:
+            return None # there is no files in this session
+
+        return await self._submit_with_trace(
+            impl_build_session_index, chunk_metas, self._parameters.storage_options, previous_index)
+
+        # metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
+        # if len(metas) == 0:
+        #     return None # there is no files in this session
+        # # list one file per different index_hash.
+        # chunks_meta_with_different_indexes = {m.index_hash: m for m in metas}.values()
+        # # read chunks indexes
+        # indexes = [self._submit_with_trace(read_parquet_index, m.path_with_protocol,
+        #                                    storage_options=self._parameters.storage_options,
+        #                                    columns=[m.columns[0]])
+        #            for m in chunks_meta_with_different_indexes]
+        # if from_bulk_id:
+        #     # read the index of previous version
+        #     indexes.append(await self._future_load_index(session.recordId, from_bulk_id))
+        # # merge all indexes
+        # #while len(indexes) > 1:
+        # #    indexes = [self._submit_with_trace(index_union, x, y) for x, y in by_pairs(indexes)]
+        # from dask.distributed import as_completed
+
+        # seq = as_completed(indexes)
+        # while seq.count() > 1:
+        #     idx1 = await seq.__anext__()
+        #     idx2 = await seq.__anext__()
+        #     f = self._submit_with_trace(index_union, idx1, idx2)
+        #     seq.add(f)
+
+        # return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
     @with_trace('_fill_catalog_columns_info')
