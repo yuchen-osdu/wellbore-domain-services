@@ -347,13 +347,14 @@ class DaskBulkStorage:
                 binop=index_union, combine=index_union, **fold_args
             ).compute()
 
+        chunk_metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
+        if len(chunk_metas) == 0:
+            return None # there is no files in this session
+
         previous_index = None
         if from_bulk_id:
             # read the index of previous version
             previous_index = await self._future_load_index(session.recordId, from_bulk_id)
-        chunk_metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
-        if len(chunk_metas) == 0:
-            return None # there is no files in this session
 
         return await self._submit_with_trace(
             impl_build_session_index, chunk_metas, self._parameters.storage_options, previous_index)
