@@ -36,6 +36,20 @@ resources:
  requests:
    memory: 2Gi
 
+probes:
+  startup:
+    failureThreshold: 5
+    periodSeconds: 3
+  liveness:
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 6
+  readiness:
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 1
+    successThreshold: 5
+
 annotations:
   buildNumber: []
   buildOrigin: AzureDevops build/#{Build.DefinitionName}#
