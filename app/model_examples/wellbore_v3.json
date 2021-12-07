@@ -23,10 +23,15 @@
                 "unitKey": "ft",
                 "value": 35.0
             },
-            "country": "United States of America",
             "operator": "Francois Vinyes",
             "wellboreType": "bypass"
         },
+        "Geocontexts": [
+            {
+                "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:",
+                "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:"
+            }
+        ],
         "FacilityNameAliases": [
                 {
                     "AliasName": "33-089-00300-00-01",
