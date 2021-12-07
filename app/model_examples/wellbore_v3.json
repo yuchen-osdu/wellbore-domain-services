@@ -18,13 +18,7 @@
         ]
     },
     "data": {
-        "ExtensionProperties": {
-            "airGap": {
-                "unitKey": "ft",
-                "value": 35.0
-            },
-            "wellboreType": "bypass"
-        },
+        "ExtensionProperties": {},
         "Geocontexts": [
             {
                 "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:",
