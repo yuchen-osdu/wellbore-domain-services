@@ -23,13 +23,17 @@
                 "unitKey": "ft",
                 "value": 35.0
             },
-            "operator": "Francois Vinyes",
             "wellboreType": "bypass"
         },
         "Geocontexts": [
             {
                 "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:",
                 "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:"
+            }
+        ],
+        "FacilityOperators": [
+            {
+                "FacilityOperatorID": "Francois Vinyes"
             }
         ],
         "FacilityNameAliases": [
