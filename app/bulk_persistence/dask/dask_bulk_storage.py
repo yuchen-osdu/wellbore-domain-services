@@ -67,6 +67,20 @@ def dask_to_parquet(ddf, path, storage_options):
         return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
 
 
+def _fetch_index_hash(meta: session_meta.SessionFileMeta):
+    return meta.index_hash, meta
+
+
+def _load_index_from_meta(meta, **kwargs):
+    return read_parquet_index(meta.path_with_protocol,
+                              columns=[meta.columns[0]],
+                              **kwargs)
+
+
+def _index_union_tuple(t):
+    return index_union(*t)
+
+
 class DaskBulkStorage:
     client: DaskDistributedClient = None
     """ Dask client """
@@ -291,7 +305,7 @@ class DaskBulkStorage:
         parquet_files = (f for f in files if f.endswith('.parquet'))
         files = [path] if is_dask_folder else list(parquet_files)
 
-        futures_datasets = [self._submit_with_trace(pa.ParquetDataset, f, self._fs) for f in files]
+        futures_datasets = self._map_with_trace(pa.ParquetDataset, files, filesystem=self._fs)
         datasets = await self.client.gather(futures_datasets)
 
         schemas = (d.read_pandas().schema for d in datasets)
@@ -331,19 +345,19 @@ class DaskBulkStorage:
     ) -> pd.Index:
         """Combine all chunks indexes + previous version index"""
         # list one file per different index_hash.
-        chunk_metas_prefetched = await self.client.gather(self._map_with_trace(lambda m: (m.index_hash, m), chunk_metas))
+        chunk_metas_prefetched = await self.client.gather(self._map_with_trace(_fetch_index_hash, chunk_metas))
         chunks_meta_with_different_indexes = {hash: meta for hash, meta in chunk_metas_prefetched}.values()
         # read chunks indexes from paquet
-        indexes = self._map_with_trace(lambda m: read_parquet_index(m.path_with_protocol,
-                                                                    storage_options=self._parameters.storage_options,
-                                                                    columns=[m.columns[0]]),
-                                       chunks_meta_with_different_indexes)
+        indexes = self._map_with_trace(_load_index_from_meta,
+                                       chunks_meta_with_different_indexes,
+                                       storage_options=self._parameters.storage_options)
         if from_bulk_id:
             # read the index of previous version
             indexes.append(await self._future_load_index(record_id, from_bulk_id))
+
         # merge all indexes
         while len(indexes) > 1:
-            indexes = [self._submit_with_trace(index_union, x, y) for x, y in by_pairs(indexes)]
+            indexes = self._map_with_trace(_index_union_tuple, list(by_pairs(indexes)))
         return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
