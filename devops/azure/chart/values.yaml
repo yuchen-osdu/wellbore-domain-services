@@ -38,8 +38,8 @@ resources:
 
 probes:
   startup:
-    failureThreshold: 5
-    periodSeconds: 3
+    failureThreshold: 6
+    periodSeconds: 5
   liveness:
     periodSeconds: 5
     timeoutSeconds: 1
