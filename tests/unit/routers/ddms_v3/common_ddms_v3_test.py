@@ -167,14 +167,10 @@ getas_parameters = [
      status.HTTP_400_BAD_REQUEST),
     (Wellbore, "/ddms/v3/wellbores", r"../../converter/wellbore_wks.json",
      "opendes:master-data--Wellbore:6f70656e6465733a646f633a3132333435:", status.HTTP_422_UNPROCESSABLE_ENTITY),
-    (Wellbore, "/ddms/v3/wellbores", r"../../../../app/model_examples/wellbore_v3.json",
-     "opendes:master-data--Wellbore:123", status.HTTP_200_OK),
     (Well, "/ddms/v3/wells", r"../../converter/well_wks.json", "opendes:well:12345",
      status.HTTP_400_BAD_REQUEST),
     (Well, "/ddms/v3/wells", r"../../converter/well_wks.json",
      "opendes:master-data--Well:6f70656e6465733a646f633a3132333435:", status.HTTP_422_UNPROCESSABLE_ENTITY),
-    (Well, "/ddms/v3/wells", r"../../../../app/model_examples/well_v3.json", "opendes:master-data--Well:12345:456",
-     status.HTTP_200_OK),
 ]
 
 

@@ -18,16 +18,24 @@
         ]
     },
     "data": {
-        "ExtensionProperties": {
-            "airGap": {
-                "unitKey": "ft",
-                "value": 35.0
-            },
-            "country": "United States of America",
-            "operator": "Francois Vinyes",
-            "uwi": "33-089-00300-00-01",
-            "wellboreType": "bypass"
-        },
+        "ExtensionProperties": {},
+        "Geocontexts": [
+            {
+                "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:",
+                "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:"
+            }
+        ],
+        "FacilityOperators": [
+            {
+                "FacilityOperatorID": "Francois Vinyes"
+            }
+        ],
+        "FacilityNameAliases": [
+                {
+                    "AliasName": "33-089-00300-00-01",
+                    "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                }
+        ],
         "SpatialLocation": {
             "Wgs84Coordinates": {
             "features": [{

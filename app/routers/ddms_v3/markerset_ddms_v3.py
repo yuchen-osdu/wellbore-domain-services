@@ -138,7 +138,7 @@ async def get_osdu_wellboreMarkerset_version(
     },
 )
 async def post_wellboreMarkerset_osdu(
-        wellboremarkersets: List[WellboreMarkerSet],
+        wellboremarkersets: List[WellboreMarkerSet] = Body(..., example= load_schema_example("marker_v3.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(wellboremarkersets)
