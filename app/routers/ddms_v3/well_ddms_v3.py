@@ -144,7 +144,7 @@ async def get_osdu_well_version(
 async def post_well_osdu(
     wells: List[Well] = Body(..., example= load_schema_example("well_v3.json")), ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
-
+    DMSV3RouterUtils.validate_record_against_kinds_schema(wells)
     storage_client = await get_storage_record_service(ctx)
 
     return await storage_client.create_or_update_records(

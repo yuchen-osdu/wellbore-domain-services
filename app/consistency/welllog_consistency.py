@@ -1,17 +1,15 @@
-from app.model.osdu_model import WellLog110 as WellLog
+from app.model.osdu_model import WellLog110
 
 
 class DuplicatedCurveIdException(RuntimeError):
     """raised if all curveID values are not unique"""
-    pass
 
 
 class ReferenceCurveIdNotFoundException(RuntimeError):
     """raised when there is no curve with a curveID value equal to the ReferenceCurveID value"""
-    pass
 
 
-def welllog_consistency_check(wl: WellLog):
+def welllog_consistency_check(wl: WellLog110):
     """Check if wellLog is consistent.
 
     Each curves in data.Curves must have a unique CurveID.
@@ -26,6 +24,7 @@ def welllog_consistency_check(wl: WellLog):
         DuplicatedCurveIdException: All CurveIDs are not unique.
         ReferenceCurveIdNotFoundException: No curve whose curveID value are equal to ReferenceCurveID value.
     """
+
     if not wl.data:
         return
 

@@ -11,8 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import asyncio
 
 import far.family_processor.model as farmodel
+from far.family_processor.family_processor import FamilyProcessor
+from azure.core.tracing import SpanKind
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from typing import Optional, List
@@ -23,15 +26,16 @@ import app.modules.log_recognition.routers.family_processor_manager as fp_manage
 from app.clients.storage_service_client import get_storage_record_service
 from app.conf import Config
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
-from app.utils import Context
-from app.utils import get_ctx
+from app.utils import Context, get_ctx
+
 
 def can_run() -> (bool, str):
     return True, ""
 
+
 router = APIRouter()
-router.prefix='/log-recognition'
-router.tags=['log-recognition']
+router.prefix = '/log-recognition'
+router.tags = ['log-recognition']
 
 
 class CatalogItem(BaseModel):
@@ -120,6 +124,18 @@ class GuessResponse(BaseModel):
     base_unit: Optional[str] = None  # Unit to convert log
 
 
+async def process_with_trace(span_label, processor: FamilyProcessor, log_info: farmodel.GuessRequest):
+    """
+    Trace guess() method from given Process
+    """
+    with get_ctx().tracer.span(name=span_label) as span:
+        span.span_kind = SpanKind.CLIENT
+
+        return await asyncio.get_event_loop().run_in_executor(
+            None, processor.guess, log_info
+        )
+
+
 @router.post('/family', response_model=GuessResponse,
              summary="Recognize family and unit",
              description="Find the most probable family and unit using family assignment rule based catalogs. "
@@ -128,11 +144,13 @@ class GuessResponse(BaseModel):
 async def post_recognize_custom(body: GuessRequest,
                                 ctx: Context = Depends(get_ctx)) -> GuessResponse:
     processor = await family_processor_manager.get_processor(ctx, ctx.partition_id)
-    result = processor.guess(log_info=farmodel.GuessRequest(**body.dict()))
+
+    result = await process_with_trace("first guess", processor, farmodel.GuessRequest(**body.dict()))
     if result.error is not None:
         # Try with the default catalog
         default_processor = family_processor_manager.get_default_processor()
-        result = default_processor.guess(log_info=farmodel.GuessRequest(**body.dict()))
+
+        result = await process_with_trace("second guess", default_processor, farmodel.GuessRequest(**body.dict()))
         if result.error is not None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.error)
 
@@ -140,11 +158,10 @@ async def post_recognize_custom(body: GuessRequest,
     if isinstance(result.family_type, str):
         result.family_type = [result.family_type]
 
-    response: GuessResponse = GuessResponse(family=result.family,
-                                            family_type=result.family_type,
-                                            log_unit=result.log_unit,
-                                            base_unit=result.base_unit)
-    return response
+    return GuessResponse(family=result.family,
+                         family_type=result.family_type,
+                         log_unit=result.log_unit,
+                         base_unit=result.base_unit)
 
 
 @router.put('/upload-catalog',
@@ -152,7 +169,8 @@ async def post_recognize_custom(body: GuessRequest,
             summary="Upload user-defined catalog with family assignment rules",
             description="""Upload user-defined catalog with family assignment rules for specific partition ID. 
             If there is an existing catalog, it will be replaced. It takes maximum of 5 mins to replace the existing catalog. 
-            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog. {}""".format(REQUIRED_ROLES_WRITE),
+            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog. {}""".format(
+                REQUIRED_ROLES_WRITE),
             operation_id="upload-catalog")
 async def upload_catalog(body: CatalogRecord,
                          ctx: Context = Depends(get_ctx)) -> model.CreateUpdateRecordsResponse:

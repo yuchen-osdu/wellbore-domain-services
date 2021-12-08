@@ -54,7 +54,7 @@ tests_parameters = [
         r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
         Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:",
-            kind="namespace:osdu:Wellbore:2.7.112",
+            kind="namespace:osdu:master-data--Wellbore:1.0.0",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             legal={
                 "legaltags": ["string"],
@@ -68,7 +68,7 @@ tests_parameters = [
         r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
         Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:145",
-            kind="namespace:osdu:Wellbore:2.7.112",
+            kind="namespace:osdu:master-data--Wellbore:1.0.0",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             legal={
                 "legaltags": ["string"],
@@ -270,14 +270,14 @@ tests_parameters_restricted_well = [
         r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9",
         {
             "id": "namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            "kind": "namespace:osdu:master-data--Well:2.7.112",
+            "kind": "namespace:osdu:master-data--Well:1.0.0",
             "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
             "data": {}
         },
         Well(
             id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            kind="namespace:osdu:master-data--Well:2.7.112",
+            kind="namespace:osdu:master-data--Well:1.0.0",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             version=1976,
             legal={
@@ -351,7 +351,7 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
             # Data
             moc_record = Record(
                 id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-                kind="namespace:osdu:master-data--Well:2.7.112",
+                kind="namespace:osdu:master-data--Well:1.0.0",
                 acl={"owners": ["test"], "viewers": ["test"]},
                 version=1976,
                 legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
