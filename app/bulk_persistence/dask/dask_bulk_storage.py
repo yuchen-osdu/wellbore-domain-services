@@ -332,12 +332,12 @@ class DaskBulkStorage:
         """Combine all chunks indexes + previous version index"""
         # list one file per different index_hash.
         chunk_metas_prefetched = await self.client.gather(self._map_with_trace(lambda m: (m.index_hash, m), chunk_metas))
-        chunks_meta_with_different_indexes = {m[0]:m[1] for m in chunk_metas_prefetched}.values()
-        # read chunks indexes
-        indexes = [self._submit_with_trace(read_parquet_index, m.path_with_protocol,
-                                           storage_options=self._parameters.storage_options,
-                                           columns=[m.columns[0]])
-                   for m in chunks_meta_with_different_indexes]
+        chunks_meta_with_different_indexes = {hash: meta for hash, meta in chunk_metas_prefetched}.values()
+        # read chunks indexes from paquet
+        indexes = self._map_with_trace(lambda m: read_parquet_index(m.path_with_protocol,
+                                                                    storage_options=self._parameters.storage_options,
+                                                                    columns=[m.columns[0]]),
+                                       chunks_meta_with_different_indexes)
         if from_bulk_id:
             # read the index of previous version
             indexes.append(await self._future_load_index(record_id, from_bulk_id))
