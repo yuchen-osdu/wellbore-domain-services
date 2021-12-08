@@ -33,8 +33,10 @@ replicaCount: 2
 resources:
  limits:
    memory: 2Gi
+   cpu: 4000m
  requests:
    memory: 2Gi
+   cpu: 1000m
 
 probes:
   startup:
