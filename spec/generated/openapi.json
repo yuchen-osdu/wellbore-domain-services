@@ -16412,6 +16412,117 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "example": {
+                "acl": {
+                  "owners": [
+                    "data.default.owners@{{datapartitionid}}.{{domain}}"
+                  ],
+                  "viewers": [
+                    "data.default.viewers@{{datapartitionid}}.{{domain}}"
+                  ]
+                },
+                "ancestry": {
+                  "parents": []
+                },
+                "createTime": "2020-12-16T11:46:20.163Z",
+                "createUser": "some-user@some-company-cloud.com",
+                "data": {
+                  "Artefacts": [
+                    {
+                      "ResourceID": "string",
+                      "ResourceKind": "string",
+                      "RoleID": "string"
+                    }
+                  ],
+                  "AuthorIDs": [
+                    "string"
+                  ],
+                  "AvailableMarkerProperties": [
+                    {
+                      "MarkerPropertyTypeID": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
+                      "MarkerPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:ft:",
+                      "Name": "MissingThickness"
+                    }
+                  ],
+                  "BusinessActivities": [
+                    "string"
+                  ],
+                  "CreationDateTime": "2021-12-02T15:19:19.271Z",
+                  "Datasets": [
+                    "string"
+                  ],
+                  "Description": "string",
+                  "ExistenceKind": "string",
+                  "ExtensionProperties": {},
+                  "GeoContexts": [
+                    "string"
+                  ],
+                  "IsDiscoverable": true,
+                  "IsExtendedLoad": true,
+                  "LineageAssertions": [
+                    {
+                      "ID": "string",
+                      "LineageRelationshipType": "string"
+                    }
+                  ],
+                  "Markers": [
+                    {
+                      "FeatureName": "string",
+                      "FeatureTypeID": "string",
+                      "GeologicalAge": "string",
+                      "MarkerDate": "2021-12-02T15:19:19.271Z",
+                      "MarkerInterpreter": "string",
+                      "MarkerMeasuredDepth": 0,
+                      "MarkerName": "string",
+                      "MarkerObservationNumber": 0,
+                      "MarkerSubSeaVerticalDepth": 0,
+                      "MarkerTypeID": "string",
+                      "Missing": "string",
+                      "NegativeVerticalDelta": 0,
+                      "PositiveVerticalDelta": 0,
+                      "SurfaceDipAngle": 0,
+                      "SurfaceDipAzimuth": 0
+                    }
+                  ],
+                  "Name": "string",
+                  "ResourceCurationStatus": "string",
+                  "ResourceHomeRegionID": "string",
+                  "ResourceHostRegionIDs": [
+                    "string"
+                  ],
+                  "ResourceLifecycleStatus": "string",
+                  "ResourceSecurityClassification": "string",
+                  "Source": "string",
+                  "SpatialArea": "string",
+                  "SpatialPoint": "string",
+                  "SubmitterName": "string",
+                  "Tags": [
+                    "string"
+                  ],
+                  "VerticalMeasurement": "string",
+                  "WellboreID": "string"
+                },
+                "id": "namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c",
+                "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
+                "legal": {
+                  "legaltags": [
+                    "{{legaltags}}"
+                  ],
+                  "otherRelevantDataCountries": [
+                    "FR",
+                    "US"
+                  ]
+                },
+                "meta": [
+                  "string"
+                ],
+                "modifyTime": "2020-12-16T11:52:24.477Z",
+                "modifyUser": "some-user@some-company-cloud.com",
+                "tags": {
+                  "NameOfKey": "String value"
+                },
+                "version": 1562066009929332
+              },
               "schema": {
                 "items": {
                   "$ref": "#/components/schemas/WellboreMarkerSet110"
@@ -16743,17 +16854,25 @@
                     ]
                   },
                   "data": {
-                    "ExtensionProperties": {
-                      "airGap": {
-                        "unitKey": "ft",
-                        "value": 35.0
-                      },
-                      "country": "United States of America",
-                      "operator": "Francois Vinyes",
-                      "uwi": "33-089-00300-00-01",
-                      "wellboreType": "bypass"
-                    },
+                    "ExtensionProperties": {},
                     "FacilityName": "{{wellboreName}}",
+                    "FacilityNameAliases": [
+                      {
+                        "AliasName": "33-089-00300-00-01",
+                        "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                      }
+                    ],
+                    "FacilityOperators": [
+                      {
+                        "FacilityOperatorID": "Francois Vinyes"
+                      }
+                    ],
+                    "Geocontexts": [
+                      {
+                        "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:",
+                        "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:"
+                      }
+                    ],
                     "SpatialLocation": {
                       "Wgs84Coordinates": {
                         "features": [
@@ -17150,6 +17269,112 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "example": [
+                {
+                  "acl": {
+                    "owners": [
+                      "data.default.owners@{{datapartitionid}}.{{domain}}"
+                    ],
+                    "viewers": [
+                      "data.default.viewers@{{datapartitionid}}.{{domain}}"
+                    ]
+                  },
+                  "data": {
+                    "ExtensionProperties": {},
+                    "FacilityName": "{{wellboreName}}",
+                    "FacilityNameAliases": [
+                      {
+                        "AliasName": "33-089-00300-00-01",
+                        "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                      }
+                    ],
+                    "FacilityOperators": [
+                      {
+                        "FacilityOperatorID": "Francois Vinyes"
+                      }
+                    ],
+                    "Geocontexts": [
+                      {
+                        "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:",
+                        "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:"
+                      }
+                    ],
+                    "SpatialLocation": {
+                      "Wgs84Coordinates": {
+                        "features": [
+                          {
+                            "geometry": {
+                              "coordinates": [
+                                [
+                                  -103.2380248,
+                                  46.8925081,
+                                  5301.0
+                                ],
+                                [
+                                  -103.2380248,
+                                  46.8925081,
+                                  2801.0
+                                ],
+                                [
+                                  -103.2378748,
+                                  46.892608100000004,
+                                  301.0
+                                ],
+                                [
+                                  -103.23742477750001,
+                                  46.89270811,
+                                  -2199.0
+                                ],
+                                [
+                                  -103.23667470999663,
+                                  46.892808120001,
+                                  -4699.0
+                                ],
+                                [
+                                  -103.2356245974865,
+                                  46.892908130002,
+                                  -7199.0
+                                ]
+                              ],
+                              "type": "LineString"
+                            },
+                            "properties": {
+                              "name": "Newton 2-31-Lat-1"
+                            },
+                            "type": "Feature"
+                          }
+                        ],
+                        "type": "FeatureCollection"
+                      }
+                    },
+                    "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:"
+                  },
+                  "id": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
+                  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
+                  "legal": {
+                    "legaltags": [
+                      "{{legaltags}}"
+                    ],
+                    "otherRelevantDataCountries": [
+                      "FR",
+                      "US"
+                    ]
+                  },
+                  "meta": [
+                    {
+                      "kind": "Unit",
+                      "name": "Measure depth default unit",
+                      "persistableReference": "persistableReference",
+                      "propertyNames": [
+                        "symbol"
+                      ],
+                      "propertyValues": [
+                        "ft"
+                      ]
+                    }
+                  ]
+                }
+              ],
               "schema": {
                 "items": {
                   "$ref": "#/components/schemas/WellboreTrajectory110"
@@ -18223,20 +18448,22 @@
                     ]
                   },
                   "data": {
-                    "BottomMeasuredDepth": 13856.25,
+                    "BottomMeasuredDepth": 13856.2,
                     "CreationDateTime": "2013-03-22T11:16:03Z",
                     "Curves": [
                       {
                         "CurveID": "GR_ID",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:",
-                        "Mnemonic": "GR"
+                        "Mnemonic": "GR",
+                        "NumberOfColumns": 1
                       },
                       {
                         "CurveID": "POR_ID",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:",
-                        "Mnemonic": "NPOR"
+                        "Mnemonic": "NPOR",
+                        "NumberOfColumns": 1
                       },
                       {
                         "CurveID": "Bulk Density",
@@ -18245,14 +18472,10 @@
                         "Mnemonic": "RHOB"
                       }
                     ],
-                    "ExtensionProperties": {
-                      "dateModified": "2013-03-22T11:16:03Z",
-                      "step": {
-                        "unitKey": "ft",
-                        "value": 0.1
-                      }
-                    },
+                    "IsRegular": true,
                     "Name": "{{welllogName}}",
+                    "SamplingDomainTypeID": "{{datapartitionid}}:reference-data--WellLogSamplingDomainType:Depth:",
+                    "SamplingInterval": 0.1,
                     "TopMeasuredDepth": 12345.6,
                     "VerticalMeasurement": {
                       "VerticalMeasurement": 2680.5,
@@ -18278,11 +18501,9 @@
                       "name": "ft",
                       "persistableReference": "{\"scaleOffset\":{\"scale\":0.3048,\"offset\":0.0},\"symbol\":\"ft\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
                       "propertyNames": [
-                        "stop.value",
-                        "elevationReference.elevationFromMsl.value",
-                        "start.value",
-                        "step.value",
-                        "reference.unitKey"
+                        "TopMeasuredDepth",
+                        "BottomMeasuredDepth",
+                        "SamplingInterval"
                       ],
                       "propertyValues": [
                         "ft"
@@ -19373,10 +19594,14 @@
                     ]
                   },
                   "data": {
-                    "ExtensionProperties": {
-                      "UWI": "20-000-00000-00"
-                    },
-                    "FacilityName": "{{wellName}}"
+                    "ExtensionProperties": {},
+                    "FacilityName": "{{wellName}}",
+                    "FacilityNameAliases": [
+                      {
+                        "AliasName": "20-000-00000-00",
+                        "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                      }
+                    ]
                   },
                   "id": "{{datapartitionid}}:master-data--Well:{{wellId}}",
                   "kind": "osdu:wks:master-data--Well:1.0.0",

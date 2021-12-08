@@ -13,13 +13,15 @@
                 "CurveID": "GR_ID",
                 "Mnemonic": "GR",
                 "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
-                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:"
+                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:",
+                "NumberOfColumns": 1
             },
             {
                 "CurveID": "POR_ID",
                 "Mnemonic": "NPOR",
                 "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
-                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:"
+                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:",
+                "NumberOfColumns": 1
             },
             {
                 "CurveID": "Bulk Density",
@@ -36,16 +38,13 @@
             "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:ft:"
         },
         "TopMeasuredDepth": 12345.6,
-        "BottomMeasuredDepth": 13856.25,
+        "BottomMeasuredDepth": 13856.2,
         "Name": "{{welllogName}}",
-   
-        "ExtensionProperties": {
-            "step": {
-                "unitKey": "ft",
-                "value": 0.1
-            },
-            "dateModified": "2013-03-22T11:16:03Z"
-        }
+
+        "SamplingDomainTypeID": "{{datapartitionid}}:reference-data--WellLogSamplingDomainType:Depth:",
+        "IsRegular": true,
+        "SamplingInterval": 0.1
+
     },
     "id": "{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
     "kind": "osdu:wks:work-product-component--WellLog:1.1.0",
@@ -63,11 +62,9 @@
             "name": "ft",
             "persistableReference": "{\"scaleOffset\":{\"scale\":0.3048,\"offset\":0.0},\"symbol\":\"ft\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
             "propertyNames": [
-                "stop.value",
-                "elevationReference.elevationFromMsl.value",
-                "start.value",
-                "step.value",
-                "reference.unitKey"
+                "TopMeasuredDepth",
+                "BottomMeasuredDepth",
+                "SamplingInterval"
             ],
             "propertyValues": [
                 "ft"

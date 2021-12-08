@@ -67,6 +67,20 @@ def dask_to_parquet(ddf, path, storage_options):
         return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
 
 
+def _fetch_index_hash(meta: session_meta.SessionFileMeta):
+    return meta.index_hash, meta
+
+
+def _load_index_from_meta(meta, **kwargs):
+    return read_parquet_index(meta.path_with_protocol,
+                              columns=[meta.columns[0]],
+                              **kwargs)
+
+
+def _index_union_tuple(t):
+    return index_union(*t)
+
+
 class DaskBulkStorage:
     client: DaskDistributedClient = None
     """ Dask client """
@@ -291,7 +305,7 @@ class DaskBulkStorage:
         parquet_files = (f for f in files if f.endswith('.parquet'))
         files = [path] if is_dask_folder else list(parquet_files)
 
-        futures_datasets = [self._submit_with_trace(pa.ParquetDataset, f, self._fs) for f in files]
+        futures_datasets = self._map_with_trace(pa.ParquetDataset, files, filesystem=self._fs)
         datasets = await self.client.gather(futures_datasets)
 
         schemas = (d.read_pandas().schema for d in datasets)
@@ -326,24 +340,24 @@ class DaskBulkStorage:
 
     @capture_timings('_build_session_index')
     @with_trace('_build_session_index')
-    async def _build_session_index(self, session: Session, from_bulk_id: str) -> pd.Index:
+    async def _build_session_index(
+        self, chunk_metas: List[session_meta.SessionFileMeta], record_id: str, from_bulk_id: str
+    ) -> pd.Index:
         """Combine all chunks indexes + previous version index"""
-        metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
         # list one file per different index_hash.
-        chunks_meta_with_different_indexes = {m.index_hash: m for m in metas}.values()
-        if len(chunks_meta_with_different_indexes) == 0:
-            return None # there is no files in this session
-        # read chunks indexes
-        indexes = [self._submit_with_trace(read_parquet_index, m.path_with_protocol,
-                                           storage_options=self._parameters.storage_options,
-                                           columns=[m.columns[0]])
-                   for m in chunks_meta_with_different_indexes]
+        chunk_metas_prefetched = await self.client.gather(self._map_with_trace(_fetch_index_hash, chunk_metas))
+        chunks_meta_with_different_indexes = {hash: meta for hash, meta in chunk_metas_prefetched}.values()
+        # read chunks indexes from paquet
+        indexes = self._map_with_trace(_load_index_from_meta,
+                                       chunks_meta_with_different_indexes,
+                                       storage_options=self._parameters.storage_options)
         if from_bulk_id:
             # read the index of previous version
-            indexes.append(await self._future_load_index(session.recordId, from_bulk_id))
+            indexes.append(await self._future_load_index(record_id, from_bulk_id))
+
         # merge all indexes
         while len(indexes) > 1:
-            indexes = [self._submit_with_trace(index_union, x, y) for x, y in by_pairs(indexes)]
+            indexes = self._map_with_trace(_index_union_tuple, list(by_pairs(indexes)))
         return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
@@ -428,8 +442,8 @@ class DaskBulkStorage:
         """
         bulk_id = new_bulk_id()
 
-        index = await self._build_session_index(session, from_bulk_id)
-        if index is None:
+        chunk_metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
+        if len(chunk_metas) == 0:# there is no files in this session
             raise BulkNotProcessable(message="No data to commit")
 
         if from_bulk_id:
@@ -440,12 +454,17 @@ class DaskBulkStorage:
 
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
-        catalog.nb_rows = len(index)
-        index_path, _ = await asyncio.gather(
-            self._save_session_index(commit_path, index),
+        async def build_and_save_index():
+            index = await self._build_session_index(chunk_metas, session.recordId, from_bulk_id)
+            index_path = await self._save_session_index(commit_path, index)
+            catalog.nb_rows = len(index)
+            catalog.index_path = self._relative_path(session.recordId, index_path)
+
+        await asyncio.gather(
+            build_and_save_index(),
             self._fill_catalog_columns_info(catalog, session, bulk_id)
         )
-        catalog.index_path = self._relative_path(session.recordId, index_path)
+
         save_bulk_catalog(self._fs, commit_path, catalog)
         return bulk_id
 

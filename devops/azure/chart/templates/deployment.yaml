@@ -92,18 +92,19 @@ spec:
             readOnly: true
         resources:
           {{ toYaml .Values.resources | nindent 10 }}
+        startupProbe:
+          httpGet:
+            path: {{ include "os-wellbore-ddms.prefix" . }}/healthz
+            port: 8080
+          {{ toYaml .Values.probes.startup | nindent 10 }}
         livenessProbe:
           httpGet:
             path: {{ include "os-wellbore-ddms.prefix" . }}/healthz
             port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 5
-          timeoutSeconds: 1
-          failureThreshold: 3
+          {{ toYaml .Values.probes.liveness | nindent 10 }}
         readinessProbe:
           httpGet:
             path: {{ include "os-wellbore-ddms.prefix" . }}/healthz
             port: 8080
-          initialDelaySeconds: 5
-          timeoutSeconds: 5
+          {{ toYaml .Values.probes.readiness | nindent 10 }}
       terminationGracePeriodSeconds: 45
