@@ -54,7 +54,7 @@ tests_parameters = [
         r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
         Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:",
-            kind="namespace:osdu:Wellbore:2.7.112",
+            kind="namespace:osdu:master-data--Wellbore:1.0.0",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             legal={
                 "legaltags": ["string"],
@@ -68,7 +68,7 @@ tests_parameters = [
         r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
         Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:145",
-            kind="namespace:osdu:Wellbore:2.7.112",
+            kind="namespace:osdu:master-data--Wellbore:1.0.0",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             legal={
                 "legaltags": ["string"],
@@ -167,14 +167,10 @@ getas_parameters = [
      status.HTTP_400_BAD_REQUEST),
     (Wellbore, "/ddms/v3/wellbores", r"../../converter/wellbore_wks.json",
      "opendes:master-data--Wellbore:6f70656e6465733a646f633a3132333435:", status.HTTP_422_UNPROCESSABLE_ENTITY),
-    (Wellbore, "/ddms/v3/wellbores", r"../../../../app/model_examples/wellbore_v3.json",
-     "opendes:master-data--Wellbore:123", status.HTTP_200_OK),
     (Well, "/ddms/v3/wells", r"../../converter/well_wks.json", "opendes:well:12345",
      status.HTTP_400_BAD_REQUEST),
     (Well, "/ddms/v3/wells", r"../../converter/well_wks.json",
      "opendes:master-data--Well:6f70656e6465733a646f633a3132333435:", status.HTTP_422_UNPROCESSABLE_ENTITY),
-    (Well, "/ddms/v3/wells", r"../../../../app/model_examples/well_v3.json", "opendes:master-data--Well:12345:456",
-     status.HTTP_200_OK),
 ]
 
 
@@ -274,14 +270,14 @@ tests_parameters_restricted_well = [
         r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9",
         {
             "id": "namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            "kind": "namespace:osdu:master-data--Well:2.7.112",
+            "kind": "namespace:osdu:master-data--Well:1.0.0",
             "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
             "data": {}
         },
         Well(
             id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            kind="namespace:osdu:master-data--Well:2.7.112",
+            kind="namespace:osdu:master-data--Well:1.0.0",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             version=1976,
             legal={
@@ -355,7 +351,7 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
             # Data
             moc_record = Record(
                 id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-                kind="namespace:osdu:master-data--Well:2.7.112",
+                kind="namespace:osdu:master-data--Well:1.0.0",
                 acl={"owners": ["test"], "viewers": ["test"]},
                 version=1976,
                 legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},

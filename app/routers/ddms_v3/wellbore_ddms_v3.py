@@ -145,6 +145,7 @@ async def get_osdu_wellbore_version(
 async def post_wellbore_osdu(
     wellbores: List[Wellbore] = Body(..., example= load_schema_example("wellbore_v3.json")), ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
+    DMSV3RouterUtils.validate_record_against_kinds_schema(wellbores)
 
     storage_client = await get_storage_record_service(ctx)
 
