@@ -74,7 +74,7 @@ def test_post_v3_consistent_trajectory(client, available_trajectory_station_prop
         url="/ddms/v3/wellboretrajectories",
         json=[
             {
-                "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
+                "kind": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
                 "legal": legal,
                 "acl": acl,
                 "data": {
@@ -112,7 +112,7 @@ def test_post_v3_inconsistent_trajectory(client):
 
     j = [
         {
-            "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
+            "kind": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
             "legal": legal,
             "acl": acl,
             "data": {

@@ -9,7 +9,7 @@ from app.model.osdu_model import (
     WellLogData110,
 )
 
-KIND = "osdu:wks:work-product-component--WellLog:1.0.0"
+KIND = "osdu:wks:work-product-component--WellLog:1.1.0"
 LEGAL = AbstractLegalTags100(legaltags=["legal_tag"], otherRelevantDataCountries=["FR"], status="compliant")
 ACL = AbstractAccessControlList100(
     owners=["data.default.owners@opendes.slb.com"], viewers=["data.default.viewers@opendes.slb.com"]
@@ -49,7 +49,9 @@ def test_consistency_inconsistent_curves_welllog(data):
         check_welllog_consistency(WellLog110(kind=KIND, legal=LEGAL, acl=ACL, data=data))
 
 
-@pytest.mark.parametrize("data", [WellLogData110(ReferenceCurveID="MD")])
+@pytest.mark.parametrize("data", [
+    WellLogData110(ReferenceCurveID="MD", Curves=[Curve110(CurveID="A"), Curve110(CurveID="B")]),
+    WellLogData110(ReferenceCurveID="MD")])
 def test_consistency_inconsistent_reference_id_welllog(data):
     with pytest.raises(ReferenceCurveIdNotFoundException) as excinfo:
         check_welllog_consistency(WellLog110(kind=KIND, legal=LEGAL, acl=ACL, data=data))

@@ -30,6 +30,7 @@ ACL = AbstractAccessControlList100(
         [],
         None,
     ],
+
 )
 def test_consistency_check_success(available_trajectory_station_properties):
     check_trajectory_consistency(
