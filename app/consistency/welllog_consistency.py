@@ -1,5 +1,6 @@
-from .unique import get_unique_ids
 from app.model.osdu_model import WellLog110
+
+from .unique import get_unique_ids
 
 
 class DuplicatedCurveIdException(RuntimeError):
