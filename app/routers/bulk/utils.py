@@ -125,7 +125,7 @@ class DataFrameRender:
         return await driver.client.submit(lambda: len(df.index))
 
     @staticmethod
-    def select_range(df: dd.DataFrame, limit, offset):
+    def select_range_impl(df: dd.DataFrame, limit, offset):
         dataframe_list = []
         for nth in range(df.npartitions):
             dataframe = df.get_partition(nth).compute()
@@ -151,7 +151,7 @@ class DataFrameRender:
     async def select_range(df: dd.DataFrame, offset, limit):
         if offset or limit:
             driver = await with_dask_blob_storage()
-            return await driver.client.submit(DataFrameRender.select_range, df, limit, offset)
+            return await driver.client.submit(DataFrameRender.select_range_impl, df, limit, offset)
             #df = driver.client.persist(df)
             # df = await driver.client.submit(set_index, df)
 
