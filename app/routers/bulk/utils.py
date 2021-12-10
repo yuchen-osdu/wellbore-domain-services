@@ -20,7 +20,7 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.utils import set_index
 from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence import JSONOrient
-from app.utils import get_ctx, OpenApiHandler, Context
+from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
 from app.model.model_chunking import GetDataParams
 from app.routers.bulk.bulk_uri_dependencies import (BulkIdAccess, BULK_URI_FIELD)
@@ -125,17 +125,44 @@ class DataFrameRender:
         return await driver.client.submit(lambda: len(df.index))
 
     @staticmethod
+    def select_range(df: dd.DataFrame, limit, offset):
+        dataframe_list = []
+        for nth in range(df.npartitions):
+            dataframe = df.get_partition(nth).compute()
+            if offset and len(dataframe.index) < offset:
+                offset -= len(dataframe.index)
+                continue  # skip the patition
+            if offset:
+                dataframe = dataframe.iloc[offset:]
+                offset = 0
+            if limit:
+                dataframe = dataframe.iloc[:limit]
+                limit -= len(dataframe.index)
+            dataframe_list.append(dataframe)
+            if limit == 0:
+                break  # stop when we have the requested data
+        if not dataframe_list:
+            return df.head(0)  # return an empty dataframe
+        return pd.concat(dataframe_list)
+
+    @staticmethod
+    @with_trace('select_range')
+    @capture_timings('select_range')
     async def select_range(df: dd.DataFrame, offset, limit):
         if offset or limit:
             driver = await with_dask_blob_storage()
-            df = driver.client.persist(df)
-            df = await driver.client.submit(set_index, df)
-            index = await driver.client.submit(lambda x: x.index.compute(), df)
-            if offset and offset > 0:
-                index = index[offset:]
-            if limit and limit > 0:
-                index = index[:limit]
-            return df.loc[df.index.isin(index)]
+            return await driver.client.submit(DataFrameRender.select_range, df, limit, offset)
+            #df = driver.client.persist(df)
+            # df = await driver.client.submit(set_index, df)
+
+            # def compute_index(x):
+            #     return x.index.compute()
+            # index = await driver.client.submit(compute_index, df)
+            # if offset and offset > 0:
+            #     index = index[offset:]
+            # if limit and limit > 0:
+            #     index = index[:limit]
+            # return df.loc[df.index.isin(index)]
         return df
 
     re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
@@ -228,6 +255,7 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
+    @capture_timings('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)

@@ -49,6 +49,17 @@ def read_with_pandas(path, **kwargs):
     return pd.read_parquet(path, engine='pyarrow', **kwargs)
 
 
+def read_with_dask(path, **kwargs):
+    arguments = {
+        'engine': 'pyarrow-dataset',
+        'chunksize': '25M',
+        'aggregate_files': True,
+    }
+    arguments.update(kwargs)
+
+    return dd.read_parquet(path, **arguments)
+
+
 def read_parquet_index(path, **kwargs) -> pd.Index:
     return read_with_pandas(path, **kwargs).index
 
@@ -161,7 +172,9 @@ class DaskBulkStorage:
         record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
         files_to_load = catalog.get_paths_for_columns(columns, record_path)
         # read all chunk for requested columns
-        dfs = [self._read_parquet(path=f.paths, columns=f.labels) for f in files_to_load]
+        def read_parquet_files(f):
+            return read_with_dask(f.paths, columns=f.labels, storage_options=self._parameters.storage_options)
+        dfs = self._map_with_trace(read_parquet_files, files_to_load)
         if not dfs:
             raise RuntimeError("cannot find requested columns")
 
@@ -170,7 +183,7 @@ class DaskBulkStorage:
 
         # if multiple dataframes, concat them together
         dfs = self._map_with_trace(set_index, dfs)
-        return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer') # concat or join?
+        return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer')
 
     async def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Load columns from parquet files in the bulk_path.
@@ -236,7 +249,7 @@ class DaskBulkStorage:
     @capture_timings('save_bulk', handlers=worker_capture_timing_handlers)
     @internal_bulk_exceptions
     @with_trace('save_bulk')
-    async def save_bulk(self, ddf: dd.DataFrame, record_id: str, bulk_id: str = None):
+    async def save_bulk(self, ddf: pd.DataFrame, record_id: str, bulk_id: str = None):
         """Write the data frame to the blob storage."""
         bulk_id = bulk_id or new_bulk_id()
 
@@ -244,6 +257,8 @@ class DaskBulkStorage:
             assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
             ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
             ddf = await self.client.scatter(ddf)
+        else:
+            assert False
 
         path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         try:
