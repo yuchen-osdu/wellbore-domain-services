@@ -147,7 +147,7 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('select_range')
-    @capture_timings('select_range')
+    #@capture_timings('select_range')
     async def select_range(df: dd.DataFrame, offset, limit):
         if offset or limit:
             driver = await with_dask_blob_storage()
@@ -255,7 +255,7 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
-    @capture_timings('df_render')
+    #@capture_timings('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)
