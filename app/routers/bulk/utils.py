@@ -161,11 +161,17 @@ class DataFrameRender:
     @staticmethod
     def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
         selected = []
+        curves_non_existent = []
         for sel in selection:
             matching_columns = list(filter(lambda col: DataFrameRender._col_matching(sel, col),
                                            cols.difference(selected)))
-            selected.extend(natsorted(matching_columns))
-        return selected
+            if not matching_columns:
+                curves_non_existent.append(sel)
+
+        if curves_non_existent:
+            raise HTTPException(status_code=404, detail=f"curve: {curves_non_existent} do not exist")
+
+        return selection
 
 
     @staticmethod
