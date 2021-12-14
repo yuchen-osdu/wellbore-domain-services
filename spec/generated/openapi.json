@@ -677,7 +677,13 @@
             "type": "array"
           },
           "query": {
-            "$ref": "#/components/schemas/SearchQuery"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchQuery"
+              }
+            ],
+            "default": {},
+            "title": "Query"
           }
         },
         "required": [
@@ -10408,7 +10414,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -10477,7 +10489,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -10546,7 +10564,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -10615,7 +10639,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -10684,7 +10714,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -10753,7 +10789,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -10813,7 +10855,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -10909,7 +10957,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -10996,7 +11050,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -11126,7 +11186,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
@@ -11195,7 +11261,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchQuery"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchQuery"
+                  }
+                ],
+                "default": {},
+                "title": "Body"
               }
             }
           }
