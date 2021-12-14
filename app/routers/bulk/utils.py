@@ -160,22 +160,18 @@ class DataFrameRender:
 
     @staticmethod
     def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
-        selected = []
+        selected = {}
         curves_non_existent = []
         for sel in selection:
-            matching_columns = list(filter(lambda col: DataFrameRender._col_matching(sel, col),
-                                           cols))
-            if not matching_columns:
-                curves_non_existent.append(sel)
-                continue
-            matching_columns_unique = [column for column in matching_columns if column not in selected]
-            if matching_columns_unique:
-                selected.extend(natsorted(matching_columns_unique))
-
+            matching_columns = [col for col in cols if DataFrameRender._col_matching(sel, col)]
+            if matching_columns:
+                selected.update({column: 1 for column in natsorted(matching_columns)})
+            else:
+                curves_non_existent.append(sel)  # TODO raise on bad selection    return list(selected)
         if curves_non_existent:
             raise BulkNotFound(curves=curves_non_existent)
 
-        return selected
+        return list(selected.keys())
 
 
     @staticmethod
@@ -274,3 +270,26 @@ async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri
     return await storage_client.create_or_update_records(
         record=[record], data_partition_id=ctx.partition_id
     )
+
+
+if __name__ == '__main__':
+
+    li = list(range(5000))
+    li_new = [str(e) for e in li]
+    from datetime import datetime
+    start = datetime.now()
+    DataFrameRender.get_matching_column(selection=['250', '260'], cols=li_new)
+    print(datetime.now() - start)
+
+    def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
+        selected = {}
+        bad_selection = []
+        for sel in selection:
+            matching_columns = [col for col in cols if DataFrameRender._col_matching(sel, col)]
+            if matching_columns:
+                selected.update({c: 1 for c in natsorted(matching_columns)})
+            else:
+                bad_selection.append(sel)  # TODO raise on bad selection    return list(selected)
+    start = datetime.now()
+    get_matching_column(selection=['250', '260'], cols=li_new)
+    print(datetime.now() - start)
