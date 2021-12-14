@@ -272,24 +272,3 @@ async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri
     )
 
 
-if __name__ == '__main__':
-
-    li = list(range(5000))
-    li_new = [str(e) for e in li]
-    from datetime import datetime
-    start = datetime.now()
-    DataFrameRender.get_matching_column(selection=['250', '260'], cols=li_new)
-    print(datetime.now() - start)
-
-    def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
-        selected = {}
-        bad_selection = []
-        for sel in selection:
-            matching_columns = [col for col in cols if DataFrameRender._col_matching(sel, col)]
-            if matching_columns:
-                selected.update({c: 1 for c in natsorted(matching_columns)})
-            else:
-                bad_selection.append(sel)  # TODO raise on bad selection    return list(selected)
-    start = datetime.now()
-    get_matching_column(selection=['250', '260'], cols=li_new)
-    print(datetime.now() - start)
