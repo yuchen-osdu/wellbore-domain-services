@@ -164,13 +164,18 @@ class DataFrameRender:
         curves_non_existent = []
         for sel in selection:
             matching_columns = list(filter(lambda col: DataFrameRender._col_matching(sel, col),
-                                           cols.difference(selected)))
+                                           cols))
             if not matching_columns:
                 curves_non_existent.append(sel)
+                continue
+            matching_columns_unique = [column for column in matching_columns if column not in selected]
+            if matching_columns_unique:
+                selected.extend(natsorted(matching_columns_unique))
 
         if curves_non_existent:
             raise BulkNotFound(curves=curves_non_existent)
-        return selection
+
+        return selected
 
 
     @staticmethod
