@@ -167,7 +167,7 @@ class DataFrameRender:
             if matching_columns:
                 selected.update({column: 1 for column in natsorted(matching_columns)})
             else:
-                curves_non_existent.append(sel)  # TODO raise on bad selection    return list(selected)
+                curves_non_existent.append(sel)
         if curves_non_existent:
             raise BulkNotFound(curves=curves_non_existent)
 
