@@ -10,7 +10,7 @@ import pandas as pd
 from natsort import natsorted
 import ast
 
-from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkNotFound
+from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
     no_validation, DataFrameValidationFunc
@@ -169,7 +169,7 @@ class DataFrameRender:
             else:
                 curves_non_existent.append(sel)
         if curves_non_existent:
-            raise BulkNotFound(curves=curves_non_existent)
+            raise BulkCurvesNotFound(curves=curves_non_existent)
 
         return list(selected.keys())
 

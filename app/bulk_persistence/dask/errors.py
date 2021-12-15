@@ -27,18 +27,28 @@ class BulkError(Exception):
         raise HTTPException(status_code=self.http_status, detail=str(self)) from self
 
 
-class BulkNotFound(BulkError):
+class BulkRecordNotFound(BulkError):
     http_status = status.HTTP_404_NOT_FOUND
 
-    def __init__(self, record_id=None, bulk_id=None, curves=None, message=None):
+    def __init__(self, record_id=None, bulk_id=None, message=None):
         ex_message = 'bulk '
         if bulk_id:
             ex_message += f'{bulk_id} '
         if record_id:
             ex_message += f'for record {record_id} '
-        if curves:
-            ex_message += f'for curves: {curves} '
         ex_message += 'not found'
+        if message:
+            ex_message += ': ' + message
+        super().__init__(ex_message)
+
+
+class BulkCurvesNotFound (BulkError):
+    http_status = status.HTTP_404_NOT_FOUND
+
+    def __init__(self, curves=None, message=None):
+        ex_message = 'bulk '
+        if curves:
+            ex_message += f'for curves: {curves} not found'
         if message:
             ex_message += ': ' + message
         super().__init__(ex_message)

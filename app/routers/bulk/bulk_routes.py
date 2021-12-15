@@ -19,7 +19,7 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
+from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError
 
 from app.bulk_persistence.mime_types import MimeTypes
 from app.model.model_chunking import GetDataParams
@@ -176,7 +176,7 @@ async def get_data_version(
     stat = None
     try:
         if not bulk_uri.is_valid():
-            raise BulkNotFound(record_id=record_id, bulk_id=None)
+            raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
         bulk_id = bulk_uri.bulk_id
         if bulk_uri.is_bulk_storage_V0():
             df = await get_dataframe(ctx, bulk_id)
@@ -295,7 +295,7 @@ async def complete_session(
                             # convert old bulk to new one
                             previous_bulk_id = await dask_blob_storage.save_blob(df, record_id=record_id)
                         except ResourceNotFoundException:
-                            BulkNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
+                            BulkRecordNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
                     else:
                         previous_bulk_id = previous_bulk_uri.bulk_id
 

@@ -6,11 +6,12 @@ from pandas.testing import assert_frame_equal
 from fastapi import HTTPException
 
 from app.bulk_persistence import JSONOrient
-from app.bulk_persistence.dask.errors import BulkNotFound
+from app.bulk_persistence.dask.errors import BulkCurvesNotFound
 from app.model.model_chunking import GetDataParams
 from app.routers.bulk.bulk_routes import DataFrameRender
 from app.routers.bulk.utils import get_df_from_request
 from tests.unit.generate_data import generate_df
+
 
 @pytest.mark.parametrize("requested, df_columns, expected", [
     (["X"],           {"X"},                        ["X"]),
@@ -51,9 +52,10 @@ def test_get_matching_column_success(requested, df_columns, expected):
     (["2D[5]"], {"X", "2D[0]", "2D[1]"}, ["2D[5]"]),
 ])
 def test_get_matching_column_404(requested, df_columns, detail):
-    with pytest.raises(BulkNotFound) as execinfo:
+    with pytest.raises(BulkCurvesNotFound) as execinfo:
         result = DataFrameRender.get_matching_column(requested, set(df_columns))
     assert execinfo.value.args[0] == f'bulk for curves: {detail} not found'
+
 
 def assert_df_in_parquet(expected_df, content):
     # let read it
