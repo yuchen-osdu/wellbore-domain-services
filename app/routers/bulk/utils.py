@@ -87,9 +87,10 @@ async def get_df_from_request(request: Request) -> pd.DataFrame:
     ct = request.headers.get('Content-Type', '')
     if MimeTypes.PARQUET.match(ct):
         content = await request.body()  # request.stream()
+        from pyarrow.lib import ArrowInvalid
         try:
             return await DataframeSerializerAsync().read_parquet(content)
-        except OSError as err:
+        except (OSError, ArrowInvalid) as err:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail=f'{err}')  # TODO
 
@@ -127,13 +128,14 @@ class DataFrameRender:
     @staticmethod
     def _select_range_impl(df: dd.DataFrame, limit, offset):
         dataframe_list = []
-        CONCURRENT_READ = 2
+        CONCURRENT_READ = 1
         for nth in range(0, df.npartitions, CONCURRENT_READ):
-            partition_len = len(df.index.partitions[nth:nth+CONCURRENT_READ])
+            dataframe = df.partitions[nth:nth+CONCURRENT_READ].compute()
+            partition_len = len(dataframe.index)
+
             if offset and partition_len < offset:
                 offset -= partition_len
                 continue  # skip the partition
-            dataframe = df.partitions[nth:nth+CONCURRENT_READ].compute()
             if offset:
                 dataframe = dataframe.iloc[offset:]
                 offset = 0
@@ -146,6 +148,37 @@ class DataFrameRender:
         if not dataframe_list:
             return df.head(0)  # return an empty dataframe
         return pd.concat(dataframe_list)
+
+    # @staticmethod
+    # def _select_range_impl(df: dd.DataFrame, limit, offset):
+    #     dataframe_list = []
+    #     CONCURRENT_READ = 1
+    #     nth = 0
+    #     #df = df.repartition(20)
+    #     while nth  < df.npartitions:
+    #         dataframe = df.partitions[nth:nth+CONCURRENT_READ].compute()
+    #         nth = nth+CONCURRENT_READ
+    #         partition_len = len(dataframe.index)
+    #         #total_size = partition_len * len(dataframe.columns)
+    #         # if total_size < 1_000_000:
+    #         #     CONCURRENT_READ = int(CONCURRENT_READ*(10_000_000/total_size))
+
+    #         if offset and partition_len < offset:
+    #             offset -= partition_len
+    #             continue  # skip the partition
+
+    #         if offset:
+    #             dataframe = dataframe.iloc[offset:]
+    #             offset = 0
+    #         if limit:
+    #             dataframe = dataframe.iloc[:limit]
+    #             limit -= len(dataframe.index)
+    #         dataframe_list.append(dataframe)
+    #         if limit is not None and limit <= 0:
+    #             break  # stop when we have the requested data
+    #     if not dataframe_list:
+    #         return df.head(0)  # return an empty dataframe
+    #     return pd.concat(dataframe_list)
 
     @staticmethod
     @with_trace('select_range')
@@ -274,6 +307,7 @@ class DataFrameRender:
 
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO
+        #pdf.reindex()
         trace_dataframe_attributes(pdf)
 
         if not accept or MimeTypes.PARQUET.type in accept:

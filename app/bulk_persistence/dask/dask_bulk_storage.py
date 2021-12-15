@@ -380,7 +380,7 @@ class DaskBulkStorage:
         """ build the catalog from the session."""
         catalog_columns = set(catalog.all_columns_dtypes)
 
-        for chunks_metas in session_meta.get_next_chunk_files2(session_metas):
+        for chunks_metas in session_meta.get_next_chunk_files(session_metas):
             files = [m.path_with_protocol for m in chunks_metas]
             relative_paths = [self._relative_path(catalog.record_id, f) for f in files]
             # chunks share the same schemas (columns + dtypes) so we get them from the first one
@@ -455,7 +455,7 @@ class DaskBulkStorage:
         """
         bulk_id = new_bulk_id()
 
-        chunk_metas = await session_meta.get_chunks_metadata_prefetch(self._fs, self.base_directory, session)
+        chunk_metas = await session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
         if len(chunk_metas) == 0:# there is no files in this session
             raise BulkNotProcessable(message="No data to commit")
 

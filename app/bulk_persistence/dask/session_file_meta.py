@@ -23,6 +23,7 @@ from distributed.worker import get_client
 
 import pandas as pd
 from app.bulk_persistence.dask.utils import share_items
+from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import capture_timings
 
@@ -132,44 +133,9 @@ def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
     }
 
 
-def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
-    """Return metadata objects for a given session"""
-    session_path = record_session_path(base_directory, session.id, session.recordId)
-    with suppress(FileNotFoundError):
-        return [SessionFileMeta(filesystem, f)
-                for f in filesystem.ls(session_path) if f.endswith(".parquet")]
-    return []
-
-
-def get_next_chunk_files(
-    filesystem, base_directory, session: Session
-) -> Generator[List[SessionFileMeta], None, None]:
-    """Generator which groups session chunk files in lists of files that can be read directly with dask
-    File can be grouped if they have the same schemas and no overlap between indexes
-    """
-    chunks_info = get_chunks_metadata(filesystem, base_directory, session)
-    chunks_info.sort(key=attrgetter('time'))
-    cache: Dict[str, SessionFileMeta] = {}
-    columns_in_cache = set()  # keep track of colunms present in the cache
-    for chunk in chunks_info:
-        if chunk.shape in cache: # if other chunks with same shape
-            if any(chunk.overlap(c) for c in cache[chunk.shape]):  # rows overlaps
-                yield cache[chunk.shape]
-                del cache[chunk.shape]
-        elif not columns_in_cache.isdisjoint(chunk.columns): # else if columns conflicts
-            conflicting_chunk = next(metas[0] for metas in cache.values()
-                                     if chunk.has_common_columns(metas[0]))
-            yield cache[conflicting_chunk.shape]
-            columns_in_cache = columns_in_cache.difference(conflicting_chunk.columns)
-            del cache[conflicting_chunk.shape]
-        cache.setdefault(chunk.shape, []).append(chunk)
-        columns_in_cache.update(chunk.columns)
-
-    yield from cache.values()
-
-
-@capture_timings('get_chunks_metadata_prefetch')
-async def get_chunks_metadata_prefetch(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
+@capture_timings('get_chunks_metadata')
+@with_trace('session_commit')
+async def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
     """Return metadata objects for a given session"""
     session_path = record_session_path(base_directory, session.id, session.recordId)
     with suppress(FileNotFoundError):
@@ -179,7 +145,7 @@ async def get_chunks_metadata_prefetch(filesystem, base_directory, session: Sess
     return []
 
 
-def get_next_chunk_files2(
+def get_next_chunk_files(
     chunks_info
 ) -> Generator[List[SessionFileMeta], None, None]:
     """Generator which groups session chunk files in lists of files that can be read directly with dask
