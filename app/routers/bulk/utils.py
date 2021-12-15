@@ -129,12 +129,11 @@ class DataFrameRender:
         dataframe_list = []
         CONCURRENT_READ = 2
         for nth in range(0, df.npartitions, CONCURRENT_READ):
-            ddf = df.partitions[nth:nth+CONCURRENT_READ]
-            dataframe = ddf.compute()
-            partitions_len = len(dataframe.index)
-            if offset and partitions_len < offset:
-                offset -= partitions_len
-                continue  # skip the patition
+            partition_len = len(df.index.partitions[nth:nth+CONCURRENT_READ])
+            if offset and partition_len < offset:
+                offset -= partition_len
+                continue  # skip the partition
+            dataframe = df.partitions[nth:nth+CONCURRENT_READ].compute()
             if offset:
                 dataframe = dataframe.iloc[offset:]
                 offset = 0
@@ -142,7 +141,7 @@ class DataFrameRender:
                 dataframe = dataframe.iloc[:limit]
                 limit -= len(dataframe.index)
             dataframe_list.append(dataframe)
-            if limit == 0:
+            if limit is not None and limit <= 0:
                 break  # stop when we have the requested data
         if not dataframe_list:
             return df.head(0)  # return an empty dataframe
@@ -150,7 +149,7 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('select_range')
-    #@capture_timings('select_range')
+    @capture_timings('select_range')
     async def select_range(df: dd.DataFrame, offset, limit):
         if offset or limit:
             driver = await with_dask_blob_storage()

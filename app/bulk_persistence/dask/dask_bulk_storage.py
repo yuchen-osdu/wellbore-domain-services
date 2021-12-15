@@ -360,11 +360,8 @@ class DaskBulkStorage:
     ) -> pd.Index:
         """Combine all chunks indexes + previous version index"""
         # list one file per different index_hash.
-        chunk_metas_prefetched = await self.client.gather(self._map_with_trace(_fetch_index_hash, chunk_metas))
-        chunks_meta_with_different_indexes = {hash: meta for hash, meta in chunk_metas_prefetched}.values()
         # read chunks indexes from paquet
-        indexes = self._map_with_trace(_load_index_from_meta,
-                                       chunks_meta_with_different_indexes,
+        indexes = self._map_with_trace(_load_index_from_meta, chunk_metas,
                                        storage_options=self._parameters.storage_options)
         if from_bulk_id:
             # read the index of previous version
@@ -378,11 +375,12 @@ class DaskBulkStorage:
     @capture_timings('_fill_catalog_columns_info')
     @with_trace('_fill_catalog_columns_info')
     async def _fill_catalog_columns_info(
-        self, catalog: BulkCatalog, session: Session, bulk_id: str
+        self, catalog: BulkCatalog, session_metas, bulk_id: str
     ) -> Optional[BulkCatalog]:
         """ build the catalog from the session."""
         catalog_columns = set(catalog.all_columns_dtypes)
-        for chunks_metas in session_meta.get_next_chunk_files(self._fs, self.base_directory, session):
+
+        for chunks_metas in session_meta.get_next_chunk_files2(session_metas):
             files = [m.path_with_protocol for m in chunks_metas]
             relative_paths = [self._relative_path(catalog.record_id, f) for f in files]
             # chunks share the same schemas (columns + dtypes) so we get them from the first one
@@ -457,7 +455,7 @@ class DaskBulkStorage:
         """
         bulk_id = new_bulk_id()
 
-        chunk_metas = session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
+        chunk_metas = await session_meta.get_chunks_metadata_prefetch(self._fs, self.base_directory, session)
         if len(chunk_metas) == 0:# there is no files in this session
             raise BulkNotProcessable(message="No data to commit")
 
@@ -477,7 +475,7 @@ class DaskBulkStorage:
 
         await asyncio.gather(
             build_and_save_index(),
-            self._fill_catalog_columns_info(catalog, session, bulk_id)
+            self._fill_catalog_columns_info(catalog, chunk_metas, bulk_id)
         )
 
         save_bulk_catalog(self._fs, commit_path, catalog)
