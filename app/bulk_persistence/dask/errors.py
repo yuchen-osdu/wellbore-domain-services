@@ -17,6 +17,7 @@ from dask.distributed import scheduler
 from pyarrow.lib import ArrowException, ArrowInvalid
 from functools import wraps
 
+from app.conf import Config
 from app.helper.logger import get_logger
 
 
@@ -81,8 +82,19 @@ class FilterError(BulkError):
     http_status = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, reason):
-        self.message = f'filter error: {reason}'
+        ex_message = f'filter error: {reason}'
+        super().__init__(ex_message)
 
+
+class TooManyColumnsRequested(BulkError):
+    http_status = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, nb_requested_cols):
+        ex_message = (
+            f"Too many columns: requested '{nb_requested_cols}',"
+            f" maximum allowed '{Config.max_columns_return.value}'")
+        super().__init__(ex_message)
+            
 
 def internal_bulk_exceptions(target):
     """

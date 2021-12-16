@@ -186,6 +186,12 @@ class ConfigurationContainer:
         description='Min amount of memory for one worker',
         default="512Mi")
 
+    max_columns_return: EnvVar = EnvVar(
+        key='MAX_COLUMNS_RETURN',
+        description='Max number of columns that can be returned per data request',
+        default="500",
+        factory=lambda x: int(x))
+
     _environment_dict: Dict = os.environ
 
     _contextual_loader: Callable = None
