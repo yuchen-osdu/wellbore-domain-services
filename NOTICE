@@ -79,7 +79,7 @@ BSD-3-Clause
 The following software have components provided under the terms of this license:
 
 - HeapDict (from http://stutzbachenterprises.com/)
-- Jinja2 (from http://jinja.pocoo.org/)
+- Jinja2 (from https://palletsprojects.com/p/jinja/)
 - MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
 - adlfs (from https://github.com/hayesgb/adlfs/)
 - asgiref (from http://github.com/django/asgiref/)
