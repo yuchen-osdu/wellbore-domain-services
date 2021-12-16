@@ -121,7 +121,7 @@ def _create_record(client, entity_type):
 
 def _cast_datetime_to_datetime64_ns(result_df):
     """  if datetime is detected, cast data column as datetime to ensure date values are valid  """
-    for name, col in result_df.items():
+    for name, _col in result_df.items():
         if name.startswith('date'):
             result_df[name] = result_df[name].astype('datetime64[ns]')
 

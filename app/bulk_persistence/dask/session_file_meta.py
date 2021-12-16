@@ -33,6 +33,12 @@ class SessionFileMeta:
     """The class extract information about chunks."""
 
     def __init__(self, fs, file_path: str, lazy: bool = True) -> None:
+        """
+        Args:
+            fs: fsspec filesystem
+            file_path (str): the parquet chunk file path
+            lazy (bool, optional): prefetch the metadata file if False, else read at demand. Defaults to True.
+        """
         self._fs = fs
         file_name = os.path.basename(file_path)
         start, end, tail = file_name.split('_')
@@ -105,6 +111,8 @@ def generate_chunk_filename(dataframe: pd.DataFrame) -> str:
     '0_9_1637223437910.526782c41fe12c3249046fedcc45563ef3662250'
     >>> generate_chunk_filename(pd.DataFrame({'A': range(10), 'B': range(10)}, index=range(10,20)))
     '10_19_1637223490719.526782c41fe12c3249046fedcc45563ef3662250'
+    >>> generate_chunk_filename(pd.DataFrame({'A': [1], 'B': [1]}, index=[datetime.datetime.now()])) 
+    '1639672097644401000_1639672097644401000_1639668497645.526782c41fe12c3249046fedcc45563ef3662250'
     >>> generate_chunk_filename(pd.DataFrame({'A': []}, index=[]))
     IndexError: index 0 is out of bounds for axis 0 with size 0
     """

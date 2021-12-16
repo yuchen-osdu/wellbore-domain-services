@@ -14,7 +14,7 @@
 
 import asyncio
 import json
-from typing import Callable, List, Optional, Union
+from typing import Awaitable, Callable, List, Optional, Union
 import uuid
 
 import fsspec
@@ -45,11 +45,17 @@ from ..bulk_id import new_bulk_id
 from .bulk_catalog import BulkCatalog, ChunkGroup, load_bulk_catalog, save_bulk_catalog
 
 
-def read_with_pandas(path, **kwargs):
-    return pd.read_parquet(path, engine='pyarrow', **kwargs)
-
-
-def read_with_dask(path, **kwargs):
+def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
+    """call dask.dataframe.read_parquet with default parameters
+    Dask read_parquet parameters:
+        chunksize='25M': if chunk are too small, we aggregate them until we reach chunksize
+        aggregate_files=True: because we are passing a list of path when commiting a session,
+                                aggregate_files is needed when paths are different
+    Args:
+        path (Union[str, List[str]]): a file, a folder or a list of files
+    Returns:
+        [dd.DataFrame]: the dask dataframe we read
+    """
     arguments = {
         'engine': 'pyarrow-dataset',
         'chunksize': '25M',
@@ -60,8 +66,11 @@ def read_with_dask(path, **kwargs):
     return dd.read_parquet(path, **arguments)
 
 
-def read_parquet_index(path, **kwargs) -> pd.Index:
-    return read_with_pandas(path, **kwargs).index
+def _load_index_from_meta(meta, **kwargs):
+    return pd.read_parquet(meta.path_with_protocol,
+                           engine='pyarrow',
+                           columns=[meta.columns[0]],
+                           **kwargs).index
 
 
 def dask_to_parquet(ddf, path, storage_options):
@@ -76,16 +85,6 @@ def dask_to_parquet(ddf, path, storage_options):
         # In some conditions, the schema is not properly infered.
         # As a workaround, passing schema={} solve the issue.
         return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
-
-
-def _fetch_index_hash(meta: session_meta.SessionFileMeta):
-    return meta.index_hash, meta
-
-
-def _load_index_from_meta(meta, **kwargs):
-    return read_parquet_index(meta.path_with_protocol,
-                              columns=[meta.columns[0]],
-                              **kwargs)
 
 
 def _index_union_tuple(t):
@@ -145,7 +144,7 @@ class DaskBulkStorage:
     def _read_parquet(self, path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
         Args:
-            path (Tuple[str, List[str]]): a file, a folder or a list of files
+            path (Union[str, List[str]]): a file, a folder or a list of files
             **kwargs dict (of dicts): Passthrough key-word arguments for read backend.
         Returns:
             Future<dd.DataFrame>: dask dataframe
@@ -154,11 +153,8 @@ class DaskBulkStorage:
             aggregate_files=True: because we are passing a list of path when commiting a session,
                                   aggregate_files is needed when paths are different
         """
-        return self._submit_with_trace(dd.read_parquet, path,
-                                       engine='pyarrow-dataset',
+        return self._submit_with_trace(read_with_dask, path,
                                        storage_options=self._parameters.storage_options,
-                                       chunksize='25M',
-                                       aggregate_files=True,
                                        **kwargs)
 
     def _load_bulk_from_catalog(self, catalog: BulkCatalog, columns: List[str] = None) -> dd.DataFrame:
@@ -253,12 +249,9 @@ class DaskBulkStorage:
         """Write the data frame to the blob storage."""
         bulk_id = bulk_id or new_bulk_id()
 
-        if isinstance(ddf, pd.DataFrame):
-            assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
-            ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
-            ddf = await self.client.scatter(ddf)
-        else:
-            assert False
+        assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
+        ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
+        ddf = await self.client.scatter(ddf)
 
         path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         try:
@@ -336,7 +329,7 @@ class DaskBulkStorage:
 
         return catalog
 
-    async def _future_load_index(self, record_id: str, bulk_id: str) -> pd.Index:
+    async def _future_load_index(self, record_id: str, bulk_id: str) -> Awaitable[pd.Index]:
         """load the dataframe index of the specified record"""
         catalog = await self.get_bulk_catalog(record_id, bulk_id)
         if catalog.index_path:
@@ -436,7 +429,7 @@ class DaskBulkStorage:
     @capture_timings('_save_session_index')
     async def _save_session_index(self, path: str, index: pd.Index) -> str:
         index_folder = pathBuilder.join(path, '_wdms_index_')
-        self._fs.mkdirs(pathBuilder.remove_protocol(index_folder)[0]) # for local storage
+        self._fs.mkdirs(pathBuilder.remove_protocol(index_folder)[0]) # TODO for local storage
         index_path = pathBuilder.join(index_folder, 'index.parquet')
         await self._save_with_pandas(index_path, pd.DataFrame(index=index))
         return index_path
