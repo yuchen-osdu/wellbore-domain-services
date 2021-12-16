@@ -32,7 +32,7 @@ from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings
 
 from .dask_worker_plugin import DaskWorkerPlugin
-from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
+from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import map_with_trace, submit_with_trace
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
@@ -223,7 +223,7 @@ class DaskBulkStorage:
             future_df = await self._load_bulk(record_id, bulk_id, columns=columns)
             return await future_df
         except (OSError, RuntimeError) as exp:
-            raise BulkNotFound(record_id, bulk_id) from exp
+            raise BulkRecordNotFound(record_id, bulk_id) from exp
 
     def _save_with_dask(self, path, dataframe):
         """Save the dataframe to a parquet file(s).
@@ -257,7 +257,7 @@ class DaskBulkStorage:
         try:
             await self._save_with_dask(path, ddf)
         except OSError as os_error:
-            raise BulkNotFound(record_id, bulk_id) from os_error
+            raise BulkRecordNotFound(record_id, bulk_id) from os_error
         return bulk_id
 
     @capture_timings('session_add_chunk')
@@ -292,7 +292,7 @@ class DaskBulkStorage:
         try:
             return await self._build_catalog_from_path(bulk_path, record_id)
         except FileNotFoundError as e:
-            raise BulkNotFound(record_id, bulk_id) from e
+            raise BulkRecordNotFound(record_id, bulk_id) from e
 
     @capture_timings('_build_catalog_from_path')
     async def _build_catalog_from_path(self, path: str, record_id: str) -> BulkCatalog:

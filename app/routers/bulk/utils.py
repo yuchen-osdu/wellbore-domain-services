@@ -10,7 +10,7 @@ import pandas as pd
 from natsort import natsorted
 import ast
 
-from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions
+from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
     no_validation, DataFrameValidationFunc
@@ -225,12 +225,18 @@ class DataFrameRender:
 
     @staticmethod
     def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
-        selected = []
+        selected = {}
+        curves_non_existent = []
         for sel in selection:
-            matching_columns = list(filter(lambda col: DataFrameRender._col_matching(sel, col),
-                                           cols.difference(selected)))
-            selected.extend(natsorted(matching_columns))
-        return selected
+            matching_columns = [col for col in cols if DataFrameRender._col_matching(sel, col)]
+            if matching_columns:
+                selected.update({column: 1 for column in natsorted(matching_columns)})
+            else:
+                curves_non_existent.append(sel)
+        if curves_non_existent:
+            raise BulkCurvesNotFound(curves=curves_non_existent)
+
+        return list(selected.keys())
 
 
     @staticmethod
@@ -330,3 +336,5 @@ async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri
     return await storage_client.create_or_update_records(
         record=[record], data_partition_id=ctx.partition_id
     )
+
+

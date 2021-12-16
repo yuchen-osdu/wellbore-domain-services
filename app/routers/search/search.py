@@ -181,7 +181,7 @@ async def query_with_cursor(query_request: QueryRequest,
              description="""Get all Wellbores object.  <p>The wellbore kind is
         *:wks:wellbore:* returns all records directly based on existing schemas</p>{}""".format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
+async def query_wellbores(body: SearchQuery = SearchQuery(), ctx: Context = Depends(get_ctx)):
     return await basic_query_request_with_cursor(query_type, wellbore_kind, ctx, body.query)
 
 
@@ -191,8 +191,8 @@ async def query_wellbores(body: SearchQuery = None, ctx: Context = Depends(get_c
             <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_wellbores_bydistance(latitude: float, longitude: float, distance: int, body: SearchQuery = None,
-                                     ctx: Context = Depends(get_ctx)):
+async def query_wellbores_bydistance(latitude: float, longitude: float, distance: int,
+                                     body: SearchQuery = SearchQuery(), ctx: Context = Depends(get_ctx)):
     spatial_filter = query_spatial_filter_builder("bydistance", latitude1=latitude, longitude1=longitude,
                                                   distance=distance)
     return await query_request_with_spatial_filter(query_type, spatial_filter, ctx, body.query)
@@ -206,7 +206,7 @@ async def query_wellbores_bydistance(latitude: float, longitude: float, distance
              response_model=CursorQueryResponse)
 async def query_wellbores_byboundingbox(latitude_top_left: float, longitude_top_left: float,
                                         latitude_bottom_right: float, longitude_bottom_right: float,
-                                        body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
+                                        body: SearchQuery = SearchQuery(), ctx: Context = Depends(get_ctx)):
     spatial_filter = query_spatial_filter_builder("byboundingbox", latitude1=latitude_top_left,
                                                   longitude1=longitude_top_left,
                                                   latitude2=latitude_bottom_right, longitude2=longitude_bottom_right)
@@ -219,7 +219,7 @@ async def query_wellbores_byboundingbox(latitude_top_left: float, longitude_top_
             <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_wellbores_bygeopolygon(points: List[Point], query: SearchQuery = None,
+async def query_wellbores_bygeopolygon(points: List[Point], query: SearchQuery = SearchQuery(),
                                        ctx: Context = Depends(get_ctx)):
     spatial_filter = query_spatial_filter_builder("bygeopolygon", points=points)
     return await query_request_with_spatial_filter(query_type, spatial_filter, ctx, query.query)
@@ -231,7 +231,7 @@ async def query_wellbores_bygeopolygon(points: List[Point], query: SearchQuery =
             <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_logsets_bywellbore(wellboreId: str, body: SearchQuery = None,
+async def query_logsets_bywellbore(wellboreId: str, body: SearchQuery = SearchQuery(),
                                    ctx: Context = Depends(get_ctx)):
     query = added_query(wellboreId, "wellbore", body.query)
     return await basic_query_request(query_type, logSet_kind, ctx, query)
@@ -244,7 +244,7 @@ async def query_logsets_bywellbore(wellboreId: str, body: SearchQuery = None,
             <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_logsets_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
+async def query_logsets_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = SearchQuery(),
                                             ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, wellboreAttribute, wellbore_kind, logSet_kind,
                                                        "wellbore", ctx,
@@ -255,7 +255,7 @@ async def query_logsets_bywellboreattribute(wellboreAttribute: str, body: Search
              description="""Get all Logs object.  <p>The Logs kind is
         *:wks:log:* returns all records directly based on existing schemas</p>{}""".format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_logs(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
+async def query_logs(body: SearchQuery = SearchQuery(), ctx: Context = Depends(get_ctx)):
     return await basic_query_request_with_cursor(query_type, log_kind, ctx, body.query)
 
 
@@ -265,7 +265,7 @@ async def query_logs(body: SearchQuery = None, ctx: Context = Depends(get_ctx)):
             <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_logs_bywellbore(wellboreId: str, body: SearchQuery = None,
+async def query_logs_bywellbore(wellboreId: str, body: SearchQuery = SearchQuery(),
                                 ctx: Context = Depends(get_ctx)):
     query = added_query(wellboreId, "wellbore", body.query)
     return await basic_query_request(query_type, log_kind, ctx, query)
@@ -278,7 +278,7 @@ async def query_logs_bywellbore(wellboreId: str, body: SearchQuery = None,
             <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_logs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = None,
+async def query_logs_bywellboreattribute(wellboreAttribute: str, body: SearchQuery = SearchQuery(),
                                          ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, wellboreAttribute, wellbore_kind, log_kind,
                                                        "wellbore", ctx,
@@ -291,7 +291,7 @@ async def query_logs_bywellboreattribute(wellboreAttribute: str, body: SearchQue
             <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_logs_bylogset(logsetId: str, body: SearchQuery = None,
+async def query_logs_bylogset(logsetId: str, body: SearchQuery = SearchQuery(),
                               ctx: Context = Depends(get_ctx)):
     query = added_query(logsetId, "logSet", body.query)
     return await basic_query_request(query_type, log_kind, ctx, query)
@@ -303,7 +303,7 @@ async def query_logs_bylogset(logsetId: str, body: SearchQuery = None,
             <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_logs_bylogsetattribute(logsetAttribute: str, body: SearchQuery = None,
+async def query_logs_bylogsetattribute(logsetAttribute: str, body: SearchQuery = SearchQuery(),
                                        ctx: Context = Depends(get_ctx)):
     return await query_request_with_specific_attribute(query_type, logsetAttribute, logSet_kind, log_kind, "logSet",
                                                        ctx,
@@ -316,7 +316,7 @@ async def query_logs_bylogsetattribute(logsetAttribute: str, body: SearchQuery =
             <p>The Marker kind is *:wks:marker:* returns all records directly based on existing schemas</p>{}"""
              .format(REQUIRED_ROLES_READ),
              response_model=CursorQueryResponse)
-async def query_markers_bywellbore(wellboreId: str, body: SearchQuery = None,
+async def query_markers_bywellbore(wellboreId: str, body: SearchQuery = SearchQuery(),
                                    ctx: Context = Depends(get_ctx)):
     query = added_query(wellboreId, "wellbore", body.query)
     return await basic_query_request(query_type, marker_kind, ctx, query)
