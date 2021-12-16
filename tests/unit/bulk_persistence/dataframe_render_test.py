@@ -6,15 +6,16 @@ from pandas.testing import assert_frame_equal
 from fastapi import HTTPException
 
 from app.bulk_persistence import JSONOrient
+from app.bulk_persistence.dask.errors import BulkCurvesNotFound
 from app.model.model_chunking import GetDataParams
 from app.routers.bulk.bulk_routes import DataFrameRender
 from app.routers.bulk.utils import get_df_from_request
 from tests.unit.generate_data import generate_df
 
+
 @pytest.mark.parametrize("requested, df_columns, expected", [
     (["X"],           {"X"},                        ["X"]),
     ([],              {"X"},                        []), # empty request
-    (["X", "Y", "Z"], {"X", "Y"},                   ["X", "Y"]),
     (["X", "Y", "Z"], {"X", "Y", "Z"},              ["X", "Y", "Z"]),
     (["Y", "X"],      {"X", "Y", "Z"},              ["Y", "X"]),
     (["2D"],          {"X", "2D[0]", "2D[1]"},      ["2D[0]", "2D[1]"]),
@@ -25,10 +26,7 @@ from tests.unit.generate_data import generate_df
     (["2D[0]"],       {"X", "2D[0]", "2D[1]"},      ["2D[0]"]),
     (["X", "2D"],     {"X", "2D[0]", "2D[1]"},      ["X", "2D[0]", "2D[1]"]),
     (["2D"],          {"2D[str]", "2D[0]"},         ["2D[0]", "2D[str]"]),
-    (["2D[str:0]"],   {"2D[str]", "2D[0]"},         []),
-    ([""],            {},                           []),  # empty string
     ([""],            {""},                         [""]),  # empty string
-    (["a"],           {"A"},                        []),  # case sensitive
     (["X", "X", "X"], {"X", "Y"},                   ["X"]), # removes duplication
     (["NMR[0:2]"],    {"NMR[0]", "NMR[1]", "GR[2]"},  ["NMR[0]", "NMR[1]"]),  # ranges
     (["NMR[0:2]", "GR[2:4]"],       {"NMR[0]", "NMR[1]", "GR[2]"},  ["NMR[0]", "NMR[1]", "GR[2]"]),  # multiple ranges
@@ -37,14 +35,26 @@ from tests.unit.generate_data import generate_df
     (["X[0]"],        {"X[0][0]", "X[0][1]"},       ["X[0][0]", "X[0][1]"]), 
     (["X[0][0:1]"],      {"X[0][0]", "X[0][1]"},       ["X[0][0]", "X[0][1]"]), 
     (["X[0][1:1]"],      {"X[0][0]", "X[0][1]"},       ["X[0][1]"]), 
-    (["Y[4:]"], {"Y[4], Y[5], Y[6]"}, []),   # incomplete range?
-    (["Y[:4]"], {"Y[4], Y[5], Y[6]"}, []),   # incomplete range?
-    (["2D[5]"], {"X", "2D[0]", "2D[1]"}, []),
 ])
-def test_get_matching_column(requested, df_columns, expected):
+def test_get_matching_column_success(requested, df_columns, expected):
     result = DataFrameRender.get_matching_column(requested, set(df_columns))
     # check order
     assert result == expected
+
+
+@pytest.mark.parametrize("requested, df_columns, detail", [
+    (["X", "Y", "Z"], {"X", "Y"},                   ["Z"]),
+    (["2D[str:0]"],   {"2D[str]", "2D[0]"},         ["2D[str:0]"]),
+    ([""],            {},                           [""]),  # empty string
+    (["a"],           {"A"},                        ["a"]),  # case sensitive
+    (["Y[4:]"], {"Y[4], Y[5], Y[6]"}, ["Y[4:]"]),   # incomplete range?
+    (["Y[:4]"], {"Y[4], Y[5], Y[6]"}, ["Y[:4]"]),   # incomplete range?
+    (["2D[5]"], {"X", "2D[0]", "2D[1]"}, ["2D[5]"]),
+])
+def test_get_matching_column_404(requested, df_columns, detail):
+    with pytest.raises(BulkCurvesNotFound) as execinfo:
+        result = DataFrameRender.get_matching_column(requested, set(df_columns))
+    assert execinfo.value.args[0] == f'bulk for curves: {detail} not found'
 
 
 def assert_df_in_parquet(expected_df, content):

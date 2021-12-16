@@ -32,7 +32,7 @@ from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings, get_ctx
 
-from .errors import BulkNotFound, BulkNotProcessable, internal_bulk_exceptions
+from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import wrap_trace_process, _create_func_key
 from .utils import by_pairs, do_merge, worker_capture_timing_handlers
 from .dask_worker_plugin import DaskWorkerPlugin
@@ -122,7 +122,7 @@ class DaskBulkStorage:
                 "schema": schema_dict
             }
         except OSError:
-            raise BulkNotFound(record_id, bulk_id)
+            raise BulkRecordNotFound(record_id, bulk_id)
 
     def _submit_with_trace(self, target_func, *args, **kwargs):
         """
@@ -153,7 +153,7 @@ class DaskBulkStorage:
         try:
             return await self._load_bulk(record_id, bulk_id, columns=columns)
         except OSError:
-            raise BulkNotFound(record_id, bulk_id)  # TODO proper exception
+            raise BulkRecordNotFound(record_id, bulk_id)  # TODO proper exception
 
     def _save_with_dask(self, path, ddf):
         """Save the dataframe to a parquet file(s).
@@ -200,7 +200,7 @@ class DaskBulkStorage:
         try:
             await self._save_with_dask(path, ddf)
         except OSError:
-            raise BulkNotFound(record_id, bulk_id)  # TODO proper exception
+            raise BulkRecordNotFound(record_id, bulk_id)  # TODO proper exception
         return bulk_id
 
     @capture_timings('session_add_chunk')
