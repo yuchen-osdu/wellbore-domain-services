@@ -134,7 +134,7 @@ def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
 
 
 @capture_timings('get_chunks_metadata')
-@with_trace('session_commit')
+@with_trace('get_chunks_metadata')
 async def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
     """Return metadata objects for a given session"""
     session_path = record_session_path(base_directory, session.id, session.recordId)

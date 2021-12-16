@@ -14,7 +14,7 @@
 
 import asyncio
 import json
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Union
 import uuid
 
 import fsspec
@@ -142,7 +142,7 @@ class DaskBulkStorage:
     def _relative_path(self, record_id: str, path: str) -> str:
         return pathBuilder.record_relative_path(self.base_directory, record_id, path)
 
-    def _read_parquet(self, path: Tuple[str, List[str]], **kwargs) -> dd.DataFrame:
+    def _read_parquet(self, path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
         Args:
             path (Tuple[str, List[str]]): a file, a folder or a list of files
@@ -281,7 +281,7 @@ class DaskBulkStorage:
         session_path = pathBuilder.record_session_path(
             self.base_directory, session.id, session.recordId)
 
-        self._fs.mkdirs(session_path, exist_ok=True)  # only for local
+        self._fs.mkdirs(session_path, exist_ok=True)  # TODO only for local
         with self._fs.open(f'{session_path}/{filename}.meta', 'w') as outfile:
             json.dump(session_meta.build_chunk_metadata(pdf), outfile)
 
@@ -373,6 +373,7 @@ class DaskBulkStorage:
         return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
+    @internal_bulk_exceptions
     @with_trace('_fill_catalog_columns_info')
     async def _fill_catalog_columns_info(
         self, catalog: BulkCatalog, session_metas, bulk_id: str
@@ -403,6 +404,7 @@ class DaskBulkStorage:
         return catalog
 
     @capture_timings('_resolve_conflict_catalog')
+    @internal_bulk_exceptions
     @with_trace('_resolve_conflict_catalog')
     async def _resolve_conflict_catalog(
         self, catalog: BulkCatalog, bulk_id: str, files: List[str], cols_to_merge: List[str]
