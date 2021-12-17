@@ -26,7 +26,7 @@ import mock
 from app.utils import DaskException
 from app.utils import DaskClient
 from app.helper import logger
-from app.bulk_persistence.dask.dask_bulk_storage import (BulkNotFound,
+from app.bulk_persistence.dask.dask_bulk_storage import (BulkRecordNotFound,
                                                          BulkNotProcessable,
                                                          DaskBulkStorage,
                                                          make_local_dask_bulk_storage)
@@ -92,7 +92,7 @@ async def test_save_bulk(dask_storage: DaskBulkStorage):
     df = await dask_storage.load_bulk(record_id=record_id, bulk_id=bulk_id)
     await compare_frame(df_ref, df)
 
-    with pytest.raises(BulkNotFound):
+    with pytest.raises(BulkRecordNotFound):
         await dask_storage.load_bulk(record_id="bad_record", bulk_id=bulk_id)
 
 
@@ -201,7 +201,7 @@ async def test_session_empty_chunk(test_session, dask_storage: DaskBulkStorage):
 
 @pytest.mark.asyncio
 async def test_session_empty_session(dask_storage: DaskBulkStorage):
-    with pytest.raises(BulkNotFound):
+    with pytest.raises(BulkRecordNotFound):
         await dask_storage.load_bulk(record_id="123", bulk_id="bad_id")
 
 
@@ -254,7 +254,7 @@ async def test_session_update_ovelap_by_column(test_session, dask_storage: DaskB
 @pytest.mark.asyncio
 async def test_bad_bulkId_commit(test_session, dask_storage: DaskBulkStorage):
     await dask_storage.session_add_chunk(test_session, generate_df(['A'], range(10)))
-    with pytest.raises(BulkNotFound):
+    with pytest.raises(BulkRecordNotFound):
         await dask_storage.session_commit(test_session, from_bulk_id="bad_bulk_id")
 
 
@@ -269,7 +269,7 @@ async def test_bad_columns_requested(test_session, dask_storage: DaskBulkStorage
     await dask_storage.session_add_chunk(test_session, generate_df(['A'], range(10)))
     bulk_id = await dask_storage.session_commit(test_session)
     await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A'])
-    with pytest.raises(BulkNotFound):
+    with pytest.raises(BulkRecordNotFound):
         await dask_storage.load_bulk(test_session.recordId, bulk_id, ['B'])
     await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A', 'B'])
 

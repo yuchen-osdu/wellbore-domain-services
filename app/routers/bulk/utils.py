@@ -10,7 +10,7 @@ import pandas as pd
 from natsort import natsorted
 import ast
 
-from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions
+from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
     no_validation, DataFrameValidationFunc
@@ -20,7 +20,7 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.utils import set_index
 from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence import JSONOrient
-from app.utils import get_ctx, OpenApiHandler, Context
+from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
 from app.model.model_chunking import GetDataParams
 from app.routers.bulk.bulk_uri_dependencies import (BulkIdAccess, BULK_URI_FIELD)
@@ -87,9 +87,10 @@ async def get_df_from_request(request: Request) -> pd.DataFrame:
     ct = request.headers.get('Content-Type', '')
     if MimeTypes.PARQUET.match(ct):
         content = await request.body()  # request.stream()
+        from pyarrow.lib import ArrowInvalid
         try:
             return await DataframeSerializerAsync().read_parquet(content)
-        except OSError as err:
+        except (OSError, ArrowInvalid) as err:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail=f'{err}')  # TODO
 
@@ -125,17 +126,79 @@ class DataFrameRender:
         return await driver.client.submit(lambda: len(df.index))
 
     @staticmethod
+    def _select_range_impl(df: dd.DataFrame, limit, offset):
+        dataframe_list = []
+        CONCURRENT_READ = 1
+        for nth in range(0, df.npartitions, CONCURRENT_READ):
+            dataframe = df.partitions[nth:nth+CONCURRENT_READ].compute()
+            partition_len = len(dataframe.index)
+
+            if offset and partition_len < offset:
+                offset -= partition_len
+                continue  # skip the partition
+            if offset:
+                dataframe = dataframe.iloc[offset:]
+                offset = 0
+            if limit:
+                dataframe = dataframe.iloc[:limit]
+                limit -= len(dataframe.index)
+            dataframe_list.append(dataframe)
+            if limit is not None and limit <= 0:
+                break  # stop when we have the requested data
+        if not dataframe_list:
+            return df.head(0)  # return an empty dataframe
+        return pd.concat(dataframe_list)
+
+    # @staticmethod
+    # def _select_range_impl(df: dd.DataFrame, limit, offset):
+    #     dataframe_list = []
+    #     CONCURRENT_READ = 1
+    #     nth = 0
+    #     #df = df.repartition(20)
+    #     while nth  < df.npartitions:
+    #         dataframe = df.partitions[nth:nth+CONCURRENT_READ].compute()
+    #         nth = nth+CONCURRENT_READ
+    #         partition_len = len(dataframe.index)
+    #         #total_size = partition_len * len(dataframe.columns)
+    #         # if total_size < 1_000_000:
+    #         #     CONCURRENT_READ = int(CONCURRENT_READ*(10_000_000/total_size))
+
+    #         if offset and partition_len < offset:
+    #             offset -= partition_len
+    #             continue  # skip the partition
+
+    #         if offset:
+    #             dataframe = dataframe.iloc[offset:]
+    #             offset = 0
+    #         if limit:
+    #             dataframe = dataframe.iloc[:limit]
+    #             limit -= len(dataframe.index)
+    #         dataframe_list.append(dataframe)
+    #         if limit is not None and limit <= 0:
+    #             break  # stop when we have the requested data
+    #     if not dataframe_list:
+    #         return df.head(0)  # return an empty dataframe
+    #     return pd.concat(dataframe_list)
+
+    @staticmethod
+    @with_trace('select_range')
+    @capture_timings('select_range')
     async def select_range(df: dd.DataFrame, offset, limit):
         if offset or limit:
             driver = await with_dask_blob_storage()
-            df = driver.client.persist(df)
-            df = await driver.client.submit(set_index, df)
-            index = await driver.client.submit(lambda x: x.index.compute(), df)
-            if offset and offset > 0:
-                index = index[offset:]
-            if limit and limit > 0:
-                index = index[:limit]
-            return df.loc[df.index.isin(index)]
+            return await driver.client.submit(DataFrameRender._select_range_impl, df, limit, offset)
+
+            # df = driver.client.persist(df)
+            # df = await driver.client.submit(set_index, df)
+
+            # def compute_index(x):
+            #     return x.index.compute()
+            # index = await driver.client.submit(compute_index, df)
+            # if offset and offset > 0:
+            #     index = index[offset:]
+            # if limit and limit > 0:
+            #     index = index[:limit]
+            # return df.loc[df.index.isin(index)]
         return df
 
     re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
@@ -162,12 +225,18 @@ class DataFrameRender:
 
     @staticmethod
     def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
-        selected = []
+        selected = {}
+        curves_non_existent = []
         for sel in selection:
-            matching_columns = list(filter(lambda col: DataFrameRender._col_matching(sel, col),
-                                           cols.difference(selected)))
-            selected.extend(natsorted(matching_columns))
-        return selected
+            matching_columns = [col for col in cols if DataFrameRender._col_matching(sel, col)]
+            if matching_columns:
+                selected.update({column: 1 for column in natsorted(matching_columns)})
+            else:
+                curves_non_existent.append(sel)
+        if curves_non_existent:
+            raise BulkCurvesNotFound(curves=curves_non_existent)
+
+        return list(selected.keys())
 
 
     @staticmethod
@@ -228,6 +297,7 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
+    #@capture_timings('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)
@@ -243,6 +313,7 @@ class DataFrameRender:
 
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO
+        #pdf.reindex()
         trace_dataframe_attributes(pdf)
 
         if not accept or MimeTypes.PARQUET.type in accept:
@@ -265,3 +336,5 @@ async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri
     return await storage_client.create_or_update_records(
         record=[record], data_partition_id=ctx.partition_id
     )
+
+

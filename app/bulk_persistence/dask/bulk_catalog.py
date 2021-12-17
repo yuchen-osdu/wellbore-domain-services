@@ -23,6 +23,7 @@ from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 from dask.distributed import get_client
 
 from app.bulk_persistence.dask.traces import submit_with_trace
+from app.helper.traces import with_trace
 from app.utils import capture_timings
 
 from .storage_path_builder import join, remove_protocol
@@ -117,7 +118,7 @@ class BulkCatalog:
     class ColumnsPaths(NamedTuple):
         labels: Set[str]
         paths: List[str]
-    
+
     def get_paths_for_columns(self, labels: Iterable[str], base_path: str) -> List[ColumnsPaths]:
         """Returns the paths to load data of the requested columns grouped by paths"""
         grouped_files = []
@@ -131,7 +132,6 @@ class BulkCatalog:
                 )
         return grouped_files
 
-    @capture_timings('as_dict', handlers=worker_capture_timing_handlers)
     def as_dict(self) -> dict:
         """Returns the dict representation of the catalog"""
         return {
@@ -158,10 +158,10 @@ class BulkCatalog:
         return catalog
 
 
-
 CATALOG_FILE_NAME = 'bulk_catalog.json'
 
 @capture_timings('save_bulk_catalog', handlers=worker_capture_timing_handlers)
+@with_trace('save_bulk_catalog')
 def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> None:
     """save a bulk catalog to a json file in the given folder path"""
     folder_path, _ = remove_protocol(folder_path)
@@ -173,6 +173,7 @@ def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> Non
 
 
 @capture_timings('load_bulk_catalog', handlers=worker_capture_timing_handlers)
+@with_trace('load_bulk_catalog')
 def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalog]:
     """load a bulk catalog from a json file in the given folder path"""
     folder_path, _ = remove_protocol(folder_path)

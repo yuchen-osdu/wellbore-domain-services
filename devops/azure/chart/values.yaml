@@ -33,13 +33,15 @@ replicaCount: 2
 resources:
  limits:
    memory: 2Gi
+   cpu: 4000m
  requests:
    memory: 2Gi
+   cpu: 1000m
 
 probes:
   startup:
-    failureThreshold: 5
-    periodSeconds: 3
+    failureThreshold: 6
+    periodSeconds: 5
   liveness:
     periodSeconds: 5
     timeoutSeconds: 1

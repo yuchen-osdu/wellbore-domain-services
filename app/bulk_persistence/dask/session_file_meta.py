@@ -19,17 +19,26 @@ import time
 from contextlib import suppress
 from operator import attrgetter
 from typing import Dict, Generator, List
+from distributed.worker import get_client
 
 import pandas as pd
 from app.bulk_persistence.dask.utils import share_items
+from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
+from app.utils import capture_timings
 
 from .storage_path_builder import add_protocol, record_session_path
 
 class SessionFileMeta:
     """The class extract information about chunks."""
 
-    def __init__(self, fs, file_path: str) -> None:
+    def __init__(self, fs, file_path: str, lazy: bool = True) -> None:
+        """
+        Args:
+            fs: fsspec filesystem
+            file_path (str): the parquet chunk file path
+            lazy (bool, optional): prefetch the metadata file if False, else read at demand. Defaults to True.
+        """
         self._fs = fs
         file_name = os.path.basename(file_path)
         start, end, tail = file_name.split('_')
@@ -38,6 +47,8 @@ class SessionFileMeta:
         self.time, self.shape, tail = tail.split('.')
         self._meta = None
         self.path = file_path
+        if not lazy:
+            self._read_meta()
 
     def _read_meta(self):
         if not self._meta:
@@ -100,6 +111,8 @@ def generate_chunk_filename(dataframe: pd.DataFrame) -> str:
     '0_9_1637223437910.526782c41fe12c3249046fedcc45563ef3662250'
     >>> generate_chunk_filename(pd.DataFrame({'A': range(10), 'B': range(10)}, index=range(10,20)))
     '10_19_1637223490719.526782c41fe12c3249046fedcc45563ef3662250'
+    >>> generate_chunk_filename(pd.DataFrame({'A': [1], 'B': [1]}, index=[datetime.datetime.now()])) 
+    '1639672097644401000_1639672097644401000_1639668497645.526782c41fe12c3249046fedcc45563ef3662250'
     >>> generate_chunk_filename(pd.DataFrame({'A': []}, index=[]))
     IndexError: index 0 is out of bounds for axis 0 with size 0
     """
@@ -128,23 +141,26 @@ def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
     }
 
 
-def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
+@capture_timings('get_chunks_metadata')
+@with_trace('get_chunks_metadata')
+async def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
     """Return metadata objects for a given session"""
     session_path = record_session_path(base_directory, session.id, session.recordId)
     with suppress(FileNotFoundError):
-        return [SessionFileMeta(filesystem, f)
-                for f in filesystem.ls(session_path) if f.endswith(".parquet")]
+        parquet_files = [f for f in filesystem.ls(session_path) if f.endswith(".parquet")]
+        futures = get_client().map(lambda f: SessionFileMeta(filesystem, f, lazy=False) , parquet_files)
+        return await get_client().gather(futures)
     return []
 
 
 def get_next_chunk_files(
-    filesystem, base_directory, session: Session
+    chunks_info
 ) -> Generator[List[SessionFileMeta], None, None]:
     """Generator which groups session chunk files in lists of files that can be read directly with dask
     File can be grouped if they have the same schemas and no overlap between indexes
     """
-    chunks_info = get_chunks_metadata(filesystem, base_directory, session)
     chunks_info.sort(key=attrgetter('time'))
+
     cache: Dict[str, SessionFileMeta] = {}
     columns_in_cache = set()  # keep track of colunms present in the cache
     for chunk in chunks_info:
