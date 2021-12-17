@@ -299,7 +299,7 @@ class DaskBulkStorage:
         Raises:
             FileNotFoundError: If path does not exist
         Returns:
-            BulkCatalog: [description]
+            BulkCatalog: the builded catalog
         """
         path, _ = pathBuilder.remove_protocol(path)
         files = self._fs.ls(path)  # raises if path doesn't exists
@@ -327,7 +327,7 @@ class DaskBulkStorage:
         """load the dataframe index of the specified record"""
         catalog = await self.get_bulk_catalog(record_id, bulk_id)
         if catalog.index_path:
-            index_path = pathBuilder.full_path(self.base_directory, record_id, catalog.index_path)
+            index_path = pathBuilder.full_path(self.base_directory, record_id, catalog.index_path, self.protocol)
             future_df = self._read_parquet(index_path)
         else: # only read one column to get the index. It doesn't seems possible to get the index directly.
             first_column = next(iter(catalog.all_columns_dtypes))

@@ -545,3 +545,22 @@ def test_send_arrayd_without_session(with_wdms_env, entity_type, serializer):
 
         result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
         pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', ["well_log"])
+@pytest.mark.parametrize('serializer', [ParquetSerializer()])
+def test_describe(with_wdms_env, entity_type, serializer):
+    with create_record(with_wdms_env, entity_type) as record_id:
+        number_of_rows = 8
+        columns = ['BOB', 'MD']
+        data = generate_df(columns, range(number_of_rows))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+        result = build_request_get_data(entity_type, record_id, {'describe': True}).call(with_wdms_env, headers=headers, assert_status=200)
+        res = result.response.json()
+        assert res['numberOfRows'] == number_of_rows
+        assert res['columns'] == columns
