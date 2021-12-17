@@ -192,7 +192,8 @@ async def get_data_version(
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
     record = await fetch_record(ctx, record_id, version)
-    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
+    if hasattr(request.state, 'version') and request.state.version != "V2":
+        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
         bulk_uri = bulk_uri_access.get_bulk_uri(record=record)  # TODO PATH logv2
     except ValueError as e:
@@ -274,9 +275,6 @@ async def get_data(
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    if hasattr(request.state, 'version') and request.state.version != "V2":
-        record = await fetch_record(ctx, record_id)
-        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, bulk_uri_access)
 
 
