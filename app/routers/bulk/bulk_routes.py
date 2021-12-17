@@ -94,7 +94,7 @@ async def post_data(record_id: str,
             assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
         except BulkError as ex:
             ex.raise_as_http()
-        return await dask_blob_storage.save_blob(df, record_id)
+        return await dask_blob_storage.save_bulk(df, record_id)
 
     record, bulk_id = await asyncio.gather(
         fetch_record(ctx, record_id),
@@ -202,7 +202,7 @@ async def get_data_version(
 async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
     dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
     columns_to_load = None
-    stat = dask_blob_storage.read_stat(record_id, bulk_id)
+    stat = await dask_blob_storage.read_stat(record_id, bulk_id)
     existing_col = set(stat['schema'])
     if data_param.curves:
         columns_to_load = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
@@ -223,9 +223,10 @@ async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataP
         if columns_to_load:
             columns_to_load.extend(filters)
             columns_to_load = set(columns_to_load)
-    if data_param.describe and not data_param.offset and not data_param.limit and not data_param.bulk_filter:
-        # optimization: create a fake dataset when describe on all rows
-        df = pd.DataFrame()
+    if columns_to_load is None and data_param.describe:
+        # optimization: create a fake dataset when describe on all columns
+        index = await dask_blob_storage.load_index(record_id, bulk_id)
+        df = pd.DataFrame(index=index)
     else:
         # loading the dataframe with filter on columns is faster than filtering columns on df
         df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns_to_load)
@@ -301,7 +302,7 @@ async def complete_session(
                         try:
                             df = await get_dataframe(ctx, previous_bulk_uri.bulk_id)
                             # convert old bulk to new one
-                            previous_bulk_id = await dask_blob_storage.save_blob(df, record_id=record_id)
+                            previous_bulk_id = await dask_blob_storage.save_bulk(df, record_id=record_id)
                         except ResourceNotFoundException:
                             BulkRecordNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
                     else:

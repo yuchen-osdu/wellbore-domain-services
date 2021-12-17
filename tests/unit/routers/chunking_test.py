@@ -30,7 +30,7 @@ from app.utils import Context, DaskClient
 from app import conf
 from app.conf import Config
 
-from tests.unit.persistence.dask_blob_storage_test import generate_df
+from tests.unit.generate_data import generate_df
 from tests.unit.test_utils import nope_logger_fixture
 
 Definitions = {
@@ -121,7 +121,7 @@ def _create_record(client, entity_type):
 
 def _cast_datetime_to_datetime64_ns(result_df):
     """  if datetime is detected, cast data column as datetime to ensure date values are valid  """
-    for name, col in result_df.items():
+    for name, _col in result_df.items():
         if name.startswith('date'):
             result_df[name] = result_df[name].astype('datetime64[ns]')
 
@@ -143,7 +143,7 @@ def event_loop():  # all tests will share the same loop
     # teardown
     loop.run_until_complete(DaskClient.close())
     loop.close()
-    
+
 
 @pytest.fixture
 def dasked_test_app(init_fixtures):
@@ -1003,10 +1003,10 @@ def assert_commit_session_status_code(commit_session_response):
      send json and parquet no matter what the order is in one session cause 422 exception because of dtypes incoherence.
     """
 
-    if platform.system() == 'Windows':
-        assert commit_session_response.status_code == 422
-    else:
-        assert commit_session_response.status_code == 200
+    # if platform.system() == 'Windows':
+    #     assert commit_session_response.status_code == 422
+    # else:
+    assert commit_session_response.status_code == 200
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -1119,26 +1119,42 @@ def test_get_bulk_data_with_filters_curves_offset(setup_client, entity_type, fil
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-@pytest.mark.parametrize("filter, limit, curves, expected", [(['A:gt:5'], 5, ['A,B'], [5, 5, 4, 0]),
-                                                            (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
-                                                            (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
-                                                            (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0])
-                                                            ])
-def test_get_bulk_data_with_filters_curves_offset_describe(setup_client, entity_type, filter, limit, expected, dataframe_for_filters, curves):
+@pytest.mark.parametrize("filter, limit, curves, expected", [
+    (['A:gt:5'], 5, ['A','B'], [5, 5, 4, 0]),
+    (['A:lt:5'], 5, ['A','C'], [5, 0, 0, 0]),
+    (['D:eq:True'], 5, ['C','D'], [5, 5, 0, 0]),
+    (['C:in:5,6,7'], 5, ['B','D'], [3, 0, 0, 0]),
+    ([], 20, None, [20, 0, 0, 0]),
+    ([], 5, None, [5, 5, 5, 5]),
+])
+def test_get_bulk_data_with_filters_curves_offset_describe(
+    setup_client, entity_type, filter, limit, expected, dataframe_for_filters, curves
+):
     client = setup_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]['chunking_url']
     response_send_data = client.post(f'{chunking_url}/{record_id}/data',
-                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+                                     data=dataframe_for_filters.to_parquet(engine="pyarrow"),
+                                     headers=headers)
     assert response_send_data.status_code == 200
 
     header_get_data = {'Accept': 'application/parquet'}
+
+    expected_columns = curves if curves else list(dataframe_for_filters.columns)
     for i in range(0, math.ceil(20/limit)):
-        response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
-                   params={'filter': filter, 'curves': curves, 'offset': i*limit, 'limit': limit, 'describe': True})
+        params = {
+            'filter': filter,
+            'curves': ','.join(curves) if curves else None,
+            'offset': i*limit,
+            'limit': limit,
+            'describe': True
+        }
+        response_get_data = client.get(f'{chunking_url}/{record_id}/data',
+                                       headers=header_get_data,
+                                       params=params)
         assert response_get_data.json()['numberOfRows'] == expected[i]
-        assert response_get_data.json()['columns'] == curves[0].split(',')
+        assert response_get_data.json()['columns'] == expected_columns
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
