@@ -24,6 +24,7 @@ from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
 from app.model.model_chunking import GetDataParams
 from app.routers.bulk.bulk_uri_dependencies import (BulkIdAccess, BULK_URI_FIELD)
+from pyarrow.lib import ArrowInvalid
 
 
 def update_operation_ids(wdms_app):
@@ -87,7 +88,6 @@ async def get_df_from_request(request: Request) -> pd.DataFrame:
     ct = request.headers.get('Content-Type', '')
     if MimeTypes.PARQUET.match(ct):
         content = await request.body()  # request.stream()
-        from pyarrow.lib import ArrowInvalid
         try:
             return await DataframeSerializerAsync().read_parquet(content)
         except (OSError, ArrowInvalid) as err:
@@ -149,36 +149,6 @@ class DataFrameRender:
             return df.head(0)  # return an empty dataframe
         return pd.concat(dataframe_list)
 
-    # @staticmethod
-    # def _select_range_impl(df: dd.DataFrame, limit, offset):
-    #     dataframe_list = []
-    #     CONCURRENT_READ = 1
-    #     nth = 0
-    #     #df = df.repartition(20)
-    #     while nth  < df.npartitions:
-    #         dataframe = df.partitions[nth:nth+CONCURRENT_READ].compute()
-    #         nth = nth+CONCURRENT_READ
-    #         partition_len = len(dataframe.index)
-    #         #total_size = partition_len * len(dataframe.columns)
-    #         # if total_size < 1_000_000:
-    #         #     CONCURRENT_READ = int(CONCURRENT_READ*(10_000_000/total_size))
-
-    #         if offset and partition_len < offset:
-    #             offset -= partition_len
-    #             continue  # skip the partition
-
-    #         if offset:
-    #             dataframe = dataframe.iloc[offset:]
-    #             offset = 0
-    #         if limit:
-    #             dataframe = dataframe.iloc[:limit]
-    #             limit -= len(dataframe.index)
-    #         dataframe_list.append(dataframe)
-    #         if limit is not None and limit <= 0:
-    #             break  # stop when we have the requested data
-    #     if not dataframe_list:
-    #         return df.head(0)  # return an empty dataframe
-    #     return pd.concat(dataframe_list)
 
     @staticmethod
     @with_trace('select_range')
@@ -187,19 +157,8 @@ class DataFrameRender:
         if offset or limit:
             driver = await with_dask_blob_storage()
             return await driver.client.submit(DataFrameRender._select_range_impl, df, limit, offset)
-
-            # df = driver.client.persist(df)
-            # df = await driver.client.submit(set_index, df)
-
-            # def compute_index(x):
-            #     return x.index.compute()
-            # index = await driver.client.submit(compute_index, df)
-            # if offset and offset > 0:
-            #     index = index[offset:]
-            # if limit and limit > 0:
-            #     index = index[:limit]
-            # return df.loc[df.index.isin(index)]
         return df
+
 
     re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
@@ -313,7 +272,6 @@ class DataFrameRender:
 
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO
-        #pdf.reindex()
         trace_dataframe_attributes(pdf)
 
         if not accept or MimeTypes.PARQUET.type in accept:

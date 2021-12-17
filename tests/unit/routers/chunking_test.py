@@ -143,7 +143,7 @@ def event_loop():  # all tests will share the same loop
     # teardown
     loop.run_until_complete(DaskClient.close())
     loop.close()
-    
+
 
 @pytest.fixture
 def dasked_test_app(init_fixtures):
