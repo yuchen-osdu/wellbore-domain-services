@@ -75,16 +75,10 @@ def _load_index_from_meta(meta, **kwargs):
 
 def dask_to_parquet(ddf, path, storage_options):
     """ Save dask dataframe to parquet """
-    to_parquet_args = {'engine': 'pyarrow',
-                       'storage_options': storage_options,
-                       'compression': 'snappy',
-                       }
-    try:
-        return dd.to_parquet(ddf, path, **to_parquet_args, schema="infer")
-    except ArrowException: # ArrowInvalid
-        # In some conditions, the schema is not properly infered.
-        # As a workaround, passing schema={} solve the issue.
-        return dd.to_parquet(ddf, path, **to_parquet_args, schema={})
+    return dd.to_parquet(ddf, path,
+                         engine='pyarrow', schema="infer",
+                         storage_options=storage_options,
+                         compression='snappy')
 
 
 def _index_union_tuple(t):
@@ -366,7 +360,6 @@ class DaskBulkStorage:
         return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
-    @internal_bulk_exceptions
     @with_trace('_fill_catalog_columns_info')
     async def _fill_catalog_columns_info(
         self, catalog: BulkCatalog, session_metas, bulk_id: str
@@ -397,7 +390,6 @@ class DaskBulkStorage:
         return catalog
 
     @capture_timings('_resolve_conflict_catalog')
-    @internal_bulk_exceptions
     @with_trace('_resolve_conflict_catalog')
     async def _resolve_conflict_catalog(
         self, catalog: BulkCatalog, bulk_id: str, files: List[str], cols_to_merge: List[str]
