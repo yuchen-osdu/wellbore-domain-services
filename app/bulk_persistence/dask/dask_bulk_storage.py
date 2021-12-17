@@ -157,8 +157,6 @@ class DaskBulkStorage:
             - if columns is None, we load all columns
         Returns: Future<dd.dataframe>
         """
-        if columns is None:
-            columns = catalog.all_columns_dtypes.keys()
         record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
         files_to_load = catalog.get_paths_for_columns(columns, record_path)
         # read all chunk for requested columns
@@ -179,11 +177,11 @@ class DaskBulkStorage:
         """Load columns from parquet files in the bulk_path.
         Returns: Future<dd.DataFrame>
         """
-        bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
-        catalog = load_bulk_catalog(self._fs, bulk_path)
+        catalog = await self.get_bulk_catalog(record_id, bulk_id, generate_if_not_exists=False)
         if catalog is not None:
             return self._load_bulk_from_catalog(catalog, columns)
         # No catalog means that we can read the folder as a parquet dataset. (legacy behavior)
+        bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         return self._read_parquet(bulk_path, columns=columns)
 
     @with_trace('read_stat')
@@ -276,11 +274,14 @@ class DaskBulkStorage:
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
     @capture_timings('get_bulk_catalog')
-    async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
+    async def get_bulk_catalog(self, record_id: str, bulk_id: str, generate_if_not_exists=True) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
         catalog = load_bulk_catalog(self._fs, bulk_path)
         if catalog:
             return catalog
+
+        if not generate_if_not_exists:
+            return None
 
         # For legacy bulk, construct a catalog on the fly
         try:

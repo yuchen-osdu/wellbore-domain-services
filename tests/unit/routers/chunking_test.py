@@ -12,7 +12,6 @@ from pandas.testing import assert_frame_equal
 import pandas.api.types as ptypes
 import pyarrow.parquet as pq
 import pyarrow as pa
-import platform
 
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -957,7 +956,10 @@ def test_send_json_parquet_in_one_session(setup_client, entity_type):
     commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'commit'})
 
-    assert_commit_session_status_code(commit_session_response)
+    assert commit_session_response.status_code == 200
+    
+    get_response = client.get(f'{chunking_url}/{record_id}/data')
+    assert get_response.status_code == 200
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -994,19 +996,10 @@ def test_send_parquet_json_in_one_session(setup_client, entity_type):
     commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
                                            json={'state': 'commit'})
 
-    assert_commit_session_status_code(commit_session_response)
-
-
-def assert_commit_session_status_code(commit_session_response):
-    """
-     in Windows, dtypes of the dataframe created from Request for parquet are int32, while for json are int64.
-     send json and parquet no matter what the order is in one session cause 422 exception because of dtypes incoherence.
-    """
-
-    # if platform.system() == 'Windows':
-    #     assert commit_session_response.status_code == 422
-    # else:
     assert commit_session_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data')
+    assert get_response.status_code == 200
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
