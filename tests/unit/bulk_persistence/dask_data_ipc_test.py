@@ -1,12 +1,31 @@
+import asyncio
+
 import pytest
 from mock import AsyncMock
 from unittest.mock import patch, mock_open
 from contextlib import suppress
+
 from tests.unit.test_utils import temp_directory, nope_logger_fixture, side_effect_raise
 
 
 from dask.distributed import Client
 from app.bulk_persistence.dask.dask_data_ipc import DaskNoneDataIPC, DaskLocalFileDataIPC, DaskNativeDataIPC
+
+
+@pytest.fixture(scope="module")
+def event_loop():  # all tests will share the same loop
+    loop = asyncio.get_event_loop()
+    yield loop
+    # teardown
+    loop.close()
+
+
+@pytest.fixture
+async def dask_client():
+    # use a mono process, mono thread async client with a single worker
+    client = await Client(processes=False, asynchronous=True, direct_to_workers=True, n_workers=1, threads_per_worker=1)
+    yield client
+    await client.close()
 
 
 async def data_async_gen(data=b"123456789", chunk_size=3):
@@ -57,9 +76,8 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
 
 
 @pytest.mark.asyncio
-async def test_dask_native_ipc_basic_usage():
-    # use a mono process, mono thread async client with a single worker
-    client = await Client(processes=False, asynchronous=True, direct_to_workers=True, n_workers=1, threads_per_worker=1)
+async def test_dask_native_ipc_basic_usage(dask_client):
+    client = dask_client
     ipc_obj = DaskNativeDataIPC(dask_client=client)
 
     # worker function, simply read and return the data

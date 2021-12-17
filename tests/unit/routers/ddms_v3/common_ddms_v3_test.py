@@ -38,10 +38,8 @@ from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.auth.auth import require_opendes_authorized_user
 from app.persistence.sessions_storage import SessionsStorage
-from app.routers.bulk.utils import DataFrameRender
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
-from tests.unit.persistence.dask_blob_storage_test import generate_df
 from tests.unit.test_utils import create_mock_class, nope_logger_fixture
 
 """

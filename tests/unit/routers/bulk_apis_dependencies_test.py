@@ -1,6 +1,9 @@
+import asyncio
+
 from fastapi.testclient import TestClient
 import pytest
 
+from app.utils import DaskClient
 from tests.unit.test_utils import nope_logger_fixture
 from tests.unit.routers.chunking_test import dasked_test_app, init_fixtures
 
@@ -17,8 +20,17 @@ base_paths = [
 bulk_routes_path = [(route.path, route.methods) for route in router.routes]
 
 
+@pytest.fixture(scope="module")
+def event_loop():  # all tests will share the same loop
+    loop = asyncio.get_event_loop()
+    yield loop
+    # teardown
+    loop.run_until_complete(DaskClient.close())
+    loop.close()
+
+
 @pytest.fixture()
-def dependencies_check_app(dasked_test_app):
+def dependencies_check_app(dasked_test_app, event_loop):
     from app.routers.bulk.utils import set_v3_input_dataframe_check, set_legacy_input_dataframe_check
     from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
     async def expected_legacy_check_func():
