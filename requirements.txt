@@ -5,26 +5,18 @@
 #    pip-compile requirements.in
 #
 --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
---extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
 
 adal==1.2.7
     # via azure-datalake-store
 adlfs==0.7.7
     # via osdu-core-lib-python-azure
-aiobotocore[boto3]==1.4.1
-    # via
-    #   -r requirements.in
-    #   s3fs
 aiohttp==3.7.4.post0
     # via
     #   -r requirements.in
     #   adlfs
-    #   aiobotocore
     #   gcsfs
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
-aioitertools==0.8.0
-    # via aiobotocore
 aioredis==1.3.1
     # via osdu-core-lib-python
 anyio==3.2.1
@@ -38,7 +30,6 @@ async-timeout==3.0.1
 attrs==21.2.0
     # via
     #   aiohttp
-    #   jsonschema
     #   osdu-core-lib-python
 azure-common==1.1.27
     # via
@@ -73,13 +64,10 @@ azure-storage-blob==12.8.1
     #   osdu-core-lib-python-azure
 backoff==1.11.1
     # via -r requirements.in
-boto3==1.17.106
+boto3==1.18.1
+    # via osdu-core-lib-python-ibm
+botocore==1.21.1
     # via
-    #   aiobotocore
-    #   osdu-core-lib-python-ibm
-botocore==1.20.106
-    # via
-    #   aiobotocore
     #   boto3
     #   osdu-core-lib-python-ibm
     #   s3transfer
@@ -109,6 +97,8 @@ cloudpickle==1.6.0
     # via
     #   dask
     #   distributed
+colorama==0.4.4
+    # via click
 cryptography==3.4.7
     # via
     #   -r requirements.in
@@ -120,7 +110,7 @@ cryptography==3.4.7
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
     #   pyjwt
-dask[distributed]==2021.10.0
+dask[distributed]==2021.7.2
     # via
     #   -r requirements.in
     #   distributed
@@ -128,7 +118,7 @@ decorator==5.0.9
     # via
     #   gcsfs
     #   jsonpath-ng
-distributed==2021.10.0
+distributed==2021.07.2
     # via dask
 fastapi==0.68.1
     # via
@@ -142,7 +132,6 @@ fsspec==2021.7.0
     #   dask
     #   gcsfs
     #   osdu-core-lib-python-azure
-    #   s3fs
 gcsfs==2021.7.0
     # via osdu-core-lib-python-gcp
 google-api-core[grpc]==1.31.0
@@ -192,14 +181,8 @@ idna==3.2
     #   requests
     #   rfc3986
     #   yarl
-importlib-metadata==4.8.1
-    # via
-    #   click
-    #   jsonschema
 isodate==0.6.0
     # via msrest
-jinja2==3.0.3
-    # via distributed
 jmespath==0.10.0
     # via
     #   boto3
@@ -208,12 +191,8 @@ jsonbender==0.9.3
     # via -r requirements.in
 jsonpath-ng==1.5.3
     # via -r requirements.in
-jsonschema==3.2.0
-    # via osdu-api
 locket==0.2.1
     # via partd
-markupsafe==2.0.1
-    # via jinja2
 msal==1.12.0
     # via
     #   azure-identity
@@ -259,21 +238,19 @@ opencensus-ext-stackdriver==0.7.4
     # via -r requirements.in
 opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
-osdu-api==0.12.1
-    # via osdu-core-lib-python-aws
 osdu-core-lib-python==1.1.0
     # via -r requirements.in
-osdu-core-lib-python-aws==0.0.6
+osdu-core-lib-python-aws==0.0.2
     # via -r requirements.in
 osdu-core-lib-python-azure==1.2.1
     # via -r requirements.in
 osdu-core-lib-python-gcp==1.1.0
     # via -r requirements.in
-osdu-core-lib-python-ibm==1.3.0
+osdu-core-lib-python-ibm==1.2.0
     # via -r requirements.in
 osdu-data-ecosystem-search==0.3.3
     # via -r requirements.in
-osdu-data-ecosystem-storage==1.3.0
+osdu-data-ecosystem-storage==1.2.0
     # via -r requirements.in
 osdu-log-recognition-lib==0.0.9
     # via -r requirements.in
@@ -320,8 +297,6 @@ pyjwt[crypto]==2.1.0
     #   osdu-core-lib-python-gcp
 pyparsing==2.4.7
     # via packaging
-pyrsistent==0.18.0
-    # via jsonschema
 python-dateutil==2.8.2
     # via
     #   adal
@@ -337,11 +312,12 @@ pytz==2021.1
     # via
     #   google-api-core
     #   pandas
+	#pywin32==301
+    # via portalocker
 pyyaml==5.4.1
     # via
     #   dask
     #   distributed
-    #   osdu-api
 requests==2.26.0
     # via
     #   adal
@@ -361,9 +337,7 @@ rfc3986[idna2008]==1.5.0
     # via httpx
 rsa==4.7.2
     # via google-auth
-s3fs==2021.8.0
-    # via -r requirements.in
-s3transfer==0.4.2
+s3transfer==0.5.0
     # via boto3
 six==1.16.0
     # via
@@ -376,7 +350,6 @@ six==1.16.0
     #   grpcio
     #   isodate
     #   jsonpath-ng
-    #   jsonschema
     #   protobuf
     #   python-dateutil
     #   python-multipart
@@ -398,39 +371,26 @@ toolz==0.11.1
     #   dask
     #   distributed
     #   partd
-toposort==1.6
-    # via osdu-api
 tornado==6.1
     # via distributed
 typing-extensions==3.10.0.0
     # via
     #   aiohttp
-    #   aioitertools
-    #   anyio
-    #   asgiref
-    #   importlib-metadata
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   pydantic
-    #   structlog
-    #   uvicorn
-    #   yarl
 urllib3==1.26.6
     # via
     #   botocore
     #   requests
 uvicorn==0.14.0
     # via -r requirements.in
-wrapt==1.12.1
-    # via aiobotocore
 xmltodict==0.11.0
     # via osdu-log-recognition-lib
 yarl==1.6.3
     # via aiohttp
 zict==2.0.0
     # via distributed
-zipp==3.6.0
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
