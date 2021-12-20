@@ -30,8 +30,8 @@ from app.persistence.sessions_storage import (Session, SessionState,
                                               SessionUpdateMode)
 from app.bulk_persistence.dask.dask_bulk_storage import (BulkRecordNotFound,
                                                          BulkNotProcessable,
-                                                         DaskBulkStorage,
-                                                         make_local_dask_bulk_storage)
+                                                         DaskBulkStorage)
+from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence.dataframe_validators import no_validation
 

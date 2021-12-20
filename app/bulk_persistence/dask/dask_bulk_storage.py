@@ -509,10 +509,3 @@ class DaskBulkStorage:
                                                   self._parameters.storage_options)
 
         return bulk_id, df_describe
-
-
-async def make_local_dask_bulk_storage(base_directory: str) -> DaskBulkStorage:
-    params = DaskStorageParameters(protocol='file',
-                                   base_directory=base_directory,
-                                   storage_options={'auto_mkdir': True})
-    return await DaskBulkStorage.create(params)

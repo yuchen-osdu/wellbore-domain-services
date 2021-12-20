@@ -29,7 +29,8 @@ from starlette.responses import Response
 
 import pandas as pd
 
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from app.model.model_chunking import GetDataParams
 from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet
 from app.clients import SearchServiceClient, StorageRecordServiceClient
