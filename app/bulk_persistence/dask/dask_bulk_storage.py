@@ -350,10 +350,11 @@ class DaskBulkStorage:
             List one file per different index_hash.
             Read chunks indexes from parquet
         """
-        chunks_meta_with_different_indexes = {hash_index: meta
-                                              for hash_index, meta in chunk_metas}.values()
-        indexes = self._map_with_trace(_load_index_from_meta, chunks_meta_with_different_indexes,
-                                       storage_options=self._parameters.storage_options)
+        chunks_meta_with_different_indexes = {meta.index_hash: meta
+                                              for meta in chunk_metas}.values()
+
+        indexes = self.client.map(_load_index_from_meta, chunks_meta_with_different_indexes,
+                                  storage_options=self._parameters.storage_options)
         if from_bulk_id:
             # read the index of previous version
             indexes.append(await self._future_load_index(record_id, from_bulk_id))
