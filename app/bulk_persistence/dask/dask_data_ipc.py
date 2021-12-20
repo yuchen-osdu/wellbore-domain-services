@@ -36,7 +36,7 @@ improving efficiency. Here's a note from Dask: `Note that it is often better to 
 * `DaskNoneDataIPC` does nothing but forward what is put inside. This is only in case of mono process and as utility for
 testing and development.
 
-Data is expected to flow is one for now, from main to worker. In main producer set the data asynchronously using a 
+Data is expected to flow is one way for now, from main to worker. In main producer set the data asynchronously using a 
 context manager. The `set` method return an handle and getter pointer function. The data can then be fetched using the
  getter function given the handle: and pass the result as argument to the worker:
 
@@ -77,31 +77,7 @@ def ipc_data_getter_from_file(ipc_ref):
 
 class DaskNativeDataIPC:
     """
-    The class is meant to wrap the way data is transferred from/to a process to/from the Dask worker processes.
-    This implementation uses Dask native way using scatter which is not really efficient for significant among of data
-    above 2MB.
-
-    `get` is asynchronous and must be used with 'async with statement' providing a tuple (data_handle, getter_func)
-
-    Parameters
-    ----------
-    dask_client: dask distributed client.
-
-    Examples
-    --------
-
-    Must be used with context manager:
-    .. code-block:: python
-        async def producer_fn():
-            data: bytes = ....
-            async with DaskDirectIPC(dask_client).set(data) as (data_hdl, getter_func):
-                # submit that to Dask workers
-                dask_client.submit(worker_fn, data_hdl, getter_func)
-
-
-        def worker_fn(data_hdl, getter_func):
-            with getter_func(data_hdl) as file_like_data:
-                data = file_like_data.read()
+    Data IPC implementation based on Dask native method (DaskClient.scatter) which efficiency degrades after 2MB
     """
 
     ipc_type = 'dask_native'
@@ -121,41 +97,19 @@ class DaskNativeDataIPC:
 
 class DaskLocalFileDataIPC:
     """
-    The class is meant to wrap the way data is transferred from/to a process to/from the Dask worker processes.
-    This implementation uses Dask native way using scatter which is not really efficient for significant among of data
-    above 2MB.
-    Files are automatically clearer.
+    Data IPC using local file to share data. The implementations focuses to release memory as soon as possible reducing
+    the memory footprint.
 
-    `get` is asynchronous, `set` is synchronous. `set` returns a read only file-like object
-
-    Parameters
-    ----------
-    base_folder: local directory where the temporary file will be created. If `None`, will use `get_wdms_temp_dir()`.
-    io_chunk_size: on write, size (in bytes) to write before giving back hand to event loop since disk writing is
-     synchronous.
-
-    Examples
-    --------
-
-    Must be used with context manager:
-
-    .. code-block:: python
-        async def producer_fn():
-            data: bytes = ....
-            async with DaskLocalFileIPC('.').set(data) as (data_hdl, getter_func):
-                # submit that to Dask workers
-                dask_client.submit(worker_fn, data_hdl, getter_func)
-
-
-        def worker_fn(data_hdl, getter_func):
-            with getter_func(data_hdl) as file_like_data:
-                data = file_like_data.read()
+    It also 'monitors' the space used on disk.
     """
 
     ipc_type = 'local_file'
 
-    total_files_count = 0  # not thread safe but just for monitoring purposes
-    total_size_in_file = 0  # not thread safe but just for monitoring purposes
+    total_files_count = 0  # only for monitoring purposes
+    total_size_in_file = 0  # only for monitoring purposes
+    log_usage_info_threshold = 1 * GiB
+    log_usage_warning_threshold = 2 * GiB
+    log_usage_error_threshold = 5 * GiB
 
     def __init__(self, base_folder=None, io_chunk_size=50*MiB):
         self._base_folder = base_folder or get_wdms_temp_dir()
@@ -230,15 +184,15 @@ class DaskLocalFileDataIPC:
     @classmethod
     def _log_files_stat(cls):
         """ internal log current number of file and total size """
-        if cls.total_size_in_file > (5 * GiB):
+        if cls.total_size_in_file > cls.log_usage_error_threshold:
             get_logger().error(f"unexpected IPC data high usage: {cls.total_size_in_file} files"
                                f" for {sizeof_fmt(cls.total_size_in_file)}")
-        elif cls.total_size_in_file > (2 * GiB):
+        elif cls.total_size_in_file > cls.log_usage_warning_threshold:
             get_logger().warning(f"IPC data high usage: {cls.total_size_in_file} files"
                                  f" for {sizeof_fmt(cls.total_size_in_file)}")
-        elif cls.total_size_in_file > (1 * GiB):
-            get_logger().error(f"IPC data usage: {cls.total_size_in_file} files"
-                               f" for {sizeof_fmt(cls.total_size_in_file)}")
+        elif cls.total_size_in_file > cls.log_usage_info_threshold:
+            get_logger().info(f"IPC data usage: {cls.total_size_in_file} files"
+                              f" for {sizeof_fmt(cls.total_size_in_file)}")
 
 
 class DaskNoneDataIPC:

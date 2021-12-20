@@ -8,54 +8,22 @@ import pandas as pd
 from pydantic import BaseModel, Field
 
 from app.helper.traces import with_trace
-from app.utils import capture_timings, get_ctx
+from app.utils import capture_timings
 from app.conf import Config
 
 # imports from bulk_persistence
 from ..json_orient import JSONOrient
-from ..mime_types import MimeTypes,  MimeType
+from ..mime_types import MimeType
 from ..dataframe_serializer import DataframeSerializerSync
 from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
                                     columns_not_in_reserved_names)
 from ..bulk_id import new_bulk_id
-from .traces import wrap_trace_process
 from .errors import internal_bulk_exceptions, BulkNotProcessable, BulkSaveException
 from .utils import worker_capture_timing_handlers
-from .traces import trace_dataframe_attributes
+from .traces import trace_dataframe_attributes, submit_with_trace
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import storage_path_builder as StoragePathBuilder
 from . import session_file_meta as session_meta
-
-
-def submit_with_trace(dask_client, target_func, *args, **kwargs):
-    """ Submit given target_func to Distributed Dask workers and add tracing required stuff """
-    kwargs['span_context'] = get_ctx().tracer.span_context
-    kwargs['target_func'] = target_func
-    return dask_client.submit(wrap_trace_process, *args, **kwargs)
-
-
-# TODO move to dataframe deserializer ?
-def deserialize(file_like_data,
-                content_type: MimeType,
-                orient: Optional[Union[str, JSONOrient]] = None) -> pd.DataFrame:
-    """
-    deserialized input data as pandas dataframe
-    :param file_like_data: input ipc raw bytes wrapped (file-like obj)
-    :param content_type: content type value (supports json and parquet)
-    :param orient: in content json, orient must be provided.
-    :return: pandas dataframe
-
-    :throw: BulkNotProcessable
-    """
-    try:
-        if content_type == MimeTypes.JSON:
-            return DataframeSerializerSync.read_json(file_like_data, orient=orient)
-        elif content_type == MimeTypes.PARQUET:
-            return DataframeSerializerSync.read_parquet(file_like_data)
-        else:
-            raise ValueError("unsupported content_type")
-    except Exception as e:
-        raise BulkNotProcessable('parsing error') from e
 
 
 # TODO move to a more appropriate file?
@@ -81,6 +49,15 @@ def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
                                   indexEnd=int(df.index[-1]))
 
 
+def read_dataframe(file_like_data,
+                   content_type: MimeType,
+                   orient: Optional[Union[str, JSONOrient]] = None) -> pd.DataFrame:
+    try:
+        return DataframeSerializerSync.load(file_like_data, content_type, orient)
+    except Exception as e:
+        raise BulkNotProcessable(f'parsing error: {e}') from e
+
+
 def write_bulk_without_session(data_handle,
                                data_getter,
                                content_type: MimeType,
@@ -101,7 +78,7 @@ def write_bulk_without_session(data_handle,
         """
     # 1- deserialize to pandas dataframe
     with data_getter(data_handle) as file_like_data:
-        df = deserialize(file_like_data, content_type, JSONOrient.split)
+        df = read_dataframe(file_like_data, content_type, JSONOrient.split)
     data_handle = None  # unref
 
     # 2- input dataframe validation
@@ -116,9 +93,7 @@ def write_bulk_without_session(data_handle,
 
     # 4- save/upload the dataframe
     try:
-        # TODO will exist
-        # TODO to replace with DataframeSerializerSync.to_parquet(df, full_file_path, storage_options=storage_options)
-        df.to_parquet(full_file_path, index=True, engine='pyarrow', storage_options=storage_options)
+        DataframeSerializerSync.to_parquet(df, full_file_path, storage_options=storage_options)
     except Exception as e:
         raise BulkSaveException('Unexpected error and save bulk') from e
 
@@ -135,9 +110,8 @@ def add_chunk_in_session(data_handle,
     """
         process add chunk data inside of a session
         :param data_handle: input ipc raw bytes wrapped (file-like obj)
-        :param data_getter: input ipc raw bytes wrapped (file-like obj)
+        :param data_getter: function to get data from the handle
         :param content_type: content type as mime type (supports json and parquet)
-        :param orient: in content json, orient must be provided.
         :param df_validator_func: option validation callable function.
         :param record_session_path: base path to the session associated to the record.
         :param storage_options: storage options
@@ -148,7 +122,7 @@ def add_chunk_in_session(data_handle,
         """
     # 1- deserialize
     with data_getter(data_handle) as file_like_data:
-        df = deserialize(file_like_data, content_type, JSONOrient.split)
+        df = read_dataframe(file_like_data, content_type, JSONOrient.split)
     data_handle = None  # unref
 
     # 2- perf some check
@@ -172,9 +146,7 @@ def add_chunk_in_session(data_handle,
     # 5- save/upload the dataframe
     parquet_file_path = f'{record_session_path}/{filename}.parquet'
     try:
-        # TODO will exist
-        # TODO to replace with DataframeSerializerSync.to_parquet(df, full_file_path, storage_options=storage_options)
-        df.to_parquet(parquet_file_path, index=True, engine='pyarrow', storage_options=storage_options)
+        DataframeSerializerSync.to_parquet(df, parquet_file_path, storage_options=storage_options)
     except Exception as e:
         raise BulkSaveException('Unexpected error and save bulk') from e
 
