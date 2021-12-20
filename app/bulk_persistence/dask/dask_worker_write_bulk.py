@@ -1,6 +1,4 @@
-# TODO this is a temporary name
-
-from typing import Optional, Tuple, List, Union, AsyncGenerator
+from typing import List
 import json
 
 import fsspec
@@ -14,8 +12,13 @@ from ..dataframe_serializer import DataframeSerializerSync
 from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
                                     columns_not_in_reserved_names)
 from .errors import BulkNotProcessable, BulkSaveException
-from . import storage_path_builder as StoragePathBuilder
+from . import storage_path_builder as path_builder
 from . import session_file_meta as session_meta
+
+
+"""
+Contains functions related to writing bulk that mean to be run inside worker
+"""
 
 
 # TODO move to a more appropriate file?
@@ -43,15 +46,6 @@ def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
                                   indexType=str(df.index.dtype))
 
 
-def read_dataframe(file_like_data,
-                   content_type: MimeType,
-                   orient: Optional[Union[str, JSONOrient]] = None) -> pd.DataFrame:
-    try:
-        return DataframeSerializerSync.load(file_like_data, content_type, orient)
-    except Exception as e:
-        raise BulkNotProcessable(f'parsing error: {e}') from e
-
-
 def write_bulk_without_session(data_handle,
                                data_getter,
                                content_type: MimeType,
@@ -71,8 +65,11 @@ def write_bulk_without_session(data_handle,
         :throw: BulkNotProcessable, BulkSaveException
         """
     # 1- deserialize to pandas dataframe
-    with data_getter(data_handle) as file_like_data:
-        df = read_dataframe(file_like_data, content_type, JSONOrient.split)
+    try:
+        with data_getter(data_handle) as file_like_data:
+            df = DataframeSerializerSync.load(file_like_data, content_type, JSONOrient.split)
+    except Exception as e:
+        raise BulkNotProcessable(f'parsing error: {e}') from e
     data_handle = None  # unref
 
     # 2- input dataframe validation
@@ -83,7 +80,7 @@ def write_bulk_without_session(data_handle,
     # 3- build blob filename and final full blob path
     # TODO to be reviewed: may want to create catalog here similarly to a session with a single chunk
     filename = session_meta.generate_chunk_filename(df)
-    full_file_path = StoragePathBuilder.join(bulk_base_path, filename + '.parquet')
+    full_file_path = path_builder.join(bulk_base_path, filename + '.parquet')
 
     # 4- save/upload the dataframe
     try:
@@ -115,8 +112,11 @@ def add_chunk_in_session(data_handle,
 
         """
     # 1- deserialize
-    with data_getter(data_handle) as file_like_data:
-        df = read_dataframe(file_like_data, content_type, JSONOrient.split)
+    try:
+        with data_getter(data_handle) as file_like_data:
+            df = DataframeSerializerSync.load(file_like_data, content_type, JSONOrient.split)
+    except Exception as e:
+        raise BulkNotProcessable(f'parsing error: {e}') from e
     data_handle = None  # unref
 
     # 2- perf some check
@@ -131,8 +131,8 @@ def add_chunk_in_session(data_handle,
     filename = session_meta.generate_chunk_filename(df)
 
     # 4- build and push chunk meta file
-    meta_file_path, protocol = StoragePathBuilder.remove_protocol(f'{record_session_path}/{filename}.meta')
-    # TODO ctor each time (so trigger a do_connect each time), avoidable?
+    meta_file_path, protocol = path_builder.remove_protocol(f'{record_session_path}/{filename}.meta')
+    # TODO ctor each time (so trigger a do_connect each time), avoidable, costly?
     fs = fsspec.filesystem(protocol, **(storage_options if storage_options else {}))
     with fs.open(meta_file_path, 'w') as outfile:
         json.dump(session_meta.build_chunk_metadata(df), outfile)

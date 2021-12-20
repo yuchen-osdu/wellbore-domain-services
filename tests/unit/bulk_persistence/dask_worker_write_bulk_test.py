@@ -11,10 +11,10 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 
 from app.bulk_persistence import MimeTypes
-from app.bulk_persistence.dask.dask_bulk_storage_rework import (basic_describe,
-                                                                DataframeBasicDescribe,
-                                                                write_bulk_without_session,
-                                                                add_chunk_in_session)
+from app.bulk_persistence.dask.dask_worker_write_bulk import (basic_describe,
+                                                              DataframeBasicDescribe,
+                                                              write_bulk_without_session,
+                                                              add_chunk_in_session)
 from app.bulk_persistence.dask.errors import BulkNotProcessable, BulkSaveException
 from app.bulk_persistence.dataframe_validators import no_validation
 

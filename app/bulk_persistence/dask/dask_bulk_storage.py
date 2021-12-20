@@ -43,8 +43,7 @@ from ..bulk_id import new_bulk_id
 from .bulk_catalog import BulkCatalog, ChunkGroup, load_bulk_catalog, save_bulk_catalog
 from ..mime_types import MimeType
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
-# TODO TMP
-from .dask_bulk_storage_rework import DataframeBasicDescribe, write_bulk_without_session, add_chunk_in_session
+from . import dask_worker_write_bulk as bulk_writer
 
 
 def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
@@ -444,7 +443,7 @@ class DaskBulkStorage:
                                         content_type: MimeType,
                                         df_validator_func: DataFrameValidationFunc,
                                         record_id: str,
-                                        bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
+                                        bulk_id: Optional[str] = None) -> Tuple[str, bulk_writer.DataframeBasicDescribe]:
         """
         process post data outside of a session, delegate the entire work in Dask worker. It constructs the path
         for the bulk in current context, prepare and
@@ -463,7 +462,7 @@ class DaskBulkStorage:
             data = None  # unref data
 
             df_describe = await submit_with_trace(self.client,
-                                                  write_bulk_without_session,
+                                                  bulk_writer.write_bulk_without_session,
                                                   data_handle,
                                                   data_getter,
                                                   content_type,
@@ -482,7 +481,7 @@ class DaskBulkStorage:
                                    df_validator_func: DataFrameValidationFunc,
                                    record_id: str,
                                    session_id: str,
-                                   bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
+                                   bulk_id: Optional[str] = None) -> Tuple[str, bulk_writer.DataframeBasicDescribe]:
         """
         add a chunk data inside a session, delegate the entire work in Dask worker
         :throw:
@@ -500,7 +499,7 @@ class DaskBulkStorage:
             data = None  # unref data
 
             df_describe = await submit_with_trace(self.client,
-                                                  add_chunk_in_session,
+                                                  bulk_writer.add_chunk_in_session,
                                                   data_handle,
                                                   data_getter,
                                                   content_type,
