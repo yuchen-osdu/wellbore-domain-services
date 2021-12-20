@@ -7,21 +7,13 @@ import fsspec
 import pandas as pd
 from pydantic import BaseModel, Field
 
-from app.helper.traces import with_trace
-from app.utils import capture_timings
-from app.conf import Config
-
 # imports from bulk_persistence
 from ..json_orient import JSONOrient
 from ..mime_types import MimeType
 from ..dataframe_serializer import DataframeSerializerSync
 from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
                                     columns_not_in_reserved_names)
-from ..bulk_id import new_bulk_id
-from .errors import internal_bulk_exceptions, BulkNotProcessable, BulkSaveException
-from .utils import worker_capture_timing_handlers
-from .traces import trace_dataframe_attributes, submit_with_trace
-from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
+from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as StoragePathBuilder
 from . import session_file_meta as session_meta
 
@@ -154,115 +146,3 @@ def add_chunk_in_session(data_handle,
 
     # 6- return basic describe
     return basic_describe(df)
-
-
-# TODO
-TEMP_FORCE_IPC_WITH_FILE = True
-
-class DaskBulkStorageFullWorkerDelegated:
-    """
-        Perform bulk storage and delegate all treatment in Dask workers.
-    """
-
-    # TODO to review, based on the legacy one instantiation for now
-    def __init__(self, dask_bulk_storage: 'DaskBulkStorage'):
-        self._parameters = dask_bulk_storage._parameters
-        self._fs = dask_bulk_storage._fs
-        self.client = dask_bulk_storage.client
-        if TEMP_FORCE_IPC_WITH_FILE or Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
-            self._data_ipc = DaskLocalFileDataIPC()
-        else:
-            self._data_ipc = DaskNativeDataIPC(self.client)
-
-    @property
-    def protocol(self) -> str:
-        return self._parameters.protocol
-
-    @property
-    def base_directory(self) -> str:
-        return self._parameters.base_directory
-
-    @property
-    def storage_options(self):
-        return self._parameters.storage_options
-
-    def ensure_dir_tree_exists(self, path: str):
-        path_wo_protocol, protocol = StoragePathBuilder.remove_protocol(path)
-
-        # on local storage only """
-        if protocol == 'file':
-            self._fs.mkdirs(path_wo_protocol, exist_ok=True)
-
-    @internal_bulk_exceptions
-    @capture_timings('post_data_without_session', handlers=worker_capture_timing_handlers)
-    @with_trace('post_data_without_session')
-    async def post_data_without_session(self,
-                                        data: Union[bytes, AsyncGenerator[bytes, None]],
-                                        content_type: MimeType,
-                                        df_validator_func: DataFrameValidationFunc,
-                                        record_id: str,
-                                        bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
-        """
-        process post data outside of a session, delegate the entire work in Dask worker. It constructs the path
-        for the bulk in current context, prepare and
-        :throw:
-            - BulkNotProcessable: in case on invalid input data
-            - BulkSaveException: if store operation fails for some reasons
-        """
-
-        bulk_id = bulk_id or new_bulk_id()
-        bulk_base_path = StoragePathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
-
-        # ensure directory exists for local storage, do nothing on remote storage
-        self.ensure_dir_tree_exists(bulk_base_path)
-
-        async with self._data_ipc.set(data) as (data_handle, data_getter):
-            data = None  # unref data
-
-            df_describe = await submit_with_trace(self.client,
-                                                  write_bulk_without_session,
-                                                  data_handle,
-                                                  data_getter,
-                                                  content_type,
-                                                  df_validator_func,
-                                                  bulk_base_path,
-                                                  self.storage_options)
-
-        return bulk_id, df_describe
-
-    @internal_bulk_exceptions
-    @capture_timings('add_chunk_in_session', handlers=worker_capture_timing_handlers)
-    @with_trace('add_chunk_in_session')
-    async def add_chunk_in_session(self,
-                                   data: Union[bytes, AsyncGenerator[bytes, None]],
-                                   content_type: MimeType,
-                                   df_validator_func: DataFrameValidationFunc,
-                                   record_id: str,
-                                   session_id: str,
-                                   bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
-        """
-        add a chunk data inside a session, delegate the entire work in Dask worker
-        :throw:
-            - BulkNotProcessable: in case on invalid input data
-            - BulkSaveException: if store operation fails for some reasons
-        """
-
-        bulk_id = bulk_id or new_bulk_id()
-        base_path = StoragePathBuilder.record_session_path(self.base_directory, session_id, record_id, self.protocol)
-
-        # ensure directory exists for local storage, do nothing on remote storage
-        self.ensure_dir_tree_exists(base_path)
-
-        async with self._data_ipc.set(data) as (data_handle, data_getter):
-            data = None  # unref data
-
-            df_describe = await submit_with_trace(self.client,
-                                                  add_chunk_in_session,
-                                                  data_handle,
-                                                  data_getter,
-                                                  content_type,
-                                                  df_validator_func,
-                                                  base_path,
-                                                  self.storage_options)
-
-        return bulk_id, df_describe

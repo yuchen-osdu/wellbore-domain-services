@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import asyncio
-from typing import Awaitable, Callable, List, Optional, Union
+from typing import Awaitable, Callable, List, Optional, Union, AsyncGenerator, Tuple
 import uuid
 
 import fsspec
@@ -28,18 +28,23 @@ from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings
+from app.conf import Config
 
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import map_with_trace, submit_with_trace
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
-from ..dataframe_validators import is_reserved_column_name
+from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
 from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
 from .bulk_catalog import BulkCatalog, ChunkGroup, load_bulk_catalog, save_bulk_catalog
+from ..mime_types import MimeType
+from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
+# TODO TMP
+from .dask_bulk_storage_rework import DataframeBasicDescribe, write_bulk_without_session, add_chunk_in_session
 
 
 def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
@@ -74,6 +79,10 @@ def _index_union_tuple(t):
     return index_union(*t)
 
 
+# TODO TMP
+TEMP_FORCE_IPC_WITH_FILE = True
+
+
 class DaskBulkStorage:
     client: DaskDistributedClient = None
     """ Dask client """
@@ -82,6 +91,12 @@ class DaskBulkStorage:
         """ use `create` to create instance """
         self._parameters = None
         self._fs = None
+
+        # may be also adapted depending of size to data
+        if TEMP_FORCE_IPC_WITH_FILE or Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
+            self._data_ipc = DaskLocalFileDataIPC()
+        else:
+            self._data_ipc = DaskNativeDataIPC(self.client)
 
     @classmethod
     async def create(cls, parameters: DaskStorageParameters, dask_client=None) -> 'DaskBulkStorage':
@@ -123,6 +138,13 @@ class DaskBulkStorage:
 
     def _relative_path(self, record_id: str, path: str) -> str:
         return pathBuilder.record_relative_path(self.base_directory, record_id, path)
+
+    def _ensure_dir_tree_exists(self, path: str):
+        path_wo_protocol, protocol = pathBuilder.remove_protocol(path)
+
+        # on local storage only """
+        if protocol == 'file':
+            self._fs.mkdirs(path_wo_protocol, exist_ok=True)
 
     def _read_parquet(self, path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
         """Read a Parquet file into a Dask DataFrame
@@ -363,7 +385,7 @@ class DaskBulkStorage:
     @capture_timings('_save_session_index')
     async def _save_session_index(self, path: str, index: pd.Index) -> str:
         index_folder = pathBuilder.join(path, '_wdms_index_')
-        self._fs.mkdirs(pathBuilder.remove_protocol(index_folder)[0]) # TODO for local storage
+        self._ensure_dir_tree_exists(index_folder)
         index_path = pathBuilder.join(index_folder, 'index.parquet')
 
         f_pdf = await self.client.scatter(pd.DataFrame(index=index))
@@ -413,6 +435,80 @@ class DaskBulkStorage:
 
         save_bulk_catalog(self._fs, commit_path, catalog)
         return bulk_id
+
+    @internal_bulk_exceptions
+    @capture_timings('post_data_without_session', handlers=worker_capture_timing_handlers)
+    @with_trace('post_data_without_session')
+    async def post_data_without_session(self,
+                                        data: Union[bytes, AsyncGenerator[bytes, None]],
+                                        content_type: MimeType,
+                                        df_validator_func: DataFrameValidationFunc,
+                                        record_id: str,
+                                        bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
+        """
+        process post data outside of a session, delegate the entire work in Dask worker. It constructs the path
+        for the bulk in current context, prepare and
+        :throw:
+            - BulkNotProcessable: in case on invalid input data
+            - BulkSaveException: if store operation fails for some reasons
+        """
+
+        bulk_id = bulk_id or new_bulk_id()
+        bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
+
+        # ensure directory exists for local storage, do nothing on remote storage
+        self._ensure_dir_tree_exists(bulk_base_path)
+
+        async with self._data_ipc.set(data) as (data_handle, data_getter):
+            data = None  # unref data
+
+            df_describe = await submit_with_trace(self.client,
+                                                  write_bulk_without_session,
+                                                  data_handle,
+                                                  data_getter,
+                                                  content_type,
+                                                  df_validator_func,
+                                                  bulk_base_path,
+                                                  self._parameters.storage_options)
+
+        return bulk_id, df_describe
+
+    @internal_bulk_exceptions
+    @capture_timings('add_chunk_in_session', handlers=worker_capture_timing_handlers)
+    @with_trace('add_chunk_in_session')
+    async def add_chunk_in_session(self,
+                                   data: Union[bytes, AsyncGenerator[bytes, None]],
+                                   content_type: MimeType,
+                                   df_validator_func: DataFrameValidationFunc,
+                                   record_id: str,
+                                   session_id: str,
+                                   bulk_id: Optional[str] = None) -> Tuple[str, DataframeBasicDescribe]:
+        """
+        add a chunk data inside a session, delegate the entire work in Dask worker
+        :throw:
+            - BulkNotProcessable: in case on invalid input data
+            - BulkSaveException: if store operation fails for some reasons
+        """
+
+        bulk_id = bulk_id or new_bulk_id()
+        base_path = pathBuilder.record_session_path(self.base_directory, session_id, record_id, self.protocol)
+
+        # ensure directory exists for local storage, do nothing on remote storage
+        self._ensure_dir_tree_exists(base_path)
+
+        async with self._data_ipc.set(data) as (data_handle, data_getter):
+            data = None  # unref data
+
+            df_describe = await submit_with_trace(self.client,
+                                                  add_chunk_in_session,
+                                                  data_handle,
+                                                  data_getter,
+                                                  content_type,
+                                                  df_validator_func,
+                                                  base_path,
+                                                  self._parameters.storage_options)
+
+        return bulk_id, df_describe
 
 
 async def make_local_dask_bulk_storage(base_directory: str) -> DaskBulkStorage:

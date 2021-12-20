@@ -26,12 +26,14 @@ import mock
 from app.utils import DaskException
 from app.utils import DaskClient
 from app.helper import logger
+from app.persistence.sessions_storage import (Session, SessionState,
+                                              SessionUpdateMode)
 from app.bulk_persistence.dask.dask_bulk_storage import (BulkRecordNotFound,
                                                          BulkNotProcessable,
                                                          DaskBulkStorage,
                                                          make_local_dask_bulk_storage)
-from app.persistence.sessions_storage import (Session, SessionState,
-                                              SessionUpdateMode)
+from app.bulk_persistence.mime_types import MimeTypes
+from app.bulk_persistence.dataframe_validators import no_validation
 
 
 @pytest.fixture(scope="module")
@@ -70,15 +72,9 @@ async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
     pd.testing.assert_frame_equal(pdf, df, check_freq=check_freq)
 
 
-# TODO temp - use new add chunk/bulk fully done in Dask workers
-from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
-from app.bulk_persistence.mime_types import MimeTypes
-from app.bulk_persistence.dataframe_validators import no_validation
-
-
 async def add_chunk(storage: DaskBulkStorage, session, df: pd.DataFrame):
     df_parquet_bytes = df.to_parquet()
-    bulkid, _ = await DaskBulkStorageFullWorkerDelegated(storage).add_chunk_in_session(
+    bulkid, _ = await storage.add_chunk_in_session(
         df_parquet_bytes,
         MimeTypes.PARQUET,
         no_validation,
@@ -89,8 +85,7 @@ async def add_chunk(storage: DaskBulkStorage, session, df: pd.DataFrame):
 
 async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_id=None):
     df_parquet_bytes = df.to_parquet()
-    from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
-    bulkid, _ = await DaskBulkStorageFullWorkerDelegated(storage).post_data_without_session(
+    bulkid, _ = await storage.post_data_without_session(
         df_parquet_bytes,
         MimeTypes.PARQUET,
         no_validation,

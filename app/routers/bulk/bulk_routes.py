@@ -46,7 +46,6 @@ from app.routers.sessions import (SessionInternal,
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, DataFrameValidationFunc
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
 from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 
@@ -89,10 +88,7 @@ async def post_data(record_id: str,
 
     # process and store the data
     try:
-        # TODO temporary built new storage from current one
-        bulk_storage = DaskBulkStorageFullWorkerDelegated(dask_blob_storage)
-
-        bulk_id, basic_describe = await bulk_storage.post_data_without_session(
+        bulk_id, basic_describe = await dask_blob_storage.post_data_without_session(
             request.stream(),  # this consume the body stream
             content_type,
             df_validation_func,
@@ -144,10 +140,7 @@ async def post_chunk_data(record_id: str,
 
     # process and store the data chunk
     try:
-        # TODO temporary built new storage from current one
-        bulk_storage = DaskBulkStorageFullWorkerDelegated(dask_blob_storage)
-
-        bulk_id, basic_describe = await bulk_storage.add_chunk_in_session(
+        bulk_id, basic_describe = await dask_blob_storage.add_chunk_in_session(
             request.stream(),  # this consume the body stream
             content_type,
             df_validation_func,
