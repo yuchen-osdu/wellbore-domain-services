@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import asyncio
-import json
 from typing import Awaitable, Callable, List, Optional, Union
 import uuid
 
@@ -21,7 +20,6 @@ import fsspec
 import pandas as pd
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
-from pyarrow.lib import ArrowException
 import pyarrow.parquet as pa
 
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
@@ -36,8 +34,7 @@ from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_except
 from .traces import map_with_trace, submit_with_trace
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
-from ..dataframe_validators import (assert_df_validate, validate_index,
-                                    columns_not_in_reserved_names, is_reserved_column_name)
+from ..dataframe_validators import is_reserved_column_name
 from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
@@ -71,14 +68,6 @@ def _load_index_from_meta(meta, **kwargs):
                            engine='pyarrow',
                            columns=[meta.columns[0]],
                            **kwargs).index
-
-
-def dask_to_parquet(ddf, path, storage_options):
-    """ Save dask dataframe to parquet """
-    return dd.to_parquet(ddf, path,
-                         engine='pyarrow', schema="infer",
-                         storage_options=storage_options,
-                         compression='snappy')
 
 
 def _index_union_tuple(t):
@@ -224,17 +213,9 @@ class DaskBulkStorage:
         ddf: dd.DataFrame or Future<dd.DataFrame>
         Returns a Future<None>
         """
-        return self._submit_with_trace(dask_to_parquet, dataframe, path,
-                                       storage_options=self._parameters.storage_options)
-
-    async def _save_with_pandas(self, path, dataframe: pd.DataFrame):
-        """Save the dataframe to a parquet file(s).
-        pdf: pd.DataFrame or Future<pd.DataFrame>
-        Returns a Future<None>
-        """
-        f_pdf = await self.client.scatter(dataframe)
-        return await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, path,
-                                             storage_options=self._parameters.storage_options)
+        return self._submit_with_trace(dd.to_parquet, dataframe, path,
+                                       storage_options=self._parameters.storage_options,
+                                       engine='pyarrow', schema="infer", compression='snappy')
 
     @capture_timings('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
@@ -384,7 +365,11 @@ class DaskBulkStorage:
         index_folder = pathBuilder.join(path, '_wdms_index_')
         self._fs.mkdirs(pathBuilder.remove_protocol(index_folder)[0]) # TODO for local storage
         index_path = pathBuilder.join(index_folder, 'index.parquet')
-        await self._save_with_pandas(index_path, pd.DataFrame(index=index))
+
+        f_pdf = await self.client.scatter(pd.DataFrame(index=index))
+        await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, index_path,
+                                      storage_options=self._parameters.storage_options)
+
         return index_path
 
     @capture_timings('session_commit')
