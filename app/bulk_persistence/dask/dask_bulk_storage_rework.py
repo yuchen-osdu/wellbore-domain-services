@@ -31,8 +31,9 @@ class DataframeBasicDescribe(BaseModel):
     row_count: int = Field(alias="rowCount")
     column_count: int = Field(alias="columnCount")
     columns: List[str] = Field(alias="columns")
-    index_start: int = Field(alias="indexStart")
-    index_end: int = Field(alias="indexEnd")
+    index_start: str = Field(alias="indexStart")
+    index_end: str = Field(alias="indexEnd")
+    index_type: str = Field(alias="indexType")
 
 
 def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
@@ -45,8 +46,9 @@ def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
     return DataframeBasicDescribe(rowCount=len(df.index),
                                   columnCount=len(full_cols),
                                   columns=cols,
-                                  indexStart=int(df.index[0]),
-                                  indexEnd=int(df.index[-1]))
+                                  indexStart=str(df.index[0]),
+                                  indexEnd=str(df.index[-1]),
+                                  indexType=str(df.index.dtype))
 
 
 def read_dataframe(file_like_data,

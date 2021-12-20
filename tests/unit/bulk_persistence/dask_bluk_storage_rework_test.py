@@ -39,8 +39,9 @@ def test_basic_describe():
         rowCount=3,
         columnCount=2,
         columns=['A', 'B'],
-        indexStart=0,
-        indexEnd=2
+        indexStart='0',
+        indexEnd='2',
+        indexType='int64'
     )
 
 
@@ -135,8 +136,9 @@ def test_write_chunk_in_session_success(content_type, temp_directory):
         rowCount=3,
         columnCount=2,
         columns=['A', 'B'],
-        indexStart=0,
-        indexEnd=2
+        indexStart='0',
+        indexEnd='2',
+        indexType='int64'
     )
 
     # and THEN meta file produced as a valid json

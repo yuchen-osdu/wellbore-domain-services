@@ -254,27 +254,6 @@ class DaskBulkStorage:
             raise BulkRecordNotFound(record_id, bulk_id) from os_error
         return bulk_id
 
-    @capture_timings('session_add_chunk')
-    @internal_bulk_exceptions
-    @with_trace('session_add_chunk')
-    async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
-        """add new chunk to the given session"""
-        assert_df_validate(dataframe=pdf, validation_funcs=[validate_index, columns_not_in_reserved_names])
-
-        # sort column by names
-        pdf = pdf[sorted(pdf.columns)]
-        filename = session_meta.generate_chunk_filename(pdf)
-
-        session_path = pathBuilder.record_session_path(
-            self.base_directory, session.id, session.recordId)
-
-        self._fs.mkdirs(session_path, exist_ok=True)  # TODO only for local
-        with self._fs.open(f'{session_path}/{filename}.meta', 'w') as outfile:
-            json.dump(session_meta.build_chunk_metadata(pdf), outfile)
-
-        session_path = pathBuilder.add_protocol(session_path, self.protocol)
-        await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
-
     @capture_timings('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
