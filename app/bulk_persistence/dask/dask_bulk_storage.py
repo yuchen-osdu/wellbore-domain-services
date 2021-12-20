@@ -236,24 +236,6 @@ class DaskBulkStorage:
         return await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, path,
                                              storage_options=self._parameters.storage_options)
 
-    @capture_timings('save_bulk', handlers=worker_capture_timing_handlers)
-    @internal_bulk_exceptions
-    @with_trace('save_bulk')
-    async def save_bulk(self, ddf: pd.DataFrame, record_id: str, bulk_id: str = None):
-        """Write the data frame to the blob storage."""
-        bulk_id = bulk_id or new_bulk_id()
-
-        assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
-        ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
-        ddf = await self.client.scatter(ddf)
-
-        path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
-        try:
-            await self._save_with_dask(path, ddf)
-        except OSError as os_error:
-            raise BulkRecordNotFound(record_id, bulk_id) from os_error
-        return bulk_id
-
     @capture_timings('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)

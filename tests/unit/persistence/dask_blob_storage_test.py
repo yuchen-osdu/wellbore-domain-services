@@ -70,12 +70,14 @@ async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
     pd.testing.assert_frame_equal(pdf, df, check_freq=check_freq)
 
 
+# TODO temp - use new add chunk/bulk fully done in Dask workers
+from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
+from app.bulk_persistence.mime_types import MimeTypes
+from app.bulk_persistence.dataframe_validators import no_validation
+
+
 async def add_chunk(storage: DaskBulkStorage, session, df: pd.DataFrame):
-    #TODO temp
     df_parquet_bytes = df.to_parquet()
-    from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
-    from app.bulk_persistence.mime_types import MimeTypes
-    from app.bulk_persistence.dataframe_validators import no_validation
     bulkid, _ = await DaskBulkStorageFullWorkerDelegated(storage).add_chunk_in_session(
         df_parquet_bytes,
         MimeTypes.PARQUET,
@@ -85,12 +87,24 @@ async def add_chunk(storage: DaskBulkStorage, session, df: pd.DataFrame):
     return bulkid
 
 
+async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_id=None):
+    df_parquet_bytes = df.to_parquet()
+    from app.bulk_persistence.dask.dask_bulk_storage_rework import DaskBulkStorageFullWorkerDelegated
+    bulkid, _ = await DaskBulkStorageFullWorkerDelegated(storage).post_data_without_session(
+        df_parquet_bytes,
+        MimeTypes.PARQUET,
+        no_validation,
+        record_id,
+        bulk_id)
+    return bulkid
+
+
 @pytest.mark.asyncio
 async def test_save_bulk_with_bulk_id(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     bulk_id = 'abcdef'
     record_id='test_save_bulk_with_bulk_id_record_id'
-    bulk_id_returned = await dask_storage.save_bulk(df_ref, record_id=record_id, bulk_id=bulk_id)
+    bulk_id_returned = await save_bulk(dask_storage, df_ref, record_id=record_id, bulk_id=bulk_id)
     assert bulk_id == bulk_id_returned
 
     df = await dask_storage.load_bulk(record_id=record_id, bulk_id=bulk_id)
@@ -101,7 +115,7 @@ async def test_save_bulk_with_bulk_id(dask_storage: DaskBulkStorage):
 async def test_save_bulk(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     record_id='test_save_bulk_record_id'
-    bulk_id = await dask_storage.save_bulk(df_ref, record_id=record_id)
+    bulk_id = await save_bulk(dask_storage, df_ref, record_id=record_id)
     assert bulk_id
 
     df = await dask_storage.load_bulk(record_id=record_id, bulk_id=bulk_id)
@@ -118,9 +132,9 @@ async def test_save_blob_with_same_data_at_once(dask_storage: DaskBulkStorage):
     record_id = 'test_save_bulk_record_id'
     concurrent_save_bulks = 5
 
-    routines = [dask_storage.save_bulk(df_ref, record_id=f'{record_id}-{i}') for i in range(concurrent_save_bulks)]
+    routines = [save_bulk(dask_storage, df_ref, record_id=f'{record_id}-{i}') for i in range(concurrent_save_bulks)]
     bulk_ids = await asyncio.gather(*routines)
-    assert len(bulk_ids) == concurrent_save_bulks
+    assert len(bulk_ids) == concurrent_save_bulks  # TODO I don't understand the actual goal of this test
 
 
 @pytest.mark.asyncio
@@ -155,7 +169,7 @@ async def test_session_append_columns(test_session, dask_storage: DaskBulkStorag
 async def test_session_update_add_new_rows(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
-    bulk_id = await dask_storage.save_bulk(df_ref.iloc[:100], record_id=test_session.recordId)
+    bulk_id = await save_bulk(dask_storage, df_ref.iloc[:100], record_id=test_session.recordId)
 
     for idx in range(100, 1000, 100):
         df = df_ref.iloc[idx:idx + 100]
@@ -172,7 +186,7 @@ async def test_session_update_add_new_rows(test_session, dask_storage: DaskBulkS
 async def test_session_update_add_new_columns(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'floatB', 'strC'], range(1000))
     
-    bulk_id = await dask_storage.save_bulk(df_ref[['A']], record_id=test_session.recordId)
+    bulk_id = await save_bulk(dask_storage, df_ref[['A']], record_id=test_session.recordId)
 
     for c in ['floatB', 'strC']:
         df = df_ref[[c]]
@@ -191,7 +205,7 @@ async def test_session_update_add_new_columns_shifted(test_session, dask_storage
     C = generate_df(['A', 'strC'], index=range(100, 200))
     df_ref = pd.concat([A,C])
     
-    bulk_id = await dask_storage.save_bulk(A, record_id=test_session.recordId)
+    bulk_id = await save_bulk(dask_storage, A, record_id=test_session.recordId)
 
     await add_chunk(dask_storage, test_session, C)
 
@@ -210,7 +224,7 @@ async def test_session_empty_chunk(test_session, dask_storage: DaskBulkStorage):
         await add_chunk(dask_storage, test_session, df_ref)
 
     with pytest.raises(BulkNotProcessable):
-        await dask_storage.save_bulk(df_ref, record_id=test_session.recordId)
+        await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
 
 
 @pytest.mark.asyncio
@@ -223,7 +237,7 @@ async def test_session_empty_session(dask_storage: DaskBulkStorage):
 async def test_session_update_ovelap(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
-    bulk_id = await dask_storage.save_bulk(df_ref, record_id=test_session.recordId)
+    bulk_id = await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
     
     # update A and B value for index > 500
     df_ref.loc[df_ref.index > 500, ['A']] = 1
@@ -247,7 +261,7 @@ async def test_session_update_ovelap(test_session, dask_storage: DaskBulkStorage
 async def test_session_update_ovelap_by_column(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
-    bulk_id = await dask_storage.save_bulk(df_ref, record_id=test_session.recordId)
+    bulk_id = await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
 
     # update A and B values for index > 500
     df_ref.loc[df_ref.index > 500, ['A']] = 1
@@ -302,7 +316,7 @@ async def test_all_type(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['dateD', 'floatB', 'intA', 'strC'], range(5))
 
     # test without session
-    bulk_id = await dask_storage.save_bulk(df_ref, record_id=test_session.recordId)
+    bulk_id = await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
     ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
@@ -342,7 +356,7 @@ async def test_index_str(test_session, dask_storage: DaskBulkStorage):
 
     # without session
     with pytest.raises(BulkNotProcessable):
-        await dask_storage.save_bulk(df_ref, record_id=test_session.recordId)
+        await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
 
     # with session
     with pytest.raises(BulkNotProcessable):
@@ -377,7 +391,7 @@ async def test_duplicate_index(test_session, dask_storage: DaskBulkStorage):
 
     # without session
     with pytest.raises(BulkNotProcessable):
-        await dask_storage.save_bulk(df_ref, record_id=test_session.recordId)
+        await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
 
     # with session
     with pytest.raises(BulkNotProcessable):
@@ -418,7 +432,7 @@ async def test_dask_workers_according_ram_available(system_memory, worker_create
 async def test_array_values(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['array_10_A', 'array_5_B', 'C'], range(5))
     assert len(df_ref['array_10_A'][0]) == 10
-    bulk_id = await dask_storage.save_bulk(df_ref, record_id=test_session.recordId)
+    bulk_id = await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
 
     ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
