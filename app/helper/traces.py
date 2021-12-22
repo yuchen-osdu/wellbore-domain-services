@@ -16,8 +16,6 @@ from asyncio import iscoroutinefunction
 
 from opencensus.common.transports.async_ import AsyncTransport
 from opencensus.trace import base_exporter
-from opencensus.ext.stackdriver.trace_exporter import StackdriverExporter
-from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
 from opencensus.trace.span import SpanKind
 
@@ -50,10 +48,12 @@ def get_trace_propagator() -> TraceContextPropagator:
 
 
 def _create_azure_exporter(key: str):
+    from opencensus.ext.azure.trace_exporter import AzureExporter
     return AzureExporter(connection_string=f'InstrumentationKey={key}')
 
 
 def _create_gcp_exporter():
+    from opencensus.ext.stackdriver.trace_exporter import StackdriverExporter
     return StackdriverExporter(transport=AsyncTransport)
 
 

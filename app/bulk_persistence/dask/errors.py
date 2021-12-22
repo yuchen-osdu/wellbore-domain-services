@@ -17,6 +17,7 @@ from dask.distributed import scheduler
 from pyarrow.lib import ArrowException, ArrowInvalid
 from functools import wraps
 
+from app.conf import Config
 from app.helper.logger import get_logger
 
 
@@ -27,7 +28,7 @@ class BulkError(Exception):
         raise HTTPException(status_code=self.http_status, detail=str(self)) from self
 
 
-class BulkNotFound(BulkError):
+class BulkRecordNotFound(BulkError):
     http_status = status.HTTP_404_NOT_FOUND
 
     def __init__(self, record_id=None, bulk_id=None, message=None):
@@ -37,6 +38,18 @@ class BulkNotFound(BulkError):
         if record_id:
             ex_message += f'for record {record_id} '
         ex_message += 'not found'
+        if message:
+            ex_message += ': ' + message
+        super().__init__(ex_message)
+
+
+class BulkCurvesNotFound (BulkError):
+    http_status = status.HTTP_404_NOT_FOUND
+
+    def __init__(self, curves=None, message=None):
+        ex_message = 'bulk '
+        if curves:
+            ex_message += f'for curves: {curves} not found'
         if message:
             ex_message += ': ' + message
         super().__init__(ex_message)
@@ -55,12 +68,33 @@ class BulkNotProcessable(BulkError):
         super().__init__(ex_message)
 
 
+class InternalBulkError(BulkError):
+    http_status = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    def __init__(self, message=None):
+        ex_message = 'Internal bulk error'
+        if message:
+            ex_message += ': ' + message
+        super().__init__(ex_message)
+
+
 class FilterError(BulkError):
     http_status = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, reason):
-        self.message = f'filter error: {reason}'
+        ex_message = f'filter error: {reason}'
+        super().__init__(ex_message)
 
+
+class TooManyColumnsRequested(BulkError):
+    http_status = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, nb_requested_cols):
+        ex_message = (
+            f"Too many columns: requested '{nb_requested_cols}',"
+            f" maximum allowed '{Config.max_columns_return.value}'")
+        super().__init__(ex_message)
+            
 
 def internal_bulk_exceptions(target):
     """
@@ -78,10 +112,7 @@ def internal_bulk_exceptions(target):
             get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
             raise BulkNotProcessable("Unable to process bulk - Arrow")
         except scheduler.KilledWorker:
-            get_logger().exception(f"Dask worker raised exception when running '{target.__name__}'")
-            raise BulkNotProcessable("Unable to process bulk- Dask")
-        except Exception:
-            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
-            raise
+            get_logger().exception(f"Dask worker has been killed when running '{target.__name__}'")
+            raise InternalBulkError("Out of memory")
 
     return async_inner

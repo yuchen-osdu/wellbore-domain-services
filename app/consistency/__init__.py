@@ -1,1 +1,2 @@
-from .welllog_consistency import welllog_consistency_check, DuplicatedCurveIdException, ReferenceCurveIdNotFoundException
+from .welllog_consistency import check_welllog_consistency, DuplicatedCurveIdException, ReferenceCurveIdNotFoundException
+from .trajectory_consistency import check_trajectory_consistency, DuplicatedStationProperties

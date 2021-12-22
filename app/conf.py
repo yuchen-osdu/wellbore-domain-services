@@ -123,7 +123,7 @@ class ConfigurationContainer:
     de_client_config_timeout: EnvVar = EnvVar(
         key='DE_CLIENT_CFG_TIMEOUT',
         description='set connect, read, write, and pool timeouts (in seconds) for all DE client.',
-        default='45',  # gateway timeout is 30s, greater value ensure the async client won't be the bottleneck.
+        default='10',
         factory=lambda x: int(x))
 
     de_client_config_max_connection: EnvVar = EnvVar(
@@ -185,6 +185,12 @@ class ConfigurationContainer:
         key='MIN_WORKER_MEMORY',
         description='Min amount of memory for one worker',
         default="512Mi")
+
+    max_columns_return: EnvVar = EnvVar(
+        key='MAX_COLUMNS_RETURN',
+        description='Max number of columns that can be returned per data request',
+        default="500",
+        factory=lambda x: int(x))
 
     _environment_dict: Dict = os.environ
 

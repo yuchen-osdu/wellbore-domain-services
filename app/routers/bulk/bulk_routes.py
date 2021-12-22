@@ -13,19 +13,26 @@
 # limitations under the License.
 
 import asyncio
+import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from app.bulk_persistence import JSONOrient, get_dataframe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkError, BulkNotFound, FilterError
-
+from app.bulk_persistence.dask.errors import (
+    BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested)
 from app.bulk_persistence.mime_types import MimeTypes
+from app.persistence.sessions_storage import (
+    Session, SessionException, SessionState, SessionUpdateMode)
+from app.bulk_persistence.dataframe_validators import (
+    auto_cast_columns_to_string,
+    assert_df_validate)
+
+from app.conf import Config
 from app.model.model_chunking import GetDataParams
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
-from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
 from app.routers.common_parameters import (
     REQUEST_DATA_BODY_SCHEMA,
     REQUIRED_ROLES_READ,
@@ -45,12 +52,10 @@ from app.routers.bulk.utils import (
     get_df_from_request,
     set_bulk_field_and_send_record,
     DataFrameRender)
-from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, assert_df_validate
 from app.helper.traces import with_trace
 
-from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
-import pandas as pd
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -84,11 +89,12 @@ async def post_data(record_id: str,
     @with_trace("save_blob")
     async def save_blob():
         df = await get_df_from_request(request)
+        trace_dataframe_attributes(df)
         try:
             assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
         except BulkError as ex:
             ex.raise_as_http()
-        return await dask_blob_storage.save_blob(df, record_id)
+        return await dask_blob_storage.save_bulk(df, record_id)
 
     record, bulk_id = await asyncio.gather(
         fetch_record(ctx, record_id),
@@ -127,6 +133,8 @@ async def post_chunk_data(record_id: str,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
     df = await get_df_from_request(request)
+    trace_dataframe_attributes(df)
+
     try:
         assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
     except BulkError as ex:
@@ -134,13 +142,18 @@ async def post_chunk_data(record_id: str,
     await dask_blob_storage.session_add_chunk(i_session.session, df)
 
 
+GET_DATA_DESCRIPTION = f"""  
+Multiple media types response are available ("application/json", "application/x-parquet").  
+The desired format can be specify in the "Accept" header, default is Parquet.  
+When bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  
+The requested columns must not exceed {Config.max_columns_return.value}. The query parameter __curves__ can be use to limit the number of columns."""
+
+
 @router.get(
     '/{record_id}/versions/{version}/data',
     summary='Returns data of the specified version.',
     description='Returns the data of a specific version according to the specified query parameters.'
-    ' Multiple media types response are available ("application/json", "application/x-parquet")'
-    ' The desired format can be specify in "Accept" header. The default is Parquet.'
-    ' When bulk statistics are requested using "describe" parameter, the response is always provided in JSON'
+    + GET_DATA_DESCRIPTION
     + REQUIRED_ROLES_READ,
     # response_model=RecordData,
     responses={
@@ -160,18 +173,19 @@ async def get_data_version(
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
     record = await fetch_record(ctx, record_id, version)
-    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
+    if hasattr(request.state, 'version') and request.state.version != "V2":
+        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
         bulk_uri = bulk_uri_access.get_bulk_uri(record=record)  # TODO PATH logv2
-    except ValueError:
+    except ValueError as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail='Record contains an invalid bulk URI')
+                            detail='Record contains an invalid bulk URI') from e
 
     filters = None
     stat = None
     try:
         if not bulk_uri.is_valid():
-            raise BulkNotFound(record_id=record_id, bulk_id=None)
+            raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
         bulk_id = bulk_uri.bulk_id
         if bulk_uri.is_bulk_storage_V0():
             df = await get_dataframe(ctx, bulk_id)
@@ -188,26 +202,31 @@ async def get_data_version(
 async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
     dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
     columns_to_load = None
-    stat = dask_blob_storage.read_stat(record_id, bulk_id)
+    stat = await dask_blob_storage.read_stat(record_id, bulk_id)
     existing_col = set(stat['schema'])
     if data_param.curves:
-        columns_to_load = DataFrameRender.get_matching_column(
-            data_param.get_curves_list(), existing_col)  # add curve needed for filtering
+        columns_to_load = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
         stat['schema'] = {k: stat['schema'][k] for k in columns_to_load}
+
+    if not data_param.describe: # don't limit columns when describe parameter is True
+        # if curves parameter is None, it means that we are going to load all existing columns
+        nb_cols_to_return = len(columns_to_load) if columns_to_load else len(existing_col)
+        if nb_cols_to_return > Config.max_columns_return.value:
+            raise TooManyColumnsRequested(nb_cols_to_return)
+
     if data_param.bulk_filter:
         # get column needed for filtering which are not yet in columns
         filters = data_param.get_filters()
-
-        invalid_columns = [c for c in filters.keys() if c not in existing_col]
+        invalid_columns = filters.keys() - existing_col
         if invalid_columns:
-            raise FilterError(f'The columns:{invalid_columns} to be filtered do not exist')
-
+            raise FilterError(f'The columns:{list(invalid_columns)} to be filtered do not exist')
         if columns_to_load:
             columns_to_load.extend(filters)
             columns_to_load = set(columns_to_load)
-    if data_param.describe and not data_param.offset and not data_param.limit and not data_param.bulk_filter:
-        # optimization: create a fake dataset when describe on all rows
-        df = pd.DataFrame()
+    if columns_to_load is None and data_param.describe:
+        # optimization: create a fake dataset when describe on all columns
+        index = await dask_blob_storage.load_index(record_id, bulk_id)
+        df = pd.DataFrame(index=index)
     else:
         # loading the dataframe with filter on columns is faster than filtering columns on df
         df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns_to_load)
@@ -218,9 +237,7 @@ async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataP
     "/{record_id}/data",
     summary='Returns the data according to the specified query parameters.',
     description='Returns the data according to the specified query parameters.'
-    ' Multiple media types response are available ("application/json", "application/x-parquet").'
-    ' The desired format can be specify in "Accept" header. The default is Parquet.'
-    ' When bulk statistics are requested using "describe" parameter, the response is always provided in JSON.'
+    + GET_DATA_DESCRIPTION
     + REQUIRED_ROLES_READ,
     # response_model=Union[RecordData, Dict],
     responses={
@@ -239,9 +256,6 @@ async def get_data(
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    if hasattr(request.state, 'version') and request.state.version != "V2":
-        record = await fetch_record(ctx, record_id)
-        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, bulk_uri_access)
 
 
@@ -288,9 +302,9 @@ async def complete_session(
                         try:
                             df = await get_dataframe(ctx, previous_bulk_uri.bulk_id)
                             # convert old bulk to new one
-                            previous_bulk_id = await dask_blob_storage.save_blob(df, record_id=record_id)
+                            previous_bulk_id = await dask_blob_storage.save_bulk(df, record_id=record_id)
                         except ResourceNotFoundException:
-                            BulkNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
+                            BulkRecordNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
                     else:
                         previous_bulk_id = previous_bulk_uri.bulk_id
 

@@ -28,11 +28,10 @@ from app.middleware import require_data_partition_id
 from app.helper import traces
 from app.utils import Context, DaskClient
 from app import conf
+from app.conf import Config
 
-
-from tests.unit.persistence.dask_blob_storage_test import generate_df
+from tests.unit.generate_data import generate_df
 from tests.unit.test_utils import nope_logger_fixture
-
 
 Definitions = {
     'WellLog': {
@@ -122,7 +121,7 @@ def _create_record(client, entity_type):
 
 def _cast_datetime_to_datetime64_ns(result_df):
     """  if datetime is detected, cast data column as datetime to ensure date values are valid  """
-    for name, col in result_df.items():
+    for name, _col in result_df.items():
         if name.startswith('date'):
             result_df[name] = result_df[name].astype('datetime64[ns]')
 
@@ -144,7 +143,7 @@ def event_loop():  # all tests will share the same loop
     # teardown
     loop.run_until_complete(DaskClient.close())
     loop.close()
-    
+
 
 @pytest.fixture
 def dasked_test_app(init_fixtures):
@@ -1004,10 +1003,10 @@ def assert_commit_session_status_code(commit_session_response):
      send json and parquet no matter what the order is in one session cause 422 exception because of dtypes incoherence.
     """
 
-    if platform.system() == 'Windows':
-        assert commit_session_response.status_code == 422
-    else:
-        assert commit_session_response.status_code == 200
+    # if platform.system() == 'Windows':
+    #     assert commit_session_response.status_code == 422
+    # else:
+    assert commit_session_response.status_code == 200
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -1120,26 +1119,42 @@ def test_get_bulk_data_with_filters_curves_offset(setup_client, entity_type, fil
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-@pytest.mark.parametrize("filter, limit, curves, expected", [(['A:gt:5'], 5, ['A,B'], [5, 5, 4, 0]),
-                                                            (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
-                                                            (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
-                                                            (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0])
-                                                            ])
-def test_get_bulk_data_with_filters_curves_offset_describe(setup_client, entity_type, filter, limit, expected, dataframe_for_filters, curves):
+@pytest.mark.parametrize("filter, limit, curves, expected", [
+    (['A:gt:5'], 5, ['A','B'], [5, 5, 4, 0]),
+    (['A:lt:5'], 5, ['A','C'], [5, 0, 0, 0]),
+    (['D:eq:True'], 5, ['C','D'], [5, 5, 0, 0]),
+    (['C:in:5,6,7'], 5, ['B','D'], [3, 0, 0, 0]),
+    ([], 20, None, [20, 0, 0, 0]),
+    ([], 5, None, [5, 5, 5, 5]),
+])
+def test_get_bulk_data_with_filters_curves_offset_describe(
+    setup_client, entity_type, filter, limit, expected, dataframe_for_filters, curves
+):
     client = setup_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]['chunking_url']
     response_send_data = client.post(f'{chunking_url}/{record_id}/data',
-                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+                                     data=dataframe_for_filters.to_parquet(engine="pyarrow"),
+                                     headers=headers)
     assert response_send_data.status_code == 200
 
     header_get_data = {'Accept': 'application/parquet'}
+
+    expected_columns = curves if curves else list(dataframe_for_filters.columns)
     for i in range(0, math.ceil(20/limit)):
-        response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
-                   params={'filter': filter, 'curves': curves, 'offset': i*limit, 'limit': limit, 'describe': True})
+        params = {
+            'filter': filter,
+            'curves': ','.join(curves) if curves else None,
+            'offset': i*limit,
+            'limit': limit,
+            'describe': True
+        }
+        response_get_data = client.get(f'{chunking_url}/{record_id}/data',
+                                       headers=header_get_data,
+                                       params=params)
         assert response_get_data.json()['numberOfRows'] == expected[i]
-        assert response_get_data.json()['columns'] == curves[0].split(',')
+        assert response_get_data.json()['columns'] == expected_columns
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
@@ -1154,16 +1169,17 @@ def test_get_bulk_data_with_filters_fail(setup_client, entity_type, params, cont
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]['chunking_url']
     response_send_data = client.post(f'{chunking_url}/{record_id}/data',
-                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+                                     data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
     assert response_send_data.status_code == 200
 
     header_get_data = {'Accept': 'application/parquet'}
 
     response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
-               params={'filter': params})
+                                   params={'filter': params})
 
-    assert response_get_data.json()['detail'] == content
+    assert content in response_get_data.json()['detail']
     assert response_get_data.status_code == 400
+
 
 # todo - concurrent sessions using fromVersion in Integrations tests
 
@@ -1171,7 +1187,6 @@ def test_get_bulk_data_with_filters_fail(setup_client, entity_type, params, cont
 @pytest.mark.parametrize("reserved_columns_name", ['__index_level_0__', '__null_dask_index__'])
 @pytest.mark.parametrize("use_custom_index", [True, False])
 def test_none_in_index_error(setup_client, entity_type, reserved_columns_name, use_custom_index):
-
     client = setup_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -1187,6 +1202,66 @@ def test_none_in_index_error(setup_client, entity_type, reserved_columns_name, u
         client.post(f'{chunking_url}/{record_id}/data',
                     data=df.to_parquet(engine="pyarrow"),
                     headers={'content-type': 'application/parquet'})
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_too_many_columns(setup_client, entity_type):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    max_cols_count = 100
+    Config.max_columns_return.value = max_cols_count
+
+    df = generate_df([f'var[{i}]' for i in range(max_cols_count + 1)], range(5))
+    write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                 data=df.to_parquet(engine="pyarrow"),
+                                 headers={'content-type': 'application/parquet'})
+    assert write_response.status_code == 200
+
+    get_describe_response = client.get(f'{chunking_url}/{record_id}/data',
+                                       headers={'Accept': 'application/parquet'},
+                                       params={'describe': True})
+    assert get_describe_response.status_code == 200
+
+    get_all_cols_response = client.get(f'{chunking_url}/{record_id}/data',
+                                       headers={'Accept': 'application/parquet'})
+    assert get_all_cols_response.status_code == 400
+    assert "Too many columns: requested" in get_all_cols_response.json().get('detail', str())
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data',
+                              headers={'Accept': 'application/parquet'},
+                              params={'curves': f'var[0:{max_cols_count - 1}]'})
+    assert get_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data',
+                              headers={'Accept': 'application/parquet'},
+                              params={'curves': f'var[0:{max_cols_count * 2}]'})
+    assert get_response.status_code == 400
+    assert "Too many columns: requested" in get_response.json().get('detail', str())
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_many_columns_ensure_effective_cols_count_matter(setup_client, entity_type):
+    client = setup_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    max_cols_count = 100
+    Config.max_columns_return.value = max_cols_count
+
+    effective_cols_count = 50
+    df = generate_df([f'var[{i}]' for i in range(effective_cols_count)], range(2))
+    write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                 data=df.to_parquet(engine="pyarrow"),
+                                 headers={'content-type': 'application/parquet'})
+    assert write_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data',
+                              headers={'Accept': 'application/parquet'},
+                              params={'curves': f'var[0:{max_cols_count * 2}]'})
+    assert get_response.status_code == 200, \
+        "Ensure only existing columns are taken into account for max cols limit"
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests

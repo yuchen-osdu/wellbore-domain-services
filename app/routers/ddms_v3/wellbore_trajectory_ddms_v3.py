@@ -12,25 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Response, status
-
-from odes_storage.models import (
-    CreateUpdateRecordsResponse,
-    List,
-    RecordVersions,
-)
+from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
+from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
 from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
+from app.consistency import DuplicatedStationProperties, check_trajectory_consistency
+from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import WellboreTrajectory110 as WellboreTrajectory
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLBORETRAJECTORY_VERSION_REGEX
-from app.routers.record_utils import fetch_record
+from app.routers.ddms_v3.ddms_v3_utils import OSDU_WELLBORETRAJECTORY_VERSION_REGEX, DMSV3RouterUtils
 from app.routers.delete.delete_bulk_data import delete_record
-from app.utils import Context
-from app.utils import get_ctx
-from app.model.model_utils import to_record, from_record
+from app.routers.record_utils import fetch_record
+from app.utils import Context, get_ctx, load_schema_example
 
 router = APIRouter()
 
@@ -72,22 +67,19 @@ async def get_wellbore_trajectory_osdu(
     response_class=Response,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "WellboreTrajectory not found"},
-        status.HTTP_204_NO_CONTENT: {
-            "description": "Record deleted successfully"
-        },
+        status.HTTP_204_NO_CONTENT: {"description": "Record deleted successfully"},
     },
 )
-async def del_osdu_wellboreTrajectory(wellboretrajectoryid: str,
-                                      purge: bool = False,
-                                      ctx: Context = Depends(get_ctx),
-                                      bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
-    wellboretrajectoryid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBORETRAJECTORY_VERSION_REGEX,
-                                                                  wellboretrajectoryid)
-    await delete_record(record_id=wellboretrajectoryid,
-                        purge=purge,
-                        ctx=ctx,
-                        bulk_uri_access=bulk_uri_access)
-
+async def del_osdu_wellboreTrajectory(
+    wellboretrajectoryid: str,
+    purge: bool = False,
+    ctx: Context = Depends(get_ctx),
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+):
+    wellboretrajectoryid = DMSV3RouterUtils.get_id_without_version(
+        OSDU_WELLBORETRAJECTORY_VERSION_REGEX, wellboretrajectoryid
+    )
+    await delete_record(record_id=wellboretrajectoryid, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
 
 
 @router.get(
@@ -128,8 +120,9 @@ async def get_osdu_wellboreTrajectory_version(
     wellboretrajectoryid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreTrajectory:
     storage_client = await get_storage_record_service(ctx)
-    wellboretrajectoryid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBORETRAJECTORY_VERSION_REGEX,
-                                                                  wellboretrajectoryid)
+    wellboretrajectoryid = DMSV3RouterUtils.get_id_without_version(
+        OSDU_WELLBORETRAJECTORY_VERSION_REGEX, wellboretrajectoryid
+    )
     wellboreTrajectory_record = await storage_client.get_record_version(
         id=wellboretrajectoryid, version=version, data_partition_id=ctx.partition_id
     )
@@ -150,8 +143,19 @@ async def get_osdu_wellboreTrajectory_version(
     },
 )
 async def post_wellboreTrajectory_osdu(
-    wellboretrajectories: List[WellboreTrajectory], ctx: Context = Depends(get_ctx)
+    wellboretrajectories: List[WellboreTrajectory] = Body(..., example=load_schema_example("wellbore_v3.json")),
+    ctx: Context = Depends(get_ctx),
 ) -> CreateUpdateRecordsResponse:
+    DMSV3RouterUtils.validate_record_against_kinds_schema(wellboretrajectories)
+
+    for idx, traj in enumerate(wellboretrajectories):
+        try:
+            check_trajectory_consistency(traj)
+        except DuplicatedStationProperties:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"All station properties in WellboreTrajectory[{idx}] should be unique",
+            )
 
     storage_client = await get_storage_record_service(ctx)
 

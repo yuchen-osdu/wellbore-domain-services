@@ -12,24 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, status, Response, Body, HTTPException
-import starlette.status
+from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
+from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
 from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
-from odes_storage.models import (
-    CreateUpdateRecordsResponse,
-    List,
-    RecordVersions,
-)
+from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import Wellbore
-from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.utils import Context
-from app.utils import get_ctx
-from app.utils import load_schema_example
-from app.model.model_utils import to_record, from_record
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
+from app.utils import Context, get_ctx, load_schema_example
+
+from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 
 router = APIRouter()
 
@@ -62,7 +56,6 @@ async def get_wellbore_osdu(
     if DMSV3RouterUtils.is_osdu_wellbore_id(wellboreid):
         return await get_osdu_wellbore(wellboreid, ctx)
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
-
 
 
 @router.delete(
@@ -143,8 +136,10 @@ async def get_osdu_wellbore_version(
     },
 )
 async def post_wellbore_osdu(
-    wellbores: List[Wellbore] = Body(..., example= load_schema_example("wellbore_v3.json")), ctx: Context = Depends(get_ctx)
+    wellbores: List[Wellbore] = Body(..., example=load_schema_example("wellbore_v3.json")),
+    ctx: Context = Depends(get_ctx),
 ) -> CreateUpdateRecordsResponse:
+    DMSV3RouterUtils.validate_record_against_kinds_schema(wellbores)
 
     storage_client = await get_storage_record_service(ctx)
 
