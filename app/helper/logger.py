@@ -19,7 +19,6 @@ import rapidjson
 
 import structlog
 from structlog.contextvars import merge_contextvars
-from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.trace import config_integration
 
 from app.conf import Config
@@ -110,6 +109,7 @@ def create_azure_logger(service_name):
 
      returns logger configured wrapped into ContextLoggerAdapter
     """
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
     config_integration.trace_integrations(['logging'])
 
     # stdout handler for direct logging output to stdout.
