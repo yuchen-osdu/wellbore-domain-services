@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from typing import Any, Callable
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -23,44 +23,31 @@ from opencensus.trace import tracer as open_tracer
 from opencensus.trace.samplers import AlwaysOnSampler
 from opencensus.trace.span import SpanKind
 
+from fastapi.routing import APIRoute
+
 from app.helper import traces, utils
 from app.utils import get_or_create_ctx
 from app import conf
-from inspect import isfunction as is_function
+
+
+class TracingRoute(APIRoute):
+    def get_route_handler(self) -> Callable:
+        original_route_handler = super().get_route_handler()
+        path = self.path
+
+        async def custom_route_handler(request: Request) -> Response:
+            # https://www.starlette.io/requests/#other-state
+            request.state.traced_route = path
+            response: Response = await original_route_handler(request)
+            return response
+
+        return custom_route_handler
 
 
 class TracingMiddleware(BaseHTTPMiddleware):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._trace_propagator = traces.get_trace_propagator()
-
-    @staticmethod
-    def _retrieve_raw_path(request):
-        """
-        Returns the raw path of given request, else default request's url path
-        E.g.:
-            /ddms/v2/wellbores/{wellboreid} instead of /ddms/v2/wellbores/opendes:doc:blablabla14587
-
-        It retrieves the raw path by finding the APIRoute object by name. By default the name of the route is the name
-         of python method where there is the implementation.
-
-
-        >>> @router.get('/wellbores/{wellboreid}')
-        >>> async def get_wellbore(wellboreid: str, ctx: Context):
-        >>>     # instructions here
-        In this example 'get_wellbore' is called_endpoint_func variable, this function's name is needed to retrieve
-        the APIRoute that contains the raw path.
-        """
-        called_endpoint_func = request.scope.get('endpoint')
-
-        if called_endpoint_func and is_function(called_endpoint_func):
-            function_name = called_endpoint_func.__name__
-            called_routes = [route for route in request.app.routes
-                             if route.name == function_name]
-            if called_routes:
-                return called_routes[0].path
-
-        return request.url.path
 
     @staticmethod
     def _before_request(request: Request, tracer: open_tracer.Tracer):
@@ -121,8 +108,13 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_STATUS_CODE,
                                              attribute_value=status)
 
+        traced_route = request.url
+        if hasattr(request.state, "traced_route"):
+            # This is set in Request state by the appropriate TracingRoute instance
+            traced_route = request.state.traced_route
+
         tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_ROUTE,
-                                             attribute_value=TracingMiddleware._retrieve_raw_path(request))
+                                             attribute_value=traced_route)
 
         if response:
             response_content_type = response.headers.get("Content-type")

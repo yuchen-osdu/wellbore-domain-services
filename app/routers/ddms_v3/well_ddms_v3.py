@@ -29,8 +29,9 @@ from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
+from ...middleware import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 
 async def get_osdu_well(wellid: str, ctx: Context) -> Well:

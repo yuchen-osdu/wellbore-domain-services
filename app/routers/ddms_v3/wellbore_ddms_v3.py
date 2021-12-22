@@ -24,8 +24,9 @@ from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx, load_schema_example
 
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from ...middleware import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 
 async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:

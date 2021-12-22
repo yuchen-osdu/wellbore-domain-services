@@ -15,7 +15,7 @@
 from opencensus.trace import base_exporter
 from fastapi.testclient import TestClient
 import pytest
-from app.wdms_app import wdms_app, DDMS_V2_PATH
+from app.wdms_app import wdms_app, DDMS_V2_PATH, DDMS_V3_PATH
 from app.utils import get_or_create_ctx
 from tests.unit.test_utils import NopeLogger
 
@@ -105,3 +105,24 @@ def test_about_call_traces_request_header(header_name, client: TestClient):
     spandata = wdms_app.trace_exporter.exported[1]
     assert header_name in spandata.attributes.keys()
     assert spandata.attributes[header_name] == "some value"
+
+
+@pytest.mark.parametrize("request_url", [
+    DDMS_V2_PATH + "/about",
+    DDMS_V3_PATH + "/about"
+    # TODO: more ?
+])
+def test_any_call_trace_url(client: TestClient, request_url):
+    # Initialize traces exporter in app, like it is in app's startup_event
+    wdms_app.trace_exporter = ExporterInTest()
+
+    # no header -> works fine
+    response = client.get(build_url("/about"))
+    assert response.status_code == 200
+
+    # one call was exported
+    assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
+    spandata = wdms_app.trace_exporter.exported[0]
+
+    # with expected name
+    assert spandata.name == build_url("/about")

@@ -18,8 +18,9 @@ from odes_search.models import Point, CursorQueryResponse
 from ..common_parameters import REQUIRED_ROLES_READ
 from app.utils import Context
 import app.routers.search.search as search
+from ...middleware import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 wellbore_kind = '*:wks:wellbore:*'
 log_kind = '*:wks:log:*'
 logSet_kind = '*:wks:logSet:*'

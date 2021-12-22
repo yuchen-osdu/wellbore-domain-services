@@ -17,9 +17,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.model.ddms_model_response import V1AboutResponse, AboutResponseUser
 from app.model.model_curated import *
 from app.utils import Context, get_ctx
+from ...middleware import TracingRoute
 
-
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 
 @router.get('/status', response_model=V1AboutResponse,

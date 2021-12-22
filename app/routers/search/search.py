@@ -28,9 +28,10 @@ from app.clients.search_service_client import get_search_service
 from ..common_parameters import REQUIRED_ROLES_READ
 from app.utils import Context
 import app.routers.search.search_wrapper as search_wrapper
+from ...middleware import TracingRoute
 from pydantic import BaseModel, Field
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 wellbore_kind = '*:wks:wellbore:*'
 log_kind = '*:wks:log:*'
