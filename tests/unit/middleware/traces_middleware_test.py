@@ -15,9 +15,13 @@
 from opencensus.trace import base_exporter
 from fastapi.testclient import TestClient
 import pytest
-from app.wdms_app import wdms_app, DDMS_V2_PATH, DDMS_V3_PATH
+from app.wdms_app import wdms_app, DDMS_V2_PATH, DDMS_V3_PATH, ALPHA_APIS_PREFIX
 from app.utils import get_or_create_ctx
+
 from tests.unit.test_utils import NopeLogger
+from tests.unit.routers.ddms_v3.common_ddms_v3_test import nope_logger_fixture
+from tests.unit.routers.ddms_v3.common_ddms_v3_test import client as authorized_client
+
 
 # Initialize traces exporter in app with a custom one to allow validating our traces
 class ExporterInTest(base_exporter.Exporter):
@@ -107,22 +111,61 @@ def test_about_call_traces_request_header(header_name, client: TestClient):
     assert spandata.attributes[header_name] == "some value"
 
 
+# parametrized for backward compatibility with /ddms/v2 APIs
 @pytest.mark.parametrize("request_url", [
+    "/about",
     DDMS_V2_PATH + "/about",
-    DDMS_V3_PATH + "/about"
-    # TODO: more ?
+    DDMS_V3_PATH + "/welllogs/{record_id}/sessions",
+    DDMS_V3_PATH + "/wellboretrajectories/{record_id}/sessions",
+    ALPHA_APIS_PREFIX + DDMS_V2_PATH + "/logs/{record_id}/sessions",
 ])
-def test_any_call_trace_url(client: TestClient, request_url):
+def test_authorized_call_trace_url(authorized_client: TestClient, request_url):
     # Initialize traces exporter in app, like it is in app's startup_event
     wdms_app.trace_exporter = ExporterInTest()
 
-    # no header -> works fine
-    response = client.get(build_url("/about"))
+    request_url_with_fake_id = request_url.format(record_id="123456")
+
+    # call with actual url path
+    response = authorized_client.get(request_url_with_fake_id)
+
+    # mock client will return found record_id
     assert response.status_code == 200
 
     # one call was exported
     assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
     spandata = wdms_app.trace_exporter.exported[0]
 
-    # with expected name
-    assert spandata.name == build_url("/about")
+    # with expected name and route
+    assert spandata.name == request_url_with_fake_id
+    assert spandata.attributes["http.route"] == request_url
+
+# parametrized for backward compatibility with /ddms/v2 APIs
+@pytest.mark.parametrize("request_url", [
+    "/about",
+    DDMS_V2_PATH + "/about",
+    DDMS_V3_PATH + "/welllogs/{record_id}/sessions",
+    DDMS_V3_PATH + "/wellboretrajectories/{record_id}/sessions",
+    ALPHA_APIS_PREFIX + DDMS_V2_PATH + "/logs/{record_id}/sessions",
+])
+def test_unauthorized_call_does_trace_url(client: TestClient, request_url):
+    # Initialize traces exporter in app, like it is in app's startup_event
+    wdms_app.trace_exporter = ExporterInTest()
+
+    request_url_with_fake_id = request_url.format(record_id="123456")
+
+    # call with actual url path
+    response = client.get(request_url_with_fake_id)
+
+    # response depends if we use a fake id or not
+    if request_url_with_fake_id == request_url:
+        assert response.status_code == 200
+    else:
+        assert response.status_code == 403  # not authorized
+
+    # one call was exported
+    assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
+    spandata = wdms_app.trace_exporter.exported[0]
+
+    # with expected name and route
+    assert spandata.name == request_url_with_fake_id
+    assert spandata.attributes["http.route"] == request_url
