@@ -123,7 +123,7 @@ class ConfigurationContainer:
     de_client_config_timeout: EnvVar = EnvVar(
         key='DE_CLIENT_CFG_TIMEOUT',
         description='set connect, read, write, and pool timeouts (in seconds) for all DE client.',
-        default='45',  # gateway timeout is 30s, greater value ensure the async client won't be the bottleneck.
+        default='10',
         factory=lambda x: int(x))
 
     de_client_config_max_connection: EnvVar = EnvVar(

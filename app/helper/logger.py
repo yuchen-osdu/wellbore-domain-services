@@ -110,6 +110,7 @@ def create_azure_logger(service_name):
 
      returns logger configured wrapped into ContextLoggerAdapter
     """
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
     config_integration.trace_integrations(['logging'])
 
     # stdout handler for direct logging output to stdout.
@@ -124,18 +125,18 @@ def create_azure_logger(service_name):
 
     # Acquire the logger for azure library
     az_logger = logging.getLogger('azure')
-    az_logger.setLevel(logging.DEBUG)
+    az_logger.setLevel(logging.INFO)
     az_logger.addHandler(stdout_handler)
 
     # Acquire the logger for osdu-core-lib-python-azure
     osdu_core_lib_logger = logging.getLogger('osdu_az')
-    osdu_core_lib_logger.setLevel(logging.DEBUG)
+    osdu_core_lib_logger.setLevel(logging.INFO)
     osdu_core_lib_logger.addHandler(stdout_handler)
     osdu_core_lib_logger.addHandler(az_handler)
 
     # Acquire the logger for wdms
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     logger.addHandler(stdout_handler)
     logger.addHandler(az_handler)
 
