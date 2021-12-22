@@ -37,7 +37,7 @@ spec:
         aadpodidbinding: "{{ .Values.labels.aadpodidbinding }}"
 {{ include "os-wellbore-ddms.commonLabels" . | indent 8}}
     spec:   
-{{- if .Values.isAutoscalingEnabled }}
+{{- if .Values.nodepool }}
       nodeSelector:
         nodepool: {{ .Values.nodepool }} 
 {{- end }}   
