@@ -21,7 +21,7 @@ import app.routers.dipset.persistence as persistence
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.dipset.dip_model import Dip
 from app.utils import Context, get_ctx
-from ...middleware import TracingRoute
+from app.helper.traces import TracingRoute
 
 # TODO reference: setup reference type  family, unit ...
 # TODO setup dipset channels (family, family_type, unit, format of dip attributs)

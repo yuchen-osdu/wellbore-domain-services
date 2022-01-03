@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from fastapi import APIRouter
-from ..middleware import TracingRoute
+from app.helper.traces import TracingRoute
 
 # Routes require for the liveliness ('/healthz') and readiness ('/healthz') probes for kubernetes
 # The root route ('/') is needs for the liveliness of the Google loadbalancer

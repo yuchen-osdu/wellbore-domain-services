@@ -23,25 +23,9 @@ from opencensus.trace import tracer as open_tracer
 from opencensus.trace.samplers import AlwaysOnSampler
 from opencensus.trace.span import SpanKind
 
-from fastapi.routing import APIRoute
-
 from app.helper import traces, utils
 from app.utils import get_or_create_ctx
 from app import conf
-
-
-class TracingRoute(APIRoute):
-    def get_route_handler(self) -> Callable:
-        original_route_handler = super().get_route_handler()
-        path = self.path
-
-        async def custom_route_handler(request: Request) -> Response:
-            # https://www.starlette.io/requests/#other-state
-            request.state.traced_route = path
-            response: Response = await original_route_handler(request)
-            return response
-
-        return custom_route_handler
 
 
 class TracingMiddleware(BaseHTTPMiddleware):

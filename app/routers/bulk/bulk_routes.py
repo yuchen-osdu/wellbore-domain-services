@@ -52,8 +52,7 @@ from app.routers.bulk.utils import (
     get_df_from_request,
     set_bulk_field_and_send_record,
     DataFrameRender)
-from app.helper.traces import with_trace
-from ...middleware import TracingRoute
+from app.helper.traces import with_trace, TracingRoute
 
 
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes

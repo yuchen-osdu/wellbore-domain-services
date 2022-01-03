@@ -28,7 +28,7 @@ from app.clients.search_service_client import get_search_service
 from ..common_parameters import REQUIRED_ROLES_READ
 from app.utils import Context
 import app.routers.search.search_wrapper as search_wrapper
-from ...middleware import TracingRoute
+from app.helper.traces import TracingRoute
 from pydantic import BaseModel, Field
 
 router = APIRouter(route_class=TracingRoute)

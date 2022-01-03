@@ -31,7 +31,7 @@ from .search_v3 import (
     query_type,
     update_query_with_nested_names_based_search)
 from ..common_parameters import REQUIRED_ROLES_READ
-from ...middleware import TracingRoute
+from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
 

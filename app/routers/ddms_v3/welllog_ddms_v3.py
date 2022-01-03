@@ -26,7 +26,7 @@ from app.routers.ddms_v3.ddms_v3_utils import OSDU_WELLLOG_VERSION_REGEX, DMSV3R
 from app.routers.delete.delete_bulk_data import delete_record
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx, load_schema_example
-from ...middleware import TracingRoute
+from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
 

@@ -27,7 +27,8 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.conf import Config
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.utils import Context, get_ctx
-from ....middleware import TracingRoute
+from app.helper.traces import TracingRoute
+
 
 def can_run() -> (bool, str):
     return True, ""

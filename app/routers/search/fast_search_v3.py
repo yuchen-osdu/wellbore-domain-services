@@ -16,7 +16,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from odes_search.models import Point, CursorQueryResponse
 from app.utils import Context
-from ...middleware import TracingRoute
+from app.helper.traces import TracingRoute
 from .search_v3 import (
     SearchQuery,
     SearchQueryRequest,

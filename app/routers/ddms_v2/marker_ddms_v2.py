@@ -20,7 +20,7 @@ from app.model.model_curated import *
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.utils import Context, get_ctx, load_schema_example
 from app.model.model_utils import to_record, from_record
-from ...middleware import TracingRoute
+from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
 

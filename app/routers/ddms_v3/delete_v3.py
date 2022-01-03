@@ -19,7 +19,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from ..common_parameters import REQUIRED_ROLES_WRITE
 from app.utils import Context
 from app.utils import get_ctx
-from ...middleware import TracingRoute
+from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
 

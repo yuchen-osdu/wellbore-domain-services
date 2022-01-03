@@ -14,7 +14,7 @@ from app.persistence.sessions_storage import (Session,
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.utils import Context
-from ..middleware import TracingRoute
+from app.helper.traces import TracingRoute
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
