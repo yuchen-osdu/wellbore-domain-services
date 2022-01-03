@@ -67,19 +67,27 @@ def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
     return dask_client.map(wrap_trace_process, *args, key=dask_task_key, **kwargs)
 
 
-def trace_dataframe_attributes(df: pd.DataFrame):
+def add_trace_attributes(attributes: dict):
     """
-        Add dataframe shape into current tracing span if tracer exists
+        Add custom key:value as attribute into current tracing span if tracer exists
     """
     tracer = get_or_create_ctx().tracer
     if tracer is None:
         return
 
-    rows_count, cols_count = df.shape
-    tracer.add_attribute_to_current_span(
-        attribute_key="df rows count",
-        attribute_value=rows_count)
+    for k, v in attributes.items():
+        tracer.add_attribute_to_current_span(
+            attribute_key=k,
+            attribute_value=v)
 
-    tracer.add_attribute_to_current_span(
-        attribute_key="df columns count",
-        attribute_value=cols_count)
+
+def trace_dataframe_attributes(df: pd.DataFrame):
+    """
+        Add dataframe shape into current tracing span if tracer exists
+    """
+
+    rows_count, cols_count = df.shape
+    add_trace_attributes({
+        "df rows count": rows_count,
+        "df columns count": cols_count
+    })

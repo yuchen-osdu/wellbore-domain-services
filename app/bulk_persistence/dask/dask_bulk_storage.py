@@ -33,7 +33,7 @@ from app.utils import DaskClient, capture_timings
 
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
-from .traces import map_with_trace, submit_with_trace
+from .traces import map_with_trace, submit_with_trace, add_trace_attributes
 from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
 from ..dataframe_validators import (assert_df_validate, validate_index,
@@ -352,9 +352,10 @@ class DaskBulkStorage:
         """
         chunks_meta_with_different_indexes = {meta.index_hash: meta
                                               for meta in chunk_metas}.values()
+        add_trace_attributes({'chunks-distinct-index': len(chunks_meta_with_different_indexes)})
 
         indexes = self.client.map(_load_index_from_meta, chunks_meta_with_different_indexes,
-                                  storage_options=self._parameters.storage_options)
+                                       storage_options=self._parameters.storage_options)
         if from_bulk_id:
             # read the index of previous version
             indexes.append(await self._future_load_index(record_id, from_bulk_id))
@@ -449,7 +450,11 @@ class DaskBulkStorage:
         bulk_id = new_bulk_id()
 
         chunk_metas = await session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
-        if len(chunk_metas) == 0:# there is no files in this session
+        # Add trace attribute: number of chunks
+        add_trace_attributes({'chunks-count': len(chunk_metas)})
+
+        # there is no files in this session
+        if len(chunk_metas) == 0:
             raise BulkNotProcessable(message="No data to commit")
 
         if from_bulk_id:
