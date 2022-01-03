@@ -106,6 +106,7 @@ async def get_df_from_request(request: Request) -> pd.DataFrame:
                         detail=f'Invalid content-type, "{ct}" is not supported')
 
 
+@with_trace("with_dask_blob_storage")
 async def with_dask_blob_storage() -> DaskBulkStorage:
     return await get_ctx().app_injector.get(DaskBulkStorage)
 
