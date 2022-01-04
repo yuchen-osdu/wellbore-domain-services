@@ -10,7 +10,7 @@ from opencensus.trace import tracer as open_tracer
 from opencensus.trace.samplers import AlwaysOnSampler
 
 from app.conf import Config
-from app.helper.traces import create_exporter
+from app.helper import traces
 from app.utils import get_ctx, get_or_create_ctx
 
 _EXPORTER = None
@@ -19,13 +19,13 @@ _EXPORTER = None
 def wrap_trace_process(*args, **kwargs):
     global _EXPORTER
 
+    span_context = traces.get_trace_propagator().from_headers(kwargs.pop('tracing_headers'))
     target_func = kwargs.pop('target_func')
-    span_context = kwargs.pop('span_context')
     if not span_context or not target_func:
-        raise AttributeError("Keyword arguments should contain 'target_func' and 'span_context'")
+        raise AttributeError("Keyword arguments should contain 'target_func' and 'tracing_headers'")
 
     if _EXPORTER is None:
-        _EXPORTER = create_exporter(service_name=Config.service_name.value)
+        _EXPORTER = traces.create_exporter(service_name=Config.service_name.value)
 
     tracer = open_tracer.Tracer(span_context=span_context,
                                 sampler=AlwaysOnSampler(),
@@ -49,9 +49,12 @@ def submit_with_trace(dask_client: Client, target_func: Callable, *args, **kwarg
     Note: 'dask_task_key' is manually created to easy reading of Dask's running tasks: it will display
         the effective targeted function instead of 'wrap_trace_process' used to enable tracing into Dask workers.
     """
-    dask_task_key = _create_func_key(target_func, *args, **kwargs)
-    kwargs['span_context'] = get_ctx().tracer.span_context
+    tracing_headers = traces.get_trace_propagator().to_headers(get_ctx().tracer.span_context)
+    kwargs['tracing_headers'] = tracing_headers
     kwargs['target_func'] = target_func
+
+    dask_task_key = _create_func_key(target_func, *args, **kwargs)
+
     return dask_client.submit(wrap_trace_process, *args, key=dask_task_key, **kwargs)
 
 
@@ -61,9 +64,12 @@ def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
     Note: 'dask_task_key' is manually created to easy reading of Dask's running tasks: it will display
         the effective targeted function instead of 'wrap_trace_process' used to enable tracing into Dask workers.
     """
-    dask_task_key = _create_func_key(target_func, *args, **kwargs)
-    kwargs['span_context'] = get_ctx().tracer.span_context
+    tracing_headers = traces.get_trace_propagator().to_headers(get_ctx().tracer.span_context)
+    kwargs['tracing_headers'] = tracing_headers
     kwargs['target_func'] = target_func
+
+    dask_task_key = _create_func_key(target_func, *args, **kwargs)
+
     return dask_client.map(wrap_trace_process, *args, key=dask_task_key, **kwargs)
 
 
