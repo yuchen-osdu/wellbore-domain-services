@@ -31,7 +31,7 @@ from .utils import worker_capture_timing_handlers
 
 @dataclass
 class ChunkGroup:
-    """A chunk group represent a chunk list having exactly the same shemas
+    """A chunk group represent a chunk list having exactly the same schemas
     (columns labels and dtypes)"""
     labels: Set[str]
     paths: List[str]
@@ -65,6 +65,13 @@ class BulkCatalog:
         self.nb_rows: int = 0
         self.index_path: Optional[str] = None
         self.columns: List[ChunkGroup] = []
+
+    @property
+    def all_columns_count(self) -> int:
+        """
+        Return number of columns contained in bulk data
+        """
+        return len(self.all_columns_dtypes)
 
     @property
     def all_columns_dtypes(self) -> Dict[str, str]:
@@ -174,7 +181,7 @@ def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> Non
 
     add_trace_attributes({
         'catalog-row-count': catalog.nb_rows,
-        'catalog-col-count': len(catalog.columns)
+        'catalog-col-count': catalog.all_columns_count
     })
 
 
