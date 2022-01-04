@@ -150,7 +150,6 @@ class DataFrameRender:
             return df.head(0)  # return an empty dataframe
         return pd.concat(dataframe_list)
 
-
     @staticmethod
     @with_trace('select_range')
     @capture_timings('select_range')
@@ -159,7 +158,6 @@ class DataFrameRender:
             driver = await with_dask_blob_storage()
             return await driver.client.submit(DataFrameRender._select_range_impl, df, limit, offset)
         return df
-
 
     re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
@@ -184,6 +182,7 @@ class DataFrameRender:
         return False
 
     @staticmethod
+    @with_trace('get_matching_column')
     def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
         selected = {}
         curves_non_existent = []
@@ -198,8 +197,8 @@ class DataFrameRender:
 
         return list(selected.keys())
 
-
     @staticmethod
+    @with_trace('apply_filter')
     def apply_filter(df, filters):
 
         operator_to_function = {
@@ -257,7 +256,6 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
-    #@capture_timings('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)

@@ -199,6 +199,7 @@ async def get_data_version(
         ex.raise_as_http()
 
 
+@with_trace('_process_request_v1')
 async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
     dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
     columns_to_load = None

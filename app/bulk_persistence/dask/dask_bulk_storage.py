@@ -276,6 +276,7 @@ class DaskBulkStorage:
         await self._save_with_pandas(f'{session_path}/{filename}.parquet', pdf)
 
     @capture_timings('get_bulk_catalog')
+    @with_trace('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
         catalog = load_bulk_catalog(self._fs, bulk_path)
@@ -289,6 +290,7 @@ class DaskBulkStorage:
             raise BulkRecordNotFound(record_id, bulk_id) from e
 
     @capture_timings('_build_catalog_from_path')
+    @with_trace('_build_catalog_from_path')
     async def _build_catalog_from_path(self, path: str, record_id: str) -> BulkCatalog:
         """Build a catalog on the fly for folder that don't have a catalog (legacy bulk bolder)
         The method will list all parquet file from the specified folder and build the catalog
@@ -354,7 +356,7 @@ class DaskBulkStorage:
                                               for meta in chunk_metas}.values()
         add_trace_attributes({'chunks-distinct-index': len(chunks_meta_with_different_indexes)})
 
-        indexes = self.client.map(_load_index_from_meta, chunks_meta_with_different_indexes,
+        indexes = self._map_with_trace(_load_index_from_meta, chunks_meta_with_different_indexes,
                                        storage_options=self._parameters.storage_options)
         if from_bulk_id:
             # read the index of previous version
@@ -465,6 +467,7 @@ class DaskBulkStorage:
 
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
+        @with_trace('build_and_save_index')
         async def build_and_save_index():
             index = await self._build_session_index(chunk_metas, session.recordId, from_bulk_id)
             index_path = await self._save_session_index(commit_path, index)

@@ -38,6 +38,7 @@ class ChunkGroup:
     paths: List[str]
     dtypes: List[str]
 
+
 class BulkCatalog:
     """Represent a bulk catalog
     Example:
@@ -159,6 +160,7 @@ class BulkCatalog:
 
 
 CATALOG_FILE_NAME = 'bulk_catalog.json'
+
 
 @capture_timings('save_bulk_catalog', handlers=worker_capture_timing_handlers)
 @with_trace('save_bulk_catalog')
