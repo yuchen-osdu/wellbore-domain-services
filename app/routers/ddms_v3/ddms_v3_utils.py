@@ -1,12 +1,13 @@
 import re
 from typing import List, Tuple
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from odes_storage.models import Record
 from pydantic import validate_model
 from starlette import status
 
 from app.model.entity_utils import get_kind_meta
+from app.model.log_bulk import LogBulkHelper
 from app.model.osdu_model import (
     Well,
     Wellbore,
@@ -17,6 +18,9 @@ from app.model.osdu_model import (
     WellLog,
     WellLog110,
 )
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
+from app.routers.record_utils import fetch_record
+from app.utils import Context
 
 OSDU_WELL_VERSION_REGEX = re.compile(r"^([\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+):([0-9]*)$")
 OSDU_WELL_REGEX = re.compile(r"^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$")
@@ -155,4 +159,39 @@ class DMSV3RouterUtils:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Record[{idx}] validation against schema '{kind.entity_type}:{kind.version}' failed: {str(validationError)}",
+                )
+
+    @staticmethod
+    async def raise_if_invalid_bulk_uri(records: List[Record], ctx: Context, bulk_uri_access: BulkIdAccess):
+        # For each records :
+        for idx, r in enumerate(records):
+            # Get the given bulkURI or return None
+            bulk_uri = r.data.ExtensionProperties["wdms"]["bulkURI"] \
+                if r.data.ExtensionProperties is not None \
+                   and 'wdms' in r.data.ExtensionProperties \
+                   and 'bulkURI' in r.data.ExtensionProperties["wdms"] else None
+
+            # If BulkURI not none and the given record has an id : check if there is an old version of this record
+            # and get bulkURI's old version if it exist
+            if bulk_uri and r.id is not None:
+                try:
+                    old_record = await fetch_record(ctx, r.id)
+                    old_bulk_uri = bulk_uri_access.get_bulk_uri(record=old_record)
+                except:
+                    # record has no previous versions
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Record[{idx}] error : no Bulk URI can be specified",
+                    )
+                if bulk_uri != old_bulk_uri:
+                    # The given BulkURI isn't matching with the previous version one
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Record[{idx}] error : Bulk URI isn't matching with the previous version one",
+                    )
+            elif bulk_uri is not None and r.id is None:
+                # The given BulkURI can be specified without record id
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Record[{idx}] error : no Bulk URI can be specified without record id",
                 )
