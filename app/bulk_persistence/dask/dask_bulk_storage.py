@@ -297,7 +297,7 @@ class DaskBulkStorage:
         Raises:
             FileNotFoundError: If path does not exist
         Returns:
-            BulkCatalog: [description]
+            BulkCatalog: the builded catalog
         """
         path, _ = pathBuilder.remove_protocol(path)
         files = self._fs.ls(path)  # raises if path doesn't exists
@@ -325,7 +325,7 @@ class DaskBulkStorage:
         """load the dataframe index of the specified record"""
         catalog = await self.get_bulk_catalog(record_id, bulk_id)
         if catalog.index_path:
-            index_path = pathBuilder.full_path(self.base_directory, record_id, catalog.index_path)
+            index_path = pathBuilder.full_path(self.base_directory, record_id, catalog.index_path, self.protocol)
             future_df = self._read_parquet(index_path)
         else: # only read one column to get the index. It doesn't seems possible to get the index directly.
             first_column = next(iter(catalog.all_columns_dtypes))
@@ -343,11 +343,16 @@ class DaskBulkStorage:
     async def _build_session_index(
         self, chunk_metas: List[session_meta.SessionFileMeta], record_id: str, from_bulk_id: str
     ) -> pd.Index:
-        """Combine all chunks indexes + previous version index"""
-        # list one file per different index_hash.
-        # read chunks indexes from paquet
-        indexes = self._map_with_trace(_load_index_from_meta, chunk_metas,
-                                       storage_options=self._parameters.storage_options)
+        """
+            Combine all chunks indexes + previous version index
+            List one file per different index_hash.
+            Read chunks indexes from parquet
+        """
+        chunks_meta_with_different_indexes = {meta.index_hash: meta
+                                              for meta in chunk_metas}.values()
+
+        indexes = self.client.map(_load_index_from_meta, chunks_meta_with_different_indexes,
+                                  storage_options=self._parameters.storage_options)
         if from_bulk_id:
             # read the index of previous version
             indexes.append(await self._future_load_index(record_id, from_bulk_id))
@@ -417,6 +422,7 @@ class DaskBulkStorage:
         catalog.change_columns_info(chunk_group)
 
     @capture_timings('_save_session_index')
+    @with_trace('_save_session_index')
     async def _save_session_index(self, path: str, index: pd.Index) -> str:
         index_folder = pathBuilder.join(path, '_wdms_index_')
         self._fs.mkdirs(pathBuilder.remove_protocol(index_folder)[0]) # TODO for local storage

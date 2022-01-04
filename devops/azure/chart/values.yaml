@@ -24,12 +24,13 @@ deployment:
   keyvaultUrlPropertyName: ENV_KEYVAULT
   name: os-wellbore-ddms
 
-nodepool: services
 isAutoscalingEnabled: false
 maxReplicaCount: 2
 minReplicaCount: 2
 replicaCount: 2
 
+# undefined by default, but you can specify it if needed
+# nodepool: services
 resources:
  limits:
    memory: 2Gi
