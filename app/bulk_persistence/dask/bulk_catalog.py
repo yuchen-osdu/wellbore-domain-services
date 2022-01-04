@@ -22,10 +22,9 @@ from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 
 from dask.distributed import get_client
 
-from app.bulk_persistence.dask.traces import submit_with_trace
+from app.bulk_persistence.dask.traces import submit_with_trace, add_trace_attributes
 from app.helper.traces import with_trace
 from app.utils import capture_timings
-
 from .storage_path_builder import join, remove_protocol
 from .utils import worker_capture_timing_handlers
 
@@ -172,6 +171,11 @@ def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> Non
         data = json.dumps(catalog.as_dict(), indent=0)
         outfile.write(data)
         # json.dump(catalog.as_dict(), outfile) # don't know why json.dump is slower (local windows)
+
+    add_trace_attributes({
+        'catalog-row-count': catalog.nb_rows,
+        'catalog-col-count': len(catalog.columns)
+    })
 
 
 @capture_timings('load_bulk_catalog', handlers=worker_capture_timing_handlers)

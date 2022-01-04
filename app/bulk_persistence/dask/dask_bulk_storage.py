@@ -452,7 +452,6 @@ class DaskBulkStorage:
         bulk_id = new_bulk_id()
 
         chunk_metas = await session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
-        # Add trace attribute: number of chunks
         add_trace_attributes({'chunks-count': len(chunk_metas)})
 
         # there is no files in this session
