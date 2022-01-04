@@ -205,7 +205,7 @@ async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataP
     stat = await dask_blob_storage.read_stat(record_id, bulk_id)
     existing_col = set(stat['schema'])
     if data_param.curves:
-        columns_to_load = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
+        columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), existing_col)
         stat['schema'] = {k: stat['schema'][k] for k in columns_to_load}
 
     if not data_param.describe: # don't limit columns when describe parameter is True

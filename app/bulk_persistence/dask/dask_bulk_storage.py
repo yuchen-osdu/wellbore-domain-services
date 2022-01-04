@@ -49,8 +49,7 @@ def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
     """call dask.dataframe.read_parquet with default parameters
     Dask read_parquet parameters:
         chunksize='25M': if chunk are too small, we aggregate them until we reach chunksize
-        aggregate_files=True: because we are passing a list of path when commiting a session,
-                                aggregate_files is needed when paths are different
+        aggregate_files=True: aggregate_files is needed when files are in different folders
     Args:
         path (Union[str, List[str]]): a file, a folder or a list of files
     Returns:
@@ -280,14 +279,12 @@ class DaskBulkStorage:
         if catalog:
             return catalog
 
-        if not generate_if_not_exists:
-            return None
-
-        # For legacy bulk, construct a catalog on the fly
-        try:
-            return await self._build_catalog_from_path(bulk_path, record_id)
-        except FileNotFoundError as e:
-            raise BulkRecordNotFound(record_id, bulk_id) from e
+        if generate_if_not_exists:
+            # For legacy bulk, construct a catalog on the fly
+            try:
+                return await self._build_catalog_from_path(bulk_path, record_id)
+            except FileNotFoundError as error:
+                raise BulkRecordNotFound(record_id, bulk_id) from error
 
     @capture_timings('_build_catalog_from_path')
     async def _build_catalog_from_path(self, path: str, record_id: str) -> BulkCatalog:

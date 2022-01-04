@@ -163,40 +163,42 @@ class DataFrameRender:
     re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
     @staticmethod
-    def _col_matching(sel, col):
-        if sel == col:  # exact match
-            return True
-        m_sel = DataFrameRender.re_array_selection.match(sel)
-        if m_sel and m_sel['name'] == col:
-            return True # TODO if column type is array
-        m_col = DataFrameRender.re_array_selection.match(col)
-        if not m_col:  # if the column doesn't have an array pattern (col[*])
-            return False
-        # compare selection with curve name without array suffix [*]
-        if sel == m_col['name']:  # if selection is 'c', c[*] should match
-            return True
-        # range selection use cases c[0:2] should match c[0], c[1] and c[2]
-        if m_sel and m_sel['stop'] and m_sel['name'] == m_col['name']:
+    def _get_matching_columns_from_selection(selection: str, all_columns=Set[str]) -> List[str]:
+        m_sel = DataFrameRender.re_array_selection.match(selection)
+        if m_sel and m_sel['stop']:  # selection like col_name[<start>:<stop>]
+            col_name = m_sel['name']
             with suppress(ValueError):  # suppress int conversion exceptions
-                if int(m_sel['start']) <= int(m_col['start']) <= int(m_sel['stop']):
-                    return True
-        return False
+                requested_columns = (f'{col_name}[{i}]' for i in range(int(m_sel['start']), int(m_sel['stop'])+1))  # TODO we may want to support floating point values ?
+                return all_columns.intersection(requested_columns)
+
+        def is_matching(col: str):
+            if not col.startswith(selection):
+                return False
+            if len(col) == len(selection):  # exact match
+                return True
+            m_col = DataFrameRender.re_array_selection.match(col)
+            if m_col:  # if selection is 'col_name', col_name[*] should match
+                return m_col['name'] == selection
+            return False
+
+        return [c for c in all_columns if is_matching(c)]
 
     @staticmethod
-    def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
+    def get_matching_columns(selection: List[str], cols: Set[str]) -> List[str]:
         selected = {}
         curves_non_existent = []
+
         for sel in selection:
-            matching_columns = [col for col in cols if DataFrameRender._col_matching(sel, col)]
+            matching_columns = DataFrameRender._get_matching_columns_from_selection(sel, cols)
             if matching_columns:
                 selected.update({column: 1 for column in natsorted(matching_columns)})
             else:
                 curves_non_existent.append(sel)
+
         if curves_non_existent:
             raise BulkCurvesNotFound(curves=curves_non_existent)
 
         return list(selected.keys())
-
 
     @staticmethod
     def apply_filter(df, filters):
@@ -244,7 +246,7 @@ class DataFrameRender:
 
         if params.curves:
             selection = params.get_curves_list()
-            columns = DataFrameRender.get_matching_column(selection, set(df.columns))
+            columns = DataFrameRender.get_matching_columns(selection, set(df.columns))
             df = df[columns]  # columns are ordered as the user requested
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
