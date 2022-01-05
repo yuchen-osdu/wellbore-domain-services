@@ -35,6 +35,8 @@ class AzureInjector(AppInjectorModule):
     @staticmethod
     async def build_dask_az_blob_storage() -> DaskBulkStorage:
         ctx: Context = Context.current()
-        tenant =  await resolve_tenant(ctx.partition_id)
-        params = await az_parameters(tenant)
-        return await DaskBulkStorage.create(params)
+        tenant = await resolve_tenant(ctx.partition_id)
+        with ctx.tracer.span(name=f'build_dask_az_blob_storage - az_parameters') as span:
+            params = await az_parameters(tenant)
+        with ctx.tracer.span(name=f'build_dask_az_blob_storage - DaskBulkStorage.create(params)') as span:
+            return await DaskBulkStorage.create(params)
