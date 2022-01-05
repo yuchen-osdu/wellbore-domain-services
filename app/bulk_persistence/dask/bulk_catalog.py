@@ -38,6 +38,9 @@ class ChunkGroup:
     paths: List[str]
     dtypes: List[str]
 
+ColumnLabel = str
+ColumnDType = str
+
 class BulkCatalog:
     """Represent a bulk catalog
     Example:
@@ -67,7 +70,7 @@ class BulkCatalog:
         self.columns: List[ChunkGroup] = []
 
     @property
-    def all_columns_dtypes(self) -> Dict[str, str]:
+    def all_columns_dtypes(self) -> Dict[ColumnLabel, ColumnDType]:
         """Returns all columns with their dtype
         Returns:
             Dict[str, str]:  a dict { column label : column dtype }
