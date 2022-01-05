@@ -177,8 +177,7 @@ class DMSV3RouterUtils:
             if bulk_uri and r.id is not None:
                 try:
                     old_record = await fetch_record(ctx, r.id)
-                    old_bulk_uri = bulk_uri_access.get_bulk_uri(record=old_record)
-                    old_bulk_uri = BulkURI.encode(old_bulk_uri)
+                    old_bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=old_record))
                 except:
                     # record has no previous versions
                     raise HTTPException(
