@@ -289,7 +289,8 @@ tests_parameters_restricted_well = [
     )]
 
 
-def validation_test_restricted_record_id(record_id, record_id_to_test, response, ok_response=status.HTTP_200_OK, error_response=status.HTTP_400_BAD_REQUEST):
+def validation_test_restricted_record_id(record_id, record_id_to_test, response, ok_response=status.HTTP_200_OK,
+                                         error_response=status.HTTP_400_BAD_REQUEST):
     if record_id != record_id_to_test:
         assert response.status_code == error_response
     else:
@@ -316,10 +317,10 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
          mock.patch.object(StorageRecordServiceClientMock, "create_or_update_records", moc_create_or_update_records), \
          mock.patch("app.routers.bulk.bulk_routes.set_bulk_field_and_send_record", moc_create_or_update_records), \
          mock.patch.object(StorageRecordServiceClientMock, "delete_record", moc_delete_records):
-
         response = client.post(f"{base_url}", json=[record_to_test])
 
-        validation_test_restricted_record_id(record_id, record_id_to_test, response, error_response=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                             error_response=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         response = client.get(f"{base_url}/{record_id_to_test}")
         validation_test_restricted_record_id(record_id, record_id_to_test, response)
@@ -356,10 +357,12 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
                 version=1976,
                 legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
                 data={'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {
-                          'wdms': {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}},
+                    'wdms': {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}},
             )
-            with mock.patch.object(StorageRecordServiceClientMock, "get_record",  mock.AsyncMock(return_value=moc_record)), \
-                 mock.patch("app.bulk_persistence.dask.dask_bulk_storage.DaskBulkStorage.save_blob",  mock.AsyncMock(return_value=0)):
+            with mock.patch.object(StorageRecordServiceClientMock, "get_record",
+                                   mock.AsyncMock(return_value=moc_record)), \
+                 mock.patch("app.bulk_persistence.dask.dask_bulk_storage.DaskBulkStorage.save_blob",
+                            mock.AsyncMock(return_value=0)):
                 data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
                 headers = {'content-type': 'application/json'}
 
@@ -372,3 +375,82 @@ def test_restricted_record_id(client, base_url, id, id_to_test, record_to_test, 
 
                 response = client.get(f'{base_url}/{record_id_to_test}/versions/{version}/data')
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
+
+
+tests_parameters_record_ids = [
+    (
+        "/ddms/v3/welllogs",
+        r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        "namespace:osdu:work-product-component--WellLog:1.0.0"
+    ),
+    (
+        "/ddms/v3/wellboretrajectories",
+        r"namespace:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        "namespace:osdu:work-product-component--WellboreTrajectory:1.0.0"
+    )
+]
+
+def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
+    record_to_test = {
+    "id": record_id,
+    "kind": record_kind,
+    "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+    "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
+    "data": data
+    }
+    return record_to_test
+
+@pytest.mark.parametrize("base_url, record_id, record_kind", tests_parameters_record_ids)
+def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind):
+    data = {}
+    chunk = pd.DataFrame([[10, 11]], index=[1], columns=['c1', 'c2'])
+    create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
+    moc_get_record = mock.AsyncMock(return_value=record_id)
+    moc_create_or_update_records = mock.AsyncMock(return_value=create_update_records_obj)
+    moc_delete_records = mock.AsyncMock(return_value=Response())
+
+    with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc_get_record), \
+         mock.patch.object(StorageRecordServiceClientMock, "create_or_update_records", moc_create_or_update_records), \
+         mock.patch("app.routers.bulk.bulk_routes.set_bulk_field_and_send_record", moc_create_or_update_records), \
+         mock.patch.object(StorageRecordServiceClientMock, "delete_record", moc_delete_records):
+        # response = client.get(f"{base_url}/{record_id_to_test}")
+
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind, data=data)
+        response = client.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_200_OK
+
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data={})
+        response = client.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_200_OK
+
+        data = {"ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236cca00'}}}
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind, data=data)
+        response = client.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data)
+        response = client.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        # Data
+        moc_record = Record(
+            id=record_id,
+            kind=record_kind,
+            acl={"owners": ["test"], "viewers": ["test"]},
+            version=1976,
+            legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
+            data={'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {
+                'wdms': {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}},
+        )
+        with mock.patch.object(StorageRecordServiceClientMock, "get_record",
+                               mock.AsyncMock(return_value=moc_record)), \
+             mock.patch("app.bulk_persistence.dask.dask_bulk_storage.DaskBulkStorage.save_blob",
+                        mock.AsyncMock(return_value=0)):
+            record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind, data=data)
+            response = client.post(f"{base_url}", json=[record_to_test])
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+            data = {"ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}}
+            record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind, data=data)
+            response = client.post(f"{base_url}", json=[record_to_test])
+            assert response.status_code == status.HTTP_200_OK

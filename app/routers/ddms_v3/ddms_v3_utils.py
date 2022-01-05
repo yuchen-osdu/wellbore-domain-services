@@ -6,6 +6,7 @@ from odes_storage.models import Record
 from pydantic import validate_model
 from starlette import status
 
+from app.bulk_persistence import BulkURI
 from app.model.entity_utils import get_kind_meta
 from app.model.log_bulk import LogBulkHelper
 from app.model.osdu_model import (
@@ -177,6 +178,7 @@ class DMSV3RouterUtils:
                 try:
                     old_record = await fetch_record(ctx, r.id)
                     old_bulk_uri = bulk_uri_access.get_bulk_uri(record=old_record)
+                    old_bulk_uri = BulkURI.encode(old_bulk_uri)
                 except:
                     # record has no previous versions
                     raise HTTPException(
