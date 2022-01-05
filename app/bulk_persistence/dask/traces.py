@@ -19,14 +19,15 @@ _EXPORTER = None
 def wrap_trace_process(*args, **kwargs):
     global _EXPORTER
 
-    span_context = traces.get_trace_propagator().from_headers(kwargs.pop('tracing_headers'))
+    tracing_headers = kwargs.pop('tracing_headers')
     target_func = kwargs.pop('target_func')
-    if not span_context or not target_func:
+    if not tracing_headers or not target_func:
         raise AttributeError("Keyword arguments should contain 'target_func' and 'tracing_headers'")
 
     if _EXPORTER is None:
         _EXPORTER = traces.create_exporter(service_name=Config.service_name.value)
 
+    span_context = traces.get_trace_propagator().from_headers(tracing_headers)
     tracer = open_tracer.Tracer(span_context=span_context,
                                 sampler=AlwaysOnSampler(),
                                 exporter=_EXPORTER)
