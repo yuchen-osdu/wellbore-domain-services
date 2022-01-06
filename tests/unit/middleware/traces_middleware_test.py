@@ -164,14 +164,6 @@ def test_call_trace_url(client_after_startup: TestClient):
 
     call_count = 0
 
-    # making sure modules are tested as well
-    from app.modules.log_recognition.routers import log_recognition
-
-    prefixes_to_test = {
-        log_recognition.router.prefix,
-    }
-    prefixes_tested = set()
-
     # startup event has been called (client has been called in a contest), so all routers should be mounted
     for method, path in gen_all_routes_request(client_after_startup.app):
 
@@ -184,10 +176,6 @@ def test_call_trace_url(client_after_startup: TestClient):
             "/redoc",
         ]:
             continue
-
-        for prefx in prefixes_to_test:
-            if path.startswith(prefx):
-                prefixes_tested.add(prefx)
 
         # replace variable in path with fake id...
         fake_path = re.sub(path_var_rgx, r"/123456", path)
@@ -206,6 +194,3 @@ def test_call_trace_url(client_after_startup: TestClient):
         # with expected name and route
         assert spandata.name == fake_path
         assert spandata.attributes["http.route"] == path
-
-    prefixes_untested = prefixes_to_test - prefixes_tested
-    assert len(prefixes_untested) == 0, f"Prefixes not tested: {prefixes_to_test}"
