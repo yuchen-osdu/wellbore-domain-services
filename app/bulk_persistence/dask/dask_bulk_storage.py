@@ -263,6 +263,7 @@ class DaskBulkStorage:
 
         # sort column by names
         pdf = pdf[sorted(pdf.columns)]
+        pdf.index.name = '_wdms_index_'  # TODO global value
         filename = session_meta.generate_chunk_filename(pdf)
 
         session_path = pathBuilder.record_session_path(
@@ -278,7 +279,6 @@ class DaskBulkStorage:
     @capture_timings('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str, generate_if_not_exists=True) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
-        # catalog = load_bulk_catalog(self._fs, bulk_path)
         catalog = await async_load_bulk_catalog(self._fs, bulk_path)
         if catalog:
             return catalog
@@ -473,7 +473,8 @@ class DaskBulkStorage:
             self._fill_catalog_columns_info(catalog, chunk_metas, bulk_id)
         )
 
-        await async_save_bulk_catalog(self._fs, commit_path, catalog)
+        fcatalog = await self.client.scatter(catalog)
+        await async_save_bulk_catalog(self._fs, commit_path, fcatalog)
         return bulk_id
 
 

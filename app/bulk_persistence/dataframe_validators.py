@@ -67,7 +67,7 @@ PandasReservedIndexColRegexp = re.compile(r'__index_level_\d+__')
 
 def is_reserved_column_name(name: str) -> bool:
     """Return True if the name is a reserved column name by Pandas/Dask with PyArrow"""
-    return PandasReservedIndexColRegexp.match(name) or name == '__null_dask_index__'
+    return PandasReservedIndexColRegexp.match(name) or name == '__null_dask_index__' or name == '_wdms_index_'
 
 
 def any_reserved_column_name(names: Iterable[str]) -> bool:
