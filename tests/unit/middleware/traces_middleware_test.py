@@ -14,7 +14,7 @@
 
 import re
 from typing import Optional
-from unittest.mock import AsyncMock
+from mock import AsyncMock
 
 from opencensus.trace import base_exporter
 from fastapi.testclient import TestClient
