@@ -398,6 +398,7 @@ tests_parameters_record_ids = [
     )
 ]
 
+
 def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
     record_to_test = {
         "id": record_id,
@@ -411,35 +412,37 @@ def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
 
 @pytest.mark.parametrize("base_url, record_id, record_kind, data", tests_parameters_record_ids)
 def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
-    chunk = pd.DataFrame([[10, 11]], index=[1], columns=['c1', 'c2'])
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
     moc_get_record = mock.AsyncMock(return_value=record_id)
     moc_create_or_update_records = mock.AsyncMock(return_value=create_update_records_obj)
-    moc_delete_records = mock.AsyncMock(return_value=Response())
 
     with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc_get_record), \
-         mock.patch.object(StorageRecordServiceClientMock, "create_or_update_records", moc_create_or_update_records), \
-         mock.patch("app.routers.bulk.bulk_routes.set_bulk_field_and_send_record", moc_create_or_update_records), \
-         mock.patch.object(StorageRecordServiceClientMock, "delete_record", moc_delete_records):
-
+         mock.patch.object(StorageRecordServiceClientMock, "create_or_update_records", moc_create_or_update_records):
+        # test create record with id and without BulkURI
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind, data=data)
         response = client.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_200_OK
 
+        # test create record without id and BulkURI
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data)
         response = client.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_200_OK
 
-        data_test = {"ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236cca00'}}}
+        # test create record with id and BulkURI
+        data_test = {
+            "ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236cca00'}}}
         data_test.update(data)
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
                                                                data=data_test)
         response = client.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified"}'
 
+        # test create record with BulkURI and without id
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data_test)
         response = client.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified without record id"}'
 
         # Data
         moc_record = Record(
@@ -452,15 +455,17 @@ def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
                 'wdms': {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}},
         )
         with mock.patch.object(StorageRecordServiceClientMock, "get_record",
-                               mock.AsyncMock(return_value=moc_record)), \
-             mock.patch("app.bulk_persistence.dask.dask_bulk_storage.DaskBulkStorage.save_blob",
-                        mock.AsyncMock(return_value=0)):
+                               mock.AsyncMock(return_value=moc_record)):
+            # test create record with BulkURI which has a previous version with another BulkURI
             record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
                                                                    data=data_test)
             response = client.post(f"{base_url}", json=[record_to_test])
             assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert response.text == '{"detail":"Record[0] error : Bulk URI isn\'t matching with the previous version one"}'
 
-            data_test = {"ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}}
+            # test create record with BulkURI which has a previous version with same BulkURI
+            data_test = {
+                "ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}}
             data_test.update(data)
             record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
                                                                    data=data_test)
