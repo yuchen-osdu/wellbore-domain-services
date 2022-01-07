@@ -95,6 +95,7 @@ class DaskBulkStorage:
         self._fs = None
 
     @classmethod
+    @with_trace("DaskBulkStorage-create()")
     async def create(cls, parameters: DaskStorageParameters, dask_client=None) -> 'DaskBulkStorage':
         instance = cls()
         instance._parameters = parameters
