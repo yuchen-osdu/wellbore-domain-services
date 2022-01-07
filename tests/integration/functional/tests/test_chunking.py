@@ -306,7 +306,7 @@ def test_get_data_with_column_filter(with_wdms_env):
         validation_list = [  # tuple (params, expected_status, expected data)
             ({"curves": "MD"}, 200, data[['MD']]),
             ({"curves": "X, Y, Z"}, 200, data[['X', 'Y', 'Z']]),
-            ({"curves": "W, X"}, 200, data[['X']]),
+            ({"curves": "W, X"}, 404, data[['X']]),
             ({"curves": "2D[0]"}, 200, data[['2D[0]']]),
             ({"curves": "2D[0:1]"}, 200, data[['2D[0]', '2D[1]']]),
             ({"curves": "2D"}, 200, data[['2D[0]', '2D[1]', '2D[2]']]),
@@ -567,4 +567,4 @@ def test_describe(with_wdms_env, entity_type, serializer):
         result = build_request_get_data(entity_type, record_id, {'describe': True}).call(with_wdms_env, headers=headers, assert_status=200)
         res = result.response.json()
         assert res['numberOfRows'] == number_of_rows
-        assert res['columns'] == ['BOB', 'MD', '__null_dask_index__'] # TODO
+        assert res['columns'] == ['BOB', 'MD']
