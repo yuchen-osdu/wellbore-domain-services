@@ -1,6 +1,6 @@
 import io
 import math
-from tempfile import TemporaryDirectory
+import platform
 
 import numpy as np
 import pandas as pd
@@ -122,36 +122,36 @@ def _cast_datetime_to_datetime64_ns(result_df):
 
 
 @pytest.fixture
-def dasked_test_app(init_fixtures, event_loop):
-    with TemporaryDirectory() as tmp_dir:
-        local_blob_storage = LocalFSBlobStorage(directory=tmp_dir)
+def dasked_test_app(init_fixtures, event_loop, tmp_path):
 
-        async def storage_service_builder(*args, **kwargs):
-            return StorageRecordServiceBlobStorage(local_blob_storage, 'myProject', 'myContainer')
+    local_blob_storage = LocalFSBlobStorage(directory=tmp_path)
 
-        async def blob_storage_builder(*args, **kwargs):
-            return local_blob_storage
+    async def storage_service_builder(*args, **kwargs):
+        return StorageRecordServiceBlobStorage(local_blob_storage, 'myProject', 'myContainer')
 
-        async def sessions_storage_builder(*args, **kwargs):
-            return SessionsStorage(local_blob_storage)
+    async def blob_storage_builder(*args, **kwargs):
+        return local_blob_storage
 
-        async def dask_blob_storage_builder() -> DaskBulkStorage:
-            return await make_local_dask_bulk_storage(base_directory=tmp_dir)
+    async def sessions_storage_builder(*args, **kwargs):
+        return SessionsStorage(local_blob_storage)
 
-        app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
-        app_injector.register(BlobStorageBase, blob_storage_builder)
-        app_injector.register(SessionsStorage, sessions_storage_builder)
-        app_injector.register(StorageRecordServiceClient, storage_service_builder)
+    async def dask_blob_storage_builder() -> DaskBulkStorage:
+        return await make_local_dask_bulk_storage(base_directory=tmp_path)
 
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
+    app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
+    app_injector.register(BlobStorageBase, blob_storage_builder)
+    app_injector.register(SessionsStorage, sessions_storage_builder)
+    app_injector.register(StorageRecordServiceClient, storage_service_builder)
 
-        # Initialize traces exporter in app, like it is in app's startup decorator
-        wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
+    wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
+    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
 
-        yield wdms_app
-        # clean up
-        wdms_app.dependency_overrides = {}
+    # Initialize traces exporter in app, like it is in app's startup decorator
+    wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
+
+    yield wdms_app
+    # clean up
+    wdms_app.dependency_overrides = {}
 
 
 @pytest.fixture
@@ -935,10 +935,7 @@ def test_send_json_parquet_in_one_session(dasked_test_app_without_consistency_cl
     commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'commit'})
 
-    assert commit_session_response.status_code == 200
-    
-    get_response = client.get(f'{chunking_url}/{record_id}/data')
-    assert get_response.status_code == 200
+    assert_commit_session_status_code(commit_session_response)
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)

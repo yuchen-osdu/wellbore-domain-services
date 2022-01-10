@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from tempfile import TemporaryDirectory
 from datetime import datetime, timedelta
 
 import pytest
@@ -36,10 +35,9 @@ from unittest.mock import patch, PropertyMock
 
 
 @pytest.fixture
-def sessions_storage():
+def sessions_storage(tmp_path):
     Context(logger=NopeLogger).set_current()
-    with TemporaryDirectory() as tmp_dir:
-        yield SessionsStorage(LocalFSBlobStorage(directory=tmp_dir))
+    yield SessionsStorage(LocalFSBlobStorage(directory=tmp_path))
 
 
 @pytest.fixture

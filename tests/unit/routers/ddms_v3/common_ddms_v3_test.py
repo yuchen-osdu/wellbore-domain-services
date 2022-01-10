@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from tempfile import TemporaryDirectory
 import json
 import os
 import mock
@@ -75,42 +74,41 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_with_mocked_core_service(nope_logger_fixture, event_loop):
+def dasked_test_app_with_mocked_core_service(nope_logger_fixture, event_loop, tmp_path):
 
-    with TemporaryDirectory() as tmp_dir:
-        local_blob_storage = LocalFSBlobStorage(directory=tmp_dir)
+    local_blob_storage = LocalFSBlobStorage(directory=tmp_path)
 
-        async def build_mock_storage():
-            return StorageRecordServiceClientMock()
+    async def build_mock_storage():
+        return StorageRecordServiceClientMock()
 
-        async def build_mock_search():
-            return SearchServiceClientMock()
+    async def build_mock_search():
+        return SearchServiceClientMock()
 
-        async def blob_storage_builder(*args, **kwargs):
-            return local_blob_storage
+    async def blob_storage_builder(*args, **kwargs):
+        return local_blob_storage
 
-        async def sessions_storage_builder(*args, **kwargs):
-            return SessionsStorage(local_blob_storage)
+    async def sessions_storage_builder(*args, **kwargs):
+        return SessionsStorage(local_blob_storage)
 
-        async def dask_blob_storage_builder() -> DaskBulkStorage:
-            return await make_local_dask_bulk_storage(base_directory=tmp_dir)
+    async def dask_blob_storage_builder() -> DaskBulkStorage:
+        return await make_local_dask_bulk_storage(base_directory=tmp_path)
 
-        app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
-        app_injector.register(BlobStorageBase, blob_storage_builder)
-        app_injector.register(SessionsStorage, sessions_storage_builder)
-        app_injector.register(StorageRecordServiceClient, build_mock_storage)
-        app_injector.register(SearchServiceClient, build_mock_search)
+    app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
+    app_injector.register(BlobStorageBase, blob_storage_builder)
+    app_injector.register(SessionsStorage, sessions_storage_builder)
+    app_injector.register(StorageRecordServiceClient, build_mock_storage)
+    app_injector.register(SearchServiceClient, build_mock_search)
 
-        # override authentication dependency
-        previous_overrides = wdms_app.dependency_overrides
+    # override authentication dependency
+    previous_overrides = wdms_app.dependency_overrides
 
-        try:
-            wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-            wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-            client = TestClient(wdms_app)
-            yield client
-        finally:
-            wdms_app.dependency_overrides = previous_overrides  # clean up
+    try:
+        wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
+        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
+        client = TestClient(wdms_app)
+        yield client
+    finally:
+        wdms_app.dependency_overrides = previous_overrides  # clean up
 
 
 # Initialize traces exporter in app, like it is in app's startup decorator

@@ -15,7 +15,7 @@
 import pytest
 import mock
 import asyncio
-from tempfile import TemporaryDirectory
+
 from opencensus.trace.span_context import SpanContext
 from contextlib import contextmanager
 
@@ -147,12 +147,6 @@ def create_mock_class(cls_to_mock):
 
     _new_class_ = type(cls_name, (object, ), m_dict)
     return _new_class_
-
-
-@pytest.fixture
-async def temp_directory() -> str:
-    with TemporaryDirectory() as tmpdir:
-        yield tmpdir
 
 
 def make_record(as_dict=False, **kwargs):
