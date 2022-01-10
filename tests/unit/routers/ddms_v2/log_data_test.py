@@ -14,7 +14,7 @@
 
 import os
 
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class
 
 from fastapi import HTTPException, Header
 from fastapi.testclient import TestClient
@@ -70,7 +70,7 @@ StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 
 
 @pytest.fixture
-def client(nope_logger_fixture, tmp_path):
+def client(tmp_path):
 
     async def storage_service_builder(*args, **kwargs):
         return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1')

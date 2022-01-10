@@ -74,7 +74,7 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_with_mocked_core_service(nope_logger_fixture, event_loop, tmp_path):
+def dasked_test_app_with_mocked_core_service(event_loop, tmp_path):
 
     local_blob_storage = LocalFSBlobStorage(directory=tmp_path)
 

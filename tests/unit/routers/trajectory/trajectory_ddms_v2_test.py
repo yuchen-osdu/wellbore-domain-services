@@ -30,7 +30,6 @@ from app.middleware import require_data_partition_id
 from app.wdms_app import wdms_app, app_injector
 
 from app.utils import Context
-from tests.unit.test_utils import nope_logger_fixture
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
@@ -76,7 +75,7 @@ prev_data = {"columns": ["col_100X"], "data": [[0], [1], [2]], 'index': [0, 1, 2
 
 
 @pytest.fixture
-def client(nope_logger_fixture, tmp_path):
+def client(tmp_path):
     async def storage_service_builder(*args, **kwargs):
         return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1')
 
