@@ -95,12 +95,6 @@ class AsyncMock:
         return args[self._from_input_index]
 
 
-def patch_async(target: str, return_value, mocker=mock):
-    future = asyncio.Future()
-    future.set_result(return_value)
-    return mocker.patch(target, return_value=future)
-
-
 def create_mock_class(cls_to_mock):
     cls_name = cls_to_mock.__name__ + 'AutoMock'
 
