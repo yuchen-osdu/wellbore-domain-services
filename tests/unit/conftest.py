@@ -20,7 +20,7 @@ import pytest
 from app.conf import ConfigurationContainer
 from app.utils import Context, DaskClient
 from fastapi import Header
-from tests.unit.test_utils import nope_logger_fixture
+
 
 @pytest.fixture(autouse=True)
 def top_fixture(monkeypatch):
@@ -67,7 +67,7 @@ def event_loop():  # all tests will share the same loop
 
 
 @pytest.fixture
-def init_fixtures(nope_logger_fixture, monkeypatch, tmp_path):
+def init_fixtures(monkeypatch, tmp_path):
     monkeypatch.setenv(name="USE_LOCALFS_BLOB_STORAGE_WITH_PATH", value=tmp_path)
     conf.Config = conf.ConfigurationContainer.with_load_all()
     yield
