@@ -53,9 +53,7 @@ from app.routers.bulk.utils import (
     set_bulk_field_and_send_record,
     DataFrameRender)
 from app.helper.traces import with_trace
-
-
-from app.bulk_persistence.dask.traces import trace_dataframe_attributes
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes, add_trace_attributes
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -285,6 +283,8 @@ async def complete_session(
                 # get the session if some information is needed
                 i_session = commit_guard.session
                 _internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
+
+                add_trace_attributes({'session-mode': i_session.session.mode})
 
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
                 DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
