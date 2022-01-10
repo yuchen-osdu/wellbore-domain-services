@@ -3,6 +3,7 @@ import re
 
 import pandas as pd
 
+from app.bulk_persistence.dask.utils import WDMS_INDEX_NAME
 from app.bulk_persistence.dask.errors import BulkNotProcessable
 
 ValidationResult = Tuple[bool, str]  # Tuple (is_dataframe_valid, failure_reason)
@@ -67,7 +68,9 @@ PandasReservedIndexColRegexp = re.compile(r'__index_level_\d+__')
 
 def is_reserved_column_name(name: str) -> bool:
     """Return True if the name is a reserved column name by Pandas/Dask with PyArrow"""
-    return PandasReservedIndexColRegexp.match(name) or name == '__null_dask_index__' or name == '_wdms_index_'
+    return (PandasReservedIndexColRegexp.match(name)
+            or name == '__null_dask_index__'
+            or name == WDMS_INDEX_NAME)
 
 
 def any_reserved_column_name(names: Iterable[str]) -> bool:

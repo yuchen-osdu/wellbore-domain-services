@@ -272,7 +272,8 @@ async def test_bad_columns_requested(test_session, dask_storage: DaskBulkStorage
     await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A'])
     with pytest.raises(BulkRecordNotFound):
         await dask_storage.load_bulk(test_session.recordId, bulk_id, ['B'])
-    await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A', 'B'])
+    with pytest.raises(BulkRecordNotFound):
+        await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A', 'B'])
 
 
 @pytest.mark.asyncio

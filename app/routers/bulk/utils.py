@@ -119,14 +119,25 @@ class DataFrameRender:
         return await driver.client.compute(df)
 
     @staticmethod
+    async def load_index(record_id: str, bulk_id: str, dask_blob_storage: DaskBulkStorage):
+        return await dask_blob_storage._future_load_index(record_id, bulk_id)
+
+    @staticmethod
     async def get_size(df):
         if isinstance(df, pd.DataFrame):
             return len(df.index)
         driver = await with_dask_blob_storage()
-        return await driver.client.submit(lambda: len(df.index))
+        return await driver._submit_with_trace(lambda: len(df.index))
 
     @staticmethod
-    def _select_range_impl(df: dd.DataFrame, limit, offset):
+    def _select_range_impl(df: dd.DataFrame, limit, offset, index):
+        if df.known_divisions and index is not None:
+            if offset:
+                index = index[offset:]
+            if limit:
+                index = index[:limit]
+            return df.loc[list(index)]  # this works only if divisions are known
+
         dataframe_list = []
         CONCURRENT_READ = 1
         for nth in range(0, df.npartitions, CONCURRENT_READ):
@@ -142,6 +153,7 @@ class DataFrameRender:
             if limit:
                 dataframe = dataframe.iloc[:limit]
                 limit -= len(dataframe.index)
+
             dataframe_list.append(dataframe)
             if limit is not None and limit <= 0:
                 break  # stop when we have the requested data
@@ -149,14 +161,13 @@ class DataFrameRender:
             return df.head(0)  # return an empty dataframe
         return pd.concat(dataframe_list)
 
-
     @staticmethod
     @with_trace('select_range')
     @capture_timings('select_range')
-    async def select_range(df: dd.DataFrame, offset, limit):
+    async def select_range(df: dd.DataFrame, offset, limit, dask_blob_storage: DaskBulkStorage, index=None):
         if offset or limit:
-            driver = await with_dask_blob_storage()
-            return await driver.client.submit(DataFrameRender._select_range_impl, df, limit, offset)
+            return await dask_blob_storage._submit_with_trace(DataFrameRender._select_range_impl,
+                                                              df, limit, offset, index)
         return df
 
 
@@ -234,7 +245,7 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('process_params')
-    async def process_params(df, params: GetDataParams, filters):
+    async def process_params(df, params: GetDataParams, filters, dask_blob_storage: DaskBulkStorage, f_index):
         """
         pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
         """
@@ -251,7 +262,10 @@ class DataFrameRender:
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
-        df = await DataFrameRender.select_range(df, params.offset, params.limit)
+        if filters:
+            f_index = dask_blob_storage.client.compute(df.index)
+
+        df = await DataFrameRender.select_range(df, params.offset, params.limit, dask_blob_storage, f_index)
 
         return df
 

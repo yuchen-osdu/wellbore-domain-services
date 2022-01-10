@@ -187,20 +187,24 @@ async def get_data_version(
         if not bulk_uri.is_valid():
             raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
         bulk_id = bulk_uri.bulk_id
+
+        dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+        future_index = None
         if bulk_uri.is_bulk_storage_V0():
             df = await get_dataframe(ctx, bulk_id)
             auto_cast_columns_to_string(df)
         else:
-            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters)
+            future_index = await DataFrameRender.load_index(record_id, bulk_id, dask_blob_storage)
+            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters, dask_blob_storage)
 
-        df = await DataFrameRender.process_params(df, data_param, filters=filters)
+        df = await DataFrameRender.process_params(df, data_param, filters, dask_blob_storage, future_index)
+
         return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
 
 
-async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
-    dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters, dask_blob_storage: DaskBulkStorage):
     columns_to_load = None
     stat = await dask_blob_storage.read_stat(record_id, bulk_id)
     existing_col = set(stat['schema'])
