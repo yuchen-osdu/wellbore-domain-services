@@ -171,29 +171,6 @@ def basic_record(kind: str = None):
     return make_record() if kind is None else make_record(kind=kind)
 
 
-def make_fn_return_value(value_to_return, as_coroutine: bool = False):
-    if not as_coroutine:
-        return lambda *args, **kwargs: value_to_return
-
-    async def return_async_fn(*args, **kwargs):
-        return value_to_return
-
-    return return_async_fn
-
-
-def make_fn_do_nothing(as_coroutine: bool = False):
-    return make_fn_return_value(None, as_coroutine)
-
-
-def make_async_return_value(value_to_return):
-    return make_fn_return_value(value_to_return, True)
-
-
-def make_async_do_nothing():
-    return make_fn_do_nothing(True)
-
-
-
 # Format selected routes for spec generation
 def format_routes(app, prefix, tags):
     for route in app.routes:
