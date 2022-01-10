@@ -34,13 +34,6 @@ from app.persistence.sessions_storage import (Session, SessionState,
                                               SessionUpdateMode)
 
 
-@pytest.fixture(scope="module")
-def event_loop():  # all tests will share the same loop
-    loop = asyncio.get_event_loop()
-    yield loop
-    # teardown
-    loop.run_until_complete(DaskClient.close())
-    loop.close()
 
 
 @pytest.fixture()

@@ -21,6 +21,7 @@ from .wdms import error_cases
 from .wdms import model_extensibility
 from .wdms import recursive_delete
 from .wdms import search_apis
+from deepdiff import DeepDiff
 
 request_path_dict = {
     "crud.well.get_well":
@@ -237,14 +238,33 @@ def build_request(path: Union[str, List[str]], sep: str = ".") -> "RequestRunner
     return request_path_dict[n_path]()
 
 
-def get_cleaned_ref_and_res(kind: str, res_dict: dict) -> (dict, dict):
+def get_cleaned_ref_and_res(kind: str) -> dict:
     if kind == "osdu_wellbore":
-        return crud.osdu_wellbore.get_cleaned_ref_and_res(res_dict)
+        return crud.osdu_wellbore.get_cleaned_ref_and_res()
     if kind == "osdu_well":
-        return crud.osdu_well.get_cleaned_ref_and_res(res_dict)
+        return crud.osdu_well.get_cleaned_ref_and_res()
     if kind == "osdu_welllog":
-        return crud.osdu_welllog.get_cleaned_ref_and_res(res_dict)
+        return crud.osdu_welllog.get_cleaned_ref_and_res()
     if kind == "osdu_wellboretrajectory":
-        return crud.osdu_wellboretrajectory.get_cleaned_ref_and_res(res_dict)
+        return crud.osdu_wellboretrajectory.get_cleaned_ref_and_res()
     if kind == "osdu_wellboremarkerset":
-        return crud.osdu_wellboremarkerset.get_cleaned_ref_and_res(res_dict)
+        return crud.osdu_wellboremarkerset.get_cleaned_ref_and_res()
+
+
+def diff_records(ref, res):
+    return DeepDiff(ref, res, exclude_paths=[
+        "root['acl']",
+        "root['id']",
+        "root['kind']",
+        "root['legal']",
+        "root['version']",
+        "root['createTime']",
+        "root['createUser']",
+        "root['modifyUser']",
+        "root['modifyTime']"
+    ])
+
+
+def diff_record_against_ref(kind: str, res_dict: dict):
+    ref = get_cleaned_ref_and_res(kind)
+    return diff_records(ref, res_dict)

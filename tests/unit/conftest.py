@@ -12,17 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.conf import ConfigurationContainer
-import app.conf as conf
+import asyncio
 import os
-import pytest
+from tempfile import TemporaryDirectory
 
+import app.conf as conf
+import pytest
+from app.conf import ConfigurationContainer
+from app.utils import Context, DaskClient
+from fastapi import Header
+from tests.unit.test_utils import nope_logger_fixture
 
 @pytest.fixture(autouse=True)
 def top_fixture(monkeypatch):
     """
-        Hooks mechanism from PyTest.
-        This fixture will be called after `pytest_configure` and can use fixture such as monkeypatch
+    Hooks mechanism from PyTest.
+    This fixture will be called after `pytest_configure` and can use fixture such as monkeypatch
     """
 
     provider_name = 'local'
@@ -37,7 +42,7 @@ def top_fixture(monkeypatch):
 
 def pytest_configure(config):
     """
-        Pytest Hook, called before loading fixtures and test cases.
+    Pytest Hook, called before loading fixtures and test cases.
     """
     # Env vars used by client lib configuration.
     # Required to be set before fixtures as all tests are currently loading dependencies at import time.
@@ -47,8 +52,33 @@ def pytest_configure(config):
 
 def pytest_unconfigure(config):
     """
-        Pytest Hook, called after running all test cases.
+    Pytest Hook, called after running all test cases.
     """
     del os.environ['KEYVAULT_URL']
     del os.environ['SERVICE_HOST_PARTITION']
 
+
+@pytest.fixture(scope="session")
+def event_loop():  # all tests will share the same loop
+    loop = asyncio.get_event_loop()
+    yield loop
+    # teardown
+    loop.run_until_complete(DaskClient.close())
+    loop.close()
+
+
+@pytest.fixture
+def init_fixtures(nope_logger_fixture, monkeypatch):
+    with TemporaryDirectory() as tmp_dir:
+        monkeypatch.setenv(name="USE_LOCALFS_BLOB_STORAGE_WITH_PATH", value=tmp_dir)
+        conf.Config = conf.ConfigurationContainer.with_load_all()
+        yield
+
+
+async def do_nothing():
+    # empty method
+    pass
+
+
+async def set_default_partition(data_partition_id: str = Header("opendes")):
+    Context.set_current_with_value(partition_id=data_partition_id)
