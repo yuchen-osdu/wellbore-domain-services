@@ -266,7 +266,7 @@ osdu-core-lib-python==1.1.0
     # via -r requirements.in
 osdu-core-lib-python-aws==0.0.6
     # via -r requirements.in
-osdu-core-lib-python-azure==1.2.1.dev809578
+osdu-core-lib-python-azure==1.2.1.dev810999
     # via -r requirements.in
 osdu-core-lib-python-gcp==1.1.0
     # via -r requirements.in

@@ -38,6 +38,6 @@ osdu-data-ecosystem-search>=0.3.2, <0.4
 
 osdu-core-lib-python-ibm==1.3.0
 osdu-core-lib-python-gcp~=1.1.0
-osdu-core-lib-python-azure==1.2.1.dev809578
+osdu-core-lib-python-azure==1.2.1.dev810999
 osdu-core-lib-python-aws>=0.0.6, <0.1
 osdu-core-lib-python~=1.1.0
