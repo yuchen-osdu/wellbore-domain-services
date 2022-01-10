@@ -149,22 +149,6 @@ def create_mock_class(cls_to_mock):
     return _new_class_
 
 
-def assert_dict_contained(dict_to_check: dict, ref_dict: dict, path=''):
-    """
-    check actual dict contained ref_dict
-    path param use the default value
-    """
-    for key, value in ref_dict.items():
-        current_path = path + '.' + key if path else key
-        assert key in dict_to_check
-        sub_item = dict_to_check[key]
-        assert type(sub_item) == type(value), f'type of {current_path} ({type(sub_item)}) != ref {type(value)}'
-        if type(value) == dict:
-            assert_dict_contained(sub_item, value, current_path)
-        else:
-            assert sub_item == value, f'{current_path}: actual {sub_item} != ref {value}'
-
-
 @pytest.fixture
 async def temp_directory() -> str:
     with TemporaryDirectory() as tmpdir:
