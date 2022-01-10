@@ -75,26 +75,6 @@ class NopeLogger:
         # empty method
         pass
 
-
-class AsyncMock:
-    def __init__(self, *, return_value=None, forward_input_name: str = None, forward_input_index: int = 0):
-        self._return_value = return_value
-        self._from_input = forward_input_name
-        self._from_input_index = forward_input_index
-
-    async def __call__(self, *args, **kwargs):
-        if self._return_value is not None:
-            return self._return_value
-
-        if self._from_input:
-            return kwargs[self._from_input]
-
-        if self._from_input_index < 0:
-            return None
-
-        return args[self._from_input_index]
-
-
 def create_mock_class(cls_to_mock):
     cls_name = cls_to_mock.__name__ + 'AutoMock'
 
