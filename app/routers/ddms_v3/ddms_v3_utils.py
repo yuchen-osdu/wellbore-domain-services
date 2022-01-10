@@ -1,3 +1,4 @@
+import asyncio
 import re
 from typing import List, Tuple
 
@@ -165,7 +166,7 @@ class DMSV3RouterUtils:
     @staticmethod
     async def raise_if_invalid_bulk_uri(records: List[Record], ctx: Context, bulk_uri_access: BulkIdAccess):
         # For each records :
-        for idx, r in enumerate(records):
+        async def raise_if_invalid_bulk_uri_task(idx, r):
             # Get the given bulkURI or return None
             bulk_uri = r.data.ExtensionProperties["wdms"]["bulkURI"] \
                 if r.data.ExtensionProperties is not None \
@@ -196,3 +197,6 @@ class DMSV3RouterUtils:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Record[{idx}] error : no Bulk URI can be specified without record id",
                 )
+
+        await asyncio.gather(*[raise_if_invalid_bulk_uri_task(idx, r)
+                               for idx, r in enumerate(records)])
