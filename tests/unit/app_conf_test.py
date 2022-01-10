@@ -38,7 +38,7 @@ def testing_config():
 
 
 @pytest.fixture()
-def gcp_config_fixture(monkeypatch):
+def gcp_config_fixture():
     provider_name = "gcp"
 
     environment_dict = os.environ.copy()
@@ -57,7 +57,7 @@ def gcp_config_fixture(monkeypatch):
 
 
 @pytest.fixture()
-def azure_config_fixture(monkeypatch):
+def azure_config_fixture():
     provider_name = "az"
 
     environment_dict = os.environ.copy()
