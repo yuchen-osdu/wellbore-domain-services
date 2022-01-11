@@ -11,7 +11,8 @@ from opencensus.trace.samplers import AlwaysOnSampler
 
 from app.conf import Config
 from app.helper import traces
-from app.utils import get_ctx, get_or_create_ctx
+from app.utils import get_ctx
+from opencensus.trace import execution_context
 
 _EXPORTER = None
 
@@ -76,9 +77,12 @@ def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
 
 def add_trace_attributes(attributes: dict):
     """
-        Add custom key:value as attribute into parent tracing span if tracer exists
+        Add custom key:value as attribute into parent tracing span if tracer exists.
+
+        Note: if called by a Dask worker, the parent span is the one created by `wrap_trace_process` function above.
     """
-    tracer = get_or_create_ctx().tracer
+    tracer = execution_context.get_opencensus_tracer()
+
     if tracer is None:
         return
     spans = tracer.tracer.list_collected_spans()
