@@ -198,5 +198,4 @@ class DMSV3RouterUtils:
                     detail=f"Record[{idx}] error : no Bulk URI can be specified without record id",
                 )
 
-        await asyncio.gather(*[raise_if_invalid_bulk_uri_task(idx, r)
-                               for idx, r in enumerate(records)])
+        await asyncio.gather(*[raise_if_invalid_bulk_uri_task(idx, r) for idx, r in enumerate(records)])
