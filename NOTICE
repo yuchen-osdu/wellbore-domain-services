@@ -275,6 +275,7 @@ The following software have components provided under the terms of this license:
 - pytest (from http://pytest.org)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
 - pytest-httpx (from https://colin-b.github.io/pytest_httpx/)
+- pytest-mock (from https://github.com/pytest-dev/pytest-mock/)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - python-ulid (from https://github.com/mdomke/python-ulid)
 - pytz (from http://pythonhosted.org/pytz)

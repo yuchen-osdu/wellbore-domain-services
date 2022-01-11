@@ -5,6 +5,7 @@ pip-tools>=6.4.0
 pytest
 pytest-asyncio
 pytest-cov
+pytest-mock
 pytest-httpx
 httpx
 numpy
