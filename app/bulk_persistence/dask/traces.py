@@ -76,16 +76,19 @@ def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
 
 def add_trace_attributes(attributes: dict):
     """
-        Add custom key:value as attribute into current tracing span if tracer exists
+        Add custom key:value as attribute into parent tracing span if tracer exists
     """
     tracer = get_or_create_ctx().tracer
     if tracer is None:
         return
+    spans = tracer.tracer.list_collected_spans()
+    parent_span = spans[0] if spans else None
+    if not parent_span:
+        return
 
     for k, v in attributes.items():
-        tracer.add_attribute_to_current_span(
-            attribute_key=k,
-            attribute_value=v)
+        parent_span.add_attribute(attribute_key=k,
+                                  attribute_value=v)
 
 
 def trace_dataframe_attributes(df: pd.DataFrame):
