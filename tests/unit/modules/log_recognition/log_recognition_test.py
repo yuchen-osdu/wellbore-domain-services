@@ -30,7 +30,7 @@ from app.middleware import require_data_partition_id
 from app.modules.log_recognition.routers.log_recognition import family_processor_manager
 from app.utils import Context
 from app.wdms_app import wdms_app, add_modules_routers, remove_modules_routers
-from tests.unit.test_utils import create_mock_class, nope_logger
+from tests.unit.test_utils import create_mock_class
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)
@@ -370,8 +370,7 @@ def test_swagger_generation():
 
 
 # Global module setup / teardown
-def setup_module():
-    nope_logger()
+def setup_module(nope_logger_fixture):
     ConfigurationContainer.modules.value = "log_recognition.routers.log_recognition"
     add_modules_routers()
 

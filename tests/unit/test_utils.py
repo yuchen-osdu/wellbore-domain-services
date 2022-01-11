@@ -14,11 +14,12 @@
 
 import pytest
 import mock
+from unittest.mock import patch
 import asyncio
-
-from opencensus.trace.span_context import SpanContext
+import logging
 from contextlib import contextmanager
 
+from opencensus.trace.span_context import SpanContext
 from odes_storage.models import Record, StorageAcl, Legal
 
 from app.model.model_utils import record_to_dict
@@ -29,51 +30,17 @@ def ctx_fixture():
     """ Create context with a fake tracer in it """
     mock_mock = mock.MagicMock()
     mock_mock.span_context = SpanContext(trace_id="trace-id", span_id="span_id")
-    ctx = get_or_create_ctx().set_current_with_value(tracer=mock_mock, logger=NopeLogger())
+    ctx = get_or_create_ctx().set_current_with_value(tracer=mock_mock, logger=mock.NonCallableMock(spec_set=logging.Logger))
     yield ctx
 
 
 @pytest.fixture
-def nope_logger_fixture():
-    nope_logger()
-    yield
+def nope_logger_fixture(mocker):
+    yield mocker.patch('app.helper.logger._LOGGER', spec_set=logging.Logger, new_callable=mock.NonCallableMock)
 
-def nope_logger():
-    from app.helper import logger
-    logger._LOGGER = NopeLogger()
 
-class NopeLogger:
-    def __init__(self):
-        # empty method
-        pass
 
-    def debug(*arg, **kargs):
-        # empty method
-        pass
 
-    def info(*arg, **kargs):
-        # empty method
-        pass
-
-    def warning(*arg, **kargs):
-        # empty method
-        pass
-
-    def error(*arg, **kargs):
-        # empty method
-        pass
-
-    def exception(*arg, **kargs):
-        # empty method
-        pass
-
-    def critical(*arg, **kargs):
-        # empty method
-        pass
-
-    def log(*arg, **kargs):
-        # empty method
-        pass
 
 def create_mock_class(cls_to_mock):
     cls_name = cls_to_mock.__name__ + 'AutoMock'
