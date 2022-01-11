@@ -251,6 +251,7 @@ class DaskBulkStorage:
         bulk_id = bulk_id or new_bulk_id()
 
         assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
+        ddf.index.name = WDMS_INDEX_NAME
         ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
         ddf = await self.client.scatter(ddf)
 
@@ -269,8 +270,8 @@ class DaskBulkStorage:
         assert_df_validate(dataframe=pdf, validation_funcs=[validate_index, columns_not_in_reserved_names])
 
         # sort column by names
-        pdf = pdf[sorted(pdf.columns)]
         pdf.index.name = WDMS_INDEX_NAME
+        pdf = pdf[sorted(pdf.columns)]
         filename = session_meta.generate_chunk_filename(pdf)
 
         session_path = pathBuilder.record_session_path(
