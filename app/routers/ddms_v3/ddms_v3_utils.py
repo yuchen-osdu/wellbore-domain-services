@@ -168,8 +168,10 @@ class DMSV3RouterUtils:
         # For each records :
         async def raise_if_invalid_bulk_uri_task(idx, r):
             # Get the given bulkURI or return None
-            bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=r)) \
-                if r.data.ExtensionProperties is not None else None
+            try:
+                bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=r))
+            except:
+                bulk_uri = None
 
             # If BulkURI not none and the given record has an id : check if there is an old version of this record
             # and get bulkURI's old version if it exist
