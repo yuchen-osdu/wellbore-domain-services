@@ -12,7 +12,6 @@ from app.routers.bulk.bulk_routes import DataFrameRender
 from app.routers.bulk.utils import get_df_from_request
 from tests.unit.generate_data import generate_df
 
-
 @pytest.mark.parametrize("requested, df_columns, expected", [
     (["X"],           {"X"},                        ["X"]),
     ([],              {"X"},                        []), # empty request

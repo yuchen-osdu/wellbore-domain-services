@@ -1,4 +1,4 @@
-pip-tools
+pip-tools>=6.4.0
 
 -c requirements.txt
 
@@ -26,3 +26,5 @@ jsonschema
 
 # Generates fake token for local integration tests runs
 pyjwt[crypto]
+
+deepdiff
