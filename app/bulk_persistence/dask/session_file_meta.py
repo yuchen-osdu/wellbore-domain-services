@@ -23,11 +23,13 @@ from distributed.worker import get_client
 
 import pandas as pd
 from app.bulk_persistence.dask.utils import share_items
+from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import capture_timings
 
 from .storage_path_builder import add_protocol, record_session_path
+
 
 class SessionFileMeta:
     """The class extract information about chunks."""
@@ -161,13 +163,21 @@ def get_next_chunk_files(
     """
     chunks_info.sort(key=attrgetter('time'))
 
-    cache: Dict[str, SessionFileMeta] = {}
+    cache: Dict[str, List[SessionFileMeta]] = {}
     columns_in_cache = set()  # keep track of colunms present in the cache
     for chunk in chunks_info:
         if chunk.shape in cache: # if other chunks with same shape
-            if any(chunk.overlap(c) for c in cache[chunk.shape]):  # rows overlaps
-                yield cache[chunk.shape]
-                del cache[chunk.shape]
+            # looking for overlaped chunk
+            for i, cached_chunk in enumerate(cache[chunk.shape]):
+                if chunk.overlap(cached_chunk):
+                    if chunk.index_hash == cached_chunk.index_hash:
+                        # if chunks are identical in shape and index just keep the last one
+                        get_logger().info(f"Duplicated chunk skipped : '{chunk.path}'")
+                        cache[chunk.shape].pop(i)
+                    else:
+                        yield cache[chunk.shape]
+                        del cache[chunk.shape]
+                    break
         elif not columns_in_cache.isdisjoint(chunk.columns): # else if columns conflicts
             conflicting_chunk = next(metas[0] for metas in cache.values()
                                      if chunk.has_common_columns(metas[0]))
