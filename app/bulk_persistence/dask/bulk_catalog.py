@@ -22,7 +22,7 @@ from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 
 from dask.distributed import get_client
 
-from app.bulk_persistence.dask.traces import submit_with_trace, add_trace_attributes
+from app.bulk_persistence.dask.traces import submit_with_trace, trace_attributes_root_span
 from app.helper.traces import with_trace
 from app.utils import capture_timings
 from .storage_path_builder import join, remove_protocol
@@ -179,7 +179,7 @@ def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> Non
         outfile.write(data)
         # json.dump(catalog.as_dict(), outfile) # don't know why json.dump is slower (local windows)
 
-    add_trace_attributes({
+    trace_attributes_root_span({
         'catalog-row-count': catalog.nb_rows,
         'catalog-col-count': catalog.all_columns_count
     })

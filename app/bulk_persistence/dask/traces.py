@@ -1,4 +1,5 @@
 from typing import Callable
+from enum import Enum
 
 from dask.distributed import Client
 import pandas as pd
@@ -75,33 +76,53 @@ def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
     return dask_client.map(wrap_trace_process, *args, key=dask_task_key, **kwargs)
 
 
-def add_trace_attributes(attributes: dict):
-    """
-        Add custom key:value as attribute into parent tracing span if tracer exists.
+class TracingMode(Enum):
+    """ Allow to determine which mode of adding attributes on tracing span is needed. """
+    CURRENT_SPAN = 1
+    ROOT_SPAN = 2
 
-        Note: if called by a Dask worker, the parent span is the one created by `wrap_trace_process` function above.
+
+def _add_trace_attributes(attributes: dict, tracing_mode: TracingMode):
+    """
+        If tracer exists, add custom key:value as attributes on root or current span according value of 'tracing_mode'.
+        NOTE: if called by a Dask worker, the parent span is the one created by `wrap_trace_process` function above.
     """
     tracer = execution_context.get_opencensus_tracer()
-
     if tracer is None:
         return
-    spans = tracer.tracer.list_collected_spans()
-    parent_span = spans[0] if spans else None
-    if not parent_span:
+
+    span = None
+
+    if tracing_mode == TracingMode.CURRENT_SPAN:
+        span = tracer.tracer.current_span()
+    elif tracing_mode == TracingMode.ROOT_SPAN:
+        existing_spans = tracer.tracer.list_collected_spans()
+        span = existing_spans[0] if existing_spans else None
+
+    if not span:
         return
 
     for k, v in attributes.items():
-        parent_span.add_attribute(attribute_key=k,
-                                  attribute_value=v)
+        span.add_attribute(attribute_key=k,
+                           attribute_value=v)
+
+
+def trace_attributes_root_span(attributes):
+    """ Add attributes to root tracing span """
+    _add_trace_attributes(attributes, TracingMode.ROOT_SPAN)
+
+
+def trace_attributes_current_span(attributes):
+    """ Add attributes to current tracing span """
+    _add_trace_attributes(attributes, TracingMode.CURRENT_SPAN)
 
 
 def trace_dataframe_attributes(df: pd.DataFrame):
     """
         Add dataframe shape into current tracing span if tracer exists
     """
-
     rows_count, cols_count = df.shape
-    add_trace_attributes({
+    trace_attributes_current_span({
         "df rows count": rows_count,
         "df columns count": cols_count
     })
