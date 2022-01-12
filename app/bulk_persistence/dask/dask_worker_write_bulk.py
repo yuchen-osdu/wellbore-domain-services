@@ -11,6 +11,8 @@ from ..mime_types import MimeType
 from ..dataframe_serializer import DataframeSerializerSync
 from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
                                     columns_not_in_reserved_names)
+
+from .traces import trace_dataframe_attributes
 from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as path_builder
 from . import session_file_meta as session_meta
@@ -74,11 +76,10 @@ def write_bulk_without_session(data_handle,
 
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
-    # TODO this requires a context, not available in worker, use info from basic describe after return?
-    # trace_dataframe_attributes(df)
+
+    trace_dataframe_attributes(df)
 
     # 3- build blob filename and final full blob path
-    # TODO to be reviewed: may want to create catalog here similarly to a session with a single chunk
     filename = session_meta.generate_chunk_filename(df)
     full_file_path = path_builder.join(bulk_base_path, filename + '.parquet')
 
@@ -121,8 +122,8 @@ def add_chunk_in_session(data_handle,
 
     # 2- perf some check
     assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
-    # TODO this requires a context, not available in worker, use info from basic describe after return?
-    # trace_dataframe_attributes(df)
+
+    trace_dataframe_attributes(df)
 
     # sort column by names # TODO could it be avoided ? then we could keep input untouched and save serialization step?
     df = df[sorted(df.columns)]
@@ -132,7 +133,7 @@ def add_chunk_in_session(data_handle,
 
     # 4- build and push chunk meta file
     meta_file_path, protocol = path_builder.remove_protocol(f'{record_session_path}/{filename}.meta')
-    # TODO ctor each time (so trigger a do_connect each time), avoidable, costly?
+
     fs = fsspec.filesystem(protocol, **(storage_options if storage_options else {}))
     with fs.open(meta_file_path, 'w') as outfile:
         json.dump(session_meta.build_chunk_metadata(df), outfile)
