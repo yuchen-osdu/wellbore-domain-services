@@ -35,7 +35,7 @@ from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_except
 from .traces import map_with_trace, submit_with_trace
 from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
-from ..dataframe_validators import (assert_df_validate, validate_index,
+from ..dataframe_validators import (assert_df_validate, validate_index, validate_number_of_columns,
                                     columns_not_in_reserved_names, is_reserved_column_name)
 from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
@@ -249,7 +249,9 @@ class DaskBulkStorage:
         """Write the data frame to the blob storage."""
         bulk_id = bulk_id or new_bulk_id()
 
-        assert_df_validate(dataframe=ddf, validation_funcs=[validate_index, columns_not_in_reserved_names])
+        assert_df_validate(dataframe=ddf, validation_funcs=[validate_number_of_columns,
+                                                            validate_index,
+                                                            columns_not_in_reserved_names])
         ddf.index.name = WDMS_INDEX_NAME
         ddf = dd.from_pandas(ddf, npartitions=1, name=f"from_pandas-{uuid.uuid4()}")
         ddf = await self.client.scatter(ddf)
@@ -266,8 +268,9 @@ class DaskBulkStorage:
     @with_trace('session_add_chunk')
     async def session_add_chunk(self, session: Session, pdf: pd.DataFrame):
         """add new chunk to the given session"""
-        assert_df_validate(dataframe=pdf, validation_funcs=[validate_index, columns_not_in_reserved_names])
-
+        assert_df_validate(dataframe=pdf, validation_funcs=[validate_number_of_columns,
+                                                            validate_index,
+                                                            columns_not_in_reserved_names])
         # sort column by names
         pdf.index.name = WDMS_INDEX_NAME
         pdf = pdf[sorted(pdf.columns)]

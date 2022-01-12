@@ -1162,7 +1162,7 @@ def test_none_in_index_error(dasked_test_app_without_consistency_client, entity_
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_too_many_columns(dasked_test_app_without_consistency_client, entity_type):
+def test_read_too_many_columns(dasked_test_app_without_consistency_client, entity_type):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -1219,6 +1219,42 @@ def test_many_columns_ensure_effective_cols_count_matter(dasked_test_app_without
                               params={'curves': f'var[0:{max_cols_count * 2}]'})
     assert get_response.status_code == 200, \
         "Ensure only existing columns are taken into account for max cols limit"
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_write_too_many_columns(dasked_test_app_without_consistency_client, entity_type):
+    client = dasked_test_app_without_consistency_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    max_cols_count = 100
+    Config.max_columns_per_chunk_write.value = max_cols_count
+
+    df = generate_df([f'var[{i}]' for i in range(max_cols_count + 1)], range(5))
+    with pytest.raises(BulkNotProcessable, match=f"Too many columns : maximum allowed '{max_cols_count}'"):
+        client.post(f'{chunking_url}/{record_id}/data',
+                    data=df.to_parquet(engine="pyarrow"),
+                    headers={'content-type': 'application/parquet'})
+
+
+@pytest.mark.parametrize("data_format", ['parquet', 'json'])
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_write_too_many_columns_session(dasked_test_app_without_consistency_client, entity_type, data_format):
+    """ send parquet and json separately with two session, check if each session can be committed successfully"""
+    client = dasked_test_app_without_consistency_client
+    record_id = _create_record(client, entity_type)
+    max_cols_count = 100
+    Config.max_columns_per_chunk_write.value = max_cols_count
+
+    columns = [f'var[{i}]' for i in range(max_cols_count + 1)]
+    # create session and append chunk
+    with pytest.raises(BulkNotProcessable, match=f"Too many columns : maximum allowed '{max_cols_count}'"):
+        _create_chunks(client=client,
+                    entity_type=entity_type,
+                    cols_ranges=[(columns, range(5)),],
+                    record_id=record_id,
+                    session_mode='overwrite',
+                    data_format=data_format)
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
