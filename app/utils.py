@@ -598,11 +598,3 @@ class __OpenApiHandler:
 OpenApiHandler = __OpenApiHandler()
 
 dask.config.set({'temporary_directory': get_wdms_temp_dir()})
-
-GiB = 1_073_741_824
-MiB = 1_048_576
-KiB = 1024
-
-
-def sizeof_fmt(size: int) -> str:
-    return f'{size / MiB:.3f} MiB'

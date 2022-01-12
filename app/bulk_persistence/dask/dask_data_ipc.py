@@ -18,10 +18,14 @@ import asyncio
 from io import BytesIO
 from contextlib import asynccontextmanager, contextmanager, suppress
 from typing import Union, AsyncGenerator, AsyncContextManager
+from dask.utils import format_bytes
 
-
-from app.utils import get_wdms_temp_dir, MiB, GiB, sizeof_fmt
+from app.utils import get_wdms_temp_dir
 from app.helper.logger import get_logger
+
+
+GiB = 10 ** 9
+MiB = 10 ** 6
 
 
 """
@@ -186,13 +190,13 @@ class DaskLocalFileDataIPC:
         """ internal log current number of file and total size """
         if cls.total_size_in_file > cls.log_usage_error_threshold:
             get_logger().error(f"unexpected IPC data high usage: {cls.total_size_in_file} files"
-                               f" for {sizeof_fmt(cls.total_size_in_file)}")
+                               f" for {format_bytes(cls.total_size_in_file)}")
         elif cls.total_size_in_file > cls.log_usage_warning_threshold:
             get_logger().warning(f"IPC data high usage: {cls.total_size_in_file} files"
-                                 f" for {sizeof_fmt(cls.total_size_in_file)}")
+                                 f" for {format_bytes(cls.total_size_in_file)}")
         elif cls.total_size_in_file > cls.log_usage_info_threshold:
             get_logger().info(f"IPC data usage: {cls.total_size_in_file} files"
-                              f" for {sizeof_fmt(cls.total_size_in_file)}")
+                              f" for {format_bytes(cls.total_size_in_file)}")
 
 
 class DaskNoneDataIPC:
