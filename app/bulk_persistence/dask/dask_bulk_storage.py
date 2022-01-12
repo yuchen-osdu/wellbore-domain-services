@@ -87,11 +87,13 @@ class DaskBulkStorage:
         self._parameters = None
         self._fs = None
 
+    @property
+    def _data_ipc(self):
         # may be also adapted depending of size to data
         if Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
-            self._data_ipc = DaskLocalFileDataIPC()
-        else:
-            self._data_ipc = DaskNativeDataIPC(self.client)
+            return DaskLocalFileDataIPC()
+        assert self.client is not None, 'Dask client not initialized'
+        return DaskNativeDataIPC(self.client)
 
     @classmethod
     async def create(cls, parameters: DaskStorageParameters, dask_client=None) -> 'DaskBulkStorage':
