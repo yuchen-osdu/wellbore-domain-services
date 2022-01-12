@@ -95,7 +95,7 @@ class DaskNativeDataIPC:
         if type(data) is not bytes:  # basic type check
             data = await _real_all_from_async_gen(data)
 
-        scattered_data = await self._client.scatter(data)
+        scattered_data = await self._client.scatter(data, direct=True)
         yield scattered_data, ipc_data_getter_from_bytes
 
 

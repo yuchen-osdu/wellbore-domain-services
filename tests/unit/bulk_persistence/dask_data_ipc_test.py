@@ -51,7 +51,7 @@ async def test_file_data_ipc_handle_async_generator_and_bytes(nope_logger_fixtur
 @pytest.mark.asyncio
 @pytest.mark.parametrize("in_data", [b"123456789", data_async_gen()])
 async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
-    async def identity(anything):
+    async def identity(anything, **kwargs):
         return anything
 
     dask_client_mock = AsyncMock()
