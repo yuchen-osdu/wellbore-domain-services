@@ -78,10 +78,6 @@ def _index_union_tuple(t):
     return index_union(*t)
 
 
-# TODO TMP
-TEMP_FORCE_IPC_WITH_FILE = True
-
-
 class DaskBulkStorage:
     client: DaskDistributedClient = None
     """ Dask client """
@@ -92,7 +88,7 @@ class DaskBulkStorage:
         self._fs = None
 
         # may be also adapted depending of size to data
-        if TEMP_FORCE_IPC_WITH_FILE or Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
+        if Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
             self._data_ipc = DaskLocalFileDataIPC()
         else:
             self._data_ipc = DaskNativeDataIPC(self.client)
