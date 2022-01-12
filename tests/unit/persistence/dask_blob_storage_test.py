@@ -36,13 +36,6 @@ from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence.dataframe_validators import no_validation
 
 
-@pytest.fixture(scope="module")
-def event_loop():  # all tests will share the same loop
-    loop = asyncio.get_event_loop()
-    yield loop
-    # teardown
-    loop.run_until_complete(DaskClient.close())
-    loop.close()
 
 
 @pytest.fixture()
@@ -431,3 +424,24 @@ async def test_array_values(test_session, dask_storage: DaskBulkStorage):
 
     ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
+
+
+@pytest.mark.asyncio
+async def test_duplicate_chunk(test_session, dask_storage: DaskBulkStorage):
+    chunk1 = generate_df(['A', 'B'], range(10))
+    chunk2 = generate_df(['A', 'B'], range(10))
+    chunk3 = generate_df(['A', 'B'], range(10, 20))
+    chunk4 = generate_df(['C', 'D'], range(5, 15))
+
+    await add_chunk(dask_storage, test_session, chunk1)
+    await add_chunk(dask_storage, test_session, chunk2)
+    await add_chunk(dask_storage, test_session, chunk3)
+    await add_chunk(dask_storage, test_session, chunk4)
+    
+    bulk_id = await dask_storage.session_commit(test_session)
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
+
+    expected_df = pd.concat([chunk2, chunk3], axis=0)
+    expected_df = pd.concat([expected_df, chunk4], axis=1)
+
+    await compare_frame(expected_df, ddf)

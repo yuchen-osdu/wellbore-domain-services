@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 from mock import AsyncMock
 from unittest.mock import patch, mock_open
@@ -12,16 +10,8 @@ from dask.distributed import Client
 from app.bulk_persistence.dask.dask_data_ipc import DaskNoneDataIPC, DaskLocalFileDataIPC, DaskNativeDataIPC
 
 
-@pytest.fixture(scope="module")
-def event_loop():  # all tests will share the same loop
-    loop = asyncio.get_event_loop()
-    yield loop
-    # teardown
-    loop.close()
-
-
 @pytest.fixture
-async def dask_client():
+async def dask_client(init_fixtures, event_loop):
     # use a mono process, mono thread async client with a single worker
     client = await Client(processes=False, asynchronous=True, direct_to_workers=True, n_workers=1, threads_per_worker=1)
     yield client

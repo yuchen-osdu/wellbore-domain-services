@@ -1,6 +1,3 @@
-# TODO this is a temporary name
-
-
 import json
 from io import BytesIO, StringIO
 from unittest.mock import patch
