@@ -219,9 +219,8 @@ class DaskBulkStorage:
         try:
             future_df = await self._load_bulk(record_id, bulk_id, columns=columns)
             dataframe = await future_df
-            if columns is not None:
-                if set(dataframe.columns) != set(columns):
-                    raise BulkRecordNotFound(record_id, bulk_id)
+            if columns and set(dataframe.columns) != set(columns):
+                raise BulkRecordNotFound(record_id, bulk_id)
             return dataframe
         except (OSError, RuntimeError) as exp:
             raise BulkRecordNotFound(record_id, bulk_id) from exp
