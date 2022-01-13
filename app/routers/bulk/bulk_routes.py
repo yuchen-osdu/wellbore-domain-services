@@ -52,12 +52,12 @@ from app.routers.bulk.utils import (
     get_df_from_request,
     set_bulk_field_and_send_record,
     DataFrameRender)
-from app.helper.traces import with_trace
+from app.helper.traces import with_trace, TracingRoute
 
 
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 
-router = APIRouter()  # router dedicated to bulk APIs
+router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}
