@@ -34,7 +34,7 @@ variables:
   OSDU_GCP_VENDOR: gcp
   OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
   OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=workload-identity-wellbore"
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s"
   OSDU_GCP_HELM_CONFIG_SERVICE: wellbore-config
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE: wellbore-deploy
   OSDU_GCP_INT_TEST_TYPE: python
@@ -90,15 +90,12 @@ verify_existing_requirements:
 
     expire_in: 2 days
 
-
 compile-and-unit-test:
   artifacts:
     when: always
     paths:
       - all-requirements.txt
       - spec/generated/openapi.json
-
-
 
 containerize:
   extends: .skipForTriggeringMergeRequests
@@ -230,9 +227,6 @@ osdu-gcp-test:
   extends:
     - .osdu-gcp-variables
 
-
 # Allow failure on private development deployments
-
 ibm-deploy-devpri:
   allow_failure: true
-
