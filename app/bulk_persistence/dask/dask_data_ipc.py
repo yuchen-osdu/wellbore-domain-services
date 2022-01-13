@@ -142,7 +142,7 @@ class DaskLocalFileDataIPC:
                 self._file_path = None
 
         async def _write_to_file(self, file, chunk_data: bytes) -> int:
-            """ write the  """
+            """ write the into file by chunk """
             if self._io_chunk_size == 0 or len(chunk_data) < self._io_chunk_size:  # write it all at once
                 return file.write(chunk_data) or 0
 

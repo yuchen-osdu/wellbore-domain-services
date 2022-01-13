@@ -90,7 +90,7 @@ async def post_data(record_id: str,
     # process and store the data
     try:
         bulk_id, basic_describe = await dask_blob_storage.post_data_without_session(
-            request.stream(),  # this consume the body stream
+            request.stream(),
             content_type,
             df_validation_func,
             record_id)
@@ -142,7 +142,7 @@ async def post_chunk_data(record_id: str,
     # process and store the data chunk
     try:
         bulk_id, basic_describe = await dask_blob_storage.add_chunk_in_session(
-            request.stream(),  # this consume the body stream
+            request.stream(),
             content_type,
             df_validation_func,
             record_id,
