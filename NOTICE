@@ -61,6 +61,7 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- colorama (from https://github.com/tartley/colorama)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
@@ -85,6 +86,7 @@ The following software have components provided under the terms of this license:
 - asgiref (from http://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
+- colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
 - dask (from http://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
@@ -223,7 +225,8 @@ MIT
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- PyYAML (from http://pyyaml.org/wiki/PyYAML)
+- PyJWT (from http://github.com/jpadilla/pyjwt)
+- PyYAML
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
 - aiohttp (from https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
@@ -267,7 +270,6 @@ The following software have components provided under the terms of this license:
 - py (from http://pylib.readthedocs.org/)
 - pyarrow (from https://arrow.apache.org/)
 - pydantic (from https://github.com/samuelcolvin/pydantic)
-- pyjwt
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org)
@@ -284,7 +286,6 @@ The following software have components provided under the terms of this license:
 - toml (from https://github.com/uiri/toml)
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/)
 - urllib3 (from https://urllib3.readthedocs.io/)
-- wheel (from https://bitbucket.org/pypa/wheel/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)
 
