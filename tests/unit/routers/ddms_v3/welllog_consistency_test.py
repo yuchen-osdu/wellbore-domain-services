@@ -38,19 +38,18 @@ def client(nope_logger_fixture):
     try:
         wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
         wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
+        # Initialize traces exporter in app, like it is in app's startup decorator
+        wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
         client = TestClient(wdms_app)
+
         yield client
     finally:
         wdms_app.dependency_overrides = previous_overrides  # clean up
 
 
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
-
-
+kind = "osdu:wks:work-product-component--WellLog:1.1.0"
 legal = {"legaltags": ["foo"], "otherRelevantDataCountries": ["FR"]}
 acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
-
 
 @pytest.mark.parametrize(
     "data",
@@ -73,11 +72,10 @@ acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
     ],
 )
 def test_post_v3_consistent_welllog(client, data):
-
     response = client.post(
         url="/ddms/v3/welllogs",
         json=[
-            {"kind": "osdu:wks:work-product-component--WellLog:1.1.0", "legal": legal, "acl": acl, "data": d}
+            {"kind": kind, "legal": legal, "acl": acl, "data": d}
             for d in data
         ],
         headers={"content-type": "application/json"},
@@ -90,36 +88,37 @@ def test_post_v3_consistent_welllog(client, data):
     "well_log_data, expected",
     [
         (
-            [
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "A"}, {"CurveID": "A"}]},
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "B"}]},
-            ],
-            "All CurveID in WellLog[1] should be unique",
+                [
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "A"}, {"CurveID": "A"}]},
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "B"}]},
+                ],
+                "All CurveID in WellLog[1] should be unique",
         ),
         (
-            [
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "A"}, {"CurveID": "B"}]},
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "C"}]},
-            ],
-            "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'",
+                [
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "A"}, {"CurveID": "B"}]},
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "C"}]},
+                ],
+                "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'",
         ),
         (
-            [
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
-                {"ReferenceCurveID": "MD", "Curves": []},
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "B"}]},
-            ],
-            "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'",
+                [
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+                    {"ReferenceCurveID": "MD", "Curves": []},
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "B"}]},
+                ],
+                "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'",
         ),
         (
-            [
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
-                {"ReferenceCurveID": "MD"},
-                {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "B"}]},
-            ],
-            "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'",
+                [
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+                    {"ReferenceCurveID": "MD"},
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "B"}]},
+                    {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "B"}]},
+                ],
+                "WellLog[1] should have a curve with a curveID value equal to the ReferenceCurveID value: 'MD'",
         ),
     ],
 )
@@ -127,7 +126,7 @@ def test_post_inconsistent_welllog(client, well_log_data, expected):
     response = client.post(
         url="/ddms/v3/welllogs",
         json=[
-            {"kind": "osdu:wks:work-product-component--WellLog:1.1.0", "legal": legal, "acl": acl, "data": data}
+            {"kind": kind, "legal": legal, "acl": acl, "data": data}
             for data in well_log_data
         ],
         headers={"content-type": "application/json"},
@@ -135,3 +134,4 @@ def test_post_inconsistent_welllog(client, well_log_data, expected):
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert expected in response.json().get("detail")
+

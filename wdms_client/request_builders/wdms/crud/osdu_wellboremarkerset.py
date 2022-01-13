@@ -386,7 +386,7 @@ def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestR
     return RequestRunner(rq_proto)
 
 
-def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
+def get_cleaned_ref_and_res() -> dict:
     ref = {
         "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
         "acl": {
@@ -710,19 +710,6 @@ def get_cleaned_ref_and_res(res: dict) -> (dict, dict):
         "status": "compliant",
     }
 
-    # Field not testable
-    res.pop("acl", None)
-    res.pop("id", None)
-    res.pop("kind", None)
-    res.pop("legal", None)
-    res.pop("version", None)
-    res.pop("createTime", None)
-    res.pop("createUser", None)
-    res.pop("modifyUser", None)
-    res.pop("modifyTime", None)
-    # Add mandatory fields
-    res["kind"] = ref["kind"]
-    res["acl"] = ref["acl"]
-    res["legal"] = ref["legal"]
 
-    return ref, res
+
+    return ref
