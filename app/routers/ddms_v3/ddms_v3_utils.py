@@ -3,6 +3,7 @@ import re
 from typing import List, Tuple
 
 from fastapi import HTTPException, Request
+from odes_storage import UnexpectedResponse
 from odes_storage.models import Record
 from pydantic import validate_model
 from starlette import status
@@ -176,7 +177,7 @@ class DMSV3RouterUtils:
             if bulk_uri and r.id:
                 try:
                     old_record = await fetch_record(ctx, r.id)
-                except HTTPException as e:
+                except UnexpectedResponse as e:
                     if e.status_code == 404:
                         # record has no previous versions
                         raise HTTPException(
