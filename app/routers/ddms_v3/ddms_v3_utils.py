@@ -176,8 +176,8 @@ class DMSV3RouterUtils:
             if bulk_uri and r.id:
                 try:
                     old_record = await fetch_record(ctx, r.id)
-                except Exception as e:
-                    if hasattr(e, "status_code") and e.status_code == 404:
+                except HTTPException as e:
+                    if e.status_code == 404:
                         # record has no previous versions
                         raise HTTPException(
                             status_code=status.HTTP_400_BAD_REQUEST,
