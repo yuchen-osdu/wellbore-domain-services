@@ -423,3 +423,19 @@ async def test_duplicate_chunk(test_session, dask_storage: DaskBulkStorage):
     expected_df = pd.concat([expected_df, chunk4], axis=1)
 
     await compare_frame(expected_df, ddf)
+
+
+@pytest.mark.asyncio
+async def test_named_index_chunk(test_session, dask_storage: DaskBulkStorage):
+    chunk = generate_df(['A', 'B'], range(10))
+    chunk['idx'] = range(10)
+    chunk = chunk.set_index('idx')
+
+    bulk_id = await dask_storage.save_bulk(chunk, test_session.recordId)
+    
+    stat = await dask_storage.read_stat(test_session.recordId, bulk_id)
+    assert set(['A', 'B']) == set(stat['schema'])
+
+    ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
+    chunk.index.name = None
+    await compare_frame(chunk, ddf)

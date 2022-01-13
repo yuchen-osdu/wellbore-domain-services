@@ -319,8 +319,9 @@ class DaskBulkStorage:
         catalog.nb_rows = max(get_num_rows(d) for d in datasets)
 
         for file, schema in zip(files, schemas):
+            index_columns = schema.pandas_metadata.get('index_columns', [])
             columns = {name: str(dtype) for name, dtype in zip(schema.names, schema.types)
-                       if not is_reserved_column_name(name)}
+                       if name not in index_columns and not is_reserved_column_name(name)}
             chunk_group = ChunkGroup(set(columns.keys()), [self._relative_path(record_id, file)], list(columns.values()))
             catalog.add_chunk(chunk_group)
 
