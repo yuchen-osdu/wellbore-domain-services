@@ -29,10 +29,6 @@ from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.utils import Context, get_ctx
 
 
-def can_run() -> (bool, str):
-    return True, ""
-
-
 router = APIRouter()
 router.prefix = '/log-recognition'
 router.tags = ['log-recognition']
