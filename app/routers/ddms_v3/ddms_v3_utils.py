@@ -168,19 +168,27 @@ class DMSV3RouterUtils:
         # For each records :
         async def raise_if_invalid_bulk_uri_task(idx, r):
             # Get the given bulkURI or return None
-            try:
+            if r.data.ExtensionProperties:
                 bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=r))
-            except:
+            else:
                 bulk_uri = None
-
             # If BulkURI not none and the given record has an id : check if there is an old version of this record
-            # and get bulkURI's old version if it exist
-            if bulk_uri and r.id is not None:
+            if bulk_uri and r.id:
                 try:
                     old_record = await fetch_record(ctx, r.id)
+                except Exception as e:
+                    if e.status_code == 404:
+                        # record has no previous versions
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Record[{idx}] error : no Bulk URI can be specified",
+                        )
+                    else:
+                        raise e
+                # Get bulkURI's old version if it exist
+                if hasattr(old_record, "data"):
                     old_bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=old_record))
-                except:
-                    # record has no previous versions
+                else:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail=f"Record[{idx}] error : no Bulk URI can be specified",
@@ -191,7 +199,7 @@ class DMSV3RouterUtils:
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail=f"Record[{idx}] error : Bulk URI isn't matching with the previous version one",
                     )
-            elif bulk_uri is not None and r.id is None:
+            elif bulk_uri and r.id is None:
                 # The given BulkURI can be specified without record id
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
