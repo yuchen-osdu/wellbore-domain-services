@@ -3,7 +3,8 @@ import json
 
 import fsspec
 import pandas as pd
-from pydantic import BaseModel, Field
+
+from app.model.model_chunking import DataframeBasicDescribe
 
 # imports from bulk_persistence
 from ..json_orient import JSONOrient
@@ -17,20 +18,9 @@ from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as path_builder
 from . import session_file_meta as session_meta
 
-
 """
 Contains functions related to writing bulk that mean to be run inside worker
 """
-
-
-# TODO move to a more appropriate file?
-class DataframeBasicDescribe(BaseModel):
-    row_count: int = Field(alias="rowCount")
-    column_count: int = Field(alias="columnCount")
-    columns: List[str] = Field(alias="columns")
-    index_start: str = Field(alias="indexStart")
-    index_end: str = Field(alias="indexEnd")
-    index_type: str = Field(alias="indexType")
 
 
 def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:

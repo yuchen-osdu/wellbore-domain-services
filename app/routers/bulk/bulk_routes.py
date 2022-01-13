@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
-from app.model.model_chunking import GetDataParams
+from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
 from app.helper.traces import TracingRoute
@@ -104,7 +104,7 @@ async def post_data(record_id: str,
                                                                   record=record,
                                                                   bulk_uri_access=bulk_uri_access)
     return update_record_response
-    # TODO proposal: construct add basic describe of data that has been stored
+    # TODO proposal: adding basic describe of data that has been stored
     # return PostDataResponse(**update_record_response.dict(exclude_unset=True, by_alias=True), dataStat=basic_describe)
 
 
@@ -118,6 +118,7 @@ async def post_data(record_id: str,
                 "Support http chunked encoding."
     + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["chunk_data"],
+    response_model=DataframeBasicDescribe,
     responses={400: {"description": "Record not found"}}
 )
 async def post_chunk_data(record_id: str,
@@ -127,7 +128,7 @@ async def post_chunk_data(record_id: str,
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func)
-                          ):
+                          ) -> DataframeBasicDescribe:
     if hasattr(request.state, 'version') and request.state.version != "V2":
         record = await fetch_record(with_session.ctx, record_id)
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
@@ -147,12 +148,10 @@ async def post_chunk_data(record_id: str,
             df_validation_func,
             record_id,
             i_session.session.id)
+        return basic_describe
 
     except BulkError as ex:
         ex.raise_as_http()
-
-    # TODO define what to return
-    return {}
 
 
 GET_DATA_DESCRIPTION = f"""  
