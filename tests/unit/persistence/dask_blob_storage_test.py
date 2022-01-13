@@ -453,10 +453,10 @@ async def test_named_index_chunk(test_session, dask_storage: DaskBulkStorage):
     chunk['idx'] = range(10)
     chunk = chunk.set_index('idx')
 
-    bulk_id = await dask_storage.save_bulk(chunk, test_session.recordId)
+    bulk_id = await save_bulk(dask_storage, chunk, test_session.recordId)
     
     stat = await dask_storage.read_stat(test_session.recordId, bulk_id)
-    assert set(['A', 'B']) == set(stat['schema'])
+    assert {'A', 'B'} == set(stat['schema'])
 
     ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     chunk.index.name = None
