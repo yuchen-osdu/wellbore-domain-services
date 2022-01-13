@@ -1260,6 +1260,43 @@ def test_write_too_many_columns_session(dasked_test_app_without_consistency_clie
     assert 'Too many columns' in response.text
 
 
+def test_session_update_previous_storage_version(dasked_test_app_without_consistency_client):
+    """ create a session update on a previous version, so only for V2 """
+
+    client = dasked_test_app_without_consistency_client
+    record_id = _create_record(client, 'Log')
+    chunking_url = Definitions['Log']['chunking_url']
+    base_url = Definitions['Log']['base_url']
+
+    df_previous = pd.DataFrame({'MD': [0.5, 1.5], 'X': [10, 11]}, index=[0, 1])
+    df_update = pd.DataFrame({'MD': [2.5, 3.5], 'X': [20, 21]}, index=[2, 3])
+
+    headers = {'Content-Type': 'application/x-parquet'}
+
+    # post bulk with legacy storage version
+    write_response = client.post(f'{base_url}/{record_id}/data',
+                                 data=df_previous.to_json(orient='split'))
+    assert write_response.status_code == 200
+
+    # update using new (alpha) storage V2
+    response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert response.status_code == 200
+    session_id = response.json()['id']
+
+    response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                           data=df_update.to_parquet(engine="pyarrow"),
+                           headers=headers)
+    assert response.status_code == 200
+
+    response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    assert response.status_code == 200
+
+    # check result
+    get_response = client.get(f'{chunking_url}/{record_id}/data',
+                              headers={'Accept': 'application/parquet'})
+    df: pd.DataFrame = _create_df_from_response(get_response)
+    assert list(df['X'].values) == [10, 11, 20, 21]
+
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
 #  - index: check if dataframe has an index

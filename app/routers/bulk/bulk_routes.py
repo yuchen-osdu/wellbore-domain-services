@@ -44,8 +44,10 @@ from app.routers.sessions import (SessionInternal,
                                   get_session_dependencies)
 
 # imports from bulk persistence
-from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, DataFrameValidationFunc
-from app.bulk_persistence import JSONOrient, get_dataframe
+from app.bulk_persistence.dataframe_validators import (auto_cast_columns_to_string,
+                                                       DataFrameValidationFunc,
+                                                       no_validation)
+from app.bulk_persistence import JSONOrient, get_dataframe, download_bulk
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
@@ -312,11 +314,18 @@ async def complete_session(
 
                     if previous_bulk_uri.is_bulk_storage_V0():
                         try:
-                            df = await get_dataframe(ctx, previous_bulk_uri.bulk_id)
+                            data, content_type = await download_bulk(ctx, previous_bulk_uri.bulk_id)
                             # convert old bulk to new one
-                            previous_bulk_id = await dask_blob_storage.save_bulk(df, record_id=record_id)
+                            previous_bulk_id, _ = await dask_blob_storage.post_data_without_session(
+                                data,
+                                content_type,
+                                no_validation,
+                                record_id)
+                        except BulkError as ex:
+                            ex.raise_as_http()
                         except ResourceNotFoundException:
                             BulkRecordNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
+
                     else:
                         previous_bulk_id = previous_bulk_uri.bulk_id
 
