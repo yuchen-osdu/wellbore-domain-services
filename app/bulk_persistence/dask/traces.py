@@ -87,16 +87,16 @@ def _add_trace_attributes(attributes: dict, tracing_mode: TracingMode):
         If tracer exists, add custom key:value as attributes on root or current span according value of 'tracing_mode'.
         NOTE: if called by a Dask worker, the parent span is the one created by `wrap_trace_process` function above.
     """
-    tracer = execution_context.get_opencensus_tracer()
-    if tracer is None:
+    opencensus_tracer = execution_context.get_opencensus_tracer()
+    if opencensus_tracer is None or not hasattr(opencensus_tracer, 'tracer'):
         return
 
     span = None
 
     if tracing_mode == TracingMode.CURRENT_SPAN:
-        span = tracer.tracer.current_span()
+        span = opencensus_tracer.tracer.current_span()
     elif tracing_mode == TracingMode.ROOT_SPAN:
-        existing_spans = tracer.tracer.list_collected_spans()
+        existing_spans = opencensus_tracer.tracer.list_collected_spans()
         span = existing_spans[0] if existing_spans else None
 
     if not span:
