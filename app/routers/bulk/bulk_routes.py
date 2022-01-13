@@ -28,6 +28,7 @@ from app.persistence.sessions_storage import (
 from app.bulk_persistence.dataframe_validators import (
     auto_cast_columns_to_string,
     assert_df_validate)
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
 
 from app.conf import Config
 from app.model.model_chunking import GetDataParams
@@ -52,10 +53,10 @@ from app.routers.bulk.utils import (
     get_df_from_request,
     set_bulk_field_and_send_record,
     DataFrameRender)
-from app.helper.traces import with_trace
-from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
+from app.helper.traces import with_trace, TracingRoute
 
-router = APIRouter()  # router dedicated to bulk APIs
+
+router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}

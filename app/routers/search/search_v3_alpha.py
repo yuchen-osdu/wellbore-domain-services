@@ -31,8 +31,9 @@ from .search_v3 import (
     query_type,
     update_query_with_nested_names_based_search)
 from ..common_parameters import REQUIRED_ROLES_READ
+from app.helper.traces import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 
 @router.post('/query/wellbores', summary='Query with cursor or offset, get wellbores',

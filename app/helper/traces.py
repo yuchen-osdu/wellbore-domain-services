@@ -13,11 +13,15 @@
 # limitations under the License.
 from functools import wraps
 from asyncio import iscoroutinefunction
+from typing import Callable
 
+from fastapi.routing import APIRoute
 from opencensus.common.transports.async_ import AsyncTransport
 from opencensus.trace import base_exporter
 from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
 from opencensus.trace.span import SpanKind
+from starlette.requests import Request
+from starlette.responses import Response
 
 from app.conf import Config
 from app.helper.utils import rename_cloud_role_func, COMPONENT
@@ -37,6 +41,20 @@ How to add specific span in a method
 >>             return MyResponseClass(result)
 
 """
+
+
+class TracingRoute(APIRoute):
+    def get_route_handler(self) -> Callable:
+        original_route_handler = super().get_route_handler()
+        path = self.path
+
+        async def custom_route_handler(request: Request) -> Response:
+            # https://www.starlette.io/requests/#other-state
+            request.state.traced_route = path
+            response: Response = await original_route_handler(request)
+            return response
+
+        return custom_route_handler
 
 
 def get_trace_propagator() -> TraceContextPropagator:
