@@ -177,7 +177,7 @@ class DMSV3RouterUtils:
                 try:
                     old_record = await fetch_record(ctx, r.id)
                 except Exception as e:
-                    if e.status_code == 404:
+                    if hasattr(e, "status_code") and e.status_code == 404:
                         # record has no previous versions
                         raise HTTPException(
                             status_code=status.HTTP_400_BAD_REQUEST,
