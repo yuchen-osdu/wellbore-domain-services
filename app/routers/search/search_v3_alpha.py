@@ -31,14 +31,17 @@ from .search_v3 import (
     query_type,
     update_query_with_nested_names_based_search)
 from ..common_parameters import REQUIRED_ROLES_READ
+from app.helper.traces import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 
 @router.post('/query/wellbores', summary='Query with cursor or offset, get wellbores',
              description=f"""Get Wellbores object by name.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
         returns all records directly based on existing schemas. The query is done on data.FacilityName field</p>{REQUIRED_ROLES_READ}""",
-             response_model=CursorQueryResponse)
+             response_model=CursorQueryResponse,
+             response_model_exclude_unset=True,
+             response_model_exclude_none=True)
 async def query_wellbores_by_name(names: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                   ctx: Context = Depends(get_ctx)):
     names = escape_forbidden_characters_for_search(names)
@@ -51,7 +54,9 @@ async def query_wellbores_by_name(names: str = None, body: SearchQueryRequest = 
              description=f"""Get all Wellbore Trajectories objects using its relationship Wellbore ID.  <p>All Wellbore Trajectories linked to this
             specific ID will be returned</p>
             <p>The Wellbore Trajectories kind is {OSDU_WELLBORETRAJECTORY_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
-             response_model=CursorQueryResponse)
+             response_model=CursorQueryResponse,
+             response_model_exclude_unset=True,
+             response_model_exclude_none=True)
 async def query_trajectories_bywellbore(wellboreId: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                    ctx: Context = Depends(get_ctx)):
     body.query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
@@ -62,7 +67,9 @@ async def query_trajectories_bywellbore(wellboreId: str, body: SearchQueryReques
              summary='Query with cursor, search WellLogs by name and optionally by wellbore ID and curves mnemonics',
              description=f"""Get all WellLogs objects using its name and optionally relationship Wellbore ID. Filtering can be done on curves mnemonics
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas. The query is done on data.Name field</p>{REQUIRED_ROLES_READ}""",
-             response_model=CursorQueryResponse)
+             response_model=CursorQueryResponse,
+             response_model_exclude_unset=True,
+             response_model_exclude_none=True)
 async def query_welllogs_by_name(names: str = None, wellbore_id: str = None, mnemonics: str = None,
                                  body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                  ctx: Context = Depends(get_ctx)):

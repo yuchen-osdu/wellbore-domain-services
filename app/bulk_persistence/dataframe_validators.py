@@ -4,6 +4,8 @@ import re
 import pandas as pd
 
 from app.bulk_persistence.dask.errors import BulkNotProcessable
+from app.conf import Config
+
 
 ValidationResult = Tuple[bool, str]  # Tuple (is_dataframe_valid, failure_reason)
 
@@ -63,7 +65,18 @@ def validate_index(df: pd.DataFrame) -> ValidationResult:
     return ValidationSuccess
 
 
+def validate_number_of_columns(df: pd.DataFrame) -> ValidationResult:
+    """ Verify max number of columns """
+    if len(df.columns) > Config.max_columns_per_chunk_write.value:
+        return False, f"Too many columns : maximum allowed '{Config.max_columns_per_chunk_write.value}'"
+    return ValidationSuccess
+
+
 PandasReservedIndexColRegexp = re.compile(r'__index_level_\d+__')
+
+def is_reserved_column_name(name: str) -> bool:
+    """Return True if the name is a reserved column name by Pandas/Dask with PyArrow"""
+    return PandasReservedIndexColRegexp.match(name) or name == '__null_dask_index__'
 
 
 def any_reserved_column_name(names: Iterable[str]) -> bool:
@@ -74,7 +87,7 @@ def any_reserved_column_name(names: Iterable[str]) -> bool:
         At this stage, columns used as index are already marked as index and it's not considered as columns by Pandas.
         return: True is any column uses a reserved name
     """
-    return any((PandasReservedIndexColRegexp.match(name) or name == '__null_dask_index__' for name in names))
+    return any(is_reserved_column_name(name) for name in names)
 
 
 def columns_not_in_reserved_names(df: pd.DataFrame) -> ValidationResult:

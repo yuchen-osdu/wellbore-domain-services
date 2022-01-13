@@ -24,6 +24,7 @@ from app.clients.search_service_client import get_search_service
 from app.routers.common_parameters import REQUIRED_ROLES_READ
 from app.utils import Context
 import app.routers.search.search_wrapper as search_wrapper
+from app.helper.traces import TracingRoute
 from .search import (
     LIMIT,
     query_type,
@@ -33,7 +34,7 @@ from .search import (
     basic_query_request,
     basic_query_request_with_cursor)
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 # osdu kind
 OSDU_WELLBORE_KIND = '*:wks:master-data--Wellbore:*'
@@ -184,7 +185,8 @@ async def query_request_with_offset(query_type: str, kind: str, ctx: Context, qu
         query_request=query_request)
 
 
-async def query_request(query_type: str, kind: str, ctx: Context, query: SearchQueryRequest = None):
+async def query_request(query_type: str, kind: str, ctx: Context,
+                        query: SearchQueryRequest = DEFAULT_SEARCHQUERYREQUEST):
     # use offset if not not none else use cursor
     query_as_dict = query.dict(exclude_none=True, exclude_unset=True)
     if query.offset is not None:
@@ -199,7 +201,7 @@ async def query_request(query_type: str, kind: str, ctx: Context, query: SearchQ
              description=f"""Get all Wellbores object.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
         returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_wellbores(body: SearchQueryRequest = DEFAULT_QUERYREQUEST, ctx: Context = Depends(get_ctx)):
+async def query_wellbores(body: SearchQueryRequest = DEFAULT_SEARCHQUERYREQUEST, ctx: Context = Depends(get_ctx)):
     return await query_request(query_type, OSDU_WELLBORE_KIND, ctx, body)
 
 
@@ -208,7 +210,7 @@ async def query_wellbores(body: SearchQueryRequest = DEFAULT_QUERYREQUEST, ctx: 
             specific ID will be returned</p>
             <p>The WellLogs kind is {OSDU_WELLLOG_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_welllogs_bywellbore(wellboreId: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+async def query_welllogs_bywellbore(wellboreId: str, body: SearchQueryRequest = DEFAULT_SEARCHQUERYREQUEST,
                                     ctx: Context = Depends(get_ctx)):
     body.query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
     return await query_request(query_type, OSDU_WELLLOG_KIND, ctx, body)
@@ -234,7 +236,7 @@ async def query_welllogs_bywellboreattribute(wellboreAttribute: str, body: Searc
             specific ID will be returned</p>
             <p>The Wellbore Markerset kind is {OSDU_WELLBOREMARKERSET_KIND} returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse)
-async def query_markers_bywellbore(wellboreId: str, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+async def query_markers_bywellbore(wellboreId: str, body: SearchQueryRequest = DEFAULT_SEARCHQUERYREQUEST,
                                    ctx: Context = Depends(get_ctx)):
     body.query = added_relationships_query(wellboreId, WELLBORE_RELATIONSHIP, body.query)
     return await query_request(query_type, OSDU_WELLBOREMARKERSET_KIND, ctx, body)

@@ -16,19 +16,29 @@
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: os-wellbore-ddms{{ include "os-wellbore-ddms.name-suffix" . }}
-  namespace: osdu
+  annotations:
+{{ include "os-wellbore-ddms.commonAnnotations" . | indent 4}}
+  labels:
+{{ include "os-wellbore-ddms.commonLabels" . | indent 4}}
+  name: {{ .Values.deployment.name }}{{ include "os-wellbore-ddms.name-suffix" . }}
+{{ include "os-wellbore-ddms.namespace" . | indent 2}}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: os-wellbore-ddms{{ include "os-wellbore-ddms.name-suffix" . }}
+    name: {{ .Values.deployment.name }}{{ include "os-wellbore-ddms.name-suffix" . }}
   minReplicas: {{ .Values.minReplicaCount }}
   maxReplicas: {{ .Values.maxReplicaCount }}
   metrics:
     - type: Resource
       resource:
         name: memory
+        target:
+          type: Utilization
+          averageUtilization: 50
+    - type: Resource
+      resource:
+        name: cpu
         target:
           type: Utilization
           averageUtilization: 50

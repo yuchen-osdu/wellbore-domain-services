@@ -19,6 +19,7 @@ import random
 import numpy.testing as npt
 import pandas as pd
 import pytest
+from typing import List
 
 from tests.unit.generate_data import generate_df
 
@@ -35,8 +36,7 @@ from wdms_client.request_builders.wdms.crud.osdu_wellboretrajectory import (
     build_request_create_osdu_wellboretrajectory,
     build_request_delete_osdu_wellboretrajectory)
 
-
-entity_type_dict={
+entity_type_dict = {
     "well_log": {"entity": "welllogs", "version": "v3"},
     "wellbore_trajectory": {"entity": "wellboretrajectories", "version": "v3"},
     "log": {"entity": "logs", "version": "v2"},
@@ -49,9 +49,9 @@ def build_base_url_without_dask(entity_type: str) -> str:
     return '{{base_url}}/ddms/' + entity_type_dict[entity_type]["version"] + '/' + entity_type_dict[entity_type]["entity"]
 
 @contextmanager
-def create_record(env, entity_type: str):
+def create_record(env, entity_type: str, curves: List[str]):
     if entity_type == "well_log":
-        result = build_request_create_osdu_welllog(False).call(env)
+        result = build_request_create_osdu_welllog(False, curves).call(env)
     elif entity_type == "wellbore_trajectory":
         result = build_request_create_osdu_wellboretrajectory(False).call(env)
     elif entity_type == "log":
@@ -159,8 +159,9 @@ WELLLOG_URL_PREFIX = 'alpha/ddms/v3/welllogs'
 @pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
-    with create_record(with_wdms_env, entity_type) as record_id:
-        data = generate_df(['MD', 'X'], range(8))
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type, col) as record_id:
+        data = generate_df(col, range(8))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -176,8 +177,9 @@ def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_with_session_commit(with_wdms_env, entity_type, serializer):
 
-    with create_record(with_wdms_env, entity_type) as record_id:
-        expected = generate_df(['MD', 'X'], range(8))
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type, col) as record_id:
+        expected = generate_df(col, range(8))
 
         # create session
         session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
@@ -208,9 +210,9 @@ def test_send_multiple_chunks_with_session_commit(with_wdms_env, shuffle):
     # well log on parquet
     entity_type = "well_log"
     serializer = ParquetSerializer()
-
-    with create_record(with_wdms_env, entity_type) as record_id:
-        data = generate_df(['MD', 'X', 'Y', 'Z'], range(1000))
+    col = ['MD', 'X', 'Y', 'Z']
+    with create_record(with_wdms_env, entity_type, col) as record_id:
+        data = generate_df(col, range(1000))
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
         # create session
@@ -252,10 +254,10 @@ def test_get_data_with_offset_filter(with_wdms_env):
     # well log on parquet
     entity_type = "well_log"
     serializer = ParquetSerializer()
-
-    with create_record(with_wdms_env, entity_type) as record_id:
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type,col) as record_id:
         size = 100
-        data = generate_df(['MD', 'X'], range(size))
+        data = generate_df(col, range(size))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -292,7 +294,7 @@ def test_get_data_with_column_filter(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
 
-    with create_record(with_wdms_env, entity_type) as record_id:
+    with create_record(with_wdms_env, entity_type, ['MD', 'X', 'Y', 'Z', '2D']) as record_id:
         size = 100
         data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
         data_to_send = serializer.dump(data)
@@ -304,7 +306,7 @@ def test_get_data_with_column_filter(with_wdms_env):
         validation_list = [  # tuple (params, expected_status, expected data)
             ({"curves": "MD"}, 200, data[['MD']]),
             ({"curves": "X, Y, Z"}, 200, data[['X', 'Y', 'Z']]),
-            ({"curves": "W, X"}, 200, data[['X']]),
+            ({"curves": "W, X"}, 404, data[['X']]),
             ({"curves": "2D[0]"}, 200, data[['2D[0]']]),
             ({"curves": "2D[0:1]"}, 200, data[['2D[0]', '2D[1]']]),
             ({"curves": "2D"}, 200, data[['2D[0]', '2D[1]', '2D[2]']]),
@@ -327,9 +329,10 @@ def test_get_data_with_limit_filter(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
 
-    with create_record(with_wdms_env, entity_type) as record_id:
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type, col) as record_id:
         size = 100
-        data = generate_df(['MD', 'X'], range(size))
+        data = generate_df(col, range(size))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -362,8 +365,8 @@ def test_get_data_with_limit_filter(with_wdms_env):
 @pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
     serializer = ParquetSerializer()
-
-    with create_record(with_wdms_env, entity_type) as record_id:
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type, ['MD', 'X']) as record_id:
         size = 100
         data = generate_df(['MD', 'X'], range(size))
         data_to_send = serializer.dump(data)
@@ -390,12 +393,12 @@ def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
 @pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
-
-    with create_record(with_wdms_env, entity_type) as record_id:
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type, col) as record_id:
         # create session
         sessions = [{
             'id': create_session(with_wdms_env, entity_type, record_id, True),
-            'df': generate_df(['MD', 'X'], range(8))
+            'df': generate_df(col, range(8))
         } for _i in range(5)]  # mode overwrite
 
         for session in sessions:
@@ -428,9 +431,10 @@ def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, enti
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
 
-    with create_record(with_wdms_env, entity_type) as record_id:
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type, ['MD', 'X']) as record_id:
         # post data
-        data = generate_df(['MD', 'X'], range(10))
+        data = generate_df(col, range(10))
         data_to_send = serializer.dump(data)
         build_request_post_data(entity_type, record_id, data_to_send).call(
             with_wdms_env, headers={'Content-Type': serializer.mime_type}).assert_ok()
@@ -471,8 +475,9 @@ def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_
 @pytest.mark.parametrize('entity_type', ["log"])
 @pytest.mark.parametrize('serializer', [JsonSerializer()])
 def test_get_data_from_record_data_without_dask(with_wdms_env, entity_type, serializer):
-    with create_record(with_wdms_env, entity_type) as record_id:
-        data = generate_df(['MD', 'X'], range(8))
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type, col) as record_id:
+        data = generate_df(col, range(8))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -501,8 +506,9 @@ def test_get_data_from_record_data_without_dask(with_wdms_env, entity_type, seri
 @pytest.mark.parametrize('entity_type', ["log"])
 @pytest.mark.parametrize('serializer', [JsonSerializer()])
 def test_data_without_dask_update_session(with_wdms_env, entity_type, serializer):
-    with create_record(with_wdms_env, entity_type) as record_id:
-        expected = generate_df(['MD', 'X'], range(20))
+    col = ['MD', 'X']
+    with create_record(with_wdms_env, entity_type, col) as record_id:
+        expected = generate_df(col, range(20))
         data_to_send = serializer.dump(expected[:10])
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -528,3 +534,37 @@ def test_data_without_dask_update_session(with_wdms_env, entity_type, serializer
         ).call(with_wdms_env, headers=headers, assert_status=200)
         result_df = serializer.read(result.response.content)
         pd.testing.assert_frame_equal(expected, result_df, check_dtype=False)
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory"])
+@pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
+def test_send_arrayd_without_session(with_wdms_env, entity_type, serializer):
+    with create_record(with_wdms_env, entity_type, ['MD', 'array_10_A']) as record_id:
+        data = generate_df(['MD', 'array_10_A'], range(8))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+        result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
+        pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
+
+
+@pytest.mark.tag('chunking', 'smoke')
+@pytest.mark.parametrize('entity_type', ["well_log"])
+@pytest.mark.parametrize('serializer', [ParquetSerializer()])
+def test_describe(with_wdms_env, entity_type, serializer):
+    columns = ['BOB', 'MD']
+    with create_record(with_wdms_env, entity_type, columns) as record_id:
+        number_of_rows = 8
+        data = generate_df(columns, range(number_of_rows))
+        data_to_send = serializer.dump(data)
+        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
+
+        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+        result = build_request_get_data(entity_type, record_id, {'describe': True}).call(with_wdms_env, headers=headers, assert_status=200)
+        res = result.response.json()
+        assert res['numberOfRows'] == number_of_rows
+        assert res['columns'] == ['BOB', 'MD']
