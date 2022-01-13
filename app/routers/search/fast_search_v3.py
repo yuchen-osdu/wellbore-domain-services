@@ -16,6 +16,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from odes_search.models import Point, CursorQueryResponse
 from app.utils import Context
+from app.helper.traces import TracingRoute
 from .search_v3 import (
     SearchQuery,
     SearchQueryRequest,
@@ -31,7 +32,7 @@ from .search_v3 import (
     DEFAULT_QUERYREQUEST
 )
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 query_type = 'fastquery'
 
 

@@ -20,6 +20,7 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from app.model.model_chunking import GetDataParams
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
+from app.helper.traces import TracingRoute
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_READ,
                                            REQUIRED_ROLES_WRITE,
@@ -50,7 +51,7 @@ from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, Filt
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 
 
-router = APIRouter()  # router dedicated to bulk APIs
+router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}
