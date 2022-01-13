@@ -200,6 +200,12 @@ class ConfigurationContainer:
         default="500",
         factory=lambda x: int(x))
 
+    max_columns_per_chunk_write: EnvVar = EnvVar(
+        key='MAX_COLUMNS_PER_CHUNK_WRITE',
+        description='Max number of columns that can be write per chunk',
+        default="500",
+        factory=lambda x: int(x))
+
     _environment_dict: Dict = os.environ
 
     _contextual_loader: Callable = None

@@ -4,6 +4,8 @@ import re
 import pandas as pd
 
 from app.bulk_persistence.dask.errors import BulkNotProcessable
+from app.conf import Config
+
 
 ValidationResult = Tuple[bool, str]  # Tuple (is_dataframe_valid, failure_reason)
 
@@ -60,6 +62,13 @@ def validate_index(df: pd.DataFrame) -> ValidationResult:
         return False, "Index should be numeric or datetime"
     if not df.index.is_unique:
         return False, "Duplicated index found"
+    return ValidationSuccess
+
+
+def validate_number_of_columns(df: pd.DataFrame) -> ValidationResult:
+    """ Verify max number of columns """
+    if len(df.columns) > Config.max_columns_per_chunk_write.value:
+        return False, f"Too many columns : maximum allowed '{Config.max_columns_per_chunk_write.value}'"
     return ValidationSuccess
 
 

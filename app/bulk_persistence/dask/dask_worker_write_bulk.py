@@ -10,7 +10,7 @@ from ..json_orient import JSONOrient
 from ..mime_types import MimeType
 from ..dataframe_serializer import DataframeSerializerSync
 from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
-                                    columns_not_in_reserved_names)
+                                    columns_not_in_reserved_names, validate_number_of_columns)
 
 from .traces import trace_dataframe_attributes
 from .errors import BulkNotProcessable, BulkSaveException
@@ -75,7 +75,7 @@ def write_bulk_without_session(data_handle,
     data_handle = None  # unref
 
     # 2- input dataframe validation
-    assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
+    assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
 
     trace_dataframe_attributes(df)
 
@@ -121,7 +121,7 @@ def add_chunk_in_session(data_handle,
     data_handle = None  # unref
 
     # 2- perf some check
-    assert_df_validate(df, [df_validator_func, columns_not_in_reserved_names, validate_index])
+    assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
 
     trace_dataframe_attributes(df)
 
