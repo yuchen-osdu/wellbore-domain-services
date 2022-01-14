@@ -414,7 +414,8 @@ def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
 @pytest.mark.parametrize("base_url, record_id, record_kind, data", tests_parameters_record_ids)
 def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
-    moc_get_record = mock.AsyncMock(side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND, reason_phrase="", content=None, headers=None))
+    moc_get_record = mock.AsyncMock(side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
+                                                                   reason_phrase="", content=None, headers=None))
     moc_create_or_update_records = mock.AsyncMock(return_value=create_update_records_obj)
 
     with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc_get_record), \

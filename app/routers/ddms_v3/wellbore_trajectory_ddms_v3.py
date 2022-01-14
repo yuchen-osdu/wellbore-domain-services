@@ -147,7 +147,7 @@ async def post_wellboreTrajectory_osdu(
     ctx: Context = Depends(get_ctx), bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(wellboretrajectories)
-    await DMSV3RouterUtils.raise_if_invalid_bulk_uri(wellboretrajectories, ctx, bulk_uri_access)
+    await DMSV3RouterUtils.raise_if_invalid_bulk_uri(wellboretrajectories, bulk_uri_access)
     for idx, traj in enumerate(wellboretrajectories):
         try:
             check_trajectory_consistency(traj)

@@ -144,7 +144,7 @@ async def post_welllog_osdu(
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(welllogs)
-    await DMSV3RouterUtils.raise_if_invalid_bulk_uri(welllogs, ctx, bulk_uri_access)
+    await DMSV3RouterUtils.raise_if_invalid_bulk_uri(welllogs, bulk_uri_access)
     for idx, w in enumerate(welllogs):
         try:
             check_welllog_consistency(w)
