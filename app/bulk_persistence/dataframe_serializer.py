@@ -22,7 +22,7 @@ import pandas as pd
 from pydantic import BaseModel
 
 from .json_orient import JSONOrient
-from .mime_types import MimeTypes
+from .mime_types import MimeTypes, MimeType
 from app.utils import get_pool_executor
 from ..helper.traces import with_trace
 
@@ -132,6 +132,26 @@ class DataframeSerializerSync:
                     continue
 
         return df
+
+    @classmethod
+    def load(cls, file_like_data,
+             content_type: MimeType,
+             orient: Optional[Union[str, JSONOrient]] = None) -> pd.DataFrame:
+        """
+        deserialized input data as pandas dataframe
+        :param file_like_data: input ipc raw bytes wrapped (file-like obj)
+        :param content_type: content type value (supports json and parquet)
+        :param orient: in content json, orient must be provided.
+        :return: pandas dataframe
+
+        :throw: ValueError
+        """
+        if content_type == MimeTypes.JSON:
+            return cls.read_json(file_like_data, orient=orient)
+        elif content_type == MimeTypes.PARQUET:
+            return cls.read_parquet(file_like_data)
+        else:
+            raise ValueError(f"unsupported content_type {content_type}")
 
 
 class DataframeSerializerAsync:

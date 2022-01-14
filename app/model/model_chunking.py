@@ -15,6 +15,7 @@
 from typing import Optional, List
 
 from fastapi import Query
+from pydantic import BaseModel, Field
 
 from app.model.filter import get_parsed_filters
 
@@ -85,3 +86,12 @@ The "filter" query parameter allows clients to filter data following the pattern
         return get_parsed_filters(self.bulk_filter)
 
 
+class DataframeBasicDescribe(BaseModel):
+    row_count: int = Field(alias="rowCount")
+    column_count: int = Field(alias="columnCount")
+    columns: List[str] = Field(
+        alias="columns",
+        description="list of column. May be truncated if too many columns, then contains the firsts and lasts once")
+    index_start: str = Field(alias="indexStart")
+    index_end: str = Field(alias="indexEnd")
+    index_type: str = Field(alias="indexType")

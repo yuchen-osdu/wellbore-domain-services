@@ -18,7 +18,8 @@ import mock
 import pandas as pd
 import pytest
 from app.auth.auth import require_opendes_authorized_user
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.helper import traces
 from app.middleware import require_data_partition_id
@@ -368,8 +369,6 @@ def test_restricted_record_id(
             )
             with mock.patch.object(
                 StorageRecordServiceClientMock, "get_record", mock.AsyncMock(return_value=moc_record)
-            ), mock.patch(
-                "app.bulk_persistence.dask.dask_bulk_storage.DaskBulkStorage.save_bulk", mock.AsyncMock(return_value=0)
             ):
                 data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
                 headers = {"content-type": "application/json"}
