@@ -102,6 +102,7 @@ def init_logger(service_name):
 
 
 def create_azure_logger(service_name):
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
     """
     Create logger with two handlers:
      - AzureLogHandler: to see Dependencies, Requests, Traces and Exception into Azure monitoring

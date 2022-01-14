@@ -263,3 +263,6 @@ def format_routes(app, prefix, tags):
                     # strip prefix from the formatted route path
                     route.path_format = route.path.removeprefix(prefix)
 
+
+def side_effect_raise(*args, **kwargs):
+    raise ValueError("side effect")

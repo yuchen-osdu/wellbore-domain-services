@@ -186,6 +186,14 @@ class ConfigurationContainer:
         description='Min amount of memory for one worker',
         default="512Mi")
 
+    dask_data_ipc: EnvVar = EnvVar(
+        key='DASK_DATA_IPC',
+        description='Specify data IPC type between main process and dask workers',
+        default='dask_native',
+        allowed_values=['dask_native', 'local_file'],
+        factory=lambda x: x.lower()
+    )
+
     max_columns_return: EnvVar = EnvVar(
         key='MAX_COLUMNS_RETURN',
         description='Max number of columns that can be returned per data request',

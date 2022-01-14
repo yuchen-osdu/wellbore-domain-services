@@ -68,6 +68,10 @@ class BulkNotProcessable(BulkError):
         super().__init__(ex_message)
 
 
+class BulkSaveException(BulkError):
+    http_status = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
 class InternalBulkError(BulkError):
     http_status = status.HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -114,5 +118,8 @@ def internal_bulk_exceptions(target):
         except scheduler.KilledWorker:
             get_logger().exception(f"Dask worker has been killed when running '{target.__name__}'")
             raise InternalBulkError("Out of memory")
+        except Exception:
+            get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
+            raise
 
     return async_inner
