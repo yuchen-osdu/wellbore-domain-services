@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import io
+from typing import Tuple
 
 import pandas as pd
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -27,7 +28,7 @@ from .blob_storage import (
 )
 from .bulk_id import new_bulk_id
 from app.bulk_persistence.dask.errors import internal_bulk_exceptions
-from .mime_types import MimeTypes
+from .mime_types import MimeTypes, MimeType
 from .tenant_provider import resolve_tenant
 from ..helper.traces import with_trace
 
@@ -50,9 +51,7 @@ async def create_and_store_dataframe(ctx: Context, df: pd.DataFrame) -> str:
         return bulkblob.id
 
 
-@internal_bulk_exceptions
-@with_trace('get_dataframe')
-async def get_dataframe(ctx: Context, bulk_id: str) -> pd.DataFrame:
+async def download_bulk(ctx: Context, bulk_id: str) -> Tuple[bytes, MimeType]:
     """ fetch bulk from a blob storage, provide column major """
     tenant = await resolve_tenant(ctx.partition_id)
     storage: BlobStorageBase = await ctx.app_injector.get(BlobStorageBase)
@@ -61,10 +60,17 @@ async def get_dataframe(ctx: Context, bulk_id: str) -> pd.DataFrame:
     # for now use fix parquet format saving one call
     # meta_data = await storage.download_metadata(tenant.project_id, tenant.bucket_name, bulk_id)
     # content_type = meta_data.metadata["content_type"]
+    return bytes_data, MimeTypes.PARQUET
+
+
+@internal_bulk_exceptions
+@with_trace('get_dataframe')
+async def get_dataframe(ctx: Context, bulk_id: str) -> pd.DataFrame:
+    bytes_data, content_type = await download_bulk(ctx, bulk_id)
     blob = BlobBulk(
         id=bulk_id,
         data=io.BytesIO(bytes_data),
-        content_type=MimeTypes.PARQUET.type,
+        content_type=content_type.type,
     )
     data_frame = await read_blob(blob)
     return data_frame

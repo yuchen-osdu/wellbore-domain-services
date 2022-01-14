@@ -10,7 +10,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 from app.auth.auth import require_opendes_authorized_user
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from app.bulk_persistence.dask.errors import BulkNotProcessable
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
@@ -1161,10 +1162,10 @@ def test_none_in_index_error(dasked_test_app_without_consistency_client, entity_
     if use_custom_index:
         df = df.set_index('float-COLUMN_MD')
 
-    with pytest.raises(BulkNotProcessable, match="Invalid column name"):
-        client.post(f'{chunking_url}/{record_id}/data',
-                    data=df.to_parquet(engine="pyarrow"),
-                    headers={'content-type': 'application/parquet'})
+    response_get_data = client.post(f'{chunking_url}/{record_id}/data',
+                                    data=df.to_parquet(engine="pyarrow"),
+                                    headers={'content-type': 'application/parquet'})
+    assert response_get_data.status_code == 422
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -1233,34 +1234,68 @@ def test_write_too_many_columns(dasked_test_app_without_consistency_client, enti
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    max_cols_count = 100
-    Config.max_columns_per_chunk_write.value = max_cols_count
-
-    df = generate_df([f'var[{i}]' for i in range(max_cols_count + 1)], range(5))
-    with pytest.raises(BulkNotProcessable, match=f"Too many columns : maximum allowed '{max_cols_count}'"):
-        client.post(f'{chunking_url}/{record_id}/data',
-                    data=df.to_parquet(engine="pyarrow"),
-                    headers={'content-type': 'application/parquet'})
+    df = generate_df([f'var[{i}]' for i in range(Config.max_columns_per_chunk_write.value + 1)], range(2))
+    response = client.post(f'{chunking_url}/{record_id}/data',
+                           data=df.to_parquet(engine="pyarrow"),
+                           headers={'content-type': 'application/parquet'})
+    assert response.status_code == 422
+    assert 'Too many columns' in response.text
 
 
-@pytest.mark.parametrize("data_format", ['parquet', 'json'])
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_write_too_many_columns_session(dasked_test_app_without_consistency_client, entity_type, data_format):
+def test_write_too_many_columns_session(dasked_test_app_without_consistency_client, entity_type):
     """ send parquet and json separately with two session, check if each session can be committed successfully"""
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
-    max_cols_count = 100
-    Config.max_columns_per_chunk_write.value = max_cols_count
 
-    columns = [f'var[{i}]' for i in range(max_cols_count + 1)]
-    # create session and append chunk
-    with pytest.raises(BulkNotProcessable, match=f"Too many columns : maximum allowed '{max_cols_count}'"):
-        _create_chunks(client=client,
-                    entity_type=entity_type,
-                    cols_ranges=[(columns, range(5)),],
-                    record_id=record_id,
-                    session_mode='overwrite',
-                    data_format=data_format)
+    chunking_url = Definitions[entity_type]["chunking_url"]
+    session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'overwrite'})
+    session_id = session_response.json()['id']
+
+    df = generate_df([f'var[{i}]' for i in range(Config.max_columns_per_chunk_write.value + 1)], range(2))
+    response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                           data=df.to_parquet(engine="pyarrow"),
+                           headers={'content-type': 'application/parquet'})
+    assert response.status_code == 422
+    assert 'Too many columns' in response.text
+
+
+def test_session_update_previous_storage_version(dasked_test_app_without_consistency_client):
+    """ create a session update on a previous version, so only for V2 """
+
+    client = dasked_test_app_without_consistency_client
+    record_id = _create_record(client, 'Log')
+    chunking_url = Definitions['Log']['chunking_url']
+    base_url = Definitions['Log']['base_url']
+
+    df_previous = pd.DataFrame({'MD': [0.5, 1.5], 'X': [10, 11]}, index=[0, 1])
+    df_update = pd.DataFrame({'MD': [2.5, 3.5], 'X': [20, 21]}, index=[2, 3])
+
+    headers = {'Content-Type': 'application/x-parquet'}
+
+    # post bulk with legacy storage version
+    write_response = client.post(f'{base_url}/{record_id}/data',
+                                 data=df_previous.to_json(orient='split'))
+    assert write_response.status_code == 200
+
+    # update using new (alpha) storage V2
+    response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert response.status_code == 200
+    session_id = response.json()['id']
+
+    response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                           data=df_update.to_parquet(engine="pyarrow"),
+                           headers=headers)
+    assert response.status_code == 200
+
+    response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    assert response.status_code == 200
+
+    # check result
+    get_response = client.get(f'{chunking_url}/{record_id}/data',
+                              headers={'Accept': 'application/parquet'})
+    df: pd.DataFrame = _create_df_from_response(get_response)
+    assert list(df['X'].values) == [10, 11, 20, 21]
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests

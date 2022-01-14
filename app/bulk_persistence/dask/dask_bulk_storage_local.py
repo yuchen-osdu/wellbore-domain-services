@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .bulk_uri import BulkURI
-from .dataframe_persistence import create_and_store_dataframe, get_dataframe, download_bulk
-from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerSync
-from .json_orient import JSONOrient
-from .mime_types import MimeTypes
-from .tenant_provider import resolve_tenant
-from .exceptions import UnknownChannelsException, InvalidBulkException, NoBulkException, NoDataException, RecordNotFoundException
+from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
+from .dask_bulk_storage import DaskBulkStorage
+
+
+async def make_local_dask_bulk_storage(base_directory: str) -> DaskBulkStorage:
+    params = DaskStorageParameters(protocol='file',
+                                   base_directory=base_directory,
+                                   storage_options={'auto_mkdir': True})
+    return await DaskBulkStorage.create(params)
