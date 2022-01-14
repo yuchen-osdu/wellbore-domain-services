@@ -210,7 +210,8 @@ class DMSV3RouterUtils:
                     # record has no previous versions
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no previous version",
+                        detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no previous "
+                               f"version",
                     )
                 else:
                     raise e
@@ -221,7 +222,8 @@ class DMSV3RouterUtils:
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no bulkURI in its previous version",
+                    detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no bulkURI in "
+                           f"its previous version",
                 )
 
             if bulk_uri != old_bulk_uri:
