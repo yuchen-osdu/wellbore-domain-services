@@ -51,7 +51,7 @@ from app.bulk_persistence import JSONOrient, get_dataframe, download_bulk
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
-from app.bulk_persistence.dask.traces import trace_dataframe_attributes
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -303,6 +303,8 @@ async def complete_session(
                 # get the session if some information is needed
                 i_session = commit_guard.session
                 _internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
+
+                trace_attributes_root_span({'session-mode': i_session.session.mode})
 
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
                 DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
