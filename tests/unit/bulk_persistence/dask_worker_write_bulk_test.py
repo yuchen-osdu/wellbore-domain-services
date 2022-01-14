@@ -8,6 +8,8 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 
 from app.bulk_persistence import MimeTypes
+from app.bulk_persistence.dask.utils import WDMS_INDEX_NAME
+
 from app.bulk_persistence.dask.dask_worker_write_bulk import (basic_describe,
                                                               DataframeBasicDescribe,
                                                               write_bulk_without_session,
@@ -148,4 +150,5 @@ def test_write_chunk_in_session_success(content_type, temp_directory):
     parquet_files = [f for f in glob(temp_directory + '/*.parquet')]
     assert len(parquet_files) == 1
     loaded_df = pd.read_parquet(parquet_files[0])
+    df.index.name = WDMS_INDEX_NAME
     assert_frame_equal(df, loaded_df)
