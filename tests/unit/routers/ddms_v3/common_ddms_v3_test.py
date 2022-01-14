@@ -21,7 +21,8 @@ import os
 
 from fastapi.testclient import TestClient
 
-from fastapi import Header, status
+from fastapi import Header, status, HTTPException
+from odes_storage import UnexpectedResponse
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record, RecordVersions
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -413,7 +414,7 @@ def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
 @pytest.mark.parametrize("base_url, record_id, record_kind, data", tests_parameters_record_ids)
 def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
-    moc_get_record = mock.AsyncMock(return_value=record_id)
+    moc_get_record = mock.AsyncMock(side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND, reason_phrase="", content=None, headers=None))
     moc_create_or_update_records = mock.AsyncMock(return_value=create_update_records_obj)
 
     with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc_get_record), \
@@ -437,7 +438,7 @@ def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
         response = client.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified, given record_id has no ' \
-                                'bulkURI in its previous version"}'
+                                'previous version"}'
 
         # test create record with BulkURI and without id
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data_test)
