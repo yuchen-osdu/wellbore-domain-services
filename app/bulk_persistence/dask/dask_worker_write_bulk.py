@@ -13,7 +13,6 @@ from ..dataframe_serializer import DataframeSerializerSync
 from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
                                     columns_not_in_reserved_names, validate_number_of_columns)
 
-from .traces import trace_dataframe_attributes
 from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as path_builder
 from . import session_file_meta as session_meta
@@ -67,8 +66,6 @@ def write_bulk_without_session(data_handle,
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
 
-    trace_dataframe_attributes(df)
-
     # 3- build blob filename and final full blob path
     filename = session_meta.generate_chunk_filename(df)
     full_file_path = path_builder.join(bulk_base_path, filename + '.parquet')
@@ -112,8 +109,6 @@ def add_chunk_in_session(data_handle,
 
     # 2- perf some check
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
-
-    trace_dataframe_attributes(df)
 
     # sort column by names # TODO could it be avoided ? then we could keep input untouched and save serialization step?
     df = df[sorted(df.columns)]

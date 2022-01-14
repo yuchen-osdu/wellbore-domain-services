@@ -20,7 +20,7 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
-from app.helper.traces import TracingRoute
+from app.helper.traces import TracingRoute, with_trace
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_READ,
                                            REQUIRED_ROLES_WRITE,
@@ -51,7 +51,7 @@ from app.bulk_persistence import JSONOrient, get_dataframe, download_bulk
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
-
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -99,6 +99,8 @@ async def post_data(record_id: str,
 
     except BulkError as ex:
         ex.raise_as_http()
+
+    trace_dataframe_attributes(basic_describe)
 
     # update record
     update_record_response = await set_bulk_field_and_send_record(ctx=ctx,
@@ -150,6 +152,8 @@ async def post_chunk_data(record_id: str,
             df_validation_func,
             record_id,
             i_session.session.id)
+
+        trace_dataframe_attributes(basic_describe)
         return basic_describe
 
     except BulkError as ex:
@@ -213,6 +217,7 @@ async def get_data_version(
         ex.raise_as_http()
 
 
+@with_trace('_process_request_v1')
 async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
     dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
     columns_to_load = None

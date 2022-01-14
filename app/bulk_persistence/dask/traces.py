@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 from enum import Enum
 
 from dask.distributed import Client
@@ -14,6 +14,7 @@ from app.conf import Config
 from app.helper import traces
 from app.utils import get_ctx
 from opencensus.trace import execution_context
+from . import dask_worker_write_bulk as bulk_writer
 
 _EXPORTER = None
 
@@ -117,12 +118,17 @@ def trace_attributes_current_span(attributes):
     _add_trace_attributes(attributes, TracingMode.CURRENT_SPAN)
 
 
-def trace_dataframe_attributes(df: pd.DataFrame):
+def trace_dataframe_attributes(df: Union[pd.DataFrame, bulk_writer.DataframeBasicDescribe]):
     """
         Add dataframe shape into current tracing span if tracer exists
     """
-    rows_count, cols_count = df.shape
+    if type(df) is pd.DataFrame:
+        df = bulk_writer.basic_describe(df)
+
     trace_attributes_current_span({
-        "df rows count": rows_count,
-        "df columns count": cols_count
+        "df rows count": df.row_count,
+        "df columns count": df.column_count,
+        "df index start": df.index_start,
+        "df index end": df.index_end,
+        "df index type": df.index_type,
     })
