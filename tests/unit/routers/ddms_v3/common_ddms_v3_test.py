@@ -436,7 +436,8 @@ def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
                                                                data=data_test)
         response = client.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified"}'
+        assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified, given record_id has no ' \
+                                'bulkURI in its previous version"} '
 
         # test create record with BulkURI and without id
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data_test)

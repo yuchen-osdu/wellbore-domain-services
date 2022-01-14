@@ -166,6 +166,26 @@ class DMSV3RouterUtils:
 
     @staticmethod
     async def raise_if_invalid_bulk_uri(records: List[Record], ctx: Context, bulk_uri_access: BulkIdAccess):
+        """
+        Check of BulkURIs in the given records on create/update welllog and trajectory APIs.
+
+        The property ExtensionProperties.wdms.bulkURI is "internal" to the wdms service.
+        User can't be allowed to "set" incorrect value, which could lead to invalid records.
+
+         Supported use case:
+            In case of Update, the bulk URI must match the current/previous one. If not, we will raise an error.
+
+        Args:
+            records (Record): Entity object to be verified
+            ctx: Context
+            bulk_uri_access: Bulk uri access
+
+        Returns:
+
+        Raises:
+            HTTPException in case record has not valid BulkURI
+        """
+
         # For each records :
         async def raise_if_invalid_bulk_uri_task(idx, r):
 
@@ -186,7 +206,7 @@ class DMSV3RouterUtils:
             try:
                 old_record = await fetch_record(ctx, r.id)
             except UnexpectedResponse as e:
-                if e.status_code == 404:
+                if e.status_code == status.HTTP_404_NOT_FOUND:
                     # record has no previous versions
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
