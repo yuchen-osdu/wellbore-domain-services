@@ -208,8 +208,8 @@ async def get_data_version(
             df = await get_dataframe(ctx, bulk_id)
             auto_cast_columns_to_string(df)
         else:
-            # future_index = await DataFrameRender.load_index(record_id, bulk_id, dask_blob_storage)
-            future_index = await dask_blob_storage.load_index(record_id, bulk_id)
+            if data_param.offset or data_param.limit:
+                future_index = await DataFrameRender.load_index(record_id, bulk_id, dask_blob_storage)
             df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters, dask_blob_storage)
 
         df = await DataFrameRender.process_params(df, data_param, filters, dask_blob_storage, future_index)

@@ -262,7 +262,7 @@ class DataFrameRender:
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
-        if filters:
+        if filters and (params.offset or params.limit):
             f_index = dask_blob_storage.client.compute(df.index)
 
         df = await DataFrameRender.select_range(df, params.offset, params.limit, dask_blob_storage, f_index)

@@ -1,6 +1,5 @@
 import io
 import math
-import platform
 from tempfile import TemporaryDirectory
 
 import numpy as np
@@ -12,7 +11,6 @@ import pytest
 from app.auth.auth import require_opendes_authorized_user
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
-from app.bulk_persistence.dask.errors import BulkNotProcessable
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.helper import traces

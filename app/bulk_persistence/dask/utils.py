@@ -23,6 +23,7 @@ import pyarrow.parquet as pa
 from app.helper.logger import get_logger
 from app.utils import capture_timings
 
+
 WDMS_INDEX_NAME = '_wdms_index_'
 
 def worker_make_log_captured_timing_handler(level=INFO):
