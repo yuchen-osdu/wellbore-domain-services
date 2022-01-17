@@ -113,7 +113,7 @@ def generate_chunk_filename(dataframe: pd.DataFrame) -> str:
     '0_9_1637223437910.526782c41fe12c3249046fedcc45563ef3662250'
     >>> generate_chunk_filename(pd.DataFrame({'A': range(10), 'B': range(10)}, index=range(10,20)))
     '10_19_1637223490719.526782c41fe12c3249046fedcc45563ef3662250'
-    >>> generate_chunk_filename(pd.DataFrame({'A': [1], 'B': [1]}, index=[datetime.datetime.now()])) 
+    >>> generate_chunk_filename(pd.DataFrame({'A': [1], 'B': [1]}, index=[datetime.datetime.now()]))
     '1639672097644401000_1639672097644401000_1639668497645.526782c41fe12c3249046fedcc45563ef3662250'
     >>> generate_chunk_filename(pd.DataFrame({'A': []}, index=[]))
     IndexError: index 0 is out of bounds for axis 0 with size 0

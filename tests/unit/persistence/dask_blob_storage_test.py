@@ -59,6 +59,7 @@ async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
     assert not set(pdf.columns) ^ set(df.columns) # check contains same columns
     df = df[pdf.columns]
     df.index.name = None
+    pdf.index.name = None
     check_freq = True
     if isinstance(df.index, pd.DatetimeIndex):
         check_freq = False
@@ -286,7 +287,8 @@ async def test_bad_columns_requested(test_session, dask_storage: DaskBulkStorage
     await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A'])
     with pytest.raises(BulkRecordNotFound):
         await dask_storage.load_bulk(test_session.recordId, bulk_id, ['B'])
-    await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A', 'B'])
+    with pytest.raises(BulkRecordNotFound):
+        await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A', 'B'])
 
 
 @pytest.mark.asyncio

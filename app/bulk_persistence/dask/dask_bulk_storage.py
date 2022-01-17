@@ -33,14 +33,16 @@ from app.conf import Config
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import map_with_trace, submit_with_trace
-from .utils import (by_pairs, do_merge, worker_capture_timing_handlers,
+from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
 from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
 from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
-from .bulk_catalog import BulkCatalog, ChunkGroup, load_bulk_catalog, save_bulk_catalog
+from .bulk_catalog import (BulkCatalog, ChunkGroup,
+                           async_load_bulk_catalog,
+                           async_save_bulk_catalog)
 from ..mime_types import MimeType
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
@@ -50,8 +52,7 @@ def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
     """call dask.dataframe.read_parquet with default parameters
     Dask read_parquet parameters:
         chunksize='25M': if chunk are too small, we aggregate them until we reach chunksize
-        aggregate_files=True: because we are passing a list of path when commiting a session,
-                                aggregate_files is needed when paths are different
+        aggregate_files=True: aggregate_files is needed when files are in different folders
     Args:
         path (Union[str, List[str]]): a file, a folder or a list of files
     Returns:
@@ -74,8 +75,8 @@ def _load_index_from_meta(meta, **kwargs):
                            **kwargs).index
 
 
-def _index_union_tuple(t):
-    return index_union(*t)
+def _index_union_tuple(indexes: Tuple[pd.Index, Optional[pd.Index]]):
+    return index_union(*indexes)
 
 
 class DaskBulkStorage:
@@ -165,14 +166,17 @@ class DaskBulkStorage:
             - if columns is None, we load all columns
         Returns: Future<dd.dataframe>
         """
-        if columns is None:
-            columns = catalog.all_columns_dtypes.keys()
         record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
         files_to_load = catalog.get_paths_for_columns(columns, record_path)
         # read all chunk for requested columns
         def read_parquet_files(f):
             return read_with_dask(f.paths, columns=f.labels, storage_options=self._parameters.storage_options)
         dfs = self._map_with_trace(read_parquet_files, files_to_load)
+
+        index_df = self._read_index_from_catalog_index_path(catalog)
+        if index_df:
+            dfs.append(index_df)
+
         if not dfs:
             raise RuntimeError("cannot find requested columns")
 
@@ -187,11 +191,11 @@ class DaskBulkStorage:
         """Load columns from parquet files in the bulk_path.
         Returns: Future<dd.DataFrame>
         """
-        bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
-        catalog = load_bulk_catalog(self._fs, bulk_path)
+        catalog = await self.get_bulk_catalog(record_id, bulk_id, generate_if_not_exists=False)
         if catalog is not None:
             return self._load_bulk_from_catalog(catalog, columns)
         # No catalog means that we can read the folder as a parquet dataset. (legacy behavior)
+        bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
         return self._read_parquet(bulk_path, columns=columns)
 
     @with_trace('read_stat')
@@ -215,7 +219,7 @@ class DaskBulkStorage:
         Args:
             record_id (str): the record id on which belongs the bulk.
             bulk_id (str): the bulk id to load.
-            columns (List[str], optional): columns to load. If None all all available columns. Defaults to None.
+            columns (List[str], optional): columns to load. If None, all available columns. Defaults to None.
         Raises:
             BulkRecordNotFound: If bulk data cannot be found.
         Returns:
@@ -223,7 +227,10 @@ class DaskBulkStorage:
         """
         try:
             future_df = await self._load_bulk(record_id, bulk_id, columns=columns)
-            return await future_df
+            dataframe = await future_df
+            if columns and set(dataframe.columns) != set(columns):
+                raise BulkRecordNotFound(record_id, bulk_id)
+            return dataframe
         except (OSError, RuntimeError) as exp:
             raise BulkRecordNotFound(record_id, bulk_id) from exp
 
@@ -237,17 +244,18 @@ class DaskBulkStorage:
                                        engine='pyarrow', schema="infer", compression='snappy')
 
     @capture_timings('get_bulk_catalog')
-    async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
+    async def get_bulk_catalog(self, record_id: str, bulk_id: str, generate_if_not_exists=True) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
-        catalog = load_bulk_catalog(self._fs, bulk_path)
+        catalog = await async_load_bulk_catalog(self._fs, bulk_path)
         if catalog:
             return catalog
 
-        # For legacy bulk, construct a catalog on the fly
-        try:
-            return await self._build_catalog_from_path(bulk_path, record_id)
-        except FileNotFoundError as e:
-            raise BulkRecordNotFound(record_id, bulk_id) from e
+        if generate_if_not_exists:
+            # For legacy bulk, construct a catalog on the fly
+            try:
+                return await self._build_catalog_from_path(bulk_path, record_id)
+            except FileNotFoundError as error:
+                raise BulkRecordNotFound(record_id, bulk_id) from error
 
     @capture_timings('_build_catalog_from_path')
     async def _build_catalog_from_path(self, path: str, record_id: str) -> BulkCatalog:
@@ -285,13 +293,24 @@ class DaskBulkStorage:
 
         return catalog
 
-    async def _future_load_index(self, record_id: str, bulk_id: str) -> Awaitable[pd.Index]:
-        """load the dataframe index of the specified record"""
-        catalog = await self.get_bulk_catalog(record_id, bulk_id)
+    def _read_index_from_catalog_index_path(self, catalog: BulkCatalog) -> Optional[dd.DataFrame]:
+        """Returns a Future dask dataframe or None if index path is not in the catalog"""
         if catalog.index_path:
-            index_path = pathBuilder.full_path(self.base_directory, record_id, catalog.index_path, self.protocol)
-            future_df = self._read_parquet(index_path)
-        else: # only read one column to get the index. It doesn't seems possible to get the index directly.
+            index_path = pathBuilder.full_path(self.base_directory, catalog.record_id,
+                                               catalog.index_path, self.protocol)
+            return self._read_parquet(index_path)
+        return None
+
+    @capture_timings('_future_load_index')
+    async def _future_load_index(self, record_id: str, bulk_id: str) -> Awaitable[pd.Index]:
+        """Loads the dataframe index of the specified record
+        index should be save in a specific folder but for bulk prior to catalog creation
+        we read one column and retreive the index associated with it.
+        """
+        catalog = await self.get_bulk_catalog(record_id, bulk_id)
+        future_df = self._read_index_from_catalog_index_path(catalog)
+        if future_df is None:
+            # read one column to get the index. (It doesn't seems possible to get the index directly)
             first_column = next(iter(catalog.all_columns_dtypes))
             future_df = await self._load_bulk(record_id, bulk_id, [first_column])
         return self._submit_with_trace(lambda df: df.index.compute(), future_df)
@@ -392,10 +411,12 @@ class DaskBulkStorage:
         self._ensure_dir_tree_exists(index_folder)
         index_path = pathBuilder.join(index_folder, 'index.parquet')
 
-        f_pdf = await self.client.scatter(pd.DataFrame(index=index))
+        dataframe = pd.DataFrame(index=index)
+        dataframe.index.name = WDMS_INDEX_NAME
+
+        f_pdf = await self.client.scatter(dataframe)
         await self._submit_with_trace(DataframeSerializerSync.to_parquet, f_pdf, index_path,
                                       storage_options=self._parameters.storage_options)
-
         return index_path
 
     @capture_timings('session_commit')
@@ -437,7 +458,8 @@ class DaskBulkStorage:
             self._fill_catalog_columns_info(catalog, chunk_metas, bulk_id)
         )
 
-        save_bulk_catalog(self._fs, commit_path, catalog)
+        fcatalog = await self.client.scatter(catalog)
+        await async_save_bulk_catalog(self._fs, commit_path, fcatalog)
         return bulk_id
 
     @internal_bulk_exceptions

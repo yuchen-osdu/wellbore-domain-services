@@ -42,7 +42,7 @@ def test_add_multiple_chunk_group_same_schemas():
     assert set(column_path[0].paths) == set([f'test/{p}' for paths in all_paths for p in paths])
 
 
-def test_change_chukn_info():
+def test_change_chunk_info():
     catalog = BulkCatalog("id")
     chunk_group = ChunkGroup(set(['A', 'B']), ['path1', 'paths2'], ["Int32", "Int64"])
     catalog.add_chunk(chunk_group)
@@ -57,4 +57,15 @@ def test_change_chukn_info():
 
     catalog.all_columns_dtypes['A'] = 'Float32'
 
-    
+
+def test_get_paths_for_columns_all_columns():
+    catalog = BulkCatalog("id")
+    chunk_group = ChunkGroup(set(['A', 'B']), ['path1', 'paths2'], ["Int32", "Int64"])
+    catalog.add_chunk(chunk_group)
+    chunk_group = ChunkGroup(set(['C', 'D']), ['path3', 'paths4'], ["Int32", "Int64"])
+    catalog.add_chunk(chunk_group)
+
+    column_path = catalog.get_paths_for_columns(None, '')
+    all_columns = {col for col_paths in column_path for col in col_paths.labels }
+    excepted_columns = {'A', 'B', 'C', 'D'}
+    assert all_columns == excepted_columns
