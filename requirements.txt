@@ -109,8 +109,6 @@ cloudpickle==1.6.0
     # via
     #   dask
     #   distributed
-colorama==0.4.4
-    # via click
 cryptography==3.4.7
     # via
     #   -r requirements.in
