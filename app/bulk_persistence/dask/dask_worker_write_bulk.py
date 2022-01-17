@@ -29,12 +29,13 @@ def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
     else:
         cols = full_cols
 
+    index_exists = len(df.index)
     return DataframeBasicDescribe(rowCount=len(df.index),
                                   columnCount=len(full_cols),
                                   columns=cols,
-                                  indexStart=str(df.index[0]),
-                                  indexEnd=str(df.index[-1]),
-                                  indexType=str(df.index.dtype))
+                                  indexStart=str(df.index[0]) if index_exists else "0",
+                                  indexEnd=str(df.index[-1]) if index_exists else "0",
+                                  indexType=str(df.index.dtype) if index_exists else "")
 
 
 def write_bulk_without_session(data_handle,
