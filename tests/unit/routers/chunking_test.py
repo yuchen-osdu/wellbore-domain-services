@@ -26,6 +26,8 @@ from pandas.testing import assert_frame_equal
 from tests.unit.conftest import do_nothing, set_default_partition
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 
+from tests.unit.test_utils import nope_logger_fixture
+
 Definitions = {
     'WellLog': {
         'api_version': 'v3',
@@ -122,7 +124,7 @@ def _cast_datetime_to_datetime64_ns(result_df):
 
 
 @pytest.fixture
-def dasked_test_app(init_fixtures, event_loop, tmp_path):
+def dasked_test_app(init_fixtures, event_loop, tmp_path, nope_logger_fixture):
 
     local_blob_storage = LocalFSBlobStorage(directory=tmp_path)
 
@@ -935,7 +937,10 @@ def test_send_json_parquet_in_one_session(dasked_test_app_without_consistency_cl
     commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
                                                json={'state': 'commit'})
 
-    assert_commit_session_status_code(commit_session_response)
+    assert commit_session_response.status_code == 200
+
+    get_response = client.get(f'{chunking_url}/{record_id}/data')
+    assert get_response.status_code == 200
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)

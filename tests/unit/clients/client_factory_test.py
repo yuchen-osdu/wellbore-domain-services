@@ -33,6 +33,7 @@ from tests.unit.test_utils import make_record
 from odes_storage.exceptions import ResponseHandlingException
 from app.conf import Config
 
+from tests.unit.test_utils import ctx_fixture
 
 @pytest.mark.asyncio
 async def test_make_storage_client(httpx_mock: HTTPXMock, ctx_fixture):
@@ -53,7 +54,7 @@ async def test_make_storage_client(httpx_mock: HTTPXMock, ctx_fixture):
 
 
 @pytest.mark.asyncio
-async def test_make_search_client(httpx_mock: HTTPXMock, test_context):
+async def test_make_search_client(httpx_mock: HTTPXMock, ctx_fixture):
     host = 'http://my_host:81234'
     async with make_search_client(host) as client:
         assert isinstance(client, SearchServiceClient)
