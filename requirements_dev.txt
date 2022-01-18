@@ -63,6 +63,7 @@ idna==3.2
     #   rfc3986
 importlib-metadata==4.10.1
     # via
+    #   -c requirements.txt
     #   click
     #   jsonschema
     #   pep517
@@ -206,6 +207,7 @@ wheel==0.36.2
     # via pip-tools
 zipp==3.7.0
     # via
+    #   -c requirements.txt
     #   importlib-metadata
     #   pep517
 
