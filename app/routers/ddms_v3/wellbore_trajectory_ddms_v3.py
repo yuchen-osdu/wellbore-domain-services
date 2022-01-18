@@ -145,10 +145,10 @@ async def get_osdu_wellboreTrajectory_version(
 )
 async def post_wellboreTrajectory_osdu(
     wellboretrajectories: List[WellboreTrajectory] = Body(..., example=load_schema_example("wellbore_v3.json")),
-    ctx: Context = Depends(get_ctx),
+    ctx: Context = Depends(get_ctx), bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(wellboretrajectories)
-
+    await DMSV3RouterUtils.raise_if_invalid_bulk_uri(wellboretrajectories, bulk_uri_access)
     for idx, traj in enumerate(wellboretrajectories):
         try:
             check_trajectory_consistency(traj)
