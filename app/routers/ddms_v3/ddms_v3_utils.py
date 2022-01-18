@@ -177,7 +177,7 @@ class DMSV3RouterUtils:
             return
 
         if not r.id and bulk_uri:
-            # The given BulkURI can be specified without record id
+            # The given BulkURI cannot be specified without record id
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record[{idx}] error : no Bulk URI can be specified without record id",
