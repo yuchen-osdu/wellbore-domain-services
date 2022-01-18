@@ -423,7 +423,7 @@ def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
 
 
 @pytest.mark.parametrize("base_url, record_id, record_kind, data", tests_parameters_record_ids)
-def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
+def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url, record_id, record_kind, data):
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
     moc_get_record = mock.AsyncMock(side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
                                                                    reason_phrase="", content=None, headers=None))
@@ -433,12 +433,12 @@ def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
          mock.patch.object(StorageRecordServiceClientMock, "create_or_update_records", moc_create_or_update_records):
         # test create record with id and without BulkURI
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind, data=data)
-        response = client.post(f"{base_url}", json=[record_to_test])
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_200_OK
 
         # test create record without id and BulkURI
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data)
-        response = client.post(f"{base_url}", json=[record_to_test])
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_200_OK
 
         # test create record with id and BulkURI
@@ -447,14 +447,14 @@ def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
         data_test.update(data)
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
                                                                data=data_test)
-        response = client.post(f"{base_url}", json=[record_to_test])
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified, given record_id has no ' \
                                 'previous version"}'
 
         # test create record with BulkURI and without id
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data_test)
-        response = client.post(f"{base_url}", json=[record_to_test])
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified without record id"}'
 
@@ -473,7 +473,7 @@ def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
             # test create record with BulkURI which has a previous version with another BulkURI
             record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
                                                                    data=data_test)
-            response = client.post(f"{base_url}", json=[record_to_test])
+            response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
             assert response.status_code == status.HTTP_400_BAD_REQUEST
             assert response.text == '{"detail":"Record[0] error : Bulk URI isn\'t matching with the previous version one"}'
 
@@ -483,5 +483,5 @@ def test_invalid_bulk_uri_set(client, base_url, record_id, record_kind, data):
             data_test.update(data)
             record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
                                                                    data=data_test)
-            response = client.post(f"{base_url}", json=[record_to_test])
+            response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
             assert response.status_code == status.HTTP_200_OK
