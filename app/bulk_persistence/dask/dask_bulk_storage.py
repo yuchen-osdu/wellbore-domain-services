@@ -350,7 +350,7 @@ class DaskBulkStorage:
     async def _fill_catalog_columns_info(
         self, catalog: BulkCatalog, session_metas, bulk_id: str
     ) -> Optional[BulkCatalog]:
-        """ build the catalog from the session."""
+        """Build the catalog from the session."""
         catalog_columns = set(catalog.all_columns_dtypes)
 
         for chunks_metas in session_meta.get_next_chunk_files(session_metas):
@@ -435,8 +435,8 @@ class DaskBulkStorage:
         """
         bulk_id = new_bulk_id()
 
-        chunk_metas = await session_meta.get_chunks_metadata(self._fs, self.base_directory, session)
-        if len(chunk_metas) == 0:# there is no files in this session
+        chunk_metas = await session_meta.get_chunks_metadata(self._fs, self.protocol, self.base_directory, session)
+        if len(chunk_metas) == 0:  # there is no files in this session
             raise BulkNotProcessable(message="No data to commit")
 
         if from_bulk_id:
