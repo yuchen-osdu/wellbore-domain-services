@@ -23,4 +23,4 @@ cd tests/integration
 
 python3 gen_postman_env.py --token $svctoken --base_url $svc_url --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
 
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
