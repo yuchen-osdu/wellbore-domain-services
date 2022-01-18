@@ -47,7 +47,7 @@ include:
     file: "build/python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "scanners/fossa.yml"
+    file: "scanners/fossa-python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
