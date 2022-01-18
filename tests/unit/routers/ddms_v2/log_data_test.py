@@ -14,9 +14,7 @@
 
 import os
 
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture
-
-from tempfile import TemporaryDirectory
+from tests.unit.test_utils import create_mock_class
 
 from fastapi import HTTPException, Header
 from fastapi.testclient import TestClient
@@ -72,30 +70,30 @@ StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
-    with TemporaryDirectory() as tmpdir:
-        async def storage_service_builder(*args, **kwargs):
-            return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmpdir), 'p1', 'c1')
+def client(tmp_path):
 
-        async def blob_storage_builder(*args, **kwargs):
-            return LocalFSBlobStorage(directory=tmpdir)
+    async def storage_service_builder(*args, **kwargs):
+        return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1')
 
-        async def set_default_partition(data_partition_id: str = Header('opendes')):
-            Context.set_current_with_value(partition_id=data_partition_id)
+    async def blob_storage_builder(*args, **kwargs):
+        return LocalFSBlobStorage(directory=tmp_path)
 
-        app_injector.register(BlobStorageBase, blob_storage_builder)
-        app_injector.register(StorageRecordServiceClient, storage_service_builder)
+    async def set_default_partition(data_partition_id: str = Header('opendes')):
+        Context.set_current_with_value(partition_id=data_partition_id)
 
-        async def do_nothing():
-            # empty method
-            pass
+    app_injector.register(BlobStorageBase, blob_storage_builder)
+    app_injector.register(StorageRecordServiceClient, storage_service_builder)
 
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
+    async def do_nothing():
+        # empty method
+        pass
 
-        yield TestClient(wdms_app)
+    wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
+    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
 
-        wdms_app.dependency_overrides = {}  # clean up
+    yield TestClient(wdms_app)
+
+    wdms_app.dependency_overrides = {}  # clean up
 
 
 @pytest.fixture

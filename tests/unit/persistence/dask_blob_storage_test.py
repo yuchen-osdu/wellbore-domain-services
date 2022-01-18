@@ -13,7 +13,6 @@
 # limitations under the License.
 import asyncio
 from datetime import datetime, timedelta
-from tempfile import TemporaryDirectory
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -39,10 +38,9 @@ from app.bulk_persistence.dataframe_validators import no_validation
 
 
 @pytest.fixture()
-async def dask_storage(nope_logger_fixture, ctx_fixture) -> DaskBulkStorage:
-    with TemporaryDirectory() as tmp_dir:
-        dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_dir)
-        yield dask_storage
+async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path) -> DaskBulkStorage:
+    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path)
+    yield dask_storage
 
 
 @pytest.fixture()

@@ -77,7 +77,7 @@ def test_version_requires_authentication(client, path_prefix):
 
 
 @pytest.mark.parametrize("path_prefix", PathPrefixParams)
-def test_version_properly_read_details(client_with_authenticated_user, monkeypatch, path_prefix):
+def test_version_properly_read_details(client_with_authenticated_user, path_prefix):
     # override value of build details
     Config.build_details.value = 'key1=value1; key2=value2'
 

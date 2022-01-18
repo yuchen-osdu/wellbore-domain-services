@@ -24,8 +24,7 @@ from starlette.routing import Router, Route, Mount
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.wdms_app import wdms_app, base_app, DDMS_V2_PATH, app_injector
 from app.utils import get_or_create_ctx
-
-from tests.unit.test_utils import NopeLogger
+from tests.unit.test_utils import ctx_fixture
 
 
 # Initialize traces exporter in app with a custom one to allow validating our traces
@@ -45,11 +44,6 @@ class ExporterInTest(base_exporter.Exporter):
                 return sd
 
 
-@pytest.fixture()
-def ctx_fixture():
-    """Create context with a real tracer in it"""
-    ctx = get_or_create_ctx().set_current_with_value(logger=NopeLogger())
-    yield ctx
 
 
 @pytest.fixture

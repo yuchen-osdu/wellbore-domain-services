@@ -17,19 +17,11 @@ import os
 import uuid
 import mock
 from app.utils import Context
-from tests.unit.test_utils import NopeLogger
+
 import app.conf as conf
 from app.helper.traces import create_exporter
 from app.conf import ConfigurationContainer, Config, check_environment, validator_path_must_exist, \
     cloud_provider_additional_environment
-
-
-@pytest.fixture
-def testing_context():
-    """ This is a basic Context initialized with empty logger to ensure tested methods can contains logging calls """
-    ctx = Context(logger=NopeLogger(), request_id='this is a test')
-    Context.set_current(ctx)
-    return ctx
 
 
 @pytest.fixture
@@ -38,7 +30,7 @@ def testing_config():
 
 
 @pytest.fixture()
-def gcp_config_fixture(monkeypatch):
+def gcp_config_fixture():
     provider_name = "gcp"
 
     environment_dict = os.environ.copy()
@@ -57,7 +49,7 @@ def gcp_config_fixture(monkeypatch):
 
 
 @pytest.fixture()
-def azure_config_fixture(monkeypatch):
+def azure_config_fixture():
     provider_name = "az"
 
     environment_dict = os.environ.copy()

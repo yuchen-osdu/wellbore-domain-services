@@ -192,7 +192,7 @@ idna==3.2
     #   requests
     #   rfc3986
     #   yarl
-importlib-metadata==4.8.1
+importlib-metadata==4.10.1
     # via
     #   click
     #   jsonschema
@@ -429,7 +429,7 @@ yarl==1.6.3
     # via aiohttp
 zict==2.0.0
     # via distributed
-zipp==3.6.0
+zipp==3.7.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
