@@ -38,8 +38,9 @@ from app.bulk_persistence import (DataframeSerializerSync,
                                   InvalidBulkException)
 
 from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx, load_schema_example
+from app.helper.traces import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 TrajectoryId = str
 

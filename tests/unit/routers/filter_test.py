@@ -24,7 +24,7 @@ def test_parse_filter_without_exception(filters, expected):
 def test_parse_filter_with_exception(filters, exec_info):
     with pytest.raises(FilterError) as execinfo:
         parse_filter(filters)
-    assert str(execinfo.value) == exec_info
+    assert exec_info in str(execinfo.value)
 
 
 @pytest.mark.parametrize("filters, expected", [
@@ -49,4 +49,4 @@ def test_get_filters_without_exception(filters, expected):
 def test_get_filters_with_exception(filters, exec_info):
     with pytest.raises(FilterError) as execinfo:
         get_parsed_filters(filters)
-    assert str(execinfo.value) == exec_info
+    assert exec_info in str(execinfo.value)

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from typing import Any, Callable
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -26,41 +26,12 @@ from opencensus.trace.span import SpanKind
 from app.helper import traces, utils
 from app.utils import get_or_create_ctx
 from app import conf
-from inspect import isfunction as is_function
 
 
 class TracingMiddleware(BaseHTTPMiddleware):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._trace_propagator = traces.get_trace_propagator()
-
-    @staticmethod
-    def _retrieve_raw_path(request):
-        """
-        Returns the raw path of given request, else default request's url path
-        E.g.:
-            /ddms/v2/wellbores/{wellboreid} instead of /ddms/v2/wellbores/opendes:doc:blablabla14587
-
-        It retrieves the raw path by finding the APIRoute object by name. By default the name of the route is the name
-         of python method where there is the implementation.
-
-
-        >>> @router.get('/wellbores/{wellboreid}')
-        >>> async def get_wellbore(wellboreid: str, ctx: Context):
-        >>>     # instructions here
-        In this example 'get_wellbore' is called_endpoint_func variable, this function's name is needed to retrieve
-        the APIRoute that contains the raw path.
-        """
-        called_endpoint_func = request.scope.get('endpoint')
-
-        if called_endpoint_func and is_function(called_endpoint_func):
-            function_name = called_endpoint_func.__name__
-            called_routes = [route for route in request.app.routes
-                             if route.name == function_name]
-            if called_routes:
-                return called_routes[0].path
-
-        return request.url.path
 
     @staticmethod
     def _before_request(request: Request, tracer: open_tracer.Tracer):
@@ -121,8 +92,11 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_STATUS_CODE,
                                              attribute_value=status)
 
-        tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_ROUTE,
-                                             attribute_value=TracingMiddleware._retrieve_raw_path(request))
+        if hasattr(request.state, "traced_route"):
+            # This is set in Request state by the appropriate TracingRoute instance
+            # otherwise the value set in _before_request is used
+            tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_ROUTE,
+                                                attribute_value=request.state.traced_route)
 
         if response:
             response_content_type = response.headers.get("Content-type")
@@ -160,5 +134,6 @@ class TracingMiddleware(BaseHTTPMiddleware):
                 raise
             finally:
                 status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
-                ctx.logger.info(utils.process_message(request, status))
+                if not request.url.path.endswith('healthz'):
+                    ctx.logger.info(utils.process_message(request, status))
                 self._after_request(request, response, tracer)

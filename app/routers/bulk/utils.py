@@ -20,10 +20,11 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.utils import set_index
 from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence import JSONOrient
-from app.utils import get_ctx, OpenApiHandler, Context
+from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
 from app.model.model_chunking import GetDataParams
 from app.routers.bulk.bulk_uri_dependencies import (BulkIdAccess, BULK_URI_FIELD)
+from pyarrow.lib import ArrowInvalid
 
 
 def update_operation_ids(wdms_app):
@@ -89,7 +90,7 @@ async def get_df_from_request(request: Request) -> pd.DataFrame:
         content = await request.body()  # request.stream()
         try:
             return await DataframeSerializerAsync().read_parquet(content)
-        except OSError as err:
+        except (OSError, ArrowInvalid) as err:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                 detail=f'{err}')  # TODO
 
@@ -118,61 +119,97 @@ class DataFrameRender:
         return await driver.client.compute(df)
 
     @staticmethod
+    async def load_index(record_id: str, bulk_id: str, dask_blob_storage: DaskBulkStorage):
+        return await dask_blob_storage._future_load_index(record_id, bulk_id)
+
+    @staticmethod
     async def get_size(df):
         if isinstance(df, pd.DataFrame):
             return len(df.index)
         driver = await with_dask_blob_storage()
-        return await driver.client.submit(lambda: len(df.index))
+        return await driver._submit_with_trace(lambda: len(df.index))
 
     @staticmethod
-    async def select_range(df: dd.DataFrame, offset, limit):
-        if offset or limit:
-            driver = await with_dask_blob_storage()
-            df = driver.client.persist(df)
-            df = await driver.client.submit(set_index, df)
-            index = await driver.client.submit(lambda x: x.index.compute(), df)
-            if offset and offset > 0:
+    def _select_range_impl(df: dd.DataFrame, limit, offset, index):
+        if df.known_divisions and index is not None:
+            if offset:
                 index = index[offset:]
-            if limit and limit > 0:
+            if limit:
                 index = index[:limit]
-            return df.loc[df.index.isin(index)]
+            return df.loc[list(index)]  # this works only if divisions are known
+
+        dataframe_list = []
+        CONCURRENT_READ = 1
+        for nth in range(0, df.npartitions, CONCURRENT_READ):
+            dataframe = df.partitions[nth:nth+CONCURRENT_READ].compute()
+            partition_len = len(dataframe.index)
+
+            if offset and partition_len < offset:
+                offset -= partition_len
+                continue  # skip the partition
+            if offset:
+                dataframe = dataframe.iloc[offset:]
+                offset = 0
+            if limit:
+                dataframe = dataframe.iloc[:limit]
+                limit -= len(dataframe.index)
+
+            dataframe_list.append(dataframe)
+            if limit is not None and limit <= 0:
+                break  # stop when we have the requested data
+        if not dataframe_list:
+            return df.head(0)  # return an empty dataframe
+        return pd.concat(dataframe_list)
+
+    @staticmethod
+    @with_trace('select_range')
+    @capture_timings('select_range')
+    async def select_range(df: dd.DataFrame, offset, limit, dask_blob_storage: DaskBulkStorage, index=None):
+        if offset or limit:
+            return await dask_blob_storage._submit_with_trace(DataFrameRender._select_range_impl,
+                                                              df, limit, offset, index)
         return df
+
 
     re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
     @staticmethod
-    def _col_matching(sel, col):
-        if sel == col:  # exact match
-            return True
-        m_col = DataFrameRender.re_array_selection.match(col)
-        if not m_col:  # if the column doesn't have an array pattern (col[*])
-            return False
-        # compare selection with curve name without array suffix [*]
-        if sel == m_col['name']:  # if selection is 'c', c[*] should match
-            return True
-        # range selection use cases c[0:2] should match c[0], c[1] and c[2]
-        m_sel = DataFrameRender.re_array_selection.match(sel)
-        if m_sel and m_sel['stop'] and m_sel['name'] == m_col['name']:
+    def _get_matching_columns_from_selection(selection: str, all_columns=Set[str]) -> List[str]:
+        m_sel = DataFrameRender.re_array_selection.match(selection)
+        if m_sel and m_sel['stop']:  # selection like col_name[<start>:<stop>]
+            col_name = m_sel['name']
             with suppress(ValueError):  # suppress int conversion exceptions
-                if int(m_sel['start']) <= int(m_col['start']) <= int(m_sel['stop']):
-                    return True
-        return False
+                requested_columns = (f'{col_name}[{i}]' for i in range(int(m_sel['start']), int(m_sel['stop'])+1))  # TODO we may want to support floating point values ?
+                return all_columns.intersection(requested_columns)
+
+        def is_matching(col: str):
+            if not col.startswith(selection):
+                return False
+            if len(col) == len(selection):  # exact match
+                return True
+            m_col = DataFrameRender.re_array_selection.match(col)
+            if m_col:  # if selection is 'col_name', col_name[*] should match
+                return m_col['name'] == selection
+            return False
+
+        return [c for c in all_columns if is_matching(c)]
 
     @staticmethod
-    def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
+    def get_matching_columns(selection: List[str], cols: Set[str]) -> List[str]:
         selected = {}
         curves_non_existent = []
+
         for sel in selection:
-            matching_columns = [col for col in cols if DataFrameRender._col_matching(sel, col)]
+            matching_columns = DataFrameRender._get_matching_columns_from_selection(sel, cols)
             if matching_columns:
                 selected.update({column: 1 for column in natsorted(matching_columns)})
             else:
                 curves_non_existent.append(sel)
+
         if curves_non_existent:
             raise BulkCurvesNotFound(curves=curves_non_existent)
 
         return list(selected.keys())
-
 
     @staticmethod
     def apply_filter(df, filters):
@@ -208,7 +245,7 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('process_params')
-    async def process_params(df, params: GetDataParams, filters):
+    async def process_params(df, params: GetDataParams, filters, dask_blob_storage: DaskBulkStorage, f_index):
         """
         pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
         """
@@ -219,26 +256,29 @@ class DataFrameRender:
             df = DataFrameRender.apply_filter(df, filters)
 
         if params.curves:
-            selection = list(map(str.strip, params.curves.split(',')))
-            columns = DataFrameRender.get_matching_column(selection, set(df))
+            selection = params.get_curves_list()
+            columns = DataFrameRender.get_matching_columns(selection, set(df.columns))
             df = df[columns]  # columns are ordered as the user requested
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
-        df = await DataFrameRender.select_range(df, params.offset, params.limit)
+        if filters and (params.offset or params.limit):
+            f_index = dask_blob_storage.client.compute(df.index)
+
+        df = await DataFrameRender.select_range(df, params.offset, params.limit, dask_blob_storage, f_index)
 
         return df
 
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
+    #@capture_timings('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
-            if stat and not params.limit and not params.offset:
-                nb_rows = stat['num_rows']
+            nb_rows = await DataFrameRender.get_size(df)
+            if params.curves is None and stat:
                 columns = natsorted(list(stat['schema']))
             else:
-                nb_rows = await DataFrameRender.get_size(df)
                 columns = list(df.columns)
 
             return {

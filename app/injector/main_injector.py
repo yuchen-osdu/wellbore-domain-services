@@ -20,10 +20,6 @@ from app.helper.logger import get_logger
 
 from .app_injector import AppInjector, AppInjectorModule, WithLifeTime
 
-from app.injector.az_injector import AzureInjector
-from app.injector.aws_injector import AwsInjector
-from app.injector.gcp_injector import GCPInjector
-from app.injector.ibm_injector import IBMInjector
 
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
@@ -31,7 +27,8 @@ from app.clients.search_service_client import SearchServiceClient
 from app.clients import make_search_client, make_storage_record_client
 from app.persistence.sessions_storage import SessionsStorage
 
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 
 
 class MainInjector(AppInjectorModule):
@@ -57,18 +54,22 @@ class MainInjector(AppInjectorModule):
         # TODO use constants
         # switch gcp/azure
         if Config.cloud_provider.value == 'az':
+            from app.injector.az_injector import AzureInjector
             logger.info('using az injector')
             AzureInjector().configure(app_injector)
 
         if Config.cloud_provider.value == 'gcp':
+            from app.injector.gcp_injector import GCPInjector
             logger.info('using gcp injector')
             GCPInjector().configure(app_injector)
 
         if Config.cloud_provider.value == 'ibm':
+            from app.injector.ibm_injector import IBMInjector
             logger.info('using ibm injector')
             IBMInjector().configure(app_injector)
 
         if Config.cloud_provider.value == 'aws':
+            from app.injector.aws_injector import AwsInjector
             logger.info('using aws injector')
             AwsInjector().configure(app_injector)
 

@@ -17,7 +17,7 @@ import pytest
 
 from wdms_client.request_builders.wdms.delete_records import build_request_delete_osdu_records
 from .fixtures import with_wdms_env
-from wdms_client.request_builders import build_request, get_cleaned_ref_and_res
+from wdms_client.request_builders import build_request, diff_record_against_ref
 
 kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog', 'osdu_wellboretrajectory', 'osdu_wellboremarkerset']
 
@@ -46,8 +46,9 @@ def test_crud_get_record(with_wdms_env, kind):
     result = build_request(f'crud.{kind}.get_{kind}').call(with_wdms_env)
     result.assert_ok()
     res_dict = result.get_response_obj().toDict()
-    ref, res = get_cleaned_ref_and_res(kind, res_dict)
-    assert ref == res
+    diff = diff_record_against_ref(kind, res_dict)
+    assert not diff
+
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
