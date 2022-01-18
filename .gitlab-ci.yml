@@ -128,9 +128,6 @@ osdu-gcp-containerize-gitlab:
   image: docker:19.03
   cache: {}
   tags: ["osdu-medium"]
-  only:
-    variables:
-      - $OSDU_GCP == 'true'
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA
     IMAGE_TAG_LATEST: $CI_REGISTRY_IMAGE/osdu-gcp:latest
@@ -192,9 +189,6 @@ osdu-gcp-test-python:
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   needs: ["osdu-gcp-deploy-deployment"]
-  only:
-    variables:
-      - $OSDU_GCP == 'true' && $OSDU_GCP_INT_TEST_TYPE == 'python'
   script:
     - apt-get install -y python3-venv
     - python3 -m venv env
@@ -223,6 +217,10 @@ osdu-gcp-test-python:
 osdu-gcp-test:
   extends:
     - .osdu-gcp-variables
+
+osdu-gcp-dev2-test:
+  extends:
+    - .osdu-gcp-dev2-variables
 
 # Allow failure on private development deployments
 ibm-deploy-devpri:
