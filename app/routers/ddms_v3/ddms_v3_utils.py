@@ -1,12 +1,16 @@
+import asyncio
 import re
 from typing import List, Tuple
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
+from odes_storage import UnexpectedResponse
 from odes_storage.models import Record
 from pydantic import validate_model
 from starlette import status
 
+from app.bulk_persistence import BulkURI
 from app.model.entity_utils import get_kind_meta
+from app.model.log_bulk import LogBulkHelper
 from app.model.osdu_model import (
     Well,
     Wellbore,
@@ -17,6 +21,9 @@ from app.model.osdu_model import (
     WellLog,
     WellLog110,
 )
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
+from app.routers.record_utils import fetch_record
+from app.utils import Context, get_ctx
 
 OSDU_WELL_VERSION_REGEX = re.compile(r"^([\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+):([0-9]*)$")
 OSDU_WELL_REGEX = re.compile(r"^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$")
@@ -156,3 +163,78 @@ class DMSV3RouterUtils:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Record[{idx}] validation against schema '{kind.entity_type}:{kind.version}' failed: {str(validationError)}",
                 )
+
+    @staticmethod
+    async def _raise_if_invalid_bulk_uri_task(idx, r, bulk_uri_access):
+
+        ctx: Context = get_ctx()
+        bulk_uri = None
+        # Get the given bulkURI or bulkURI is None
+        if r.data.ExtensionProperties and "wdms" in r.data.ExtensionProperties:
+            bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=r))
+
+        if not r.id and not bulk_uri:
+            return
+
+        if not r.id and bulk_uri:
+            # The given BulkURI cannot be specified without record id
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Record[{idx}] error : no Bulk URI can be specified without record id",
+            )
+
+        # If BulkURI not none and the given record has an id : check if there is an old version of this record
+        try:
+            old_record = await fetch_record(ctx, r.id)
+        except UnexpectedResponse as e:
+            if e.status_code == status.HTTP_404_NOT_FOUND:
+                # record has no previous versions
+                if not bulk_uri:
+                    return
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no previous version",
+                )
+            else:
+                raise e
+
+        # Get bulkURI's old version if it exist
+        if hasattr(old_record, "data"):
+            old_bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=old_record))
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no bulkURI in "
+                       f"its previous version",
+            )
+
+        if bulk_uri != old_bulk_uri:
+            # The given BulkURI isn't matching with the previous version one
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Record[{idx}] error : Bulk URI isn't matching with the previous version one",
+            )
+
+    @staticmethod
+    async def raise_if_invalid_bulk_uri(records: List[Record], bulk_uri_access: BulkIdAccess):
+        """
+        Check of BulkURIs in the given records on create/update welllog and trajectory APIs.
+
+        The property ExtensionProperties.wdms.bulkURI is "internal" to the wdms service.
+        User can't be allowed to "set" incorrect value, which could lead to invalid records.
+
+         Supported use case:
+            In case of Update, the bulk URI must match the current/previous one. If not, we will raise an error.
+
+        Args:
+            records (Record): Entity object to be verified
+            bulk_uri_access: Bulk uri access
+
+        Returns:
+
+        Raises:
+            HTTPException in case record has not valid BulkURI
+        """
+
+        await asyncio.gather(
+            *[DMSV3RouterUtils._raise_if_invalid_bulk_uri_task(idx, r, bulk_uri_access) for idx, r in enumerate(records)])

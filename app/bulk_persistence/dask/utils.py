@@ -24,6 +24,8 @@ from app.helper.logger import get_logger
 from app.utils import capture_timings
 
 
+WDMS_INDEX_NAME = '_wdms_index_'
+
 def worker_make_log_captured_timing_handler(level=INFO):
     """log captured timing from the worker subprocess (no access to context)"""
 
@@ -64,6 +66,12 @@ def join_dataframes(dfs: List[dd.DataFrame]):
     return dfs[0] if dfs else None
 
 
+def rename_index(dataframe: pd.DataFrame, name):
+    """Rename the dataframe index"""
+    dataframe.index.name = name
+    return dataframe
+
+
 @capture_timings("do_merge", handlers=worker_capture_timing_handlers)
 def do_merge(df1: dd.DataFrame, df2: Optional[dd.DataFrame]):
     """Combine the 2 dask dataframe. Updates df1 with df2 values if overlap."""
@@ -72,6 +80,10 @@ def do_merge(df1: dd.DataFrame, df2: Optional[dd.DataFrame]):
 
     df1 = set_index(df1)
     df2 = set_index(df2)
+
+    df1 = df1.map_partitions(rename_index, WDMS_INDEX_NAME)
+    df2 = df2.map_partitions(rename_index, WDMS_INDEX_NAME)
+
     if share_items(df1.columns, df2.columns):
         return df2.combine_first(df1)
     return df1.join(df2, how='outer')  # join seems faster when there no columns in common

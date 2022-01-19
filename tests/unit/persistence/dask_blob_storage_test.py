@@ -13,7 +13,6 @@
 # limitations under the License.
 import asyncio
 from datetime import datetime, timedelta
-from tempfile import TemporaryDirectory
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -39,10 +38,9 @@ from app.bulk_persistence.dataframe_validators import no_validation
 
 
 @pytest.fixture()
-async def dask_storage(nope_logger_fixture, ctx_fixture) -> DaskBulkStorage:
-    with TemporaryDirectory() as tmp_dir:
-        dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_dir)
-        yield dask_storage
+async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path) -> DaskBulkStorage:
+    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path)
+    yield dask_storage
 
 
 @pytest.fixture()
@@ -59,6 +57,7 @@ async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
     assert not set(pdf.columns) ^ set(df.columns) # check contains same columns
     df = df[pdf.columns]
     df.index.name = None
+    pdf.index.name = None
     check_freq = True
     if isinstance(df.index, pd.DatetimeIndex):
         check_freq = False
@@ -286,7 +285,8 @@ async def test_bad_columns_requested(test_session, dask_storage: DaskBulkStorage
     await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A'])
     with pytest.raises(BulkRecordNotFound):
         await dask_storage.load_bulk(test_session.recordId, bulk_id, ['B'])
-    await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A', 'B'])
+    with pytest.raises(BulkRecordNotFound):
+        await dask_storage.load_bulk(test_session.recordId, bulk_id, ['A', 'B'])
 
 
 @pytest.mark.asyncio

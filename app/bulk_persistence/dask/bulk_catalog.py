@@ -37,6 +37,9 @@ class ChunkGroup:
     paths: List[str]
     dtypes: List[str]
 
+ColumnLabel = str
+ColumnDType = str
+
 
 class BulkCatalog:
     """Represent a bulk catalog
@@ -74,7 +77,7 @@ class BulkCatalog:
         return len(self.all_columns_dtypes)
 
     @property
-    def all_columns_dtypes(self) -> Dict[str, str]:
+    def all_columns_dtypes(self) -> Dict[ColumnLabel, ColumnDType]:
         """Returns all columns with their dtype
         Returns:
             Dict[str, str]:  a dict { column label : column dtype }
@@ -127,11 +130,17 @@ class BulkCatalog:
         paths: List[str]
 
     def get_paths_for_columns(self, labels: Iterable[str], base_path: str) -> List[ColumnsPaths]:
-        """Returns the paths to load data of the requested columns grouped by paths"""
+        """Returns the paths to load data of the requested columns grouped by paths
+        Args:
+            labels (Iterable[str]): List of desired columns. If None or empty select all columns.
+            base_path (str): Base path as prefix to chunks path
+        Returns:
+            List[ColumnsPaths]: The requested columns grouped by paths
+        """
         grouped_files = []
 
         for col_group in self.columns:
-            matching_columns = col_group.labels.intersection(labels)
+            matching_columns = col_group.labels.intersection(labels) if labels else col_group.labels
             if matching_columns:
                 grouped_files.append(self.ColumnsPaths(
                     labels=matching_columns,

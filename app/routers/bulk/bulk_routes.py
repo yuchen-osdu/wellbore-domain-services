@@ -205,26 +205,31 @@ async def get_data_version(
         if not bulk_uri.is_valid():
             raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
         bulk_id = bulk_uri.bulk_id
+
+        dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+        future_index = None
         if bulk_uri.is_bulk_storage_V0():
             df = await get_dataframe(ctx, bulk_id)
             auto_cast_columns_to_string(df)
         else:
-            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters)
+            if data_param.offset or data_param.limit:
+                future_index = await DataFrameRender.load_index(record_id, bulk_id, dask_blob_storage)
+            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters, dask_blob_storage)
 
-        df = await DataFrameRender.process_params(df, data_param, filters=filters)
+        df = await DataFrameRender.process_params(df, data_param, filters, dask_blob_storage, future_index)
+
         return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
 
 
 @with_trace('_process_request_v1')
-async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
-    dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters, dask_blob_storage: DaskBulkStorage):
     columns_to_load = None
     stat = await dask_blob_storage.read_stat(record_id, bulk_id)
     existing_col = set(stat['schema'])
     if data_param.curves:
-        columns_to_load = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
+        columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), existing_col)
         stat['schema'] = {k: stat['schema'][k] for k in columns_to_load}
 
     if not data_param.describe: # don't limit columns when describe parameter is True

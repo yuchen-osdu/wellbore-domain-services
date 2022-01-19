@@ -3,6 +3,7 @@ import json
 
 import fsspec
 import pandas as pd
+from app.bulk_persistence.dask.utils import WDMS_INDEX_NAME
 
 from app.model.model_chunking import DataframeBasicDescribe
 
@@ -67,6 +68,9 @@ def write_bulk_without_session(data_handle,
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
 
+    # set the name of the index column
+    df.index.name = WDMS_INDEX_NAME
+
     # 3- build blob filename and final full blob path
     filename = session_meta.generate_chunk_filename(df)
     full_file_path = path_builder.join(bulk_base_path, filename + '.parquet')
@@ -111,8 +115,9 @@ def add_chunk_in_session(data_handle,
     # 2- perf some check
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
 
-    # sort column by names # TODO could it be avoided ? then we could keep input untouched and save serialization step?
+    # sort column by names and set index column name  # TODO could it be avoided ? then we could keep input untouched and save serialization step?
     df = df[sorted(df.columns)]
+    df.index.name = WDMS_INDEX_NAME
 
     # 3- build blob filename and final full blob path
     filename = session_meta.generate_chunk_filename(df)

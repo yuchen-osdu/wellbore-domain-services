@@ -20075,6 +20075,9 @@
             },
             "description": "Successful Response"
           },
+          "404": {
+            "description": "Family not found"
+          },
           "422": {
             "content": {
               "application/json": {

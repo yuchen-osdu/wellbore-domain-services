@@ -36,7 +36,7 @@ from tests.unit.generate_data import generate_df
     (["X[0][1:1]"],      {"X[0][0]", "X[0][1]"},       ["X[0][1]"]), 
 ])
 def test_get_matching_column_success(requested, df_columns, expected):
-    result = DataFrameRender.get_matching_column(requested, set(df_columns))
+    result = DataFrameRender.get_matching_columns(requested, set(df_columns))
     # check order
     assert result == expected
 
@@ -52,7 +52,7 @@ def test_get_matching_column_success(requested, df_columns, expected):
 ])
 def test_get_matching_column_404(requested, df_columns, detail):
     with pytest.raises(BulkCurvesNotFound) as execinfo:
-        result = DataFrameRender.get_matching_column(requested, set(df_columns))
+        result = DataFrameRender.get_matching_columns(requested, set(df_columns))
     assert execinfo.value.args[0] == f'bulk for curves: {detail} not found'
 
 

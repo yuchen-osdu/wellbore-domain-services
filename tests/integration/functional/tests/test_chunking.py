@@ -470,7 +470,6 @@ def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_
             # check type set to false since in Json dType is lost so int32 can become int64
 
 
-
 @pytest.mark.tag('chunking', 'smoke')
 @pytest.mark.parametrize('entity_type', ["log"])
 @pytest.mark.parametrize('serializer', [JsonSerializer()])

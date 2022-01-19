@@ -15,7 +15,7 @@ openapi-spec-validator
 
 mockito~=1.2
 # Note since 3.8 includes Mock 4.0+.
-mock>=4.0
+mock>=4.0 # Should be removed after migration to python >= 3.8
 requests # used by starlette.TestClient for testing
 cryptography
 
