@@ -188,11 +188,6 @@ def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> Non
         outfile.write(data)
         # json.dump(catalog.as_dict(), outfile) # don't know why json.dump is slower (local windows)
 
-    trace_attributes_root_span({
-        'catalog-row-count': catalog.nb_rows,
-        'catalog-col-count': catalog.all_columns_count
-    })
-
 
 @capture_timings('load_bulk_catalog', handlers=worker_capture_timing_handlers)
 @with_trace('load_bulk_catalog')

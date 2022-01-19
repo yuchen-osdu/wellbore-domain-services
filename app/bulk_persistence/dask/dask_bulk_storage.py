@@ -467,6 +467,10 @@ class DaskBulkStorage:
 
         fcatalog = await self.client.scatter(catalog)
         await async_save_bulk_catalog(self._fs, commit_path, fcatalog)
+        trace_attributes_root_span({
+            'catalog-row-count': catalog.nb_rows,
+            'catalog-col-count': catalog.all_columns_count
+        })
         return bulk_id
 
     @internal_bulk_exceptions
