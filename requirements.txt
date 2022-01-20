@@ -247,6 +247,7 @@ opencensus==0.7.13
     #   opencensus-ext-logging
     #   opencensus-ext-ocagent
     #   opencensus-ext-stackdriver
+    #   osdu-core-lib-python-azure
 opencensus-context==0.1.2
     # via opencensus
 opencensus-ext-azure==1.0.8
@@ -265,7 +266,7 @@ osdu-core-lib-python==1.1.0
     # via -r requirements.in
 osdu-core-lib-python-aws==0.0.6
     # via -r requirements.in
-osdu-core-lib-python-azure==1.2.1
+osdu-core-lib-python-azure==2.0.0
     # via -r requirements.in
 osdu-core-lib-python-gcp==1.1.0
     # via -r requirements.in

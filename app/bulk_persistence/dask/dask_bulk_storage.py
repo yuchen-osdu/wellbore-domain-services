@@ -32,7 +32,7 @@ from app.conf import Config
 
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
-from .traces import map_with_trace, submit_with_trace
+from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span
 from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
 from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
@@ -97,6 +97,7 @@ class DaskBulkStorage:
         return DaskNativeDataIPC(self.client)
 
     @classmethod
+    @with_trace("DaskBulkStorage-create()")
     async def create(cls, parameters: DaskStorageParameters, dask_client=None) -> 'DaskBulkStorage':
         instance = cls()
         instance._parameters = parameters
@@ -168,8 +169,9 @@ class DaskBulkStorage:
         """
         record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
         files_to_load = catalog.get_paths_for_columns(columns, record_path)
-        # read all chunk for requested columns
+
         def read_parquet_files(f):
+            """ read all chunk for requested columns """
             return read_with_dask(f.paths, columns=f.labels, storage_options=self._parameters.storage_options)
         dfs = self._map_with_trace(read_parquet_files, files_to_load)
 
@@ -244,6 +246,7 @@ class DaskBulkStorage:
                                        engine='pyarrow', schema="infer", compression='snappy')
 
     @capture_timings('get_bulk_catalog')
+    @with_trace('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str, generate_if_not_exists=True) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
         catalog = await async_load_bulk_catalog(self._fs, bulk_path)
@@ -258,6 +261,7 @@ class DaskBulkStorage:
                 raise BulkRecordNotFound(record_id, bulk_id) from error
 
     @capture_timings('_build_catalog_from_path')
+    @with_trace('_build_catalog_from_path')
     async def _build_catalog_from_path(self, path: str, record_id: str) -> BulkCatalog:
         """Build a catalog on the fly for folder that don't have a catalog (legacy bulk bolder)
         The method will list all parquet file from the specified folder and build the catalog
@@ -333,9 +337,10 @@ class DaskBulkStorage:
         """
         chunks_meta_with_different_indexes = {meta.index_hash: meta
                                               for meta in chunk_metas}.values()
+        trace_attributes_root_span({'chunks-distinct-index': len(chunks_meta_with_different_indexes)})
 
-        indexes = self.client.map(_load_index_from_meta, chunks_meta_with_different_indexes,
-                                  storage_options=self._parameters.storage_options)
+        indexes = self._map_with_trace(_load_index_from_meta, chunks_meta_with_different_indexes,
+                                       storage_options=self._parameters.storage_options)
         if from_bulk_id:
             # read the index of previous version
             indexes.append(await self._future_load_index(record_id, from_bulk_id))
@@ -367,7 +372,7 @@ class DaskBulkStorage:
                 labels_dtypes = {label: dtype for label, dtype in zip(labels, dtypes) if label not in conflicting_col}
                 labels = set(labels_dtypes.keys())
                 dtypes = list(labels_dtypes.values())
-                # pb here, wait -> cannot resolve conflict in parallele!
+                # pb here, wait -> cannot resolve conflict in parallel!
                 await self._resolve_conflict_catalog(catalog, bulk_id, files, conflicting_col)
 
             catalog.add_chunk(ChunkGroup(labels, relative_paths, dtypes))
@@ -436,6 +441,7 @@ class DaskBulkStorage:
         bulk_id = new_bulk_id()
 
         chunk_metas = await session_meta.get_chunks_metadata(self._fs, self.protocol, self.base_directory, session)
+        trace_attributes_root_span({'chunks-count': len(chunk_metas)})
         if len(chunk_metas) == 0:  # there is no files in this session
             raise BulkNotProcessable(message="No data to commit")
 
@@ -447,6 +453,7 @@ class DaskBulkStorage:
 
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
+        @with_trace('build_and_save_index')
         async def build_and_save_index():
             index = await self._build_session_index(chunk_metas, session.recordId, from_bulk_id)
             index_path = await self._save_session_index(commit_path, index)
@@ -460,6 +467,10 @@ class DaskBulkStorage:
 
         fcatalog = await self.client.scatter(catalog)
         await async_save_bulk_catalog(self._fs, commit_path, fcatalog)
+        trace_attributes_root_span({
+            'catalog-row-count': catalog.nb_rows,
+            'catalog-col-count': catalog.all_columns_count
+        })
         return bulk_id
 
     @internal_bulk_exceptions

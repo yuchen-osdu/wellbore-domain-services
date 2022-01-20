@@ -161,15 +161,14 @@ def dasked_test_app_without_consistency(dasked_test_app):
     app = dasked_test_app
     # disable wellLog data consistency check for tests
     previous_overrides = wdms_app.dependency_overrides
-    #app.dependency_overrides[set_check_welllog_data_consistency_func] = do_nothing
+    # app.dependency_overrides[set_check_welllog_data_consistency_func] = do_nothing
     yield app
     app.dependency_overrides = previous_overrides
+
 
 @pytest.fixture
 def dasked_test_app_without_consistency_client(dasked_test_app_without_consistency):
     yield TestClient(dasked_test_app_without_consistency)
-
-
 
 
 def test_post_data_merge_extension_properties(dasked_test_app_without_consistency_client):
@@ -328,7 +327,8 @@ def test_send_all_data_once_post_data_v2_get_data_v3(dasked_test_app_without_con
     'overwrite',
     'update',
 ])
-def test_overwrite_data_by_chunk_append(dasked_test_app_without_consistency_client, entity_type, columns, content_type_header, create_func,
+def test_overwrite_data_by_chunk_append(dasked_test_app_without_consistency_client, entity_type, columns,
+                                        content_type_header, create_func,
                                         accept_content, session_mode):
     """ Create session, append chunking with consecutive index, validate session """
 
@@ -373,6 +373,18 @@ def test_overwrite_data_by_chunk_append(dasked_test_app_without_consistency_clie
                                   )
 
 
+def _send_chunk(client, url, chunk_df, data_format):
+    if data_format == 'json':
+        headers = {'Content-Type': 'application/json'}
+    elif data_format == 'parquet':
+        headers = {'content-type': 'application/x-parquet'}
+    else:
+        raise ValueError(f"Unknown content-type: '{data_format}'")
+
+    chunk_response = client.post(url, data=_df_to_format(chunk_df, data_format), headers=headers)
+    assert chunk_response.status_code == 200
+
+
 def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='update', data_format='json'):
     """ Create session, add chunks with given columns and index, validate the session """
 
@@ -388,17 +400,7 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
         chunk_df = generate_df(columns, ranges)
         created_dfs.append(chunk_df)
 
-        if data_format == 'json':
-            headers = {'Content-Type': 'application/json'}
-        elif data_format == 'parquet':
-            headers = {'content-type': 'application/x-parquet'}
-        else:
-            raise ValueError(f"Unknown content-type: '{data_format}'")
-
-        chunk_response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
-                                     data=_df_to_format(chunk_df, data_format),
-                                     headers=headers)
-        assert chunk_response.status_code == 200  # todo: should it be 204?
+        _send_chunk(client, f'{chunking_url}/{record_id}/sessions/{session_id}/data', chunk_df, data_format)
 
     commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
     assert commit_response.status_code == 200
@@ -412,7 +414,8 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
     'application/x-parquet',
     'application/json',
 ])
-def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_client, entity_type, data_format, accept_content):
+def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_client, entity_type, data_format,
+                                           accept_content):
     """ Create session, append chunking with consecutive index, validate session """
 
     client = dasked_test_app_without_consistency_client
@@ -440,7 +443,8 @@ def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_c
     'application/x-parquet',
     'application/json',
 ])
-def test_add_curve_by_chunk_same_cols(dasked_test_app_without_consistency_client, entity_type, data_format, accept_content):
+def test_add_curve_by_chunk_same_cols(dasked_test_app_without_consistency_client, entity_type, data_format,
+                                      accept_content):
     """ Create session, append chunking with consecutive index, validate session """
 
     client = dasked_test_app_without_consistency_client
@@ -502,7 +506,8 @@ def test_add_curve_by_chunk_overlap_different_cols(dasked_test_app_without_consi
                                                                           (['E'], range(15)),  # overlap both side
                                                                           ])
 
-    data_response = client.get(f'{chunking_url}/{record_id}/data?orient=columns', headers={'Accept': 'application/json'})
+    data_response = client.get(f'{chunking_url}/{record_id}/data?orient=columns',
+                               headers={'Accept': 'application/json'})
     assert data_response.status_code == 200
     with_new_col = pd.DataFrame.from_dict(data_response.json())
     assert list(with_new_col.columns) == ['A', 'B', 'C', 'D', 'E', 'MD']
@@ -627,9 +632,9 @@ def test_session_unknown_record(dasked_test_app_without_consistency_client, enti
     assert session_response.status_code == 404
 
 
-
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_creates_two_sessions_one_record_with_chunks_different_format(dasked_test_app_without_consistency_client, entity_type):
+def test_creates_two_sessions_one_record_with_chunks_different_format(dasked_test_app_without_consistency_client,
+                                                                      entity_type):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -712,7 +717,8 @@ def _df_to_pyarrow_parquet(df_data: pd.DataFrame):
     ('application/x-parquet', lambda df: _df_to_pyarrow_parquet(df)),
     ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
 ])
-def test_session_chunk_int(dasked_test_app_without_consistency_client, entity_type, content_type_header, create_func, columns_type):
+def test_session_chunk_int(dasked_test_app_without_consistency_client, entity_type, content_type_header, create_func,
+                           columns_type):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -763,12 +769,12 @@ def test_legacy_logs_int_columns(dasked_test_app_without_consistency_client, col
     data_to_send = df_data.to_json(orient='split', date_format='iso')
 
     write_legacy_log_response = client.post(f'{base_url}/{record_id}/data',
-                                 data=data_to_send,
-                                 headers={'content-type': 'application/json'})
+                                            data=data_to_send,
+                                            headers={'content-type': 'application/json'})
     assert write_legacy_log_response.status_code == 200
 
     read_dask_log_response = client.get(f'{chunking_url}/{record_id}/data',
-                               headers={'content-type': 'application/parquet'})
+                                        headers={'content-type': 'application/parquet'})
     assert read_dask_log_response.status_code == 200
     result_df = _create_df_from_response(read_dask_log_response)
     assert ptypes.is_string_dtype(result_df.columns)
@@ -779,7 +785,7 @@ def test_legacy_logs_int_columns(dasked_test_app_without_consistency_client, col
 @pytest.mark.parametrize("columns_name", [
     list(map(str, range(100))),
     list(map(lambda x: f'test_{x}', range(100))),
-    list(map(lambda x: f'{x}_test_{x%10}', range(100)))
+    list(map(lambda x: f'{x}_test_{x % 10}', range(100)))
 ])
 def test_nat_sort_columns(dasked_test_app_without_consistency_client, data_format, accept_content, columns_name):
     """ Create session, append chunking with consecutive index, validate session """
@@ -790,7 +796,7 @@ def test_nat_sort_columns(dasked_test_app_without_consistency_client, data_forma
     chunking_url = Definitions[entity_type]['chunking_url']
 
     _create_chunks(client, entity_type, record_id=record_id, data_format=data_format,
-                cols_ranges=[(columns_name, range(20))])
+                   cols_ranges=[(columns_name, range(20))])
 
     data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
     assert data_response.status_code == 200
@@ -910,7 +916,7 @@ def test_send_json_parquet_in_one_session(dasked_test_app_without_consistency_cl
         check if the session can be committed successfully """
 
     client = dasked_test_app_without_consistency_client
-    record_id = _create_record(client,  entity_type)
+    record_id = _create_record(client, entity_type)
 
     # Create a session
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -935,7 +941,7 @@ def test_send_json_parquet_in_one_session(dasked_test_app_without_consistency_cl
 
     # COMMIT session
     commit_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}',
-                                               json={'state': 'commit'})
+                                           json={'state': 'commit'})
 
     assert commit_session_response.status_code == 200
 
@@ -1014,7 +1020,7 @@ def dataframe_for_filters():
         "A": range(20),
         "B": np.arange(20.0),
         "C": [str(i) for i in range(20)],
-        "D": [i%2 == 0 for i in range(20)]
+        "D": [i % 2 == 0 for i in range(20)]
     }
     return pd.DataFrame(dic, index=range(20))
 
@@ -1051,19 +1057,20 @@ def dataframe_for_filters():
     (['A:lt:5', 'B:gte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] >= 5.0) & (df['D'] == True)]),
     (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])
 ])
-def test_get_bulk_data_with_filters(dasked_test_app_without_consistency_client, entity_type, params, expected, dataframe_for_filters):
+def test_get_bulk_data_with_filters(dasked_test_app_without_consistency_client, entity_type, params, expected,
+                                    dataframe_for_filters):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]['chunking_url']
     response_send_data = client.post(f'{chunking_url}/{record_id}/data',
-                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+                                     data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
     assert response_send_data.status_code == 200
 
     header_get_data = {'Accept': 'application/parquet'}
 
     response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
-               params={'filter': params})
+                                   params={'filter': params})
     df = _create_df_from_response(response_get_data)
     assert_frame_equal(df, expected(dataframe_for_filters))
 
@@ -1072,45 +1079,49 @@ def test_get_bulk_data_with_filters(dasked_test_app_without_consistency_client, 
 @pytest.mark.parametrize("filter, limit, expected", [(['A:gt:5'], 5, lambda df: df.loc[df['A'] > 5]),
                                                      (['A:lt:5'], 5, lambda df: df.loc[df['A'] < 5]),
                                                      (['C:eq:5'], 5, lambda df: df.loc[df['A'] == 5]),
-                                                     (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], 5, lambda df: df.loc[(df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])])
-def test_get_bulk_data_with_filters_curves_offset(dasked_test_app_without_consistency_client, entity_type, filter, limit, expected, dataframe_for_filters):
+                                                     (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], 5, lambda df: df.loc[
+                                                         (df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])])
+def test_get_bulk_data_with_filters_curves_offset(dasked_test_app_without_consistency_client, entity_type, filter,
+                                                  limit, expected, dataframe_for_filters):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]['chunking_url']
     response_send_data = client.post(f'{chunking_url}/{record_id}/data',
-                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+                                     data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
     assert response_send_data.status_code == 200
 
     header_get_data = {'Accept': 'application/parquet'}
     curve = ['A,B']
-    for i in range(0, math.ceil(20/limit)):
+    for i in range(0, math.ceil(20 / limit)):
         response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
-                   params={'filter': filter, 'curves': curve, 'offset': i*limit, 'limit': limit})
+                                       params={'filter': filter, 'curves': curve, 'offset': i * limit, 'limit': limit})
         df = _create_df_from_response(response_get_data)
-        df_expected = expected(dataframe_for_filters).iloc[i*limit:(i+1)*limit][['A', 'B']]
+        df_expected = expected(dataframe_for_filters).iloc[i * limit:(i + 1) * limit][['A', 'B']]
         assert_frame_equal(df, df_expected)
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
 @pytest.mark.parametrize("filter, limit, curves, expected", [(['A:gt:5'], 5, ['A,B'], [5, 5, 4, 0]),
-                                                            (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
-                                                            (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
-                                                            (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0])
-                                                            ])
-def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app_without_consistency_client, entity_type, filter, limit, expected, dataframe_for_filters, curves):
+                                                             (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
+                                                             (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
+                                                             (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0])
+                                                             ])
+def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app_without_consistency_client, entity_type,
+                                                           filter, limit, expected, dataframe_for_filters, curves):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]['chunking_url']
     response_send_data = client.post(f'{chunking_url}/{record_id}/data',
-                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+                                     data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
     assert response_send_data.status_code == 200
 
     header_get_data = {'Accept': 'application/parquet'}
-    for i in range(0, math.ceil(20/limit)):
+    for i in range(0, math.ceil(20 / limit)):
         response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
-                   params={'filter': filter, 'curves': curves, 'offset': i*limit, 'limit': limit, 'describe': True})
+                                       params={'filter': filter, 'curves': curves, 'offset': i * limit, 'limit': limit,
+                                               'describe': True})
         assert response_get_data.json()['numberOfRows'] == expected[i]
         assert response_get_data.json()['columns'] == curves[0].split(',')
 
@@ -1121,30 +1132,32 @@ def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app_witho
     (['A:xx:5'], 'filter error: Operator xx is not supported'),
     (['A:lt:5', 'A:lt:7'], 'filter error: Same operator on the same column'),
 ])
-def test_get_bulk_data_with_filters_fail(dasked_test_app_without_consistency_client, entity_type, params, content, dataframe_for_filters):
+def test_get_bulk_data_with_filters_fail(dasked_test_app_without_consistency_client, entity_type, params, content,
+                                         dataframe_for_filters):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]['chunking_url']
     response_send_data = client.post(f'{chunking_url}/{record_id}/data',
-                                   data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
+                                     data=dataframe_for_filters.to_parquet(engine="pyarrow"), headers=headers)
     assert response_send_data.status_code == 200
 
     header_get_data = {'Accept': 'application/parquet'}
 
     response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
-               params={'filter': params})
+                                   params={'filter': params})
 
     assert response_get_data.json()['detail'] == content
     assert response_get_data.status_code == 400
+
 
 # todo - concurrent sessions using fromVersion in Integrations tests
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("reserved_columns_name", ['__index_level_0__', '__null_dask_index__'])
 @pytest.mark.parametrize("use_custom_index", [True, False])
-def test_none_in_index_error(dasked_test_app_without_consistency_client, entity_type, reserved_columns_name, use_custom_index):
-
+def test_none_in_index_error(dasked_test_app_without_consistency_client, entity_type, reserved_columns_name,
+                             use_custom_index):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -1290,6 +1303,63 @@ def test_session_update_previous_storage_version(dasked_test_app_without_consist
                               headers={'Accept': 'application/parquet'})
     df: pd.DataFrame = _create_df_from_response(get_response)
     assert list(df['X'].values) == [10, 11, 20, 21]
+
+
+import mock
+from app.bulk_persistence.dask.traces import TracingMode
+from app.persistence.sessions_storage import SessionsStorage, SessionState, SessionUpdateMode
+
+
+def assert_mock_chunk(tracing_mock, chunk_df):
+    tracing_mock.assert_called_with({"df rows count": chunk_df.shape[0], "df columns count": chunk_df.shape[1],
+                                     'df index start': str(chunk_df.index[0]), 'df index end': str(chunk_df.index[-1]),
+                                     'df index type': str(chunk_df.index.dtype)
+                                     }, TracingMode.CURRENT_SPAN)
+
+
+@pytest.mark.parametrize("entity_type", EntityTypeParams)
+def test_bulk_tracing(dasked_test_app_without_consistency_client, entity_type):
+    client = dasked_test_app_without_consistency_client
+    record_id = _create_record(client, entity_type)
+    chunking_url = Definitions[entity_type]['chunking_url']
+
+    with mock.patch('app.bulk_persistence.dask.traces._add_trace_attributes',
+                    return_value=mock.MagicMock()) as mock_mock:
+        session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+        assert session_response.status_code == 200
+        session_id = session_response.json()['id']
+        send_chunk_url = f'{chunking_url}/{record_id}/sessions/{session_id}/data'
+
+        chunk_1 = generate_df(['MD', 'X'], range(0, 5))
+        _send_chunk(client, send_chunk_url, chunk_1, 'parquet')
+        assert_mock_chunk(mock_mock, chunk_1)
+
+        chunk_2 = generate_df(['MD', 'X'], range(10, 30))
+        _send_chunk(client, send_chunk_url, chunk_2, 'parquet')
+        assert_mock_chunk(mock_mock, chunk_2)
+
+        chunk_3 = generate_df(['Y', 'Z'], range(10, 30))
+        _send_chunk(client, send_chunk_url, chunk_3, 'parquet')
+        assert_mock_chunk(mock_mock, chunk_3)
+
+        commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+        assert commit_response.status_code == 200
+
+        mock_mock.assert_any_call({'session-mode': SessionUpdateMode.Update}, TracingMode.ROOT_SPAN)
+        mock_mock.assert_any_call({'chunks-count': 3}, TracingMode.ROOT_SPAN)
+        mock_mock.assert_any_call({'chunks-distinct-index': 2}, TracingMode.ROOT_SPAN)
+        mock_mock.assert_any_call({'catalog-row-count': 25, 'catalog-col-count': 4}, TracingMode.ROOT_SPAN)
+
+        data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'content-type': 'application/parquet'})
+        assert data_response.status_code == 200
+        retrieved_df = _create_df_from_response(data_response)
+        assert_mock_chunk(mock_mock, retrieved_df)
+
+        data_df = generate_df(['A', 'B', 'C'], range(0, 30))
+        write_response = client.post(f'{chunking_url}/{record_id}/data', data=_df_to_format(data_df, 'parquet'),
+                                     headers={'content-type': 'application/parquet'})
+        assert write_response.status_code == 200
+        assert_mock_chunk(mock_mock, data_df)
 
 # todo:
 #  - concurrent sessions using fromVersion in Integrations tests
