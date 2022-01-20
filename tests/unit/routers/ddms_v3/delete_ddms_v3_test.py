@@ -32,7 +32,7 @@ from app.auth.auth import require_opendes_authorized_user
 from app.routers.delete import delete_bulk_data
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class
 
 StorageRecordServiceClientMock = mock.AsyncMock()
 BlobStorageMock = mock.AsyncMock()

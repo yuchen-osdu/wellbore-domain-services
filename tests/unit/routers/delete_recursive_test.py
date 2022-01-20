@@ -25,7 +25,7 @@ from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.model.entity_utils import Entity, get_kind, format_kind
 from app.utils import Context
 from tests.unit.test_utils import create_mock_class, make_record
-from tests.unit.app_conf_test import testing_context
+from tests.unit.test_utils import ctx_fixture
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 
@@ -63,7 +63,7 @@ def with_patched_get_record(well_record):
 
 
 @pytest.mark.asyncio
-async def test_delete_recursive_only_delete_entity_provided(testing_context,
+async def test_delete_recursive_only_delete_entity_provided(ctx_fixture,
                                                             authority,
                                                             data_partition,
                                                             entity_source,
@@ -96,7 +96,7 @@ async def test_delete_recursive_only_delete_entity_provided(testing_context,
                 wraps=StorageRecordServiceClientMock.delete_record) as moc_storage_delete_record:
             # when
             await StorageHelper.delete_recursively(
-                testing_context,
+                ctx_fixture,
                 well_record.id, 'well',
                 [Entity.LOGSET, Entity.MARKER],
                 data_partition,
@@ -110,7 +110,7 @@ async def test_delete_recursive_only_delete_entity_provided(testing_context,
 
 
 @pytest.mark.asyncio
-async def test_delete_failure_on_parent_dont_delete_children(testing_context,
+async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
                                                              authority,
                                                              data_partition,
                                                              entity_source,
@@ -135,7 +135,7 @@ async def test_delete_failure_on_parent_dont_delete_children(testing_context,
                 side_effect=RuntimeError('simulate error')) as moc_storage_delete_record:
             with pytest.raises(RuntimeError):  # expect to raise
                 await StorageHelper.delete_recursively(
-                    testing_context,
+                    ctx_fixture,
                     well_record.id, 'well',
                     [Entity.LOGSET],
                     data_partition,
@@ -150,7 +150,7 @@ async def test_delete_failure_on_parent_dont_delete_children(testing_context,
 
 @pytest.mark.asyncio
 async def test_delete_should_keep_delete_heterogeneous_failure(
-        testing_context,
+        ctx_fixture,
         authority,
         data_partition,
         entity_source,
@@ -205,7 +205,7 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
 
 @pytest.mark.asyncio
 async def test_delete_should_keep_delete_homogenous_failure(
-        testing_context,
+        ctx_fixture,
         authority,
         data_partition,
         entity_source,
@@ -264,7 +264,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
                                                            reason_phrase='',
                                                            content=b'',
                                                            headers={})])
-async def test_delete_404_of_sub_delete_is_valid(testing_context,
+async def test_delete_404_of_sub_delete_is_valid(ctx_fixture,
                                                  data_partition,
                                                  authority,
                                                  entity_source,
@@ -291,7 +291,7 @@ async def test_delete_404_of_sub_delete_is_valid(testing_context,
                 side_effect=delete_success_only_well):
             # no exception raised
             await StorageHelper.delete_recursively(
-                testing_context,
+                ctx_fixture,
                 well_record.id, 'well',
                 [Entity.LOGSET],
                 data_partition,
@@ -305,7 +305,7 @@ async def test_delete_404_of_sub_delete_is_valid(testing_context,
                           fastApiHTTPException(status_code=status.HTTP_404_NOT_FOUND),
                           fastApiHTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR),
                           RuntimeError()])
-async def test_delete_failure_get_record(testing_context,
+async def test_delete_failure_get_record(ctx_fixture,
                                          data_partition,
                                          entity_source,
                                          well_record,
@@ -313,6 +313,6 @@ async def test_delete_failure_get_record(testing_context,
     with StorageRecordServiceClientMock.set_throw('get_record', exception):
         with pytest.raises(exception.__class__):
             await StorageHelper.delete_recursively(
-                testing_context,
+                ctx_fixture,
                 well_record.id, 'well', [],
                 data_partition, None, StorageRecordServiceClientMock)

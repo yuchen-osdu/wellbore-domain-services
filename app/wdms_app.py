@@ -23,6 +23,7 @@ from app import __version__, __build_number__, __app_name__
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers, create_custom_http_exception_handler
+from app.helper.traces import TracingRoute
 from app.model.entity_utils import Entity
 from app.modules import discoverer
 
@@ -70,12 +71,14 @@ from app.routers.bulk.bulk_uri_dependencies import (
 )
 
 base_app = FastAPI()
+base_app.router.route_class = TracingRoute
 
 # The sub application which contains all the routers
 wdms_app = FastAPI(title=__app_name__,
                    description='build ' + __build_number__,
                    version=__version__,
                    )
+wdms_app.router.route_class = TracingRoute
 
 app_injector = AppInjector()
 

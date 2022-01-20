@@ -1154,6 +1154,48 @@
         ],
         "title": "DataType_2"
       },
+      "DataframeBasicDescribe": {
+        "properties": {
+          "columnCount": {
+            "title": "Columncount",
+            "type": "integer"
+          },
+          "columns": {
+            "description": "list of column. May be truncated if too many columns, then contains the firsts and lasts once",
+            "items": {
+              "type": "string"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "indexEnd": {
+            "title": "Indexend",
+            "type": "string"
+          },
+          "indexStart": {
+            "title": "Indexstart",
+            "type": "string"
+          },
+          "indexType": {
+            "title": "Indextype",
+            "type": "string"
+          },
+          "rowCount": {
+            "title": "Rowcount",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rowCount",
+          "columnCount",
+          "columns",
+          "indexStart",
+          "indexEnd",
+          "indexType"
+        ],
+        "title": "DataframeBasicDescribe",
+        "type": "object"
+      },
       "Dataset": {
         "additionalProperties": false,
         "description": "The SRN which identifies this OSDU File resource.",
@@ -9059,7 +9101,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/DataframeBasicDescribe"
+                }
               }
             },
             "description": "Successful Response"
@@ -18044,7 +18088,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/DataframeBasicDescribe"
+                }
               }
             },
             "description": "Successful Response"
@@ -19190,7 +19236,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/DataframeBasicDescribe"
+                }
               }
             },
             "description": "Successful Response"
@@ -20026,6 +20074,9 @@
               }
             },
             "description": "Successful Response"
+          },
+          "404": {
+            "description": "Family not found"
           },
           "422": {
             "content": {

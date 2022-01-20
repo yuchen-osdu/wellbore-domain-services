@@ -12,52 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
-from app.bulk_persistence import JSONOrient, get_dataframe
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import (
-    BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested)
-from app.bulk_persistence.mime_types import MimeTypes
-from app.persistence.sessions_storage import (
-    Session, SessionException, SessionState, SessionUpdateMode)
-from app.bulk_persistence.dataframe_validators import (
-    auto_cast_columns_to_string,
-    assert_df_validate)
-
-from app.conf import Config
-from app.model.model_chunking import GetDataParams
+from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
-from app.routers.common_parameters import (
-    REQUEST_DATA_BODY_SCHEMA,
-    REQUIRED_ROLES_READ,
-    REQUIRED_ROLES_WRITE,
-    json_orient_parameter)
-from app.routers.sessions import (
-    SessionInternal,
-    UpdateSessionState,
-    UpdateSessionStateValue,
-    WithSessionStorages,
-    get_session_dependencies)
+from app.helper.traces import TracingRoute, with_trace
+from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
+                                           REQUIRED_ROLES_READ,
+                                           REQUIRED_ROLES_WRITE,
+                                           json_orient_parameter,
+                                           write_bulk_content_type)
+
+from app.conf import Config
 from app.routers.record_utils import fetch_record
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
-from app.routers.bulk.utils import (
-    with_dask_blob_storage,
-    get_df_validation_func,
-    get_df_from_request,
-    set_bulk_field_and_send_record,
-    DataFrameRender)
-from app.helper.traces import with_trace
+from app.routers.bulk.utils import (with_dask_blob_storage,
+                                    get_df_validation_func,
+                                    set_bulk_field_and_send_record,
+                                    DataFrameRender)
 
+# imports for session manipulation
+from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
+from app.routers.sessions import (SessionInternal,
+                                  UpdateSessionState,
+                                  UpdateSessionStateValue,
+                                  WithSessionStorages,
+                                  get_session_dependencies)
 
-from app.bulk_persistence.dask.traces import trace_dataframe_attributes
+# imports from bulk persistence
+from app.bulk_persistence.dataframe_validators import (auto_cast_columns_to_string,
+                                                       DataFrameValidationFunc,
+                                                       no_validation)
+from app.bulk_persistence import JSONOrient, get_dataframe, download_bulk
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
+from app.bulk_persistence.mime_types import MimeTypes, MimeType
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
 
-router = APIRouter()  # router dedicated to bulk APIs
+router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}
@@ -81,27 +77,39 @@ Support http chunked encoding transfer.
         })
 async def post_data(record_id: str,
                     request: Request,
+                    content_type: MimeType = Depends(write_bulk_content_type),
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-                    df_validation_func=Depends(get_df_validation_func),
-                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-                    ):
-    @with_trace("save_blob")
-    async def save_blob():
-        df = await get_df_from_request(request)
-        trace_dataframe_attributes(df)
-        try:
-            assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
-        except BulkError as ex:
-            ex.raise_as_http()
-        return await dask_blob_storage.save_bulk(df, record_id)
+                    df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
+                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
 
-    record, bulk_id = await asyncio.gather(
-        fetch_record(ctx, record_id),
-        save_blob()
-    )
+    """
+    Handle a post data outside of a session. The given bulk will fully replace any existing one
+    """
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
-    return await set_bulk_field_and_send_record(ctx=ctx, bulk_id=bulk_id, record=record, bulk_uri_access=bulk_uri_access)
+
+    # process and store the data
+    try:
+        bulk_id, basic_describe = await dask_blob_storage.post_data_without_session(
+            request.stream(),
+            content_type,
+            df_validation_func,
+            record_id)
+
+    except BulkError as ex:
+        ex.raise_as_http()
+
+    trace_dataframe_attributes(basic_describe)
+
+    # update record
+    update_record_response = await set_bulk_field_and_send_record(ctx=ctx,
+                                                                  bulk_id=bulk_id,
+                                                                  record=record,
+                                                                  bulk_uri_access=bulk_uri_access)
+    return update_record_response
+    # TODO proposal: adding basic describe of data that has been stored
+    # return PostDataResponse(**update_record_response.dict(exclude_unset=True, by_alias=True), dataStat=basic_describe)
 
 
 @OpenApiHandler.set(operation_id=OPERATION_IDS["chunk_data"], request_body=REQUEST_DATA_BODY_SCHEMA)
@@ -114,32 +122,42 @@ async def post_data(record_id: str,
                 "Support http chunked encoding."
     + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["chunk_data"],
+    response_model=DataframeBasicDescribe,
     responses={400: {"description": "Record not found"}}
 )
 async def post_chunk_data(record_id: str,
                           session_id: str,
                           request: Request,
+                          content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-                          df_validation_func=Depends(get_df_validation_func),
-                          ):
+                          df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func)
+                          ) -> DataframeBasicDescribe:
     if hasattr(request.state, 'version') and request.state.version != "V2":
         record = await fetch_record(with_session.ctx, record_id)
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
+
+    # fetch the session
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
-    df = await get_df_from_request(request)
-    trace_dataframe_attributes(df)
-
+    # process and store the data chunk
     try:
-        assert_df_validate(dataframe=df, validation_funcs=[df_validation_func])
+        bulk_id, basic_describe = await dask_blob_storage.add_chunk_in_session(
+            request.stream(),
+            content_type,
+            df_validation_func,
+            record_id,
+            i_session.session.id)
+
+        trace_dataframe_attributes(basic_describe)
+        return basic_describe
+
     except BulkError as ex:
         ex.raise_as_http()
-    await dask_blob_storage.session_add_chunk(i_session.session, df)
 
 
 GET_DATA_DESCRIPTION = f"""  
@@ -187,25 +205,31 @@ async def get_data_version(
         if not bulk_uri.is_valid():
             raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
         bulk_id = bulk_uri.bulk_id
+
+        dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+        future_index = None
         if bulk_uri.is_bulk_storage_V0():
             df = await get_dataframe(ctx, bulk_id)
             auto_cast_columns_to_string(df)
         else:
-            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters)
+            if data_param.offset or data_param.limit:
+                future_index = await DataFrameRender.load_index(record_id, bulk_id, dask_blob_storage)
+            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters, dask_blob_storage)
 
-        df = await DataFrameRender.process_params(df, data_param, filters=filters)
+        df = await DataFrameRender.process_params(df, data_param, filters, dask_blob_storage, future_index)
+
         return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
 
 
-async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters):
-    dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+@with_trace('_process_request_v1')
+async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters, dask_blob_storage: DaskBulkStorage):
     columns_to_load = None
     stat = await dask_blob_storage.read_stat(record_id, bulk_id)
     existing_col = set(stat['schema'])
     if data_param.curves:
-        columns_to_load = DataFrameRender.get_matching_column(data_param.get_curves_list(), existing_col)
+        columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), existing_col)
         stat['schema'] = {k: stat['schema'][k] for k in columns_to_load}
 
     if not data_param.describe: # don't limit columns when describe parameter is True
@@ -285,6 +309,8 @@ async def complete_session(
                 i_session = commit_guard.session
                 _internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
 
+                trace_attributes_root_span({'session-mode': i_session.session.mode})
+
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
                 DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
                 previous_bulk_id = None
@@ -300,11 +326,18 @@ async def complete_session(
 
                     if previous_bulk_uri.is_bulk_storage_V0():
                         try:
-                            df = await get_dataframe(ctx, previous_bulk_uri.bulk_id)
+                            data, content_type = await download_bulk(ctx, previous_bulk_uri.bulk_id)
                             # convert old bulk to new one
-                            previous_bulk_id = await dask_blob_storage.save_bulk(df, record_id=record_id)
+                            previous_bulk_id, _ = await dask_blob_storage.post_data_without_session(
+                                data,
+                                content_type,
+                                no_validation,
+                                record_id)
+                        except BulkError as ex:
+                            ex.raise_as_http()
                         except ResourceNotFoundException:
                             BulkRecordNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
+
                     else:
                         previous_bulk_id = previous_bulk_uri.bulk_id
 

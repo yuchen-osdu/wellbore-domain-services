@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from tempfile import TemporaryDirectory
 import json
 import os
 import mock
+from odes_storage import UnexpectedResponse
 import pandas as pd
 import pytest
 from app.auth.auth import require_opendes_authorized_user
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.helper import traces
 from app.middleware import require_data_partition_id
@@ -74,42 +75,41 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_with_mocked_core_service(nope_logger_fixture, event_loop):
+def dasked_test_app_with_mocked_core_service(event_loop, tmp_path):
 
-    with TemporaryDirectory() as tmp_dir:
-        local_blob_storage = LocalFSBlobStorage(directory=tmp_dir)
+    local_blob_storage = LocalFSBlobStorage(directory=tmp_path)
 
-        async def build_mock_storage():
-            return StorageRecordServiceClientMock()
+    async def build_mock_storage():
+        return StorageRecordServiceClientMock()
 
-        async def build_mock_search():
-            return SearchServiceClientMock()
+    async def build_mock_search():
+        return SearchServiceClientMock()
 
-        async def blob_storage_builder(*args, **kwargs):
-            return local_blob_storage
+    async def blob_storage_builder(*args, **kwargs):
+        return local_blob_storage
 
-        async def sessions_storage_builder(*args, **kwargs):
-            return SessionsStorage(local_blob_storage)
+    async def sessions_storage_builder(*args, **kwargs):
+        return SessionsStorage(local_blob_storage)
 
-        async def dask_blob_storage_builder() -> DaskBulkStorage:
-            return await make_local_dask_bulk_storage(base_directory=tmp_dir)
+    async def dask_blob_storage_builder() -> DaskBulkStorage:
+        return await make_local_dask_bulk_storage(base_directory=tmp_path)
 
-        app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
-        app_injector.register(BlobStorageBase, blob_storage_builder)
-        app_injector.register(SessionsStorage, sessions_storage_builder)
-        app_injector.register(StorageRecordServiceClient, build_mock_storage)
-        app_injector.register(SearchServiceClient, build_mock_search)
+    app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
+    app_injector.register(BlobStorageBase, blob_storage_builder)
+    app_injector.register(SessionsStorage, sessions_storage_builder)
+    app_injector.register(StorageRecordServiceClient, build_mock_storage)
+    app_injector.register(SearchServiceClient, build_mock_search)
 
-        # override authentication dependency
-        previous_overrides = wdms_app.dependency_overrides
+    # override authentication dependency
+    previous_overrides = wdms_app.dependency_overrides
 
-        try:
-            wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-            wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-            client = TestClient(wdms_app)
-            yield client
-        finally:
-            wdms_app.dependency_overrides = previous_overrides  # clean up
+    try:
+        wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
+        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
+        client = TestClient(wdms_app)
+        yield client
+    finally:
+        wdms_app.dependency_overrides = previous_overrides  # clean up
 
 
 # Initialize traces exporter in app, like it is in app's startup decorator
@@ -368,8 +368,6 @@ def test_restricted_record_id(
             )
             with mock.patch.object(
                 StorageRecordServiceClientMock, "get_record", mock.AsyncMock(return_value=moc_record)
-            ), mock.patch(
-                "app.bulk_persistence.dask.dask_bulk_storage.DaskBulkStorage.save_bulk", mock.AsyncMock(return_value=0)
             ):
                 data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
                 headers = {"content-type": "application/json"}
@@ -388,3 +386,100 @@ def test_restricted_record_id(
                     f"{base_url}/{record_id_to_test}/versions/{version}/data"
                 )
                 validation_test_restricted_record_id(record_id, record_id_to_test, response)
+
+
+tests_parameters_record_ids = [
+    (
+        "/ddms/v3/welllogs",
+        r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        "namespace:osdu:work-product-component--WellLog:1.0.0",
+        {}
+    ),
+    (
+        "/ddms/v3/wellboretrajectories",
+        r"namespace:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        "namespace:osdu:work-product-component--WellboreTrajectory:1.0.0",
+        {
+            "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
+            "TopDepthMeasuredDepth": 12345.6,
+            "BaseDepthMeasuredDepth": 12345.6,
+            "VerticalMeasurement": {"VerticalMeasurement": 12345.6}
+        }
+    )
+]
+
+
+def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
+    record_to_test = {
+        "id": record_id,
+        "kind": record_kind,
+        "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+        "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
+        "data": data
+    }
+    return record_to_test
+
+
+@pytest.mark.parametrize("base_url, record_id, record_kind, data", tests_parameters_record_ids)
+def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url, record_id, record_kind, data):
+    create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
+    moc_get_record = mock.AsyncMock(side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
+                                                                   reason_phrase="", content=None, headers=None))
+    moc_create_or_update_records = mock.AsyncMock(return_value=create_update_records_obj)
+
+    with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc_get_record), \
+         mock.patch.object(StorageRecordServiceClientMock, "create_or_update_records", moc_create_or_update_records):
+        # test create record with id and without BulkURI
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind, data=data)
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_200_OK
+
+        # test create record without id and BulkURI
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data)
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_200_OK
+
+        # test create record with id and BulkURI
+        data_test = {
+            "ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236cca00'}}}
+        data_test.update(data)
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
+                                                               data=data_test)
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified, given record_id has no ' \
+                                'previous version"}'
+
+        # test create record with BulkURI and without id
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind, data=data_test)
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified without record id"}'
+
+        # Data
+        moc_record = Record(
+            id=record_id,
+            kind=record_kind,
+            acl={"owners": ["test"], "viewers": ["test"]},
+            version=1976,
+            legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
+            data={'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {
+                'wdms': {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}},
+        )
+        with mock.patch.object(StorageRecordServiceClientMock, "get_record",
+                               mock.AsyncMock(return_value=moc_record)):
+            # test create record with BulkURI which has a previous version with another BulkURI
+            record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
+                                                                   data=data_test)
+            response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert response.text == '{"detail":"Record[0] error : Bulk URI isn\'t matching with the previous version one"}'
+
+            # test create record with BulkURI which has a previous version with same BulkURI
+            data_test = {
+                "ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}}
+            data_test.update(data)
+            record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
+                                                                   data=data_test)
+            response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+            assert response.status_code == status.HTTP_200_OK

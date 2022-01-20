@@ -15,7 +15,6 @@ import asyncio
 
 import far.family_processor.model as farmodel
 from far.family_processor.family_processor import FamilyProcessor
-from azure.core.tracing import SpanKind
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from typing import Optional, List
@@ -27,13 +26,15 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.conf import Config
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.utils import Context, get_ctx
+from app.helper.traces import with_trace
+from app.helper.traces import TracingRoute
 
 
 def can_run() -> (bool, str):
     return True, ""
 
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 router.prefix = '/log-recognition'
 router.tags = ['log-recognition']
 
@@ -124,35 +125,39 @@ class GuessResponse(BaseModel):
     base_unit: Optional[str] = None  # Unit to convert log
 
 
-async def process_with_trace(span_label, processor: FamilyProcessor, log_info: farmodel.GuessRequest):
+@with_trace("processor.guess")
+async def process_with_trace(processor: FamilyProcessor, log_info: farmodel.GuessRequest):
     """
     Trace guess() method from given Process
     """
-    with get_ctx().tracer.span(name=span_label) as span:
-        span.span_kind = SpanKind.CLIENT
-
-        return await asyncio.get_event_loop().run_in_executor(
-            None, processor.guess, log_info
-        )
+    return await asyncio.get_event_loop().run_in_executor(
+        None, processor.guess, log_info
+    )
 
 
-@router.post('/family', response_model=GuessResponse,
+@router.post('/family',
+             response_model=GuessResponse,
              summary="Recognize family and unit",
              description="Find the most probable family and unit using family assignment rule based catalogs. "
                          "User defined catalog will have the priority.",
-             operation_id="family")
+             operation_id="family",
+             responses={status.HTTP_404_NOT_FOUND: {"description": "Family not found"}}
+             )
 async def post_recognize_custom(body: GuessRequest,
                                 ctx: Context = Depends(get_ctx)) -> GuessResponse:
     processor = await family_processor_manager.get_processor(ctx, ctx.partition_id)
 
-    result = await process_with_trace("first guess", processor, farmodel.GuessRequest(**body.dict()))
+    result = await process_with_trace(processor, farmodel.GuessRequest(**body.dict()))
     if result.error is not None:
         # Try with the default catalog
         default_processor = family_processor_manager.get_default_processor()
 
-        result = await process_with_trace("second guess", default_processor, farmodel.GuessRequest(**body.dict()))
-        if result.error is not None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.error)
+        result = await process_with_trace(default_processor, farmodel.GuessRequest(**body.dict()))
+        if result.error:
+            if result.error == 'Cannot find family name':
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=result.error)
+            else:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.error)
 
     # family_processor_manager can return a 'str' or a 'List[str]', ensure in any case a List[str] is returned
     if isinstance(result.family_type, str):

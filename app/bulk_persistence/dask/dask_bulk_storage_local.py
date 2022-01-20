@@ -12,18 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, HTTPException
-
-from app.model.ddms_model_response import V1AboutResponse, AboutResponseUser
-from app.model.model_curated import *
-from app.utils import Context, get_ctx
-from app.helper.traces import TracingRoute
-
-router = APIRouter(route_class=TracingRoute)
+from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
+from .dask_bulk_storage import DaskBulkStorage
 
 
-@router.get('/status', response_model=V1AboutResponse,
-            summary="Get the status of the service")
-async def about(ctx: Context = Depends(get_ctx)) -> V1AboutResponse:
-    return V1AboutResponse(user=AboutResponseUser(tenant=ctx.partition_id or 'unknown'))
-
+async def make_local_dask_bulk_storage(base_directory: str) -> DaskBulkStorage:
+    params = DaskStorageParameters(protocol='file',
+                                   base_directory=base_directory,
+                                   storage_options={'auto_mkdir': True})
+    return await DaskBulkStorage.create(params)

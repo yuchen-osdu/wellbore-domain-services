@@ -4,7 +4,7 @@ from pytest_httpx import HTTPXMock, to_response
 
 from app.clients import make_storage_record_client, make_search_client
 
-from tests.unit.test_utils import nope_logger_fixture, ctx_fixture
+from tests.unit.test_utils import ctx_fixture
 import app.conf as conf
 from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
@@ -43,7 +43,7 @@ async def test_fwd_correlation_id_to_outgoing_request_to_search(httpx_mock: HTTP
 
 
 @pytest.fixture()
-async def wdms_app_mocked(nope_logger_fixture):
+async def wdms_app_mocked():
 
     from fastapi.testclient import TestClient
     from app.wdms_app import wdms_app, app_injector

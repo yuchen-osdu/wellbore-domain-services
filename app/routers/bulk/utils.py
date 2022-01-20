@@ -12,14 +12,16 @@ import ast
 
 from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
-from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
-    no_validation, DataFrameValidationFunc
-from app.clients.storage_service_client import get_storage_record_service
-from app.bulk_persistence import DataframeSerializerAsync
+from app.bulk_persistence.dask.dask_worker_write_bulk import basic_describe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.utils import set_index
+from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
+    no_validation, DataFrameValidationFunc
+from app.bulk_persistence import DataframeSerializerAsync
 from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence import JSONOrient
+
+from app.clients.storage_service_client import get_storage_record_service
 from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
 from app.model.model_chunking import GetDataParams
@@ -106,6 +108,7 @@ async def get_df_from_request(request: Request) -> pd.DataFrame:
                         detail=f'Invalid content-type, "{ct}" is not supported')
 
 
+@with_trace("with_dask_blob_storage")
 async def with_dask_blob_storage() -> DaskBulkStorage:
     return await get_ctx().app_injector.get(DaskBulkStorage)
 
@@ -119,14 +122,25 @@ class DataFrameRender:
         return await driver.client.compute(df)
 
     @staticmethod
+    async def load_index(record_id: str, bulk_id: str, dask_blob_storage: DaskBulkStorage):
+        return await dask_blob_storage._future_load_index(record_id, bulk_id)
+
+    @staticmethod
     async def get_size(df):
         if isinstance(df, pd.DataFrame):
             return len(df.index)
         driver = await with_dask_blob_storage()
-        return await driver.client.submit(lambda: len(df.index))
+        return await driver._submit_with_trace(lambda: len(df.index))
 
     @staticmethod
-    def _select_range_impl(df: dd.DataFrame, limit, offset):
+    def _select_range_impl(df: dd.DataFrame, limit, offset, index):
+        if df.known_divisions and index is not None:
+            if offset:
+                index = index[offset:]
+            if limit:
+                index = index[:limit]
+            return df.loc[list(index)]  # this works only if divisions are known
+
         dataframe_list = []
         CONCURRENT_READ = 1
         for nth in range(0, df.npartitions, CONCURRENT_READ):
@@ -142,6 +156,7 @@ class DataFrameRender:
             if limit:
                 dataframe = dataframe.iloc[:limit]
                 limit -= len(dataframe.index)
+
             dataframe_list.append(dataframe)
             if limit is not None and limit <= 0:
                 break  # stop when we have the requested data
@@ -149,66 +164,68 @@ class DataFrameRender:
             return df.head(0)  # return an empty dataframe
         return pd.concat(dataframe_list)
 
-
     @staticmethod
     @with_trace('select_range')
     @capture_timings('select_range')
-    async def select_range(df: dd.DataFrame, offset, limit):
+    async def select_range(df: dd.DataFrame, offset, limit, dask_blob_storage: DaskBulkStorage, index=None):
         if offset or limit:
-            driver = await with_dask_blob_storage()
-            return await driver.client.submit(DataFrameRender._select_range_impl, df, limit, offset)
+            return await dask_blob_storage._submit_with_trace(DataFrameRender._select_range_impl,
+                                                              df, limit, offset, index)
         return df
-
 
     re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
     @staticmethod
-    def _col_matching(sel, col):
-        if sel == col:  # exact match
-            return True
-        m_sel = DataFrameRender.re_array_selection.match(sel)
-        if m_sel and m_sel['name'] == col:
-            return True # TODO if column type is array
-        m_col = DataFrameRender.re_array_selection.match(col)
-        if not m_col:  # if the column doesn't have an array pattern (col[*])
-            return False
-        # compare selection with curve name without array suffix [*]
-        if sel == m_col['name']:  # if selection is 'c', c[*] should match
-            return True
-        # range selection use cases c[0:2] should match c[0], c[1] and c[2]
-        if m_sel and m_sel['stop'] and m_sel['name'] == m_col['name']:
+    def _get_matching_columns_from_selection(selection: str, all_columns=Set[str]) -> List[str]:
+        m_sel = DataFrameRender.re_array_selection.match(selection)
+        if m_sel and m_sel['stop']:  # selection like col_name[<start>:<stop>]
+            col_name = m_sel['name']
             with suppress(ValueError):  # suppress int conversion exceptions
-                if int(m_sel['start']) <= int(m_col['start']) <= int(m_sel['stop']):
-                    return True
-        return False
+                requested_columns = (f'{col_name}[{i}]' for i in range(int(m_sel['start']), int(m_sel['stop'])+1))  # TODO we may want to support floating point values ?
+                return all_columns.intersection(requested_columns)
+
+        def is_matching(col: str):
+            if not col.startswith(selection):
+                return False
+            if len(col) == len(selection):  # exact match
+                return True
+            m_col = DataFrameRender.re_array_selection.match(col)
+            if m_col:  # if selection is 'col_name', col_name[*] should match
+                return m_col['name'] == selection
+            return False
+
+        return [c for c in all_columns if is_matching(c)]
 
     @staticmethod
-    def get_matching_column(selection: List[str], cols: Set[str]) -> List[str]:
+    @with_trace('get_matching_column')
+    def get_matching_columns(selection: List[str], cols: Set[str]) -> List[str]:
         selected = {}
         curves_non_existent = []
+
         for sel in selection:
-            matching_columns = [col for col in cols if DataFrameRender._col_matching(sel, col)]
+            matching_columns = DataFrameRender._get_matching_columns_from_selection(sel, cols)
             if matching_columns:
                 selected.update({column: 1 for column in natsorted(matching_columns)})
             else:
                 curves_non_existent.append(sel)
+
         if curves_non_existent:
             raise BulkCurvesNotFound(curves=curves_non_existent)
 
         return list(selected.keys())
 
-
     @staticmethod
+    @with_trace('apply_filter')
     def apply_filter(df, filters):
 
         operator_to_function = {
-            'eq' : lambda df, col, val : df[col] == val,
-            'neq' : lambda df, col, val : df[col] != val,
-            'lte': lambda df, col, val : df[col] <= val,
-            'lt': lambda df, col, val : df[col] < val,
-            'gt': lambda df, col, val : df[col] > val,
-            'gte': lambda df, col, val : df[col] >= val,
-            'in': lambda df, col, val : df[col].isin(val)
+            'eq': lambda df, col, val: df[col] == val,
+            'neq': lambda df, col, val: df[col] != val,
+            'lte': lambda df, col, val: df[col] <= val,
+            'lt': lambda df, col, val: df[col] < val,
+            'gt': lambda df, col, val: df[col] > val,
+            'gte': lambda df, col, val: df[col] >= val,
+            'in': lambda df, col, val: df[col].isin(val)
         }
         for col_name, operation in filters.items():
             for operator, value in operation.items():
@@ -232,7 +249,7 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('process_params')
-    async def process_params(df, params: GetDataParams, filters):
+    async def process_params(df, params: GetDataParams, filters, dask_blob_storage: DaskBulkStorage, f_index):
         """
         pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
         """
@@ -244,19 +261,21 @@ class DataFrameRender:
 
         if params.curves:
             selection = params.get_curves_list()
-            columns = DataFrameRender.get_matching_column(selection, set(df.columns))
+            columns = DataFrameRender.get_matching_columns(selection, set(df.columns))
             df = df[columns]  # columns are ordered as the user requested
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
-        df = await DataFrameRender.select_range(df, params.offset, params.limit)
+        if filters and (params.offset or params.limit):
+            f_index = dask_blob_storage.client.compute(df.index)
+
+        df = await DataFrameRender.select_range(df, params.offset, params.limit, dask_blob_storage, f_index)
 
         return df
 
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
-    #@capture_timings('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)
