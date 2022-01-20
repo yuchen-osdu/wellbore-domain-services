@@ -18,42 +18,59 @@
 echo '********* Running Wellbore DDMS integration tests  *********'
 
 SCRIPT_SOURCE_DIR=$(dirname "$0")
-echo "Script source location"
 echo "$SCRIPT_SOURCE_DIR"
-
-AWS_COGNITO_PWD=$ADMIN_PASSWORD
-AWS_COGNITO_USER=$ADMIN_USER
-client_id=$AWS_COGNITO_CLIENT_ID
-svc_url=$WELLBORE_DDMS_URL
-tenant='opendes'
-acl_domain='example.com'
-legal_tag='opendes-sdmstestlegaltag'
-
-
-#### RUN INTEGRATION TEST #########################################################################
-
-echo 'Generating token...'
-token=$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id $client_id --auth-parameters USERNAME=$AWS_COGNITO_USER,PASSWORD=$AWS_COGNITO_PWD --output=text --query AuthenticationResult.{AccessToken:AccessToken})
-
-#### RUN INTEGRATION TEST #########################################################################
-
 
 pushd "$SCRIPT_SOURCE_DIR"/../../../
 echo $(pwd)
 python3 -m venv env
 source env/bin/activate
 python3 -m pip install -r ./tests/aws-test/build-aws/requirements.txt
+python3 -m pip install -r ./tests/aws-test/build-aws/requirements_dev.txt
 rm -rf test-reports/
 mkdir test-reports
 
-cd tests/integration
+export AWS_COGNITO_AUTH_PARAMS_USER=${ADMIN_USER} #set by env script
+export AWS_COGNITO_AUTH_PARAMS_PASSWORD=${ADMIN_PASSWORD} #set by codebuild 
+tenant='opendes'
 acl_domain='example.com'
-legal_tag='opendes-sdmstestlegaltag'
+legal_tag='opendes-wellddmstestlegaltag'
+token=$(python3 tests/aws-test/build-aws/aws_jwt_client.py)
 
-python3 gen_postman_env.py --token $token --base_url $svc_url --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
+echo 'Register Legal tag before Integration Tests ...'
+curl --location --request POST "$LEGAL_URL"'legaltags' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer '"$token" \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+        "name": "wellddmstestlegaltag",
+        "description": "legal tag for Wellbore DMS Service Integration tests",
+        "properties": {
+            "countryOfOrigin":["US"],
+            "contractId":"A1234",
+            "expirationDate":"2099-01-25",
+            "dataType":"Public Domain Data", 
+            "originator":"MyCompany",
+            "securityClassification":"Public",
+            "exportClassification":"EAR99",
+            "personalData":"No Personal Data"
+        }
+}'
+cd tests/integration
 
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+python3 gen_postman_env.py --token $token --base_url $WELLBORE_DDMS_URL --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
+
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
 
 TEST_EXIT_CODE=$?
+
+echo Delete legaltag after Integration Tests...
+curl --location --request DELETE "$LEGAL_URL"'legaltags/opendes-wellddmstestlegaltag' \
+--header 'Authorization: Bearer '"$token" \
+--header 'data-partition-id: opendes' \
+--header 'Content-Type: application/json'
+
 deactivate
+
+
 exit $TEST_EXIT_CODE

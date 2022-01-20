@@ -55,6 +55,9 @@ Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Un
 - Implementation of blob storage and partition service on Azure
   - osdu-core-lib-python-azure
 
+- Implementation of blob storage and partition service on AWS
+  - osdu-core-lib-python-aws
+
 - Client libraries for OSDU data ecosystem services
   - osdu-data-ecosystem-search
   - osdu-data-ecosystem-storage
@@ -186,6 +189,20 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
   -e KEYVAULT_URL keyvault_url \
   -e USE_PARTITION_SERVICE disabled
   ```
+
+- The following environment variables are required when the cloud provider is set to AWS:
+  - SERVICE_HOST_SEARCH: The Search Service host
+  - SERVICE_HOST_STORAGE: The Storage Service host
+  - SERVICE_HOST_PARTITION: The Partition Service host
+
+  ```bash
+  python main.py -e CLOUD_PROVIDER aws \
+  -e SERVICE_HOST_SEARCH search_host \
+  -e SERVICE_HOST_STORAGE storage_host \
+  -e SERVICE_HOST_PARTITION partition_host 
+  ```
+
+
 
 Note: If you're running locally, you may need to provide environmental variables in your IDE. Here is a sample for providing a `.env` file.
 
