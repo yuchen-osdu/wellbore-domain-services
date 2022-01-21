@@ -23,7 +23,7 @@ import app.helper.utils as logger_utils
 from app import conf
 from app.injector.app_injector import AppInjector
 from app.model.user import User
-from app.utils import Context, get_or_create_ctx
+from app.utils import Context
 from app.helper.logger import get_logger
 
 
@@ -38,7 +38,8 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
         Returns the response with the additional CSP headers added to allow for swagger js and css files from the given domains.
         """
         if "/docs" in request.url.path:
-            response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' *.jsdelivr.net 'unsafe-inline'; style-src 'self' *.jsdelivr.net; img-src 'self' *.tiangolo.com data:;"
+            response.headers[
+                "Content-Security-Policy"] = "default-src 'self'; script-src 'self' *.jsdelivr.net 'unsafe-inline'; style-src 'self' *.jsdelivr.net; img-src 'self' *.tiangolo.com data:;"
 
     async def dispatch(self, request, call_next):
         api_key = request.headers.get('x-api-key', None)
@@ -56,20 +57,24 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
                                 app_key=app_key,
                                 api_key=api_key)
 
-        ctx = get_or_create_ctx()
-        ctx.set_current_with_value(logger=get_logger(),
-                                   correlation_id=correlation_id,
-                                   request_id=request_id,
-                                   partition_id=partition_id,
-                                   app_key=app_key,
-                                   api_key=api_key,
-                                   user=anonymous_user,
-                                   x_user_id=x_user_id,
-                                   app_injector=self._app_injector)
+        Context.clear_current()
+        ctx = Context(logger=get_logger(),
+                      correlation_id=correlation_id,
+                      request_id=request_id,
+                      partition_id=partition_id,
+                      app_key=app_key,
+                      api_key=api_key,
+                      user=anonymous_user,
+                      x_user_id=x_user_id,
+                      app_injector=self._app_injector)
+        ctx.set_current()
 
         request.scope['user'] = anonymous_user
+        try:
+            response = await call_next(request)
+        finally:
+            Context.clear_current()
 
-        response = await call_next(request)
         self._add_csp_header(request, response)
         return response
 

@@ -236,7 +236,7 @@ class Context:
         # pass
         self._attr_dict = keys or {}
 
-    __ctx_var = contextvars.ContextVar('__internal_context_var')
+    __ctx_var = contextvars.ContextVar('_wdms_internal_context_var')
     """
     contextvar is natively supported in asyncio, we can take advantage of this of easily get the current context (by
     the way it may hide the potential dependency)
@@ -245,6 +245,10 @@ class Context:
     @classmethod
     def current(cls) -> 'Context':
         return cls.__ctx_var.get()
+
+    @classmethod
+    def clear_current(cls):
+        cls.__ctx_var.set(Context())
 
     def set_current(self):
         Context.__ctx_var.set(self)
