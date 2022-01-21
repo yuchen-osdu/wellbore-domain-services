@@ -34,6 +34,7 @@ variables:
   OSDU_GCP_VENDOR: gcp
   OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
   OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s"
   OSDU_GCP_HELM_CONFIG_SERVICE: wellbore-config
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE: wellbore-deploy
@@ -192,6 +193,35 @@ osdu-gcp-test-python:
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   needs: ["osdu-gcp-deploy-deployment"]
+  script:
+    - apt-get install -y python3-venv
+    - python3 -m venv env
+    - source env/bin/activate
+    - pip install --upgrade pip
+    - pip install wheel pytest pytest-cov
+    - >
+      for REQ in $PIP_REQUIREMENTS ; do
+        pip install -r $REQ
+      done
+    - cd tests/integration
+    - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
+    - gcloud auth activate-service-account --key-file file.json
+    - gcloud config set project $OSDU_GCP_PROJECT
+    - >
+      python gen_postman_env.py
+      --token $(gcloud auth print-access-token)
+      --base_url $OSDU_GCP_WELLBORE_BASE_URL
+      --cloud_provider $OSDU_GCP_VENDOR
+      --data_partition $OSDU_GCP_TENANT
+      --acl_domain $DOMAIN
+      --legal_tag $LEGAL_TAG
+    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
+
+osdu-gcp-dev2-test-python:
+  extends: .osdu-gcp-dev2-variables
+  stage: integration
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  needs: ["osdu-gcp-dev2-deploy-deployment"]
   script:
     - apt-get install -y python3-venv
     - python3 -m venv env
