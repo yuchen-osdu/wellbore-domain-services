@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from tempfile import TemporaryDirectory
 from datetime import datetime, timedelta
 
 import pytest
@@ -31,15 +30,15 @@ from app.persistence.sessions_storage import (Session,
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from app.utils import Context
 
-from tests.unit.test_utils import NopeLogger
+from tests.unit.test_utils import ctx_fixture
+
+
 from unittest.mock import patch, PropertyMock
 
 
 @pytest.fixture
-def sessions_storage():
-    Context(logger=NopeLogger).set_current()
-    with TemporaryDirectory() as tmp_dir:
-        yield SessionsStorage(LocalFSBlobStorage(directory=tmp_dir))
+def sessions_storage(ctx_fixture, tmp_path):
+    yield SessionsStorage(LocalFSBlobStorage(directory=tmp_path))
 
 
 @pytest.fixture

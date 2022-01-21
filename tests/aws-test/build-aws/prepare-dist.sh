@@ -27,7 +27,12 @@ mkdir -p "$INTEGRATION_TEST_OUTPUT_DIR"
 if [ ! -e requirements_dev.txt ]; then
     echo "File requirements_dev.txt does not exist!"
 else
-    cp requirements_dev.txt tests/aws-test/build-aws/requirements.txt
+    cp requirements_dev.txt tests/aws-test/build-aws/requirements_dev.txt
+fi
+if [ ! -e requirements.txt ]; then
+    echo "File requirements.txt does not exist!"
+else
+    cp requirements.txt tests/aws-test/build-aws/requirements.txt
 fi
 cp  -r tests "${INTEGRATION_TEST_OUTPUT_DIR}"
 cp -r wdms_client "${INTEGRATION_TEST_OUTPUT_DIR}"

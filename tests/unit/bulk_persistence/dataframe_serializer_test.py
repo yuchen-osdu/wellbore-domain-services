@@ -15,7 +15,6 @@
 from app.bulk_persistence.dataframe_serializer import (DataframeSerializerSync,
                                                        DataframeSerializerAsync,
                                                        JSONOrient)
-from tests.unit.test_utils import temp_directory
 import pandas as pd
 import json
 import pytest
@@ -25,7 +24,12 @@ from unittest.mock import patch
 from tempfile import SpooledTemporaryFile
 
 Reference_df = pd.DataFrame([[1., 10, 11], [2., 20, 21], [3., 30, 31]], columns=['ref', 'a', 'b'])
-CONSTANT_DATA_JSON = '/data.json'
+
+
+@pytest.fixture()
+def data_path(tmp_path):
+    yield tmp_path / 'data.json'
+
 
 # we're building it manually as we want to spot any change from anywhere that could occur (in pandas for instance)
 # we want format to be stable
@@ -66,31 +70,31 @@ def test_load_from_str_various_orient(data_dict, orient):
     check_dataframe(df)
 
 
-def test_load_from_path(temp_directory):
+def test_load_from_path(data_path):
     orient = 'split'
     data_dict = dataframe_dict[orient]
-    path = temp_directory + CONSTANT_DATA_JSON
-    with open(path, 'w') as file:
+
+    with open(data_path, 'w') as file:
         json.dump(data_dict, file)
 
-    df = DataframeSerializerSync.read_json(path, orient=orient)
+    df = DataframeSerializerSync.read_json(data_path, orient=orient)
     check_dataframe(df)
 
 
-def test_load_from_file_like(temp_directory):
+def test_load_from_file_like(data_path):
     orient = 'split'
     data_dict = dataframe_dict[orient]
-    path = temp_directory + CONSTANT_DATA_JSON
-    with open(path, 'w') as file:
+
+    with open(data_path, 'w') as file:
         json.dump(data_dict, file)
 
-    with open(path, 'r') as file:
+    with open(data_path, 'r') as file:
         df = DataframeSerializerSync.read_json(file, orient=orient)
         check_dataframe(df)
 
 
-def test_load_parquet_from_file_like(temp_directory):
-    path = temp_directory + '/data.parquet'
+def test_load_parquet_from_file_like(tmp_path):
+    path = tmp_path / 'data.parquet'
     Reference_df.to_parquet(path)
 
     with open(path, 'rb') as file:
@@ -144,29 +148,29 @@ async def test_back_forth_async_serializer():
     check_dataframe(df)
 
 
-def test_to_json_to_path(temp_directory):
+def test_to_json_to_path(data_path):
     orient = 'split'
     data_dict = dataframe_dict[orient]
-    path = temp_directory + CONSTANT_DATA_JSON
 
-    result = DataframeSerializerSync.to_json(Reference_df, path_or_buf=path, orient=orient)
+
+    result = DataframeSerializerSync.to_json(Reference_df, path_or_buf=data_path, orient=orient)
     assert result is None
 
-    with open(path, 'r') as file:
+    with open(data_path, 'r') as file:
         actual_dict = json.load(file)
         assert actual_dict == data_dict
 
 
-def test_to_json_to_file(temp_directory):
+def test_to_json_to_file(data_path):
     orient = 'split'
     data_dict = dataframe_dict[orient]
-    path = temp_directory + CONSTANT_DATA_JSON
 
-    with open(path, 'w') as file:
+
+    with open(data_path, 'w') as file:
         result = DataframeSerializerSync.to_json(Reference_df, path_or_buf=file, orient=orient)
     assert result is None
 
-    with open(path, 'r') as file:
+    with open(data_path, 'r') as file:
         actual_dict = json.load(file)
         assert actual_dict == data_dict
 

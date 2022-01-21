@@ -18,7 +18,7 @@ tests specific to logset APIs. Common tests implemented in common_ddms_v2_test
 
 import asyncio
 import json
-from tempfile import TemporaryDirectory
+
 from io import BytesIO
 
 import numpy as np
@@ -42,7 +42,7 @@ from app.bulk_persistence import MimeTypes
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
-from tests.unit.test_utils import assert_dict_contained, make_record, nope_logger_fixture
+from tests.unit.test_utils import make_record, nope_logger_fixture
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
@@ -100,30 +100,29 @@ class TestHelper:
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
-    with TemporaryDirectory() as tmpdir:
-        async def storage_service_builder(*args, **kwargs):
-            return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmpdir), 'p1', 'c1')
+def client(nope_logger_fixture, tmp_path):
+    async def storage_service_builder(*args, **kwargs):
+        return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1')
 
-        async def blob_storage_builder(*args, **kwargs):
-            return LocalFSBlobStorage(directory=tmpdir)
+    async def blob_storage_builder(*args, **kwargs):
+        return LocalFSBlobStorage(directory=tmp_path)
 
-        async def set_default_partition(data_partition_id: str = Header('opendes')):
-            Context.set_current_with_value(partition_id=data_partition_id)
+    async def set_default_partition(data_partition_id: str = Header('opendes')):
+        Context.set_current_with_value(partition_id=data_partition_id)
 
-        app_injector.register(BlobStorageBase, blob_storage_builder)
-        app_injector.register(StorageRecordServiceClient, storage_service_builder)
+    app_injector.register(BlobStorageBase, blob_storage_builder)
+    app_injector.register(StorageRecordServiceClient, storage_service_builder)
 
-        async def do_nothing():
-            # empty method
-            pass
+    async def do_nothing():
+        # empty method
+        pass
 
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
+    wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
+    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
 
-        yield TestClient(wdms_app)
+    yield TestClient(wdms_app)
 
-        wdms_app.dependency_overrides = {}  # clean up
+    wdms_app.dependency_overrides = {}  # clean up
 
 
 log_data = [

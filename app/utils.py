@@ -13,16 +13,17 @@
 # limitations under the License.
 
 import asyncio
+from time import perf_counter, process_time
 from typing import Optional, Callable, List, Tuple, Union, NamedTuple
 import concurrent.futures
 from functools import lru_cache, wraps, partial
-from aiohttp import ClientSession
 import contextvars
 from os import path, makedirs
 import tempfile
 import json
-from asyncio import iscoroutinefunction
+from logging import INFO
 
+from aiohttp import ClientSession
 import dask
 from dask.utils import parse_bytes, format_bytes
 from dask.distributed import Client as DaskDistributedClient
@@ -32,8 +33,6 @@ from distributed.deploy.utils import nprocesses_nthreads
 from app.model.user import User
 from app.injector.app_injector import AppInjector
 from app.conf import Config
-from time import perf_counter, process_time
-from logging import INFO
 
 POOL_EXECUTOR_MAX_WORKER = 4
 
@@ -143,7 +142,7 @@ class DaskClient:
 
 def get_pool_executor():
     if get_pool_executor._pool is None:
-        get_pool_executor._pool = concurrent.futures.ProcessPoolExecutor(POOL_EXECUTOR_MAX_WORKER)
+        get_pool_executor._pool = concurrent.futures.ThreadPoolExecutor(POOL_EXECUTOR_MAX_WORKER)
     return get_pool_executor._pool
 
 
@@ -479,7 +478,7 @@ def capture_timings(tag, handlers=default_capture_timing_handlers):
 
     def decorate(target):
 
-        if iscoroutinefunction(target):
+        if asyncio.iscoroutinefunction(target):
 
             @wraps(target)
             async def async_inner(*args, **kwargs):

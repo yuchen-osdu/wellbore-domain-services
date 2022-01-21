@@ -18,8 +18,9 @@ from app import __version__, __app_name__, __build_number__
 from app.conf import Config
 from typing import Dict
 from app.auth.auth import require_opendes_authorized_user
+from app.helper.traces import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 
 class AboutResponse(BaseModel):

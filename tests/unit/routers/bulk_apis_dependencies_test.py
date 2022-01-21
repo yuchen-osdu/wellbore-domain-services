@@ -1,13 +1,11 @@
-from fastapi.testclient import TestClient
 import pytest
-
-from tests.unit.test_utils import nope_logger_fixture
-from tests.unit.routers.chunking_test import dasked_test_app, init_fixtures
-
-from app.wdms_app import DDMS_V2_PATH, DDMS_V3_PATH, ALPHA_APIS_PREFIX
 from app.routers.bulk.bulk_routes import router
-from app.routers.ddms_v3 import welllog_ddms_v3, wellbore_trajectory_ddms_v3
 from app.routers.ddms_v2 import log_ddms_v2
+from app.routers.ddms_v3 import wellbore_trajectory_ddms_v3, welllog_ddms_v3
+from app.wdms_app import ALPHA_APIS_PREFIX, DDMS_V2_PATH, DDMS_V3_PATH
+from fastapi.testclient import TestClient
+from tests.unit.test_utils import nope_logger_fixture
+from tests.unit.routers.chunking_test import dasked_test_app
 
 base_paths = [
     DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
@@ -19,8 +17,8 @@ bulk_routes_path = [(route.path, route.methods) for route in router.routes]
 
 @pytest.fixture()
 def dependencies_check_app(dasked_test_app):
-    from app.routers.bulk.utils import set_v3_input_dataframe_check, set_legacy_input_dataframe_check
-    from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
+    from app.routers.bulk.utils import set_legacy_input_dataframe_check, set_v3_input_dataframe_check
+
     async def expected_legacy_check_func():
         raise ArithmeticError("I'm raising for legacy injection")
 
@@ -55,7 +53,7 @@ def test_ensure_bulk_apis_dependencies_injection(dependencies_check_app, route_u
     client = dependencies_check_app
 
     bulk_paths = bulk_routes_path
-    all_bulk_paths = {prefix+router_path: methods for prefix in base_paths for router_path, methods in bulk_paths}
+    all_bulk_paths = {prefix + router_path: methods for prefix in base_paths for router_path, methods in bulk_paths}
 
     if route_url in all_bulk_paths.keys() and method in all_bulk_paths[route_url]:
         if _is_welllogs_v3_route(route_url) or _is_trajectories_v3_route(route_url):

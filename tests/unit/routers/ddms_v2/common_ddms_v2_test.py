@@ -20,6 +20,7 @@ import pytest
 from fastapi import HTTPException, Header, status
 from fastapi.testclient import TestClient
 from odes_search.models import CursorQueryResponse
+from odes_storage import UnexpectedResponse
 from odes_storage.models import RecordVersions, CreateUpdateRecordsResponse, Record
 
 from app.auth.auth import require_opendes_authorized_user
@@ -33,7 +34,7 @@ from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.routers.search.search_wrapper import SearchWrapper
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
-from tests.unit.test_utils import create_mock_class, make_record, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class, make_record
 
 """
 Contains unified common tests for the different kind. Mainly CRUD test cases
@@ -141,7 +142,7 @@ SearchWrapperMock = create_mock_class(SearchWrapper)
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
+def client():
     async def bypass_authorization():
         # empty method
         pass
@@ -416,7 +417,8 @@ def test_get_record_at_version_errors(client, base_url, record_obj):
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_post_records_successful(client, base_url, record_obj):
     expected_response = CreateUpdateRecordsResponse(recordCount=2, recordIds=['rec1', 'rec2'])
-
+    moc_get_record = mock.AsyncMock(side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
+                                                                   reason_phrase="", content=None, headers=None))
     # done this way because of the current inconsistency of root fields between wdms model vs storage client model
     record_dict_list = [
         make_record(True, **(record_obj.dict(exclude_unset=True))) for _ in expected_response.record_ids
@@ -424,7 +426,8 @@ def test_post_records_successful(client, base_url, record_obj):
 
     moc_create_or_update_records = mock.AsyncMock(return_value=expected_response)
 
-    with mock.patch.object(StorageRecordServiceClientMock, 'create_or_update_records', moc_create_or_update_records):
+    with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc_get_record), \
+         mock.patch.object(StorageRecordServiceClientMock, 'create_or_update_records', moc_create_or_update_records):
         # when
         response = client.post(base_url, data=json.dumps(record_dict_list), headers={'content-type': 'application/json'})
 

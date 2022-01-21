@@ -34,7 +34,7 @@ from app.middleware import require_data_partition_id
 from app.wdms_app import wdms_app, app_injector
 from app.utils import Context
 from app.routers.record_utils import fetch_record, update_records
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture, ctx_fixture
+from tests.unit.test_utils import create_mock_class, ctx_fixture
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record
 

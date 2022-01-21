@@ -15,7 +15,7 @@ from app.clients import *
 from app.auth.auth import require_opendes_authorized_user
 from tests.unit.errors.error_handler_test import StorageRecordServiceBlobStorageMock
 
-from tests.unit.test_utils import patch_async, create_mock_class, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class
 from odes_storage.exceptions import UnexpectedResponse
 import pandas as pd
 
@@ -27,7 +27,7 @@ tests_parameters = [
 ]
 
 @pytest.fixture
-def client(nope_logger_fixture):
+def client():
     async def bypass_authorization():
         # empty method
         pass

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from .bulk_uri import BulkURI
-from .dataframe_persistence import create_and_store_dataframe, get_dataframe
+from .dataframe_persistence import create_and_store_dataframe, get_dataframe, download_bulk
 from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerSync
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes

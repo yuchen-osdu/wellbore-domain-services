@@ -26,8 +26,9 @@ from app.routers.ddms_v3.ddms_v3_utils import OSDU_WELLLOG_VERSION_REGEX, DMSV3R
 from app.routers.delete.delete_bulk_data import delete_record
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx, load_schema_example
+from app.helper.traces import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 WELL_LOGS_API_BASE_PATH = '/welllogs'
 
@@ -140,10 +141,11 @@ async def get_osdu_welllog_version(
     },
 )
 async def post_welllog_osdu(
-    welllogs: List[WellLog] = Body(..., example=load_schema_example("wellLog_v3.json")), ctx: Context = Depends(get_ctx)
+    welllogs: List[WellLog] = Body(..., example=load_schema_example("wellLog_v3.json")), ctx: Context = Depends(get_ctx),
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(welllogs)
-
+    await DMSV3RouterUtils.raise_if_invalid_bulk_uri(welllogs, bulk_uri_access)
     for idx, w in enumerate(welllogs):
         try:
             check_welllog_consistency(w)

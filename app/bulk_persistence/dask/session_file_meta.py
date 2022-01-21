@@ -23,16 +23,18 @@ from distributed.worker import get_client
 
 import pandas as pd
 from app.bulk_persistence.dask.utils import share_items
+from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
 from app.utils import capture_timings
 
 from .storage_path_builder import add_protocol, record_session_path
 
+
 class SessionFileMeta:
     """The class extract information about chunks."""
 
-    def __init__(self, fs, file_path: str, lazy: bool = True) -> None:
+    def __init__(self, fs, protocol: str, file_path: str, lazy: bool = True) -> None:
         """
         Args:
             fs: fsspec filesystem
@@ -47,6 +49,7 @@ class SessionFileMeta:
         self.time, self.shape, tail = tail.split('.')
         self._meta = None
         self.path = file_path
+        self.protocol = protocol
         if not lazy:
             self._read_meta()
 
@@ -75,7 +78,7 @@ class SessionFileMeta:
     @property
     def path_with_protocol(self) -> str:
         """Returns chunk path with protocol"""
-        return add_protocol(self.path, self._fs.protocol)
+        return add_protocol(self.path, self.protocol)
 
     @property
     def index_hash(self) -> str:
@@ -111,7 +114,7 @@ def generate_chunk_filename(dataframe: pd.DataFrame) -> str:
     '0_9_1637223437910.526782c41fe12c3249046fedcc45563ef3662250'
     >>> generate_chunk_filename(pd.DataFrame({'A': range(10), 'B': range(10)}, index=range(10,20)))
     '10_19_1637223490719.526782c41fe12c3249046fedcc45563ef3662250'
-    >>> generate_chunk_filename(pd.DataFrame({'A': [1], 'B': [1]}, index=[datetime.datetime.now()])) 
+    >>> generate_chunk_filename(pd.DataFrame({'A': [1], 'B': [1]}, index=[datetime.datetime.now()]))
     '1639672097644401000_1639672097644401000_1639668497645.526782c41fe12c3249046fedcc45563ef3662250'
     >>> generate_chunk_filename(pd.DataFrame({'A': []}, index=[]))
     IndexError: index 0 is out of bounds for axis 0 with size 0
@@ -143,12 +146,12 @@ def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
 
 @capture_timings('get_chunks_metadata')
 @with_trace('get_chunks_metadata')
-async def get_chunks_metadata(filesystem, base_directory, session: Session) -> List[SessionFileMeta]:
+async def get_chunks_metadata(filesystem, protocol: str, base_directory: str, session: Session) -> List[SessionFileMeta]:
     """Return metadata objects for a given session"""
     session_path = record_session_path(base_directory, session.id, session.recordId)
     with suppress(FileNotFoundError):
         parquet_files = [f for f in filesystem.ls(session_path) if f.endswith(".parquet")]
-        futures = get_client().map(lambda f: SessionFileMeta(filesystem, f, lazy=False) , parquet_files)
+        futures = get_client().map(lambda f: SessionFileMeta(filesystem, protocol, f, lazy=False) , parquet_files)
         return await get_client().gather(futures)
     return []
 
@@ -161,13 +164,21 @@ def get_next_chunk_files(
     """
     chunks_info.sort(key=attrgetter('time'))
 
-    cache: Dict[str, SessionFileMeta] = {}
+    cache: Dict[str, List[SessionFileMeta]] = {}
     columns_in_cache = set()  # keep track of colunms present in the cache
     for chunk in chunks_info:
         if chunk.shape in cache: # if other chunks with same shape
-            if any(chunk.overlap(c) for c in cache[chunk.shape]):  # rows overlaps
-                yield cache[chunk.shape]
-                del cache[chunk.shape]
+            # looking for overlaped chunk
+            for i, cached_chunk in enumerate(cache[chunk.shape]):
+                if chunk.overlap(cached_chunk):
+                    if chunk.index_hash == cached_chunk.index_hash:
+                        # if chunks are identical in shape and index just keep the last one
+                        get_logger().info(f"Duplicated chunk skipped : '{chunk.path}'")
+                        cache[chunk.shape].pop(i)
+                    else:
+                        yield cache[chunk.shape]
+                        del cache[chunk.shape]
+                    break
         elif not columns_in_cache.isdisjoint(chunk.columns): # else if columns conflicts
             conflicting_chunk = next(metas[0] for metas in cache.values()
                                      if chunk.has_common_columns(metas[0]))
