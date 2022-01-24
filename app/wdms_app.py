@@ -284,7 +284,10 @@ update_operation_ids(wdms_app)
 
 # order is last executed first
 wdms_app.add_middleware(TracingMiddleware)
+
+# must be added last to be executed first, it's responsible to clean and create WDMS Context
 wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
+
 
 # adding exception handling
 add_exception_handlers(wdms_app)
