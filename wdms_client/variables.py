@@ -48,7 +48,8 @@ class Variables:
     def from_dict(cls, variables_dict):
         inst = cls()
         for k, v in variables_dict.items():
-            inst.set(k, v)
+            if len(k) > 0:  # avoiding empty string issues
+                inst.set(k, v)
         return inst
 
     def update(self, **kwargs):
@@ -69,8 +70,12 @@ class Variables:
         return inst
 
     def resolve(self, d):
+
         if isinstance(d, dict):
             return {k: self.resolve(v) for k, v in d.items()}
+
+        if isinstance(d, list):
+            return [self.resolve(e) for e in d]
 
         if isinstance(d, str):
             return self._resolve_value(d)
