@@ -30,10 +30,6 @@ from app.helper.traces import with_trace
 from app.helper.traces import TracingRoute
 
 
-def can_run() -> (bool, str):
-    return True, ""
-
-
 router = APIRouter(route_class=TracingRoute)
 router.prefix = '/log-recognition'
 router.tags = ['log-recognition']

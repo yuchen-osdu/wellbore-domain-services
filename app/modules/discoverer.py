@@ -39,11 +39,6 @@ def load_module(name):
         log.info(f'Loading `{name}` module')
         module = importlib.import_module(f'{MODULES_PATH_PREFIX}.{name}')
 
-        can_run, message = module.can_run()
-        if not can_run:
-            log.info(f'Skipped `{name}`. {message}')
-            return
-
         router = module.router
         if not router.prefix:
             raise AttributeError('Router prefix cannot be empty')
