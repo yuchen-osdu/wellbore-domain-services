@@ -6,7 +6,7 @@ Wellbore Data Management Services (WDMS) Open Subsurface Data Universe (OSDU) is
 
 In order to run this service locally, you will need the following:
 
-- [Python](https://www.python.org/downloads/) >=3.7
+- [Python](https://www.python.org/downloads/) >=3.8
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [OSDU on Azure infrastructure](https://community.opengroup.org/osdu/platform/deployment-and-operations/infra-azure-provisioning) deployed
 
