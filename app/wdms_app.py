@@ -153,12 +153,12 @@ async def startup_event():
 async def shutdown_event():
     # clients close
     storage_client = await app_injector.get(StorageRecordServiceClient)
-    if storage_client is not None:
+    if storage_client is not None and hasattr(storage_client, 'api_client'):
         await storage_client.api_client.close()
 
     search_client = await app_injector.get(SearchServiceClient)
-    if search_client is not None:
-        await storage_client.api_client.close()
+    if search_client is not None and hasattr(search_client, 'api_client'):
+        await search_client.api_client.close()
 
     await get_http_client_session().close()
     await DaskClient.close()
