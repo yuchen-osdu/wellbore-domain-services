@@ -17,6 +17,9 @@ This test ensures the API spec committed with the sources stays accurate.
 If the test fails, it replaces the saved spec with the current version.
 The updated spec file must then be committed with the latest changes.
 """
+import logging
+
+from mock import mock
 
 OPENAPI_PATH = 'spec/generated/openapi.json'
 
@@ -44,7 +47,8 @@ if prefix:
     format_routes(wdms_app, prefix, tags)
 
 @pytest.fixture
-def client(ctx_fixture):
+def client(mocker):
+    mocker.patch('app.helper.logger._LOGGER', spec_set=logging.Logger, new_callable=mock.NonCallableMock)
     yield TestClient(wdms_app)
     wdms_app.dependency_overrides = {}
 
