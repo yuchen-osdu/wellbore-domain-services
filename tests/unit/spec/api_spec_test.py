@@ -46,9 +46,9 @@ if prefix:
         tags = tags.split(',')
     format_routes(wdms_app, prefix, tags)
 
+
 @pytest.fixture
-def client(mocker):
-    mocker.patch('app.helper.logger._LOGGER', spec_set=logging.Logger, new_callable=mock.NonCallableMock)
+def client(nope_logger_fixture):
     yield TestClient(wdms_app)
     wdms_app.dependency_overrides = {}
 
