@@ -21,6 +21,8 @@ from app.conf import ConfigurationContainer
 from app.utils import Context, DaskClient
 from fastapi import Header
 
+from .fixtures import local_dev_config
+
 
 @pytest.fixture(autouse=True)
 def top_fixture(monkeypatch):
