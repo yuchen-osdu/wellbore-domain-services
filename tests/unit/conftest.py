@@ -24,7 +24,16 @@ from app.conf import ConfigurationContainer
 from app.utils import Context, DaskClient
 from fastapi import Header
 
-from .fixtures import local_dev_config
+from .data import (
+    well_v2_file_contents, well_v3_file_contents, wellbore_v2_file_contents, wellbore_v3_file_contents,
+    domain, data_partition, legal_tags,
+    well_v2_record_list, well_v3_record_list, wellbore_v2_record_list, wellbore_v3_record_list,
+    well_wks_record, well_wks_mini_record, wellbore_wks_record, wellbore_wks_mini_record
+)
+
+from .fixtures import (
+    local_dev_config
+)
 
 
 @pytest.fixture(autouse=False)
