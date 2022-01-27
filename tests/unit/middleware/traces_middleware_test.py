@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 import re
 from typing import Optional
-from mock import AsyncMock
+from mock import AsyncMock, mock
 
 from opencensus.trace import base_exporter
 from fastapi.testclient import TestClient
@@ -23,8 +23,6 @@ from starlette.routing import Router, Route, Mount
 
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.wdms_app import wdms_app, base_app, DDMS_V2_PATH, app_injector
-from app.utils import get_or_create_ctx
-from tests.unit.test_utils import ctx_fixture
 
 
 # Initialize traces exporter in app with a custom one to allow validating our traces
@@ -44,16 +42,14 @@ class ExporterInTest(base_exporter.Exporter):
                 return sd
 
 
-
-
 @pytest.fixture
-def client(ctx_fixture):
+def client(local_dev_config, nope_logger_fixture):
     with TestClient(wdms_app) as client:
         yield client
 
 
 @pytest.fixture
-def client_after_startup(ctx_fixture):
+def client_after_startup(local_dev_config, nope_logger_fixture):
     # using base_app client to trigger startup event.
     with TestClient(base_app):
 
