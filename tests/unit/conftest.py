@@ -32,7 +32,8 @@ from .data import (
 )
 
 from .fixtures import (
-    local_dev_config
+    local_dev_config,
+    mock_storage_client_holding_data
 )
 
 
