@@ -17,7 +17,7 @@ from app.bulk_persistence.dask.dask_worker_write_bulk import (basic_describe,
 from app.bulk_persistence.dask.errors import BulkNotProcessable, BulkSaveException
 from app.bulk_persistence.dataframe_validators import no_validation
 
-from tests.unit.test_utils import temp_directory
+
 
 
 def dataframe_to_format(df, data_format: str, as_stream=False):
@@ -54,7 +54,7 @@ def test_basic_describe_truncates_columns():
 
 # so far post_data and add_chunk takes same input, validate similarly and throw same exceptions
 @pytest.mark.parametrize("method_to_test", [write_bulk_without_session, add_chunk_in_session])
-def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
+def test_post_bulk_not_processable_cases(method_to_test, tmp_path):
     def as_bytes_io(content):
         return BytesIO(content)
 
@@ -96,7 +96,7 @@ def test_post_bulk_not_processable_cases(method_to_test, temp_directory):
     data = pd.DataFrame({'A': [1], 'B': [4]}).to_parquet(engine='pyarrow', index=True)
     with patch.object(pd.DataFrame, 'to_parquet', side_effect=lambda *args, **kwargs: 0/0):
         with pytest.raises(BulkSaveException):
-            method_to_test(data, as_bytes_io, MimeTypes.PARQUET, no_validation, temp_directory, None)
+            method_to_test(data, as_bytes_io, MimeTypes.PARQUET, no_validation, tmp_path, None)
 
 
 @pytest.mark.parametrize("content_type", [
@@ -122,13 +122,13 @@ def test_write_bulk_without_session_success(content_type):
     MimeTypes.PARQUET,
     MimeTypes.JSON
 ])
-def test_write_chunk_in_session_success(content_type, temp_directory):
+def test_write_chunk_in_session_success(content_type, tmp_path):
     # GIVEN
     df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
     data = dataframe_to_format(df, content_type.type, True)
 
     # WHEN
-    result = add_chunk_in_session(data, lambda x: x, content_type, no_validation, temp_directory, None)
+    result = add_chunk_in_session(data, lambda x: x, content_type, no_validation, tmp_path, None)
 
     # THEN output basic describe matches
     assert result == DataframeBasicDescribe(
@@ -141,13 +141,13 @@ def test_write_chunk_in_session_success(content_type, temp_directory):
     )
 
     # and THEN meta file produced as a valid json
-    meta_files = [f for f in glob(temp_directory + '/*.meta')]
+    meta_files = [f for f in tmp_path.glob('*.meta')]
     assert len(meta_files) == 1
     with open(meta_files[0]) as f:
         json.load(f)
 
     # and THEN dataframe saved as parquet format
-    parquet_files = [f for f in glob(temp_directory + '/*.parquet')]
+    parquet_files = [f for f in tmp_path.glob('*.parquet')]
     assert len(parquet_files) == 1
     loaded_df = pd.read_parquet(parquet_files[0])
     df.index.name = WDMS_INDEX_NAME

@@ -9,7 +9,7 @@ Apache-2.0
 The following software have components provided under the terms of this license:
 
 - aiobotocore (from https://github.com/aio-libs/aiobotocore)
-- aiohttp (from https://github.com/aio-libs/aiohttp/)
+- aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - boto3 (from https://github.com/boto/boto3)
 - botocore (from https://github.com/boto/botocore)
@@ -61,7 +61,6 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- colorama (from https://github.com/tartley/colorama)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
@@ -86,7 +85,6 @@ The following software have components provided under the terms of this license:
 - asgiref (from http://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
-- colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
 - dask (from http://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
@@ -226,9 +224,9 @@ MIT
 The following software have components provided under the terms of this license:
 
 - PyJWT (from http://github.com/jpadilla/pyjwt)
-- PyYAML
+- PyYAML (from http://pyyaml.org/wiki/PyYAML)
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
-- aiohttp (from https://github.com/aio-libs/aiohttp/)
+- aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis)
 - anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/3.4.0/)

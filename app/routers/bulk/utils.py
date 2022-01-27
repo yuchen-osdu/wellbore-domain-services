@@ -12,14 +12,16 @@ import ast
 
 from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
-from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
-    no_validation, DataFrameValidationFunc
-from app.clients.storage_service_client import get_storage_record_service
-from app.bulk_persistence import DataframeSerializerAsync
+from app.bulk_persistence.dask.dask_worker_write_bulk import basic_describe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.utils import set_index
+from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
+    no_validation, DataFrameValidationFunc
+from app.bulk_persistence import DataframeSerializerAsync
 from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence import JSONOrient
+
+from app.clients.storage_service_client import get_storage_record_service
 from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
 from app.model.model_chunking import GetDataParams
@@ -106,6 +108,7 @@ async def get_df_from_request(request: Request) -> pd.DataFrame:
                         detail=f'Invalid content-type, "{ct}" is not supported')
 
 
+@with_trace("with_dask_blob_storage")
 async def with_dask_blob_storage() -> DaskBulkStorage:
     return await get_ctx().app_injector.get(DaskBulkStorage)
 
@@ -170,7 +173,6 @@ class DataFrameRender:
                                                               df, limit, offset, index)
         return df
 
-
     re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
     @staticmethod
@@ -195,6 +197,7 @@ class DataFrameRender:
         return [c for c in all_columns if is_matching(c)]
 
     @staticmethod
+    @with_trace('get_matching_column')
     def get_matching_columns(selection: List[str], cols: Set[str]) -> List[str]:
         selected = {}
         curves_non_existent = []
@@ -212,16 +215,17 @@ class DataFrameRender:
         return list(selected.keys())
 
     @staticmethod
+    @with_trace('apply_filter')
     def apply_filter(df, filters):
 
         operator_to_function = {
-            'eq' : lambda df, col, val : df[col] == val,
-            'neq' : lambda df, col, val : df[col] != val,
-            'lte': lambda df, col, val : df[col] <= val,
-            'lt': lambda df, col, val : df[col] < val,
-            'gt': lambda df, col, val : df[col] > val,
-            'gte': lambda df, col, val : df[col] >= val,
-            'in': lambda df, col, val : df[col].isin(val)
+            'eq': lambda df, col, val: df[col] == val,
+            'neq': lambda df, col, val: df[col] != val,
+            'lte': lambda df, col, val: df[col] <= val,
+            'lt': lambda df, col, val: df[col] < val,
+            'gt': lambda df, col, val: df[col] > val,
+            'gte': lambda df, col, val: df[col] >= val,
+            'in': lambda df, col, val: df[col].isin(val)
         }
         for col_name, operation in filters.items():
             for operator, value in operation.items():
@@ -272,7 +276,6 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
-    #@capture_timings('df_render')
     async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)

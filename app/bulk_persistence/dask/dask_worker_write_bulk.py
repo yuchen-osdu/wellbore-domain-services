@@ -14,7 +14,6 @@ from ..dataframe_serializer import DataframeSerializerSync
 from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
                                     columns_not_in_reserved_names, validate_number_of_columns)
 
-from .traces import trace_dataframe_attributes
 from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as path_builder
 from . import session_file_meta as session_meta
@@ -31,12 +30,13 @@ def basic_describe(df: pd.DataFrame) -> DataframeBasicDescribe:
     else:
         cols = full_cols
 
+    index_exists = len(df.index)
     return DataframeBasicDescribe(rowCount=len(df.index),
                                   columnCount=len(full_cols),
                                   columns=cols,
-                                  indexStart=str(df.index[0]),
-                                  indexEnd=str(df.index[-1]),
-                                  indexType=str(df.index.dtype))
+                                  indexStart=str(df.index[0]) if index_exists else "0",
+                                  indexEnd=str(df.index[-1]) if index_exists else "0",
+                                  indexType=str(df.index.dtype) if index_exists else "")
 
 
 def write_bulk_without_session(data_handle,
@@ -67,8 +67,6 @@ def write_bulk_without_session(data_handle,
 
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
-
-    trace_dataframe_attributes(df)
 
     # set the name of the index column
     df.index.name = WDMS_INDEX_NAME
@@ -116,8 +114,6 @@ def add_chunk_in_session(data_handle,
 
     # 2- perf some check
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
-
-    trace_dataframe_attributes(df)
 
     # sort column by names and set index column name  # TODO could it be avoided ? then we could keep input untouched and save serialization step?
     df = df[sorted(df.columns)]

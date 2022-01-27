@@ -32,11 +32,11 @@ from app.utils import get_or_create_ctx
 from tests.unit.test_utils import make_record
 from odes_storage.exceptions import ResponseHandlingException
 from app.conf import Config
-from tests.unit.test_utils import ctx_fixture as test_context
 
+from tests.unit.test_utils import ctx_fixture
 
 @pytest.mark.asyncio
-async def test_make_storage_client(httpx_mock: HTTPXMock, test_context):
+async def test_make_storage_client(httpx_mock: HTTPXMock, ctx_fixture):
     host = 'http://my_host:81234'
     async with make_storage_record_client(host) as client:
         assert isinstance(client, StorageRecordServiceClient)
@@ -54,7 +54,7 @@ async def test_make_storage_client(httpx_mock: HTTPXMock, test_context):
 
 
 @pytest.mark.asyncio
-async def test_make_search_client(httpx_mock: HTTPXMock, test_context):
+async def test_make_search_client(httpx_mock: HTTPXMock, ctx_fixture):
     host = 'http://my_host:81234'
     async with make_search_client(host) as client:
         assert isinstance(client, SearchServiceClient)

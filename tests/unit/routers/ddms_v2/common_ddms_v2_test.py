@@ -34,7 +34,7 @@ from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.routers.search.search_wrapper import SearchWrapper
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
-from tests.unit.test_utils import create_mock_class, make_record, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class, make_record
 
 """
 Contains unified common tests for the different kind. Mainly CRUD test cases
@@ -142,7 +142,7 @@ SearchWrapperMock = create_mock_class(SearchWrapper)
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
+def client():
     async def bypass_authorization():
         # empty method
         pass

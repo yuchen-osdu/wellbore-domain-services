@@ -3,7 +3,7 @@ from mock import AsyncMock
 from unittest.mock import patch, mock_open
 from contextlib import suppress
 
-from tests.unit.test_utils import temp_directory, nope_logger_fixture, side_effect_raise
+from tests.unit.test_utils import nope_logger_fixture, side_effect_raise
 
 
 from dask.distributed import Client
@@ -43,8 +43,8 @@ async def test_none_data_ipc_handle_async_generator_and_bytes(in_data):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("in_data", [b"123456789", data_async_gen()])
-async def test_file_data_ipc_handle_async_generator_and_bytes(nope_logger_fixture, temp_directory, in_data):
-    ipc_obj = DaskLocalFileDataIPC(base_folder=temp_directory)
+async def test_file_data_ipc_handle_async_generator_and_bytes(nope_logger_fixture, tmp_path, in_data):
+    ipc_obj = DaskLocalFileDataIPC(base_folder=tmp_path)
     await assert_ipc_forward_equal(ipc_obj, b"123456789")
 
 
@@ -111,8 +111,8 @@ async def test_file_data_ipc_write_by_chunk(nope_logger_fixture, in_data):
 
 
 @pytest.mark.asyncio
-async def test_file_data_ipc_track_file_count_and_size(nope_logger_fixture, temp_directory):
-    ipc_obj = DaskLocalFileDataIPC(base_folder=temp_directory)
+async def test_file_data_ipc_track_file_count_and_size(nope_logger_fixture, tmp_path):
+    ipc_obj = DaskLocalFileDataIPC(base_folder=tmp_path)
 
     async with ipc_obj.set(b"0123456789"):
         assert DaskLocalFileDataIPC.total_size_in_file == 10

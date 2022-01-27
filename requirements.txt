@@ -192,7 +192,7 @@ idna==3.2
     #   requests
     #   rfc3986
     #   yarl
-importlib-metadata==4.8.1
+importlib-metadata==4.10.1
     # via
     #   click
     #   jsonschema
@@ -247,6 +247,7 @@ opencensus==0.7.13
     #   opencensus-ext-logging
     #   opencensus-ext-ocagent
     #   opencensus-ext-stackdriver
+    #   osdu-core-lib-python-azure
 opencensus-context==0.1.2
     # via opencensus
 opencensus-ext-azure==1.0.8
@@ -265,7 +266,7 @@ osdu-core-lib-python==1.1.0
     # via -r requirements.in
 osdu-core-lib-python-aws==0.0.6
     # via -r requirements.in
-osdu-core-lib-python-azure==1.2.1
+osdu-core-lib-python-azure==2.0.0
     # via -r requirements.in
 osdu-core-lib-python-gcp==1.1.0
     # via -r requirements.in
@@ -429,7 +430,7 @@ yarl==1.6.3
     # via aiohttp
 zict==2.0.0
     # via distributed
-zipp==3.6.0
+zipp==3.7.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:

@@ -30,14 +30,14 @@ from app.middleware import require_data_partition_id
 from app.modules.log_recognition.routers.log_recognition import family_processor_manager
 from app.utils import Context
 from app.wdms_app import wdms_app, add_modules_routers, remove_modules_routers
-from tests.unit.test_utils import create_mock_class, nope_logger, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
+def client():
     async def bypass_authorization():
         pass
 
@@ -100,7 +100,7 @@ def test_family_assignment_rules_not_found(client):
         response = client.post("/log-recognition/family",
                                json={"label": "unknown",
                                      "log_unit": ""})
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_upload_good_catalog(client):
@@ -140,7 +140,7 @@ def test_upload_good_catalog(client):
 
 
 @pytest.mark.parametrize("label, unit, code, expected", [
-    ('fantomas', '', status.HTTP_400_BAD_REQUEST, {}),
+    ('fantomas', '', status.HTTP_404_NOT_FOUND, {}),
     ('FF', 'f', status.HTTP_200_OK,
      {'family': 'fake family', 'family_type': ['Fake'], 'log_unit': 'f', 'base_unit': 'ef'}),
     ('OF', 'g', status.HTTP_200_OK,
@@ -184,7 +184,7 @@ def test_family_assignment_rules_custom(client, label, unit, code, expected):
 
 
 @pytest.mark.parametrize("label, unit, code, expected", [
-    ('OF', 'F', status.HTTP_400_BAD_REQUEST, {}),
+    ('OF', 'F', status.HTTP_404_NOT_FOUND, {}),
     ('DTC', 'us/cm', status.HTTP_200_OK,
      {'family': 'Compressional Slowness', 'family_type': ['Slowness'], 'log_unit': 'us/cm', 'base_unit': 'us/ft'})
 ])
@@ -370,8 +370,7 @@ def test_swagger_generation():
 
 
 # Global module setup / teardown
-def setup_module():
-    nope_logger()
+def setup_module(nope_logger_fixture):
     ConfigurationContainer.modules.value = "log_recognition.routers.log_recognition"
     add_modules_routers()
 
