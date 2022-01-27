@@ -1,0 +1,25 @@
+{
+    "data": {},
+	"id": "opendes:doc:REMOVED_FOR_CICD_SCAN",
+    "version": 1590504779086127,
+    "kind": "opendes:wks:well:1.0.6",
+    "acl": {
+        "viewers": [
+            "data.default.viewers@opendes.p4d.cloud.slb-ds.com"
+        ],
+        "owners": [
+            "data.default.owners@opendes.p4d.cloud.slb-ds.com"
+        ]
+    },
+    "legal": {
+        "legaltags": [
+            "opendes-public-usa-dataset-1"
+        ],
+        "otherRelevantDataCountries": [
+            "US"
+        ],
+        "status": "compliant"
+    },
+    "createUser": "fserin@opendes.p4d.cloud.slb-ds.com",
+    "createTime": "2020-05-26T14:52:59.294Z"
+}
