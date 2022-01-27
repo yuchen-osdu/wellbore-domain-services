@@ -13,7 +13,10 @@
 # limitations under the License.
 
 import asyncio
+import logging
 import os
+
+from mock import mock
 
 import app.conf as conf
 import pytest
@@ -38,6 +41,12 @@ def top_fixture(monkeypatch):
         environment_dict=environment_dict,
         contextual_loader=None
     )
+
+
+@pytest.fixture
+def nope_logger_fixture():
+    with mock.patch('app.helper.logger._LOGGER', spec_set=logging.Logger, new_callable=mock.NonCallableMock) as Logger:
+        yield Logger
 
 
 def pytest_configure(config):
