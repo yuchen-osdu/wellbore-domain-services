@@ -24,7 +24,7 @@ from fastapi import Header
 from .fixtures import local_dev_config
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=False)
 def top_fixture(monkeypatch):
     """
     Hooks mechanism from PyTest.
