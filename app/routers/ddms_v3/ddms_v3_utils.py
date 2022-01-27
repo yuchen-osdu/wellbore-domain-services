@@ -170,7 +170,7 @@ class DMSV3RouterUtils:
         ctx: Context = get_ctx()
         bulk_uri = None
         # Get the given bulkURI or bulkURI is None
-        if r.data.ExtensionProperties and "wdms" in r.data.ExtensionProperties:
+        if r.data.ExtensionProperties and "wdms" in r.data.ExtensionProperties and "bulkURI" in r.data.ExtensionProperties["wdms"]:
             bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=r))
 
         if not r.id and not bulk_uri:
