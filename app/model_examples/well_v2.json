@@ -2,10 +2,10 @@
     {
         "acl": {
             "viewers": [
-                "data.default.viewers@{{datapartitionid}}.{{domain}}.com"
+                "data.default.viewers@{{datapartitionid}}.{{domain}}"
             ],
             "owners": [
-                "data.default.owners@{{datapartitionid}}.{{domain}}.com"
+                "data.default.owners@{{datapartitionid}}.{{domain}}"
             ]
         },
         "data": {
