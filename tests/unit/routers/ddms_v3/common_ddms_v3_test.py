@@ -439,6 +439,15 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
         response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
         assert response.status_code == status.HTTP_200_OK
 
+        # test create record with id, "wdms" field and no BulkURI
+        data_test = {
+            "ExtensionProperties": {"wdms": {'test': 'test'}}}
+        data_test.update(data)
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
+                                                               data=data_test)
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_200_OK
+
         # test create record with id and BulkURI
         data_test = {
             "ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236cca00'}}}
