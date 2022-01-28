@@ -45,6 +45,7 @@ include:
     file: "standard-setup.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: "fserin/upgrade_python_version"
     file: "build/python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
