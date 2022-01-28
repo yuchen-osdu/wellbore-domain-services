@@ -11,6 +11,7 @@ httpx
 numpy
 pandas
 pyarrow
+hypothesis
 openapi-spec-validator
 
 mockito~=1.2

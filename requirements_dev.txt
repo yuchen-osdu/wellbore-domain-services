@@ -14,6 +14,7 @@ anyio==3.2.1
 attrs==21.2.0
     # via
     #   -c requirements.txt
+    #   hypothesis
     #   jsonschema
     #   pytest
 certifi==2021.5.30
@@ -55,6 +56,8 @@ httpx==0.18.2
     #   -c requirements.txt
     #   -r requirements_dev.in
     #   pytest-httpx
+hypothesis==6.36.0
+    # via -r requirements_dev.in
 idna==3.2
     # via
     #   -c requirements.txt
@@ -188,6 +191,10 @@ sniffio==1.2.0
     #   anyio
     #   httpcore
     #   httpx
+sortedcontainers==2.4.0
+    # via
+    #   -c requirements.txt
+    #   hypothesis
 toml==0.10.2
     # via
     #   pytest
