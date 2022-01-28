@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from odes_search.models import CursorQueryResponse
 
 from app.utils import Context
@@ -37,12 +37,18 @@ router = APIRouter(route_class=TracingRoute)
 
 
 @router.post('/query/wellbores', summary='Query with cursor or offset, get wellbores',
-             description=f"""Get Wellbores object by name.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
-        returns all records directly based on existing schemas. The query is done on data.FacilityName field</p>{REQUIRED_ROLES_READ}""",
+             description=f"""Get Wellbores object by name.  
+             The wellbore kind is {OSDU_WELLBORE_KIND}  
+             Returns all records directly based on existing schemas. The query is done on data.FacilityName field  
+             {REQUIRED_ROLES_READ}""",
              response_model=CursorQueryResponse,
              response_model_exclude_unset=True,
              response_model_exclude_none=True)
-async def query_wellbores_by_name(names: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+# You can search for several wellbore names combining wellbore name values with the bitwise inclusive OR operator "|".
+# async def query_wellbores_by_name(names: str = None, body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
+async def query_wellbores_by_name(names: str = Query(None, description='You can search for several wellbore names \
+combining wellbore name values with the bitwise inclusive OR operator "|".'),
+                                  body: SearchQueryRequest = DEFAULT_QUERYREQUEST,
                                   ctx: Context = Depends(get_ctx)):
     names = escape_forbidden_characters_for_search(names)
     body.query = update_query_with_names_based_search(names=names, user_query=body.query)
