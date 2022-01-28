@@ -55,6 +55,7 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: "fserin/upgrade_python_version"
     file: "cloud-providers/osdu-gcp-gke.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
@@ -189,7 +190,7 @@ osdu-gcp-containerize-for-release:
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG_RELEASE
 
-osdu-gcp-test-python:
+osdu-gcp-test-python-from-local-ci:
   extends: .osdu-gcp-variables
   stage: integration
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
