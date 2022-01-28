@@ -193,10 +193,14 @@ osdu-gcp-containerize-for-release:
 osdu-gcp-test-python:
   extends: .osdu-gcp-variables
   stage: integration
-  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  image: python:3.8
   needs: ["osdu-gcp-deploy-deployment"]
   script:
-    - apt-get install -y python3-venv
+    - bash
+    - curl https://sdk.cloud.google.com > install.sh
+    - bash install.sh --disable-prompts
+    - source /root/google-cloud-sdk/completion.bash.inc
+    - source /root/google-cloud-sdk/path.bash.inc
     - python3 -m venv env
     - source env/bin/activate
     - pip install --upgrade pip
@@ -218,6 +222,36 @@ osdu-gcp-test-python:
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
+
+
+#osdu-gcp-test-python:
+#  extends: .osdu-gcp-variables
+#  stage: integration
+#  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+#  needs: ["osdu-gcp-deploy-deployment"]
+#  script:
+#    - apt-get install -y python3-venv
+#    - python3 -m venv env
+#    - source env/bin/activate
+#    - pip install --upgrade pip
+#    - pip install wheel pytest pytest-cov
+#    - >
+#      for REQ in $PIP_REQUIREMENTS ; do
+#        pip install -r $REQ
+#      done
+#    - cd tests/integration
+#    - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
+#    - gcloud auth activate-service-account --key-file file.json
+#    - gcloud config set project $OSDU_GCP_PROJECT
+#    - >
+#      python gen_postman_env.py
+#      --token $(gcloud auth print-access-token)
+#      --base_url $OSDU_GCP_WELLBORE_BASE_URL
+#      --cloud_provider $OSDU_GCP_VENDOR
+#      --data_partition $OSDU_GCP_TENANT
+#      --acl_domain $DOMAIN
+#      --legal_tag $LEGAL_TAG
+#    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
 
 osdu-gcp-dev2-test-python:
   extends: .osdu-gcp-dev2-variables
