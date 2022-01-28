@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pytest
 from hypothesis import given, settings, Verbosity
 from hypothesis import strategies as st
@@ -313,3 +315,335 @@ def test_data_type_value_init_symmetric(data_type):
 def test_format_value_init_symmetric(format):
     """.value/init symmetry for Format enum"""
     assert model.Format(format.value) == format
+
+
+@given(logset_relationships_instance=st.from_type(model.logsetrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_logset_relationships_dict_init_symmetric(logset_relationships_instance):
+    """tests dict/init symmetry for logsetrelationships model"""
+    assert (
+        model.logsetrelationships(**logset_relationships_instance.dict())
+        == logset_relationships_instance
+    )
+
+
+@given(logset_relationships_instance=st.from_type(model.logsetrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_logset_relationships_allows_extra(logset_relationships_instance):
+    """tests logsetrelationships allows extra fields"""
+
+    instance = model.logsetrelationships(
+        **{**logset_relationships_instance.dict(), "another_key": "the other value"}
+    )
+    assert instance.another_key == "the other value"
+
+
+@given(dipset_relationships_instance=st.from_type(model.dipsetrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_dipset_relationships_dict_init_symmetric(dipset_relationships_instance):
+    """tests dict/init symmetry for dipsetrelationships model"""
+    assert (
+        model.dipsetrelationships(**dipset_relationships_instance.dict())
+        == dipset_relationships_instance
+    )
+
+
+@given(dipset_relationships_instance=st.from_type(model.dipsetrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_dipset_relationships_allows_extra(dipset_relationships_instance):
+    """tests dipsetrelationships allows extra fields"""
+
+    instance = model.dipsetrelationships(
+        **{**dipset_relationships_instance.dict(), "another_key": "the other value"}
+    )
+    assert instance.another_key == "the other value"
+
+
+@given(data_type=st.from_type(model.DataType_1))
+@settings(verbosity=Verbosity.verbose)
+def test_data_type_1_value_init_symmetric(data_type):
+    """.value/init symmetry for DataType_1 enum"""
+    assert model.DataType_1(data_type.value) == data_type
+
+
+@given(format=st.from_type(model.Format_1))
+@settings(verbosity=Verbosity.verbose)
+def test_format_1_value_init_symmetric(format):
+    """.value/init symmetry for Format_1 enum"""
+    assert model.Format_1(format.value) == format
+
+
+@given(trajectory_channel_instance=st.from_type(model.trajectorychannel))
+@settings(verbosity=Verbosity.verbose)
+def test_trajectory_channel_dict_init_symmetric(trajectory_channel_instance):
+    """tests dict/init symmetry for trajectorychannel model"""
+    assert (
+        model.trajectorychannel(**trajectory_channel_instance.dict())
+        == trajectory_channel_instance
+    )
+
+
+@given(trajectory_relationships_instance=st.from_type(model.trajectoryrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_trajectory_relationships_dict_init_symmetric(
+    trajectory_relationships_instance,
+):
+    """tests dict/init symmetry for trajectoryrelationships model"""
+    assert (
+        model.trajectoryrelationships(**trajectory_relationships_instance.dict())
+        == trajectory_relationships_instance
+    )
+
+
+@given(trajectory_relationships_instance=st.from_type(model.trajectoryrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_trajectory_relationships_allows_extra(trajectory_relationships_instance):
+    """tests trajectoryrelationships allows extra fields"""
+
+    instance = model.dipsetrelationships(
+        **{**trajectory_relationships_instance.dict(), "another_key": "the other value"}
+    )
+    assert instance.another_key == "the other value"
+
+
+@given(wgs84_position=st.from_type(model.wgs84Position))
+@settings(verbosity=Verbosity.verbose)
+def test_wgs84_position_dict_init_symmetric(wgs84_position):
+    """tests dict/init symmetry for wgs84Position model"""
+    assert model.wgs84Position(**wgs84_position.dict()) == wgs84_position
+
+
+@given(marker_relationships_instance=st.from_type(model.markerrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_marker_relationships_dict_init_symmetric(marker_relationships_instance):
+    """tests dict/init symmetry for markerrelationships model"""
+    assert (
+        model.markerrelationships(**marker_relationships_instance.dict())
+        == marker_relationships_instance
+    )
+
+
+@given(marker_relationships_instance=st.from_type(model.markerrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_marker_relationships_allows_extra(marker_relationships_instance):
+    """tests markerrelationships allows extra fields"""
+
+    instance = model.markerrelationships(
+        **{**marker_relationships_instance.dict(), "another_key": "the other value"}
+    )
+    assert instance.another_key == "the other value"
+
+
+@given(data_type_2=st.from_type(model.DataType_2))
+@settings(verbosity=Verbosity.verbose)
+def test_data_type_2_value_init_symmetric(data_type_2):
+    """.value/init symmetry for DataType_2 enum"""
+    assert model.DataType_2(data_type_2.value) == data_type_2
+
+
+@given(format_2=st.from_type(model.Format_2))
+@settings(verbosity=Verbosity.verbose)
+def test_format_2_value_init_symmetric(format_2):
+    """.value/init symmetry for Format_2 enum"""
+    assert model.Format_2(format_2.value) == format_2
+
+
+@given(history_record=st.from_type(model.historyRecord))
+@settings(verbosity=Verbosity.verbose)
+def test_history_record_dict_init_symmetric(history_record):
+    """tests dict/init symmetry for historyRecord model"""
+    assert model.historyRecord(**history_record.dict()) == history_record
+
+
+@given(reference_type=st.from_type(model.ReferenceType))
+@settings(verbosity=Verbosity.verbose)
+def test_reference_type_value_init_symmetric(reference_type):
+    """.value/init symmetry for ReferenceType enum"""
+    assert model.ReferenceType(reference_type.value) == reference_type
+
+
+@given(log_relationships_instance=st.from_type(model.logRelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_log_relationships_dict_init_symmetric(log_relationships_instance):
+    """tests dict/init symmetry for logRelationships model"""
+    assert (
+        model.logRelationships(**log_relationships_instance.dict())
+        == log_relationships_instance
+    )
+
+
+@given(log_relationships_instance=st.from_type(model.logRelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_log_relationships_allows_extra(log_relationships_instance):
+    """tests logRelationships allows extra fields"""
+
+    instance = model.logRelationships(
+        **{**log_relationships_instance.dict(), "another_key": "the other value"}
+    )
+    assert instance.another_key == "the other value"
+
+
+@given(basin_context=st.from_type(model.basinContext))
+@settings(verbosity=Verbosity.verbose)
+def test_basin_context_dict_init_symmetric(basin_context):
+    """tests dict/init symmetry for basinContext model"""
+    assert model.basinContext(**basin_context.dict()) == basin_context
+
+
+@given(well_relationships_instance=st.from_type(model.wellrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_well_relationships_dict_init_symmetric(well_relationships_instance):
+    """tests dict/init symmetry for wellrelationships model"""
+    assert (
+        model.wellrelationships(**well_relationships_instance.dict())
+        == well_relationships_instance
+    )
+
+
+@given(well_relationships_instance=st.from_type(model.wellrelationships))
+@settings(verbosity=Verbosity.verbose)
+def test_well_relationships_allows_extra(well_relationships_instance):
+    """tests wellrelationships allows extra fields"""
+
+    instance = model.wellrelationships(
+        **{**well_relationships_instance.dict(), "another_key": "the other value"}
+    )
+    assert instance.another_key == "the other value"
+
+
+@given(direction_well=st.from_type(model.DirectionWell))
+@settings(verbosity=Verbosity.verbose)
+def test_direction_well_value_init_symmetric(direction_well):
+    """.value/init symmetry for DirectionWell enum"""
+    assert model.DirectionWell(direction_well.value) == direction_well
+
+
+@given(fluid_well=st.from_type(model.FluidWell))
+@settings(verbosity=Verbosity.verbose)
+def test_fluid_well_value_init_symmetric(fluid_well):
+    """.value/init symmetry for FluidWell enum"""
+    assert model.FluidWell(fluid_well.value) == fluid_well
+
+
+@given(well_location_type=st.from_type(model.WellLocationType))
+@settings(verbosity=Verbosity.verbose)
+def test_well_location_type_value_init_symmetric(well_location_type):
+    """.value/init symmetry for WellLocationType enum"""
+    assert model.WellLocationType(well_location_type.value) == well_location_type
+
+
+@given(well_purpose=st.from_type(model.WellPurpose))
+@settings(verbosity=Verbosity.verbose)
+def test_well_purpose_value_init_symmetric(well_purpose):
+    """.value/init symmetry for WellPurpose enum"""
+    assert model.WellPurpose(well_purpose.value) == well_purpose
+
+
+@given(well_status=st.from_type(model.WellStatus))
+@settings(verbosity=Verbosity.verbose)
+def test_well_status_value_init_symmetric(well_status):
+    """.value/init symmetry for WellStatus enum"""
+    assert model.WellStatus(well_status.value) == well_status
+
+
+@given(well_type=st.from_type(model.WellType))
+@settings(verbosity=Verbosity.verbose)
+def test_well_type_value_init_symmetric(well_type):
+    """.value/init symmetry for WellType enum"""
+    assert model.WellType(well_type.value) == well_type
+
+
+@given(by_bounding_box=st.from_type(model.ByBoundingBox))
+@settings(verbosity=Verbosity.verbose)
+def test_by_bounding_box_dict_init_symmetric(by_bounding_box):
+    """tests dict/init symmetry for ByBoundingBox model"""
+    assert model.ByBoundingBox(**by_bounding_box.dict()) == by_bounding_box
+
+
+@given(by_distance=st.from_type(model.ByDistance))
+@settings(verbosity=Verbosity.verbose)
+def test_by_distance_dict_init_symmetric(by_distance):
+    """tests dict/init symmetry for ByDistance model"""
+    assert model.ByDistance(**by_distance.dict()) == by_distance
+
+
+@given(by_geo_polygon=st.from_type(model.ByGeoPolygon))
+@settings(verbosity=Verbosity.verbose)
+def test_by_geo_polygon_dict_init_symmetric(by_geo_polygon):
+    """tests dict/init symmetry for ByGeoPolygon model"""
+    assert model.ByGeoPolygon(**by_geo_polygon.dict()) == by_geo_polygon
+
+
+@given(simple_elevation_reference=st.from_type(model.SimpleElevationReference))
+@settings(verbosity=Verbosity.verbose)
+def test_simple_elevation_reference_dict_init_symmetric(simple_elevation_reference):
+    """tests dict/init symmetry for SimpleElevationReference model"""
+    assert (
+        model.SimpleElevationReference(**simple_elevation_reference.dict())
+        == simple_elevation_reference
+    )
+
+
+@given(geo_json_line_string=st.from_type(model.GeoJsonLineString))
+@settings(verbosity=Verbosity.verbose)
+def test_geo_json_line_string_dict_init_symmetric(geo_json_line_string):
+    """tests dict/init symmetry for GeoJsonLineString model"""
+    assert (
+        model.GeoJsonLineString(**geo_json_line_string.dict()) == geo_json_line_string
+    )
+
+
+@given(geo_json_multi_point=st.from_type(model.GeoJsonMultiPoint))
+@settings(verbosity=Verbosity.verbose)
+def test_geo_json_multi_point_dict_init_symmetric(geo_json_multi_point):
+    """tests dict/init symmetry for GeoJsonMultiPoint model"""
+    assert (
+        model.GeoJsonMultiPoint(**geo_json_multi_point.dict()) == geo_json_multi_point
+    )
+
+
+@given(geo_json_multi_polygon=st.from_type(model.GeoJsonMultiPolygon))
+@settings(verbosity=Verbosity.verbose)
+def test_geo_json_multi_polygon_dict_init_symmetric(geo_json_multi_polygon):
+    """tests dict/init symmetry for GeoJsonMultiPolygon model"""
+    assert (
+        model.GeoJsonMultiPolygon(**geo_json_multi_polygon.dict())
+        == geo_json_multi_polygon
+    )
+
+
+@given(named_property=st.from_type(model.namedProperty))
+@settings(verbosity=Verbosity.verbose)
+def test_named_property_dict_init_symmetric(named_property):
+    """tests dict/init symmetry for namedProperty model"""
+    assert model.namedProperty(**named_property.dict()) == named_property
+
+
+@given(logchannel_instance=st.from_type(model.logchannel))
+@settings(verbosity=Verbosity.verbose)
+def test_logchannel_dict_init_symmetric(logchannel_instance):
+    """tests dict/init symmetry for logchannel model"""
+    assert model.logchannel(**logchannel_instance.dict()) == logchannel_instance
+
+
+@given(log_data=st.from_type(model.logData))
+@settings(verbosity=Verbosity.verbose)
+def test_log_data_dict_init_symmetric(log_data):
+    """tests dict/init symmetry for logData model"""
+    assert model.logData(**log_data.dict()) == log_data
+
+
+@given(log_data=st.from_type(model.logData))
+@settings(verbosity=Verbosity.verbose)
+def test_log_data_allows_extra(log_data):
+    """tests logData allows extra fields"""
+
+    instance = model.logData(**{**log_data.dict(), "another_key": "the other value"})
+    assert instance.another_key == "the other value"
+
+
+@given(log_instance=st.from_type(model.log))
+@settings(verbosity=Verbosity.verbose)
+def test_log_dict_init_symmetric(log_instance):
+    """tests dict/init symmetry for log model"""
+    assert model.log(**log_instance.dict()) == log_instance

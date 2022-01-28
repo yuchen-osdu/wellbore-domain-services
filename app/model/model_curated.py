@@ -564,29 +564,6 @@ class dipsetrelationships(DDMSBaseModelWithExtra):
     )
 
 
-class toManyRelationship(DDMSBaseModel):
-    confidences: Optional[List[float]] = Field(
-        None,
-        description='The confidences of the relationships. Keep all the arrays ordered and aligned.',
-        title='Relationship Confidences',
-    )
-    ids: Optional[List[str]] = Field(
-        None,
-        description='The ids of the related objects. It is populated for an explicit relationship where the target entity is present as a record in the data ecosystem. Keep all the arrays ordered and aligned.',
-        title='Related Object Id',
-    )
-    names: Optional[List[str]] = Field(
-        None,
-        description='The names or natural keys of the related objects. Keep all the arrays ordered and aligned.',
-        title='Related Object Names',
-    )
-    versions: Optional[List[float]] = Field(
-        None,
-        description='The specific version numbers of the related instances. This is only specified if a specific version is required. If not populated the last version is implied. Keep all the arrays ordered and aligned.',
-        title='To Many Relationship',
-    )
-
-
 class DataType_1(Enum):
     string = 'string'
     number = 'number'
@@ -738,72 +715,6 @@ class markerrelationships(DDMSBaseModelWithExtra):
         description='The wellbore entity, to which this marker belongs.',
         title='Wellbore',
     )
-
-
-class valueAzimuth(DDMSBaseModel):
-    azimuthKey: str = Field(
-        ...,
-        description="Azimuth reference for the value of the corresponding attribute for the domain object in question. It can be looked up in 'frameOfReference.azimuths'.",
-        title='Azimuth Key',
-    )
-    crsKey: Optional[str] = Field(
-        None,
-        description="Mandatory for GridNorth referenced azimuths. The 'crsKey' can be looked up in the 'frameOfReference.crs' for further details.",
-        title='CRS Key',
-    )
-    date: Optional[date] = Field(
-        None,
-        description='Mandatory for MagneticNorth referenced azimuths: the observation date of the azimuth such that a correction can be obtained via a geomagnetic model using its secular variation.',
-        title='Observation Date',
-    )
-    unitKey: str = Field(
-        ...,
-        description="'unitKey' for value of the corresponding attribute for the domain object in question. It can be looked up in 'frameOfReference.units'.",
-        title='Unit Key',
-    )
-    value: float = Field(
-        ..., description='Value of the azimuth.', title='Azimuth Value'
-    )
-
-
-class v1LogProperties(DDMSBaseModel):
-    rowKeysUnit: Optional[str] = Field(
-        None, title="The unit of the row keys, e.g. 'm' or 'ft'"
-    )
-    rowKeysQuantity: Optional[str] = Field(
-        None, title="The quantity of the row keys, e.g. 'length' or 'time'"
-    )
-    rowKeysMnemonic: Optional[str] = Field(
-        None, title='The mnemonic of the row keys, e.g. MD, TVD, TWT'
-    )
-    colKeysUnit: Optional[str] = Field(
-        None, title="The unit of the column keys, e.g. 'm' or 'ft'"
-    )
-    colKeysQuantity: Optional[str] = Field(
-        None, title="The quantity of the column keys, e.g. 'length' or 'time'"
-    )
-    colKeysMnemonic: Optional[str] = Field(
-        None, title='The mnemonic of the column keys, e.g. MD, TVD, TWT'
-    )
-    valuesUnit: Optional[str] = Field(
-        None, title='The unit of the values, e.g. gAPI or Hz'
-    )
-    valuesQuantity: Optional[str] = Field(
-        None, title="The quantity of the values, e.g. 'gammaRay' or 'temperature'"
-    )
-    valuesMnemonic: Optional[str] = Field(
-        None, title='The mnemonic of the values, e.g. GR, TEMP, POR'
-    )
-    custom: Optional[Dict[str, Any]] = Field(
-        None,
-        description='A map of custom properties. Case sensitive on both key and value.',
-    )
-
-
-class RangeBoundType(Enum):
-    UNBOUNDED = 'UNBOUNDED'
-    OPEN = 'OPEN'
-    CLOSED = 'CLOSED'
 
 
 class DataType_2(Enum):
