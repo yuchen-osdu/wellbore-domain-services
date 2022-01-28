@@ -70,4 +70,50 @@ def test_meta_item_allows_extra(meta_item):
 @settings(verbosity=Verbosity.verbose)
 def test_ddms_base_record_dict_init_symmetric(ddms_base_record):
     """tests dict/init symmetry for MetaItem model"""
-    assert model.MetaItem(**ddms_base_record.dict()) == ddms_base_record
+    assert model.DDMSBaseRecord(**ddms_base_record.dict()) == ddms_base_record
+
+
+@given(point=st.from_type(model.Point))
+@settings(verbosity=Verbosity.verbose)
+def test_point_dict_init_symmetric(point):
+    """tests dict/init symmetry for Point model"""
+    assert model.Point(**point.dict()) == point
+
+
+@given(legal=st.from_type(model.Legal))
+@settings(verbosity=Verbosity.verbose)
+def test_legal_dict_init_symmetric(legal):
+    """tests dict/init symmetry for Legal model"""
+    assert model.Legal(**legal.dict()) == legal
+
+
+@given(tag_dictionary=st.from_type(model.TagDictionary))
+@settings(verbosity=Verbosity.verbose)
+def test_tag_dictionary_dict_init_symmetric(tag_dictionary):
+    """tests dict/init symmetry for TagDictionary model"""
+    assert model.TagDictionary(**tag_dictionary.dict()) == tag_dictionary
+
+
+@given(tag_dictionary=st.from_type(model.TagDictionary))
+@settings(verbosity=Verbosity.verbose)
+def test_tag_dictionary_allows_extra(tag_dictionary):
+    """tests TagDictionary allows extra fields"""
+
+    instance = model.TagDictionary(
+        **{**tag_dictionary.dict(), "another_key": "the other value"}
+    )
+    assert instance.another_key == "the other value"
+
+
+@given(to_one_relationship=st.from_type(model.ToOneRelationship))
+@settings(verbosity=Verbosity.verbose)
+def test_to_one_relationship_dict_init_symmetric(to_one_relationship):
+    """tests dict/init symmetry for ToOneRelationship model"""
+    assert model.ToOneRelationship(**to_one_relationship.dict()) == to_one_relationship
+
+
+@given(value_with_unit=st.from_type(model.ValueWithUnit))
+@settings(verbosity=Verbosity.verbose)
+def test_to_one_relationship_dict_init_symmetric(value_with_unit):
+    """tests dict/init symmetry for ValueWithUnit model"""
+    assert model.ValueWithUnit(**value_with_unit.dict()) == value_with_unit
