@@ -973,6 +973,28 @@ class GeoJsonMultiPolygon(DDMSBaseModel):
 
 
 class namedProperty(DDMSBaseModel):
+    """
+    namedProperty Model
+
+    >>> from pprint import pprint
+    >>> original_data = {
+    ...     "associations": None,
+    ...     "description": "descr",
+    ...     "format": None,
+    ...     "name": "named property",
+    ...     "value": 42.0
+    ... }
+    >>> named_property = namedProperty(**original_data)
+    >>> pprint(named_property.dict())
+    {'associations': None,
+     'description': 'descr',
+     'format': None,
+     'name': 'named property',
+     'unitKey': None,
+     'value': 42.0,
+     'values': None}
+
+    """
     associations: Optional[List[str]] = Field(
         None,
         description='The optional associations contains one or more mnemonics found elsewhere in the logSet.',
@@ -2142,3 +2164,8 @@ class well(DDMSBaseModel, DDMSBaseRecord):
         description='The version number of this well; set by the framework.',
         title='Entity Version Number',
     )
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
