@@ -2,9 +2,12 @@
 # from tests/aws-test/build-aws/ goes up to the tests dir.
 cd ../../../
 
+#add experimental source to apt repo
+echo 'deb http://deb.debian.org/debian experimental main' >> /etc/apt/sources.list
+
 # Install python3.8
 apt-get update
-apt-get  install -y python3.8 python3.8-dev python3.8-venv
+apt-get experimental install -y python3.8 python3.8-dev python3.8-venv
 
 python3.8 -m venv env
 source env/bin/activate
