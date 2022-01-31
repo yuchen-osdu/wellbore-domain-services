@@ -7,7 +7,7 @@ echo 'deb http://deb.debian.org/debian experimental main' >> /etc/apt/sources.li
 
 # Install python3.8
 apt-get update
-apt-get experimental install -y python3.8 python3.8-dev python3.8-venv
+apt-get -t experimental install -y python3.8 python3.8-dev python3.8-venv
 
 python3.8 -m venv env
 source env/bin/activate
