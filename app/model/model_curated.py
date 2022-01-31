@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+import sys
 from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
@@ -1210,6 +1211,35 @@ class GeoJsonFeature(DDMSBaseModel):
     ]
     properties: Dict[str, Any]
     type: Type_1
+
+
+# only defining strategy if we are in a testing session
+if "pytest" in sys.modules and "hypothesis" in sys.modules:
+    # From https://datatracker.ietf.org/doc/html/rfc7946
+    # A Feature object has a member with the name "properties".  The
+    #   value of the properties member is an object (any JSON object or a
+    #   JSON null value).
+    import typing
+    import hypothesis.strategies as st
+    from string import printable
+
+    # fix pydantic strategy
+    json_strategy = st.recursive(
+        st.none() | st.booleans() | st.floats() | st.text(printable),
+        lambda children: st.lists(children)
+        | st.dictionaries(st.text(printable), children),
+    )
+    geojson_feature_type_hints = typing.get_type_hints(GeoJsonFeature)
+    st.register_type_strategy(
+        GeoJsonFeature,
+        st.builds(
+            GeoJsonFeature,
+            bbox=st.from_type(geojson_feature_type_hints["bbox"]),
+            geometry=st.from_type(geojson_feature_type_hints["geometry"]),
+            properties=st.dictionaries(keys=st.text(printable), values=json_strategy),
+            type=st.from_type(geojson_feature_type_hints["type"]),
+        ),
+    )
 
 
 class GeoJsonFeatureCollection(DDMSBaseModel):

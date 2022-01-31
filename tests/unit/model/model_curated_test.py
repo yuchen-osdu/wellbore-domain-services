@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pytest
 from hypothesis import given, settings, Verbosity
 from hypothesis import strategies as st
@@ -648,6 +646,7 @@ def test_log_dict_init_symmetric(log_instance):
     """tests dict/init symmetry for log model"""
     assert model.log(**log_instance.dict()) == log_instance
 
+
 @given(spatial_filter=st.from_type(model.SpatialFilter))
 @settings(verbosity=Verbosity.verbose)
 def test_spatial_filter_dict_init_symmetric(spatial_filter):
@@ -673,8 +672,10 @@ def test_geojson_feature_dict_init_symmetric(geojson_feature):
 @settings(verbosity=Verbosity.verbose)
 def test_geojson_feature_collection_dict_init_symmetric(geojson_feature_collection):
     """tests dict/init symmetry for GeoJsonFeatureCollection model"""
-    assert model.GeoJsonFeatureCollection(**geojson_feature_collection.dict()) == geojson_feature_collection
-
+    assert (
+        model.GeoJsonFeatureCollection(**geojson_feature_collection.dict())
+        == geojson_feature_collection
+    )
 
 
 @given(wellbore_data=st.from_type(model.wellboreData))
@@ -689,9 +690,10 @@ def test_wellbore_data_dict_init_symmetric(wellbore_data):
 def test_wellbore_data_allows_extra(wellbore_data):
     """tests wellboreData allows extra fields"""
 
-    instance = model.wellboreData(**{**wellbore_data.dict(), "another_key": "the other value"})
+    instance = model.wellboreData(
+        **{**wellbore_data.dict(), "another_key": "the other value"}
+    )
     assert instance.another_key == "the other value"
-
 
 
 @given(wellbore_instance=st.from_type(model.wellbore))
@@ -701,13 +703,11 @@ def test_wellbore_dict_init_symmetric(wellbore_instance):
     assert model.wellbore(**wellbore_instance.dict()) == wellbore_instance
 
 
-
 @given(channel_instance=st.from_type(model.channel))
 @settings(verbosity=Verbosity.verbose)
 def test_channel_dict_init_symmetric(channel_instance):
     """tests dict/init symmetry for channel model"""
     assert model.channel(**channel_instance.dict()) == channel_instance
-
 
 
 @given(log_set_data=st.from_type(model.logSetData))
@@ -722,7 +722,9 @@ def test_log_set_data_dict_init_symmetric(log_set_data):
 def test_log_set_data_allows_extra(log_set_data):
     """tests logSetData allows extra fields"""
 
-    instance = model.logSetData(**{**log_set_data.dict(), "another_key": "the other value"})
+    instance = model.logSetData(
+        **{**log_set_data.dict(), "another_key": "the other value"}
+    )
     assert instance.another_key == "the other value"
 
 
@@ -738,9 +740,10 @@ def test_dip_set_data_dict_init_symmetric(dip_set_data):
 def test_dip_set_data_allows_extra(dip_set_data):
     """tests dipSetData allows extra fields"""
 
-    instance = model.dipSetData(**{**dip_set_data.dict(), "another_key": "the other value"})
+    instance = model.dipSetData(
+        **{**dip_set_data.dict(), "another_key": "the other value"}
+    )
     assert instance.another_key == "the other value"
-
 
 
 @given(log_set_instance=st.from_type(model.logset))
@@ -755,8 +758,3 @@ def test_log_set_dict_init_symmetric(log_set_instance):
 def test_dip_set_dict_init_symmetric(dip_set_instance):
     """tests dict/init symmetry for dipset model"""
     assert model.dipset(**dip_set_instance.dict()) == dip_set_instance
-
-
-
-
-
