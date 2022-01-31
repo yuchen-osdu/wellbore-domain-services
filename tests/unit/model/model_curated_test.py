@@ -647,3 +647,116 @@ def test_log_data_allows_extra(log_data):
 def test_log_dict_init_symmetric(log_instance):
     """tests dict/init symmetry for log model"""
     assert model.log(**log_instance.dict()) == log_instance
+
+@given(spatial_filter=st.from_type(model.SpatialFilter))
+@settings(verbosity=Verbosity.verbose)
+def test_spatial_filter_dict_init_symmetric(spatial_filter):
+    """tests dict/init symmetry for SpatialFilter model"""
+    assert model.SpatialFilter(**spatial_filter.dict()) == spatial_filter
+
+
+@given(geometry_item=st.from_type(model.geometryItem))
+@settings(verbosity=Verbosity.verbose)
+def test_geometry_item_dict_init_symmetric(geometry_item):
+    """tests dict/init symmetry for geometryItem model"""
+    assert model.geometryItem(**geometry_item.dict()) == geometry_item
+
+
+@given(geojson_feature=st.from_type(model.GeoJsonFeature))
+@settings(verbosity=Verbosity.verbose)
+def test_geojson_feature_dict_init_symmetric(geojson_feature):
+    """tests dict/init symmetry for GeoJsonFeature model"""
+    assert model.GeoJsonFeature(**geojson_feature.dict()) == geojson_feature
+
+
+@given(geojson_feature_collection=st.from_type(model.GeoJsonFeatureCollection))
+@settings(verbosity=Verbosity.verbose)
+def test_geojson_feature_collection_dict_init_symmetric(geojson_feature_collection):
+    """tests dict/init symmetry for GeoJsonFeatureCollection model"""
+    assert model.GeoJsonFeatureCollection(**geojson_feature_collection.dict()) == geojson_feature_collection
+
+
+
+@given(wellbore_data=st.from_type(model.wellboreData))
+@settings(verbosity=Verbosity.verbose)
+def test_wellbore_data_dict_init_symmetric(wellbore_data):
+    """tests dict/init symmetry for wellboreData model"""
+    assert model.wellboreData(**wellbore_data.dict()) == wellbore_data
+
+
+@given(wellbore_data=st.from_type(model.wellboreData))
+@settings(verbosity=Verbosity.verbose)
+def test_wellbore_data_allows_extra(wellbore_data):
+    """tests wellboreData allows extra fields"""
+
+    instance = model.wellboreData(**{**wellbore_data.dict(), "another_key": "the other value"})
+    assert instance.another_key == "the other value"
+
+
+
+@given(wellbore_instance=st.from_type(model.wellbore))
+@settings(verbosity=Verbosity.verbose)
+def test_wellbore_dict_init_symmetric(wellbore_instance):
+    """tests dict/init symmetry for wellbore model"""
+    assert model.wellbore(**wellbore_instance.dict()) == wellbore_instance
+
+
+
+@given(channel_instance=st.from_type(model.channel))
+@settings(verbosity=Verbosity.verbose)
+def test_channel_dict_init_symmetric(channel_instance):
+    """tests dict/init symmetry for channel model"""
+    assert model.channel(**channel_instance.dict()) == channel_instance
+
+
+
+@given(log_set_data=st.from_type(model.logSetData))
+@settings(verbosity=Verbosity.verbose)
+def test_log_set_data_dict_init_symmetric(log_set_data):
+    """tests dict/init symmetry for logSetData model"""
+    assert model.logSetData(**log_set_data.dict()) == log_set_data
+
+
+@given(log_set_data=st.from_type(model.logSetData))
+@settings(verbosity=Verbosity.verbose)
+def test_log_set_data_allows_extra(log_set_data):
+    """tests logSetData allows extra fields"""
+
+    instance = model.logSetData(**{**log_set_data.dict(), "another_key": "the other value"})
+    assert instance.another_key == "the other value"
+
+
+@given(dip_set_data=st.from_type(model.dipSetData))
+@settings(verbosity=Verbosity.verbose)
+def test_dip_set_data_dict_init_symmetric(dip_set_data):
+    """tests dict/init symmetry for dipSetData model"""
+    assert model.dipSetData(**dip_set_data.dict()) == dip_set_data
+
+
+@given(dip_set_data=st.from_type(model.dipSetData))
+@settings(verbosity=Verbosity.verbose)
+def test_dip_set_data_allows_extra(dip_set_data):
+    """tests dipSetData allows extra fields"""
+
+    instance = model.dipSetData(**{**dip_set_data.dict(), "another_key": "the other value"})
+    assert instance.another_key == "the other value"
+
+
+
+@given(log_set_instance=st.from_type(model.logset))
+@settings(verbosity=Verbosity.verbose)
+def test_log_set_dict_init_symmetric(log_set_instance):
+    """tests dict/init symmetry for logset model"""
+    assert model.logset(**log_set_instance.dict()) == log_set_instance
+
+
+@given(dip_set_instance=st.from_type(model.dipset))
+@settings(verbosity=Verbosity.verbose)
+def test_dip_set_dict_init_symmetric(dip_set_instance):
+    """tests dict/init symmetry for dipset model"""
+    assert model.dipset(**dip_set_instance.dict()) == dip_set_instance
+
+
+
+
+
