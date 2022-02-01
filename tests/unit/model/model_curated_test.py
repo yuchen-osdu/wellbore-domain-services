@@ -1,27 +1,26 @@
-import os
+import typing
+from string import printable
 
 import pytest
-from hypothesis import given, settings, Verbosity
+from hypothesis import given, example
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
 import app.model.model_curated as model
 
+# Ref: https://github.com/samuelcolvin/pydantic/issues/3757
+# fix pydantic strategy
+json_strategy = st.recursive(
+    st.none() | st.booleans() | st.floats() | st.text(printable),
+    lambda children: st.lists(children, max_size=5)
+    | st.dictionaries(st.text(printable), children, max_size=5),
+    max_leaves=20
+)
 
 # From https://datatracker.ietf.org/doc/html/rfc7946
 # A Feature object has a member with the name "properties".  The
 #   value of the properties member is an object (any JSON object or a
 #   JSON null value).
-import typing
-from string import printable
-
-# Ref: https://github.com/samuelcolvin/pydantic/issues/3757
-# fix pydantic strategy
-json_strategy = st.recursive(
-    st.none() | st.booleans() | st.floats() | st.text(printable),
-    lambda children: st.lists(children)
-    | st.dictionaries(st.text(printable), children),
-)
 geojson_feature_type_hints = typing.get_type_hints(model.GeoJsonFeature)
 st.register_type_strategy(
     model.GeoJsonFeature,
@@ -33,7 +32,6 @@ st.register_type_strategy(
         type=st.from_type(geojson_feature_type_hints["type"]),
     ),
 )
-
 
 
 @given(tag=st.from_type(model.Tags))

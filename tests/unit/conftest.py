@@ -20,7 +20,11 @@ import pytest
 from app.conf import ConfigurationContainer
 from app.utils import Context, DaskClient
 from fastapi import Header
-from hypothesis import settings, Verbosity
+from hypothesis import settings, Verbosity, HealthCheck
+
+# TMP: added import only to expose pydantic bug
+# https://github.com/samuelcolvin/pydantic/issues/2835
+# import requests
 
 
 @pytest.fixture(autouse=True)
@@ -53,8 +57,8 @@ def pytest_configure(config):
     # they can be loaded via `$pytest --hypothesis-profile ci`
     # Ref: https://hypothesis.readthedocs.io/en/latest/settings.html?highlight=profile#settings-profiles
     settings.register_profile("ci", database=None, deadline=None, derandomize=True)
-    settings.register_profile("dev", verbosity=Verbosity.normal)
-    settings.register_profile("debug", verbosity=Verbosity.verbose)
+    settings.register_profile("default", suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.normal)
+    settings.register_profile("debug", suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.verbose)
     settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "default"))
 
 
