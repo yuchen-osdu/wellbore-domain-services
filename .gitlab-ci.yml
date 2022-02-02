@@ -68,7 +68,6 @@ include:
     file: "cloud-providers/aws-global.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "use-python-base-image-aws-test"
     file: "cloud-providers/aws-python.yml"
 
 verify_existing_requirements:
