@@ -107,7 +107,7 @@ verify_models:
   stage: build
 
   script:
-    - python -m doctest docs/model/model_curated.rst
+    - python -m doctest docs/model/model_curated.md
 
 
 containerize:
