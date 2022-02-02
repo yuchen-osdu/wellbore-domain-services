@@ -581,6 +581,24 @@ def test_named_property_dict_init_symmetric(named_property):
     assert model.namedProperty(**named_property.dict()) == named_property
 
 
+@pytest.mark.parametrize("named_property_dict", [
+    # {"value": 42},  # behaviour here is still non-deterministic with smart_unions
+    # to illustrate, add "import requests" in model_curated.py
+    {"value": "42"},
+    {"value": 42.0},
+    {"value": "42.0"},
+ ])
+def test_named_property_dict_maybe_coerce_value_to_float(named_property_dict):
+    """tests dict/init symmetry for namedProperty model"""
+    named_property = model.namedProperty(**named_property_dict)
+
+    # pydantic 1.8 with default union behavior:
+    # when creating the instance, the value is coerced to one (non-deterministic) of the union type.
+    # In our specific usecase it should be float
+    assert isinstance(named_property.value, float)
+    assert isinstance(named_property.dict()["value"], float)
+
+
 @given(logchannel_instance=st.from_type(model.logchannel))
 def test_logchannel_dict_init_symmetric(logchannel_instance):
     """tests dict/init symmetry for logchannel model"""
