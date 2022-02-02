@@ -8,6 +8,7 @@ Necessary setup to verify code with doctest:
 ```
 >>> from pprint import pprint
 >>> from app.model.model_curated import *
+
 ```
 
 Tags
@@ -225,6 +226,7 @@ value accepts a float
  'unitKey': None,
  'value': 42.0,
  'values': None}
+ 
 ```
 
 value also accepts a string
@@ -241,6 +243,7 @@ value also accepts a string
  'unitKey': None,
  'value': 'Lorem Ipsum',
  'values': None}
+ 
 ```
 
 logchannel
@@ -321,6 +324,7 @@ geometries field accepts various geojson geometries
                                   [[5.678, 12.3], [223.4, 34.2]]]],
                  'type': <Type_6.MultiPolygon: 'MultiPolygon'>}],
  'type': <Type.GeometryCollection: 'GeometryCollection'>}
+ 
 ```
 
 
@@ -346,7 +350,8 @@ geometry field accepts various geojson geometries
               'type': <Type_7.Point: 'Point'>},
  'properties': {},
  'type': <Type_1.Feature: 'Feature'>}
- ```
+ 
+```
 
 ```
 >>> geojson_feature = GeoJsonFeature(**{
@@ -364,7 +369,8 @@ geometry field accepts various geojson geometries
               'type': <Type_5.MultiPoint: 'MultiPoint'>},
  'properties': {},
  'type': <Type_1.Feature: 'Feature'>}
- ```
+ 
+```
 
 ```
 >>> geojson_feature = GeoJsonFeature(**{
@@ -382,6 +388,7 @@ geometry field accepts various geojson geometries
               'type': <Type_3.LineString: 'LineString'>},
  'properties': {},
  'type': <Type_1.Feature: 'Feature'>}
+ 
 ```
 
 ```
@@ -404,6 +411,7 @@ geometry field accepts various geojson geometries
               'type': <Type_4.MultiLineString: 'MultiLineString'>},
  'properties': {},
  'type': <Type_1.Feature: 'Feature'>}
+ 
 ```
 
 ```
@@ -426,6 +434,7 @@ geometry field accepts various geojson geometries
               'type': <Type_8.Polygon: 'Polygon'>},
  'properties': {},
  'type': <Type_1.Feature: 'Feature'>}
+ 
 ```
 
 ```
@@ -453,7 +462,8 @@ geometry field accepts various geojson geometries
               'type': <Type_6.MultiPolygon: 'MultiPolygon'>},
  'properties': {},
  'type': <Type_1.Feature: 'Feature'>}
- ```
+ 
+```
 
 properties accepts a dict with string keys and any kind of value
 
@@ -479,7 +489,8 @@ properties accepts a dict with string keys and any kind of value
                                4,
                                {'some_dict_key': 'some_dict_value'}]},
  'type': <Type_1.Feature: 'Feature'>}
- ```
+ 
+```
 
 GeoJsonFeatureCollection
 ------------------------
