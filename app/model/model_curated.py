@@ -29,6 +29,12 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra, Field, confloat
 
+
+# TMP: added import only to expose pydantic bug with non-deterministic coercion
+# https://github.com/samuelcolvin/pydantic/issues/2835
+# import requests
+
+
 class Tags(BaseModel):
     class Config:
         extra = Extra.allow
@@ -44,6 +50,7 @@ class DDMSBaseModel(BaseModel):
 
     class Config:
         extra = Extra.forbid
+        smart_union = True
 
 
 # only allow unknown field in the data
@@ -54,6 +61,7 @@ class DDMSBaseModelWithExtra(BaseModel):
 
     class Config:
         extra = Extra.allow
+        smart_union = True
 
 
 class LinkList(DDMSBaseModelWithExtra):

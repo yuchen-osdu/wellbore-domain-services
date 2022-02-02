@@ -595,8 +595,16 @@ def test_named_property_dict_maybe_coerce_value_to_float(named_property_dict):
     # pydantic 1.8 with default union behavior:
     # when creating the instance, the value is coerced to one (non-deterministic) of the union type.
     # In our specific usecase it should be float
-    assert isinstance(named_property.value, float)
-    assert isinstance(named_property.dict()["value"], float)
+    # assert isinstance(named_property.value, float)
+    # assert isinstance(named_property.dict()["value"], float)
+
+    # pydantic 1.9 with smart union:
+    # named_property.value depends on what the original data was
+    # but is coerced (non-deterministic?) if the original data requires it :
+    original_value_type = type(named_property_dict["value"])
+    expected_type = original_value_type if original_value_type in [str, float] else float
+    assert type(named_property.value) == expected_type
+    assert type(named_property.dict()["value"]) == expected_type
 
 
 @given(logchannel_instance=st.from_type(model.logchannel))
