@@ -28,8 +28,19 @@ st.register_type_strategy(
         model.GeoJsonFeature,
         bbox=st.from_type(geojson_feature_type_hints["bbox"]),
         geometry=st.from_type(geojson_feature_type_hints["geometry"]),
-        properties=st.dictionaries(keys=st.text(printable), values=json_strategy),
+        properties=st.dictionaries(keys=st.text(printable), values=json_strategy, max_size=5),
         type=st.from_type(geojson_feature_type_hints["type"]),
+    ),
+)
+
+geojson_feature_collection_type_hints = typing.get_type_hints(model.GeoJsonFeatureCollection)
+st.register_type_strategy(
+    model.GeoJsonFeatureCollection,
+    st.builds(
+        model.GeoJsonFeatureCollection,
+        bbox=st.from_type(geojson_feature_collection_type_hints["bbox"]),
+        features=st.lists(st.from_type(model.GeoJsonFeature), max_size=5),
+        type=st.from_type(geojson_feature_collection_type_hints["type"]),
     ),
 )
 

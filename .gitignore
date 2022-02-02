@@ -27,6 +27,8 @@ htmlcov
 coverage.xml
 unit_tests_report.xml
 
+# Ignore files cached by Hypothesis...
+.hypothesis/*
 # Environments
 .env
 .venv*
