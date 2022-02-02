@@ -68,7 +68,7 @@ def event_loop():  # all tests will share the same loop
 
 @pytest.fixture
 def init_fixtures(monkeypatch, tmp_path):
-    monkeypatch.setenv(name="USE_LOCALFS_BLOB_STORAGE_WITH_PATH", value=tmp_path)
+    monkeypatch.setenv(name="USE_LOCALFS_BLOB_STORAGE_WITH_PATH", value=str(tmp_path))
     conf.Config = conf.ConfigurationContainer.with_load_all()
     yield
 
