@@ -121,7 +121,7 @@ The following software have components provided under the terms of this license:
 - starlette (from https://github.com/encode/starlette)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn)
+- uvicorn (from https://www.uvicorn.org/)
 - wrapt (from https://github.com/GrahamDumpleton/wrapt)
 - zict (from http://github.com/dask/zict/)
 
