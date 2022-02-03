@@ -59,16 +59,6 @@ def client():
                 wdms_app.dependency_overrides = previous_overrides  # clean up
 
 
-@pytest.fixture(autouse=True)
-def setup_teardown():
-    # setup
-    # run the test
-    yield
-    # teardown
-    family_processor_manager._processors["opendes"] = None
-    family_processor_manager._catalog_lifetime = 200
-
-
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
@@ -369,11 +359,14 @@ def test_swagger_generation():
     assert swagger_dict is not None
 
 
-# Global module setup / teardown
-def setup_module(nope_logger_fixture):
+@pytest.fixture(autouse=True)
+def log_recognition_enabled(nope_logger_fixture):
     ConfigurationContainer.modules.value = "log_recognition.routers.log_recognition"
     add_modules_routers()
 
-def teardown_module():
+    yield
+
     remove_modules_routers()
+    family_processor_manager._processors["opendes"] = None
+    family_processor_manager._catalog_lifetime = 200
 

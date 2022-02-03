@@ -26,7 +26,6 @@ from pandas.testing import assert_frame_equal
 from tests.unit.conftest import do_nothing, set_default_partition
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 
-from tests.unit.test_utils import nope_logger_fixture
 
 Definitions = {
     'WellLog': {

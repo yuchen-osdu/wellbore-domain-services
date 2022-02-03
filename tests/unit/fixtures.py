@@ -32,12 +32,16 @@ def local_dev_config():
 
 
 @pytest.fixture
-def mock_storage_client_holding_data(local_dev_config):
+def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
     """
     Fixture mocking the Storage Client, except for a specific record that we want to return when requested.
      The data we want the Client to hold and return as the service would normally do is passed as an argument.
 
      For usage examples, see fixtures_test.py in this directory
+
+     We depend on :
+     - local_dev_config to ha ve a valid configuration, but also avoid doing unexpected network requests
+     - nope_logger_fixture because configuring this will mount middlewares, and they need a logger
     """
 
     def setup_data_for_mock(data):

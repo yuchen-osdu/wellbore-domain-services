@@ -34,14 +34,6 @@ def ctx_fixture():
     yield ctx
 
 
-@pytest.fixture
-def nope_logger_fixture(mocker):
-    yield mocker.patch('app.helper.logger._LOGGER', spec_set=logging.Logger, new_callable=mock.NonCallableMock)
-
-
-
-
-
 def create_mock_class(cls_to_mock):
     cls_name = cls_to_mock.__name__ + 'AutoMock'
 

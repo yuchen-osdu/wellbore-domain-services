@@ -13,6 +13,7 @@
 # limitations under the License.
 import logging
 import re
+import types
 from typing import Optional
 from mock import AsyncMock, mock
 
@@ -50,11 +51,20 @@ def client(local_dev_config, nope_logger_fixture):
 
 @pytest.fixture
 def client_after_startup(local_dev_config, nope_logger_fixture):
+    import odes_storage
+
     # using base_app client to trigger startup event.
     with TestClient(base_app):
 
+        # defining a fake_get_record to not break, in case we reach the stage where we need the return
+        async def fake_get_record(self, id, data_partition_id):
+            return odes_storage.models.Record()
+
         async def build_mock_storage():
-            return AsyncMock()
+            storage_mock = AsyncMock()
+            # fake get_record to not break
+            storage_mock.get_record = types.MethodType(fake_get_record, storage_mock)
+            return storage_mock
 
         async def build_mock_search():
             return AsyncMock()
