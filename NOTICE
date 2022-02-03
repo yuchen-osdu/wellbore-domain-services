@@ -8,9 +8,11 @@ Apache-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Pillow (from https://python-pillow.org)
 - aiobotocore (from https://github.com/aio-libs/aiobotocore)
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
+- bokeh (from https://github.com/bokeh/bokeh)
 - boto3 (from https://github.com/boto/boto3)
 - botocore (from https://github.com/boto/botocore)
 - coverage (from https://github.com/nedbat/coveragepy)
@@ -81,8 +83,10 @@ The following software have components provided under the terms of this license:
 - HeapDict (from http://stutzbachenterprises.com/)
 - Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/)
 - MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
+- Pillow (from https://python-pillow.org)
 - adlfs (from https://github.com/hayesgb/adlfs/)
 - asgiref (from http://github.com/django/asgiref/)
+- bokeh (from https://github.com/bokeh/bokeh)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
@@ -121,9 +125,30 @@ The following software have components provided under the terms of this license:
 - starlette (from https://github.com/encode/starlette)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn)
+- uvicorn (from https://github.com/tomchristie/uvicorn, https://www.uvicorn.org/)
 - wrapt (from https://github.com/GrahamDumpleton/wrapt)
 - zict (from http://github.com/dask/zict/)
+
+========================================================================
+BitstreamVera
+========================================================================
+The following software have components provided under the terms of this license:
+
+- Pillow (from https://python-pillow.org)
+
+========================================================================
+CC-BY-2.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- bokeh (from https://github.com/bokeh/bokeh)
+
+========================================================================
+CC-BY-3.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- bokeh (from https://github.com/bokeh/bokeh)
 
 ========================================================================
 CC-BY-4.0
@@ -131,6 +156,7 @@ CC-BY-4.0
 The following software have components provided under the terms of this license:
 
 - adlfs (from https://github.com/hayesgb/adlfs/)
+- bokeh (from https://github.com/bokeh/bokeh)
 - dask (from http://github.com/dask/dask/)
 - distributed (from https://distributed.readthedocs.io/en/latest/)
 - fsspec (from http://github.com/intake/filesystem_spec)
@@ -168,10 +194,18 @@ GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Pillow (from https://python-pillow.org)
 - coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
+
+========================================================================
+GPL-3.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- Pillow (from https://python-pillow.org)
 
 ========================================================================
 ISC
@@ -200,6 +234,7 @@ LGPL-2.1-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Pillow (from https://python-pillow.org)
 - chardet (from https://github.com/chardet/chardet)
 - charset-normalizer (from https://github.com/ousret/charset_normalizer)
 
@@ -215,6 +250,7 @@ LGPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Pillow (from https://python-pillow.org)
 - chardet (from https://github.com/chardet/chardet)
 - pycparser (from https://github.com/eliben/pycparser)
 
@@ -223,6 +259,7 @@ MIT
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Pillow (from https://python-pillow.org)
 - PyJWT (from http://github.com/jpadilla/pyjwt)
 - PyYAML (from http://pyyaml.org/wiki/PyYAML)
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
@@ -242,6 +279,7 @@ The following software have components provided under the terms of this license:
 - azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
 - azure-storage-blob (from https://github.com/Azure/azure-storage-python)
 - backoff
+- bokeh (from https://github.com/bokeh/bokeh)
 - botocore (from https://github.com/boto/botocore)
 - cachetools (from https://github.com/tkem/cachetools)
 - cffi
@@ -301,6 +339,13 @@ NCSA
 The following software have components provided under the terms of this license:
 
 - numpy
+
+========================================================================
+OFL-1.1
+========================================================================
+The following software have components provided under the terms of this license:
+
+- Pillow (from https://python-pillow.org)
 
 ========================================================================
 OPL-1.0
@@ -378,9 +423,18 @@ public-domain
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Pillow (from https://python-pillow.org)
+- bokeh (from https://github.com/bokeh/bokeh)
 - botocore (from https://github.com/boto/botocore)
 - grpcio (from https://grpc.io)
 - numpy
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - py (from http://pylib.readthedocs.org/)
 - pytz (from http://pythonhosted.org/pytz)
+
+========================================================================
+unknown
+========================================================================
+The following software have components provided under the terms of this license:
+
+- Pillow (from https://python-pillow.org)
