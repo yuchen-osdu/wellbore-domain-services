@@ -582,8 +582,8 @@ def test_named_property_dict_init_symmetric(named_property):
 
 
 @pytest.mark.parametrize("named_property_dict", [
-    # {"value": 42},  # behaviour here is still non-deterministic with smart_unions
-    # to illustrate, add "import requests" in model_curated.py
+    {"value": 42},  # behaviour here is still non-deterministic with smart_unions
+                    # to illustrate, add "import requests" in model_curated.py
     {"value": "42"},
     {"value": 42.0},
     {"value": "42.0"},
