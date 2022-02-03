@@ -77,7 +77,7 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 @pytest.fixture
 def dasked_test_app_with_mocked_core_service(event_loop, tmp_path):
 
-    local_blob_storage = LocalFSBlobStorage(directory=tmp_path)
+    local_blob_storage = LocalFSBlobStorage(directory=str(tmp_path))
 
     async def build_mock_storage():
         return StorageRecordServiceClientMock()
@@ -92,7 +92,7 @@ def dasked_test_app_with_mocked_core_service(event_loop, tmp_path):
         return SessionsStorage(local_blob_storage)
 
     async def dask_blob_storage_builder() -> DaskBulkStorage:
-        return await make_local_dask_bulk_storage(base_directory=tmp_path)
+        return await make_local_dask_bulk_storage(base_directory=str(tmp_path))
 
     app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
     app_injector.register(BlobStorageBase, blob_storage_builder)
@@ -144,31 +144,6 @@ def test_post_records_successful(dasked_test_app_with_mocked_core_service):
         assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
 
 
-getas_parameters = [
-    (
-        Wellbore,
-        "/ddms/v3/wellbores",
-        r"../../converter/wellbore_wks.json",
-        "opendes:wellbore:12345",
-        status.HTTP_400_BAD_REQUEST,
-    ),
-    (
-        Wellbore,
-        "/ddms/v3/wellbores",
-        r"../../converter/wellbore_wks.json",
-        "opendes:master-data--Wellbore:6f70656e6465733a646f633a3132333435:",
-        status.HTTP_422_UNPROCESSABLE_ENTITY,
-    ),
-    (Well, "/ddms/v3/wells", r"../../converter/well_wks.json", "opendes:well:12345", status.HTTP_400_BAD_REQUEST),
-    (
-        Well,
-        "/ddms/v3/wells",
-        r"../../converter/well_wks.json",
-        "opendes:master-data--Well:6f70656e6465733a646f633a3132333435:",
-        status.HTTP_422_UNPROCESSABLE_ENTITY,
-    ),
-]
-
 
 def replace_template(source_obj_str: str) -> str:
     source_obj_str = (
@@ -179,34 +154,6 @@ def replace_template(source_obj_str: str) -> str:
         .replace("{{wellId}}", "wellId")
     )
     return source_obj_str
-
-
-@pytest.mark.parametrize("entity_class, base_url, source_file, record_id, expected_response", getas_parameters)
-def test_get_record_as_OSDU(
-    dasked_test_app_with_mocked_core_service, entity_class, base_url, source_file, record_id, expected_response
-):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, source_file)) as f:
-        record_str = replace_template(f.read())
-        source_record = json.loads(record_str)
-    if isinstance(source_record, list):
-        source_record = source_record[0]
-    record_entity = Record.parse_obj(source_record)
-    moc = mock.AsyncMock(return_value=record_entity)
-
-    with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc):
-
-        # when
-        response = dasked_test_app_with_mocked_core_service.get(
-            f"{base_url}/{record_id}",
-            headers={"data-partition-id": "testing_partition"},
-        )
-
-        assert response.status_code == expected_response
-        if response.status_code == status.HTTP_200_OK:
-            # assert it validates the input object schema
-            res = response.json()
-            entity_class.validate(res)
 
 
 get_invalid_id_parameters = [
