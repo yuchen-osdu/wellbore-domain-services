@@ -23,6 +23,7 @@ import pytest
 from app.conf import ConfigurationContainer
 from app.utils import Context, DaskClient
 from fastapi import Header
+from hypothesis import settings, Verbosity, HealthCheck
 
 from .data import (
     well_v2_file_contents, well_v3_file_contents, wellbore_v2_file_contents, wellbore_v3_file_contents,
@@ -68,6 +69,13 @@ def pytest_configure(config):
     # Required to be set before fixtures as all tests are currently loading dependencies at import time.
     os.environ.setdefault('KEYVAULT_URL', 'non-empty-name')
     os.environ.setdefault('SERVICE_HOST_PARTITION', 'https://test-endpoint/api/partition')
+
+    # defining settings profile for local dev runs or CI runs
+    # they can be loaded via `$pytest --hypothesis-profile debug`
+    # Ref: https://hypothesis.readthedocs.io/en/latest/settings.html?highlight=profile#settings-profiles
+    settings.register_profile("default", deadline=None, verbosity=Verbosity.normal)
+    settings.register_profile("debug", suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.verbose)
+    settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "default"))
 
 
 def pytest_unconfigure(config):

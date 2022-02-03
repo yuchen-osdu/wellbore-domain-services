@@ -294,6 +294,14 @@ The following software have components provided under the terms of this license:
 
 - certifi (from http://certifi.io/)
 - charset-normalizer (from https://github.com/ousret/charset_normalizer)
+- hypothesis (from https://hypothesis.works)
+
+========================================================================
+MPL-2.0-no-copyleft-exception
+========================================================================
+The following software have components provided under the terms of this license:
+
+- hypothesis (from https://hypothesis.works)
 
 ========================================================================
 NCSA
@@ -380,6 +388,7 @@ The following software have components provided under the terms of this license:
 
 - botocore (from https://github.com/boto/botocore)
 - grpcio (from https://grpc.io)
+- hypothesis (from https://hypothesis.works)
 - numpy
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - py (from http://pylib.readthedocs.org/)

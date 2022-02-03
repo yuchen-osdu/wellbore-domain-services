@@ -1516,7 +1516,7 @@
       },
       "GeoJsonFeature": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "GeoJson Feature\nhttps://datatracker.ietf.org/doc/html/rfc7946#section-3.2",
         "properties": {
           "bbox": {
             "items": {
@@ -1569,7 +1569,7 @@
       },
       "GeoJsonFeatureCollection": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "GeoJson Feature Collection\nhttps://datatracker.ietf.org/doc/html/rfc7946#section-3.3",
         "properties": {
           "bbox": {
             "items": {
@@ -1598,7 +1598,7 @@
       },
       "GeoJsonLineString": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "GeoJson MultiLineString\nhttps://datatracker.ietf.org/doc/html/rfc7946#section-3.1.4",
         "properties": {
           "bbox": {
             "items": {
@@ -1630,7 +1630,7 @@
       },
       "GeoJsonMultiLineString": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "GeoJson MultilineString\nhttps://datatracker.ietf.org/doc/html/rfc7946#section-3.1.5",
         "properties": {
           "bbox": {
             "items": {
@@ -1665,7 +1665,7 @@
       },
       "GeoJsonMultiPoint": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "GeoJson MultiPoint\nhttps://datatracker.ietf.org/doc/html/rfc7946#section-3.1.3",
         "properties": {
           "bbox": {
             "items": {
@@ -1697,7 +1697,7 @@
       },
       "GeoJsonMultiPolygon": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "GeoJson MultiPolygon\nhttps://datatracker.ietf.org/doc/html/rfc7946#section-3.1.7",
         "properties": {
           "bbox": {
             "description": "Bounding box in longitude, latitude WGS 84.",
@@ -1737,7 +1737,7 @@
       },
       "GeoJsonPoint": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "GeoJson Point\nhttps://datatracker.ietf.org/doc/html/rfc7946#section-3.1.2",
         "properties": {
           "bbox": {
             "items": {
@@ -6071,7 +6071,7 @@
       },
       "geometryItem": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "geometryItem\nhttps://datatracker.ietf.org/doc/html/rfc7946#section-3.1.8",
         "properties": {
           "bbox": {
             "items": {
@@ -7099,7 +7099,7 @@
       },
       "namedProperty": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "namedProperty Model",
         "properties": {
           "associations": {
             "description": "The optional associations contains one or more mnemonics found elsewhere in the logSet.",
