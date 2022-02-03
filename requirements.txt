@@ -258,21 +258,21 @@ opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
 osdu-api==0.12.1
     # via osdu-core-lib-python-aws
-osdu-core-lib-python==1.1.0
+osdu-core-lib-python==2.0.0
     # via -r requirements.in
-osdu-core-lib-python-aws==0.0.6
+osdu-core-lib-python-aws==1.0.0.dev876231
     # via -r requirements.in
-osdu-core-lib-python-azure==2.0.0
+osdu-core-lib-python-azure==3.0.0.dev876232
     # via -r requirements.in
-osdu-core-lib-python-gcp==1.1.0
+osdu-core-lib-python-gcp==2.0.0.dev876247
     # via -r requirements.in
-osdu-core-lib-python-ibm==1.3.0
+osdu-core-lib-python-ibm==2.0.0.dev876248
     # via -r requirements.in
-osdu-data-ecosystem-search==0.3.3
+osdu-data-ecosystem-search==1.0.0.dev872209
     # via -r requirements.in
-osdu-data-ecosystem-storage==1.3.0
+osdu-data-ecosystem-storage==2.0.0.dev872234
     # via -r requirements.in
-osdu-log-recognition-lib==0.0.9
+osdu-log-recognition-lib==1.0.0.dev872247
     # via -r requirements.in
 packaging==21.0
     # via
