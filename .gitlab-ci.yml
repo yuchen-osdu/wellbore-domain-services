@@ -55,7 +55,6 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "fserin/upgrade_python_version"
     file: "cloud-providers/osdu-gcp-gke.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
@@ -64,7 +63,6 @@ include:
   - local: "/devops/azure/azure-wellbore.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "fserin/upgrade_python_version"
     file: "cloud-providers/aws-global.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"

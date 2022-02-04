@@ -258,19 +258,19 @@ osdu-api==0.12.1
     # via osdu-core-lib-python-aws
 osdu-core-lib-python==2.0.0
     # via -r requirements.in
-osdu-core-lib-python-aws==1.0.0.dev876231
+osdu-core-lib-python-aws==1.0.0
     # via -r requirements.in
 osdu-core-lib-python-azure==3.0.0.dev876232
     # via -r requirements.in
-osdu-core-lib-python-gcp==2.0.0.dev876247
+osdu-core-lib-python-gcp==2.0.0
     # via -r requirements.in
 osdu-core-lib-python-ibm==2.0.0.dev876248
     # via -r requirements.in
-osdu-data-ecosystem-search==1.0.0.dev872209
+osdu-data-ecosystem-search==1.0.0
     # via -r requirements.in
-osdu-data-ecosystem-storage==2.0.0.dev872234
+osdu-data-ecosystem-storage==2.0.0
     # via -r requirements.in
-osdu-log-recognition-lib==1.0.0.dev872247
+osdu-log-recognition-lib==1.0.0
     # via -r requirements.in
 packaging==21.0
     # via

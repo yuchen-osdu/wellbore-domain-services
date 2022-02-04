@@ -32,8 +32,8 @@ https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
 osdu-log-recognition-lib~=1.0.0.dev872247
 
-osdu-data-ecosystem-storage~=2.0.0.dev872234
-osdu-data-ecosystem-search~=1.0.0.dev872209
+osdu-data-ecosystem-storage~=2.0.0
+osdu-data-ecosystem-search~=1.0.0
 
 osdu-core-lib-python-ibm==2.0.0.dev876248
 osdu-core-lib-python-gcp~=2.0.0.dev876247
