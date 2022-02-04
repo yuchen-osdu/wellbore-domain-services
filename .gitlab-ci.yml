@@ -14,6 +14,7 @@
 # limitations under the License.
 
 variables:
+  VENV_CMD: "python -m venv --clear"
   PIP_REQUIREMENTS: "requirements.txt requirements_dev.txt"
 
   AZURE_SERVICE: wellbore-ddms
