@@ -264,7 +264,7 @@ osdu-core-lib-python-azure==3.0.0.dev876232
     # via -r requirements.in
 osdu-core-lib-python-gcp==2.0.0
     # via -r requirements.in
-osdu-core-lib-python-ibm==2.0.0.dev876248
+osdu-core-lib-python-ibm==2.0.0
     # via -r requirements.in
 osdu-data-ecosystem-search==1.0.0
     # via -r requirements.in
