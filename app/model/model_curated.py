@@ -27,8 +27,7 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra, Field, confloat
-
+from pydantic import BaseModel, Extra, Field, confloat, StrictFloat, StrictStr, StrictInt
 
 # TMP: added import only to expose pydantic bug with non-deterministic coercion
 # https://github.com/samuelcolvin/pydantic/issues/2835
@@ -1004,35 +1003,37 @@ class namedProperty(DDMSBaseModel):
     """
     namedProperty Model
     """
-    associations: Optional[List[str]] = Field(
+    associations: Optional[List[StrictStr]] = Field(
         None,
         description='The optional associations contains one or more mnemonics found elsewhere in the logSet.',
         title='Associations',
     )
-    description: Optional[str] = Field(
+    description: Optional[StrictStr] = Field(
         None,
         description='The description and role of this property.',
         title='Property Description',
     )
-    format: Optional[str] = Field(
+    format: Optional[StrictStr] = Field(
         None,
         description="An optional format declaration for the property values. The 'A' prefix indicates an array; string values are represented by 'S'; floating point values are represented by 'F', optionally followed by a field specification, e.g. 'F10.4'; exponential number representations are represented by 'E'; integer values are represented by 'I'. For further information see the LAS specification http://www.cwls.org/las/.",
         title='Format (LAS)',
     )
-    name: Optional[str] = Field(
+    name: Optional[StrictStr] = Field(
         None, description='The name of this property.', title='Property Name'
     )
-    unitKey: Optional[str] = Field(
+    unitKey: Optional[StrictStr] = Field(
         None,
         description="The unitKey to be looked up in the 'frameOfReference.units' dictionary to find the self-contained definition.",
         title='Property Unit Symbol',
     )
-    value: Optional[Union[float, str]] = Field(
+    # value: Optional[Union[float, str]] = Field(
+    # using StrictFloat and StrictStr to prevent unexpected (non-deterministic) coercion
+    value: Optional[Union[StrictFloat, StrictInt, StrictStr]] = Field(
         None,
         description='The value for this property as a string or a number.',
         title='Property Value',
     )
-    values: Optional[List[float]] = Field(
+    values: Optional[List[StrictFloat]] = Field(
         None,
         description='The values, e.g. interval boundaries, for this property.',
         title='Property Values (Interval)',
