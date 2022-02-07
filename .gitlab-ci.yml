@@ -45,7 +45,6 @@ include:
     file: "standard-setup.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "fserin/upgrade_python_version"
     file: "build/python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
@@ -67,6 +66,10 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
+
+#Override Python Image defined in python.yml
+.python:
+  image: python:3.8-bullseye
 
 verify_existing_requirements:
   extends:
