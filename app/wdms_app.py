@@ -130,6 +130,10 @@ async def startup_event():
     service_name = Config.service_name.value
 
     logger.init_logger(service_name=service_name)
+
+    #check python version >=3.8
+    assert sys.version_info.major == 3 and sys.version_info.minor >= 8, 'Python version required >=3.8'
+
     check_environment(Config)
     print('using temporary directory:', get_wdms_temp_dir())
     MainInjector().configure(app_injector)

@@ -14,6 +14,7 @@
 
 from app import __version__, __build_number__, __app_name__
 import re
+from sys import version_info
 
 
 # to ensure info are ok
@@ -30,3 +31,8 @@ def test_version_info():
 
     assert type(__app_name__) == str
     assert __app_name__ is not None
+
+
+def test_python_version():
+    # check python version >=3.8
+    assert version_info.major == 3 and version_info.minor >= 8, 'Python version required >=3.8'
