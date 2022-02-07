@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-import sys
 from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
@@ -2194,8 +2193,3 @@ class well(DDMSBaseModel, DDMSBaseRecord):
         description='The version number of this well; set by the framework.',
         title='Entity Version Number',
     )
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
