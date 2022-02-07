@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
+from app.model.filter import BulkReadFilters
 from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.utils import Context, OpenApiHandler, get_ctx
@@ -199,12 +200,12 @@ async def get_data_version(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI') from e
 
-    filters = None
     stat = None
     try:
         if not bulk_uri.is_valid():
             raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
         bulk_id = bulk_uri.bulk_id
+        bulk_filters = BulkReadFilters(data_param.get_bulk_filters())
 
         dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
         future_index = None
@@ -214,9 +215,9 @@ async def get_data_version(
         else:
             if data_param.offset or data_param.limit:
                 future_index = await DataFrameRender.load_index(record_id, bulk_id, dask_blob_storage)
-            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, filters, dask_blob_storage)
+            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, bulk_filters, dask_blob_storage)
 
-        df = await DataFrameRender.process_params(df, data_param, filters, dask_blob_storage, future_index)
+        df = await DataFrameRender.process_params(df, data_param, bulk_filters, dask_blob_storage, future_index)
 
         return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
     except BulkError as ex:
@@ -224,7 +225,11 @@ async def get_data_version(
 
 
 @with_trace('_process_request_v1')
-async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataParams, filters, dask_blob_storage: DaskBulkStorage):
+async def _process_request_v1(record_id: str,
+                              bulk_id: str,
+                              data_param: GetDataParams,
+                              filters: BulkReadFilters,
+                              dask_blob_storage: DaskBulkStorage):
     columns_to_load = None
     stat = await dask_blob_storage.read_stat(record_id, bulk_id)
     existing_col = set(stat['schema'])
@@ -238,15 +243,14 @@ async def _process_request_v1(record_id: str, bulk_id: str, data_param: GetDataP
         if nb_cols_to_return > Config.max_columns_return.value:
             raise TooManyColumnsRequested(nb_cols_to_return)
 
-    if data_param.bulk_filter:
+    if filters.has_filter():
         # get column needed for filtering which are not yet in columns
-        filters = data_param.get_filters()
-        invalid_columns = filters.keys() - existing_col
+        invalid_columns = filters.columns - existing_col
         if invalid_columns:
             raise FilterError(f'The columns:{list(invalid_columns)} to be filtered do not exist')
         if columns_to_load:
-            columns_to_load.extend(filters)
-            columns_to_load = set(columns_to_load)
+            columns_to_load = filters.columns.union(columns_to_load)
+
     if columns_to_load is None and data_param.describe:
         # optimization: create a fake dataset when describe on all columns
         index = await dask_blob_storage.load_index(record_id, bulk_id)

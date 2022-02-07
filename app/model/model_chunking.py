@@ -13,16 +13,17 @@
 # limitations under the License.
 
 from typing import Optional, List
+import re
 
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from app.model.filter import get_parsed_filters
+from .filter import BulkReadFilterOperator, BulkFilter
+from ..bulk_persistence.dask.errors import FilterError
+
 
 class GetDataParams:
-    ''' All parameters to query welllog data. '''
-
-    FilterOperators = {'lt', 'lte', 'gt', 'gte', 'eq', 'neq', 'in'}
+    """ All parameters to query welllog data. """
 
     def __init__(
         self,
@@ -38,7 +39,8 @@ class GetDataParams:
             example=100),
         curves: Optional[str] = Query(
             default=None,
-            description='Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.',
+            description='Filters curves. List of curves to be returned. '
+                        'The curves are returned in the same order as it is given.',
             example='MD,GR'),
         describe: Optional[bool] = Query(
             default=False,
@@ -48,21 +50,19 @@ class GetDataParams:
         bulk_filter: Optional[List[str]] = Query(
             default=None,
             alias='filter',
+            regex='^(".+"|[^:]+):(' + '|'.join(BulkReadFilterOperator.values()) + '):.*$',
             description="""
-The "filter" query parameter allows clients to filter data following the pattern $column_name:$operator:$value
-<br/>supported operation : """ + ','.join(sorted(list(FilterOperators))) + """
-<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).
-""",
+The "filter" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.
+If the column name contains ':', enclose it in double quotation marks (").
+<br/>The supported operators are : """ + ', '.join(BulkReadFilterOperator.values()),
             example='MD:lt:1000'
-
-    )
+        )
     ) -> None:
         self.offset = offset
         self.limit = limit
         self.curves = curves
         self.describe = describe
         self.bulk_filter = bulk_filter
-        # orient if json ?
 
     def get_curves_list(self) -> List[str]:
         """parse the curves query parameter and return the list of requested curves"""
@@ -73,17 +73,24 @@ The "filter" query parameter allows clients to filter data following the pattern
             return list(dict.fromkeys(curves))
         return []
 
-    def get_filters(self) -> dict:
-        """return the parsed filter query
-        { 
-            'col_name_1' : {
-                'lt': 10,
-                'gt': 50
-            },
-            'col_name_2': {...}
-        }
+    re_bulk_filter = re.compile(
+        r'^("(?P<enclosed_col>.+)"|(?P<col>[^:]+)):(?P<op>' + '|'.join(BulkReadFilterOperator.values()) + '):(?P<value>.*)$')
+
+    def get_bulk_filters(self) -> List[BulkFilter]:
         """
-        return get_parsed_filters(self.bulk_filter)
+        returns an iterator over all filters, each iterator provide tuple [column name, operator, value]
+        """
+        if not self.bulk_filter:
+            return []
+
+        result = []
+        for f in self.bulk_filter:
+            matches = self.re_bulk_filter.match(f)
+            if not matches:
+                raise FilterError('Invalid filter expression')
+            column = matches['col'] or matches['enclosed_col']
+            result.append(BulkFilter(column, BulkReadFilterOperator.from_string(matches['op']), matches['value']))
+        return result
 
 
 class DataframeBasicDescribe(BaseModel):

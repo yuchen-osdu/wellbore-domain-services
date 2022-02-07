@@ -1127,13 +1127,14 @@ def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app_witho
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-@pytest.mark.parametrize("params, content", [
-    (['M:lt:5'], "filter error: The columns:['M'] to be filtered do not exist"),
-    (['A:xx:5'], 'filter error: Operator xx is not supported'),
-    (['A:lt:5', 'A:lt:7'], 'filter error: Same operator on the same column'),
+@pytest.mark.parametrize("params, content, failure_status", [
+    (['M:lt:5'], "filter error: The columns:['M'] to be filtered do not exist", 400),
+    (['A:lt:5', 'A:lt:7'], 'filter error: Same operator on the same column', 400),
+    (['A:xx:5'], '', 422),  # 422 since handled by regex at query param declaration,
+    (['A:lt'], '', 422)
 ])
 def test_get_bulk_data_with_filters_fail(dasked_test_app_without_consistency_client, entity_type, params, content,
-                                         dataframe_for_filters):
+                                         failure_status, dataframe_for_filters):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
@@ -1147,8 +1148,9 @@ def test_get_bulk_data_with_filters_fail(dasked_test_app_without_consistency_cli
     response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
                                    params={'filter': params})
 
-    assert response_get_data.json()['detail'] == content
-    assert response_get_data.status_code == 400
+    if content:
+        assert response_get_data.json()['detail'] == content
+    assert response_get_data.status_code == failure_status
 
 
 # todo - concurrent sessions using fromVersion in Integrations tests

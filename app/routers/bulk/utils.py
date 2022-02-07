@@ -22,6 +22,7 @@ from app.bulk_persistence import JSONOrient
 from app.clients.storage_service_client import get_storage_record_service
 from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
+from app.model.filter import BulkReadFilterOperator, BulkReadFilters
 from app.model.model_chunking import GetDataParams, DataframeDescribe
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 from pyarrow.lib import ArrowInvalid
@@ -214,47 +215,69 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('apply_filter')
-    def apply_filter(df, filters):
+    def apply_filter(dataframe, filters: BulkReadFilters):
+        """
+        apply the given bulk filter on the dataframe
+        :param dataframe: dataframe on which apply the filters
+        :param filters: the filters
+        return filtered dataframe
+        """
 
         operator_to_function = {
-            'eq': lambda df, col, val: df[col] == val,
-            'neq': lambda df, col, val: df[col] != val,
-            'lte': lambda df, col, val: df[col] <= val,
-            'lt': lambda df, col, val: df[col] < val,
-            'gt': lambda df, col, val: df[col] > val,
-            'gte': lambda df, col, val: df[col] >= val,
-            'in': lambda df, col, val: df[col].isin(val)
-        }
-        for col_name, operation in filters.items():
-            for operator, value in operation.items():
-                try:
-                    new_value = ast.literal_eval(value)
-                except (ValueError, SyntaxError):
-                    new_value = value
-                if df[col_name].dtype == object:
-                    if isinstance(new_value, tuple):
-                        new_value = [str(v) for v in new_value]
-                    else:
-                        new_value = str(new_value)
+            BulkReadFilterOperator.Equal:
+                lambda df, col, val: df[col] == val,
 
-                filter_function = operator_to_function[operator]
-                try:
-                    df = df.loc[filter_function(df, col_name, new_value)]
-                except ValueError:
-                    raise FilterError('the value is not valid for this operation')
-        return df
+            BulkReadFilterOperator.NotEqual:
+                lambda df, col, val: df[col] != val,
+
+            BulkReadFilterOperator.LessOrEqual:
+                lambda df, col, val: df[col] <= val,
+
+            BulkReadFilterOperator.Less:
+                lambda df, col, val: df[col] < val,
+
+            BulkReadFilterOperator.Greater:
+                lambda df, col, val: df[col] > val,
+
+            BulkReadFilterOperator.GreaterOrEqual:
+                lambda df, col, val: df[col] >= val,
+
+            BulkReadFilterOperator.In:
+                lambda df, col, val: df[col].isin(val)
+        }
+        for col_name, operator, value in filters.all_filters():
+            try:
+                new_value = ast.literal_eval(value)
+            except (ValueError, SyntaxError):
+                new_value = value
+            if dataframe[col_name].dtype == object:
+                if isinstance(new_value, tuple):
+                    new_value = [str(v) for v in new_value]
+                else:
+                    new_value = str(new_value)
+
+            filter_function = operator_to_function[operator]
+            try:
+                dataframe = dataframe.loc[filter_function(dataframe, col_name, new_value)]
+            except ValueError:
+                raise FilterError('the value is not valid for this operation')
+        return dataframe
 
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('process_params')
-    async def process_params(df, params: GetDataParams, filters, dask_blob_storage: DaskBulkStorage, f_index):
+    async def process_params(df,
+                             params: GetDataParams,
+                             filters: BulkReadFilters,
+                             dask_blob_storage: DaskBulkStorage,
+                             f_index):
         """
         pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
         """
         if isinstance(df, pd.DataFrame):
             df = dd.from_pandas(df, npartitions=1)
 
-        if filters:
+        if filters.has_filter():
             df = DataFrameRender.apply_filter(df, filters)
 
         if params.curves:
@@ -264,7 +287,7 @@ class DataFrameRender:
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
-        if filters and (params.offset or params.limit):
+        if filters.has_filter() and (params.offset or params.limit):
             f_index = dask_blob_storage.client.compute(df.index)
 
         df = await DataFrameRender.select_range(df, params.offset, params.limit, dask_blob_storage, f_index)
