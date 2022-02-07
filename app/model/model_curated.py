@@ -1003,37 +1003,45 @@ class namedProperty(DDMSBaseModel):
     """
     namedProperty Model
     """
-    associations: Optional[List[StrictStr]] = Field(
+    associations: Optional[List[str]] = Field(
         None,
         description='The optional associations contains one or more mnemonics found elsewhere in the logSet.',
         title='Associations',
     )
-    description: Optional[StrictStr] = Field(
+    description: Optional[str] = Field(
         None,
         description='The description and role of this property.',
         title='Property Description',
     )
-    format: Optional[StrictStr] = Field(
+    format: Optional[str] = Field(
         None,
         description="An optional format declaration for the property values. The 'A' prefix indicates an array; string values are represented by 'S'; floating point values are represented by 'F', optionally followed by a field specification, e.g. 'F10.4'; exponential number representations are represented by 'E'; integer values are represented by 'I'. For further information see the LAS specification http://www.cwls.org/las/.",
         title='Format (LAS)',
     )
-    name: Optional[StrictStr] = Field(
+    name: Optional[str] = Field(
         None, description='The name of this property.', title='Property Name'
     )
-    unitKey: Optional[StrictStr] = Field(
+    unitKey: Optional[str] = Field(
         None,
         description="The unitKey to be looked up in the 'frameOfReference.units' dictionary to find the self-contained definition.",
         title='Property Unit Symbol',
     )
+
+    # original type definition for value:
+    # pydantic coerces when possible, but to *what* is ambiguous here.
     # value: Optional[Union[float, str]] = Field(
-    # using StrictFloat and StrictStr to prevent unexpected (non-deterministic) coercion
+
+    # if we want to rely on coercion, it needs to be unambiguous
+    # value: Optional[float] = Field(  # but we would size-down the accepted type
+
+    # otherwise we use StrictFloat and StrictStr to prevent unexpected (non-deterministic) coercion
+    # we add StrictInt to keep accepting int, as int was implicitely coerced to float
     value: Optional[Union[StrictFloat, StrictInt, StrictStr]] = Field(
         None,
         description='The value for this property as a string or a number.',
         title='Property Value',
     )
-    values: Optional[List[StrictFloat]] = Field(
+    values: Optional[List[float]] = Field(
         None,
         description='The values, e.g. interval boundaries, for this property.',
         title='Property Values (Interval)',
