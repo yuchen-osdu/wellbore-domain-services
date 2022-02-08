@@ -5,12 +5,14 @@ from pandas.testing import assert_frame_equal
 
 from fastapi import HTTPException
 
-from app.bulk_persistence import JSONOrient
+from app.bulk_persistence import JSONOrient, MimeTypes
 from app.bulk_persistence.dask.errors import BulkCurvesNotFound
 from app.model.model_chunking import GetDataParams
 from app.routers.bulk.bulk_routes import DataFrameRender
 from app.routers.bulk.utils import get_df_from_request
 from tests.unit.generate_data import generate_df
+from tests.unit.test_utils import nope_logger_fixture
+
 
 @pytest.mark.parametrize("requested, df_columns, expected", [
     (["X"],           {"X"},                        ["X"]),
@@ -75,15 +77,14 @@ def basic_dataframe():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("accept", [
-    None,  # default is parquet
-    "",  # default is parquet
-    "application/x-parquet",
-    "application/parquet",
-    "application/json, application/x-parquet"  # is case of multiple, prioritize parquet
-])
-async def test_df_render_accept_parquet(default_get_params, basic_dataframe, accept):
-    response = await DataFrameRender.df_render(basic_dataframe, default_get_params, accept)
+async def test_df_render_empty_accept_raise(default_get_params, basic_dataframe, nope_logger_fixture):
+    with pytest.raises(ValueError):
+        await DataFrameRender.df_render(basic_dataframe, default_get_params, render_type=None)
+
+
+@pytest.mark.asyncio
+async def test_df_render_accept_parquet(default_get_params, basic_dataframe):
+    response = await DataFrameRender.df_render(basic_dataframe, default_get_params, MimeTypes.PARQUET)
 
     assert response.headers.get('Content-Type') == "application/x-parquet"
     assert_df_in_parquet(basic_dataframe, response.body)
@@ -92,7 +93,7 @@ async def test_df_render_accept_parquet(default_get_params, basic_dataframe, acc
 @pytest.mark.asyncio
 @pytest.mark.parametrize("orient", [JSONOrient.split, JSONOrient.columns])
 async def test_df_render_accept_json(default_get_params, basic_dataframe, orient):
-    response = await DataFrameRender.df_render(basic_dataframe, default_get_params, "application/json", orient)
+    response = await DataFrameRender.df_render(basic_dataframe, default_get_params, MimeTypes.JSON, orient)
     assert response.headers.get('Content-Type') == "application/json"
     actual = pd.read_json(response.body, orient=orient)
     assert_frame_equal(basic_dataframe, actual)
