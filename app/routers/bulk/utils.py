@@ -12,9 +12,7 @@ import ast
 
 from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
-from app.bulk_persistence.dask.dask_worker_write_bulk import basic_describe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.utils import set_index
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
     no_validation, DataFrameValidationFunc
 from app.bulk_persistence import DataframeSerializerAsync
@@ -24,8 +22,8 @@ from app.bulk_persistence import JSONOrient
 from app.clients.storage_service_client import get_storage_record_service
 from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
-from app.model.model_chunking import GetDataParams
-from app.routers.bulk.bulk_uri_dependencies import (BulkIdAccess, BULK_URI_FIELD)
+from app.model.model_chunking import GetDataParams, DataframeDescribe
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 from pyarrow.lib import ArrowInvalid
 
 
@@ -284,10 +282,10 @@ class DataFrameRender:
             else:
                 columns = list(df.columns)
 
-            return {
-                "numberOfRows": nb_rows,
-                "columns": columns
-            }
+            return DataframeDescribe(
+                numberOfRows=nb_rows,
+                columns=columns
+            )
 
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO

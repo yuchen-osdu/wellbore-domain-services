@@ -7,7 +7,7 @@ from fastapi import HTTPException
 
 from app.bulk_persistence import JSONOrient
 from app.bulk_persistence.dask.errors import BulkCurvesNotFound
-from app.model.model_chunking import GetDataParams
+from app.model.model_chunking import GetDataParams, DataframeDescribe
 from app.routers.bulk.bulk_routes import DataFrameRender
 from app.routers.bulk.utils import get_df_from_request
 from tests.unit.generate_data import generate_df
@@ -105,8 +105,9 @@ async def test_df_render_describe():
     response = await DataFrameRender.df_render(data, GetDataParams(
         describe=True, limit=None, curves=None, offset=None))
 
-    assert response['columns'] == columns
-    assert response['numberOfRows'] == 100
+    assert type(response) is DataframeDescribe
+    assert response.columns == columns
+    assert response.row_count == 100
 
 
 class RequestMock:

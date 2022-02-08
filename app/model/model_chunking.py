@@ -95,3 +95,8 @@ class DataframeBasicDescribe(BaseModel):
     index_start: str = Field(alias="indexStart")
     index_end: str = Field(alias="indexEnd")
     index_type: str = Field(alias="indexType")
+
+
+class DataframeDescribe(BaseModel):
+    row_count: int = Field(alias="numberOfRows")
+    columns: List[str] = Field(alias="columns", description="list of columns")
