@@ -23,7 +23,6 @@ The following software have components provided under the terms of this license:
 - google-cloud-trace (from https://github.com/googleapis/googleapis)
 - googleapis-common-protos (from https://github.com/googleapis/googleapis)
 - grpcio (from https://grpc.io)
-- importlib-metadata
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from http://msgpack.org/)
 - multidict (from https://github.com/aio-libs/multidict/)
@@ -270,7 +269,7 @@ The following software have components provided under the terms of this license:
 - pydantic (from https://github.com/samuelcolvin/pydantic)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
-- pytest (from http://pytest.org)
+- pytest (from https://docs.pytest.org/en/latest/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
 - pytest-httpx (from https://colin-b.github.io/pytest_httpx/)
 - pytest-mock (from https://github.com/pytest-dev/pytest-mock/)
@@ -285,7 +284,6 @@ The following software have components provided under the terms of this license:
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
-- zipp (from https://github.com/jaraco/zipp)
 
 ========================================================================
 MPL-2.0
