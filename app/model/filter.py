@@ -1,50 +1,66 @@
-"""
-This module groups fonctions to parse the query filter parameters
-"""
-from contextlib import suppress
-from typing import List, Tuple
+from typing import Iterable, NamedTuple, Set, List
+from enum import Enum
 
 from app.bulk_persistence.dask.errors import FilterError
 
-FilterOperators = {'lt', 'lte', 'gt', 'gte', 'eq', 'neq', 'in'}
+
+class BulkReadFilterOperator(str, Enum):
+    Less = 'lt',
+    LessOrEqual = 'lte',
+    Greater = 'gt',
+    GreaterOrEqual = 'gte',
+    Equal = 'eq',
+    NotEqual = 'neq',
+    In = 'in'
+
+    @classmethod
+    def from_string(cls, value: str) -> 'BulkReadFilterOperator':
+        value = value.lower()
+        op = next(filter(lambda e: e.value == value, cls), None)
+        if op:
+            return op
+        raise FilterError('invalid operator: ' + value)
+
+    @classmethod
+    def values(cls) -> List[str]:
+        return [e.value for e in cls]
 
 
-def parse_filter(col_filter: str) -> Tuple[str,str,str]:
-    """Parse a column filter expression
-    expression should be in the form <column_name>:<operator>:<value>
-
-    >>> parse_filter('A:eq') 
-    FilterError: Invalid filter expression A:eq
-    >>> parse_filter('A:eq:2') 
-    ('A', 'eq', '2')
-    """
-    with suppress(ValueError):
-        col, operator, value = col_filter.split(':', maxsplit=2)
-        return col, operator, value
-    raise FilterError(f'Invalid filter expression {col_filter}')
+class BulkFilter(NamedTuple):
+    column: str
+    operator: BulkReadFilterOperator
+    value: str
 
 
-def get_parsed_filters(bulk_filter: List[str]) -> dict:
-    """return the parsed filter query
+class BulkReadFilters:
 
-    >>> get_parsed_filters(['A:lt:2', 'B:lt:2', 'A:gt:3'])
-    {'a': {'lt': '2', 'gt': '3'}, 'b': {'lt': '2'}}
-    >>> get_parsed_filters(['A'])
-    FilterError: Invalid filter expression A
-    >>> get_parsed_filters(['A:=:2'])
-    FilterError: Operator = is not supported
-    >>> get_parsed_filters(['A:eq:2', 'A:eq:3'])
-    FilterError: Same operator on the same column
-    """
-    filter_dict = {}
-    for col_name, operator, value in (parse_filter(f) for f in bulk_filter):
-        if operator not in FilterOperators:
-            raise FilterError(f'Operator {operator} is not supported')
-        col_filter = filter_dict.setdefault(col_name, {})
-        if operator in col_filter:
-            raise FilterError('Same operator on the same column')
-        filter_dict[col_name].update({operator: value})
-        if all (k in filter_dict[col_name] for k in ("in", "eq")):
-            raise FilterError("Operator 'in' and 'eq' can't be applied on the same column")
+    def __init__(self, filters: Iterable[BulkFilter]):
+        """
+        Construct BulkReadFilters and validate inputs
+        :param filters: iterable tuple[column, operator, value]
+        :throw: FilterError
+        return BulkReadFilters object
+        """
+        column_operators = {}
+        self._filters = []
+        for column_name, operator, value in filters:
+            operators = column_operators.setdefault(column_name, set())
+            if operator in operators:
+                raise FilterError('Same operator on the same column')
+            operators.add(operator)
+            self._filters.append(BulkFilter(column_name, operator, value))
 
-    return filter_dict
+        for _, operators in column_operators.items():
+            if BulkReadFilterOperator.Equal in operators and BulkReadFilterOperator.In in operators:
+                raise FilterError(f"Operator '{BulkReadFilterOperator.Equal}' and '{BulkReadFilterOperator.In}' "
+                                  "can't be applied on the same column")
+
+    @property
+    def columns(self) -> Set[str]:
+        return set((c for c, *_ in self._filters))
+
+    def has_filter(self) -> bool:
+        return bool(self._filters)
+
+    def all_filters(self) -> List[BulkFilter]:
+        return self._filters
