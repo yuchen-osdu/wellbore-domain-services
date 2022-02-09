@@ -16,7 +16,7 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
     no_validation, DataFrameValidationFunc
 from app.bulk_persistence import DataframeSerializerAsync
-from app.bulk_persistence.mime_types import MimeTypes
+from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence import JSONOrient
 
 from app.clients.storage_service_client import get_storage_record_service
@@ -297,7 +297,10 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
-    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
+    async def df_render(df, params: GetDataParams,
+                        render_type: Optional[MimeType] = None,
+                        orient: Optional[JSONOrient] = None,
+                        stat=None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)
             if params.curves is None and stat:
@@ -314,16 +317,15 @@ class DataFrameRender:
         pdf.index.name = None  # TODO
         trace_dataframe_attributes(pdf)
 
-        if not accept or MimeTypes.PARQUET.type in accept:
+        if render_type == MimeTypes.PARQUET:
             content = await DataframeSerializerAsync().to_parquet(pdf)
-            return Response(content, media_type=MimeTypes.PARQUET.type)
+            return Response(content, media_type=render_type.type)
 
-        if MimeTypes.JSON.type in accept:
+        if render_type == MimeTypes.JSON:
             content = await DataframeSerializerAsync().to_json(pdf, index=True, date_format='iso', orient=orient.value)
-            return Response(content, media_type=MimeTypes.JSON.type)
+            return Response(content, media_type=render_type.type)
 
-        content = await DataframeSerializerAsync().to_parquet(pdf)
-        return Response(content, media_type=MimeTypes.PARQUET.type)
+        raise ValueError("Invalid render type")
 
 
 async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri_access: BulkIdAccess):

@@ -26,6 +26,7 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_READ,
                                            REQUIRED_ROLES_WRITE,
                                            json_orient_parameter,
+                                           read_bulk_accept_type,
                                            write_bulk_content_type)
 
 from app.conf import Config
@@ -187,6 +188,7 @@ async def get_data_version(
     record_id: str, version: int,
     request: Request,
     data_param: GetDataParams = Depends(),
+    accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
@@ -219,7 +221,7 @@ async def get_data_version(
 
         df = await DataFrameRender.process_params(df, data_param, bulk_filters, dask_blob_storage, future_index)
 
-        return await DataFrameRender.df_render(df, data_param, request.headers.get('Accept'), orient=orient, stat=stat)
+        return await DataFrameRender.df_render(df, data_param, accept_type, orient=orient, stat=stat)
     except BulkError as ex:
         ex.raise_as_http()
 
@@ -280,11 +282,12 @@ async def get_data(
     record_id: str,
     request: Request,
     ctrl_p: GetDataParams = Depends(),
+    accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    return await get_data_version(record_id, None, request, ctrl_p, orient, ctx, bulk_uri_access)
+    return await get_data_version(record_id, None, request, ctrl_p, accept_type, orient, ctx, bulk_uri_access)
 
 
 @router.patch(
