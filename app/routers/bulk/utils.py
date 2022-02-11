@@ -1,14 +1,15 @@
-from fastapi import HTTPException, Request, status
-from fastapi.routing import APIRoute
-
 from typing import List, Set, Optional
 import re
+import ast
+from natsort import natsorted
 from contextlib import suppress
+
+from fastapi import HTTPException, Request, status
+from fastapi.routing import APIRoute
 from fastapi.responses import Response
 import dask.dataframe as dd
 import pandas as pd
-from natsort import natsorted
-import ast
+from pyarrow.lib import ArrowInvalid
 
 from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
@@ -25,7 +26,9 @@ from app.helper.traces import with_trace
 from app.model.filter import BulkReadFilterOperator, BulkReadFilters
 from app.model.model_chunking import GetDataParams, DataframeDescribe
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
-from pyarrow.lib import ArrowInvalid
+
+from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks
+
 
 
 def update_operation_ids(wdms_app):
@@ -77,9 +80,19 @@ def get_df_validation_func(request: Request) -> DataFrameValidationFunc:
 
     return: guarantee to return a not None dataframe validation function
     """
-    if not request.state.check_input_df_func:
+    if not getattr(request.state, 'check_input_df_func', None):
         return no_validation
     return request.state.check_input_df_func
+
+
+def set_welllog_data_consistency_check(request: Request):
+    request.state.data_consistency_checks = WelllogDataConsistencyChecks()
+
+
+def get_data_consistency_checks(request: Request):
+    if not getattr(request.state, 'data_consistency_checks', None):
+        return NoConsistencyChecks()
+    return request.state.data_consistency_checks
 
 
 @with_trace("get_df_from_request")

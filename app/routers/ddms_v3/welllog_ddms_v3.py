@@ -17,7 +17,12 @@ from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersion
 from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
-from app.consistency import DuplicatedCurveIdException, ReferenceCurveIdNotFoundException, check_welllog_consistency
+from app.consistency import (
+    DuplicatedCurveIdException,
+    ReferenceCurveIdNotFoundException,
+    check_welllog_consistency,
+    WelllogDataConsistencyChecks
+)
 from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import WellLog110 as WellLog
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
