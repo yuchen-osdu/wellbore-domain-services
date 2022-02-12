@@ -1,4 +1,4 @@
-from app.consistency import DuplicatedIdError, get_unique_ids
+from app.consistency.unique import DuplicatedIdError, get_unique_ids
 from app.model.osdu_model import Curve110
 
 

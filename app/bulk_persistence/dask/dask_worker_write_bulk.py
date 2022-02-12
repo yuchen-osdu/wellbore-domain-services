@@ -88,7 +88,7 @@ def write_bulk_without_session(data_handle,
     try:
         DataframeSerializerSync.to_parquet(df, full_file_path, storage_options=storage_options)
     except Exception as e:
-        raise BulkSaveException(message='Unexpected error and save bulk') from e
+        raise BulkSaveException('Unexpected error and save bulk') from e
 
     # 4- return basic describe
     return basic_describe(df)
