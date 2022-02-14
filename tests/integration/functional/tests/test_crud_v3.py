@@ -26,7 +26,7 @@ param_kind_depend_on_create = [
     pytest.param(k, marks=pytest.mark.dependency(depends=[f'test_create_record_{k}'])) for k in kind_list
 ]
 
-
+# TODO where is test_create_record_ ???
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize(
     'kind', [pytest.param(k, marks=pytest.mark.dependency(name=f'test_create_record_{k}')) for k in kind_list])

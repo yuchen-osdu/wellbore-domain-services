@@ -3,22 +3,18 @@ from typing import Set, Iterable
 
 from dask.dataframe.core import DataFrame as DaskDataFrame
 import pandas as pd
-
 import math
 
 from odes_storage.models import Record
 
+from app.utils import get_ctx
 from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
+from app.bulk_persistence.dask.traces import submit_with_trace
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
 
 from .unique import get_unique_ids
-
-from app.bulk_persistence.dask.traces import submit_with_trace
-
-from app.utils import get_ctx
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-
-from .consistency_checks import ConsistencyException, DataConsistencyChecks
 
 
 class DuplicatedCurveIdException(ConsistencyException):
@@ -89,7 +85,6 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         cls._check_reference_is_strictly_monotonic(ref)
         cls._check_top_bottom_reference(wl, ref)
-
 
     @classmethod
     async def check_bulk_consistency_on_commit_session(cls, record: Record, new_bulk_id):

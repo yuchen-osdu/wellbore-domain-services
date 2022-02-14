@@ -34,7 +34,7 @@ from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bu
 from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence.dataframe_validators import no_validation
 
-from app.consistency.consistency_checks import  NoConsistencyChecks
+from app.consistency import NoConsistencyChecks
 from odes_storage.models import Record, StorageAcl, Legal
 
 

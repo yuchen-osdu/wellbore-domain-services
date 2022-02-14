@@ -186,7 +186,8 @@ class DMSV3RouterUtils:
         # If BulkURI not none and the given record has an id : check if there is an old version of this record
         try:
             old_record = await fetch_record(ctx, r.id)
-        except UnexpectedResponse as e:
+        # real client raise UnexpectedResponse but blob local storage raises  HTTPException
+        except (UnexpectedResponse, HTTPException) as e:
             if e.status_code == status.HTTP_404_NOT_FOUND:
                 # record has no previous versions
                 if not bulk_uri:

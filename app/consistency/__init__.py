@@ -1,4 +1,4 @@
-from .consistency_checks import ConsistencyException, DataConsistencyChecks, NoConsistencyChecks
+from .no_consistency import NoConsistencyChecks
 from .welllog_consistency import (
     check_welllog_consistency, WelllogDataConsistencyChecks, DuplicatedCurveIdException,
     ReferenceCurveIdNotFoundException, ColumnDoesNotMatchCurveIdException, ReferenceCurveException

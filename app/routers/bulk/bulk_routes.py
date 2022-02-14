@@ -58,7 +58,9 @@ from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, Filt
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
 
-from app.consistency import DataConsistencyChecks, NoConsistencyChecks
+
+from app.bulk_persistence import DataConsistencyChecks, ConsistencyException
+from app.consistency import NoConsistencyChecks
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -105,7 +107,6 @@ async def post_data(record_id: str,
             df_validator_func=df_validation_func,
             consistency_checks=consistency_checks,
             record=record)
-
     except BulkError as ex:
         ex.raise_as_http()
 
@@ -322,7 +323,7 @@ async def complete_session(
             async with sessions_storage.initiate_commit(tenant, record_id, session_id) as commit_guard:
                 # get the session if some information is needed
                 i_session = commit_guard.session
-                _internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
+                _internal = i_session.internal  # <=  contains details, may be irrelevant or not needed
 
                 trace_attributes_root_span({'session-mode': i_session.session.mode})
 

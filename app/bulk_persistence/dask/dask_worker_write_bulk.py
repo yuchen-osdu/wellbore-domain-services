@@ -18,6 +18,8 @@ from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as path_builder
 from . import session_file_meta as session_meta
 
+from ..consistency_checks import DataConsistencyChecks
+
 """
 Contains functions related to writing bulk that mean to be run inside worker
 """
@@ -45,7 +47,7 @@ def write_bulk_without_session(data_handle,
                                df_validator_func: DataFrameValidationFunc,
                                bulk_base_path: str,
                                storage_options,
-                               consistency_checks: "DataConsistencyChecks",
+                               consistency_checks: DataConsistencyChecks,
                                record: "Record",
                                ) -> DataframeBasicDescribe:
     """

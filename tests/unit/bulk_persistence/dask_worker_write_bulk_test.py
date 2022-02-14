@@ -16,8 +16,7 @@ from app.bulk_persistence.dask.dask_worker_write_bulk import (basic_describe,
                                                               add_chunk_in_session)
 from app.bulk_persistence.dask.errors import BulkNotProcessable, BulkSaveException
 from app.bulk_persistence.dataframe_validators import no_validation
-from app.consistency.consistency_checks import NoConsistencyChecks
-
+from app.consistency import NoConsistencyChecks
 
 
 def dataframe_to_format(df, data_format: str, as_stream=False):

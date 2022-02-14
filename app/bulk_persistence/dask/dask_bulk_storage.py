@@ -47,7 +47,7 @@ from .bulk_catalog import (BulkCatalog, ChunkGroup,
 from ..mime_types import MimeType
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
-
+from ..consistency_checks import DataConsistencyChecks
 
 def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
     """call dask.dataframe.read_parquet with default parameters
@@ -481,7 +481,7 @@ class DaskBulkStorage:
                                         data: Union[bytes, AsyncGenerator[bytes, None]],
                                         content_type: MimeType,
                                         df_validator_func: DataFrameValidationFunc,
-                                        consistency_checks: "DataConsistencyChecks",
+                                        consistency_checks: DataConsistencyChecks,
                                         record: "Record",
                                         bulk_id: Optional[str] = None) -> Tuple[str, bulk_writer.DataframeBasicDescribe]:
         """
