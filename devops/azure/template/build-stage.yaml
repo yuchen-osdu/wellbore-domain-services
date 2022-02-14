@@ -38,6 +38,7 @@ stages:
       - job: unit_test_version3_10
         steps:
           - template: steps-unit-tests.yaml
+            enabled: false
             parameters:
               allow_to_fail: true
               python_version: '3.10'
@@ -46,7 +47,6 @@ stages:
         dependsOn:
         - unit_test_version3_8
         - unit_test_version3_9
-        - unit_test_version3_10
         steps:
           - template: steps-build.yaml
             parameters:
