@@ -1,7 +1,6 @@
 import json
 from io import BytesIO, StringIO
 from unittest.mock import patch
-from glob import glob
 
 import pytest
 import pandas as pd
@@ -52,13 +51,13 @@ def test_basic_describe_truncates_columns():
 
 
 # so far post_data and add_chunk takes same input, validate similarly and throw same exceptions
-@pytest.mark.parametrize("method_to_test, args",
-                         [
-                             (
-                             write_bulk_without_session, {"consistency_checks": NoConsistencyChecks(), "record": None}),
-                             (add_chunk_in_session, {})
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "method_to_test, args",
+    [
+        (write_bulk_without_session, {"consistency_checks": NoConsistencyChecks(), "record": None}),
+        (add_chunk_in_session, {}),
+    ],
+)
 def test_post_bulk_not_processable_cases(method_to_test, args, tmp_path):
     def as_bytes_io(content):
         return BytesIO(content)
@@ -104,10 +103,7 @@ def test_post_bulk_not_processable_cases(method_to_test, args, tmp_path):
             method_to_test(data, as_bytes_io, MimeTypes.PARQUET, no_validation, tmp_path, None, **args)
 
 
-@pytest.mark.parametrize("content_type", [
-    MimeTypes.PARQUET,
-    MimeTypes.JSON
-])
+@pytest.mark.parametrize("content_type", [MimeTypes.PARQUET, MimeTypes.JSON])
 def test_write_bulk_without_session_success(content_type):
     df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
     data = dataframe_to_format(df, content_type.type, True)

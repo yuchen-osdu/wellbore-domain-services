@@ -1,18 +1,16 @@
-import re
-from typing import Set, Iterable
-
-from dask.dataframe.core import DataFrame as DaskDataFrame
-import pandas as pd
 import math
+import re
+from typing import Iterable, Set
 
-from odes_storage.models import Record
-
-from app.utils import get_ctx
+import pandas as pd
+from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.traces import submit_with_trace
 from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
-from app.bulk_persistence.dask.traces import submit_with_trace
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
+from app.utils import get_ctx
+from dask.dataframe.core import DataFrame as DaskDataFrame
+from odes_storage.models import Record
 
 from .unique import get_unique_ids
 
@@ -65,13 +63,12 @@ def check_welllog_consistency(wl: WellLog110):
 
 
 class WelllogDataConsistencyChecks(DataConsistencyChecks):
-    """ Check welllog data consistency
-        bulk columns and welllog curvesIDs must match.
-        welllog referenceCurveID must match a welllog curve
-        Reference should be strictly monotonic increasing or strictly monotonic decresing
-        Reference top & bottom values should match welllog metadata.
+    """Check welllog data consistency
+    bulk columns and welllog curvesIDs must match.
+    welllog referenceCurveID must match a welllog curve
+    Reference should be strictly monotonic increasing or strictly monotonic decresing
+    Reference top & bottom values should match welllog metadata.
     """
-
 
     @classmethod
     def check_bulk_consistency_on_post_bulk(cls, record: Record, df: pd.DataFrame):
@@ -116,15 +113,15 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         """Check if col_names match curveID in bulk data
 
-            Args:
-                wl(welllog): welllog record to check
-                df(pandas.DataFrame): the bulk data
+        Args:
+            wl(welllog): welllog record to check
+            df(pandas.DataFrame): the bulk data
 
-            Returns: None
+        Returns: None
 
-            Raises:
-                ColumnDoesNotMatchCurveIdException: a column doesn't match any CurveID
-            """
+        Raises:
+            ColumnDoesNotMatchCurveIdException: a column doesn't match any CurveID
+        """
         if (not wl.data or not wl.data.Curves) and len(cols) > 0:
             raise ColumnDoesNotMatchCurveIdException(f"Columns doesn't match any CurveID")
 
@@ -134,7 +131,8 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
         if any(not_matching_col_name):
             raise ColumnDoesNotMatchCurveIdException(
-                f"Column(s) {','.join(not_matching_col_name)} doesn't match any CurveID")
+                f"Column(s) {','.join(not_matching_col_name)} doesn't match any CurveID"
+            )
 
     @staticmethod
     def _get_data_columns_name(cols: Iterable[str]) -> Set[str]:
@@ -145,9 +143,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
                 return txt
             return match["name"]
 
-        res = (
-            get_name(col) for col in cols if col != ""
-        )
+        res = (get_name(col) for col in cols if col != "")
         return {r for r in res if r != ""}
 
     @staticmethod
@@ -168,8 +164,9 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         def raise_if_attr_value_is_different(attr_name: str, value):
             current_value = getattr(wl.data, attr_name, None)
             if current_value is not None and not math.isclose(current_value, value):
-                    raise ReferenceCurveException(
-                        f"Reference {attr_name} value ({value}) is not egal to welllog's {attr_name} value ({current_value})")
+                raise ReferenceCurveException(
+                    f"Reference {attr_name} value ({value}) is not egal to welllog's {attr_name} value ({current_value})"
+                )
 
         raise_if_attr_value_is_different("TopMeasuredDepth", ref.iloc[0])
         raise_if_attr_value_is_different("SamplingStart", ref.iloc[0])

@@ -1,5 +1,5 @@
-from app.bulk_persistence import DataConsistencyChecks
 import pandas as pd
+from app.bulk_persistence import DataConsistencyChecks
 
 
 class NoConsistencyChecks(DataConsistencyChecks):
