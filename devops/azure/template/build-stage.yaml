@@ -36,9 +36,9 @@ stages:
               python_version: '3.9'
               include_coverage: false
       - job: unit_test_version3_10
+        enabled: false
         steps:
           - template: steps-unit-tests.yaml
-            enabled: false
             parameters:
               allow_to_fail: true
               python_version: '3.10'
