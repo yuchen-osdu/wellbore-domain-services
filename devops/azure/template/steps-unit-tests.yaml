@@ -37,6 +37,7 @@ steps:
   continueOnError: ${{parameters.allow_to_fail}}
   inputs:
     targetType: 'inline'
+    failOnStderr: true
     script: |
       echo ----- setup: installing dependencies --------
       echo $(System.DefaultWorkingDirectory)
