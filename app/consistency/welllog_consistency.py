@@ -159,7 +159,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not ref.is_monotonic_increasing and not ref.is_monotonic_decreasing:
             # Check Nan values are not allowed
             if ref.isnull().values.any():
-                raise ReferenceCurveException("Nan values in reference curve are not allowed")
+                raise ReferenceCurveException("Nan values in reference curve is not allowed")
             else:
                 raise ReferenceCurveException("Reference must be monotonically increasing or decreasing")
 

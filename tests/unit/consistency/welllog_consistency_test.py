@@ -112,7 +112,7 @@ def test__check_reference_is_strictly_monotonic_success():
         ),
         (
                 [0, None, 1, 2, 3, 4],
-                "Nan values in reference curve are not allowed"
+                "Nan values in reference curve is not allowed"
          ),
         (
                 [0, 2, 4, 3, 5],
