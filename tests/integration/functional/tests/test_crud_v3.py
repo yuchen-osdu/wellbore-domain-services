@@ -26,11 +26,11 @@ param_kind_depend_on_create = [
     pytest.param(k, marks=pytest.mark.dependency(depends=[f'test_create_record_{k}'])) for k in kind_list
 ]
 
-# TODO where is test_create_record_ ???
+
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize(
     'kind', [pytest.param(k, marks=pytest.mark.dependency(name=f'test_create_record_{k}')) for k in kind_list])
-def test_crud_create_record(with_wdms_env, kind):
+def test_create_record(with_wdms_env, kind):
     result = build_request(f'crud.{kind}.create_{kind}').call(with_wdms_env)
     result.assert_ok()
     resobj = result.get_response_obj()
