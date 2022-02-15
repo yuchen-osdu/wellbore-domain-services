@@ -20,8 +20,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.consistency import (
     DuplicatedCurveIdException,
     ReferenceCurveIdNotFoundException,
-    check_welllog_consistency,
-    WelllogDataConsistencyChecks
+    check_welllog_consistency
 )
 from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import WellLog110 as WellLog
