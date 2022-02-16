@@ -165,27 +165,21 @@ class DMSV3RouterUtils:
                 )
 
     @staticmethod
-    async def _raise_if_invalid_bulk_uri_task(idx, r, bulk_uri_access):
-
-        ctx: Context = get_ctx()
+    def _get_BulkURI_from_record_entity_object(r):
         bulk_uri = None
-        old_bulk_uri = None
-
-        # Get the given bulkURI or bulkURI is None
         if r.data.ExtensionProperties:
             bulk_uri = r.data.ExtensionProperties.get("wdms", {}).get(BULK_URI_FIELD, None)
+        return bulk_uri
 
-        if not r.id and not bulk_uri:
-            return
+    @staticmethod
+    def _get_BulkURI_from_record_object(old_record):
+        old_bulk_uri = None
+        if old_record.data:
+            old_bulk_uri = old_record.data.get("ExtensionProperties", {}).get("wdms", {}).get(BULK_URI_FIELD, None)
+        return old_bulk_uri
 
-        if not r.id and bulk_uri:
-            # The given BulkURI cannot be specified without record id
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Record[{idx}] error : no Bulk URI can be specified without record id",
-            )
-
-        # If BulkURI not none and the given record has an id : check if there is an old version of this record
+    @staticmethod
+    async def _get_old_version_record_or_raise_error(ctx, idx, r, bulk_uri):
         try:
             old_record = await fetch_record(ctx, r.id)
         except UnexpectedResponse as e:
@@ -193,30 +187,65 @@ class DMSV3RouterUtils:
                 # record has no previous versions
                 if not bulk_uri:
                     return
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no previous version",
-                )
+                DMSV3RouterUtils._raise_bulk_uri_error_list("Bulk URI, no old version", idx)
             else:
                 raise e
+        return old_record
 
-        # Get bulkURI's old version if it exist
-        if old_record.data:
-            old_bulk_uri = old_record.data.get("ExtensionProperties", {}).get("wdms", {}).get(BULK_URI_FIELD, None)
-
-        if not old_bulk_uri:
+    @staticmethod
+    def _raise_bulk_uri_error_list(err, idx):
+        if err == "Bulk URI, no ID":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Record[{idx}] error : no Bulk URI can be specified without record id",
+            )
+        if err == "Bulk URI, no old version":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no previous version",
+            )
+        if err == "Bulk URI, old version without bulk URI":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no bulkURI in "
                        f"its previous version",
             )
-
-        if bulk_uri != old_bulk_uri:
-            # The given BulkURI isn't matching with the previous version one
+        if err == "No match bulk URI and old version bulk URI":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record[{idx}] error : Bulk URI isn't matching with the previous version one",
             )
+
+    @staticmethod
+    async def _raise_if_invalid_bulk_uri_task(idx, r, bulk_uri_access):
+
+        ctx: Context = get_ctx()
+
+        # Get the given bulkURI or bulkURI is None
+        bulk_uri = DMSV3RouterUtils._get_BulkURI_from_record_entity_object(r)
+
+        # if id is None and bulkURI is None: new record creation
+        if not r.id and not bulk_uri:
+            return
+
+        if not r.id and bulk_uri:
+            # The given BulkURI cannot be specified without record id
+            DMSV3RouterUtils._raise_bulk_uri_error_list("Bulk URI, no ID", idx)
+
+        # If BulkURI not none and the given record has an id : check if there is an old version of this record or raise a error
+        old_record = await DMSV3RouterUtils._get_old_version_record_or_raise_error(ctx, idx, r, bulk_uri)
+        if not old_record:
+            return
+
+        # Get bulkURI's old version if it exist
+        old_bulk_uri = DMSV3RouterUtils._get_BulkURI_from_record_object(old_record)
+
+        if not old_bulk_uri:
+            DMSV3RouterUtils._raise_bulk_uri_error_list("Bulk URI, old version without bulk URI", idx)
+
+        if bulk_uri != old_bulk_uri:
+            # The given BulkURI isn't matching with the previous version one
+            DMSV3RouterUtils._raise_bulk_uri_error_list("No match bulk URI and old version bulk URI", idx)
 
     @staticmethod
     async def raise_if_invalid_bulk_uri(records: List[Record], bulk_uri_access: BulkIdAccess):
