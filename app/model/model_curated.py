@@ -22,13 +22,11 @@
 
 from __future__ import annotations
 
-import sys
 from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra, Field, confloat
-
+from pydantic import BaseModel, Extra, Field, confloat, StrictFloat, StrictStr, StrictInt
 
 # TMP: added import only to expose pydantic bug with non-deterministic coercion
 # https://github.com/samuelcolvin/pydantic/issues/2835
@@ -1027,7 +1025,17 @@ class namedProperty(DDMSBaseModel):
         description="The unitKey to be looked up in the 'frameOfReference.units' dictionary to find the self-contained definition.",
         title='Property Unit Symbol',
     )
-    value: Optional[Union[float, str]] = Field(
+
+    # original type definition for value:
+    # pydantic coerces when possible, but to *what* is ambiguous here.
+    # value: Optional[Union[float, str]] = Field(
+
+    # if we want to rely on coercion, it needs to be unambiguous
+    # value: Optional[float] = Field(  # but we would size-down the accepted type
+
+    # otherwise we use StrictFloat and StrictStr to prevent unexpected (non-deterministic) coercion
+    # we add StrictInt to keep accepting int, as int was implicitely coerced to float
+    value: Optional[Union[StrictFloat, StrictInt, StrictStr]] = Field(
         None,
         description='The value for this property as a string or a number.',
         title='Property Value',
@@ -2185,8 +2193,3 @@ class well(DDMSBaseModel, DDMSBaseRecord):
         description='The version number of this well; set by the framework.',
         title='Entity Version Number',
     )
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

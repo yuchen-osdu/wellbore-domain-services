@@ -1,12 +1,97 @@
+import fractions
 import typing
+from collections import deque
+from datetime import timedelta
+
+import pydantic
 from string import printable
 
 import pytest
-from hypothesis import given, example
+from hypothesis import given, example, settings, Verbosity, HealthCheck
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
 import app.model.model_curated as model
+
+
+# typing utils
+def is_union_hint(hint):
+    return getattr(hint, "__origin__", None) is typing.Union
+
+
+def is_list_hint(hint):
+    return getattr(hint, "__origin__", None) is list
+
+
+def is_optional_hint(hint):
+    return is_union_hint(hint) and type(None) in hint.__args__
+
+
+# useful strategies
+def everything_except(*excluded_types):
+    """Strategy to generate anything from type except excluded_types
+    Ref: https://hypothesis.readthedocs.io/en/latest/data.html#hypothesis.strategies.from_type
+    """
+
+    def isinstance_check_hint(
+        inst: typing.Any, type_hints: typing.Iterable[typing.Type]
+    ) -> typing.Optional[typing.Type]:
+        """ad-hock method to find the actual runtime type we can check for, using isinstance with a type hint.
+        This cannot be perfect, nor generalizable, but we can come up with something useful enough for our specific usecase.
+
+        It returns the **first** type hint that isinstance() deemed valid for inst, or None otherwise.
+        It should except for any unsupported hint.
+        """
+        for hint in type_hints:
+
+            # skipping type or it would result in a useless strategy
+            # we need it to be explicit, because type(type) == type and it would match the next condition
+            if hint is type:
+                pass
+
+            # if it is a specific type from pydantic
+            elif getattr(hint, "__name__", None) in dir(pydantic.types):
+                # TODO: this can be refined to improve validation checks of pydantic types
+                # check the type hierarchy for the fist match found
+                instance_of = isinstance_check_hint(inst, hint.mro()[1:])
+                return instance_of
+
+            # hint is an actual runtime datatype, we can check for it
+            elif type(hint) == type:
+                if isinstance(inst, hint):
+                    instance_of = hint
+                    return instance_of
+
+            # same check as in pydantic core.py::_from_type for Union
+            elif is_union_hint(hint):
+                # recurse nested types while flattening the list
+                instance_of = isinstance_check_hint(inst, hint.__args__)
+                return instance_of
+
+            # we can check for a list immediately
+            elif is_list_hint(hint):
+                # Ref: https://pydantic-docs.helpmanual.io/usage/types/#standard-library-types
+                if isinstance(inst, (list, tuple, set, frozenset, deque)):
+                    # make sure we check all elements of the list
+                    if all(
+                        isinstance_check_hint(inst_elem, hint.__args__)
+                        for inst_elem in inst
+                    ):
+                        instance_of = hint
+                        return instance_of
+
+            else:
+                raise NotImplemented(
+                    f"isinstance_check_hint not implemented for {hint}"
+                )
+
+    return (
+        st.from_type(type).flatmap(st.from_type)
+        # filter out the instance of excluded_types that can be identified
+        # meaning we let through only what does not seem to be an instance of any one of the excluded_types
+        .filter(lambda x: isinstance_check_hint(x, excluded_types) is None)
+    )
+
 
 # Ref: https://github.com/samuelcolvin/pydantic/issues/3757
 # fix pydantic strategy
@@ -14,7 +99,7 @@ json_strategy = st.recursive(
     st.none() | st.booleans() | st.floats() | st.text(printable),
     lambda children: st.lists(children, max_size=5)
     | st.dictionaries(st.text(printable), children, max_size=5),
-    max_leaves=20
+    max_leaves=20,
 )
 
 # From https://datatracker.ietf.org/doc/html/rfc7946
@@ -28,12 +113,16 @@ st.register_type_strategy(
         model.GeoJsonFeature,
         bbox=st.from_type(geojson_feature_type_hints["bbox"]),
         geometry=st.from_type(geojson_feature_type_hints["geometry"]),
-        properties=st.dictionaries(keys=st.text(printable), values=json_strategy, max_size=5),
+        properties=st.dictionaries(
+            keys=st.text(printable), values=json_strategy, max_size=5
+        ),
         type=st.from_type(geojson_feature_type_hints["type"]),
     ),
 )
 
-geojson_feature_collection_type_hints = typing.get_type_hints(model.GeoJsonFeatureCollection)
+geojson_feature_collection_type_hints = typing.get_type_hints(
+    model.GeoJsonFeatureCollection
+)
 st.register_type_strategy(
     model.GeoJsonFeatureCollection,
     st.builds(
@@ -43,6 +132,38 @@ st.register_type_strategy(
         type=st.from_type(geojson_feature_collection_type_hints["type"]),
     ),
 )
+
+
+def dict_strategy(model_class):
+    return st.fixed_dictionaries(
+        mapping={
+            f: st.from_type(th)
+            for f, th in typing.get_type_hints(model_class).items()
+            if not is_optional_hint(th)
+        },
+        optional={
+            f: st.from_type(th)
+            for f, th in typing.get_type_hints(model_class).items()
+            if is_optional_hint(th)
+        },
+    )
+
+
+def adverse_dict_strategy(model_class):
+    return st.fixed_dictionaries(
+        mapping={
+            f: everything_except(th)
+            for f, th in typing.get_type_hints(model_class).items()
+            if not is_optional_hint(th)
+        },
+        optional={
+            f: everything_except(th)
+            for f, th in typing.get_type_hints(model_class).items()
+            if is_optional_hint(th)
+        },
+    ).filter(
+        lambda d: len(d) != 0
+    )  # empty dict is possible, but can be validated
 
 
 @given(tag=st.from_type(model.Tags))
@@ -581,30 +702,67 @@ def test_named_property_dict_init_symmetric(named_property):
     assert model.namedProperty(**named_property.dict()) == named_property
 
 
-@pytest.mark.parametrize("named_property_dict", [
-    {"value": 42},  # behaviour here is still non-deterministic with smart_unions
-                    # to illustrate, add "import requests" in model_curated.py
-    {"value": "42"},
-    {"value": 42.0},
-    {"value": "42.0"},
- ])
+@pytest.mark.parametrize(
+    "named_property_dict",
+    [
+        {"value": None},
+        {"value": 42},  # behaviour here is still non-deterministic with smart_unions
+        # to illustrate, add "import requests" in model_curated.py
+        {"value": "42"},
+        {"value": 42.0},
+        {"value": "42.0"},
+        {"value": "1.23456789"},
+        {"value": "Lorem Ipsum"},
+    ],
+)
 def test_named_property_dict_maybe_coerce_value_to_float(named_property_dict):
     """tests dict/init symmetry for namedProperty model"""
+    original_value_type = type(named_property_dict["value"])
     named_property = model.namedProperty(**named_property_dict)
 
     # pydantic 1.8 with default union behavior:
     # when creating the instance, the value is coerced to one (non-deterministic) of the union type.
-    # In our specific usecase it should be float
+    # In our specific usecase it should be float where possible:
     # assert isinstance(named_property.value, float)
     # assert isinstance(named_property.dict()["value"], float)
 
     # pydantic 1.9 with smart union:
     # named_property.value depends on what the original data was
-    # but is coerced (non-deterministic?) if the original data requires it :
-    original_value_type = type(named_property_dict["value"])
-    expected_type = original_value_type if original_value_type in [str, float] else float
-    assert type(named_property.value) == expected_type
-    assert type(named_property.dict()["value"]) == expected_type
+    # but can be implicitly coerced (non-deterministically) if the type is not strict.
+    # For instance implicit conversion from int to float might occur if int is not in the Union args...
+    hints = typing.get_type_hints(model.namedProperty)["value"].__args__
+    expected_types = [h.mro()[-2] for h in hints]  # retrieve builtins python types
+    if original_value_type in expected_types:
+        expected_type = original_value_type
+        assert type(named_property.value) == expected_type
+        assert type(named_property.dict()["value"]) == expected_type
+    else:
+        # to detect unexpected behaviour.
+        assert False, f"{original_value_type} not taken into account in test"
+
+
+@given(named_property_dict=dict_strategy(model.namedProperty))
+def test_named_property_init_dict_symmetric(named_property_dict):
+    """tests for unexpected coercion for namedProperty model"""
+    assert (
+        model.namedProperty(**named_property_dict).dict(exclude_unset=True)
+        == named_property_dict
+    )
+
+
+@pytest.mark.xfail(
+    reason="fields are not strict, model accepts most values and then coerce them to string"
+)
+@given(not_named_property_dict=adverse_dict_strategy(model.namedProperty))
+@settings(
+    verbosity=Verbosity.normal,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much],
+)
+def test_named_property_refuses_unexpected(not_named_property_dict):
+    """tests for strictness and expected validation errors"""
+    with pytest.raises(ValidationError) as exc:
+        model.namedProperty(**not_named_property_dict)
+    assert len(exc.value.errors()) > 0  # we have some error info
 
 
 @given(logchannel_instance=st.from_type(model.logchannel))
@@ -786,9 +944,7 @@ def test_well_data_dict_init_symmetric(well_data):
 def test_well_data_allows_extra(well_data):
     """tests wellData allows extra fields"""
 
-    instance = model.wellData(
-        **{**well_data.dict(), "another_key": "the other value"}
-    )
+    instance = model.wellData(**{**well_data.dict(), "another_key": "the other value"})
     assert instance.another_key == "the other value"
 
 

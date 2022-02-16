@@ -229,6 +229,25 @@ value accepts a float
  
 ```
 
+
+value accepts an int
+
+```
+>>> from pprint import pprint
+>>> named_property = namedProperty(**{
+...     "value": 42
+... })
+>>> pprint(named_property.dict())
+{'associations': None,
+ 'description': None,
+ 'format': None,
+ 'name': None,
+ 'unitKey': None,
+ 'value': 42,
+ 'values': None}
+ 
+```
+
 value also accepts a string
 
 ```
@@ -245,6 +264,28 @@ value also accepts a string
  'values': None}
  
 ```
+
+Note different types of values for other fields are accepted, and coerced to string
+
+```
+>>> named_property = namedProperty(**{
+...     "associations": [1,2,3],
+...     "description": 51,
+...     "format": 33,
+...     "name": 42,
+...     "unitKey": 5
+... })
+>>> pprint(named_property.dict())
+{'associations': ['1', '2', '3'],
+ 'description': '51',
+ 'format': '33',
+ 'name': '42',
+ 'unitKey': '5',
+ 'value': None,
+ 'values': None}
+ 
+```
+
 
 logchannel
 ----------
