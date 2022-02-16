@@ -2,7 +2,7 @@ import pytest
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from fastapi.testclient import TestClient
 from tests.unit.test_utils import create_mock_class
-
+from chunking_test import dasked_test_app
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)
