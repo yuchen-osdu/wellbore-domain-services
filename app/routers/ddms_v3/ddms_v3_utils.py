@@ -21,7 +21,7 @@ from app.model.osdu_model import (
     WellLog,
     WellLog110,
 )
-from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, BULK_URI_FIELD
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
 
@@ -169,9 +169,11 @@ class DMSV3RouterUtils:
 
         ctx: Context = get_ctx()
         bulk_uri = None
+        old_bulk_uri = None
+
         # Get the given bulkURI or bulkURI is None
-        if r.data.ExtensionProperties and "wdms" in r.data.ExtensionProperties and "bulkURI" in r.data.ExtensionProperties["wdms"]:
-            bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=r))
+        if r.data.ExtensionProperties:
+            bulk_uri = r.data.ExtensionProperties.get("wdms", {}).get(BULK_URI_FIELD, None)
 
         if not r.id and not bulk_uri:
             return
@@ -199,9 +201,10 @@ class DMSV3RouterUtils:
                 raise e
 
         # Get bulkURI's old version if it exist
-        if hasattr(old_record, "data"):
-            old_bulk_uri = BulkURI.encode(bulk_uri_access.get_bulk_uri(record=old_record))
-        else:
+        if old_record.data:
+            old_bulk_uri = old_record.data.get("ExtensionProperties", {}).get("wdms", {}).get(BULK_URI_FIELD, None)
+
+        if not old_bulk_uri:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no bulkURI in "

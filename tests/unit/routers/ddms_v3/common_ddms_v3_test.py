@@ -35,6 +35,9 @@ from starlette.responses import Response
 from tests.unit.conftest import do_nothing, set_default_partition
 from tests.unit.test_utils import create_mock_class
 
+from tests.unit.test_utils import nope_logger_fixture
+
+
 """
 Contains unified common tests for the different kind. Mainly CRUD test cases
 """
@@ -368,7 +371,7 @@ def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
 
 
 @pytest.mark.parametrize("base_url, record_id, record_kind, data", tests_parameters_record_ids)
-def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url, record_id, record_kind, data):
+def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url, record_id, record_kind, data, nope_logger_fixture):
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
     moc_get_record = mock.AsyncMock(side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
                                                                    reason_phrase="", content=None, headers=None))
@@ -389,6 +392,15 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
         # test create record with id, "wdms" field and no BulkURI
         data_test = {
             "ExtensionProperties": {"wdms": {'test': 'test'}}}
+        data_test.update(data)
+        record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
+                                                               data=data_test)
+        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+        assert response.status_code == status.HTTP_200_OK
+
+        # test create record with id, "ExtensionProperties" field, no "wdms" field and no BulkURI
+        data_test = {
+            "ExtensionProperties": {"test": {'test': 'test'}}}
         data_test.update(data)
         record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
                                                                data=data_test)
@@ -439,3 +451,22 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                                                                    data=data_test)
             response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
             assert response.status_code == status.HTTP_200_OK
+
+            # Data
+            moc_record = Record(
+                id=record_id,
+                kind=record_kind,
+                acl={"owners": ["test"], "viewers": ["test"]},
+                version=1976,
+                legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
+                data={'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {
+                    'test': {}}},
+            )
+            with mock.patch.object(StorageRecordServiceClientMock, "get_record",
+                                   mock.AsyncMock(return_value=moc_record)):
+                # test create record with BulkURI which has a previous version with another BulkURI
+                record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
+                                                                       data=data_test)
+                response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+                assert response.status_code == status.HTTP_400_BAD_REQUEST
+                assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified, given record_id has no bulkURI in its previous version"}'
