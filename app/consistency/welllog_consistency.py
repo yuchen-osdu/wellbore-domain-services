@@ -143,7 +143,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
                 return txt
             return match["name"]
 
-        res = (get_name(col) for col in cols if col != "")
+        res = (get_name(col) for col in cols if col)
         return {r for r in res if r != ""}
 
     @staticmethod
