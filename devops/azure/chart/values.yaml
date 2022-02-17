@@ -40,9 +40,9 @@ resources:
    cpu: 1000m
 
 probes:
-#  startup:
-#    failureThreshold: 6
-#    periodSeconds: 5
+  startup:
+    failureThreshold: 6
+    periodSeconds: 5
   liveness:
     initialDelaySeconds: 15
     periodSeconds: 5
