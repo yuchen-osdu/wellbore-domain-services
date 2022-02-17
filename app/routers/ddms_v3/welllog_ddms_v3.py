@@ -141,11 +141,10 @@ async def get_osdu_welllog_version(
     },
 )
 async def post_welllog_osdu(
-    welllogs: List[WellLog] = Body(..., example=load_schema_example("wellLog_v3.json")), ctx: Context = Depends(get_ctx),
-    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
+    welllogs: List[WellLog] = Body(..., example=load_schema_example("wellLog_v3.json")), ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(welllogs)
-    await DMSV3RouterUtils.raise_if_invalid_bulk_uri(welllogs, bulk_uri_access)
+    await DMSV3RouterUtils.raise_if_invalid_bulk_uri(welllogs)
     for idx, w in enumerate(welllogs):
         try:
             check_welllog_consistency(w)

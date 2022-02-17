@@ -194,7 +194,7 @@ class DMSV3RouterUtils:
 
 
     @staticmethod
-    async def _raise_if_invalid_bulk_uri_task(idx, r, bulk_uri_access):
+    async def _raise_if_invalid_bulk_uri_task(idx: int, r: Record):
 
         ctx: Context = get_ctx()
 
@@ -232,7 +232,7 @@ class DMSV3RouterUtils:
         # Record update
 
     @staticmethod
-    async def raise_if_invalid_bulk_uri(records: List[Record], bulk_uri_access: BulkIdAccess):
+    async def raise_if_invalid_bulk_uri(records: List[Record]):
         """
         Check of BulkURIs in the given records on create/update welllog and trajectory APIs.
 
@@ -253,4 +253,4 @@ class DMSV3RouterUtils:
         """
 
         await asyncio.gather(
-            *[DMSV3RouterUtils._raise_if_invalid_bulk_uri_task(idx, r, bulk_uri_access) for idx, r in enumerate(records)])
+            *[DMSV3RouterUtils._raise_if_invalid_bulk_uri_task(idx, r) for idx, r in enumerate(records)])
