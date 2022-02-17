@@ -35,8 +35,6 @@ from starlette.responses import Response
 from tests.unit.conftest import do_nothing, set_default_partition
 from tests.unit.test_utils import create_mock_class
 
-from tests.unit.test_utils import nope_logger_fixture
-
 
 """
 Contains unified common tests for the different kind. Mainly CRUD test cases
@@ -371,7 +369,7 @@ def records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
 
 
 @pytest.mark.parametrize("base_url, record_id, record_kind, data", tests_parameters_record_ids)
-def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url, record_id, record_kind, data, nope_logger_fixture):
+def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url, record_id, record_kind, data):
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
     moc_get_record = mock.AsyncMock(side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
                                                                    reason_phrase="", content=None, headers=None))
