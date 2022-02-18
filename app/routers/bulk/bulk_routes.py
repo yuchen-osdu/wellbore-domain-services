@@ -59,8 +59,8 @@ from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
 
 
-from app.bulk_persistence import DataConsistencyChecks, ConsistencyException
-from app.consistency import NoConsistencyChecks
+from app.bulk_persistence import DataConsistencyChecks
+
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
