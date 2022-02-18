@@ -167,9 +167,9 @@ class DMSV3RouterUtils:
     @staticmethod
     def _get_BulkURI_from_record(r):
         bulk_uri = None
-        if isinstance(r.data, dict):
+        if hasattr(r, 'data') and isinstance(r.data, dict):
             bulk_uri = r.data.get("ExtensionProperties", {}).get("wdms", {}).get(BULK_URI_FIELD, None)
-        elif isinstance(r.data.ExtensionProperties, dict):
+        elif hasattr(r, 'data') and hasattr(r.data, 'ExtensionProperties') and isinstance(r.data.ExtensionProperties, dict):
             bulk_uri = r.data.ExtensionProperties.get("wdms", {}).get(BULK_URI_FIELD, None)
         if bulk_uri:
             BulkURI.decode(bulk_uri)
@@ -217,7 +217,7 @@ class DMSV3RouterUtils:
 
         # Get bulkURI's old version if it exist
         old_bulk_uri = DMSV3RouterUtils._get_BulkURI_from_record(old_record)
-        if not old_bulk_uri:
+        if not old_bulk_uri and bulk_uri:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no bulkURI in "

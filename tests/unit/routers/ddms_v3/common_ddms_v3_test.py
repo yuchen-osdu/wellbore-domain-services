@@ -470,9 +470,18 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
             )
             with mock.patch.object(StorageRecordServiceClientMock, "get_record",
                                    mock.AsyncMock(return_value=moc_record)):
-                # test create record with BulkURI which has a previous version with another BulkURI
+                # test create record with BulkURI which has a previous version with another/without BulkURI
                 record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
                                                                        data=data_test)
                 response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
                 assert response.status_code == status.HTTP_400_BAD_REQUEST
                 assert response.text == '{"detail":"Record[0] error : no Bulk URI can be specified, given record_id has no bulkURI in its previous version"}'
+
+                # test create record without BulkURI and with id which has a previous version without BulkURI
+                data_test = {
+                    "ExtensionProperties": {"wdms": {}}}
+                data_test.update(data)
+                record_to_test = records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind,
+                                                                       data=data_test)
+                response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+                assert response.status_code == status.HTTP_200_OK
