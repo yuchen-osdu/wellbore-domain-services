@@ -25,7 +25,15 @@ class BulkIdAccess(ABC):
 class OsduBulkIdAccess(BulkIdAccess):
     @staticmethod
     def get_bulk_uri(record) -> BulkURI:
-        return BulkURI.decode(record.data.get("ExtensionProperties", {}).get("wdms", {}).get(BULK_URI_FIELD, None))
+        bulk_uri = None
+        if hasattr(record, 'data') and isinstance(record.data, dict):
+            bulk_uri = record.data.get("ExtensionProperties", {}).get("wdms", {}).get(BULK_URI_FIELD, None)
+        elif hasattr(record, 'data') and hasattr(record.data, 'ExtensionProperties') and isinstance(
+                record.data.ExtensionProperties, dict):
+            bulk_uri = record.data.ExtensionProperties.get("wdms", {}).get(BULK_URI_FIELD, None)
+        if bulk_uri:
+            BulkURI.decode(bulk_uri)
+        return bulk_uri
 
     @staticmethod
     def set_bulk_uri(record, bulk_id: str):
