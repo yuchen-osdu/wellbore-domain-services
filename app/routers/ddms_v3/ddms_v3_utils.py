@@ -164,24 +164,6 @@ class DMSV3RouterUtils:
                     detail=f"Record[{idx}] validation against schema '{kind.entity_type}:{kind.version}' failed: {str(validationError)}",
                 )
 
-
-    @staticmethod
-    async def _get_old_version_record_or_raise_error(ctx, idx, record, bulk_uri):
-        try:
-            old_record = await fetch_record(ctx, record.id)
-        except UnexpectedResponse as e:
-            if e.status_code == status.HTTP_404_NOT_FOUND:
-                # record has no previous versions
-                if not bulk_uri:
-                    return
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Record[{idx}] error : no Bulk URI can be specified, given record_id has no previous version",
-                )
-            else:
-                raise e
-        return old_record
-
     @staticmethod
     async def _raise_if_invalid_bulk_uri_task(index_record: int, record: Record, bulk_uri_access: BulkIdAccess):
 
@@ -218,21 +200,31 @@ class DMSV3RouterUtils:
                     detail=f"Record[{index_record}] error : no Bulk URI can be specified without record id",
                 )
 
-        old_record = await DMSV3RouterUtils._get_old_version_record_or_raise_error(ctx, index_record, record, bulk_uri)
-        if not old_record:
-            # Record creation
-            return
+        # Get record's previous version
+        try:
+            previous_version_record = await fetch_record(ctx, record.id)
+        except UnexpectedResponse as e:
+            if e.status_code == status.HTTP_404_NOT_FOUND:
+                # record has no previous versions
+                if not bulk_uri:
+                    return
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Record[{index_record}] error : no Bulk URI can be specified, given record_id has no previous version",
+                )
+            else:
+                raise e
 
         # Get bulkURI's old version if it exist
-        old_bulk_uri = bulk_uri_access.get_bulk_uri(record=old_record)
-        if not old_bulk_uri and bulk_uri:
+        previous_version_bulk_uri = bulk_uri_access.get_bulk_uri(record=previous_version_record)
+        if not previous_version_bulk_uri and bulk_uri:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record[{index_record}] error : no Bulk URI can be specified, given record_id has no bulkURI in "
                        f"its previous version",
             )
 
-        if bulk_uri != old_bulk_uri:
+        if bulk_uri != previous_version_bulk_uri:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record[{index_record}] error : Bulk URI isn't matching with the previous version one",
