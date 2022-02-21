@@ -5,25 +5,25 @@ class DuplicatedIdError:
     pass
 
 
-def get_unique_ids(object_list: List[Any], attr_name: str) -> Tuple[Set[str], Optional[DuplicatedIdError]]:
-    """Check that the value of an attribute of all objects in a list are unique
+def get_unique_attr_values(object_list: List[Any], attr_name: str) -> Tuple[Set[str], Optional[DuplicatedIdError]]:
+    """Get the values of an attribute of all objects if all values are unique
 
     Args:
         object_list (List[Any]):  objects whose specified attribute must be unique
-        attr_name: the name of the attribute to check for each object of the list passed as argument
+        attr_name: the name of the attribute to get for each objects
 
     Returns:
-        The values of the attribute specified for each object passed in argument if they are all unique
+        The values of the attribute specified for each objects  if they are all unique
         otherwise an empty set and a DuplicatedIdError
     """
 
-    ids = set()
+    values = set()
 
     # check all curve ids are unique
     if object_list:
         # expression generator fetch attribute  and  evaluate on demand if attribute value is duplicated
-        is_id_duplicated = (getattr(obj, attr_name) in ids or ids.add(getattr(obj, attr_name)) for obj in object_list)
-        if any(is_id_duplicated):
+        is_duplicated = (getattr(obj, attr_name) in values or values.add(getattr(obj, attr_name)) for obj in object_list)
+        if any(is_duplicated):
             return set(), DuplicatedIdError()
 
-    return ids, None
+    return values, None

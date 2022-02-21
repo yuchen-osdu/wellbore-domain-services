@@ -34,7 +34,8 @@ from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bu
 from app.bulk_persistence.mime_types import MimeTypes
 from app.bulk_persistence.dataframe_validators import no_validation
 
-
+from app.consistency import NoConsistencyChecks
+from odes_storage.models import Record, StorageAcl, Legal
 
 
 @pytest.fixture()
@@ -81,8 +82,9 @@ async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_
         df_parquet_bytes,
         MimeTypes.PARQUET,
         no_validation,
-        record_id,
-        bulk_id)
+        consistency_checks=NoConsistencyChecks,
+        record=Record(id=record_id, kind="", acl=StorageAcl(viewers=[], owners=[]), legal=Legal(), data={}),
+        bulk_id=bulk_id)
     return bulkid
 
 

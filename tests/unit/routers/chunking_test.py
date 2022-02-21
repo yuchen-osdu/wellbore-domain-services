@@ -28,6 +28,8 @@ from tests.unit.persistence.dask_blob_storage_test import generate_df
 
 from tests.unit.test_utils import nope_logger_fixture
 
+from app.routers.bulk.utils import set_welllog_data_consistency_check
+
 Definitions = {
     'WellLog': {
         'api_version': 'v3',
@@ -161,7 +163,7 @@ def dasked_test_app_without_consistency(dasked_test_app):
     app = dasked_test_app
     # disable wellLog data consistency check for tests
     previous_overrides = wdms_app.dependency_overrides
-    # app.dependency_overrides[set_check_welllog_data_consistency_func] = do_nothing
+    app.dependency_overrides[set_welllog_data_consistency_check] = do_nothing
     yield app
     app.dependency_overrides = previous_overrides
 

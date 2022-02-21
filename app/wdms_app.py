@@ -64,6 +64,7 @@ from app.routers.bulk.utils import (
     update_operation_ids,
     set_v3_input_dataframe_check,
     set_legacy_input_dataframe_check,
+    set_welllog_data_consistency_check
 )
 from app.routers.bulk.bulk_uri_dependencies import (
     set_osdu_bulk_id_access,
@@ -241,6 +242,7 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
                                            (DDMS_V3_PATH, [], True)
                                            ]:
     # welllog bulk v3 APIs
+    # Create and Read session   (EXCLUDE  PATCH commit/abandon)
     wdms_app.include_router(
         sessions.router,
         prefix=bulk_prefix + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
@@ -248,11 +250,17 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))],
         include_in_schema=is_visible)
 
+    # POST welllogs/{record_id}/data
+    # POST welllogs/{record_id}/sessions/{session_id}/data
+    # GET welllogs/{record_id}/versions/{version}/data
+    # GET welllogs/{record_id}/data
+    # PATCH /{record_id}/sessions/{session_id}
     wdms_app.include_router(
         bulk_routes.router,
         prefix=bulk_prefix + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["WellLog"],
-        dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))],
+        dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
+                      Depends(set_welllog_data_consistency_check)],
         include_in_schema=is_visible)
 
     # wellbore trajectory bulk v3 APIs

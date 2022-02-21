@@ -51,7 +51,6 @@ def columns_type_must_be_string(df: pd.DataFrame) -> ValidationResult:
     """ Ensure given dataframe contains columns name as string only as described by WellLog schemas """
     if all((type(t) is str for t in df.columns)):
         return ValidationSuccess
-
     return False, 'All columns type should be string'
 
 

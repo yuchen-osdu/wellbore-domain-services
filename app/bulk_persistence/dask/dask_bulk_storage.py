@@ -30,6 +30,7 @@ from app.persistence.sessions_storage import Session
 from app.utils import DaskClient, capture_timings
 from app.conf import Config
 
+
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span
@@ -46,7 +47,7 @@ from .bulk_catalog import (BulkCatalog, ChunkGroup,
 from ..mime_types import MimeType
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
-
+from ..consistency_checks import DataConsistencyChecks
 
 def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
     """call dask.dataframe.read_parquet with default parameters
@@ -480,7 +481,8 @@ class DaskBulkStorage:
                                         data: Union[bytes, AsyncGenerator[bytes, None]],
                                         content_type: MimeType,
                                         df_validator_func: DataFrameValidationFunc,
-                                        record_id: str,
+                                        consistency_checks: DataConsistencyChecks,
+                                        record: "Record",
                                         bulk_id: Optional[str] = None) -> Tuple[str, bulk_writer.DataframeBasicDescribe]:
         """
         process post data outside of a session, delegate the entire work in Dask worker. It constructs the path
@@ -491,7 +493,7 @@ class DaskBulkStorage:
         """
 
         bulk_id = bulk_id or new_bulk_id()
-        bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
+        bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record.id, bulk_id, self.protocol)
 
         # ensure directory exists for local storage, do nothing on remote storage
         self._ensure_dir_tree_exists(bulk_base_path)
@@ -506,7 +508,9 @@ class DaskBulkStorage:
                                                   content_type,
                                                   df_validator_func,
                                                   bulk_base_path,
-                                                  self._parameters.storage_options)
+                                                  self._parameters.storage_options,
+                                                  consistency_checks,
+                                                  record)
 
         return bulk_id, df_describe
 
