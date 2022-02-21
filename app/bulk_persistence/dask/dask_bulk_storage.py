@@ -33,7 +33,7 @@ from app.conf import Config
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span
-from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, worker_capture_timing_handlers,
+from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, join_dataframes, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
 from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
 from .. import DataframeSerializerSync
@@ -111,10 +111,8 @@ class DaskBulkStorage:
                 parameters.register_fsspec_implementation()
 
             await DaskBulkStorage.client.register_worker_plugin(
-                DaskWorkerPlugin,
-                name="LoggerWorkerPlugin",
-                logger=get_logger(),
-                register_fsspec_implementation=parameters.register_fsspec_implementation)
+                DaskWorkerPlugin(logger=get_logger(), register_fsspec_implementation=parameters.register_fsspec_implementation),
+                name="LoggerWorkerPlugin")
 
             get_logger().info(f"Distributed Dask client initialized : {DaskBulkStorage.client}")
 
@@ -170,9 +168,11 @@ class DaskBulkStorage:
         record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
         files_to_load = catalog.get_paths_for_columns(columns, record_path)
 
+        # read all chunk for requested columns
         def read_parquet_files(f):
             """ read all chunk for requested columns """
             return read_with_dask(f.paths, columns=f.labels, storage_options=self._parameters.storage_options)
+
         dfs = self._map_with_trace(read_parquet_files, files_to_load)
 
         index_df = self._read_index_from_catalog_index_path(catalog)
@@ -187,7 +187,7 @@ class DaskBulkStorage:
 
         # if multiple dataframes, concat them together
         dfs = self._map_with_trace(set_index, dfs)
-        return self._submit_with_trace(dd.concat, dfs, axis=1, join='outer')
+        return self._submit_with_trace(join_dataframes, dfs)
 
     async def _load_bulk(self, record_id: str, bulk_id: str, columns: List[str] = None) -> dd.DataFrame:
         """Load columns from parquet files in the bulk_path.
@@ -375,8 +375,9 @@ class DaskBulkStorage:
                 # pb here, wait -> cannot resolve conflict in parallel!
                 await self._resolve_conflict_catalog(catalog, bulk_id, files, conflicting_col)
 
-            catalog.add_chunk(ChunkGroup(labels, relative_paths, dtypes))
-            catalog_columns.update(chunks_metas[0].columns)
+            if labels: # if all columns conflicts
+                catalog.add_chunk(ChunkGroup(labels, relative_paths, dtypes))
+                catalog_columns.update(chunks_metas[0].columns)
 
         return catalog
 

@@ -60,7 +60,7 @@ def export_to_parquet(
     pq.write_table(
         pa.Table.from_pandas(dataframe, preserve_index=True),
         path_like,
-        version="2.0",
+        version="2.6",
         compression="snappy",
     )
     return path_like, {"content_type": MimeTypes.PARQUET.type}
