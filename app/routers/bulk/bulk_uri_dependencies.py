@@ -27,9 +27,13 @@ class OsduBulkIdAccess(BulkIdAccess):
     def get_bulk_uri(record) -> BulkURI:
         bulk_uri = None
         if hasattr(record, 'data') and isinstance(record.data, dict):
-            bulk_uri = record.data.get("ExtensionProperties", {}).get("wdms", {}).get(BULK_URI_FIELD, None)
+            extension_properties = record.data.get("ExtensionProperties", None)
+            if extension_properties:
+                wdms = extension_properties.get("wdms", None)
+                bulk_uri = wdms.get(BULK_URI_FIELD, None) if wdms else None
         elif hasattr(record, 'data') and hasattr(record.data, 'ExtensionProperties') and isinstance(record.data.ExtensionProperties, dict):
-            bulk_uri = record.data.ExtensionProperties.get("wdms", {}).get(BULK_URI_FIELD, None)
+            wdms = record.data.ExtensionProperties.get("wdms", None)
+            bulk_uri = wdms.get(BULK_URI_FIELD, None) if wdms else None
         return BulkURI.decode(bulk_uri)
 
     @staticmethod

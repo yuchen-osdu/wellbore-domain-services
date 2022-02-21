@@ -427,6 +427,9 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                 * data with no "ExtensionProperties" field
                 * data["ExtensionProperties"] with no "wdms" field
                 * data["ExtensionProperties"]["wdms"] with no bulkURI field
+                * data with "ExtensionProperties" field to None
+                * data["ExtensionProperties"] with "wdms" field to None
+                * data["ExtensionProperties"]["wdms"] with bulkURI field to None
     """
 
     # Mock init
@@ -441,6 +444,12 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
     moc_old_version_record_without_ExtensionProperties_field = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00'},
                                                 record_id, record_kind)
     moc_old_version_record_without_bulk_uri_field = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {'wdms': {}}},
+                                                record_id, record_kind)
+    moc_old_version_record_with_ExtensionProperties_field_to_none = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': None},
+                                                record_id, record_kind)
+    moc_old_version_record_with_wdms_field_to_none = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {'wdms': None}},
+                                                record_id, record_kind)
+    moc_old_version_record_with_bulk_uri_field_to_none = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {'wdms':  {'bulkURI': None}}},
                                                 record_id, record_kind)
 
     moc_create_or_update_records = mock.AsyncMock(return_value=create_update_records_obj)
@@ -526,7 +535,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                                                         record_kind=record_kind,
                                                         data=data_test, response_details=response_details)
 
-            '''         
+            '''
                  With mock returning previous version record without bulk URI:
                     If record has Bulk URI:
                         * Bulk URI + record_id + old_record + NO old_bulk_uri:              400 Err
@@ -596,6 +605,10 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                     * data with NO "ExtensionProperties" field
                     * data["ExtensionProperties"] with NO "wdms" field
                     * data["ExtensionProperties"]["wdms"] with NO bulkURI field (done above)
+                    * data with "ExtensionProperties" field to None
+                    * data["ExtensionProperties"] with "wdms" field to None
+                    * data["ExtensionProperties"]["wdms"] with bulkURI field to None
+                    
             '''
             with mock.patch.object(StorageRecordServiceClientMock, "get_record",
                                    mock.AsyncMock(return_value=moc_old_version_record_without_ExtensionProperties_field)):
@@ -605,6 +618,24 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
 
             with mock.patch.object(StorageRecordServiceClientMock, "get_record",
                                    mock.AsyncMock(return_value=moc_old_version_record_without_wdms_field)):
+                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                                                            record_id=record_id, record_kind=record_kind, data=data,
+                                                            response_details=response_details)
+
+            with mock.patch.object(StorageRecordServiceClientMock, "get_record",
+                                   mock.AsyncMock(return_value=moc_old_version_record_with_ExtensionProperties_field_to_none)):
+                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                                                            record_id=record_id, record_kind=record_kind, data=data,
+                                                            response_details=response_details)
+
+            with mock.patch.object(StorageRecordServiceClientMock, "get_record",
+                                   mock.AsyncMock(return_value=moc_old_version_record_with_wdms_field_to_none)):
+                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                                                            record_id=record_id, record_kind=record_kind, data=data,
+                                                            response_details=response_details)
+
+            with mock.patch.object(StorageRecordServiceClientMock, "get_record",
+                                   mock.AsyncMock(return_value=moc_old_version_record_with_bulk_uri_field_to_none)):
                 _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
