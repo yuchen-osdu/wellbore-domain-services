@@ -165,12 +165,6 @@ class DMSV3RouterUtils:
                 )
 
     @staticmethod
-    def bulk_uri_encode_if_not_none(bulk_uri):
-        if bulk_uri:
-            return bulk_uri.encode()
-        return bulk_uri
-
-    @staticmethod
     async def _raise_if_invalid_bulk_uri_task(index_record: int, record: Record, bulk_uri_access: BulkIdAccess):
 
         """
@@ -230,8 +224,8 @@ class DMSV3RouterUtils:
                        f"its previous version",
             )
 
-        bulk_uri = DMSV3RouterUtils.bulk_uri_encode_if_not_none(bulk_uri)
-        previous_version_bulk_uri = DMSV3RouterUtils.bulk_uri_encode_if_not_none(previous_version_bulk_uri)
+        bulk_uri = bulk_uri.encode() if bulk_uri else None
+        previous_version_bulk_uri = previous_version_bulk_uri.encode() if previous_version_bulk_uri else None
 
         if bulk_uri != previous_version_bulk_uri:
             raise HTTPException(
