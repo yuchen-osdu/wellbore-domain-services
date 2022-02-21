@@ -11,7 +11,7 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_client(dasked_test_app):
+def dasked_test_app_client(dasked_test_app, nope_logger_fixture):
     yield TestClient(dasked_test_app)
 
 
