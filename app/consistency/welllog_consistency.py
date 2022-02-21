@@ -3,6 +3,7 @@ import re
 from typing import Iterable, Set
 
 import pandas as pd
+from app.helper.traces import with_trace
 from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.traces import submit_with_trace
@@ -31,6 +32,7 @@ class ReferenceCurveException(ConsistencyException):
     """raised when column doesn't match any CurveID"""
 
 
+@with_trace('welllog_consistency')
 def check_welllog_consistency(wl: WellLog110):
     """Check wellLog metadata.
 
@@ -82,6 +84,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     _col_label_pattern = re.compile(r"^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$")
 
     @classmethod
+    @with_trace('bulk_consistency')
     def check_bulk_consistency_on_post_bulk(cls, record: Record, df: pd.DataFrame):
         """ Perform welllog consistency checks of a bulk  dataframe against a welllog record
         used by bulk_persistence when post a whole bulk (not chunking apis)
@@ -106,6 +109,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         cls._check_top_bottom_reference(wl, ref)
 
     @classmethod
+    @with_trace('bulk_consistency')
     async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
         """ Perform welllog consistency checks of a bulk  against a welllog record
         used by bulk_persistence when commit a session (chunking apis)
