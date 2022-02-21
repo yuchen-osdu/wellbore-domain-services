@@ -53,10 +53,19 @@ def test_session(mode=SessionUpdateMode.Overwrite) -> Session:
                    state=SessionState.Open)
 
 
+def get_update_session() -> Session:
+    utc_now = datetime.utcnow()
+    return Session(id='fake_session_id_update', recordId='fake_record_id', fromVersion=0,
+                   mode=SessionUpdateMode.Update, createdTime=utc_now, updatedTime=utc_now,
+                   expiry=utc_now + timedelta(minutes=5),
+                   state=SessionState.Open)
+
+
 async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
     df = await DaskBulkStorage.client.compute(ddf)
     assert not set(pdf.columns) ^ set(df.columns) # check contains same columns
     df = df[pdf.columns]
+    # df = df.sort_index()
     df.index.name = None
     pdf.index.name = None
     check_freq = True
@@ -332,9 +341,11 @@ async def test_index_float(test_session, dask_storage: DaskBulkStorage):
     ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
 
+    update_session = get_update_session()
+
     df_ref = df_ref.join(generate_df(['D'], index=np.arange(0, 5, 0.25)), how="outer")
-    await add_chunk(dask_storage, test_session, df_ref[['D']])
-    bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
+    await add_chunk(dask_storage, update_session, df_ref[['D']])
+    bulk_id = await dask_storage.session_commit(update_session, from_bulk_id=bulk_id)
 
     ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
@@ -368,8 +379,11 @@ async def test_index_time(test_session, dask_storage: DaskBulkStorage):
 
     D = generate_df(['D'], index=pd.date_range("2021-01-01", periods=30, freq="30s"))
     df_ref = df_ref.join(D, how="outer")
-    await add_chunk(dask_storage, test_session, df_ref[['D']])
-    bulk_id = await dask_storage.session_commit(test_session, from_bulk_id=bulk_id)
+
+    update_session = get_update_session()
+
+    await add_chunk(dask_storage, update_session, df_ref[['D']])
+    bulk_id = await dask_storage.session_commit(update_session, from_bulk_id=bulk_id)
 
     ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
     await compare_frame(df_ref, ddf)
