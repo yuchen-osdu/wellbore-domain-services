@@ -142,7 +142,7 @@ class DataFrameRender:
         if isinstance(df, pd.DataFrame):
             return len(df.index)
         driver = await with_dask_blob_storage()
-        return await driver._submit_with_trace(lambda: len(df.index))
+        return await driver._submit_with_trace(len, df.index)
 
     @staticmethod
     def _select_range_impl(df: dd.DataFrame, limit, offset, index):

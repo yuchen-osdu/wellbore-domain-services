@@ -44,14 +44,13 @@ probes:
     failureThreshold: 6
     periodSeconds: 5
   liveness:
+    initialDelaySeconds: 15
     periodSeconds: 5
     timeoutSeconds: 1
-    failureThreshold: 6
+    failureThreshold: 3
   readiness:
-    periodSeconds: 5
-    timeoutSeconds: 1
-    failureThreshold: 1
-    successThreshold: 5
+    initialDelaySeconds: 5
+    timeoutSeconds: 5
 
 annotations:
   buildNumber: []
