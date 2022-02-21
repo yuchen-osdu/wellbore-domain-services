@@ -189,6 +189,7 @@ class DMSV3RouterUtils:
         ctx: Context = get_ctx()
 
         bulk_uri = bulk_uri_access.get_bulk_uri(record=record)
+        bulk_uri = bulk_uri.encode() if bulk_uri.is_valid() else None
 
         if not record.id:
             if not bulk_uri:
@@ -217,15 +218,13 @@ class DMSV3RouterUtils:
 
         # Get bulkURI's old version if it exist
         previous_version_bulk_uri = bulk_uri_access.get_bulk_uri(record=previous_version_record)
+        previous_version_bulk_uri = previous_version_bulk_uri.encode() if previous_version_bulk_uri.is_valid() else None
         if not previous_version_bulk_uri and bulk_uri:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record[{index_record}] error : no Bulk URI can be specified, given record_id has no bulkURI in "
                        f"its previous version",
             )
-
-        bulk_uri = bulk_uri.encode() if bulk_uri else None
-        previous_version_bulk_uri = previous_version_bulk_uri.encode() if previous_version_bulk_uri else None
 
         if bulk_uri != previous_version_bulk_uri:
             raise HTTPException(
