@@ -37,6 +37,7 @@ import pyarrow.feather as feather
 import pyarrow.parquet as pq
 
 from app.utils import get_pool_executor, get_wdms_temp_dir
+from .dataframe_serializer import DataframeSerializerAsync
 
 from .blob_bulk import BlobBulk
 from .mime_types import MimeType, MimeTypes
@@ -231,7 +232,4 @@ async def create_and_write_blob(
 
 @with_trace('read_blob')
 async def read_blob(blob: BlobBulk):
-    importer = BlobFileImporters.from_string(blob.content_type)
-    # TODO: run in executor?
-    dataframe = importer.reader_fn(blob.data)
-    return dataframe
+    return await DataframeSerializerAsync().read_parquet(blob.data)
