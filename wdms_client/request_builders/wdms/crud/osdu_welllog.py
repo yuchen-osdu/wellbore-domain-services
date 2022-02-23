@@ -367,9 +367,6 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: List[str]=['E
     "SamplingStart": 12345.6,
     "SamplingStop": 12345.6,"""
 
-    if len(curves) > 0:
-        payload = payload + f'"ReferenceCurveID": "{curves[0]}",'
-
     inner_curves = ""
     for c in curves:
         inner_curves = inner_curves + r'{"CurveID":' + f'"{c}",' + r"""            
@@ -711,7 +708,7 @@ def get_cleaned_ref_and_res() -> dict:
     "IsRegular": True,
     "SamplingStart": 12345.6,
     "SamplingStop": 12345.6,
-    "ReferenceCurveID": "Example CurveID",
+
     "Curves": [
       {
         "CurveID": "Example CurveID",

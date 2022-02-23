@@ -19,9 +19,12 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from app.model.filter import BulkReadFilters
 from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
-from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
+
 from app.utils import Context, OpenApiHandler, get_ctx
 from app.helper.traces import TracingRoute, with_trace
+from app.conf import Config
+
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_READ,
                                            REQUIRED_ROLES_WRITE,
@@ -29,13 +32,13 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            read_bulk_accept_type,
                                            write_bulk_content_type)
 
-from app.conf import Config
 from app.routers.record_utils import fetch_record
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
                                     set_bulk_field_and_send_record,
-                                    DataFrameRender)
+                                    DataFrameRender,
+                                    get_data_consistency_checks)
 
 # imports for session manipulation
 from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
@@ -54,6 +57,10 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
+
+
+from app.bulk_persistence import DataConsistencyChecks
+
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -83,6 +90,7 @@ async def post_data(record_id: str,
                     ctx: Context = Depends(get_ctx),
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
+                    consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
 
     """
@@ -94,11 +102,11 @@ async def post_data(record_id: str,
     # process and store the data
     try:
         bulk_id, basic_describe = await dask_blob_storage.post_data_without_session(
-            request.stream(),
-            content_type,
-            df_validation_func,
-            record_id)
-
+            data=request.stream(),
+            content_type=content_type,
+            df_validator_func=df_validation_func,
+            consistency_checks=consistency_checks,
+            record=record)
     except BulkError as ex:
         ex.raise_as_http()
 
@@ -303,7 +311,8 @@ async def complete_session(
     with_session: WithSessionStorages = Depends(get_session_dependencies),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     ctx: Context = Depends(get_ctx),
-    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+    consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
 ) -> Session:
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
@@ -314,7 +323,7 @@ async def complete_session(
             async with sessions_storage.initiate_commit(tenant, record_id, session_id) as commit_guard:
                 # get the session if some information is needed
                 i_session = commit_guard.session
-                _internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
+                _internal = i_session.internal  # <=  contains details, may be irrelevant or not needed
 
                 trace_attributes_root_span({'session-mode': i_session.session.mode})
 
@@ -336,10 +345,11 @@ async def complete_session(
                             data, content_type = await download_bulk(ctx, previous_bulk_uri.bulk_id)
                             # convert old bulk to new one
                             previous_bulk_id, _ = await dask_blob_storage.post_data_without_session(
-                                data,
-                                content_type,
-                                no_validation,
-                                record_id)
+                                data=data,
+                                content_type=content_type,
+                                df_validator_func=no_validation,
+                                consistency_checks=consistency_checks,
+                                record=record)
                         except BulkError as ex:
                             ex.raise_as_http()
                         except ResourceNotFoundException:
@@ -349,6 +359,8 @@ async def complete_session(
                         previous_bulk_id = previous_bulk_uri.bulk_id
 
                 new_bulk_id = await dask_blob_storage.session_commit(i_session.session, previous_bulk_id)
+
+                await consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id)
                 # ==============>
                 # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
                 # ==============>

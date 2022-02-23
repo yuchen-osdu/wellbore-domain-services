@@ -33,6 +33,7 @@
   "version": 74987940,
   "modifyTime": "1999-05-15T07:24:31.641Z",
   "data": {
+    "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Ee8F:0440185630",
     "HoleTypeLogging": "OPENHOLE",
     "ToolStringDescription": "in aliqua",
     "VerticalMeasurement": {

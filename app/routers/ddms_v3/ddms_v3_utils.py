@@ -21,7 +21,7 @@ from app.model.osdu_model import (
     WellLog,
     WellLog110,
 )
-from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, BULK_URI_FIELD
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 from app.routers.record_utils import fetch_record
 from app.utils import Context, get_ctx
 

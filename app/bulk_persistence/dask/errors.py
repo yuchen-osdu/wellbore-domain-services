@@ -21,7 +21,7 @@ from app.conf import Config
 from app.helper.logger import get_logger
 
 
-class BulkError(Exception):
+class BulkError(RuntimeError):
     http_status: int
 
     def raise_as_http(self):

@@ -79,7 +79,7 @@ mockito==1.2.2
     # via -r requirements_dev.in
 munch==2.5.0
     # via -r requirements_dev.in
-numpy==1.21.1
+numpy==1.22.2
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in
@@ -95,7 +95,7 @@ packaging==21.0
     # via
     #   -c requirements.txt
     #   pytest
-pandas==1.2.4
+pandas==1.4.1
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in
@@ -107,7 +107,7 @@ pluggy==0.13.1
     # via pytest
 py==1.10.0
     # via pytest
-pyarrow==4.0.1
+pyarrow==7.0.0
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in

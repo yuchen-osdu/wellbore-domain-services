@@ -95,7 +95,9 @@ async def test_df_render_accept_parquet(default_get_params, basic_dataframe):
 async def test_df_render_accept_json(default_get_params, basic_dataframe, orient):
     response = await DataFrameRender.df_render(basic_dataframe, default_get_params, MimeTypes.JSON, orient)
     assert response.headers.get('Content-Type') == "application/json"
-    actual = pd.read_json(response.body, orient=orient)
+    f = BytesIO(response.body)
+    f.seek(0)
+    actual = pd.read_json(f, orient=orient)
     assert_frame_equal(basic_dataframe, actual)
 
 

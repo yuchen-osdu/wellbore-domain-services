@@ -928,7 +928,8 @@
       }
     ],
     "InterestTypeID": "namespace:reference-data--WellInterestType:Operated:",
-    "ExtensionProperties": {}
+    "ExtensionProperties": {},
+    "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Ee8F:0440185630"
   }
 }
 ]

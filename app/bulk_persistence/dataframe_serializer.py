@@ -101,6 +101,9 @@ class DataframeSerializerSync:
         :param orient:
         :return: dataframe
         """
+        if isinstance(data, bytes):
+            data = BytesIO(data)
+
         orient = JSONOrient.get(orient)
 
         df = pd.read_json(
