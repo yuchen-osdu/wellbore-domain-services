@@ -93,6 +93,7 @@
   "modifyTime": "1946-11-05T00:46:23.348Z",
   "modifyUser": "aute exercitation",
   "data": {
+    "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Ee8F:0440185630",
     "SamplingStop": -30795841.679913044,
     "Name": "laborum do incididunt amet",
     "IsRegular": false,

@@ -44,7 +44,9 @@
         ]
       }
     ],
-    "data": {}
+    "data": {
+      "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Ee8F:0440185630"
+    }
   },
   {
     "id": "namespace:work-product-component--WellboreMarkerSet:12345",
