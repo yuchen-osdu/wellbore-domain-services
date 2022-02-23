@@ -310,7 +310,8 @@
       "Example AppliedOperations"
     ],
     "CompanyID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
-    "ExtensionProperties": {}
+    "ExtensionProperties": {},
+    "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Ee8F:0440185630"
   }
 }
 ]
