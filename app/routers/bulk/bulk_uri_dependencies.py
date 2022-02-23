@@ -33,11 +33,12 @@ class OsduBulkIdAccess(BulkIdAccess):
 
     @staticmethod
     def set_bulk_uri(record, bulk_id: str):
+        if not record.data.get("ExtensionProperties", None):
+            record.data["ExtensionProperties"] = {}
+        elif not record.data["ExtensionProperties"].get("wdms", None):
+            record.data["ExtensionProperties"]["wdms"] = {}
         bulk_uri = BulkURI.from_bulk_storage_V1(bulk_id=bulk_id)
-        if isinstance(record.data, dict):
-            record.data.setdefault("ExtensionProperties", {}).setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
-        else:
-            record.data.ExtensionProperties.setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
+        record.data.setdefault("ExtensionProperties", {}).setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
 
 class LogBulkIdAccess(BulkIdAccess):
     @staticmethod
