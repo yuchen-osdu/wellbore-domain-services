@@ -44,4 +44,3 @@ secrets/
 **/.DS_Store
 
 .vscode
-/.direnv/python-3.7.12/
