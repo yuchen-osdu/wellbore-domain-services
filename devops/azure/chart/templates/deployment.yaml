@@ -92,11 +92,6 @@ spec:
             readOnly: true
         resources:
           {{ toYaml .Values.resources | nindent 10 }}
-        startupProbe:
-          httpGet:
-            path: {{ include "os-wellbore-ddms.prefix" . }}/healthz
-            port: 8080
-          {{ toYaml .Values.probes.startup | nindent 10 }}
         livenessProbe:
           httpGet:
             path: {{ include "os-wellbore-ddms.prefix" . }}/healthz

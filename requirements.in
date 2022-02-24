@@ -2,8 +2,8 @@ fastapi==0.68.1
 pydantic>=1.9
 aiohttp==3.7.4.post0
 cryptography>=2.7
-pyarrow>=4.0.1, <5.0
-pandas==1.2.4
+pyarrow>=4.0.1
+pandas==1.4.1
 uvicorn
 Click
 backoff
@@ -20,7 +20,7 @@ opencensus-ext-ocagent
 opencensus-ext-logging
 
 # for chunking feature
-dask[distributed]==2021.10.0
+dask[distributed]==2022.2.0
 fsspec
 python-ulid
 s3fs
@@ -31,13 +31,13 @@ https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
 --extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
 
-osdu-log-recognition-lib>=0.0.9
+osdu-log-recognition-lib~=1.0.0
 
-osdu-data-ecosystem-storage~=1.3.0
-osdu-data-ecosystem-search>=0.3.2, <0.4
+osdu-data-ecosystem-storage~=2.0.0
+osdu-data-ecosystem-search~=1.0.0
 
-osdu-core-lib-python-ibm==1.3.0
-osdu-core-lib-python-gcp~=1.1.0
-osdu-core-lib-python-azure>=2.0.0
-osdu-core-lib-python-aws>=0.0.6, <0.1
-osdu-core-lib-python~=1.1.0
+osdu-core-lib-python-ibm==2.0.0
+osdu-core-lib-python-gcp~=2.0.0
+osdu-core-lib-python-azure~=3.0.0
+osdu-core-lib-python-aws~=1.0.0
+osdu-core-lib-python~=2.0.0

@@ -183,7 +183,9 @@ def test_logs_write_then_read_data(client, test_data, nan_conversion):
                           headers=TestHelper.BASE_HEADERS)
 
     data = response.content
-    actual_df = pd.read_json(data, orient=log_data_orient).replace("NaN", np.NaN)
+    f = BytesIO(response.content)
+    f.seek(0)
+    actual_df = pd.read_json(f, orient=log_data_orient).replace("NaN", np.NaN)
     pd.testing.assert_frame_equal(df, actual_df)
 
 
@@ -225,8 +227,9 @@ def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
     response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
-    data = response.content
-    actual_df = pd.read_json(data, orient=log_data_orient).replace("NaN", np.NaN)
+    f = BytesIO(response.content)
+    f.seek(0)
+    actual_df = pd.read_json(f, orient=log_data_orient).replace("NaN", np.NaN)
     pd.testing.assert_frame_equal(df, actual_df)
 
 
@@ -263,8 +266,9 @@ def test_logs_upload_parquet_read_json(client, df):
     response = client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
-    data = response.content
-    actual_df = pd.read_json(data, orient=log_data_orient).replace("NaN", np.NaN)
+    f = BytesIO(response.content)
+    f.seek(0)
+    actual_df = pd.read_json(f, orient=log_data_orient).replace("NaN", np.NaN)
     pd.testing.assert_frame_equal(df, actual_df)
 
 
@@ -295,8 +299,9 @@ def test_logs_write_twice_then_read_data(client, test_data, nan_conversion):
     response = client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient), headers=TestHelper.BASE_HEADERS)
 
     assert response.status_code == 200
-    data = response.content
-    actual_df = pd.read_json(data, orient=log_data_orient).replace("NaN", np.NaN)
+    f = BytesIO(response.content)
+    f.seek(0)
+    actual_df = pd.read_json(f, orient=log_data_orient).replace("NaN", np.NaN)
     pd.testing.assert_frame_equal(initial_df, actual_df)
 
 
@@ -471,10 +476,11 @@ def test_decimated_logs(client, decimated_test_data, expected_result, start, sto
     response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'), #  + decimated_log_data_orient),
                           params=params,
                           headers=TestHelper.BASE_HEADERS)
-    data = response.content
+    f = BytesIO(response.content)
+    f.seek(0)
     if isinstance(expected_result, HTTPException):
         assert response.status_code == expected_result.status_code
     else:
         assert response.status_code == 200
-        actual_df = pd.read_json(data, orient="values").replace("NaN", np.NaN)
+        actual_df = pd.read_json(f, orient="values").replace("NaN", np.NaN)
         pd.testing.assert_frame_equal(expected_result, actual_df)

@@ -23,7 +23,6 @@ The following software have components provided under the terms of this license:
 - google-cloud-trace (from https://github.com/googleapis/googleapis)
 - googleapis-common-protos (from https://github.com/googleapis/googleapis)
 - grpcio (from https://grpc.io)
-- importlib-metadata
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from http://msgpack.org/)
 - multidict (from https://github.com/aio-libs/multidict/)
@@ -285,7 +284,6 @@ The following software have components provided under the terms of this license:
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
-- zipp (from https://github.com/jaraco/zipp)
 
 ========================================================================
 MPL-2.0

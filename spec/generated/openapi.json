@@ -3938,6 +3938,12 @@
             "title": "Targetformation",
             "type": "string"
           },
+          "TechnicalAssuranceID": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance ID",
+            "type": "string"
+          },
           "TrajectoryTypeID": {
             "description": "Describes the predominant shapes the wellbore path can follow if deviated from vertical. Sample Values: Horizontal, Vertical, Directional.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellboreTrajectoryType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
@@ -4136,6 +4142,12 @@
             ],
             "description": "The spatial location information such as coordinates, CRS information (left empty when not appropriate).",
             "title": "Spatiallocation"
+          },
+          "TechnicalAssuranceID": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance ID",
+            "type": "string"
           },
           "VersionCreationReason": {
             "description": "This describes the reason that caused the creation of a new version of this master data.",
@@ -4564,6 +4576,12 @@
             },
             "title": "Tags",
             "type": "array"
+          },
+          "TechnicalAssuranceID": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance ID",
+            "type": "string"
           },
           "ToolStringDescription": {
             "description": "Tool String Description - a long concatenation of the tools used for logging services such as GammaRay+NeutronPorosity",
@@ -5059,6 +5077,12 @@
             "title": "Tags",
             "type": "array"
           },
+          "TechnicalAssuranceID": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance ID",
+            "type": "string"
+          },
           "VerticalMeasurement": {
             "allOf": [
               {
@@ -5491,6 +5515,12 @@
             },
             "title": "Tags",
             "type": "array"
+          },
+          "TechnicalAssuranceID": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance ID",
+            "type": "string"
           },
           "TieMeasuredDepth": {
             "description": "Tie-point depth measured along the wellbore from the measurement reference datum to the survey station - where tie point is the place on the originating survey where the current survey intersect it.",
@@ -8620,16 +8650,18 @@
             }
           },
           {
-            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
             "example": "MD:lt:1000",
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
-              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
               "items": {
+                "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
               },
+              "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
               "title": "Filter",
               "type": "array"
             }
@@ -9211,16 +9243,18 @@
             }
           },
           {
-            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
             "example": "MD:lt:1000",
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
-              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
               "items": {
+                "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
               },
+              "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
               "title": "Filter",
               "type": "array"
             }
@@ -17609,16 +17643,18 @@
             }
           },
           {
-            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
             "example": "MD:lt:1000",
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
-              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
               "items": {
+                "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
               },
+              "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
               "title": "Filter",
               "type": "array"
             }
@@ -18200,16 +18236,18 @@
             }
           },
           {
-            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
             "example": "MD:lt:1000",
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
-              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
               "items": {
+                "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
               },
+              "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
               "title": "Filter",
               "type": "array"
             }
@@ -18757,16 +18795,18 @@
             }
           },
           {
-            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
             "example": "MD:lt:1000",
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
-              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
               "items": {
+                "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
               },
+              "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
               "title": "Filter",
               "type": "array"
             }
@@ -19348,16 +19388,18 @@
             }
           },
           {
-            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+            "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
             "example": "MD:lt:1000",
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
-              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+              "description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.\nIf the column name contains ':', enclose it in double quotation marks (\").\n<br/>The supported operators are : lt, lte, gt, gte, eq, neq, in",
               "items": {
+                "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
               },
+              "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
               "title": "Filter",
               "type": "array"
             }

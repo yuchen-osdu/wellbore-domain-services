@@ -27,6 +27,8 @@ from tests.unit.conftest import do_nothing, set_default_partition
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 
 
+from app.routers.bulk.utils import set_welllog_data_consistency_check
+
 Definitions = {
     'WellLog': {
         'api_version': 'v3',
@@ -160,7 +162,7 @@ def dasked_test_app_without_consistency(dasked_test_app):
     app = dasked_test_app
     # disable wellLog data consistency check for tests
     previous_overrides = wdms_app.dependency_overrides
-    # app.dependency_overrides[set_check_welllog_data_consistency_func] = do_nothing
+    app.dependency_overrides[set_welllog_data_consistency_check] = do_nothing
     yield app
     app.dependency_overrides = previous_overrides
 
@@ -1126,13 +1128,14 @@ def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app_witho
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-@pytest.mark.parametrize("params, content", [
-    (['M:lt:5'], "filter error: The columns:['M'] to be filtered do not exist"),
-    (['A:xx:5'], 'filter error: Operator xx is not supported'),
-    (['A:lt:5', 'A:lt:7'], 'filter error: Same operator on the same column'),
+@pytest.mark.parametrize("params, content, failure_status", [
+    (['M:lt:5'], "filter error: The columns:['M'] to be filtered do not exist", 400),
+    (['A:lt:5', 'A:lt:7'], 'filter error: Same operator on the same column', 400),
+    (['A:xx:5'], '', 422),  # 422 since handled by regex at query param declaration,
+    (['A:lt'], '', 422)
 ])
 def test_get_bulk_data_with_filters_fail(dasked_test_app_without_consistency_client, entity_type, params, content,
-                                         dataframe_for_filters):
+                                         failure_status, dataframe_for_filters):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
@@ -1146,8 +1149,9 @@ def test_get_bulk_data_with_filters_fail(dasked_test_app_without_consistency_cli
     response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
                                    params={'filter': params})
 
-    assert response_get_data.json()['detail'] == content
-    assert response_get_data.status_code == 400
+    if content:
+        assert response_get_data.json()['detail'] == content
+    assert response_get_data.status_code == failure_status
 
 
 # todo - concurrent sessions using fromVersion in Integrations tests

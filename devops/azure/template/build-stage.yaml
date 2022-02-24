@@ -23,21 +23,22 @@ parameters:
 stages:
   - stage: build
     jobs:
-      - job: unit_test_version3_7
-        steps:
-          - template: steps-unit-tests.yaml
-            parameters:
-              python_version: '3.7'
       - job: unit_test_version3_8
         steps:
           - template: steps-unit-tests.yaml
             parameters:
               python_version: '3.8'
+      - job: unit_test_version3_9
+        steps:
+          - template: steps-unit-tests.yaml
+            parameters:
+              allow_to_fail: true
+              python_version: '3.9'
               include_coverage: false
       - job: build
         dependsOn:
-        - unit_test_version3_7
         - unit_test_version3_8
+        - unit_test_version3_9
         steps:
           - template: steps-build.yaml
             parameters:

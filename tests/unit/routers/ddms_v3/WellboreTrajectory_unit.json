@@ -45,6 +45,7 @@
       }
     ],
     "data": {
+      "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Ee8F:0440185630",
       "ResourceHomeRegionID": "namespace:reference-data--OSDURegion:AWSEastUSA:",
       "ResourceHostRegionIDs": [
         "namespace:reference-data--OSDURegion:AWSEastUSA:"

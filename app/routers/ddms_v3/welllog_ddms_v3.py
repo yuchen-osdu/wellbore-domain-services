@@ -17,7 +17,11 @@ from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersion
 from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
-from app.consistency import DuplicatedCurveIdException, ReferenceCurveIdNotFoundException, check_welllog_consistency
+from app.consistency import (
+    DuplicatedCurveIdException,
+    ReferenceCurveIdNotFoundException,
+    check_welllog_consistency
+)
 from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import WellLog110 as WellLog
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
@@ -142,7 +146,7 @@ async def get_osdu_welllog_version(
 )
 async def post_welllog_osdu(
     welllogs: List[WellLog] = Body(..., example=load_schema_example("wellLog_v3.json")), ctx: Context = Depends(get_ctx),
-    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
+        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(welllogs)
     await DMSV3RouterUtils.raise_if_invalid_bulk_uri(welllogs, bulk_uri_access)

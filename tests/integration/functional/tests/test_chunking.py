@@ -146,7 +146,9 @@ class JsonSerializer:
     mime_type = 'application/json'
 
     def read(self, json_content):
-        return pd.read_json(json_content, orient='split')
+        f = io.BytesIO(json_content)
+        f.seek(0)
+        return pd.read_json(f, orient='split')
 
     def dump(self, df):
         return df.to_json(orient='split')

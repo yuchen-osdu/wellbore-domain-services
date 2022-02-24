@@ -1,32 +1,34 @@
-from fastapi import HTTPException, Request, status
-from fastapi.routing import APIRoute
-
 from typing import List, Set, Optional
 import re
+import ast
+from natsort import natsorted
 from contextlib import suppress
+
+from fastapi import HTTPException, Request, status
+from fastapi.routing import APIRoute
 from fastapi.responses import Response
 import dask.dataframe as dd
 import pandas as pd
-from natsort import natsorted
-import ast
+from pyarrow.lib import ArrowInvalid
 
 from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
-from app.bulk_persistence.dask.dask_worker_write_bulk import basic_describe
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.utils import set_index
 from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, \
     no_validation, DataFrameValidationFunc
 from app.bulk_persistence import DataframeSerializerAsync
-from app.bulk_persistence.mime_types import MimeTypes
+from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence import JSONOrient
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.utils import capture_timings, get_ctx, OpenApiHandler, Context
 from app.helper.traces import with_trace
-from app.model.model_chunking import GetDataParams
-from app.routers.bulk.bulk_uri_dependencies import (BulkIdAccess, BULK_URI_FIELD)
-from pyarrow.lib import ArrowInvalid
+from app.model.filter import BulkReadFilterOperator, BulkReadFilters
+from app.model.model_chunking import GetDataParams, DataframeDescribe
+from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
+
+from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks
+
 
 
 def update_operation_ids(wdms_app):
@@ -78,9 +80,19 @@ def get_df_validation_func(request: Request) -> DataFrameValidationFunc:
 
     return: guarantee to return a not None dataframe validation function
     """
-    if not request.state.check_input_df_func:
+    if not getattr(request.state, 'check_input_df_func', None):
         return no_validation
     return request.state.check_input_df_func
+
+
+def set_welllog_data_consistency_check(request: Request):
+    request.state.data_consistency_checks = WelllogDataConsistencyChecks()
+
+
+def get_data_consistency_checks(request: Request):
+    if not getattr(request.state, 'data_consistency_checks', None):
+        return NoConsistencyChecks()
+    return request.state.data_consistency_checks
 
 
 @with_trace("get_df_from_request")
@@ -130,7 +142,7 @@ class DataFrameRender:
         if isinstance(df, pd.DataFrame):
             return len(df.index)
         driver = await with_dask_blob_storage()
-        return await driver._submit_with_trace(lambda: len(df.index))
+        return await driver._submit_with_trace(len, df.index)
 
     @staticmethod
     def _select_range_impl(df: dd.DataFrame, limit, offset, index):
@@ -216,47 +228,69 @@ class DataFrameRender:
 
     @staticmethod
     @with_trace('apply_filter')
-    def apply_filter(df, filters):
+    def apply_filter(dataframe, filters: BulkReadFilters):
+        """
+        apply the given bulk filter on the dataframe
+        :param dataframe: dataframe on which apply the filters
+        :param filters: the filters
+        return filtered dataframe
+        """
 
         operator_to_function = {
-            'eq': lambda df, col, val: df[col] == val,
-            'neq': lambda df, col, val: df[col] != val,
-            'lte': lambda df, col, val: df[col] <= val,
-            'lt': lambda df, col, val: df[col] < val,
-            'gt': lambda df, col, val: df[col] > val,
-            'gte': lambda df, col, val: df[col] >= val,
-            'in': lambda df, col, val: df[col].isin(val)
-        }
-        for col_name, operation in filters.items():
-            for operator, value in operation.items():
-                try:
-                    new_value = ast.literal_eval(value)
-                except (ValueError, SyntaxError):
-                    new_value = value
-                if df[col_name].dtype == object:
-                    if isinstance(new_value, tuple):
-                        new_value = [str(v) for v in new_value]
-                    else:
-                        new_value = str(new_value)
+            BulkReadFilterOperator.Equal:
+                lambda df, col, val: df[col] == val,
 
-                filter_function = operator_to_function[operator]
-                try:
-                    df = df.loc[filter_function(df, col_name, new_value)]
-                except ValueError:
-                    raise FilterError('the value is not valid for this operation')
-        return df
+            BulkReadFilterOperator.NotEqual:
+                lambda df, col, val: df[col] != val,
+
+            BulkReadFilterOperator.LessOrEqual:
+                lambda df, col, val: df[col] <= val,
+
+            BulkReadFilterOperator.Less:
+                lambda df, col, val: df[col] < val,
+
+            BulkReadFilterOperator.Greater:
+                lambda df, col, val: df[col] > val,
+
+            BulkReadFilterOperator.GreaterOrEqual:
+                lambda df, col, val: df[col] >= val,
+
+            BulkReadFilterOperator.In:
+                lambda df, col, val: df[col].isin(val)
+        }
+        for col_name, operator, value in filters.all_filters():
+            try:
+                new_value = ast.literal_eval(value)
+            except (ValueError, SyntaxError):
+                new_value = value
+            if dataframe[col_name].dtype == object:
+                if isinstance(new_value, tuple):
+                    new_value = [str(v) for v in new_value]
+                else:
+                    new_value = str(new_value)
+
+            filter_function = operator_to_function[operator]
+            try:
+                dataframe = dataframe.loc[filter_function(dataframe, col_name, new_value)]
+            except ValueError:
+                raise FilterError('the value is not valid for this operation')
+        return dataframe
 
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('process_params')
-    async def process_params(df, params: GetDataParams, filters, dask_blob_storage: DaskBulkStorage, f_index):
+    async def process_params(df,
+                             params: GetDataParams,
+                             filters: BulkReadFilters,
+                             dask_blob_storage: DaskBulkStorage,
+                             f_index):
         """
         pass filters as a parameter here to avoid using params.get_filter() to parse filters 2 times
         """
         if isinstance(df, pd.DataFrame):
             df = dd.from_pandas(df, npartitions=1)
 
-        if filters:
+        if filters.has_filter():
             df = DataFrameRender.apply_filter(df, filters)
 
         if params.curves:
@@ -266,7 +300,7 @@ class DataFrameRender:
         else:
             df = df[natsorted(df.columns)]  # columns are ordered by natural sort
 
-        if filters and (params.offset or params.limit):
+        if filters.has_filter() and (params.offset or params.limit):
             f_index = dask_blob_storage.client.compute(df.index)
 
         df = await DataFrameRender.select_range(df, params.offset, params.limit, dask_blob_storage, f_index)
@@ -276,7 +310,10 @@ class DataFrameRender:
     @staticmethod
     @internal_bulk_exceptions
     @with_trace('df_render')
-    async def df_render(df, params: GetDataParams, accept: str = None, orient: Optional[JSONOrient] = None, stat=None):
+    async def df_render(df, params: GetDataParams,
+                        render_type: Optional[MimeType] = None,
+                        orient: Optional[JSONOrient] = None,
+                        stat=None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)
             if params.curves is None and stat:
@@ -284,25 +321,24 @@ class DataFrameRender:
             else:
                 columns = list(df.columns)
 
-            return {
-                "numberOfRows": nb_rows,
-                "columns": columns
-            }
+            return DataframeDescribe(
+                numberOfRows=nb_rows,
+                columns=columns
+            )
 
         pdf = await DataFrameRender.compute(df)
         pdf.index.name = None  # TODO
         trace_dataframe_attributes(pdf)
 
-        if not accept or MimeTypes.PARQUET.type in accept:
+        if render_type == MimeTypes.PARQUET:
             content = await DataframeSerializerAsync().to_parquet(pdf)
-            return Response(content, media_type=MimeTypes.PARQUET.type)
+            return Response(content, media_type=render_type.type)
 
-        if MimeTypes.JSON.type in accept:
+        if render_type == MimeTypes.JSON:
             content = await DataframeSerializerAsync().to_json(pdf, index=True, date_format='iso', orient=orient.value)
-            return Response(content, media_type=MimeTypes.JSON.type)
+            return Response(content, media_type=render_type.type)
 
-        content = await DataframeSerializerAsync().to_parquet(pdf)
-        return Response(content, media_type=MimeTypes.PARQUET.type)
+        raise ValueError("Invalid render type")
 
 
 async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri_access: BulkIdAccess):

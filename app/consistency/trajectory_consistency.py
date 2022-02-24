@@ -1,6 +1,6 @@
 from app.model.osdu_model import WellboreTrajectory110
 
-from .unique import get_unique_ids
+from .unique import get_unique_attr_values
 
 
 class DuplicatedStationProperties(RuntimeError):
@@ -23,7 +23,7 @@ def check_trajectory_consistency(traj: WellboreTrajectory110):
     if not traj.data or not traj.data.AvailableTrajectoryStationProperties:
         return
 
-    curve_ids, duplicated_error = get_unique_ids(
+    curve_ids, duplicated_error = get_unique_attr_values(
         traj.data.AvailableTrajectoryStationProperties, "TrajectoryStationPropertyTypeID"
     )
 

@@ -12,6 +12,7 @@ def json_orient_parameter(
 
 
 WRITE_BULK_SUPPORTED_MIME_TYPES = [MimeTypes.JSON, MimeTypes.PARQUET]
+READ_BULK_SUPPORTED_MIME_TYPES = [MimeTypes.PARQUET, MimeTypes.JSON]  # by priority order
 
 
 def write_bulk_content_type(request: Request) -> MimeType:
@@ -20,6 +21,16 @@ def write_bulk_content_type(request: Request) -> MimeType:
         return next(m for m in WRITE_BULK_SUPPORTED_MIME_TYPES if m.match(content_type))
     except:
         raise HTTPException(status_code=400, detail=f'Content-Type invalid: "{content_type}"')
+
+
+def read_bulk_accept_type(request: Request) -> MimeType:
+    accept_value = request.headers.get('Accept', None)
+    if not accept_value or '*/*' in accept_value:
+        return READ_BULK_SUPPORTED_MIME_TYPES[0]  # parquet by default
+    for t in READ_BULK_SUPPORTED_MIME_TYPES:
+        if any((v in accept_value for v in (t.type, *t.alternative_types))):
+            return t
+    raise HTTPException(status_code=400, detail=f'No supported type found in "{accept_value}"')
 
 
 _dataframe_sample = DataFrame(

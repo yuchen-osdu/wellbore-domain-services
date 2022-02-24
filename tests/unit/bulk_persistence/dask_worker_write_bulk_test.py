@@ -1,7 +1,6 @@
 import json
 from io import BytesIO, StringIO
 from unittest.mock import patch
-from glob import glob
 
 import pytest
 import pandas as pd
@@ -16,8 +15,7 @@ from app.bulk_persistence.dask.dask_worker_write_bulk import (basic_describe,
                                                               add_chunk_in_session)
 from app.bulk_persistence.dask.errors import BulkNotProcessable, BulkSaveException
 from app.bulk_persistence.dataframe_validators import no_validation
-
-
+from app.consistency import NoConsistencyChecks
 
 
 def dataframe_to_format(df, data_format: str, as_stream=False):
@@ -53,28 +51,34 @@ def test_basic_describe_truncates_columns():
 
 
 # so far post_data and add_chunk takes same input, validate similarly and throw same exceptions
-@pytest.mark.parametrize("method_to_test", [write_bulk_without_session, add_chunk_in_session])
-def test_post_bulk_not_processable_cases(method_to_test, tmp_path):
+@pytest.mark.parametrize(
+    "method_to_test, args",
+    [
+        (write_bulk_without_session, {"consistency_checks": NoConsistencyChecks(), "record": None}),
+        (add_chunk_in_session, {}),
+    ],
+)
+def test_post_bulk_not_processable_cases(method_to_test, args, tmp_path):
     def as_bytes_io(content):
         return BytesIO(content)
 
     # unsupported content type
     with pytest.raises(BulkNotProcessable):
-        method_to_test(b'123', as_bytes_io, 'invalid_content_type', no_validation, '', None)
+        method_to_test(b'123', as_bytes_io, 'invalid_content_type', no_validation, '', None, **args)
 
     # empty input as json format
     with pytest.raises(BulkNotProcessable):
-        method_to_test(b'', as_bytes_io, MimeTypes.JSON, no_validation, '', None)
+        method_to_test(b'', as_bytes_io, MimeTypes.JSON, no_validation, '', None, **args)
 
     # empty input as parquet format
     with pytest.raises(BulkNotProcessable):
-        method_to_test(b'', as_bytes_io, MimeTypes.PARQUET, no_validation, '', None)
+        method_to_test(b'', as_bytes_io, MimeTypes.PARQUET, no_validation, '', None, **args)
 
     # custom validation failure
     with pytest.raises(BulkNotProcessable):
         data = pd.DataFrame({'1': [10], '2': [20]}).to_parquet(engine='pyarrow')
         method_to_test(data, as_bytes_io, MimeTypes.PARQUET,
-                                      lambda _: (False, "some error"), '', None)
+                                      lambda _: (False, "some error"), '', None, **args)
 
     # index not numerical
     with pytest.raises(BulkNotProcessable):
@@ -82,7 +86,7 @@ def test_post_bulk_not_processable_cases(method_to_test, tmp_path):
         df.set_index('1')
         data = pd.DataFrame(df).to_parquet(engine='pyarrow')
         method_to_test(data, as_bytes_io, MimeTypes.PARQUET,
-                                      lambda _: (False, "some error"), '', None)
+                                      lambda _: (False, "some error"), '', None, **args)
 
     # index not unique
     with pytest.raises(BulkNotProcessable):
@@ -90,25 +94,30 @@ def test_post_bulk_not_processable_cases(method_to_test, tmp_path):
         df.set_index('A')
         data = df.to_parquet(engine='pyarrow')
         method_to_test(data, as_bytes_io, MimeTypes.PARQUET,
-                                      lambda _: (False, "some error"), '', None)
+                                      lambda _: (False, "some error"), '', None, **args)
 
     # save error
     data = pd.DataFrame({'A': [1], 'B': [4]}).to_parquet(engine='pyarrow', index=True)
     with patch.object(pd.DataFrame, 'to_parquet', side_effect=lambda *args, **kwargs: 0/0):
         with pytest.raises(BulkSaveException):
-            method_to_test(data, as_bytes_io, MimeTypes.PARQUET, no_validation, tmp_path, None)
+            method_to_test(data, as_bytes_io, MimeTypes.PARQUET, no_validation, tmp_path, None, **args)
 
 
-@pytest.mark.parametrize("content_type", [
-    MimeTypes.PARQUET,
-    MimeTypes.JSON
-])
+@pytest.mark.parametrize("content_type", [MimeTypes.PARQUET, MimeTypes.JSON])
 def test_write_bulk_without_session_success(content_type):
     df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
     data = dataframe_to_format(df, content_type.type, True)
     with patch.object(pd.DataFrame, 'to_parquet') as mock_method:
-        result = write_bulk_without_session(data, lambda x: x, content_type, no_validation,
-                                               'my_path', {'storage_opt1': 42})
+        result = write_bulk_without_session(data,
+                                            lambda x: x,
+                                            content_type,
+                                            no_validation,
+                                            'my_path',
+                                            {'storage_opt1': 42},
+                                            consistency_checks=NoConsistencyChecks,
+                                            record=None
+                                            )
+
         mock_method.assert_called_once()
 
         args, kwargs = mock_method.call_args_list[0]

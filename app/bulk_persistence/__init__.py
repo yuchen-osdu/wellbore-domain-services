@@ -19,3 +19,4 @@ from .json_orient import JSONOrient
 from .mime_types import MimeTypes
 from .tenant_provider import resolve_tenant
 from .exceptions import UnknownChannelsException, InvalidBulkException, NoBulkException, NoDataException, RecordNotFoundException
+from .consistency_checks import ConsistencyException, DataConsistencyChecks

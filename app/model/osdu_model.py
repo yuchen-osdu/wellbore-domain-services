@@ -353,6 +353,15 @@ class AbstractCommonResources100(DDMSBaseModel):
         description='Where does this data resource sit in the cradle-to-grave span of its existence?',
         title='Existence Kind',
     )
+    TechnicalAssuranceID: Optional[
+        constr(
+            regex='^[\w\-\.]+:reference-data\-\-TechnicalAssuranceType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Describes a record\'s overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single "preferred" or "definitive" record by comparison with other records.',
+        title='Technical Assurance ID',
+    )
 
 
 class AbstractFacilityEvent100(DDMSBaseModel):

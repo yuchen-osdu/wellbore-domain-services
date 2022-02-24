@@ -19,6 +19,9 @@ parameters:
 - name: include_coverage
   type: boolean
   default: true
+- name: allow_to_fail
+  type: boolean
+  default: false
   
 steps:
 
@@ -31,12 +34,15 @@ steps:
 
 - task: Bash@3
   displayName: 'run unit tests'
+  continueOnError: ${{parameters.allow_to_fail}}
   inputs:
     targetType: 'inline'
+    failOnStderr: true
     script: |
       echo ----- setup: installing dependencies --------
       echo $(System.DefaultWorkingDirectory)
       python --version
+      python -m pip install --upgrade pip
       pip --version
       pip install virtualenv
       virtualenv venv

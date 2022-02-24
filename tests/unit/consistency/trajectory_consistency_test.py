@@ -1,5 +1,4 @@
 import pytest
-
 from app.consistency import DuplicatedStationProperties, check_trajectory_consistency
 from app.model.osdu_model import (
     AbstractAccessControlList100,

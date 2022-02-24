@@ -3,8 +3,8 @@ import json
 
 import fsspec
 import pandas as pd
-from app.bulk_persistence.dask.utils import WDMS_INDEX_NAME
 
+from app.bulk_persistence.dask.utils import WDMS_INDEX_NAME
 from app.model.model_chunking import DataframeBasicDescribe
 
 # imports from bulk_persistence
@@ -17,6 +17,8 @@ from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate,
 from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as path_builder
 from . import session_file_meta as session_meta
+
+from ..consistency_checks import DataConsistencyChecks
 
 """
 Contains functions related to writing bulk that mean to be run inside worker
@@ -44,15 +46,21 @@ def write_bulk_without_session(data_handle,
                                content_type: MimeType,
                                df_validator_func: DataFrameValidationFunc,
                                bulk_base_path: str,
-                               storage_options) -> DataframeBasicDescribe:
+                               storage_options,
+                               consistency_checks: DataConsistencyChecks,
+                               record: "Record",
+                               ) -> DataframeBasicDescribe:
     """
         process post data outside of a session - write data straight to blob storage
+
         :param data_handle: dataframe as input ipc raw bytes wrapped (file-like obj)
         :param data_getter: function to get data from the handle
         :param content_type: content type value as mime type (supports json and parquet)
         :param df_validator_func: option validation callable function.
         :param bulk_base_path: base path of the final object on blob storage.
         :param storage_options: storage options
+        :param consistency_checks: option consistency checks object
+        :param record:  the entity to which the bulk belongs
         :return: basic describe of the dataframe
 
         :throw: BulkNotProcessable, BulkSaveException
@@ -67,6 +75,9 @@ def write_bulk_without_session(data_handle,
 
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
+
+    # 2(bis)- checks data consistency
+    consistency_checks.check_bulk_consistency_on_post_bulk(record, df)
 
     # set the name of the index column
     df.index.name = WDMS_INDEX_NAME
