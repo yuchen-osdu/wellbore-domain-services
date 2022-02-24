@@ -36,3 +36,13 @@ def test_set_bulk_uri_merge_extension_properties():
     OsduBulkIdAccess.set_bulk_uri(record, str(uuid.uuid4()))
     assert "wdms" in record.data["ExtensionProperties"]
     assert "bulkURI" in record.data["ExtensionProperties"]["wdms"]
+
+    record.data = {"ExtensionProperties": None}
+    OsduBulkIdAccess.set_bulk_uri(record, str(uuid.uuid4()))
+    assert "wdms" in record.data["ExtensionProperties"]
+    assert "bulkURI" in record.data["ExtensionProperties"]["wdms"]
+
+    record.data = {"ExtensionProperties": {"wdms": None}}
+    OsduBulkIdAccess.set_bulk_uri(record, str(uuid.uuid4()))
+    assert "wdms" in record.data["ExtensionProperties"]
+    assert "bulkURI" in record.data["ExtensionProperties"]["wdms"]
