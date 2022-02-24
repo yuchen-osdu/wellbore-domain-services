@@ -26,7 +26,12 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra, Field, confloat
+from pydantic import BaseModel, Extra, Field, confloat, StrictFloat, StrictStr, StrictInt
+
+# TMP: added import only to expose pydantic bug with non-deterministic coercion
+# https://github.com/samuelcolvin/pydantic/issues/2835
+# import requests
+
 
 class Tags(BaseModel):
     class Config:
@@ -43,6 +48,7 @@ class DDMSBaseModel(BaseModel):
 
     class Config:
         extra = Extra.forbid
+        smart_union = True
 
 
 # only allow unknown field in the data
@@ -53,9 +59,12 @@ class DDMSBaseModelWithExtra(BaseModel):
 
     class Config:
         extra = Extra.allow
+        smart_union = True
+
 
 class LinkList(DDMSBaseModelWithExtra):
     pass
+
 
 class Kind(str, Enum):
     CRS = 'CRS'
@@ -233,6 +242,10 @@ class Type_4(Enum):
 
 
 class GeoJsonMultiLineString(DDMSBaseModel):
+    """
+    GeoJson MultilineString
+    https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.5
+    """
     bbox: Optional[List[float]] = None
     coordinates: List[List[List[float]]]
     type: Type_4
@@ -251,6 +264,10 @@ class Type_7(Enum):
 
 
 class GeoJsonPoint(DDMSBaseModel):
+    """
+    GeoJson Point
+    https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.2
+    """
     bbox: Optional[List[float]] = None
     coordinates: List[float]
     type: Type_7
@@ -564,29 +581,6 @@ class dipsetrelationships(DDMSBaseModelWithExtra):
     )
 
 
-class toManyRelationship(DDMSBaseModel):
-    confidences: Optional[List[float]] = Field(
-        None,
-        description='The confidences of the relationships. Keep all the arrays ordered and aligned.',
-        title='Relationship Confidences',
-    )
-    ids: Optional[List[str]] = Field(
-        None,
-        description='The ids of the related objects. It is populated for an explicit relationship where the target entity is present as a record in the data ecosystem. Keep all the arrays ordered and aligned.',
-        title='Related Object Id',
-    )
-    names: Optional[List[str]] = Field(
-        None,
-        description='The names or natural keys of the related objects. Keep all the arrays ordered and aligned.',
-        title='Related Object Names',
-    )
-    versions: Optional[List[float]] = Field(
-        None,
-        description='The specific version numbers of the related instances. This is only specified if a specific version is required. If not populated the last version is implied. Keep all the arrays ordered and aligned.',
-        title='To Many Relationship',
-    )
-
-
 class DataType_1(Enum):
     string = 'string'
     number = 'number'
@@ -738,72 +732,6 @@ class markerrelationships(DDMSBaseModelWithExtra):
         description='The wellbore entity, to which this marker belongs.',
         title='Wellbore',
     )
-
-
-class valueAzimuth(DDMSBaseModel):
-    azimuthKey: str = Field(
-        ...,
-        description="Azimuth reference for the value of the corresponding attribute for the domain object in question. It can be looked up in 'frameOfReference.azimuths'.",
-        title='Azimuth Key',
-    )
-    crsKey: Optional[str] = Field(
-        None,
-        description="Mandatory for GridNorth referenced azimuths. The 'crsKey' can be looked up in the 'frameOfReference.crs' for further details.",
-        title='CRS Key',
-    )
-    date: Optional[date] = Field(
-        None,
-        description='Mandatory for MagneticNorth referenced azimuths: the observation date of the azimuth such that a correction can be obtained via a geomagnetic model using its secular variation.',
-        title='Observation Date',
-    )
-    unitKey: str = Field(
-        ...,
-        description="'unitKey' for value of the corresponding attribute for the domain object in question. It can be looked up in 'frameOfReference.units'.",
-        title='Unit Key',
-    )
-    value: float = Field(
-        ..., description='Value of the azimuth.', title='Azimuth Value'
-    )
-
-
-class v1LogProperties(DDMSBaseModel):
-    rowKeysUnit: Optional[str] = Field(
-        None, title="The unit of the row keys, e.g. 'm' or 'ft'"
-    )
-    rowKeysQuantity: Optional[str] = Field(
-        None, title="The quantity of the row keys, e.g. 'length' or 'time'"
-    )
-    rowKeysMnemonic: Optional[str] = Field(
-        None, title='The mnemonic of the row keys, e.g. MD, TVD, TWT'
-    )
-    colKeysUnit: Optional[str] = Field(
-        None, title="The unit of the column keys, e.g. 'm' or 'ft'"
-    )
-    colKeysQuantity: Optional[str] = Field(
-        None, title="The quantity of the column keys, e.g. 'length' or 'time'"
-    )
-    colKeysMnemonic: Optional[str] = Field(
-        None, title='The mnemonic of the column keys, e.g. MD, TVD, TWT'
-    )
-    valuesUnit: Optional[str] = Field(
-        None, title='The unit of the values, e.g. gAPI or Hz'
-    )
-    valuesQuantity: Optional[str] = Field(
-        None, title="The quantity of the values, e.g. 'gammaRay' or 'temperature'"
-    )
-    valuesMnemonic: Optional[str] = Field(
-        None, title='The mnemonic of the values, e.g. GR, TEMP, POR'
-    )
-    custom: Optional[Dict[str, Any]] = Field(
-        None,
-        description='A map of custom properties. Case sensitive on both key and value.',
-    )
-
-
-class RangeBoundType(Enum):
-    UNBOUNDED = 'UNBOUNDED'
-    OPEN = 'OPEN'
-    CLOSED = 'CLOSED'
 
 
 class DataType_2(Enum):
@@ -1036,18 +964,30 @@ class SimpleElevationReference(DDMSBaseModel):
 
 
 class GeoJsonLineString(DDMSBaseModel):
+    """
+    GeoJson MultiLineString
+    https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.4
+    """
     bbox: Optional[List[float]] = None
     coordinates: List[List[float]]
     type: Type_3
 
 
 class GeoJsonMultiPoint(DDMSBaseModel):
+    """
+    GeoJson MultiPoint
+    https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.3
+    """
     bbox: Optional[List[float]] = None
     coordinates: List[List[float]]
     type: Type_5
 
 
 class GeoJsonMultiPolygon(DDMSBaseModel):
+    """
+    GeoJson MultiPolygon
+    https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.7
+    """
     bbox: Optional[List[float]] = Field(
         None, description='Bounding box in longitude, latitude WGS 84.'
     )
@@ -1059,6 +999,9 @@ class GeoJsonMultiPolygon(DDMSBaseModel):
 
 
 class namedProperty(DDMSBaseModel):
+    """
+    namedProperty Model
+    """
     associations: Optional[List[str]] = Field(
         None,
         description='The optional associations contains one or more mnemonics found elsewhere in the logSet.',
@@ -1082,7 +1025,17 @@ class namedProperty(DDMSBaseModel):
         description="The unitKey to be looked up in the 'frameOfReference.units' dictionary to find the self-contained definition.",
         title='Property Unit Symbol',
     )
-    value: Optional[Union[float, str]] = Field(
+
+    # original type definition for value:
+    # pydantic coerces when possible, but to *what* is ambiguous here.
+    # value: Optional[Union[float, str]] = Field(
+
+    # if we want to rely on coercion, it needs to be unambiguous
+    # value: Optional[float] = Field(  # but we would size-down the accepted type
+
+    # otherwise we use StrictFloat and StrictStr to prevent unexpected (non-deterministic) coercion
+    # we add StrictInt to keep accepting int, as int was implicitely coerced to float
+    value: Optional[Union[StrictFloat, StrictInt, StrictStr]] = Field(
         None,
         description='The value for this property as a string or a number.',
         title='Property Value',
@@ -1274,6 +1227,10 @@ class SpatialFilter(DDMSBaseModel):
 
 
 class geometryItem(DDMSBaseModel):
+    """
+    geometryItem
+    https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.8
+    """
     bbox: Optional[List[float]] = None
     geometries: List[Union[
         GeoJsonPoint,
@@ -1287,6 +1244,10 @@ class geometryItem(DDMSBaseModel):
 
 
 class GeoJsonFeature(DDMSBaseModel):
+    """
+    GeoJson Feature
+    https://datatracker.ietf.org/doc/html/rfc7946#section-3.2
+    """
     bbox: Optional[List[float]] = None
     geometry: Union[
         GeoJsonPoint,
@@ -1302,6 +1263,10 @@ class GeoJsonFeature(DDMSBaseModel):
 
 
 class GeoJsonFeatureCollection(DDMSBaseModel):
+    """
+    GeoJson Feature Collection
+    https://datatracker.ietf.org/doc/html/rfc7946#section-3.3
+    """
     bbox: Optional[List[float]] = None
     features: List[GeoJsonFeature]
     type: Type_2

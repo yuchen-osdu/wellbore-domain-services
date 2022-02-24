@@ -102,6 +102,18 @@ compile-and-unit-test:
       - all-requirements.txt
       - spec/generated/openapi.json
 
+
+verify_models:
+  extends:
+    - .python
+    - .skipForTriggeringMergeRequests
+
+  stage: build
+
+  script:
+    - python -m doctest docs/model/model_curated.md
+
+
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
