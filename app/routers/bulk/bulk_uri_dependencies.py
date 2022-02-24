@@ -25,19 +25,22 @@ class BulkIdAccess(ABC):
 class OsduBulkIdAccess(BulkIdAccess):
     @staticmethod
     def get_bulk_uri(record) -> BulkURI:
-        if isinstance(record.data, dict):
-            return BulkURI.decode(record.data.get("ExtensionProperties", {}).get("wdms", {}).get(BULK_URI_FIELD, None))
-        else:
-            return BulkURI.decode(record.data.ExtensionProperties.get("wdms", {}).get(BULK_URI_FIELD, None))
-
+        bulk_uri = None
+        if hasattr(record, 'data') and isinstance(record.data, dict):
+            extension_properties = record.data.get("ExtensionProperties", None)
+            if extension_properties:
+                wdms = extension_properties.get("wdms", None)
+                bulk_uri = wdms.get(BULK_URI_FIELD, None) if wdms else None
+        elif hasattr(record, 'data') and hasattr(record.data, 'ExtensionProperties') and isinstance(record.data.ExtensionProperties, dict):
+            wdms = record.data.ExtensionProperties.get("wdms", None)
+            bulk_uri = wdms.get(BULK_URI_FIELD, None) if wdms else None
+        return BulkURI.decode(bulk_uri)
 
     @staticmethod
     def set_bulk_uri(record, bulk_id: str):
         bulk_uri = BulkURI.from_bulk_storage_V1(bulk_id=bulk_id)
-        if isinstance(record.data, dict):
-            record.data.setdefault("ExtensionProperties", {}).setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
-        else:
-            record.data.ExtensionProperties.setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
+        record.data.setdefault("ExtensionProperties", {}).setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
+
 
 class LogBulkIdAccess(BulkIdAccess):
     @staticmethod
