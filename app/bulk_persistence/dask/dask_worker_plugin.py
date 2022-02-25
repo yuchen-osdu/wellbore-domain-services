@@ -13,26 +13,30 @@
 # limitations under the License.
 
 from dask.distributed import WorkerPlugin
-from app.helper.logger import get_logger
+from app.helper.logger import get_logger, init_logger
+from app.conf import Config
 
 
 class DaskWorkerPlugin(WorkerPlugin):
 
     def __init__(self, logger=None, register_fsspec_implementation=None) -> None:
         self.worker = None
-        global _LOGGER
-        _LOGGER = logger
-
         self._register_fsspec_implementation = register_fsspec_implementation
+
         super().__init__()
-        get_logger().debug("WorkerPlugin initialised")
+        logger.debug("WorkerPlugin initialised")
 
     def setup(self, worker):
+        init_logger(service_name=Config.service_name.value)
+
         self.worker = worker
         if self._register_fsspec_implementation:
             self._register_fsspec_implementation()
 
+    def teardown(self, worker):
+        get_logger().debug(f"Worker '{worker.name}' with id '{worker.id}' is closing - {worker}")
+
     def transition(self, key, start, finish, *args, **kwargs):
         if finish == 'error':
-            # exc = self.worker.exceptions[key]
-            get_logger().exception(f"Task '{key}' has failed with exception")
+            exc = self.worker.exceptions.get(key, None)
+            get_logger().exception(f"Task '{key}' has failed with exception: {exc}")

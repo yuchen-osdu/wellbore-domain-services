@@ -27,7 +27,7 @@ from aiohttp import ClientSession
 import dask
 from dask.utils import parse_bytes, format_bytes
 from dask.distributed import Client as DaskDistributedClient
-from distributed import system
+from distributed import system, LocalCluster
 from distributed.deploy.utils import nprocesses_nthreads
 
 from app.model.user import User
@@ -35,6 +35,7 @@ from app.injector.app_injector import AppInjector
 from app.conf import Config
 
 POOL_EXECUTOR_MAX_WORKER = 4
+HOUR = 3600  # in seconds
 
 
 @lru_cache()
@@ -75,12 +76,28 @@ class DaskClient:
                     logger.info(f"Dask client worker configuration: {n_workers} workers running with "
                                 f"{format_bytes(worker_memory_limit)} of RAM and {threads_per_worker} threads each")
 
-                    DaskClient.client = await DaskDistributedClient(memory_limit=worker_memory_limit,
-                                                                    n_workers=n_workers,
-                                                                    threads_per_worker=threads_per_worker,
-                                                                    asynchronous=True,
-                                                                    processes=True,
-                                                                    dashboard_address=None)
+                    # Ensure memory used by workers is freed regularly despite memory leak
+                    dask.config.set({'distributed.worker.lifetime.duration': HOUR * 24})
+                    dask.config.set({'distributed.worker.lifetime.stagger': HOUR * 1})
+                    dask.config.set({'distributed.worker.lifetime.restart': True})
+                    logger.info(f"Dask cluster configuration - "
+                                f"worker lifetime: {dask.config.get('distributed.worker.lifetime.duration')}s. "
+                                f"stagger: {dask.config.get('distributed.worker.lifetime.stagger')}s.")
+
+                    cluster = await LocalCluster(
+                        asynchronous=True,
+                        processes=True,
+                        threads_per_worker=threads_per_worker,
+                        n_workers=n_workers,
+                        memory_limit=worker_memory_limit,
+                        dashboard_address=None
+                    )
+
+                    # A worker could be killed when executing a task if lifetime duration elapsed,
+                    # "cluster.adapt(min=N, max=N)" ensure the respawn of workers if it happens
+                    cluster.adapt(minimum=n_workers, maximum=n_workers)
+                    DaskClient.client = await DaskDistributedClient(cluster, asynchronous=True)
+
                     get_logger().info(f"Dask client initialized : {DaskClient.client}")
         return DaskClient.client
 
@@ -426,7 +443,6 @@ class Context:
     @property
     def x_user_id(self) -> Optional[str]:
         return self._x_user_id
-
 
     def __dict__(self):
         return {
