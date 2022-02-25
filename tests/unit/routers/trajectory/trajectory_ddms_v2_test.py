@@ -75,7 +75,7 @@ prev_data = {"columns": ["col_100X"], "data": [[0], [1], [2]], 'index': [0, 1, 2
 
 
 @pytest.fixture
-def client(tmp_path):
+def client(tmp_path, nope_logger_fixture):
     async def storage_service_builder(*args, **kwargs):
         return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1')
 

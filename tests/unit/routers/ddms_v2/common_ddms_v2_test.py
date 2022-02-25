@@ -142,7 +142,7 @@ SearchWrapperMock = create_mock_class(SearchWrapper)
 
 
 @pytest.fixture
-def client():
+def client(nope_logger_fixture):
     async def bypass_authorization():
         # empty method
         pass

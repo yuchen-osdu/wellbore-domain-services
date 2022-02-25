@@ -17,40 +17,33 @@ This test ensures the API spec committed with the sources stays accurate.
 If the test fails, it replaces the saved spec with the current version.
 The updated spec file must then be committed with the latest changes.
 """
+import logging
+
+from mock import mock
 
 OPENAPI_PATH = 'spec/generated/openapi.json'
 
 import os
 import pytest
 import rapidjson as json
-from tests.unit.test_utils import ctx_fixture, format_routes
-from fastapi.testclient import TestClient
+from tests.unit.test_utils import format_routes
 from openapi_spec_validator import validate_spec
 
-from app.helper import traces
-from app.wdms_app import wdms_app
-
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
-
-# Initialize route filters for documentation
-prefix = os.environ.get('OPENAPI_FILTER_PREFIX')
-tags = os.environ.get('OPENAPI_FILTER_TAGS')
-# Filter and reformat routes only if a prefix is provided
-if prefix:
-    # Make a tags list from the comma separated env var if needed
-    if tags:
-        tags = tags.split(',')
-    format_routes(wdms_app, prefix, tags)
 
 @pytest.fixture
-def client(ctx_fixture):
-    yield TestClient(wdms_app)
-    wdms_app.dependency_overrides = {}
+def openapi_json(app_configurable_with_testclient):
+    app, client = app_configurable_with_testclient()
 
+    # Initialize route filters for documentation
+    prefix = os.environ.get('OPENAPI_FILTER_PREFIX')
+    tags = os.environ.get('OPENAPI_FILTER_TAGS')
+    # Filter and reformat routes only if a prefix is provided
+    if prefix:
+        # Make a tags list from the comma separated env var if needed
+        if tags:
+            tags = tags.split(',')
+        format_routes(app, prefix, tags)
 
-@pytest.fixture
-def openapi_json(client):
     # get the openapi spec
     response = client.get("/openapi.json")
     assert response.status_code == 200
