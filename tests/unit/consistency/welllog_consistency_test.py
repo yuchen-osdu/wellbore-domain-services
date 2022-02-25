@@ -79,7 +79,7 @@ async def test_check_columns_consistency_error(welllog):
     welllog.data = WellLogData110(Curves=[Curve110(CurveID="A"), Curve110(CurveID="D")])
 
     with pytest.raises(
-        ColumnDoesNotMatchCurveIdException, match=r"^Column\(s\)  [B,C]|[C,B] doesn't match any CurveID$"
+        ColumnDoesNotMatchCurveIdException, match=r"^Column\(s\)  [B,C]|[C,B] doesn't match any CurveID of the WellLog record.$"
     ) as excinfo:
         await WelllogDataConsistencyChecks._check_columns_consistency(welllog, ["A", "B", "C", "D"])
 
@@ -105,9 +105,9 @@ def test__check_reference_is_strictly_monotonic_success():
 @pytest.mark.parametrize(
     "ref, error",
     [
-        ([0, 1, 1, 2, 3, 4], "Reference curve must have only unique values"),
-        ([0, None, 1, 2, 3, 4], "Nan values in reference curve is not allowed"),
-        ([0, 2, 4, 3, 5], "Reference must be monotonically increasing or decreasing"),
+        ([0, 1, 1, 2, 3, 4], "Repeated values in a reference curve aren't allowed."),
+        ([0, None, 1, 2, 3, 4], "Nan values in a reference curve are not allowed."),
+        ([0, 2, 4, 3, 5], "Reference must be monotonically increasing or decreasing."),
     ],
 )
 def test__check_reference_is_strictly_monotonic_error(ref, error):
