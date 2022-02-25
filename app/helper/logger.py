@@ -134,6 +134,11 @@ def create_azure_logger(service_name):
     osdu_core_lib_logger.addHandler(stdout_handler)
     osdu_core_lib_logger.addHandler(az_handler)
 
+    # Ensure logging messages from Dask (killing, restart worker) are exported
+    dask_nanny_logger = logging.getLogger('distributed.nanny')
+    dask_nanny_logger.setLevel(logging.INFO)
+    dask_nanny_logger.addHandler(az_handler)
+
     # Acquire the logger for wdms
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
