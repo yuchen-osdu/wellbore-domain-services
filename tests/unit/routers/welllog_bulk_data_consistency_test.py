@@ -87,7 +87,7 @@ inconsistent_test_params = [
     pytest.param(
         {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
         {"columns": ["MD", "AA"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
-        "Column(s) AA doesn't match any CurveID",
+        "Column(s) AA doesn't match any CurveID of the WellLog record.",
     ),
     pytest.param(
         {
@@ -97,7 +97,7 @@ inconsistent_test_params = [
             "BottomMeasuredDepth": 2.0,
         },
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
-        "Reference TopMeasuredDepth value (0.0) is not egal to welllog's TopMeasuredDepth value (0.1)",
+        "Reference TopMeasuredDepth value (0.0) is different from TopMeasuredDepth value (0.1) of the WellLog record.",
     ),
     pytest.param(
         {
@@ -107,22 +107,22 @@ inconsistent_test_params = [
             "BottomMeasuredDepth": 1.9,
         },
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
-        "Reference BottomMeasuredDepth value (2.0) is not egal to welllog's BottomMeasuredDepth value (1.9)",
+        "Reference BottomMeasuredDepth value (2.0) is different from BottomMeasuredDepth value (1.9) of the WellLog record.",
     ),
     pytest.param(
         {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [0.9, 2222.4], [2.0, 2222.5]]},
-        "Reference must be monotonically increasing or decreasing",
+        "Reference must be monotonically increasing or decreasing.",
     ),
     pytest.param(
         {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [None, 2222.5]]},
-        "Nan values in reference curve is not allowed",
+        "Nan values in a reference curve are not allowed.",
     ),
     pytest.param(
         {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.0, 2222.4], [2.0, 2222.5]]},
-        "Reference curve must have only unique values",
+        "Repeated values in a reference curve aren't allowed.",
     ),
 ]
 

@@ -159,7 +159,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             ColumnDoesNotMatchCurveIdException: column and record's curves doesn't match
         """
         if (not wl.data or not wl.data.Curves) and len(col_labels) > 0:
-            raise ColumnDoesNotMatchCurveIdException(f"Columns doesn't match any CurveID")
+            raise ColumnDoesNotMatchCurveIdException(f"Columns doesn't match any CurveID of the WellLog record.")
 
         curve_ids, _ = get_unique_attr_values(wl.data.Curves, "CurveID")
         col_names = WelllogDataConsistencyChecks._get_data_columns_name(col_labels)
@@ -167,7 +167,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
         if any(not_matching_col_name):
             raise ColumnDoesNotMatchCurveIdException(
-                f"Column(s) {','.join(not_matching_col_name)} doesn't match any CurveID"
+                f"Column(s) {','.join(not_matching_col_name)} doesn't match any CurveID of the WellLog record."
             )
 
     @staticmethod
@@ -188,14 +188,14 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     def _check_reference_is_strictly_monotonic(ref: pd.Series):
         # check unique values because is_monotonic_increasing & is_monotonic_decreasing are not strict
         if ref.duplicated().any():
-            raise ReferenceCurveException("Reference curve must have only unique values")
+            raise ReferenceCurveException("Repeated values in a reference curve aren't allowed.")
 
         if not ref.is_monotonic_increasing and not ref.is_monotonic_decreasing:
             # Nan values
             if ref.isnull().values.any():
-                raise ReferenceCurveException("Nan values in reference curve is not allowed")
+                raise ReferenceCurveException("Nan values in a reference curve are not allowed.")
             else:
-                raise ReferenceCurveException("Reference must be monotonically increasing or decreasing")
+                raise ReferenceCurveException("Reference must be monotonically increasing or decreasing.")
 
     @staticmethod
     def _check_top_bottom_reference(wl: WellLog110, ref: pd.Series):
@@ -203,7 +203,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             current_value = getattr(wl.data, attr_name, None)
             if current_value is not None and not math.isclose(current_value, value):
                 raise ReferenceCurveException(
-                    f"Reference {attr_name} value ({value}) is not egal to welllog's {attr_name} value ({current_value})"
+                    f"Reference {attr_name} value ({value}) is different from {attr_name} value ({current_value}) of the WellLog record."
                 )
 
         raise_if_attr_value_is_different("TopMeasuredDepth", ref.iloc[0])
