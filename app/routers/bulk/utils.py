@@ -1,4 +1,4 @@
-from typing import List, Set, Optional
+from typing import List, Set, Optional, Iterable
 import re
 import ast
 from natsort import natsorted
@@ -185,41 +185,62 @@ class DataFrameRender:
                                                               df, limit, offset, index)
         return df
 
-    re_array_selection = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
+    re_array = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
     @staticmethod
-    def _get_matching_columns_from_selection(selection: str, all_columns=Set[str]) -> List[str]:
-        m_sel = DataFrameRender.re_array_selection.match(selection)
-        if m_sel and m_sel['stop']:  # selection like col_name[<start>:<stop>]
-            col_name = m_sel['name']
-            with suppress(ValueError):  # suppress int conversion exceptions
-                requested_columns = (f'{col_name}[{i}]' for i in range(int(m_sel['start']), int(m_sel['stop'])+1))  # TODO we may want to support floating point values ?
-                return all_columns.intersection(requested_columns)
+    def _get_array_columns(all_columns=Iterable[str]) -> dict:
+        """
+        for a list of column detect and group array once. For instance given: A, B, C[0], C[1], D[0], D[1], D[2]
+        will return {
+            C: C[0], C[1]
+            D: D[0], D[1], D[2]
+        }
+        """
+        # TODO this info might be computed at catalog creation and then provided
 
-        def is_matching(col: str):
-            if not col.startswith(selection):
-                return False
-            if len(col) == len(selection):  # exact match
-                return True
-            m_col = DataFrameRender.re_array_selection.match(col)
-            if m_col:  # if selection is 'col_name', col_name[*] should match
-                return m_col['name'] == selection
-            return False
-
-        return [c for c in all_columns if is_matching(c)]
+        array_col = {}
+        for c in all_columns:
+            m_sel = DataFrameRender.re_array.match(c)
+            if m_sel:
+                array_col.setdefault(m_sel['name'], []).append(c)
+        return array_col
 
     @staticmethod
     @with_trace('get_matching_column')
     def get_matching_columns(selection: List[str], cols: Set[str]) -> List[str]:
         selected = {}
         curves_non_existent = []
+        curves_array = None
 
         for sel in selection:
-            matching_columns = DataFrameRender._get_matching_columns_from_selection(sel, cols)
-            if matching_columns:
-                selected.update({column: 1 for column in natsorted(matching_columns)})
+            if sel in cols:
+                selected[sel] = 1
+                continue
+
+            if curves_array is None:
+                curves_array = DataFrameRender._get_array_columns(cols)
+
+            matching_columns = [sel]
+            selection_slice = DataFrameRender.re_array.match(sel)
+            if selection_slice:
+                # means sel is a form CURVE_NAME[VALUE or SLICE],
+                curve_name = selection_slice['name']
+                slice_start, slice_stop = selection_slice['start'], selection_slice['stop']
+                if slice_start and slice_stop:  # full slice expression provided
+                    with suppress(ValueError):  # suppress int conversion exceptions
+                        # TODO we may want to support floating point values ?
+                        matching_columns = cols.intersection(
+                            (f'{curve_name}[{i}]'
+                             for i in range(int(slice_start), int(slice_stop) + 1))
+                        )
+            if sel in curves_array:  # no slicing + known as array => add all of them
+                matching_columns = curves_array[sel]
+
+            if not cols.issuperset(matching_columns):
+                curves_non_existent.extend(set(matching_columns).difference(cols))
             else:
-                curves_non_existent.append(sel)
+                # TODO natsorted could be a bottleneck for big array (> 100 000)
+                selected.update({column: 1 for column in natsorted(matching_columns)})
 
         if curves_non_existent:
             raise BulkCurvesNotFound(curves=curves_non_existent)
