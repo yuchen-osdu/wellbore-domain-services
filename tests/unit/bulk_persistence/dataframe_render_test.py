@@ -1,5 +1,6 @@
 import pytest
 from io import BytesIO
+from time import process_time
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
@@ -32,7 +33,7 @@ from tests.unit.test_utils import nope_logger_fixture
     (["NMR[0:2]"],    {"NMR[0]", "NMR[1]", "GR[2]"},  ["NMR[0]", "NMR[1]"]),  # ranges
     (["NMR[0:2]", "GR[2:4]"],       {"NMR[0]", "NMR[1]", "GR[2]"},  ["NMR[0]", "NMR[1]", "GR[2]"]),  # multiple ranges
     (["X[0]", "X[0:5]", "X[0:1]"],  {"X[0]", "X[1]", "X[2]"},       ["X[0]", "X[1]", "X[2]"]),  # removes duplication in overlapping ranges
-    (["X[0]"],        {"X[0]", "X[0][1]"},          ["X[0]", "X[0][1]"]),  # ensure that we capture only the last [..]
+    (["X[0]"],        {"X[0]", "X[0][1]"},          ["X[0]"]),  # unlikely case, for now only return exact match
     (["X[0]"],        {"X[0][0]", "X[0][1]"},       ["X[0][0]", "X[0][1]"]), 
     (["X[0][0:1]"],      {"X[0][0]", "X[0][1]"},       ["X[0][0]", "X[0][1]"]), 
     (["X[0][1:1]"],      {"X[0][0]", "X[0][1]"},       ["X[0][1]"]), 
@@ -41,6 +42,23 @@ def test_get_matching_column_success(requested, df_columns, expected):
     result = DataFrameRender.get_matching_columns(requested, set(df_columns))
     # check order
     assert result == expected
+
+
+@pytest.mark.parametrize("col_selection, all_columns, expected_count", [
+    ([f"C{i}" for i in range(1000)], {f"C{i}" for i in range(500000)}, 1000),  # many request, no array, many curves
+    ([f"C[{i}]" for i in range(1000)], {f"C[{i}]" for i in range(500000)}, 1000),  # many request in big array
+    ([f"C[{i}:{i+1}]" for i in range(1000)], {f"C[{i}]" for i in range(500000)}, 1001), # many slice requests in big array
+    (["C[1000:1999]"], {f"C[{i}]" for i in range(500000)}, 1000),  # single slice request in big array
+    (["C"], {f"C[{i}]" for i in range(100000)}, 100000),  # request one curve = big array
+    ([f"C{i}" for i in range(1000)], {f"C{i}[{j}]" for i in range(1000) for j in range(100)}, 100000),  # request many curves array
+    ([f"C{i}" for i in range(100)], {f"C{i}[{j}]" for i in range(100) for j in range(1000)}, 100000)  # request many curves array
+])
+def test_get_matching_column_perf(col_selection, all_columns, expected_count):
+    start_process = process_time()
+    result = DataFrameRender.get_matching_columns(col_selection, all_columns)
+    elapsed = process_time() - start_process
+    assert elapsed < 2.0, "performance degradation"
+    assert len(result) == expected_count
 
 
 @pytest.mark.parametrize("requested, df_columns, detail", [
