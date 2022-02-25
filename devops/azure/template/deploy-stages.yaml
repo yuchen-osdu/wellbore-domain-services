@@ -30,6 +30,10 @@ parameters:
         #       - template: ${{ my_template }}
         #         parameters: ${{ my_template_params }}
         #       - ...
+        #       postDeployTemplates:
+        #       - template: ${{ my_template }}
+        #         parameters: ${{ my_template_params }}
+        #       - ...
         #     getImageTemplate: ${{ authenticationTemplate }}
         #     getImageTemplateParameters: ${{ authenticationTemplateParameter }}
 
