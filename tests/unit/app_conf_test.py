@@ -15,7 +15,7 @@
 import pytest
 import os
 import uuid
-import mock
+from unittest import mock
 from app.utils import Context
 
 import app.conf as conf

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import httpx
-import mock
+from unittest import mock
 import pytest
 from pytest_httpx import HTTPXMock
 from httpx import (RemoteProtocolError, TimeoutException)

@@ -19,8 +19,6 @@ The updated spec file must then be committed with the latest changes.
 """
 import logging
 
-from mock import mock
-
 OPENAPI_PATH = 'spec/generated/openapi.json'
 
 import os

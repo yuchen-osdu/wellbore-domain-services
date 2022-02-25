@@ -1,5 +1,5 @@
 import pytest
-from mock import AsyncMock
+from unittest.mock import AsyncMock
 from unittest.mock import patch, mock_open
 from contextlib import suppress
 
