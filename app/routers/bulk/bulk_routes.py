@@ -62,7 +62,7 @@ from app.bulk_persistence.dataframe_validators import (auto_cast_columns_to_stri
                                                        DataFrameValidationFunc,
                                                        no_validation)
 from app.bulk_persistence import JSONOrient, get_dataframe, download_bulk
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
