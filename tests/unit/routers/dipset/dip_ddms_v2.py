@@ -9,7 +9,7 @@ from odes_storage.models import Record
 from app.middleware import require_data_partition_id
 from app.model.model_curated import dipset
 
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
 from app.auth.auth import require_opendes_authorized_user

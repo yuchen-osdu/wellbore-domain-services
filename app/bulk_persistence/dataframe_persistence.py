@@ -18,7 +18,7 @@ from typing import Tuple
 import pandas as pd
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
-from app.utils import Context
+from app.context import Context
 
 from .blob_storage import (
     BlobBulk,

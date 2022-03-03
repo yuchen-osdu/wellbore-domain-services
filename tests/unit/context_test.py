@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.utils import Context
+from app.context import Context
 import pytest
 import uuid
 import asyncio

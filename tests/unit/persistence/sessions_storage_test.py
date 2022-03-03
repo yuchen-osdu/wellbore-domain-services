@@ -28,7 +28,7 @@ from app.persistence.sessions_storage import (Session,
                                               SessionUpdatedEtagUnmatched,
                                               SessionException)
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
-from app.utils import Context
+from app.context import Context
 
 from tests.unit.test_utils import ctx_fixture
 

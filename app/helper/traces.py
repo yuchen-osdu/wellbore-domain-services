@@ -30,7 +30,7 @@ from app.context import get_or_create_ctx
 """
 How to add specific span in a method
 
->> from app.utils import Context, get_ctx
+>> from app.context import Context, get_ctx
 >>
 >> @router.get("/about", response_model=MyResponseClass)
 >> async def my_endpoint_method(ctx: Context = Depends(get_ctx)) -> MyResponseClass:

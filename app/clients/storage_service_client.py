@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from app.clients import StorageRecordServiceClient
-from app.utils import Context
+from app.context import Context
 
 
 async def get_storage_record_service(ctx: Context) -> StorageRecordServiceClient:

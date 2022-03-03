@@ -14,7 +14,7 @@
 
 from typing import List, Optional
 
-from app.utils import Context
+from app.context import Context
 from app.clients.storage_service_client import get_storage_record_service
 
 from odes_storage.models import (

@@ -29,7 +29,7 @@ from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.wdms_app import wdms_app, app_injector
 
-from app.utils import Context
+from app.context import Context
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')

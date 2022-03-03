@@ -16,7 +16,7 @@ from opencensus.trace.span import SpanKind
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from app import conf
-from app.utils import Context
+from app.context import Context
 from app.helper import utils, traces
 from .backoff_policy import backoff_policy
 from sys import exc_info
