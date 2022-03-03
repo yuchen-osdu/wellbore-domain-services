@@ -99,7 +99,7 @@ spec:
           {{ toYaml .Values.probes.liveness | nindent 10 }}
         readinessProbe:
           httpGet:
-            path: {{ include "os-wellbore-ddms.prefix" . }}/healthz
+            path: {{ include "os-wellbore-ddms.prefix" . }}/readiness
             port: 8080
           {{ toYaml .Values.probes.readiness | nindent 10 }}
       terminationGracePeriodSeconds: 45
