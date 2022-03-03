@@ -23,8 +23,7 @@ from odes_storage.models import (
 )
 from app.model.osdu_model import Well
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.utils import Context
-from app.utils import get_ctx
+from app.context import Context, get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils

@@ -9,7 +9,7 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.traces import submit_with_trace
 from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
-from app.utils import get_ctx
+from app.context import get_ctx
 from dask.dataframe.core import DataFrame as DaskDataFrame
 from odes_storage.models import Record
 

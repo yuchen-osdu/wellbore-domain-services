@@ -25,7 +25,7 @@ from starlette.responses import Response
 
 from app.conf import Config
 from app.helper.utils import rename_cloud_role_func, COMPONENT
-from app.utils import get_or_create_ctx
+from app.context import get_or_create_ctx
 
 """
 How to add specific span in a method

@@ -24,7 +24,8 @@ from app.model.model_curated import dipset
 from app.model.model_utils import from_record, to_record
 from app.model.entity_utils import Entity
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.utils import Context, get_ctx, load_schema_example
+from app.context import Context, get_ctx
+from app.utils import load_schema_example
 from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)

@@ -24,7 +24,7 @@ from opencensus.trace.samplers import AlwaysOnSampler
 from opencensus.trace.span import SpanKind
 
 from app.helper import traces, utils
-from app.utils import get_or_create_ctx
+from app.context import get_or_create_ctx
 from app import conf
 
 

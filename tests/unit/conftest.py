@@ -21,7 +21,8 @@ from mock import mock
 import app.conf as conf
 import pytest
 from app.conf import ConfigurationContainer
-from app.utils import Context, DaskClient
+from app.context import Context
+from app.utils import DaskClient
 from fastapi import Header
 from hypothesis import settings, Verbosity, HealthCheck
 

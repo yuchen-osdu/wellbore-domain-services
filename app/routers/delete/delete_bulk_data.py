@@ -22,7 +22,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 
 from app.routers.record_utils import fetch_record
-from app.utils import Context, get_ctx
+from app.context import Context, get_ctx
 
 
 async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess, record_id: str, index: int,

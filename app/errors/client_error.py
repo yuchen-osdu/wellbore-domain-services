@@ -32,7 +32,7 @@ from osdu_az.exceptions.data_access_error import (DataAccessError as OSDUPartiti
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
-from app.utils import get_ctx
+from app.context import get_ctx
 
 OSDU_DATA_ECOSYSTEM_SEARCH = "osdu-data-ecosystem-search"
 OSDU_DATA_ECOSYSTEM_STORAGE = "osdu-data-ecosystem-storage"

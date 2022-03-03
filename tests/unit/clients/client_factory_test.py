@@ -28,7 +28,7 @@ from app.clients import (
     SearchServiceClient)
 from app.clients.backoff_policy import backoff_policy, _exceptions_type_to_retry
 
-from app.utils import get_or_create_ctx
+from app.context import get_or_create_ctx
 from tests.unit.test_utils import make_record
 from odes_storage.exceptions import ResponseHandlingException
 from app.conf import Config
