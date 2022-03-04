@@ -18,6 +18,7 @@ from .model_chunking import GetDataParams, DataframeBasicDescribe, DataframeDesc
 from .dask.dask_bulk_storage import DaskBulkStorage
 from .dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from .dask.storage_path_builder import hash_record_id
+from .dask.traces import trace_dataframe_attributes, submit_with_trace, trace_attributes_root_span
 from .dataframe_persistence import create_and_store_dataframe, get_dataframe, download_bulk
 from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerSync
 from .dataframe_validators import auto_cast_columns_to_string, DataFrameValidationFunc, no_validation
