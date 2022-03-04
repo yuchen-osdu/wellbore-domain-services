@@ -21,9 +21,12 @@ def get_unique_attr_values(object_list: List[Any], attr_name: str) -> Tuple[Set[
 
     # check all curve ids are unique
     if object_list:
-        # expression generator fetch attribute  and  evaluate on demand if attribute value is duplicated
-        is_duplicated = (getattr(obj, attr_name) in values or values.add(getattr(obj, attr_name)) for obj in object_list)
-        if any(is_duplicated):
-            return set(), DuplicatedIdError()
+        for obj in object_list:
+            value = getattr(obj, attr_name)
+            if value:
+                if value in values:
+                    return values, DuplicatedIdError()
+                else:
+                    values.add(value)
 
     return values, None

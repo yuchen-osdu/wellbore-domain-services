@@ -10,6 +10,7 @@ from app.utils import Context
 from app.wdms_app import app_injector, wdms_app
 from tests.unit.test_utils import create_mock_class
 
+
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
@@ -56,13 +57,32 @@ acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
     [
         [
             {
+                "Name": "AzimuthTN",
                 "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:"
             },
-            {"TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:INCL:"},
+            {
+                "Name": "Incl",
+                "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:"
+            },
         ],
         [
             {
                 "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:"
+            },
+            {
+                "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:"
+            },
+        ],
+        [
+            {
+                "Name": "AzimuthTN",
+                "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:"
+            },
+        ],
+        [
+            {
+                "Name": "MD",
+                "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:MD:"
             },
         ],
         [],
@@ -93,44 +113,44 @@ def test_post_v3_consistent_trajectory(client, available_trajectory_station_prop
     assert response.status_code == status.HTTP_200_OK
 
 
-def test_post_v3_inconsistent_trajectory(client):
 
-    trajs = [
+@pytest.mark.parametrize(
+    "available_trajectory_station_properties",
+    [
         [
-            "partition-id:reference-data--TrajectoryStationPropertyType:A:",
-            "partition-id:reference-data--TrajectoryStationPropertyType:B:",
-        ],
-        [
-            "partition-id:reference-data--TrajectoryStationPropertyType:A:",
-            "partition-id:reference-data--TrajectoryStationPropertyType:A:",
-        ],
-        [
-            "partition-id:reference-data--TrajectoryStationPropertyType:A:",
-            "partition-id:reference-data--TrajectoryStationPropertyType:B:",
-        ],
-    ]
-
-    j = [
-        {
-            "kind": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
-            "legal": legal,
-            "acl": acl,
-            "data": {
-                "WellboreID": "namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:456",
-                "TopDepthMeasuredDepth": 1,
-                "BaseDepthMeasuredDepth": 1,
-                "VerticalMeasurement": [],
-                "AvailableTrajectoryStationProperties": [{"TrajectoryStationPropertyTypeID": i} for i in t],
+            {
+                "Name": "Incl",
+                "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:"
             },
-        }
-        for t in trajs
-    ]
-
+            {
+                "Name": "Incl",
+                "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:"
+            },
+        ],
+    ],
+)
+def test_post_v3_inconsistent_trajectory(client, available_trajectory_station_properties):
     response = client.post(
         url="/ddms/v3/wellboretrajectories",
-        json=j,
+        json=[
+            {
+                "kind": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
+                "legal": legal,
+                "acl": acl,
+                "data": {
+                    "WellboreID": "namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:456",
+                    "TopDepthMeasuredDepth": 1,
+                    "BaseDepthMeasuredDepth": 1,
+                    "VerticalMeasurement": [],
+                    "AvailableTrajectoryStationProperties": available_trajectory_station_properties
+                    if available_trajectory_station_properties
+                    else None,
+                },
+            }
+        ],
         headers={"content-type": "application/json"},
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "All station properties in WellboreTrajectory[1] should be unique" in response.json().get("detail")
+    assert "All station properties in WellboreTrajectory[0] should be unique" in response.json().get("detail")
+

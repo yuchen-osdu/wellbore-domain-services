@@ -64,7 +64,8 @@ from app.routers.bulk.utils import (
     update_operation_ids,
     set_v3_input_dataframe_check,
     set_legacy_input_dataframe_check,
-    set_welllog_data_consistency_check
+    set_welllog_data_consistency_check,
+    set_trajectory_data_consistency_check
 )
 from app.routers.bulk.bulk_uri_dependencies import (
     set_osdu_bulk_id_access,
@@ -241,41 +242,59 @@ alpha_tags = ['ALPHA feature: bulk data chunking']
 for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, alpha_tags, False),
                                            (DDMS_V3_PATH, [], True)
                                            ]:
-    # welllog bulk v3 APIs
-    # Create and Read session   (EXCLUDE  PATCH commit/abandon)
+
+    # POST and GET v3/welllog/session   (EXCLUDE  PATCH commit/abandon)
     wdms_app.include_router(
         sessions.router,
         prefix=bulk_prefix + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["WellLog"],
-        dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))],
+        dependencies=[
+            *basic_dependencies,
+            Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))
+        ],
         include_in_schema=is_visible)
 
-    # POST welllogs/{record_id}/data
-    # POST welllogs/{record_id}/sessions/{session_id}/data
-    # GET welllogs/{record_id}/versions/{version}/data
-    # GET welllogs/{record_id}/data
-    # PATCH /{record_id}/sessions/{session_id}
+    # POST v3/welllogs/{record_id}/data
+    # POST v3/welllogs/{record_id}/sessions/{session_id}/data
+    # GET v3/welllogs/{record_id}/versions/{version}/data
+    # GET v3/welllogs/{record_id}/data
+    # PATCH v3/welllogs/{record_id}/sessions/{session_id}
     wdms_app.include_router(
         bulk_routes.router,
         prefix=bulk_prefix + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["WellLog"],
-        dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
-                      Depends(set_welllog_data_consistency_check)],
+        dependencies=[
+            *v3_bulk_dependencies, 
+            Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
+            Depends(set_welllog_data_consistency_check)
+        ],
         include_in_schema=is_visible)
 
-    # wellbore trajectory bulk v3 APIs
+    # POST and GET v3/wellboretrajectories/session   (EXCLUDE  PATCH commit/abandon)
     wdms_app.include_router(
         sessions.router,
         prefix=bulk_prefix + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["Trajectory v3"],
-        dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3"))],
+        dependencies=[
+            *basic_dependencies, 
+            Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3")),
+        ],
         include_in_schema=is_visible)
 
+    # POST v3/wellboretrajectories/{record_id}/data
+    # POST v3/wellboretrajectories/{record_id}/sessions/{session_id}/data
+    # GET v3/wellboretrajectories/{record_id}/versions/{version}/data
+    # GET v3/wellboretrajectories/{record_id}/data
+    # PATCH v3/{wellboretrajectories}/{record_id}/sessions/{session_id}
     wdms_app.include_router(
         bulk_routes.router,
         prefix=bulk_prefix + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["Trajectory v3"],
-        dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3"))],
+        dependencies=[
+            *v3_bulk_dependencies,
+            Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3")),
+            Depends(set_trajectory_data_consistency_check)
+        ],
         include_in_schema=is_visible)
 
 # log bulk v2 APIs
@@ -290,7 +309,7 @@ wdms_app.include_router(
     tags=alpha_tags,
     dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access), Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
 
-# The multiple instantiation of bulk_utils router create some duplicates operation_id
+# The multiple instantiation of bulk_utils router create some duplicated operation_id
 update_operation_ids(wdms_app)
 
 

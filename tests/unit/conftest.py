@@ -75,7 +75,7 @@ def pytest_configure(config):
     # defining settings profile for local dev runs or CI runs
     # they can be loaded via `$pytest --hypothesis-profile debug`
     # Ref: https://hypothesis.readthedocs.io/en/latest/settings.html?highlight=profile#settings-profiles
-    settings.register_profile("default", deadline=None, verbosity=Verbosity.normal)
+    settings.register_profile("default", deadline=None, verbosity=Verbosity.normal, suppress_health_check=[HealthCheck.too_slow])
     settings.register_profile("debug", suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.verbose)
     settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "default"))
 

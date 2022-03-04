@@ -1,15 +1,15 @@
 import pandas as pd
 import pytest
-from deepdiff import DeepDiff
+
 
 from app.consistency.welllog_consistency import (
     ColumnDoesNotMatchCurveIdException,
     DuplicatedCurveIdException,
-    ReferenceCurveException,
     ReferenceCurveIdNotFoundException,
     WelllogDataConsistencyChecks,
     check_welllog_consistency,
 )
+
 from app.model.osdu_model import (
     AbstractAccessControlList100,
     AbstractLegalTags100,
@@ -82,37 +82,6 @@ async def test_check_columns_consistency_error(welllog):
         ColumnDoesNotMatchCurveIdException, match=r"^Column\(s\)  [B,C]|[C,B] doesn't match any CurveID of the WellLog record.$"
     ) as excinfo:
         await WelllogDataConsistencyChecks._check_columns_consistency(welllog, ["A", "B", "C", "D"])
-
-
-def test_get_data_columns_name():
-    computed = WelllogDataConsistencyChecks._get_data_columns_name(
-        ["GR[1]", "GR[2]", "DEN[1324]", "VSHALE[1324]", "", "A[1324][456]"]
-    )
-
-    assert not DeepDiff(computed, {"GR", "DEN", "VSHALE", "A[1324]"})
-
-    assert WelllogDataConsistencyChecks._get_data_columns_name([]) == set()
-    assert WelllogDataConsistencyChecks._get_data_columns_name([""]) == set()
-    assert WelllogDataConsistencyChecks._get_data_columns_name(["[foo]"]) == {"[foo]"}
-    assert WelllogDataConsistencyChecks._get_data_columns_name(["[1234]"]) == {"[1234]"}
-
-
-def test__check_reference_is_strictly_monotonic_success():
-    WelllogDataConsistencyChecks._check_reference_is_strictly_monotonic(pd.Series([0, 1, 2, 3, 4]))
-    WelllogDataConsistencyChecks._check_reference_is_strictly_monotonic(pd.Series())
-
-
-@pytest.mark.parametrize(
-    "ref, error",
-    [
-        ([0, 1, 1, 2, 3, 4], "Repeated values in a reference curve aren't allowed."),
-        ([0, None, 1, 2, 3, 4], "Nan values in a reference curve are not allowed."),
-        ([0, 2, 4, 3, 5], "Reference must be monotonically increasing or decreasing."),
-    ],
-)
-def test__check_reference_is_strictly_monotonic_error(ref, error):
-    with pytest.raises(ReferenceCurveException, match=f"^{error}$") as excinfo:
-        WelllogDataConsistencyChecks._check_reference_is_strictly_monotonic(pd.Series(ref))
 
 
 @pytest.mark.parametrize(

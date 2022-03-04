@@ -376,6 +376,11 @@ def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True) -> Request
         "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:",
         "StationPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:dega:",
         "Name": "AzimuthTN"
+      },
+      {
+        "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
+        "StationPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:dega:",
+        "Name": "Incl"
       }
     ],
     "AppliedOperations": [

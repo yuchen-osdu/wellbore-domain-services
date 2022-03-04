@@ -27,7 +27,7 @@ from app.model.filter import BulkReadFilterOperator, BulkReadFilters
 from app.model.model_chunking import GetDataParams, DataframeDescribe
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 
-from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks
+from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks, TrajectoryDataConsistencyChecks
 
 
 
@@ -87,6 +87,10 @@ def get_df_validation_func(request: Request) -> DataFrameValidationFunc:
 
 def set_welllog_data_consistency_check(request: Request):
     request.state.data_consistency_checks = WelllogDataConsistencyChecks()
+
+
+def set_trajectory_data_consistency_check(request: Request):
+    request.state.data_consistency_checks = TrajectoryDataConsistencyChecks()
 
 
 def get_data_consistency_checks(request: Request):
