@@ -20,7 +20,7 @@ from .dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from .dataframe_persistence import create_and_store_dataframe, get_dataframe, download_bulk
 from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerSync
 from .json_orient import JSONOrient
-from .mime_types import MimeTypes
+from .mime_types import MimeTypes, MimeType
 from .tenant_provider import resolve_tenant
 from .exceptions import UnknownChannelsException, InvalidBulkException, NoBulkException, NoDataException, RecordNotFoundException
 from .consistency_checks import ConsistencyException, DataConsistencyChecks
