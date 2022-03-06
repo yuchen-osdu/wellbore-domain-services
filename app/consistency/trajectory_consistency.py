@@ -18,7 +18,7 @@ from .reference_check import check_reference_is_strictly_monotonic, ReferenceCur
 
 
 class DuplicatedStationProperties(RuntimeError):
-    """raised if all curveID values are not unique"""
+    """raised if all trajectoryStationProperties names are not unique"""
 
 
 class ColumnDoesNotMatchTrajectoryStationException(ConsistencyException):
@@ -43,11 +43,11 @@ def check_trajectory_consistency(traj: WellboreTrajectory110):
 
     # All   name  must be unique
     station_name, duplicated_error = get_unique_attr_values(
-        traj.data.AvailableTrajectoryStationProperties, "Name"
+        traj.data.AvailableTrajectoryStationProperties,
+        "Name"
     )
     if duplicated_error:
         raise DuplicatedStationProperties()
-
 
 
 class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
@@ -57,21 +57,27 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
     MD Top & bottom values  should match WelllogTrajectory
     """
 
+    reference_trajectory_station_property_type_id = ":reference-data--TrajectoryStationPropertyType:MD:"
+
     @staticmethod
     def get_reference_name(traj: WellboreTrajectory110):
         if not traj.data.AvailableTrajectoryStationProperties:
             return None
         for station in traj.data.AvailableTrajectoryStationProperties:
-            if hasattr(station, "TrajectoryStationPropertyTypeID"):
-                if ":reference-data--TrajectoryStationPropertyType:MD:" in station.TrajectoryStationPropertyTypeID:
-                    if hasattr(station, "Name"):
+            if station and hasattr(station, "TrajectoryStationPropertyTypeID"):
+                if (
+                    station.TrajectoryStationPropertyTypeID
+                    and TrajectoryDataConsistencyChecks.reference_trajectory_station_property_type_id
+                    in station.TrajectoryStationPropertyTypeID
+                ):
+                    if hasattr(station, "Name") and station.Name:
                         return station.Name
         return None
 
     @classmethod
-    @with_trace('bulk_consistency')
+    @with_trace("bulk_consistency")
     def check_bulk_consistency_on_post_bulk(cls, record: Record, df: pd.DataFrame):
-        """ Perform trajectory consistency checks of a bulk  dataframe against welllogTrajectory record
+        """Perform trajectory consistency checks of a bulk  dataframe against welllogTrajectory record
         Called  when post a whole bulk (not chunking apis)
 
          Args:
@@ -98,7 +104,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         cls._check_top_bottom_reference(traj, ref)
 
     @classmethod
-    @with_trace('bulk_consistency')
+    @with_trace("bulk_consistency")
     async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
         traj = from_record(WellboreTrajectory110, record)
 
@@ -124,11 +130,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
 
     @staticmethod
     def _check_columns_consistency(traj: WellboreTrajectory110, col_labels: Iterable[str]):
-        """
-        """
         error_msg = "do(es) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record."
-        # if (not traj.data or not traj.data.AvailableTrajectoryStationProperties) and len(col_labels) > 0:
-        #    raise ColumnDoesNotMatchTrajectoryStationException(f"Column(s) {error_msg}")
 
         curve_ids, _ = get_unique_attr_values(traj.data.AvailableTrajectoryStationProperties, "Name")
         col_names = DataConsistencyChecks._get_data_columns_name(col_labels)
@@ -136,20 +138,20 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
         if any(not_matching_col_name):
             raise ColumnDoesNotMatchTrajectoryStationException(
-                f"Column(s) {','.join(not_matching_col_name)} {error_msg}"
+                f"Column(s) {', '.join(not_matching_col_name)} {error_msg}"
             )
 
     @staticmethod
     def _check_top_bottom_reference(traj: WellboreTrajectory110, ref: pd.Series):
-
-        def raise_if_attr_value_is_not_egal_to_top_value(attr_name: str):
-            top_value = ref.iloc[0]
-            attr_value = getattr(traj.data, attr_name, None)
-
-            if attr_value is not None and not math.isclose(attr_value, top_value):
+        def raise_if_attr_value_is_different(attr_name: str, value):
+            current_value = getattr(traj.data, attr_name, None)
+            if current_value is not None and not math.isclose(current_value, value):
                 raise ReferenceCurveException(
-                    f"Reference top value ({top_value}) is different from {attr_name} value ({attr_value}) of the WellboreTrajectory record."
+                    f"{attr_name} value ({value}) of the measured depth is different from {attr_name} value ({current_value}) of the WellboreTrajectory record."
                 )
 
-        raise_if_attr_value_is_not_egal_to_top_value("TopDepthMeasuredDepth")
-        raise_if_attr_value_is_not_egal_to_top_value("BaseDepthMeasuredDepth")
+        raise_if_attr_value_is_different("TopDepthMeasuredDepth", ref.iloc[0])
+        raise_if_attr_value_is_different("BaseDepthMeasuredDepth", ref.iloc[-1])
+
+
+

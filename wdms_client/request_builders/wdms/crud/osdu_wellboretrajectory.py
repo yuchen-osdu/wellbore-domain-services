@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from ....request_runner import RequestRunner, Request
-
+from typing import List
 
 def build_request_delete_osdu_wellboretrajectory(record_id='{{osdu_wellboretrajectory_record_id}}') -> RequestRunner:
     rq_proto = Request(
@@ -75,24 +75,14 @@ def build_request_get_versions_of_osdu_wellboretrajectory() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True) -> RequestRunner:
+def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True, curves: List[str]=['Example CurveID']) -> RequestRunner:
     if b_use_fixed_id:
         id_field = '"id": "{{data_partition}}:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",'
     else:
         id_field = ''
 
-    rq_proto = Request(
-        name="Create OSDU wellboretrajectory",
-        method="POST",
-        url="{{base_url}}/ddms/v3/wellboretrajectories",
-        headers={
-            "accept": "application/json",
-            'Content-Type': 'application/json',
-            "data-partition-id": "{{data_partition}}",
-            "Connection": "{{header_connection}}",
-            "Authorization": "Bearer {{token}}",
-        },
-        payload='[{' + id_field + r"""
+
+    payload = '[{' + id_field + r"""
   "acl": {{record_acl}}, "legal": {{record_legal}},
   "kind": "{{osduWellboreTrajectoryKind}}",
   "tags": {
@@ -387,10 +377,32 @@ def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True) -> Request
       "Example AppliedOperations"
     ],
     "CompanyID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
-    "ExtensionProperties": {}
-  }
-}
-]""",
+    "ExtensionProperties": {}"""
+    inner_curves = ""
+    for c in curves:
+        inner_curves = inner_curves + '{ "Name":' + f'"{c}",' + '"TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:"},'
+
+    if len(curves) > 0:
+        inner_curves = inner_curves[:-1]
+
+    payload = payload + f',"AvailableTrajectoryStationProperties": [{inner_curves}]'
+
+    payload = payload + '}}]'
+
+
+
+    rq_proto = Request(
+        name="Create OSDU wellboretrajectory",
+        method="POST",
+        url="{{base_url}}/ddms/v3/wellboretrajectories",
+        headers={
+            "accept": "application/json",
+            'Content-Type': 'application/json',
+            "data-partition-id": "{{data_partition}}",
+            "Connection": "{{header_connection}}",
+            "Authorization": "Bearer {{token}}",
+        },
+        payload=payload,
     )
     return RequestRunner(rq_proto)
 
