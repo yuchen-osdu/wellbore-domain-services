@@ -120,13 +120,13 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
             return
 
         # wrap what should be called in dask workers
-        def check_welllog_reference(traj: WellboreTrajectory110, ref_ddf_: DaskDataFrame):
+        def check_reference(traj: WellboreTrajectory110, ref_ddf_: DaskDataFrame):
             ref = ref_ddf_[reference_name].compute()
             check_reference_is_strictly_monotonic(ref)
             cls._check_top_bottom_reference(traj, ref)
 
         ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[reference_name])
-        await submit_with_trace(dask_blob_storage.client, check_welllog_reference, traj, ref_ddf)
+        await submit_with_trace(dask_blob_storage.client, check_reference, traj, ref_ddf)
 
     @staticmethod
     def _check_columns_consistency(traj: WellboreTrajectory110, col_labels: Iterable[str]):
