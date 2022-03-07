@@ -8,7 +8,7 @@ from odes_storage.models import Record
 from app.model.osdu_model import WellboreTrajectory110
 from app.helper.traces import with_trace
 from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, BulkRecordNotFound
 from app.bulk_persistence.dask.traces import submit_with_trace
 from app.model.model_utils import from_record
 from app.utils import get_ctx
@@ -98,10 +98,10 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         if not reference_name:
             return
 
-        ref = df[reference_name]
-
-        check_reference_is_strictly_monotonic(ref)
-        cls._check_top_bottom_reference(traj, ref)
+        if reference_name in df:
+            ref = df[reference_name]
+            check_reference_is_strictly_monotonic(ref)
+            cls._check_top_bottom_reference(traj, ref)
 
     @classmethod
     @with_trace("bulk_consistency")
@@ -119,13 +119,17 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         if not reference_name:
             return
 
+        try:
+            ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[reference_name])
+        except BulkRecordNotFound:
+            return
+
         # wrap what should be called in dask workers
         def check_reference(traj: WellboreTrajectory110, ref_ddf_: DaskDataFrame):
             ref = ref_ddf_[reference_name].compute()
             check_reference_is_strictly_monotonic(ref)
             cls._check_top_bottom_reference(traj, ref)
 
-        ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[reference_name])
         await submit_with_trace(dask_blob_storage.client, check_reference, traj, ref_ddf)
 
     @staticmethod

@@ -50,7 +50,6 @@ def _create_session(client, record_id):
 
 def _post_chunk(client, record_id, session_id, data):
     response = client.post(f"/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data", json=data)
-
     return response
 
 
@@ -60,7 +59,7 @@ def _commit_session(client, record_id, session_id):
 
 
 def generate_test_data():
-    bulk_columns = ["MD", "Incl"]
+
     bulk_values = [
         [0.0, 11.0],
         [0.5, 22.2],
@@ -68,7 +67,7 @@ def generate_test_data():
     ]
 
     bulk_data = {
-        "columns": bulk_columns,
+        "columns": ["MD", "Incl"],
         "data": bulk_values
     }
 
@@ -84,6 +83,10 @@ def generate_test_data():
         },
         {
             "Name": "MD",
+        },
+        {
+            "Name": "MD",
+            "TrajectoryStationPropertyTypeID": None
         },
     ]
 
@@ -123,7 +126,91 @@ def generate_test_data():
     return test_data
 
 
-test_param = generate_test_data()
+test_param = []
+
+#test_param = generate_test_data()
+
+test_param.append(
+    pytest.param(
+        {
+            "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
+            "VerticalMeasurement": [],
+            "TopDepthMeasuredDepth": 0.0,
+            "BaseDepthMeasuredDepth": 0.0,
+            "AvailableTrajectoryStationProperties": [
+                {
+                    "Name": "MD",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:MD:",
+                },
+                {
+                    "Name": "Incl",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
+                },
+            ]
+        },
+        {
+            "columns": ["MD", "Incl"],
+            "data": [
+                [0.0, 11.0],
+            ],
+        }
+    )
+)
+
+test_param.append(
+    pytest.param(
+        {
+            "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
+            "VerticalMeasurement": [],
+            "TopDepthMeasuredDepth": 0.0,
+            "BaseDepthMeasuredDepth": 0.0,
+            "AvailableTrajectoryStationProperties": [
+                {
+                    "Name": "MD",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:MD:",
+                },
+                {
+                    "Name": "Incl",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
+                },
+            ]
+        },
+        {
+            "columns": ["Incl"],
+            "data": [
+                [11.0],
+            ],
+        }
+    )
+)
+
+
+test_param.append(
+    pytest.param(
+        {
+            "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
+            "VerticalMeasurement": [],
+            "TopDepthMeasuredDepth": 0.0,
+            "BaseDepthMeasuredDepth": 0.0,
+            "AvailableTrajectoryStationProperties": [
+                {
+                    "Name": "MD",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:MD:",
+                },
+                {
+                    "Name": "Incl",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
+                },
+            ]
+        },
+        {
+            "columns": ["MD"],
+            "data": [
+                [0.0],
+            ],
+        }
+    )
+)
 
 
 @pytest.mark.parametrize("traj_data, bulk_data", test_param)
@@ -133,80 +220,109 @@ def test_consistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data):
     assert response.status_code == 200
 
 
-@pytest.mark.parametrize(
-    "traj_data, bulk_data, err",
-    [
-         (
-            {
-                "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
-                "TopDepthMeasuredDepth": 0.5,
-                "BaseDepthMeasuredDepth": 2,
-                "VerticalMeasurement": [],
-                "AvailableTrajectoryStationProperties": [
-                    {
-                        "Name": "Incl",
-                        "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
-                    },
-                    {
-                        "Name": "MD",
-                        "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:MD:",
-                    },
-                ]
-            },
-            {
-                "columns": ["MD", "Incl"],
-                "data": [
-                    [0.0, 2222.1],
-                    [2, 2222.5]
-                ]
-            },
-            r"^TopDepthMeasuredDepth value \(0\) of the measured depth is different from TopDepthMeasuredDepth value \(0\.5\) of the WellboreTrajectory record\.$",
-        ),
-        (
+@pytest.mark.parametrize("traj_data, bulk_data", test_param)
+def test_post_consistent_chunk(dasked_test_app_client, traj_data, bulk_data):
+    wid = _create_record(dasked_test_app_client, traj_data)
+    session_id = _create_session(dasked_test_app_client, wid)
+
+    response = _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
+    assert response.status_code == 200
+
+    response = _commit_session(dasked_test_app_client, wid, session_id)
+    assert response.status_code == 200
+
+
+
+inconsistent_test_params = [
+    pytest.param(
+        {
+            "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
+            "TopDepthMeasuredDepth": 0.5,
+            "BaseDepthMeasuredDepth": 2,
+            "VerticalMeasurement": [],
+            "AvailableTrajectoryStationProperties": [
                 {
-                    "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
-                    "TopDepthMeasuredDepth": 0,
-                    "BaseDepthMeasuredDepth": 2.5,
-                    "VerticalMeasurement": [],
-                    "AvailableTrajectoryStationProperties": [
-                        {
-                            "Name": "Incl",
-                            "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
-                        },
-                        {
-                            "Name": "MD",
-                            "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:MD:",
-                        },
-                    ]
+                    "Name": "Incl",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
                 },
                 {
-                    "columns": ["MD", "Incl"],
-                    "data": [
-                        [0.0, 2222.1],
-                        [2, 2222.5]
-                    ]
+                    "Name": "MD",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:MD:",
                 },
-                r"^BaseDepthMeasuredDepth value \(2\) of the measured depth is different from BaseDepthMeasuredDepth value \(2\.5\) of the WellboreTrajectory record\.$",
-        ),
-        (
+            ]
+        },
+        {
+            "columns": ["MD", "Incl"],
+            "data": [
+                [0.0, 2222.1],
+                [2, 2222.5]
+            ]
+        },
+        r"^TopDepthMeasuredDepth value \(0\) of the measured depth is different from TopDepthMeasuredDepth value \(0\.5\) of the WellboreTrajectory record\.$",
+    ),
+    pytest.param(
+        {
+            "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
+            "TopDepthMeasuredDepth": 0,
+            "BaseDepthMeasuredDepth": 2.5,
+            "VerticalMeasurement": [],
+            "AvailableTrajectoryStationProperties": [
                 {
-                    "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
-                    "TopDepthMeasuredDepth": 0,
-                    "BaseDepthMeasuredDepth": 2,
-                    "VerticalMeasurement": [],
-                    "AvailableTrajectoryStationProperties": []
+                    "Name": "Incl",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
                 },
                 {
-                    "columns": ["MD", "Incl"],
-                    "data": [
-                        [0.0, 2222.1],
-                        [2.0, 2222.5]
-                    ]
+                    "Name": "MD",
+                    "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:MD:",
                 },
-                r"^Column\(s\) ((\bMD, Incl\b)|(\bIncl, MD\b)) do\(es\) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record\.$",
-        ),
-    ]
-)
+            ]
+        },
+        {
+            "columns": ["MD", "Incl"],
+            "data": [
+                [0.0, 2222.1],
+                [2, 2222.5]
+            ]
+        },
+        r"^BaseDepthMeasuredDepth value \(2\) of the measured depth is different from BaseDepthMeasuredDepth value \(2\.5\) of the WellboreTrajectory record\.$",
+    ),
+    pytest.param(
+        {
+            "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
+            "TopDepthMeasuredDepth": 0,
+            "BaseDepthMeasuredDepth": 2,
+            "VerticalMeasurement": [],
+            "AvailableTrajectoryStationProperties": []
+        },
+        {
+            "columns": ["MD", "Incl"],
+            "data": [
+                [0.0, 2222.1],
+                [2.0, 2222.5]
+            ]
+        },
+        r"^Column\(s\) ((\bMD, Incl\b)|(\bIncl, MD\b)) do\(es\) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record\.$",
+    ),
+    pytest.param    (
+        {
+            "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
+            "TopDepthMeasuredDepth": 0,
+            "BaseDepthMeasuredDepth": 2,
+            "VerticalMeasurement": [],
+            "AvailableTrajectoryStationProperties": None
+        },
+        {
+            "columns": ["MD", "Incl"],
+            "data": [
+                [0.0, 2222.1],
+                [2.0, 2222.5]
+            ]
+        },
+        r"^Column\(s\) ((\bMD, Incl\b)|(\bIncl, MD\b)) do\(es\) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record\.$",
+    ),
+]
+
+@pytest.mark.parametrize("traj_data, bulk_data, err", inconsistent_test_params)
 def test_inconsistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data, err):
     record_id = _create_record(
         dasked_test_app_client,
@@ -221,7 +337,21 @@ def test_inconsistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data, e
     assert match, f"{computed} should match regular expression {err}"
 
 
+@pytest.mark.parametrize("traj_data, bulk_data, err", inconsistent_test_params)
+def test_post_inconsistent_chunk(dasked_test_app_client, traj_data, bulk_data, err):
+    wid = _create_record(dasked_test_app_client, traj_data)
+    session_id = _create_session(dasked_test_app_client, wid)
 
+    response = _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
+    assert response.status_code == 200
+
+    response = _commit_session(dasked_test_app_client, wid, session_id)
+    assert response.status_code == 400
+    computed = response.json()["detail"]
+    pattern = re.compile(err)
+    match = pattern.match(computed)
+
+    assert match, f"{computed} should match regular expression {err}"
 
 
 

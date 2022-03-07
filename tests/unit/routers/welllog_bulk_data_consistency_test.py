@@ -58,14 +58,14 @@ def _commit_session(client, record_id, session_id):
 
 
 def generate_test_data():
-    bulk_columns = ["MD", "GR"]
+
     bulk_values = [
         [0.0, 2222.1],
         [0.5, 2222.2],
         [2.0, 2222.5]
     ]
     bulk_data = {
-        "columns": bulk_columns,
+        "columns": ["MD", "GR"],
         "data": bulk_values
     }
 
@@ -109,7 +109,7 @@ def generate_test_data():
     ]
 
     test_data = []
-    for reference_curve  in reference_curve_data:
+    for reference_curve in reference_curve_data:
         for top_measured_depth in top_measured_depth_data:
             for sampling_start in sampling_start_data:
                 for bottom_measured_depth in bottom_measured_depth_data:
@@ -134,8 +134,48 @@ def generate_test_data():
 test_param = generate_test_data()
 
 
+test_param.append(
+    pytest.param(
+        {
+            "TopMeasuredDepth": 99,
+            "BottomMeasuredDepth": 99,
+            "SamplingStart": 99,
+            "SamplingStop": 99,
+            "Curves": [
+                {"CurveID": "MD"},
+                {"CurveID": "GR"},
+            ],
+        },
+        {
+            "columns": ["GR"],
+            "data":  [[0.0]],
+        }
+    )
+)
+
+test_param.append(
+    pytest.param(
+        {
+            "TopMeasuredDepth": 99,
+            "BottomMeasuredDepth": 99,
+            "SamplingStart": 99,
+            "SamplingStop": 99,
+            "ReferenceCurveID": "MD",
+            "Curves": [
+                {"CurveID": "MD"},
+                {"CurveID": "GR"}
+            ],
+        },
+        {
+            "columns": ["GR"],
+            "data":  [[0.0]],
+        }
+    )
+)
+
+
 @pytest.mark.parametrize("welllog_data, bulk_data", test_param)
-def test_consistent_whole_bulk(dasked_test_app_client, welllog_data, bulk_data):
+def test_post_consistent_bulk(dasked_test_app_client, welllog_data, bulk_data):
     wid = _create_record(client=dasked_test_app_client, data=welllog_data)
     response = _post_data(client=dasked_test_app_client, record_id=wid, data=bulk_data)
     assert response.status_code == 200

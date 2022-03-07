@@ -8,7 +8,7 @@ from odes_storage.models import Record
 
 from app.helper.traces import with_trace
 from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, BulkRecordNotFound
 from app.bulk_persistence.dask.traces import submit_with_trace
 from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
@@ -105,10 +105,10 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not (wl.data and wl.data.ReferenceCurveID):
             return
 
-        ref = df[wl.data.ReferenceCurveID]
-
-        check_reference_is_strictly_monotonic(ref)
-        cls._check_top_bottom_reference(wl, ref)
+        if wl.data.ReferenceCurveID in df:
+            ref = df[wl.data.ReferenceCurveID]
+            check_reference_is_strictly_monotonic(ref)
+            cls._check_top_bottom_reference(wl, ref)
 
     @classmethod
     @with_trace('bulk_consistency')
@@ -137,7 +137,10 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not (wl.data and wl.data.ReferenceCurveID):
             return
 
-        ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[wl.data.ReferenceCurveID])
+        try:
+            ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[wl.data.ReferenceCurveID])
+        except BulkRecordNotFound:
+            return
 
         # wrap what should be called in dask workers
         def check_welllog_reference(wl: WellLog110, ref_ddf: DaskDataFrame):
