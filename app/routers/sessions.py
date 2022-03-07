@@ -12,7 +12,7 @@ from app.persistence.sessions_storage import (Session,
                                               SessionsStorage,
                                               SessionUpdateMode)
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
-from app.routers.record_utils import fetch_record
+
 from app.utils import Context
 from app.helper.traces import TracingRoute
 
