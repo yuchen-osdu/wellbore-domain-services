@@ -1,0 +1,334 @@
+{
+    "data": {
+        "airGap": {
+            "unitKey": "ft",
+            "value": 30.0
+        },
+        "block": "Block 11/8",
+        "country": "United States of America",
+        "county": "Stark",
+        "dateCreated": "2013-03-22T11:16:03.123000+00:00",
+        "dateModified": "2013-03-22T11:16:03.123000+00:00",
+        "drillingDaysTarget": {
+            "unitKey": "days",
+            "value": 12.5
+        },
+        "elevationReference": {
+            "elevationFromMsl": {
+                "unitKey": "ft",
+                "value": 2650.5
+            },
+            "name": "GL"
+        },
+        "externalIds": null,
+        "field": "Bell",
+        "formationAtTd": "Bakken",
+        "formationProjected": "Bakken",
+        "hasAchievedTotalDepth": true,
+        "isActive": true,
+        "kickOffMd": {
+            "unitKey": "ft",
+            "value": 5324.9
+        },
+        "kickOffTvd": {
+            "unitKey": "ft",
+            "value": 5103.8
+        },
+        "locationWGS84": {
+            "bbox": null,
+            "features": [
+                {
+                    "bbox": null,
+                    "geometry": {
+                        "bbox": null,
+                        "coordinates": [
+                            [
+                                -103.2380248,
+                                46.8925081,
+                                5301.0
+                            ],
+                            [
+                                -103.2380248,
+                                46.8925081,
+                                2801.0
+                            ],
+                            [
+                                -103.2378748,
+                                46.892608100000004,
+                                301.0
+                            ],
+                            [
+                                -103.23742477750001,
+                                46.89270811,
+                                -2199.0
+                            ],
+                            [
+                                -103.23667470999663,
+                                46.892808120001,
+                                -4699.0
+                            ],
+                            [
+                                -103.2356245974865,
+                                46.892908130002,
+                                -7199.0
+                            ]
+                        ],
+                        "type": "LineString"
+                    },
+                    "properties": {
+                        "name": "Newton 2-31-Lat-1"
+                    },
+                    "type": "Feature"
+                }
+            ],
+            "type": "FeatureCollection"
+        },
+        "name": "Newton 2-31-Lat-1",
+        "operator": "Don E. Beckert",
+        "permitDate": "2013-01-15",
+        "permitNumber": "608020",
+        "plssLocation": {
+            "aliquotPart": null,
+            "range": "99W",
+            "section": 31,
+            "township": "140N"
+        },
+        "propertyDictionary": {
+            "API Number": "33003000080000",
+            "Activity Code": "E",
+            "Basin": "WILLISTON BASIN",
+            "Basin Code": "713200",
+            "Class Initial Code": "WF",
+            "Class Initial Name": "NEW FIELD WILDCAT",
+            "Country Name": "UNITED STATES",
+            "County Name": "BARNES",
+            "Current Operator City": "BILLINGS",
+            "Current Operator Name": "NYVATEX MONTANA",
+            "Date First Report": "11-12-1982",
+            "Date Last Activity": "06-03-2016",
+            "Depth Total Projected": "1800",
+            "Elevation Reference Datum": "GR",
+            "Elevation Reference Value": "1407",
+            "Field Name": "WILDCAT",
+            "Final Status": "ABANDON LOCATION",
+            "Formation Projected Name": "PRECAMBRIAN",
+            "Ground Elevation": "1407",
+            "Hole Direction": "VERTICAL",
+            "Lease Acres": "40",
+            "Lease Name": "TRIEBOLD",
+            "Operator City": "BILLINGS",
+            "Operator Name": "NYVATEX MONTANA",
+            "Permit Date": "11-10-1982",
+            "Permit Filer Long": ";PRESIDENT;;;;;;;",
+            "Permit Number": "9896",
+            "Permit Status": "APPROVED",
+            "Source": "PI",
+            "State Name": "NORTH DAKOTA",
+            "Status Final Code": "A",
+            "Sub Basin": "EASTERN SHELF (WILLISTON BASIN)",
+            "Sub Basin Code": "100000004313",
+            "Surface LL Source": "IH",
+            "Surface Latitude": "+47.1981919",
+            "Surface Longitude": " -97.8621697",
+            "UWI": "33003000080000",
+            "Unit of Measure": "ACRE",
+            "Well Num": "34-14"
+        },
+        "relationships": {
+            "definitiveTimeDepthRelation": {
+                "confidence": null,
+                "id": "slb:wing:timeDepthRelation-b34a7d55-d6da-5d94-afda-7bd0148236a5",
+                "name": null,
+                "version": null
+            },
+            "definitiveTrajectory": {
+                "confidence": null,
+                "id": "slb:wke:trajectory-REMOVED_FOR_CICD_SCAN",
+                "name": null,
+                "version": null
+            },
+            "tieInWellbore": {
+                "confidence": 1.0,
+                "id": "slb:n_dakota:wellbore-9076e90e-a1d2-5bec-8b49-c8928362d1d8",
+                "name": "Newton 2-31-Main",
+                "version": null
+            },
+            "well": {
+                "confidence": null,
+                "id": "slb:n_dakota:well-b95b1105-0711-5c01-b9b8-8decd610b4ef",
+                "name": "Newton 2-31",
+                "version": null
+            }
+        },
+        "shape": "build and hold",
+        "spudDate": "2013-03-22",
+        "state": "North Dakota",
+        "totalDepthMd": {
+            "unitKey": "ft",
+            "value": 8411.529999999999
+        },
+        "totalDepthMdDriller": {
+            "unitKey": "ft",
+            "value": 8412.23
+        },
+        "totalDepthMdPlanned": {
+            "unitKey": "ft",
+            "value": 8400.0
+        },
+        "totalDepthMdSubSeaPlanned": {
+            "unitKey": "ft",
+            "value": 5749.5
+        },
+        "totalDepthProjectedMd": {
+            "unitKey": "ft",
+            "value": 13215.0
+        },
+        "totalDepthTvd": {
+            "unitKey": "ft",
+            "value": 7834.34
+        },
+        "totalDepthTvdDriller": {
+            "unitKey": "ft",
+            "value": 7834.99
+        },
+        "totalDepthTvdPlanned": {
+            "unitKey": "ft",
+            "value": 7830.0
+        },
+        "totalDepthTvdSubSeaPlanned": {
+            "unitKey": "ft",
+            "value": 5179.5
+        },
+        "uwi": "33-089-00300-00-01",
+        "wellHeadElevation": null,
+        "wellHeadGeographic": {
+            "crsKey": "geographic",
+            "elevationFromMsl": {
+                "unitKey": "ft",
+                "value": 2650.5
+            },
+            "latitude": 46.89249512931594,
+            "longitude": -103.23756979739804
+        },
+        "wellHeadProjected": {
+            "crsKey": "projected",
+            "elevationFromMsl": {
+                "unitKey": "ft",
+                "value": 2650.5
+            },
+            "x": 1315694.366039069,
+            "y": 458966.7531300551
+        },
+        "wellHeadWgs84": {
+            "latitude": 46.8925081,
+            "longitude": -103.2380248
+        },
+        "wellboreNumberGovernment": "42-501-20130-P",
+        "wellboreNumberOperator": "12399-001",
+        "wellborePurpose": "appraisal",
+        "wellboreStatus": "abandoned",
+        "wellboreType": "bypass"
+    },
+    "meta": [
+        {
+            "kind": "Unit",
+            "name": "days",
+            "persistableReference": "{\"scaleOffset\":{\"scale\":86400.0,\"offset\":0.0},\"symbol\":\"d\",\"baseMeasurement\":{\"ancestry\":\"Time\",\"type\":\"UM\"},\"type\":\"USO\"}",
+            "propertyNames": [
+                "drillingDaysTarget.value"
+            ],
+            "propertyValues": null,
+            "uncertainty": null
+        },
+        {
+            "kind": "CRS",
+            "name": "projected",
+            "persistableReference": "{\"lateBoundCRS\":{\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.1833333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.4833333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",32021]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"type\":\"LBC\"},\"singleCT\":{\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"type\":\"ST\"},\"ver\":\"PE_10_3_1\",\"name\":\"NAD27 * OGP-Usa Conus / North Dakota South [32021,15851]\",\"authCode\":{\"auth\":\"SLB\",\"code\":\"32021079\"},\"type\":\"EBC\"}",
+            "propertyNames": [
+                "wellHeadProjected.x",
+                "wellHeadProjected.y"
+            ],
+            "propertyValues": null,
+            "uncertainty": null
+        },
+        {
+            "kind": "DateTime",
+            "name": "datetime",
+            "persistableReference": "{\"persistableReference\": \"{\"format\":\"yyyy-MM-ddTHH:mm:ssZ\",\"timeZone\":\"Antarctica/South Pole Standard Time;720;(GMT+12:00) Antarctica/South Pole;Antarctica/South Pole Standard Time;Antarctica/South Pole Daylight Time;[10:01:1989;12:31:9999;60;[0;02:00:00;10;1;0;];[0;02:00:00;3;3;0;];];\",\"type\":\"DTM\"}\"}",
+            "propertyNames": [
+                "dateCreated",
+                "dateModified"
+            ],
+            "propertyValues": null,
+            "uncertainty": null
+        },
+        {
+            "kind": "DateTime",
+            "name": "date",
+            "persistableReference": "{\"persistableReference\": \"{\"format\":\"yyyy-MM-dd\",\"type\":\"DAT\"}\"}",
+            "propertyNames": [
+                "permitDate",
+                "spudDate"
+            ],
+            "propertyValues": null,
+            "uncertainty": null
+        },
+        {
+            "kind": "Unit",
+            "name": "ft",
+            "persistableReference": "{\"scaleOffset\":{\"scale\":0.3048,\"offset\":0.0},\"symbol\":\"ft\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+            "propertyNames": [
+                "totalDepthMdSubSeaPlanned.value",
+                "totalDepthMdPlanned.value",
+                "kickOffMd.value",
+                "totalDepthTvd.value",
+                "totalDepthTvdSubSeaPlanned.value",
+                "totalDepthProjectedMd.value",
+                "airGap.value",
+                "totalDepthTvdDriller.value",
+                "totalDepthMdDriller.value",
+                "kickOffTvd.value",
+                "totalDepthMd.value",
+                "totalDepthTvdPlanned.value",
+                "elevationReference.elevationFromMsl.value",
+                "wellHeadGeographic.elevationFromMsl.value",
+                "wellHeadProjected.elevationFromMsl.value"
+            ],
+            "propertyValues": null,
+            "uncertainty": null
+        },
+        {
+            "kind": "CRS",
+            "name": "geographic",
+            "persistableReference": "{\"lateBoundCRS\":{\"wkt\":\"GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433],AUTHORITY[\\\"EPSG\\\",4267]]\",\"ver\":\"PE_10_3_1\",\"name\":\"GCS_North_American_1927\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"4267\"},\"type\":\"LBC\"},\"singleCT\":{\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"type\":\"ST\"},\"ver\":\"PE_10_3_1\",\"name\":\"NAD27 * OGP-Usa Conus [4267,15851]\",\"authCode\":{\"auth\":\"SLB\",\"code\":\"4267079\"},\"type\":\"EBC\"}",
+            "propertyNames": [
+                "wellHeadGeographic.latitude",
+                "wellHeadGeographic.longitude"
+            ],
+            "propertyValues": null,
+            "uncertainty": null
+        }
+    ],
+    "id": "opendes:doc:REMOVED_FOR_CICD_SCAN",
+    "version": 1590504779086127,
+    "kind": "opendes:wks:wellbore:1.0.6",
+    "acl": {
+        "viewers": [
+            "data.default.viewers@opendes.p4d.cloud.slb-ds.com"
+        ],
+        "owners": [
+            "data.default.owners@opendes.p4d.cloud.slb-ds.com"
+        ]
+    },
+    "legal": {
+        "legaltags": [
+            "opendes-public-usa-dataset-1"
+        ],
+        "otherRelevantDataCountries": [
+            "US"
+        ],
+        "status": "compliant"
+    },
+    "createUser": "fserin@opendes.p4d.cloud.slb-ds.com",
+    "createTime": "2020-05-26T14:52:59.294Z"
+}
