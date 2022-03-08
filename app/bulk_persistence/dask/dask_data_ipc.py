@@ -20,7 +20,7 @@ from contextlib import asynccontextmanager, contextmanager, suppress
 from typing import Union, AsyncGenerator, AsyncContextManager
 from dask.utils import format_bytes
 
-from app.utils import get_wdms_temp_dir
+from ..wdms_temp_dir import get_wdms_temp_dir
 from app.helper.logger import get_logger
 
 

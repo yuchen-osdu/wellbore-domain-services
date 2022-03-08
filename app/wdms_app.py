@@ -27,6 +27,7 @@ from app.helper.traces import TracingRoute
 from app.model.entity_utils import Entity
 from app.modules import discoverer
 
+from app.bulk_persistence import get_wdms_temp_dir
 from app.helper import traces, logger
 from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
@@ -57,7 +58,6 @@ from app.pool_executor import run_in_pool_executor
 from app.utils import (
     get_http_client_session,
     OpenApiHandler,
-    get_wdms_temp_dir,
     DaskClient,
     POOL_EXECUTOR_MAX_WORKER)
 from app.routers.bulk.utils import (

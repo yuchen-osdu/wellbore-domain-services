@@ -160,22 +160,6 @@ class DaskClient:
                 DaskClient.client = None
 
 
-def _setup_temp_dir() -> str:
-    tmpdir = tempfile.gettempdir()
-    if not tmpdir.endswith('wdmsosdu'):
-        tmpdir = path.join(tmpdir, 'wdmsosdu')
-        makedirs(tmpdir, exist_ok=True)
-        tempfile.tempdir = tmpdir
-    return tmpdir
-
-
-WDMS_TEMP_DIR = _setup_temp_dir()
-
-
-def get_wdms_temp_dir():
-    return WDMS_TEMP_DIR
-
-
 async def async_with_cache(cache, key: str, fn_coroutine, *args, **kwargs):
     try:
         return cache[key]
@@ -328,4 +312,3 @@ class __OpenApiHandler:
 
 OpenApiHandler = __OpenApiHandler()
 
-dask.config.set({'temporary_directory': get_wdms_temp_dir()})

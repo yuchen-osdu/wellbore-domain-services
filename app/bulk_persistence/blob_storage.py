@@ -37,7 +37,7 @@ import pyarrow.feather as feather
 import pyarrow.parquet as pq
 
 from app.pool_executor import get_pool_executor
-from app.utils import get_wdms_temp_dir
+from .wdms_temp_dir import get_wdms_temp_dir
 from .dataframe_serializer import DataframeSerializerAsync
 
 from .blob_bulk import BlobBulk
