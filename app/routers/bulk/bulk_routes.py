@@ -378,7 +378,10 @@ async def complete_session(
             i_session.session.meta = i_session.session.meta or {}
             i_session.session.meta.update({"some_detail_about_merge": "like the shape, number of rows ..."})
 
-            response = CommitSessionResponse(**i_session.session.dict(exclude_unset=True, by_alias=True), version=new_record.record_id_versions[0])
+            return CommitSessionResponse(
+                **i_session.session.dict(exclude_unset=True, by_alias=True),
+                version=new_record.record_id_versions[0]
+            )
 
             return response
 
@@ -393,7 +396,9 @@ async def complete_session(
                 # ==============> ADD ABANDON CODE HERE <==============
                 # ==============>
 
-            return CommitSessionResponse(**abandon_guard.session.session.dict(exclude_unset=True, by_alias=True))
+            return CommitSessionResponse(
+                **abandon_guard.session.session.dict(exclude_unset=True, by_alias=True)
+            )
 
     except SessionException as ex:
         ex.raise_as_http()
