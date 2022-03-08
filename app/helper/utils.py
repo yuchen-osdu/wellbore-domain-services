@@ -18,6 +18,28 @@ def rename_cloud_role_func(service_name):
     return callback_func
 
 
+_maximum_azure_attribute_length = 2048
+
+
+def azure_traces_processing(envelope):
+    """
+        Return a function to process trace data, it reduces the size of 'request.url' field whether it is too big
+         to be sent.
+
+        It's used by AzureLogHandler and AzureExporter.
+        https://docs.microsoft.com/en-us/azure/azure-monitor/app/api-filtering-sampling#opencensus-python-telemetry-processors
+    """
+
+    if hasattr(envelope.data, 'baseData'):
+        url = envelope.data.baseData.get('url')
+        if url and len(url) >= _maximum_azure_attribute_length:
+            suffix = '...'
+            truncated_url = url[:_maximum_azure_attribute_length-len(suffix)]
+            envelope.data.baseData['url'] = f'{truncated_url}{suffix}'
+
+    return True
+
+
 def add_fields(**kwargs):
     """
     Add key-value pairs to our homemade logger

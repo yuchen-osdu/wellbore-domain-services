@@ -27,7 +27,7 @@ from .blob_storage import (
     read_blob,
 )
 from .bulk_id import new_bulk_id
-from app.bulk_persistence.dask.errors import internal_bulk_exceptions
+from .dask.errors import internal_bulk_exceptions
 from .mime_types import MimeTypes, MimeType
 from .tenant_provider import resolve_tenant
 from ..helper.traces import with_trace

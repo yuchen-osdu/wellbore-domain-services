@@ -13,7 +13,7 @@ from app.middleware import require_data_partition_id
 from app.routers.search.search_wrapper import SearchWrapper
 from app.utils import Context
 from app.wdms_app import app_injector, wdms_app
-from tests.unit.test_utils import create_mock_class
+from tests.unit.test_utils import create_mock_class, nope_logger_fixture
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)

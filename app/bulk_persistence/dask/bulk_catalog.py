@@ -22,7 +22,7 @@ from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 
 from dask.distributed import get_client
 
-from app.bulk_persistence.dask.traces import submit_with_trace, trace_attributes_root_span
+from .traces import submit_with_trace, trace_attributes_root_span
 from app.helper.traces import with_trace
 from app.utils import capture_timings
 from .storage_path_builder import join, remove_protocol

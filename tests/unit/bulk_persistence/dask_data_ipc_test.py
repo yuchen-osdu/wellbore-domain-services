@@ -3,7 +3,7 @@ from mock import AsyncMock
 from unittest.mock import patch, mock_open
 from contextlib import suppress
 
-from tests.unit.test_utils import side_effect_raise
+from tests.unit.test_utils import nope_logger_fixture, side_effect_raise
 
 
 from dask.distributed import Client

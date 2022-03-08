@@ -22,7 +22,7 @@ from typing import Dict, Generator, List
 from distributed.worker import get_client
 
 import pandas as pd
-from app.bulk_persistence.dask.utils import share_items
+from .utils import share_items
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session

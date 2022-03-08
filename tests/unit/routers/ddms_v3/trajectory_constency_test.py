@@ -15,7 +15,7 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
+def client():
     async def bypass_authorization():
         # empty method
         pass

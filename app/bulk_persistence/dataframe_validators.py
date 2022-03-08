@@ -3,8 +3,8 @@ import re
 
 import pandas as pd
 
-from app.bulk_persistence.dask.utils import WDMS_INDEX_NAME
-from app.bulk_persistence.dask.errors import BulkNotProcessable
+from .dask.utils import WDMS_INDEX_NAME
+from .dask.errors import BulkNotProcessable
 from app.conf import Config
 
 
