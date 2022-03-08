@@ -1,4 +1,6 @@
 import pandas as pd
+import math
+from pydantic import BaseModel
 from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
 
 
@@ -17,3 +19,22 @@ def check_reference_is_strictly_monotonic(ref: pd.Series):
             raise ReferenceCurveException("Nan values in a reference curve are not allowed.")
         else:
             raise ReferenceCurveException("Reference must be monotonically increasing or decreasing.")
+
+
+def raise_if_attr_value_is_different(
+    record_data: BaseModel,
+    attr_name: str,
+    reference_value: float,
+    error_msg: str,
+):
+    attr_value = getattr(record_data, attr_name, None)
+    if attr_value is not None and not math.isclose(attr_value, reference_value):
+        raise ReferenceCurveException(
+            error_msg.format(
+                attr_name=attr_name,
+                attr_value=attr_value,
+                reference_value=reference_value,
+            )
+        )
+
+

@@ -14,7 +14,7 @@ from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
 from app.utils import get_ctx
 
-from .reference_check import check_reference_is_strictly_monotonic, ReferenceCurveException
+from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
 
 from .unique import get_unique_attr_values
 
@@ -76,14 +76,9 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     welllog referenceCurveID must match a welllog curve
     Reference should be strictly monotonic increasing or strictly monotonic decreasing
     Top & bottom reference values  should match welllog metadata ie:
-        TopMeasuredDepth is close to  top reference value with 1% tolerance
         SamplingStart is close to top reference value with 1e-9% tolerance
-        BottomMeasuredDepth is close to bottom reference values with 1% tolerance
         SamplingStop is close to bottom reference value with 1e-9% tolerance
     """
-
-    loose_tolerance = 1/100
-    strict_tolerance = 1e-9
 
     @classmethod
     @with_trace('bulk_consistency')
@@ -177,14 +172,16 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
     @staticmethod
     def _check_top_bottom_reference(wl: WellLog110, ref: pd.Series):
-        def raise_if_attr_value_is_different(attr_name: str, value, rel_tol):
-            current_value = getattr(wl.data, attr_name, None)
-            if current_value is not None and not math.isclose(current_value, value, rel_tol=rel_tol):
-                raise ReferenceCurveException(
-                    f"Reference {attr_name} value ({value}) is different from {attr_name} value ({current_value}) of the WellLog record."
-                )
+        raise_if_attr_value_is_different(
+            record_data=wl.data,
+            attr_name="SamplingStart",
+            reference_value=ref.iloc[0],
+            error_msg="Reference top value ({reference_value}) is different from {attr_name} value ({attr_value}) of the WellLog record."
+        )
 
-        raise_if_attr_value_is_different("TopMeasuredDepth", ref.iloc[0], WelllogDataConsistencyChecks.loose_tolerance)
-        raise_if_attr_value_is_different("SamplingStart", ref.iloc[0], WelllogDataConsistencyChecks.strict_tolerance)
-        raise_if_attr_value_is_different("BottomMeasuredDepth", ref.iloc[-1], WelllogDataConsistencyChecks.loose_tolerance)
-        raise_if_attr_value_is_different("SamplingStop", ref.iloc[-1], WelllogDataConsistencyChecks.strict_tolerance)
+        raise_if_attr_value_is_different(
+            record_data=wl.data,
+            attr_name="SamplingStop",
+            reference_value=ref.iloc[-1],
+            error_msg="Reference bottom value ({reference_value}) is different from {attr_name} value ({attr_value}) of the WellLog record."
+        )

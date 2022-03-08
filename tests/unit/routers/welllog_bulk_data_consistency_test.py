@@ -208,21 +208,21 @@ inconsistent_test_params = [
         {
             "ReferenceCurveID": "MD",
             "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}],
-            "TopMeasuredDepth": 0.1,
-            "BottomMeasuredDepth": 2.0,
+            "SamplingStart": 0.1,
+            "SamplingStop": 2.0,
         },
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
-        r"^Reference TopMeasuredDepth value \(0\.0\) is different from TopMeasuredDepth value \(0\.1\) of the WellLog record\.$",
+        r"^Reference top value \(0\.0\) is different from SamplingStart value \(0\.1\) of the WellLog record\.$",
     ),
     pytest.param(
         {
             "ReferenceCurveID": "MD",
             "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}],
-            "TopMeasuredDepth": 0.0,
-            "BottomMeasuredDepth": 1.9,
+            "SamplingStart": 0.0,
+            "SamplingStop": 1.9,
         },
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
-        r"^Reference BottomMeasuredDepth value \(2\.0\) is different from BottomMeasuredDepth value \(1\.9\) of the WellLog record\.$",
+        r"^Reference bottom value \(2\.0\) is different from SamplingStop value \(1\.9\) of the WellLog record\.$",
     ),
     pytest.param(
         {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},

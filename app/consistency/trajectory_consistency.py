@@ -14,7 +14,7 @@ from app.model.model_utils import from_record
 from app.utils import get_ctx
 
 from .unique import get_unique_attr_values
-from .reference_check import check_reference_is_strictly_monotonic, ReferenceCurveException
+from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
 
 
 class DuplicatedStationProperties(RuntimeError):
@@ -147,15 +147,20 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
 
     @staticmethod
     def _check_top_bottom_reference(traj: WellboreTrajectory110, ref: pd.Series):
-        def raise_if_attr_value_is_different(attr_name: str, value):
-            current_value = getattr(traj.data, attr_name, None)
-            if current_value is not None and not math.isclose(current_value, value):
-                raise ReferenceCurveException(
-                    f"{attr_name} value ({value}) of the measured depth is different from {attr_name} value ({current_value}) of the WellboreTrajectory record."
-                )
+        raise_if_attr_value_is_different(
+            record_data=traj.data,
+            attr_name="TopDepthMeasuredDepth",
+            reference_value=ref.iloc[0],
+            error_msg="First value ({reference_value}) of the measured depth is different from {attr_name} value ({attr_value}) of the WellboreTrajectory record."
 
-        raise_if_attr_value_is_different("TopDepthMeasuredDepth", ref.iloc[0])
-        raise_if_attr_value_is_different("BaseDepthMeasuredDepth", ref.iloc[-1])
+        )
+
+        raise_if_attr_value_is_different(
+            record_data=traj.data,
+            attr_name="BaseDepthMeasuredDepth",
+            reference_value=ref.iloc[-1],
+            error_msg="Last value ({reference_value}) of the measured depth is different from {attr_name} value ({attr_value}) of the WellboreTrajectory record."
+        )
 
 
 

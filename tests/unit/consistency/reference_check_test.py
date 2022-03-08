@@ -1,10 +1,13 @@
+from typing import Optional
 import pandas as pd
 import pytest
+from pydantic import BaseModel, Field
 
-
-from app.consistency.reference_check import check_reference_is_strictly_monotonic, ReferenceCurveException
-
-
+from app.consistency.reference_check import (
+    check_reference_is_strictly_monotonic,
+    ReferenceCurveException,
+    raise_if_attr_value_is_different
+)
 
 
 def test_check_reference_is_strictly_monotonic_success():
@@ -23,4 +26,109 @@ def test_check_reference_is_strictly_monotonic_success():
 def test_check_reference_is_strictly_monotonic_error(ref, error):
     with pytest.raises(ReferenceCurveException, match=f"^{error}$") as excinfo:
         check_reference_is_strictly_monotonic(pd.Series(ref))
+
+
+class Data(BaseModel):
+    TopMeasuredDepth: Optional[float] = Field(None)
+    BottomMeasuredDepth: Optional[float] = Field(None)
+
+
+@pytest.mark.parametrize(
+    "data, attr_name, reference_value",
+    [
+        (
+            {"TopMeasuredDepth": 0.0},
+            "TopMeasuredDepth",
+            0.0
+        ),
+        (
+            {"TopMeasuredDepth": 0.0},
+            "foo",
+            10.0
+        ),
+        (
+            {"TopMeasuredDepth": 10},
+            "TopMeasuredDepth",
+            10+1e-9
+        ),
+        (
+            {"TopMeasuredDepth": -10},
+            "TopMeasuredDepth",
+            -10+1e-9
+        ),
+        (
+            {"TopMeasuredDepth": None},
+            "TopMeasuredDepth",
+            0.0
+        ),
+        (
+            {},
+            "TopMeasuredDepth",
+            0.0
+        ),
+    ]
+)
+def test_raise_if_attr_value_is_different(
+    data,
+    attr_name,
+    reference_value
+):
+    record_data = Data(**data)
+
+    try:
+        raise_if_attr_value_is_different(
+            record_data=record_data,
+            attr_name=attr_name,
+            reference_value=reference_value,
+            error_msg=""
+        )
+    except ReferenceCurveException as exc:
+        assert False, f"Should not raise ReferenceCurveException"
+
+
+@pytest.mark.parametrize(
+    "data, attr_name, reference_value, error_msg, expected",
+    [
+        (
+            {"TopMeasuredDepth": 0.0},
+            "TopMeasuredDepth",
+            1.0,
+            "Value ({reference_value}) is different from {attr_name} value ({attr_value}).",
+            r"^Value \(1\.0\) is different from TopMeasuredDepth value \(0\.0\)\.$"
+        ),
+        (
+            {"TopMeasuredDepth": 20.0},
+            "TopMeasuredDepth",
+            20+20*1e-9,
+            "Value ({reference_value}) is different from {attr_name} value ({attr_value}).",
+            r"^Value \(20\.00000002\) is different from TopMeasuredDepth value \(20\.0\)\.$"
+        ),
+        (
+            {"TopMeasuredDepth": -20.0},
+            "TopMeasuredDepth",
+            20.0,
+            "Value ({reference_value}) is different from {attr_name} value ({attr_value}).",
+            r"^Value \(20\.0\) is different from TopMeasuredDepth value \(-20\.0\)\.$"
+        ),
+    ]
+)
+def test_check_top_bottom_reference_raise(
+    data,
+    attr_name,
+    reference_value,
+    error_msg,
+    expected
+):
+    record_data = Data(**data)
+
+    with pytest.raises(ReferenceCurveException, match=expected):
+        raise_if_attr_value_is_different(
+            record_data=record_data,
+            attr_name=attr_name,
+            reference_value=reference_value,
+            error_msg=error_msg
+        )
+
+
+
 

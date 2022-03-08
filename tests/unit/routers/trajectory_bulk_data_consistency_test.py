@@ -258,7 +258,7 @@ inconsistent_test_params = [
                 [2, 2222.5]
             ]
         },
-        r"^TopDepthMeasuredDepth value \(0\) of the measured depth is different from TopDepthMeasuredDepth value \(0\.5\) of the WellboreTrajectory record\.$",
+        r"^First value \(0\) of the measured depth is different from TopDepthMeasuredDepth value \(0\.5\) of the WellboreTrajectory record\.$",
     ),
     pytest.param(
         {
@@ -284,7 +284,7 @@ inconsistent_test_params = [
                 [2, 2222.5]
             ]
         },
-        r"^BaseDepthMeasuredDepth value \(2\) of the measured depth is different from BaseDepthMeasuredDepth value \(2\.5\) of the WellboreTrajectory record\.$",
+        r"^Last value \(2\) of the measured depth is different from BaseDepthMeasuredDepth value \(2\.5\) of the WellboreTrajectory record\.$",
     ),
     pytest.param(
         {
@@ -322,8 +322,8 @@ inconsistent_test_params = [
     ),
 ]
 
-@pytest.mark.parametrize("traj_data, bulk_data, err", inconsistent_test_params)
-def test_inconsistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data, err):
+@pytest.mark.parametrize("traj_data, bulk_data, expected", inconsistent_test_params)
+def test_inconsistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data, expected):
     record_id = _create_record(
         dasked_test_app_client,
         data=traj_data
@@ -332,13 +332,13 @@ def test_inconsistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data, e
     assert response.status_code == 400
     computed = response.json()["detail"]
 
-    pattern = re.compile(err)
+    pattern = re.compile(expected)
     match = pattern.match(computed)
-    assert match, f"{computed} should match regular expression {err}"
+    assert match, f"{computed} should match regex {expected}"
 
 
-@pytest.mark.parametrize("traj_data, bulk_data, err", inconsistent_test_params)
-def test_post_inconsistent_chunk(dasked_test_app_client, traj_data, bulk_data, err):
+@pytest.mark.parametrize("traj_data, bulk_data, expected", inconsistent_test_params)
+def test_post_inconsistent_chunk(dasked_test_app_client, traj_data, bulk_data, expected):
     wid = _create_record(dasked_test_app_client, traj_data)
     session_id = _create_session(dasked_test_app_client, wid)
 
@@ -348,10 +348,10 @@ def test_post_inconsistent_chunk(dasked_test_app_client, traj_data, bulk_data, e
     response = _commit_session(dasked_test_app_client, wid, session_id)
     assert response.status_code == 400
     computed = response.json()["detail"]
-    pattern = re.compile(err)
+    pattern = re.compile(expected)
     match = pattern.match(computed)
 
-    assert match, f"{computed} should match regular expression {err}"
+    assert match, f"{computed} should match regular expression {expected}"
 
 
 
