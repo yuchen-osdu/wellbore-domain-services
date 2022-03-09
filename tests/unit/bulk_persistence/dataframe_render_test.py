@@ -12,7 +12,6 @@ from app.model.model_chunking import GetDataParams, DataframeDescribe
 from app.routers.bulk.bulk_routes import DataFrameRender
 from app.routers.bulk.utils import get_df_from_request
 from tests.unit.generate_data import generate_df
-from tests.unit.test_utils import nope_logger_fixture
 
 
 @pytest.mark.parametrize("requested, df_columns, expected", [
