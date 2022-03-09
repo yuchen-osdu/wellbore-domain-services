@@ -45,9 +45,7 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(
             attribute_key=utils.HTTP_ROUTE,
             attribute_value=request.url.path)
-        tracer.add_attribute_to_current_span(
-            attribute_key=utils.HTTP_PATH,
-            attribute_value=str(request.url.path))
+
         tracer.add_attribute_to_current_span(
             attribute_key=utils.HTTP_URL,
             attribute_value=str(request.url))

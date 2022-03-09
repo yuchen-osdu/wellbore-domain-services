@@ -25,22 +25,8 @@ from app.utils import Context, DaskClient
 from fastapi import Header
 from hypothesis import settings, Verbosity, HealthCheck
 
-from .data import (
-    well_v2_file_contents, well_v3_file_contents, wellbore_v2_file_contents, wellbore_v3_file_contents,
-    domain, data_partition, legal_tags,
-    well_v2_record_list, well_v3_record_list, wellbore_v2_record_list, wellbore_v3_record_list,
-    well_wks_record, well_wks_mini_record, wellbore_wks_record, wellbore_wks_mini_record
-)
 
-from .fixtures import (
-    local_dev_config,
-    app_initialized_with_testclient,
-    app_configurable_with_testclient,
-    mock_storage_client_holding_data
-)
-
-
-@pytest.fixture(autouse=False)
+@pytest.fixture(autouse=True)
 def top_fixture(monkeypatch):
     """
     Hooks mechanism from PyTest.

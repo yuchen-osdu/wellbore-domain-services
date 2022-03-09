@@ -19,7 +19,7 @@
     },
     "data": {
         "ExtensionProperties": {},
-        "GeoContexts": [
+        "Geocontexts": [
             {
                 "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:",
                 "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:"
@@ -33,7 +33,7 @@
         "FacilityNameAliases": [
                 {
                     "AliasName": "33-089-00300-00-01",
-                    "AliasNameTypeID": "{{datapartitionid}}:reference-data--AliasNameType:UniqueIdentifier:"
+                    "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
                 }
         ],
         "SpatialLocation": {

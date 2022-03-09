@@ -2,6 +2,7 @@ import pytest
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from fastapi.testclient import TestClient
 from tests.unit.test_utils import create_mock_class
+from tests.unit.test_utils import nope_logger_fixture
 from .chunking_test import dasked_test_app
 import re
 

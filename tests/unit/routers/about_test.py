@@ -27,13 +27,13 @@ wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 PathPrefixParams = [DDMS_V2_PATH, '']
 
 @pytest.fixture
-def client(ctx_fixture, nope_logger_fixture):
+def client(ctx_fixture):
     yield TestClient(wdms_app)
     wdms_app.dependency_overrides = {}
 
 
 @pytest.fixture
-def client_with_authenticated_user(nope_logger_fixture):
+def client_with_authenticated_user():
     async def mock_require_opendes_authorized_user():
         # empty method
         pass
