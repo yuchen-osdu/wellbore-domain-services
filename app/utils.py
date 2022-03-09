@@ -153,6 +153,9 @@ class DaskClient:
 
         async with DaskClient.lock_client:
             if DaskClient.client:
+                # closing the cluster (started independently from the client)
+                cluster = await DaskClient.client.cluster
+                await cluster.close()
                 await DaskClient.client.close()  # or shutdown
                 DaskClient.client = None
 
