@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 import pytest
-from tests.unit.test_utils import ctx_fixture
+from tests.unit.test_utils import ctx_fixture, nope_logger_fixture
 from tests.unit.generate_data import generate_df
 import mock
 

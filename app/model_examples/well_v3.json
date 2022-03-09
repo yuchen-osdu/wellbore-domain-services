@@ -13,7 +13,7 @@
             "FacilityNameAliases": [
                 {
                     "AliasName": "20-000-00000-00",
-                    "AliasNameTypeID": "{{datapartitionid}}:reference-data--AliasNameType:UniqueIdentifier:"
+                    "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
                 }
             ],
             "ExtensionProperties": {}
