@@ -4,7 +4,7 @@ import json
 import fsspec
 import pandas as pd
 
-from app.bulk_persistence.dask.utils import WDMS_INDEX_NAME
+from .utils import WDMS_INDEX_NAME
 from app.model.model_chunking import DataframeBasicDescribe
 
 # imports from bulk_persistence

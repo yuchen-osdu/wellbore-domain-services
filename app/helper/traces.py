@@ -24,8 +24,9 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from app.conf import Config
-from app.helper.utils import rename_cloud_role_func, COMPONENT
+from app.helper.utils import rename_cloud_role_func, azure_traces_processing, COMPONENT
 from app.context import get_or_create_ctx
+
 
 """
 How to add specific span in a method
@@ -94,6 +95,7 @@ def create_exporter(service_name):
         try:
             az_exporter = _create_azure_exporter(key)
             az_exporter.add_telemetry_processor(rename_cloud_role_func(service_name))
+            az_exporter.add_telemetry_processor(azure_traces_processing)
             combined_exporter.add_exporter(az_exporter)
         except ValueError as e:
             print('Unable to create AzureExporter:', str(e))
