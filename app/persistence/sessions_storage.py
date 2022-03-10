@@ -98,6 +98,24 @@ class Session(BaseModel):
         return (datetime.utcnow() - self.updatedTime).total_seconds()
 
 
+class CommitSessionResponse(Session):
+    class Config:
+        validate_assignment = True
+        schema_extra = {
+            "example": {
+                **Session.Config.schema_extra["example"],
+                "version": 123456789,
+            }
+        }
+
+    version: Optional[int] = Field(
+        None,
+        description='Record version in case of successful commit',
+        example=1562066009929332,
+        title='Version Number',
+    )
+
+
 class SessionInternal(BaseModel):
     session: Session
     etag: Optional[str] = Field(None, allow_mutation=False)  # internal only, read only

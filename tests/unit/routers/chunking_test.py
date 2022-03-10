@@ -406,6 +406,7 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
     commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
     assert commit_response.status_code == 200
     assert commit_response.json()['state'] == SessionState.Committed
+    assert commit_response.json()['version']
     return created_dfs
 
 
@@ -535,6 +536,7 @@ def test_abandon_session_with_data_push_data_again(dasked_test_app_without_consi
                                           json={'state': 'abandon'})
     assert abort_session_response.status_code == 200
     assert abort_session_response.json()['state'] == SessionState.Abandoned
+    assert abort_session_response.json()['version'] == None
 
     chunk_2 = generate_df(['MD', 'X'], range(11, 20))
     chunk2_response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
