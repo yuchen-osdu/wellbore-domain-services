@@ -43,12 +43,14 @@ async def test_fwd_correlation_id_to_outgoing_request_to_search(httpx_mock: HTTP
 
 
 @pytest.fixture()
-async def wdms_app_mocked():
+async def wdms_app_mocked(nope_logger_fixture):
 
     from fastapi.testclient import TestClient
     from app.wdms_app import wdms_app, app_injector
     from app.clients import StorageRecordServiceClient
 
+    # we do not want dev mode, so that we are able to actually send http requests
+    conf.Config.dev_mode.value = False
     conf.Config.service_host_search.value = "http://localhost:8888"
     conf.Config.service_host_storage.value = "http://localhost:9999"
 

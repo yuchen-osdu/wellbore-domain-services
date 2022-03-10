@@ -15096,10 +15096,10 @@
                 {
                   "acl": {
                     "owners": [
-                      "data.default.owners@{{datapartitionid}}.{{domain}}.com"
+                      "data.default.owners@{{datapartitionid}}.{{domain}}"
                     ],
                     "viewers": [
-                      "data.default.viewers@{{datapartitionid}}.{{domain}}.com"
+                      "data.default.viewers@{{datapartitionid}}.{{domain}}"
                     ]
                   },
                   "data": {
@@ -15568,10 +15568,10 @@
                 {
                   "acl": {
                     "owners": [
-                      "data.default.owners@{{datapartitionid}}.{{domain}}.com"
+                      "data.default.owners@{{datapartitionid}}.{{domain}}"
                     ],
                     "viewers": [
-                      "data.default.viewers@{{datapartitionid}}.{{domain}}.com"
+                      "data.default.viewers@{{datapartitionid}}.{{domain}}"
                     ]
                   },
                   "data": {
@@ -17014,7 +17014,7 @@
                     "FacilityNameAliases": [
                       {
                         "AliasName": "33-089-00300-00-01",
-                        "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                        "AliasNameTypeID": "{{datapartitionid}}:reference-data--AliasNameType:UniqueIdentifier:"
                       }
                     ],
                     "FacilityOperators": [
@@ -17022,7 +17022,7 @@
                         "FacilityOperatorID": "Francois Vinyes"
                       }
                     ],
-                    "Geocontexts": [
+                    "GeoContexts": [
                       {
                         "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:",
                         "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:"
@@ -17440,7 +17440,7 @@
                     "FacilityNameAliases": [
                       {
                         "AliasName": "33-089-00300-00-01",
-                        "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                        "AliasNameTypeID": "{{datapartitionid}}:reference-data--AliasNameType:UniqueIdentifier:"
                       }
                     ],
                     "FacilityOperators": [
@@ -17448,7 +17448,7 @@
                         "FacilityOperatorID": "Francois Vinyes"
                       }
                     ],
-                    "Geocontexts": [
+                    "GeoContexts": [
                       {
                         "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:",
                         "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:"
@@ -19766,7 +19766,7 @@
                     "FacilityNameAliases": [
                       {
                         "AliasName": "20-000-00000-00",
-                        "AliasNameTypeID": "{{datapartitionid}}:osdu:reference-data--AliasNameType:UniqueIdentifier:"
+                        "AliasNameTypeID": "{{datapartitionid}}:reference-data--AliasNameType:UniqueIdentifier:"
                       }
                     ]
                   },

@@ -29,7 +29,7 @@ from app.clients import *
 from app.helper import traces, logger
 from app.auth.auth import require_opendes_authorized_user
 
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class
 from odes_storage.exceptions import (
     UnexpectedResponse as OSDUStorageUnexpectedResponse,
     ResponseValidationError as OSDUStorageResponseValidationError,
