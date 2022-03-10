@@ -851,6 +851,95 @@
         "title": "CatalogRecord",
         "type": "object"
       },
+      "CommitSessionResponse": {
+        "description": "model of session exposed  ",
+        "example": {
+          "createdTime": "2021-03-07T15:49:01+00:00",
+          "expiry": "2021-03-08T15:49:01+00:00",
+          "fromVersion": 25686567113,
+          "id": "xx1234",
+          "meta": {
+            "creatorCustom": "someValue"
+          },
+          "mode": "update",
+          "recordId": "opendes:log:991234",
+          "state": "open",
+          "updatedTime": "2021-03-07T15:58:01+00:00",
+          "version": 123456789
+        },
+        "properties": {
+          "createdTime": {
+            "description": "creation date",
+            "format": "date-time",
+            "title": "Createdtime",
+            "type": "string"
+          },
+          "expiry": {
+            "description": "If the session is not committed before this dead line, session is automatically abandoned.",
+            "format": "date-time",
+            "title": "Expiry",
+            "type": "string"
+          },
+          "fromVersion": {
+            "description": "record version on top of which the session is based.",
+            "title": "Fromversion",
+            "type": "integer"
+          },
+          "id": {
+            "description": "identifier of the current session.",
+            "title": "Id",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "miscellaneous metadata associated to the session. The session creator can set some data here.",
+            "title": "Meta",
+            "type": "object"
+          },
+          "mode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SessionUpdateMode"
+              }
+            ],
+            "description": "merge mode at commit. If 'update', existing data will be merged with the data sent during the session. If 'overrride', existing data will be ignored, the final result will only contains data sent within the session."
+          },
+          "recordId": {
+            "description": "identifier of the record of which the session is attached to.",
+            "title": "Recordid",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/SessionState"
+          },
+          "updatedTime": {
+            "description": "updated date",
+            "format": "date-time",
+            "title": "Updatedtime",
+            "type": "string"
+          },
+          "version": {
+            "description": "Record version in case of successful commit",
+            "example": 1562066009929332,
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "recordId",
+          "fromVersion",
+          "mode",
+          "expiry",
+          "createdTime",
+          "updatedTime",
+          "state"
+        ],
+        "title": "CommitSessionResponse",
+        "type": "object"
+      },
       "Coordinate": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
@@ -9051,7 +9140,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/CommitSessionResponse"
                 }
               }
             },
@@ -18044,7 +18133,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/CommitSessionResponse"
                 }
               }
             },
@@ -19196,7 +19285,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "$ref": "#/components/schemas/CommitSessionResponse"
                 }
               }
             },
