@@ -33,7 +33,7 @@ from app.conf import Config
 
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
-from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span
+from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span, trace_attributes_current_span
 from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, join_dataframes, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
 from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
@@ -179,6 +179,11 @@ class DaskBulkStorage:
         index_df = self._read_index_from_catalog_index_path(catalog)
         if index_df:
             dfs.append(index_df)
+
+        trace_attributes_current_span({
+            'parquet-files-to-load-count': len(files_to_load),
+            'df-to-merge-count': len(dfs)
+        })
 
         if not dfs:
             raise RuntimeError("cannot find requested columns")
