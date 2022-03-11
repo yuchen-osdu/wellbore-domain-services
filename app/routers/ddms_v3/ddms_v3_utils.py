@@ -58,7 +58,7 @@ entity_names = {
 class DMSV3RouterUtils:
 
     @staticmethod
-    def get_version_from_record_id_version(record_id_version: str) -> str:
+    def get_version_from_record_id_version(record_id_version: str) -> int:
         match = OSDU_ENTITY_VERSION_REGEX.match(record_id_version)
         if not match:
             raise RuntimeError(f"{record_id_version} is not a  valid, it must match {OSDU_ENTITY_VERSION_REGEX}")
