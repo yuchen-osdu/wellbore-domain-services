@@ -378,9 +378,11 @@ async def complete_session(
             i_session.session.meta = i_session.session.meta or {}
             i_session.session.meta.update({"some_detail_about_merge": "like the shape, number of rows ..."})
 
-            return CommitSessionResponse(
+            response = CommitSessionResponse(
                 **i_session.session.dict(exclude_unset=True, by_alias=True),
-                version=new_record.record_id_versions[0]
+                version=DMSV3RouterUtils.get_version_from_record_id_version(
+                    new_record.record_id_versions[0]
+                )
             )
 
             return response
