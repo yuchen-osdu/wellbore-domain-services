@@ -202,11 +202,3 @@ async def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalo
             data = await asyncio.get_running_loop().run_in_executor(None, json.load, json_file)
             return BulkCatalog.from_dict(data)
     return None
-
-
-async def async_load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
-    return await asyncio.create_task(load_bulk_catalog(filesystem, folder_path))
-
-
-async def async_save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> None:
-    return await asyncio.create_task(save_bulk_catalog(filesystem, folder_path, catalog))

@@ -41,9 +41,7 @@ from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
-from .bulk_catalog import (BulkCatalog, ChunkGroup,
-                           async_load_bulk_catalog,
-                           async_save_bulk_catalog)
+from .bulk_catalog import (BulkCatalog, ChunkGroup, load_bulk_catalog, save_bulk_catalog)
 from ..mime_types import MimeType
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
@@ -255,7 +253,7 @@ class DaskBulkStorage:
     @with_trace('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str, generate_if_not_exists=True) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
-        catalog = await async_load_bulk_catalog(self._fs, bulk_path)
+        catalog = await load_bulk_catalog(self._fs, bulk_path)
         if catalog:
             return catalog
 
@@ -473,7 +471,7 @@ class DaskBulkStorage:
         )
 
         fcatalog = await self.client.scatter(catalog)
-        await async_save_bulk_catalog(self._fs, commit_path, fcatalog)
+        await save_bulk_catalog(self._fs, commit_path, await fcatalog)
         trace_attributes_root_span({
             'catalog-row-count': catalog.nb_rows,
             'catalog-col-count': catalog.all_columns_count
