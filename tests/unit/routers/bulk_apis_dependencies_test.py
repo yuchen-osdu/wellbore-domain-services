@@ -4,7 +4,6 @@ from app.routers.ddms_v2 import log_ddms_v2
 from app.routers.ddms_v3 import wellbore_trajectory_ddms_v3, welllog_ddms_v3
 from app.wdms_app import ALPHA_APIS_PREFIX, DDMS_V2_PATH, DDMS_V3_PATH
 from fastapi.testclient import TestClient
-from tests.unit.test_utils import nope_logger_fixture
 from tests.unit.routers.chunking_test import dasked_test_app
 
 base_paths = [

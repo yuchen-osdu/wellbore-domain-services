@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pytest
-import mock
+from unittest import mock
 from unittest.mock import patch
 import asyncio
 import logging
@@ -32,14 +32,6 @@ def ctx_fixture():
     mock_mock.span_context = SpanContext(trace_id="trace-id", span_id="span_id")
     ctx = get_or_create_ctx().set_current_with_value(tracer=mock_mock, logger=mock.NonCallableMock(spec_set=logging.Logger))
     yield ctx
-
-
-@pytest.fixture
-def nope_logger_fixture(mocker):
-    yield mocker.patch('app.helper.logger._LOGGER', spec_set=logging.Logger, new_callable=mock.NonCallableMock)
-
-
-
 
 
 def create_mock_class(cls_to_mock):

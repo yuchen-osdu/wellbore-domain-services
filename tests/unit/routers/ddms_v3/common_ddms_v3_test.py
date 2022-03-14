@@ -13,7 +13,7 @@
 # limitations under the License.
 import json
 import os
-import mock
+from unittest import mock
 from odes_storage import UnexpectedResponse
 import pandas as pd
 import pytest
@@ -76,7 +76,8 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_with_mocked_core_service(event_loop, tmp_path):
+def dasked_test_app_with_mocked_core_service(event_loop, tmp_path, nope_logger_fixture):
+
     local_blob_storage = LocalFSBlobStorage(directory=str(tmp_path))
 
     async def build_mock_storage():

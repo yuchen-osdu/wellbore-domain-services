@@ -42,7 +42,7 @@ from app.bulk_persistence import MimeTypes
 from app.utils import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
-from tests.unit.test_utils import make_record, nope_logger_fixture
+from tests.unit.test_utils import make_record
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')

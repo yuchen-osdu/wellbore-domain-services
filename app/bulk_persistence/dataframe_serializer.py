@@ -23,7 +23,7 @@ from pydantic import BaseModel
 
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes, MimeType
-from app.utils import get_pool_executor
+from app.pool_executor import get_pool_executor
 from ..helper.traces import with_trace
 
 
