@@ -13,7 +13,7 @@
 # limitations under the License.
 import json
 import os
-import mock
+from unittest import mock
 from odes_storage import UnexpectedResponse
 import pandas as pd
 import pytest

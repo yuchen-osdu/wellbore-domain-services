@@ -20,7 +20,7 @@ import pandas as pd
 import pytest
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
-import mock
+from unittest import mock
 
 from app.utils import DaskException
 from app.utils import DaskClient

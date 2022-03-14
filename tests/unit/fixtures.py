@@ -7,8 +7,8 @@ from typing import List
 import httpx
 import odes_storage
 import pytest
-from mock import mock
-from mock.mock import AsyncMock, create_autospec
+from unittest import mock
+from unittest.mock import AsyncMock, create_autospec
 
 from fastapi.testclient import TestClient
 

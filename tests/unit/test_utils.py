@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pytest
-import mock
+from unittest import mock
 from unittest.mock import patch
 import asyncio
 import logging
