@@ -14,7 +14,7 @@
 
 import json
 
-import mock
+from unittest import mock
 import pytest
 
 from fastapi import HTTPException, Header, status

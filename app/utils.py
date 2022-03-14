@@ -15,8 +15,8 @@
 import asyncio
 from time import perf_counter, process_time
 from typing import Optional, Callable, List, Tuple, Union, NamedTuple
-import concurrent.futures
-from functools import lru_cache, wraps, partial
+from functools import lru_cache, wraps
+
 from os import path, makedirs
 import tempfile
 import json
@@ -158,22 +158,6 @@ class DaskClient:
                 await cluster.close()
                 await DaskClient.client.close()  # or shutdown
                 DaskClient.client = None
-
-
-def get_pool_executor():
-    if get_pool_executor._pool is None:
-        get_pool_executor._pool = concurrent.futures.ThreadPoolExecutor(POOL_EXECUTOR_MAX_WORKER)
-    return get_pool_executor._pool
-
-
-get_pool_executor._pool = None
-
-
-async def run_in_pool_executor(func, *args, **kwargs):
-    pool = get_pool_executor()
-    loop = asyncio.get_running_loop()
-    func = partial(func, *args, **kwargs)
-    return await loop.run_in_executor(pool, func=func)
 
 
 def _setup_temp_dir() -> str:

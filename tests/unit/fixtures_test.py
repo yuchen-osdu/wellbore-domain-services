@@ -1,7 +1,7 @@
 import asyncio
 
 from fastapi import Depends
-from mock.mock import AsyncMock
+from unittest.mock import AsyncMock
 
 from app.clients.search_service_client import get_search_service
 from app.clients.storage_service_client import get_storage_record_service

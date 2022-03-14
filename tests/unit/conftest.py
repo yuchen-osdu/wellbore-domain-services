@@ -16,7 +16,7 @@ import asyncio
 import logging
 import os
 
-from mock import mock
+from unittest import mock
 
 import app.conf as conf
 import pytest

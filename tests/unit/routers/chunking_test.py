@@ -1310,7 +1310,7 @@ def test_session_update_previous_storage_version(dasked_test_app_without_consist
     assert list(df['X'].values) == [10, 11, 20, 21]
 
 
-import mock
+from unittest import mock
 from app.bulk_persistence.dask.traces import TracingMode
 from app.persistence.sessions_storage import SessionsStorage, SessionState, SessionUpdateMode
 

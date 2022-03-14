@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pytest
-import mock
+from unittest import mock
 from odes_search.models import CursorQueryResponse
 
 from starlette.exceptions import HTTPException as starletteHTTPException

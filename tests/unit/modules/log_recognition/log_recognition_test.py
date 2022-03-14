@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import time
-import mock
+from unittest import mock
 import pytest
 
 from fastapi import Header, status

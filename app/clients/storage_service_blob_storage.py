@@ -118,7 +118,7 @@ class StorageRecordServiceBlobStorage:
         # manual for now
         return CreateUpdateRecordsResponse(recordCount=len(record_list),
                                            recordIds=[record.id for record in record_list],
-                                           recordIdVersions=[record.version for record in record_list],
+                                           recordIdVersions=[f"{record.id}:{record.version}" for record in record_list],
                                            skipped_record_ids=[])
 
     async def get_record_version(self,

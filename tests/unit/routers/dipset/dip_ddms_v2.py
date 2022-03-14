@@ -1,4 +1,4 @@
-import mock
+from unitttest import mock
 import pytest
 
 from fastapi import Header, status
