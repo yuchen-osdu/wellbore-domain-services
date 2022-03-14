@@ -30,7 +30,7 @@ from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.auth.auth import require_opendes_authorized_user
 from app.routers.delete import delete_bulk_data
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import wdms_app, app_injector
 from tests.unit.test_utils import create_mock_class
 

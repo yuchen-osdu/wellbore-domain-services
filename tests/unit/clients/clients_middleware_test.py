@@ -15,7 +15,7 @@
 import pytest
 from pytest_httpx import HTTPXMock
 from app.clients import make_storage_record_client, make_search_client
-from app.utils import Context, get_or_create_ctx
+from app.context import Context, get_or_create_ctx
 
 from tests.unit.test_utils import ctx_fixture
 

@@ -22,7 +22,7 @@ from odes_search.models import (
     Optional)
 from app.clients.search_service_client import get_search_service
 from app.routers.common_parameters import REQUIRED_ROLES_READ
-from app.utils import Context
+from app.context import Context
 import app.routers.search.search_wrapper as search_wrapper
 from app.helper.traces import TracingRoute
 from .search import (

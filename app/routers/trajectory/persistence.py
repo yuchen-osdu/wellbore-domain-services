@@ -18,7 +18,7 @@ from app.model.model_curated import trajectory as Trajectory
 
 from app.bulk_persistence import get_dataframe, create_and_store_dataframe
 
-from app.utils import Context
+from app.context import Context
 
 TrajectoryId = str
 

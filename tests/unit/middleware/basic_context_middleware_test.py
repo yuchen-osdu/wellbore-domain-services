@@ -3,7 +3,7 @@ from unittest.mock import Mock, PropertyMock
 
 from app import wdms_app
 from app.middleware.basic_context_middleware import CreateBasicContextMiddleware
-from app.utils import Context
+from app.context import Context
 from starlette.datastructures import URL
 
 

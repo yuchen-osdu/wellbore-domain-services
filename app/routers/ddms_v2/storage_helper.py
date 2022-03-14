@@ -23,7 +23,7 @@ from odes_search.models import QueryRequest, CursorQueryResponse
 from app.routers.search import search_wrapper
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.model.entity_utils import Entity, format_kind, get_kind_meta
-from app.utils import Context
+from app.context import Context
 
 
 class StorageHelper:

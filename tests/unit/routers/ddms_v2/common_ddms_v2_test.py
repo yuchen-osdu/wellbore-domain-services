@@ -32,7 +32,7 @@ from app.model.model_curated import *
 from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet, WellboreMarkerSet110
 from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.routers.search.search_wrapper import SearchWrapper
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import wdms_app, app_injector
 from tests.unit.test_utils import create_mock_class, make_record
 

@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 from app.clients.search_service_client import get_search_service
 from app.clients.storage_service_client import get_storage_record_service
-from app.utils import Context, get_ctx
+from app.context import Context, get_ctx
 
 
 def test_local_dev_config(local_dev_config):

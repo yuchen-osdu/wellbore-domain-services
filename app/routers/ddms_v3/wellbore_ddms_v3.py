@@ -21,7 +21,8 @@ from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import Wellbore
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
-from app.utils import Context, get_ctx, load_schema_example
+from app.context import Context, get_ctx
+from app.utils import load_schema_example
 
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.helper.traces import TracingRoute

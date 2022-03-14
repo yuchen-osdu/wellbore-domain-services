@@ -28,7 +28,7 @@ from app.clients import *
 from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.modules.log_recognition.routers.log_recognition import family_processor_manager
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import wdms_app, add_modules_routers, remove_modules_routers
 from tests.unit.test_utils import create_mock_class
 

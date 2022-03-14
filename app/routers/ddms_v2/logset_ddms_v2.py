@@ -20,8 +20,7 @@ from app.clients.search_service_client import get_search_service
 from odes_storage.models import *
 from app.model.model_curated import logset
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.utils import Context
-from app.utils import get_ctx
+from app.context import Context, get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
 from app.model.entity_utils import Entity

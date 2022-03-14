@@ -25,7 +25,8 @@ from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
 
 from app.helper.traces import with_trace
-from app.utils import Context, capture_timings
+from app.context import Context
+from app.utils import capture_timings
 
 
 class SessionState(str, Enum):

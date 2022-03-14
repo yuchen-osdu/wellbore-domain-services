@@ -23,7 +23,7 @@ from app.model.osdu_model import (
 )
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 from app.routers.record_utils import fetch_record
-from app.utils import Context, get_ctx
+from app.context import Context, get_ctx
 
 OSDU_ENTITY_VERSION_REGEX = re.compile(r"^[\w\-\.]+:[^\:]+:[\w\-\.\:\%]+:(?P<version>[0-9]+)$")
 

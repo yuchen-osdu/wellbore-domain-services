@@ -18,7 +18,7 @@ from odes_storage.models import Record
 
 from app.bulk_persistence import create_and_store_dataframe
 from app.bulk_persistence import get_dataframe
-from app.utils import Context
+from app.context import Context
 from app.model.log_bulk import LogBulkHelper
 
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
