@@ -470,8 +470,7 @@ class DaskBulkStorage:
             self._fill_catalog_columns_info(catalog, chunk_metas, bulk_id)
         )
 
-        fcatalog = await self.client.scatter(catalog)
-        await save_bulk_catalog(self._fs, commit_path, await fcatalog)
+        await save_bulk_catalog(self._fs, commit_path, catalog)
         trace_attributes_root_span({
             'catalog-row-count': catalog.nb_rows,
             'catalog-col-count': catalog.all_columns_count
