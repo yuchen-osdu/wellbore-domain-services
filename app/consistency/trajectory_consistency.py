@@ -1,6 +1,6 @@
 import pandas as pd
 from dask.dataframe.core import DataFrame as DaskDataFrame
-from typing import Iterable
+from typing import List
 import math
 
 from odes_storage.models import Record
@@ -51,7 +51,7 @@ def check_trajectory_consistency(traj: WellboreTrajectory110):
 
 
 class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
-    """Check welllogTrqjectory data consistency
+    """Check welllogTrajectory data consistency
     bulk columns and TrajectoryStationProperty names must match.
     MD column should be strictly monotonic increasing or strictly monotonic decreasing
     MD Top & bottom values  should match WelllogTrajectory
@@ -133,7 +133,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         await submit_with_trace(dask_blob_storage.client, check_reference, traj, ref_ddf)
 
     @staticmethod
-    def _check_columns_consistency(traj: WellboreTrajectory110, col_labels: Iterable[str]):
+    def _check_columns_consistency(traj: WellboreTrajectory110, col_labels: List[str]):
         error_msg = "do(es) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record."
 
         curve_ids, _ = get_unique_attr_values(traj.data.AvailableTrajectoryStationProperties, "Name")
