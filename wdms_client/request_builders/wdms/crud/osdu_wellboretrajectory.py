@@ -75,7 +75,7 @@ def build_request_get_versions_of_osdu_wellboretrajectory() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True, curves: List[str]=['Example CurveID']) -> RequestRunner:
+def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True, stations: List[str] = ['Example Station']) -> RequestRunner:
     if b_use_fixed_id:
         id_field = '"id": "{{data_partition}}:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",'
     else:
@@ -361,35 +361,28 @@ def build_request_create_osdu_wellboretrajectory(b_use_fixed_id=True, curves: Li
       "VerticalReferenceID": "Example VerticalReferenceID",
       "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
     },
-    "AvailableTrajectoryStationProperties": [
-      {
-        "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:",
-        "StationPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:dega:",
-        "Name": "AzimuthTN"
-      },
-      {
-        "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:Inclination:",
-        "StationPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:dega:",
-        "Name": "Incl"
-      }
-    ],
     "AppliedOperations": [
       "Example AppliedOperations"
     ],
     "CompanyID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
     "ExtensionProperties": {}"""
-    inner_curves = ""
-    for c in curves:
-        inner_curves = inner_curves + '{ "Name":' + f'"{c}",' + '"TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:"},'
 
-    if len(curves) > 0:
-        inner_curves = inner_curves[:-1]
 
-    payload = payload + f',"AvailableTrajectoryStationProperties": [{inner_curves}]'
+
+    inner_stations = ""
+    for s in stations:
+        inner_stations = inner_stations \
+                         + '{ "Name":' + f'"{s}",' \
+                         + '"StationPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:dega:",' \
+                         + '"TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:"},'
+
+
+    if len(stations) > 0:
+        inner_stations = inner_stations[:-1]
+
+    payload = payload + f',"AvailableTrajectoryStationProperties": [{inner_stations}]'
 
     payload = payload + '}}]'
-
-
 
     rq_proto = Request(
         name="Create OSDU wellboretrajectory",
@@ -707,7 +700,7 @@ def get_cleaned_ref_and_res() -> dict:
                 {
                     "TrajectoryStationPropertyTypeID": "partition-id:reference-data--TrajectoryStationPropertyType:AzimuthTN:",
                     "StationPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:dega:",
-                    "Name": "AzimuthTN"
+                    "Name": "Example Station"
                 }
             ],
             "AppliedOperations": [
