@@ -41,11 +41,14 @@ from .. import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
-from .bulk_catalog import (BulkCatalog, ChunkGroup, load_bulk_catalog, save_bulk_catalog)
+from .bulk_catalog import (BulkCatalog, ChunkGroup,
+                           load_bulk_catalog,
+                           save_bulk_catalog)
 from ..mime_types import MimeType
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
 from ..consistency_checks import DataConsistencyChecks
+
 
 def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
     """call dask.dataframe.read_parquet with default parameters
