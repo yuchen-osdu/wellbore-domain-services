@@ -53,11 +53,11 @@ from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_alpha
 from app.clients import StorageRecordServiceClient, SearchServiceClient
+from app.pool_executor import run_in_pool_executor
 from app.utils import (
     get_http_client_session,
     OpenApiHandler,
     get_wdms_temp_dir,
-    run_in_pool_executor,
     DaskClient,
     POOL_EXECUTOR_MAX_WORKER)
 from app.routers.bulk.utils import (
