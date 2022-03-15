@@ -184,5 +184,16 @@ class StorageRecordServiceBlobStorage:
                     headers=httpx.Headers(),
                 )
 
+    async def delete_records(self, data_partition_id: str, request_body: List[str]) -> None:
+        await gather(*[
+            self._storage.delete(
+                Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
+                record_id
+            )
+            for record_id in request_body
+        ], return_exceptions=False)  # return_exceptions False means will throw if a single error occurs
+
+        return httpx.Response(status_code=204)
+
     async def get_schema(self, kind, data_partition_id=None, appkey=None, token=None, *args, **kwargs):
         raise NotImplementedError('StorageServiceBlobStorage.get_schema')

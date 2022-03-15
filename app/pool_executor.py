@@ -14,6 +14,7 @@
 
 import concurrent.futures
 from functools import lru_cache, wraps, partial
+import asyncio
 
 POOL_EXECUTOR_MAX_WORKER = 4
 

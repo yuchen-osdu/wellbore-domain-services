@@ -65,4 +65,8 @@ async def set_osdu_bulk_id_access(request: Request):
 
 
 def get_bulk_id_access(request: Request) -> BulkIdAccess:
+    if not getattr(request.state, 'bulk_id_access', None):
+        raise RuntimeError("bulk_id_access dependency is not defined")
     return request.state.bulk_id_access
+
+

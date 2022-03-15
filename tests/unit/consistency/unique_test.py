@@ -16,6 +16,14 @@ def test_get_unique_ids_success():
     assert error is None
 
 
+def test_get_unique_ids_None():
+    ids, error = get_unique_attr_values(
+        [Curve110(), Curve110(), Curve110()], attr_name="CurveID"
+    )
+    assert ids == set()
+    assert error is None
+
+
 def test_get_unique_ids_error():
     ids, error = get_unique_attr_values(
         [Curve110(CurveID="A"), Curve110(CurveID="B"), Curve110(CurveID="A")], attr_name="CurveID"

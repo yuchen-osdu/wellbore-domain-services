@@ -53,7 +53,7 @@ def create_record(env, entity_type: str, curves: List[str]):
     if entity_type == "well_log":
         result = build_request_create_osdu_welllog(False, curves).call(env)
     elif entity_type == "wellbore_trajectory":
-        result = build_request_create_osdu_wellboretrajectory(False).call(env)
+        result = build_request_create_osdu_wellboretrajectory(False, curves).call(env)
     elif entity_type == "log":
         result = build_request_create_log().call(env)
     else:

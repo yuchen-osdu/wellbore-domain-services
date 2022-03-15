@@ -1,18 +1,20 @@
 import math
-import re
-from typing import Iterable, Set
+from typing import Iterable
 
 import pandas as pd
+from dask.dataframe.core import DataFrame as DaskDataFrame
+
+from odes_storage.models import Record
+
 from app.helper.traces import with_trace
 from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, BulkRecordNotFound
 from app.bulk_persistence.dask.traces import submit_with_trace
 from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
 from app.context import get_ctx
-from dask.dataframe.core import DataFrame as DaskDataFrame
-from odes_storage.models import Record
 
+from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
 from .unique import get_unique_attr_values
 
 
