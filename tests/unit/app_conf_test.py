@@ -16,7 +16,7 @@ import pytest
 import os
 import uuid
 from unittest import mock
-from app.utils import Context
+from app.context import Context
 
 import app.conf as conf
 from app.helper.traces import create_exporter

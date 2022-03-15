@@ -12,7 +12,7 @@ from opencensus.trace.samplers import AlwaysOnSampler
 
 from app.conf import Config
 from app.helper import traces
-from app.utils import get_ctx
+from app.context import get_ctx
 from opencensus.trace import execution_context
 from . import dask_worker_write_bulk as bulk_writer
 

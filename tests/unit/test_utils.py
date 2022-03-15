@@ -23,7 +23,7 @@ from opencensus.trace.span_context import SpanContext
 from odes_storage.models import Record, StorageAcl, Legal
 
 from app.model.model_utils import record_to_dict
-from app.utils import get_or_create_ctx
+from app.context import get_or_create_ctx
 
 @pytest.fixture()
 def ctx_fixture():

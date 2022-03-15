@@ -23,7 +23,7 @@ import app.helper.utils as logger_utils
 from app import conf
 from app.injector.app_injector import AppInjector
 from app.model.user import User
-from app.utils import Context
+from app.context import Context
 from app.helper.logger import get_logger
 
 

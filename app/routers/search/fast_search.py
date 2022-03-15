@@ -16,7 +16,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from odes_search.models import Point, CursorQueryResponse
 from ..common_parameters import REQUIRED_ROLES_READ
-from app.utils import Context
+from app.context import Context
 import app.routers.search.search as search
 from app.helper.traces import TracingRoute
 

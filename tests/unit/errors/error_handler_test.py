@@ -23,7 +23,7 @@ import starlette.status as status
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.errors.exception_handlers import create_custom_http_exception_handler
 from app.middleware import require_data_partition_id
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import wdms_app
 from app.clients import *
 from app.helper import traces, logger
