@@ -11,7 +11,7 @@ from app.bulk_persistence.consistency_checks import ConsistencyException, DataCo
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, BulkRecordNotFound
 from app.bulk_persistence.dask.traces import submit_with_trace
 from app.model.model_utils import from_record
-from app.utils import get_ctx
+from app.context import get_ctx
 
 from .unique import get_unique_attr_values
 from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
