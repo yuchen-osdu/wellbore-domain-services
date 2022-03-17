@@ -29,6 +29,7 @@ from dask.distributed import Client as DaskDistributedClient
 from distributed import system, LocalCluster
 from distributed.deploy.utils import nprocesses_nthreads
 
+from .bulk_persistence import get_wdms_temp_dir
 from .context import Context
 from app.model.user import User
 from app.injector.app_injector import AppInjector
@@ -71,6 +72,7 @@ class DaskClient:
                     from app.helper.logger import get_logger
                     logger = get_logger()
                     logger.info(f"Dask client initialization started...")
+                    get_logger().info(f"Dask using temporary directory: {get_wdms_temp_dir()}")
 
                     n_workers, threads_per_worker, worker_memory_limit = DaskClient._get_dask_configuration(logger)
                     logger.info(f"Dask client worker configuration: {n_workers} workers running with "

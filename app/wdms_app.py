@@ -27,7 +27,6 @@ from app.helper.traces import TracingRoute
 from app.model.entity_utils import Entity
 from app.modules import discoverer
 
-from app.bulk_persistence import get_wdms_temp_dir
 from app.helper import traces, logger
 from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
@@ -137,7 +136,6 @@ async def startup_event():
     assert sys.version_info.major == 3 and sys.version_info.minor >= 8, 'Python version required >=3.8'
 
     check_environment(Config)
-    print('using temporary directory:', get_wdms_temp_dir())
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
 
