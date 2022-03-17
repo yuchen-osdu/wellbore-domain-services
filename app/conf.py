@@ -316,6 +316,11 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             is_mandatory=False,
                             override=True)
 
+        config.add_from_env(attribute_name='az_default_container',
+                            env_var_key='AZ_DEFAULT_CONTAINER',
+                            description='default name for az container',
+                            default='wdms-osdu')
+
     if provider == 'gcp':
         config.add_from_env(attribute_name='default_data_tenant_project_id',
                             env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
