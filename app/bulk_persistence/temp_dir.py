@@ -1,6 +1,7 @@
 import tempfile
 from os import path, makedirs
 
+
 def _setup_temp_dir() -> str:
     tmpdir = tempfile.gettempdir()
     if not tmpdir.endswith('wdmsosdu'):
@@ -10,8 +11,8 @@ def _setup_temp_dir() -> str:
     return tmpdir
 
 
-WDMS_TEMP_DIR = _setup_temp_dir()
+_TEMP_DIR = _setup_temp_dir()
 
 
-def get_wdms_temp_dir():
-    return WDMS_TEMP_DIR
+def get_temp_dir():
+    return _TEMP_DIR
