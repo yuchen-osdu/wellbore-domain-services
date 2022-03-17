@@ -319,7 +319,9 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
         config.add_from_env(attribute_name='az_default_container',
                             env_var_key='AZ_DEFAULT_CONTAINER',
                             description='default name for az container',
-                            default='wdms-osdu')
+                            default='wdms-osdu',
+                            is_mandatory=True,
+                            override=True)
 
     if provider == 'gcp':
         config.add_from_env(attribute_name='default_data_tenant_project_id',
