@@ -1,17 +1,20 @@
 import math
-import re
-from typing import Iterable, Set
+from typing import Iterable
 
 import pandas as pd
+from dask.dataframe.core import DataFrame as DaskDataFrame
+
+from odes_storage.models import Record
+
 from app.helper.traces import with_trace
 from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage, BulkRecordNotFound
 from app.bulk_persistence.dask.traces import submit_with_trace
 from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
 from app.context import get_ctx
-from dask.dataframe.core import DataFrame as DaskDataFrame
-from odes_storage.models import Record
+
+from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
 
 from .unique import get_unique_attr_values
 
@@ -25,10 +28,6 @@ class ReferenceCurveIdNotFoundException(ConsistencyException):
 
 
 class ColumnDoesNotMatchCurveIdException(ConsistencyException):
-    """raised when column doesn't match any CurveID"""
-
-
-class ReferenceCurveException(ConsistencyException):
     """raised when column doesn't match any CurveID"""
 
 
@@ -57,7 +56,7 @@ def check_welllog_consistency(wl: WellLog110):
     if not wl.data.Curves and not wl.data.ReferenceCurveID:
         return
 
-    # Can't define a  ReferenceCurveID fi wellbore doesn't have any Curve
+    # Can't define a  ReferenceCurveID when welllog doesn't have any Curve
     if not wl.data.Curves and wl.data.ReferenceCurveID:
         raise ReferenceCurveIdNotFoundException()
 
@@ -76,12 +75,10 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     bulk columns and welllog curvesIDs must match.
     welllog referenceCurveID must match a welllog curve
     Reference should be strictly monotonic increasing or strictly monotonic decreasing
-    Top & bottom reference values  should match welllog ie:
-        top == TopMeasuredDepth == SamplingStart AND bottom == BottomMeasuredDepth == SamplingStop
+    Top & bottom reference values  should match welllog metadata ie:
+        SamplingStart is close to top reference value with 1e-9% tolerance
+        SamplingStop is close to bottom reference value with 1e-9% tolerance
     """
-
-    # regular expression pattern for extracting column name from bulk data column label
-    _col_label_pattern = re.compile(r"^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$")
 
     @classmethod
     @with_trace('bulk_consistency')
@@ -103,10 +100,10 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not (wl.data and wl.data.ReferenceCurveID):
             return
 
-        ref = df[wl.data.ReferenceCurveID]
-
-        cls._check_reference_is_strictly_monotonic(ref)
-        cls._check_top_bottom_reference(wl, ref)
+        if wl.data.ReferenceCurveID in df:
+            ref = df[wl.data.ReferenceCurveID]
+            check_reference_is_strictly_monotonic(ref)
+            cls._check_top_bottom_reference(wl, ref)
 
     @classmethod
     @with_trace('bulk_consistency')
@@ -135,12 +132,15 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not (wl.data and wl.data.ReferenceCurveID):
             return
 
-        ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[wl.data.ReferenceCurveID])
+        try:
+            ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[wl.data.ReferenceCurveID])
+        except BulkRecordNotFound:
+            return
 
         # wrap what should be called in dask workers
         def check_welllog_reference(wl: WellLog110, ref_ddf: DaskDataFrame):
             ref = ref_ddf[wl.data.ReferenceCurveID].compute()
-            cls._check_reference_is_strictly_monotonic(ref)
+            check_reference_is_strictly_monotonic(ref)
             cls._check_top_bottom_reference(wl, ref)
 
         await submit_with_trace(dask_blob_storage.client, check_welllog_reference, wl, ref_ddf)
@@ -159,54 +159,29 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             ColumnDoesNotMatchCurveIdException: column and record's curves doesn't match
         """
         if (not wl.data or not wl.data.Curves) and len(col_labels) > 0:
-            raise ColumnDoesNotMatchCurveIdException(f"Columns doesn't match any CurveID of the WellLog record.")
+            raise ColumnDoesNotMatchCurveIdException(f"Column(s) do(es) not match any CurveID of the WellLog record.")
 
         curve_ids, _ = get_unique_attr_values(wl.data.Curves, "CurveID")
-        col_names = WelllogDataConsistencyChecks._get_data_columns_name(col_labels)
+        col_names = DataConsistencyChecks._get_data_columns_name(col_labels)
 
         not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
         if any(not_matching_col_name):
             raise ColumnDoesNotMatchCurveIdException(
-                f"Column(s) {','.join(not_matching_col_name)} doesn't match any CurveID of the WellLog record."
+                f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any CurveID of the WellLog record."
             )
 
     @staticmethod
-    def _get_data_columns_name(col_labels: Iterable[str]) -> Set[str]:
-        """
-        Get column names from bulk data column labels
-        """
-        def _get_col_name_from_col_label(col_label: str):
-            match = WelllogDataConsistencyChecks._col_label_pattern.match(col_label)
-            if not match:
-                return col_label
-            return match["name"]
-
-        res = (_get_col_name_from_col_label(col) for col in col_labels if col)
-        return {r for r in res if r != ""}
-
-    @staticmethod
-    def _check_reference_is_strictly_monotonic(ref: pd.Series):
-        # check unique values because is_monotonic_increasing & is_monotonic_decreasing are not strict
-        if ref.duplicated().any():
-            raise ReferenceCurveException("Repeated values in a reference curve aren't allowed.")
-
-        if not ref.is_monotonic_increasing and not ref.is_monotonic_decreasing:
-            # Nan values
-            if ref.isnull().values.any():
-                raise ReferenceCurveException("Nan values in a reference curve are not allowed.")
-            else:
-                raise ReferenceCurveException("Reference must be monotonically increasing or decreasing.")
-
-    @staticmethod
     def _check_top_bottom_reference(wl: WellLog110, ref: pd.Series):
-        def raise_if_attr_value_is_different(attr_name: str, value):
-            current_value = getattr(wl.data, attr_name, None)
-            if current_value is not None and not math.isclose(current_value, value):
-                raise ReferenceCurveException(
-                    f"Reference {attr_name} value ({value}) is different from {attr_name} value ({current_value}) of the WellLog record."
-                )
+        raise_if_attr_value_is_different(
+            record_data=wl.data,
+            attr_name="SamplingStart",
+            reference_value=ref.iloc[0],
+            error_msg="Reference top value ({reference_value}) is different from {attr_name} value ({attr_value}) of the WellLog record."
+        )
 
-        raise_if_attr_value_is_different("TopMeasuredDepth", ref.iloc[0])
-        raise_if_attr_value_is_different("SamplingStart", ref.iloc[0])
-        raise_if_attr_value_is_different("BottomMeasuredDepth", ref.iloc[-1])
-        raise_if_attr_value_is_different("SamplingStop", ref.iloc[-1])
+        raise_if_attr_value_is_different(
+            record_data=wl.data,
+            attr_name="SamplingStop",
+            reference_value=ref.iloc[-1],
+            error_msg="Reference bottom value ({reference_value}) is different from {attr_name} value ({attr_value}) of the WellLog record."
+        )

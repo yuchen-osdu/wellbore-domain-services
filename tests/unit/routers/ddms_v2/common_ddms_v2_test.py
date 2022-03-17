@@ -191,6 +191,7 @@ def test_get_record_success(client, base_url, record_obj):
         # assert it validates the input object schema
         record_obj.validate(response.json())
 
+
 @pytest.mark.parametrize('base_url, record_obj', tests_errors_422)
 def test_get_record_422(client, base_url, record_obj):
     record_id = record_obj.id
