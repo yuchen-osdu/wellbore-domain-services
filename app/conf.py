@@ -322,6 +322,8 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             is_mandatory=False,
                             override=True)
 
+        config.add('az_bulk_container', 'wdms-osdu')
+
     if provider == 'gcp':
         config.add_from_env(attribute_name='default_data_tenant_project_id',
                             env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
