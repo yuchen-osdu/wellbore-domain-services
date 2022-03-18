@@ -110,12 +110,6 @@ class ConfigurationContainer:
         factory=lambda x: x.lower()
     )
 
-    az_default_container: EnvVar = EnvVar(
-                        key='AZ_DEFAULT_CONTAINER',
-                        description='default name for az container',
-                        default='wdms-osdu',
-                        is_mandatory=True)
-
     service_host_search: EnvVar = EnvVar(
         key='SERVICE_HOST_SEARCH',
         description='Back-end for search service',
