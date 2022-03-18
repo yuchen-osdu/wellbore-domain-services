@@ -29,6 +29,7 @@ from dask.distributed import Client as DaskDistributedClient
 from distributed import system, LocalCluster
 from distributed.deploy.utils import nprocesses_nthreads
 
+from .bulk_persistence import get_temp_dir
 from .context import Context
 from app.model.user import User
 from app.injector.app_injector import AppInjector
@@ -71,6 +72,7 @@ class DaskClient:
                     from app.helper.logger import get_logger
                     logger = get_logger()
                     logger.info(f"Dask client initialization started...")
+                    get_logger().info(f"Dask using temporary directory: {get_temp_dir()}")
 
                     n_workers, threads_per_worker, worker_memory_limit = DaskClient._get_dask_configuration(logger)
                     logger.info(f"Dask client worker configuration: {n_workers} workers running with "
@@ -158,22 +160,6 @@ class DaskClient:
                 await cluster.close()
                 await DaskClient.client.close()  # or shutdown
                 DaskClient.client = None
-
-
-def _setup_temp_dir() -> str:
-    tmpdir = tempfile.gettempdir()
-    if not tmpdir.endswith('wdmsosdu'):
-        tmpdir = path.join(tmpdir, 'wdmsosdu')
-        makedirs(tmpdir, exist_ok=True)
-        tempfile.tempdir = tmpdir
-    return tmpdir
-
-
-WDMS_TEMP_DIR = _setup_temp_dir()
-
-
-def get_wdms_temp_dir():
-    return WDMS_TEMP_DIR
 
 
 async def async_with_cache(cache, key: str, fn_coroutine, *args, **kwargs):
@@ -328,4 +314,3 @@ class __OpenApiHandler:
 
 OpenApiHandler = __OpenApiHandler()
 
-dask.config.set({'temporary_directory': get_wdms_temp_dir()})

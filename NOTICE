@@ -18,7 +18,7 @@ The following software have components provided under the terms of this license:
 - google-api-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
-- google-cloud-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
+- google-cloud-core (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-cloud-core)
 - google-cloud-monitoring (from https://github.com/GoogleCloudPlatform/google-cloud-python)
 - google-cloud-trace (from https://github.com/googleapis/googleapis)
 - googleapis-common-protos (from https://github.com/googleapis/googleapis)

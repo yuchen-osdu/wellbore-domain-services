@@ -57,7 +57,6 @@ from app.pool_executor import run_in_pool_executor
 from app.utils import (
     get_http_client_session,
     OpenApiHandler,
-    get_wdms_temp_dir,
     DaskClient,
     POOL_EXECUTOR_MAX_WORKER)
 from app.routers.bulk.utils import (
@@ -137,7 +136,6 @@ async def startup_event():
     assert sys.version_info.major == 3 and sys.version_info.minor >= 8, 'Python version required >=3.8'
 
     check_environment(Config)
-    print('using temporary directory:', get_wdms_temp_dir())
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
 

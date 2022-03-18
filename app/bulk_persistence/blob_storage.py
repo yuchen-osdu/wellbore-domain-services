@@ -37,7 +37,7 @@ import pyarrow.feather as feather
 import pyarrow.parquet as pq
 
 from app.pool_executor import get_pool_executor
-from app.utils import get_wdms_temp_dir
+from .temp_dir import get_temp_dir
 from .dataframe_serializer import DataframeSerializerAsync
 
 from .blob_bulk import BlobBulk
@@ -201,7 +201,7 @@ async def create_and_write_blob(
     # Build the output filename which will be used as bulk id
     blob_id = blob_id or str(uuid.uuid4())
     out_filename = blob_id + file_exporter.mime_type.extension
-    out_path = path.join(out_dir or get_wdms_temp_dir(), out_filename)
+    out_path = path.join(out_dir or get_temp_dir(), out_filename)
 
     # Dump/Export the dataframe into a file format
     export_to_file_function = custom_export_to_file_fn or file_exporter.writer_fn
