@@ -72,7 +72,6 @@ steps:
   inputs:
     targetPath: $(System.DefaultWorkingDirectory)/spec/generated/openapi.json
     artifactName: OpenApiSpec
-    failTaskOnFailedTests: false
 
 - ${{ if eq(parameters.include_coverage, true) }}:
   - task: PublishCodeCoverageResults@1
