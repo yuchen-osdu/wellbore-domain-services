@@ -110,6 +110,12 @@ class ConfigurationContainer:
         factory=lambda x: x.lower()
     )
 
+    az_default_container: EnvVar = EnvVar(
+                        key='AZ_DEFAULT_CONTAINER',
+                        description='default name for az container',
+                        default='wdms-osdu',
+                        is_mandatory=True)
+
     service_host_search: EnvVar = EnvVar(
         key='SERVICE_HOST_SEARCH',
         description='Back-end for search service',
@@ -314,13 +320,6 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             default='INFO',
                             secret=False,
                             is_mandatory=False,
-                            override=True)
-
-        config.add_from_env(attribute_name='az_default_container',
-                            env_var_key='AZ_DEFAULT_CONTAINER',
-                            description='default name for az container',
-                            default='wdms-osdu',
-                            is_mandatory=True,
                             override=True)
 
     if provider == 'gcp':
