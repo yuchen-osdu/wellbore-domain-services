@@ -36,9 +36,9 @@ from app.conf import Config
 from tests.unit.test_utils import ctx_fixture
 
 @pytest.mark.asyncio
-async def test_make_storage_client(httpx_mock: HTTPXMock, ctx_fixture):
+async def test_make_storage_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
     host = 'http://my_host:81234'
-    async with make_storage_record_client(host) as client:
+    async with make_storage_record_client(host, config=local_dev_config) as client:
         assert isinstance(client, StorageRecordServiceClient)
 
         # ensure host
@@ -54,9 +54,9 @@ async def test_make_storage_client(httpx_mock: HTTPXMock, ctx_fixture):
 
 
 @pytest.mark.asyncio
-async def test_make_search_client(httpx_mock: HTTPXMock, ctx_fixture):
+async def test_make_search_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
     host = 'http://my_host:81234'
-    async with make_search_client(host) as client:
+    async with make_search_client(host, config=local_dev_config) as client:
         assert isinstance(client, SearchServiceClient)
 
         # ensure host

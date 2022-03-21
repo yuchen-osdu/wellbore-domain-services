@@ -20,7 +20,7 @@ from app.context import Context, get_or_create_ctx
 from tests.unit.test_utils import ctx_fixture
 
 @pytest.mark.asyncio
-async def test_fwd_correlation_id_to_outgoing_request_to_storage(ctx_fixture: Context, httpx_mock: HTTPXMock):
+async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_config, ctx_fixture: Context, httpx_mock: HTTPXMock):
     storage_url = "http://example.com"  # well formed url required
     expected_correlation_id = 'some-correlation-id'
 
@@ -30,7 +30,7 @@ async def test_fwd_correlation_id_to_outgoing_request_to_storage(ctx_fixture: Co
     # safety: make sure no methods on tracer have been called yet
     assert ctx.tracer.method_calls == []
 
-    async with make_storage_record_client(storage_url) as storage_client:
+    async with make_storage_record_client(storage_url, config=local_dev_config) as storage_client:
         httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
         # force to use endpoint which does not return a response to skip model validation
         response = await storage_client.delete_record(id="123", data_partition_id="test")
@@ -43,7 +43,7 @@ async def test_fwd_correlation_id_to_outgoing_request_to_storage(ctx_fixture: Co
     )
 
 @pytest.mark.asyncio
-async def test_fwd_correlation_id_to_outgoing_request_to_search(ctx_fixture: Context, httpx_mock: HTTPXMock):
+async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config, ctx_fixture: Context, httpx_mock: HTTPXMock):
     storage_url = "http://example.com"  # well formed url required
     expected_correlation_id = 'some-correlation-id'
 
@@ -53,7 +53,7 @@ async def test_fwd_correlation_id_to_outgoing_request_to_search(ctx_fixture: Con
     # safety: make sure no methods on tracer have been called yet
     assert ctx.tracer.method_calls == []
 
-    async with make_search_client(storage_url) as search_client:
+    async with make_search_client(storage_url, config=local_dev_config) as search_client:
         httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
         # force to use endpoint which does not return a response to skip model validation
         response = await search_client.delete_index(kind="kind", data_partition_id="test")

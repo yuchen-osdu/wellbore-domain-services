@@ -17,7 +17,7 @@ import odes_search
 import odes_storage
 from odes_search.api_client import AsyncSearchApi
 from odes_storage.api_client import AsyncRecordsApi
-from app.conf import Config
+from app.conf import ConfigurationContainer
 from dataclasses import dataclass
 from typing import Optional
 
@@ -40,26 +40,26 @@ class Limits:
     keepalive_expiry: Optional[float] = 5.0
 
 
-def make_search_client(host) -> SearchServiceClient:
+def make_search_client(host, config: ConfigurationContainer) -> SearchServiceClient:
     search_client = odes_search.ApiClient(
         host=host,
-        timeout=Config.de_client_config_timeout.value,
+        timeout=config.de_client_config_timeout.value,
         limits=Limits(
-            max_connections=Config.de_client_config_max_connection.value or None,
-            max_keepalive_connections=Config.de_client_config_max_keepalive.value or None)
+            max_connections=config.de_client_config_max_connection.value or None,
+            max_keepalive_connections=config.de_client_config_max_keepalive.value or None)
     )
     search_client.add_middleware(middleware=client_middleware)
     search_client.add_middleware(middleware=backoff_middleware)
     return odes_search.AsyncApis(search_client).search_api
 
 
-def make_storage_record_client(host) -> StorageRecordServiceClient:
+def make_storage_record_client(host, config: ConfigurationContainer) -> StorageRecordServiceClient:
     storage_client = odes_storage.ApiClient(
         host=host,
-        timeout=Config.de_client_config_timeout.value,
+        timeout=config.de_client_config_timeout.value,
         limits=Limits(
-            max_connections=Config.de_client_config_max_connection.value or None,
-            max_keepalive_connections=Config.de_client_config_max_keepalive.value or None)
+            max_connections=config.de_client_config_max_connection.value or None,
+            max_keepalive_connections=config.de_client_config_max_keepalive.value or None)
     )
     storage_client.add_middleware(middleware=client_middleware)
     storage_client.add_middleware(middleware=backoff_middleware)

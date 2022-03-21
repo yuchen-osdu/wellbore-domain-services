@@ -15,7 +15,7 @@
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 
-from app.conf import *
+from app.conf import Config
 from app.helper.logger import get_logger
 
 from .app_injector import AppInjector, AppInjectorModule, WithLifeTime
@@ -131,8 +131,8 @@ class MainInjector(AppInjectorModule):
 
     @staticmethod
     async def build_storage_service_client(host=None, *args, **kwargs) -> StorageRecordServiceClient:
-        return make_storage_record_client(host or Config.service_host_storage.value)
+        return make_storage_record_client(host or Config.service_host_storage.value, config=Config)
 
     @staticmethod
     async def build_search_service_client(host=None, *args, **kwargs) -> SearchServiceClient:
-        return make_search_client(host or Config.service_host_search.value)
+        return make_search_client(host or Config.service_host_search.value, config=Config)
