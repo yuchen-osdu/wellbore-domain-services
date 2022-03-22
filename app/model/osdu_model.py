@@ -1224,6 +1224,106 @@ class Curve110(DDMSBaseModel):
     )
 
 
+class Curve120(DDMSBaseModel):
+    CurveID: Optional[str] = Field(None, description='The ID of the Well Log Curve')
+    DateStamp: Optional[datetime] = Field(
+        None, description='Date curve was created in the database'
+    )
+    CurveVersion: Optional[str] = Field(
+        None, description='The Version of the Log Curve.'
+    )
+    CurveQuality: Optional[str] = Field(
+        None, description='The Quality of the Log Curve.'
+    )
+    InterpreterName: Optional[str] = Field(
+        None, description='The name of person who interpreted this Log Curve.'
+    )
+    IsProcessed: Optional[bool] = Field(
+        None,
+        description='Indicates if the curve has been (pre)processed or if it is a raw recording',
+    )
+    NullValue: Optional[bool] = Field(
+        None, description='Indicates that there is no measurement within the curve'
+    )
+    DepthCoding: Optional[constr(regex=r'^REGULAR|DISCRETE$')] = Field(
+        None,
+        description='DEPRECATED: Replaced by boolean data.IsRegular. The Coding of the depth.',
+    )
+    Interpolate: Optional[bool] = Field(
+        None, description='Whether curve can be interpolated or not'
+    )
+    TopDepth: Optional[float] = Field(
+        None,
+        description="The curve's minimum 'depth', i.e., the reference value at which the curve has its first non-absent value. The curve may contain further absent values in between TopDepth and BaseDepth. Note that the SamplingDomainType may not be a depth as the property name indicates.",
+    )
+    BaseDepth: Optional[float] = Field(
+        None,
+        description="The curve's maximum 'depth' i.e., the reference value at which the curve has its last non-absent value. The curve may contain further absent values in between TopDepth and BaseDepth. Note that the SamplingDomainType may not be a depth as the property name indicates.",
+    )
+    DepthUnit: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(None, description='Unit of Measure for TopDepth and BaseDepth.')
+    CurveUnit: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(None, description='Unit of Measure for the Log Curve')
+    Mnemonic: Optional[str] = Field(
+        None,
+        description='The Mnemonic of the Log Curve is the value as received either from Raw Providers or from Internal Processing team',
+        example='PRES_HDRB.BAR',
+    )
+    LogCurveTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-LogCurveType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The related record id of the Log Curve Type - which is the standard mnemonic chosen by the company - OSDU provides an initial list',
+    )
+    LogCurveBusinessValueID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveBusinessValue:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None, description='The related record id of the Log Curve Business Value Type.'
+    )
+    LogCurveMainFamilyID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveMainFamily:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The related record id of the Log Curve Main Family Type - which is the Geological Physical Quantity measured - such as porosity.',
+    )
+    LogCurveFamilyID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveFamily:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The related record id of the Log Curve Family - which is the detailed Geological Physical Quantity Measured - such as neutron porosity',
+    )
+    NumberOfColumns: Optional[int] = Field(
+        None,
+        description='The number of columns present in this Curve for a single reference value. For simple logs this is typically 1; for image logs this holds the number of image traces or property series. Further information about the columns can be obtained via the respective log or curve APIs of the Domain Data Management Service.',
+        example=192,
+        title='Number Of Columns',
+    )
+    CurveSampleTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CurveSampleType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The value type to be expected as curve sample values.',
+        example='namespace:reference-data--CurveSampleType:float:',
+        title='Curve Sample Type ID',
+    )
+    CurveDescription: Optional[str] = Field(
+        None,
+        description='Mnemonic-level curve description is used during parsing or reading and ingesting LAS or DLIS files, to explain the type of measurement being looked at, specifically for that moment. Curve description is specific to that single (log) mnemonic and for the entire log (acquisition run) interval. In essence, curve description defines the internal factors such as what the "curve" or measurement ideally is representing, how is it calculated, what are the assumptions and the "constants".',
+        example='CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant',
+        title='Curve Description',
+    )
+
+
 class WellData(AbstractCommonResources100, AbstractMaster100, AbstractFacility100):
     DefaultVerticalMeasurementID: Optional[str] = Field(
         None,
