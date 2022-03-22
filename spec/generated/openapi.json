@@ -18755,7 +18755,7 @@
                     "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:"
                   },
                   "id": "{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
-                  "kind": "osdu:wks:work-product-component--WellLog:1.1.0",
+                  "kind": "osdu:wks:work-product-component--WellLog:1.2.0",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
