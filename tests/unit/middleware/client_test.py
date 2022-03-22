@@ -17,7 +17,7 @@ async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_confi
     expected_correlation_id = 'some-correlation-id'
 
     async with make_storage_record_client(host=local_dev_config.service_host_storage.value,
-                                          timeout=local_dev_config.de_client_config_timeout) as storage_client:
+                                          timeout=local_dev_config.de_client_config_timeout.value) as storage_client:
         httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
 
         ctx_fixture.set_current_with_value(correlation_id=expected_correlation_id)
@@ -32,7 +32,7 @@ async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config
     expected_correlation_id = 'some-correlation-id'
 
     async with make_search_client(host=local_dev_config.service_host_search.value,
-                                  timeout=local_dev_config.de_client_config_timeout) as search_client:
+                                  timeout=local_dev_config.de_client_config_timeout.value) as search_client:
         httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
 
         ctx_fixture.set_current_with_value(correlation_id=expected_correlation_id)
@@ -82,7 +82,7 @@ def test_outgoing_tracing_headers_without_headers(local_dev_config, app_configur
 
     app, client = app_configurable_with_testclient(
         storage_client_mock=make_storage_record_client(host=local_dev_config.service_host_storage.value,
-                                                       timeout=local_dev_config.de_client_config_timeout),
+                                                       timeout=local_dev_config.de_client_config_timeout.value),
         fake_opendes_authorized_user=True,
         fake_data_partition_id=True
     )
