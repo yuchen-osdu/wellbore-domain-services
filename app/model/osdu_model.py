@@ -1712,13 +1712,13 @@ class WellLogData120(
     AbstractCommonResources100, AbstractWPCGroupType100, AbstractWorkProductComponent100
 ):
     WellboreID: Optional[
-        constr(regex='^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='The Wellbore where the Well Log Work Product Component was recorded',
     )
     WellLogTypeID: Optional[
-        constr(regex='^[\w\-\.]+:reference-data\-\-LogType:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-LogType:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='Well Log Type short Description such as Raw; Evaluated; Composite;....',
@@ -1734,7 +1734,7 @@ class WellLogData120(
         title='Bottom Measured Depth',
     )
     ServiceCompanyID: Optional[
-        constr(regex='^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='The relationship to a Service Company, typically the producer or logging contractor.',
@@ -1780,7 +1780,7 @@ class WellLogData120(
         None, description='Type of mud at time of logging (oil, water based,...)'
     )
     HoleTypeLogging: Optional[
-        constr(regex='^OPENHOLE|CASEDHOLE|CEMENTEDHOLE$')
+        constr(regex=r'^OPENHOLE|CASEDHOLE|CEMENTEDHOLE$')
     ] = Field(
         None,
         description='Description of the hole related type of logging - POSSIBLE VALUE : OpenHole / CasedHole / CementedHole',
@@ -1826,7 +1826,7 @@ class WellLogData120(
     )
     SamplingDomainTypeID: Optional[
         constr(
-            regex='^[\w\-\.]+:reference-data\-\-WellLogSamplingDomainType:[\w\-\.\:\%]+:[0-9]*$'
+            regex=r'^[\w\-\.]+:reference-data\-\-WellLogSamplingDomainType:[\w\-\.\:\%]+:[0-9]*$'
         )
     ] = Field(
         None,
@@ -1835,7 +1835,7 @@ class WellLogData120(
         title='Sampling Domain Type ID',
     )
     CompanyID: Optional[
-        constr(regex='^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(
         None,
         description='The relationship to company who engaged the service company (ServiceCompanyID) to perform the logging.',
@@ -2025,14 +2025,14 @@ class WellLog120(DDMSBaseModel):
     """
 
     id: Optional[
-        constr(regex='^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')
+        constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')
     ] = Field(
         None,
         description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
         example='namespace:work-product-component--WellLog:c2c79f1c-90ca-5c92-b8df-04dbe438f414',
         title='Entity ID',
     )
-    kind: constr(regex='^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
         ...,
         description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
         example='osdu:wks:work-product-component--WellLog:1.2.0',
