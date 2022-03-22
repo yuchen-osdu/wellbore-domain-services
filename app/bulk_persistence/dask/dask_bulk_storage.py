@@ -551,3 +551,60 @@ class DaskBulkStorage:
                                                   self._parameters.storage_options)
 
         return bulk_id, df_describe
+
+
+    def _compute_statistics(self, catalog: BulkCatalog, column_name: str,record_id: str, bulk_uri: str):
+        record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
+        columns = [column_name]
+        column_paths = catalog.get_paths_for_columns(columns, record_path)
+        files_to_load = column_paths[0].paths
+
+        dfs = (pd.read_parquet(file, columns=columns) for file in files_to_load)
+        big_df = pd.concat(dfs, ignore_index=True)
+        computed_stats = big_df.describe().transpose()
+        print("coucou", computed_stats.head(1))
+
+        self._save_bulk_stats(computed_stats, record_id, bulk_uri)
+
+    def _save_bulk_stats(self, df_statistics, record_id: str, bulk_id: str):
+
+        base_bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
+        bulk_statistics_path = pathBuilder.join(base_bulk_base_path, 'statistics')
+        self._ensure_dir_tree_exists(bulk_statistics_path)
+
+        filename = f"statistics_{df_statistics.index[0]}.parquet"
+        full_file_path = pathBuilder.join(bulk_statistics_path, filename)
+        DataframeSerializerSync.to_parquet(df_statistics,
+                                           full_file_path,
+                                           storage_options=self._parameters.storage_options)
+
+    async def compute_bulk_statistics(self, record_id: str, bulk_uri: str):
+        catalog = await self.get_bulk_catalog(record_id, bulk_uri)
+        existing_columns = catalog.all_columns_dtypes.keys()
+
+        computations = [self._compute_statistics(catalog, column, record_id, bulk_uri) for column in existing_columns]
+        return computations
+
+    def _fetch_statistics(self, bulk_statistics_path: str, column_name: str):
+
+        filename = f"statistics_{column_name}.parquet"
+        parquet_file = f'{bulk_statistics_path}/{filename}'
+        return pd.read_parquet(parquet_file, storage_options=self._parameters.storage_options)
+
+    async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) -> pd.DataFrame:
+
+        catalog = await self.get_bulk_catalog(record_id, bulk_uri)
+        existing_col = catalog.all_columns_dtypes
+
+        base_bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_uri, self.protocol)
+        bulk_statistics_path = pathBuilder.join(base_bulk_base_path, 'statistics')
+
+        if not columns:
+            columns = existing_col
+        else:
+            if any([wanted_col in existing_col for wanted_col in columns]):
+                raise Exception("Requested curves unknown")
+
+        futures = [self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, column) for column in columns]
+        fetched_df_stats = await self.client.gather(futures)
+        return pd.concat(fetched_df_stats)
