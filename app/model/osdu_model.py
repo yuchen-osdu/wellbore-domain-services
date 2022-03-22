@@ -355,7 +355,7 @@ class AbstractCommonResources100(DDMSBaseModel):
     )
     TechnicalAssuranceID: Optional[
         constr(
-            regex='^[\w\-\.]+:reference-data\-\-TechnicalAssuranceType:[\w\-\.\:\%]+:[0-9]*$'
+            regex=r'^[\w\-\.]+:reference-data\-\-TechnicalAssuranceType:[\w\-\.\:\%]+:[0-9]*$'
         )
     ] = Field(
         None,
