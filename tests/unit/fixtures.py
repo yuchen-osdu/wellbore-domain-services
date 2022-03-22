@@ -50,13 +50,14 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
      For usage examples, see fixtures_test.py in this directory
 
      We depend on :
-     - local_dev_config to ha ve a valid configuration, but also avoid doing unexpected network requests
+     - local_dev_config to have a valid configuration, but also avoid doing unexpected network requests
      - nope_logger_fixture because configuring this will mount middlewares, and they need a logger
     """
 
     def setup_data_for_mock(data):
         template_client = make_storage_record_client(
-            local_dev_config.service_host_storage
+            host=local_dev_config.service_host_storage.value,
+            timeout=local_dev_config.de_client_config_timeout.value
         )
 
         # Note: we want to be able to modify the mock to handle get_record and get_record_version specifically
