@@ -17,7 +17,6 @@ import odes_search
 import odes_storage
 from odes_search.api_client import AsyncSearchApi
 from odes_storage.api_client import AsyncRecordsApi
-from app.conf import ConfigurationContainer
 from dataclasses import dataclass
 from typing import Optional
 
