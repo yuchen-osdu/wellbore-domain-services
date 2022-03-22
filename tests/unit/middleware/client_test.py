@@ -14,10 +14,10 @@ from app.injector.main_injector import MainInjector
 
 @pytest.mark.asyncio
 async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
-    storage_url = "http://example.com"  # well formed url required
     expected_correlation_id = 'some-correlation-id'
 
-    async with make_storage_record_client(storage_url, config=local_dev_config) as storage_client:
+    async with make_storage_record_client(host=local_dev_config.service_host_storage.value,
+                                          timeout=local_dev_config.de_client_config_timeout) as storage_client:
         httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
 
         ctx_fixture.set_current_with_value(correlation_id=expected_correlation_id)
@@ -29,10 +29,10 @@ async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_confi
 
 @pytest.mark.asyncio
 async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
-    storage_url = "http://example.com"  # well formed url required
     expected_correlation_id = 'some-correlation-id'
 
-    async with make_search_client(storage_url, config=local_dev_config) as search_client:
+    async with make_search_client(host=local_dev_config.service_host_search.value,
+                                  timeout=local_dev_config.de_client_config_timeout) as search_client:
         httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
 
         ctx_fixture.set_current_with_value(correlation_id=expected_correlation_id)
@@ -45,7 +45,8 @@ async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config
 def test_outgoing_tracing_headers_with_incoming_headers(local_dev_config, app_configurable_with_testclient, httpx_mock):
 
     app, client = app_configurable_with_testclient(
-        storage_client_mock=make_storage_record_client("https://testserver/api/storage", config=local_dev_config),
+        storage_client_mock=make_storage_record_client(host=local_dev_config.service_host_storage.value,
+                                                       timeout=local_dev_config.de_client_config_timeout.value),
         fake_opendes_authorized_user=True,
         fake_data_partition_id=True
     )
@@ -80,7 +81,8 @@ def test_outgoing_tracing_headers_with_incoming_headers(local_dev_config, app_co
 def test_outgoing_tracing_headers_without_headers(local_dev_config, app_configurable_with_testclient, httpx_mock):
 
     app, client = app_configurable_with_testclient(
-        storage_client_mock=make_storage_record_client("https://testserver/api/storage", config=local_dev_config),
+        storage_client_mock=make_storage_record_client(host=local_dev_config.service_host_storage.value,
+                                                       timeout=local_dev_config.de_client_config_timeout),
         fake_opendes_authorized_user=True,
         fake_data_partition_id=True
     )

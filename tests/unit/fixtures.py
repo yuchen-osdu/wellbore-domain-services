@@ -56,8 +56,8 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
 
     def setup_data_for_mock(data):
         template_client = make_storage_record_client(
-            local_dev_config.service_host_storage,
-            config=local_dev_config
+            host=local_dev_config.service_host_storage.value,
+            timeout=local_dev_config.de_client_config_timeout.value
         )
 
         # Note: we want to be able to modify the mock to handle get_record and get_record_version specifically
