@@ -2189,7 +2189,7 @@ class WellLog120(DDMSBaseModel):
         description='The links to data, which constitute the inputs, from which this record instance is derived.',
         title='Ancestry',
     )
-    meta: Optional[List[AbstractMetaItem100]] = Field(
+    meta: Optional[List[Any]] = Field(
         None,
         description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
         title='Frame of Reference Meta Data',
