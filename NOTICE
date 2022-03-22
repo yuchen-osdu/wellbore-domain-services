@@ -276,7 +276,7 @@ The following software have components provided under the terms of this license:
 - pydantic (from https://github.com/samuelcolvin/pydantic)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
-- pytest (from https://docs.pytest.org/en/latest/)
+- pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
 - pytest-httpx (from https://colin-b.github.io/pytest_httpx/)
 - pytest-mock (from https://github.com/pytest-dev/pytest-mock/)
