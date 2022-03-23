@@ -22,7 +22,7 @@ import app.conf as conf
 import pytest
 from app.conf import ConfigurationContainer
 from app.context import Context
-from app.bulk_persistence import DaskClient
+
 from fastapi import Header
 from hypothesis import settings, Verbosity, HealthCheck
 
@@ -38,6 +38,10 @@ from .fixtures import (
     app_initialized_with_testclient,
     app_configurable_with_testclient,
     mock_storage_client_holding_data
+)
+
+from .fixtures_pkg import (
+    dask_client
 )
 
 
@@ -89,12 +93,13 @@ def pytest_unconfigure(config):
     del os.environ['SERVICE_HOST_PARTITION']
 
 
+# all tests with pytest-asyncio will share the same loop
+# Ref: https://github.com/pytest-dev/pytest-asyncio#event_loop
 @pytest.fixture(scope="session")
-def event_loop():  # all tests will share the same loop
+def event_loop():
     loop = asyncio.get_event_loop()
     yield loop
     # teardown
-    loop.run_until_complete(DaskClient.close())
     loop.close()
 
 
