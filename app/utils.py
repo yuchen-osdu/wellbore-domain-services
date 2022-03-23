@@ -24,19 +24,11 @@ from logging import INFO
 
 from aiohttp import ClientSession
 import dask
-from dask.utils import parse_bytes, format_bytes
-from dask.distributed import Client as DaskDistributedClient
-from distributed import system, LocalCluster
-from distributed.deploy.utils import nprocesses_nthreads
 
 from .bulk_persistence import get_temp_dir
 from .context import Context
-from app.model.user import User
-from app.injector.app_injector import AppInjector
-from app.conf import Config
 
 POOL_EXECUTOR_MAX_WORKER = 4
-HOUR = 3600  # in seconds
 
 
 @lru_cache()
