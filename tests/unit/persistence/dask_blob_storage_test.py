@@ -22,8 +22,8 @@ from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 from unittest import mock
 
-from app.utils import DaskException
-from app.utils import DaskClient
+from app.bulk_persistence import DaskException
+from app.bulk_persistence import DaskClient
 from app.helper import logger
 from app.persistence.sessions_storage import (Session, SessionState,
                                               SessionUpdateMode)
@@ -414,8 +414,8 @@ async def test_dask_workers_according_ram_available(system_memory, worker_create
     await DaskClient.close()
     logger._LOGGER = mock.MagicMock()
 
-    with mock.patch('app.utils.DaskClient._get_system_memory', mock.Mock(return_value=system_memory)):
-        with mock.patch('app.utils.DaskClient._recommended_workers_and_threads', mock.Mock(return_value=(10, 10))):
+    with mock.patch('app.bulk_persistence.DaskClient._get_system_memory', mock.Mock(return_value=system_memory)):
+        with mock.patch('app.bulk_persistence.DaskClient._recommended_workers_and_threads', mock.Mock(return_value=(10, 10))):
 
             if DaskClient._available_memory_for_workers() < DaskClient.min_worker_memory_recommended:
                 with pytest.raises(DaskException):

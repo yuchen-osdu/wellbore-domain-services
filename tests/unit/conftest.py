@@ -22,7 +22,7 @@ import app.conf as conf
 import pytest
 from app.conf import ConfigurationContainer
 from app.context import Context
-from app.utils import DaskClient
+from app.bulk_persistence import DaskClient
 from fastapi import Header
 from hypothesis import settings, Verbosity, HealthCheck
 

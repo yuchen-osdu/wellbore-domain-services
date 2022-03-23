@@ -20,6 +20,7 @@ from .mime_types import MimeTypes
 from .tenant_provider import resolve_tenant
 from .exceptions import UnknownChannelsException, InvalidBulkException, NoBulkException, NoDataException, RecordNotFoundException
 from .consistency_checks import ConsistencyException, DataConsistencyChecks
+from .dask.client import DaskClient, DaskException
 
 # TMP: this should probably not be exposed outside of the bulk_persistence package
 from .temp_dir import get_temp_dir
