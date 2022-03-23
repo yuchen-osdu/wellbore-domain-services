@@ -14,14 +14,16 @@
                 "Mnemonic": "GR",
                 "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                 "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:",
-                "NumberOfColumns": 1
+                "NumberOfColumns": 1,
+                "CurveDescription": "Gamma Ray"
             },
             {
                 "CurveID": "POR_ID",
                 "Mnemonic": "NPOR",
                 "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                 "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:",
-                "NumberOfColumns": 1
+                "NumberOfColumns": 1,
+                "CurveDescription": "Neutron Porosity"
             },
             {
                 "CurveID": "Bulk Density",
