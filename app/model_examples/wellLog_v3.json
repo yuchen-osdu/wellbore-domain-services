@@ -15,7 +15,8 @@
                 "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                 "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:",
                 "NumberOfColumns": 1,
-                "CurveDescription": "Gamma Ray"
+                "CurveDescription": "Gamma Ray",
+                "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:"
             },
             {
                 "CurveID": "POR_ID",
@@ -23,13 +24,15 @@
                 "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                 "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:",
                 "NumberOfColumns": 1,
-                "CurveDescription": "Neutron Porosity"
+                "CurveDescription": "Neutron Porosity",
+                "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:"
             },
             {
                 "CurveID": "Bulk Density",
                 "Mnemonic": "RHOB",
                 "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
-                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:BulkDensity:"
+                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:BulkDensity:",
+                "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:"
             }
         ],
         "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
@@ -45,6 +48,7 @@
 
         "SamplingDomainTypeID": "{{datapartitionid}}:reference-data--WellLogSamplingDomainType:Depth:",
         "IsRegular": true,
+        "LogRemark": "example data for API documentation",
         "SamplingInterval": 0.1
 
     },
