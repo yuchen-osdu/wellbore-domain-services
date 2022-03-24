@@ -48,7 +48,7 @@ from app.routers.ddms_v3 import (
     wellbore_trajectory_ddms_v3,
     markerset_ddms_v3,
     delete_v3)
-from app.routers.bulk import bulk_routes
+from app.routers.bulk import bulk_routes, statistics_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_alpha
@@ -294,6 +294,19 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
             Depends(set_trajectory_data_consistency_check)
         ],
         include_in_schema=is_visible)
+
+
+# Statistics endpoints
+wdms_app.include_router(
+    statistics_routes.router,
+    prefix=DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
+    tags=["WellLog"],
+    dependencies=[
+        *basic_dependencies,
+        Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))
+    ],
+    include_in_schema=True)
+
 
 # log bulk v2 APIs
 wdms_app.include_router(
