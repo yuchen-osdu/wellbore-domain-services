@@ -89,6 +89,8 @@ def test_azure_configuration_checker(azure_config_fixture):
 
     check_environment(azure_config)
 
+    assert azure_config.az_bulk_container == 'wdms-osdu'
+
     # below attribute are gcp only
     assert "default_data_tenant_project_id" not in variables_dict
     assert "default_data_tenant_credentials" not in variables_dict
