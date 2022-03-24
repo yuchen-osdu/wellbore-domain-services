@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import copy
 import types
 from typing import List
@@ -50,13 +51,14 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
      For usage examples, see fixtures_test.py in this directory
 
      We depend on :
-     - local_dev_config to ha ve a valid configuration, but also avoid doing unexpected network requests
+     - local_dev_config to have a valid configuration, but also avoid doing unexpected network requests
      - nope_logger_fixture because configuring this will mount middlewares, and they need a logger
     """
 
     def setup_data_for_mock(data):
         template_client = make_storage_record_client(
-            local_dev_config.service_host_storage
+            host=local_dev_config.service_host_storage.value,
+            timeout=local_dev_config.de_client_config_timeout.value
         )
 
         # Note: we want to be able to modify the mock to handle get_record and get_record_version specifically
@@ -106,18 +108,27 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
 
 
 @pytest.fixture(scope="module")
-def app_initialized_with_testclient(local_dev_config, request):
+def app_initialized_with_testclient(local_dev_config, dask_client):
     """
     Fixture providing wdms_app started, along with a test client
     """
     global base_app, wdms_app
 
-    # this app, initialized, and as part of a hierarchy of apps
-    with TestClient(
-        base_app
-    ):  # TOFIX: currently necessary because base_app and wdms_app are interdependent
-        with TestClient(wdms_app) as client:
-            yield wdms_app, client
+    # retrieve the dask_client starter, but let the app close it.
+    # CAREFUL about the fixture scope
+    with dask_client(autoclose_asynccontext=False) as dask_client_starter:
+
+        # Mocking dask_client for app to use it
+        with mock.patch('app.bulk_persistence.dask.client.DaskClient.create', dask_client_starter):
+
+            # this app, initialized, and as part of a hierarchy of apps
+            with TestClient(
+                base_app
+            ):  # TOFIX: currently necessary because base_app and wdms_app are interdependent
+                with TestClient(wdms_app) as client:
+                    yield wdms_app, client
+
+            # slb_app shutdown event should call DaskClient.close()
 
 
 @pytest.fixture

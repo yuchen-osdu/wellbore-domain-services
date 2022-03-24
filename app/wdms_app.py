@@ -57,8 +57,8 @@ from app.pool_executor import run_in_pool_executor
 from app.utils import (
     get_http_client_session,
     OpenApiHandler,
-    DaskClient,
     POOL_EXECUTOR_MAX_WORKER)
+from app.bulk_persistence import DaskClient
 from app.routers.bulk.utils import (
     update_operation_ids,
     set_v3_input_dataframe_check,
