@@ -190,7 +190,7 @@ async def get_bulk_statistics_version(
     summary="Trigger computations of record's data statistics of record's data",
     responses={
         404: {"description": "Statistics or record not found"},
-        200: {"description": "Statistics computation stated"},
+        200: {"description": "Statistics computation started"},
     }
 )
 async def compute_bulk_statistics(

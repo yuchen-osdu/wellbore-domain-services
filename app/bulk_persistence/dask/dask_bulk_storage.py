@@ -49,6 +49,20 @@ from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
 from ..consistency_checks import DataConsistencyChecks
 
+
+import itertools
+
+
+def grouper(n, iterable):
+    n = int(n)
+    it = iter(iterable)
+    while True:
+        chunk = tuple(itertools.islice(it, n))
+        if not chunk:
+            return
+        yield chunk
+
+
 def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
     """call dask.dataframe.read_parquet with default parameters
     Dask read_parquet parameters:
@@ -552,18 +566,18 @@ class DaskBulkStorage:
 
         return bulk_id, df_describe
 
-
-    def _compute_statistics(self, catalog: BulkCatalog, column_name: str,record_id: str, bulk_uri: str):
+    def _compute_statistics(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
         record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
-        columns = [column_name]
         column_paths = catalog.get_paths_for_columns(columns, record_path)
-        files_to_load = column_paths[0].paths
+
+        files_to_load = [col_path.paths for col_path in column_paths]
+        import itertools
+        files_to_load = itertools.chain.from_iterable(files_to_load)
 
         dfs = (pd.read_parquet(file, columns=columns) for file in files_to_load)
         big_df = pd.concat(dfs, ignore_index=True)
-        computed_stats = big_df.describe().transpose()
-        print("coucou", computed_stats.head(1))
 
+        computed_stats = big_df.describe().transpose()
         self._save_bulk_stats(computed_stats, record_id, bulk_uri)
 
     def _save_bulk_stats(self, df_statistics, record_id: str, bulk_id: str):
@@ -582,14 +596,30 @@ class DaskBulkStorage:
         catalog = await self.get_bulk_catalog(record_id, bulk_uri)
         existing_columns = catalog.all_columns_dtypes.keys()
 
-        computations = [self._compute_statistics(catalog, column, record_id, bulk_uri) for column in existing_columns]
-        return computations
+        nb_rows = catalog.nb_rows
+        nb_cols = len(existing_columns)
+        max_number_values = 10_000_000
 
-    def _fetch_statistics(self, bulk_statistics_path: str, column_name: str):
+        total_nb_values = nb_rows * nb_cols
+        block_count = max(total_nb_values / max_number_values, 1)
+        wanted_nb_col = int(nb_cols / block_count)
 
-        filename = f"statistics_{column_name}.parquet"
-        parquet_file = f'{bulk_statistics_path}/{filename}'
-        return pd.read_parquet(parquet_file, storage_options=self._parameters.storage_options)
+        wanted_columns_number = min(500, wanted_nb_col)
+
+        started_tasks = []
+        for columns in grouper(wanted_columns_number, existing_columns):
+            f = self._submit_with_trace(self._compute_statistics, catalog, columns, record_id, bulk_uri)
+            started_tasks.append(f)
+
+        print("started_tasks", len(started_tasks))
+
+    def _fetch_statistics(self, bulk_statistics_path: str, columns: List[str]):
+
+        parquet_files = [f for f in self._fs.ls(bulk_statistics_path) if f.endswith(".parquet")]
+        dfs = (pd.read_parquet(file) for file in parquet_files)
+        statistics_df = pd.concat(dfs)
+
+        return statistics_df.filter(items=columns, axis=0)
 
     async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) -> pd.DataFrame:
 
@@ -600,11 +630,9 @@ class DaskBulkStorage:
         bulk_statistics_path = pathBuilder.join(base_bulk_base_path, 'statistics')
 
         if not columns:
-            columns = existing_col
+            columns = existing_col.keys()
         else:
-            if any([wanted_col in existing_col for wanted_col in columns]):
+            if any((wanted_col not in existing_col for wanted_col in columns)):
                 raise Exception("Requested curves unknown")
 
-        futures = [self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, column) for column in columns]
-        fetched_df_stats = await self.client.gather(futures)
-        return pd.concat(fetched_df_stats)
+        return self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)
