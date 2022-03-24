@@ -18722,6 +18722,7 @@
                     "CreationDateTime": "2013-03-22T11:16:03Z",
                     "Curves": [
                       {
+                        "CurveDescription": "Gamma Ray",
                         "CurveID": "GR_ID",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:",
@@ -18729,6 +18730,7 @@
                         "NumberOfColumns": 1
                       },
                       {
+                        "CurveDescription": "Neutron Porosity",
                         "CurveID": "POR_ID",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:",
