@@ -50,19 +50,6 @@ from . import dask_worker_write_bulk as bulk_writer
 from ..consistency_checks import DataConsistencyChecks
 
 
-import itertools
-
-
-def grouper(n, iterable):
-    n = int(n)
-    it = iter(iterable)
-    while True:
-        chunk = tuple(itertools.islice(it, n))
-        if not chunk:
-            return
-        yield chunk
-
-
 def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
     """call dask.dataframe.read_parquet with default parameters
     Dask read_parquet parameters:
@@ -565,74 +552,3 @@ class DaskBulkStorage:
                                                   self._parameters.storage_options)
 
         return bulk_id, df_describe
-
-    def _compute_statistics(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
-        record_path = pathBuilder.record_path(self.base_directory, catalog.record_id, self.protocol)
-        column_paths = catalog.get_paths_for_columns(columns, record_path)
-
-        files_to_load = [col_path.paths for col_path in column_paths]
-        import itertools
-        files_to_load = itertools.chain.from_iterable(files_to_load)
-
-        dfs = (pd.read_parquet(file, columns=columns) for file in files_to_load)
-        big_df = pd.concat(dfs, ignore_index=True)
-
-        computed_stats = big_df.describe().transpose()
-        self._save_bulk_stats(computed_stats, record_id, bulk_uri)
-
-    def _save_bulk_stats(self, df_statistics, record_id: str, bulk_id: str):
-
-        base_bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id, self.protocol)
-        bulk_statistics_path = pathBuilder.join(base_bulk_base_path, 'statistics')
-        self._ensure_dir_tree_exists(bulk_statistics_path)
-
-        filename = f"statistics_{df_statistics.index[0]}.parquet"
-        full_file_path = pathBuilder.join(bulk_statistics_path, filename)
-        DataframeSerializerSync.to_parquet(df_statistics,
-                                           full_file_path,
-                                           storage_options=self._parameters.storage_options)
-
-    async def compute_bulk_statistics(self, record_id: str, bulk_uri: str):
-        catalog = await self.get_bulk_catalog(record_id, bulk_uri)
-        existing_columns = catalog.all_columns_dtypes.keys()
-
-        nb_rows = catalog.nb_rows
-        nb_cols = len(existing_columns)
-        max_number_values = 10_000_000
-
-        total_nb_values = nb_rows * nb_cols
-        block_count = max(total_nb_values / max_number_values, 1)
-        wanted_nb_col = int(nb_cols / block_count)
-
-        wanted_columns_number = min(500, wanted_nb_col)
-
-        started_tasks = []
-        for columns in grouper(wanted_columns_number, existing_columns):
-            f = self._submit_with_trace(self._compute_statistics, catalog, columns, record_id, bulk_uri)
-            started_tasks.append(f)
-
-        print("started_tasks", len(started_tasks))
-
-    def _fetch_statistics(self, bulk_statistics_path: str, columns: List[str]):
-
-        parquet_files = [f for f in self._fs.ls(bulk_statistics_path) if f.endswith(".parquet")]
-        dfs = (pd.read_parquet(file) for file in parquet_files)
-        statistics_df = pd.concat(dfs)
-
-        return statistics_df.filter(items=columns, axis=0)
-
-    async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) -> pd.DataFrame:
-
-        catalog = await self.get_bulk_catalog(record_id, bulk_uri)
-        existing_col = catalog.all_columns_dtypes
-
-        base_bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_uri, self.protocol)
-        bulk_statistics_path = pathBuilder.join(base_bulk_base_path, 'statistics')
-
-        if not columns:
-            columns = existing_col.keys()
-        else:
-            if any((wanted_col not in existing_col for wanted_col in columns)):
-                raise Exception("Requested curves unknown")
-
-        return self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)
