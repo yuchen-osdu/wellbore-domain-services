@@ -365,7 +365,8 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: List[str]=['E
     },
     "IsRegular": true,
     "SamplingStart": 12345.6,
-    "SamplingStop": 12345.6,"""
+    "SamplingStop": 12345.6,
+    "LogRemark": "example data for API integration tests","""
 
     inner_curves = ""
     for c in curves:
@@ -727,7 +728,9 @@ def get_cleaned_ref_and_res() -> dict:
         "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
         "LogCurveBusinessValueID": "namespace:reference-data--LogCurveBusinessValue:SomeUniqueLogCurveBusinessValueID:",
         "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
-        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:"
+        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
+        "CurveDescription": "Sample curve for integration tests",
+        "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:"
       }
     ],
     "ExtensionProperties": {}
