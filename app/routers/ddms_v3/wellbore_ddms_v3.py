@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
-from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
+from fastapi import APIRouter, Body, Depends, Response, status
 from starlette.requests import Request
 
-from app.model.osdu_record_id import split_record_id_version, OSDU_WELLBORE_REGEX
+from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
+from app.model.osdu_record_id import split_record_id_version, WellboreId
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import from_record, to_record
@@ -43,14 +43,9 @@ router = APIRouter(route_class=TracingRoute)
         status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}
     },
 )
-async def get_wellbore_osdu(
-    wellboreid: str, ctx: Context = Depends(get_ctx)
-) -> Wellbore:
-    if OSDU_WELLBORE_REGEX.match(wellboreid) is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
-    # Note: version is dropped here
+async def get_wellbore_osdu(wellboreid: WellboreId, ctx: Context = Depends(get_ctx)) -> Wellbore:
+    # TODO version is dropped here, it would be better to either return an error or return the version not the latest
     record_id, _ = split_record_id_version(wellboreid)
-
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
     return from_record(Wellbore, well_record)
@@ -71,7 +66,7 @@ async def get_wellbore_osdu(
         },
     },
 )
-async def del_osdu_wellbore(wellboreid: str, ctx: Context = Depends(get_ctx)):
+async def del_osdu_wellbore(wellboreid: WellboreId, ctx: Context = Depends(get_ctx)):
     storage_client = await get_storage_record_service(ctx)
     await storage_client.delete_record(
         id=wellboreid, data_partition_id=ctx.partition_id
@@ -89,7 +84,7 @@ async def del_osdu_wellbore(wellboreid: str, ctx: Context = Depends(get_ctx)):
     },
 )
 async def get_osdu_wellbore_versions(
-    wellboreid: str, request: Request, ctx: Context = Depends(get_ctx)
+    wellboreid: WellboreId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
     record = await fetch_record(ctx, wellboreid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
@@ -111,7 +106,7 @@ async def get_osdu_wellbore_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_wellbore_version(
-    wellboreid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
+    wellboreid: WellboreId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
     storage_client = await get_storage_record_service(ctx)
     wellbore_record = await storage_client.get_record_version(

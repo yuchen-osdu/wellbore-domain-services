@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
-from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
 from starlette.requests import Request
+
+from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.consistency import (
@@ -23,8 +24,8 @@ from app.consistency import (
     check_welllog_consistency
 )
 from app.model.model_utils import from_record, to_record
+from app.model.osdu_record_id import split_record_id_version, WellLogId
 from app.model.osdu_model import WellLog110 as WellLog
-from app.model.osdu_record_id import split_record_id_version
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
@@ -51,9 +52,10 @@ WELL_LOGS_API_BASE_PATH = '/welllogs'
     },
 )
 async def get_welllog_osdu(
-        welllogid: str, request: Request, ctx: Context = Depends(get_ctx)
+        welllogid: WellLogId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
     storage_client = await get_storage_record_service(ctx)
+    # TODO version is dropped here, it would be better to either return an error or return the version not the latest
     welllogid, _ = split_record_id_version(welllogid)
 
     welllog_record = await storage_client.get_record(
@@ -79,7 +81,7 @@ async def get_welllog_osdu(
     },
 )
 async def del_osdu_welllog(
-    welllogid: str,
+    welllogid: WellLogId,
     purge: bool = False,
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
@@ -99,7 +101,7 @@ async def del_osdu_welllog(
     },
 )
 async def get_osdu_welllog_versions(
-    welllogid: str, request: Request, ctx: Context = Depends(get_ctx)
+    welllogid: WellLogId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
     record = await fetch_record(ctx, welllogid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
@@ -123,7 +125,7 @@ async def get_osdu_welllog_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_welllog_version(
-    welllogid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
+    welllogid: WellLogId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
     storage_client = await get_storage_record_service(ctx)
     welllogid, _ = split_record_id_version(welllogid)
