@@ -76,7 +76,7 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                              token: str = None) -> odes_storage.models.Record:
             # return the latest
             if attribute is not None:
-                raise NotImplementedError("mocked_get_record not support 'attribute' parameter")
+                raise NotImplementedError("mocked_get_record does not support 'attribute' parameter")
 
             return await self.get_record_version(id, None, data_partition_id, appkey, token)
 
@@ -97,11 +97,13 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                 # CAREFUL: id might be optional in the model (not set on write)
                 # Also storage seems to have problematic behavior with id ending in ':'
                 if id is not None and (id == d.id or id + ":" == d.id):
-                    if version is None or version == d.version:  # Note: version None means latest
-                        if d.version is None:  # no version set in record just return this one
-                            return d
-                        elif latest is None or d.version > latest.version:
-                            latest = d
+                    if version == d.version:
+                        return d
+
+                    if latest is None \
+                       or latest.version is None \
+                       or (d.version is not None and d.version > latest.version):
+                        latest = d
 
             if latest is not None:
                 return latest
