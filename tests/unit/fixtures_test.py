@@ -7,6 +7,8 @@ from app.clients.search_service_client import get_search_service
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import Context, get_ctx
 
+from app.model.osdu_model import Well, Wellbore, WellboreMarkerSet110, WellboreTrajectory110, WellLog110
+
 
 def test_local_dev_config(local_dev_config):
 
@@ -213,3 +215,32 @@ def test_app_configurable_with_client_and_mocks(
         # remove the route we added to not mess with other tests
         app.router.routes = [r for r in app.routes if r.name != inside_out_handler.__name__]
 
+
+def test_well100_v3_list(well100_v3_list):
+    assert len(well100_v3_list) > 0
+    for inst in well100_v3_list:
+        Well.validate(inst)
+
+
+def test_wellbore100_v3_list(wellbore100_v3_list):
+    assert len(wellbore100_v3_list) > 0
+    for inst in wellbore100_v3_list:
+        Wellbore.validate(inst)
+
+
+def test_welllog110_v3_list(welllog110_v3_list):
+    assert len(welllog110_v3_list) > 0
+    for inst in welllog110_v3_list:
+        WellLog110.validate(inst)
+
+
+def test_marker110_v3_list(marker110_v3_list):
+    assert len(marker110_v3_list) > 0
+    for inst in marker110_v3_list:
+        WellboreMarkerSet110.validate(inst)
+
+
+def test_trajectory110_v3_list(trajectory110_v3_list):
+    assert len(trajectory110_v3_list) > 0
+    for inst in trajectory110_v3_list:
+        WellboreTrajectory110.validate(inst)
