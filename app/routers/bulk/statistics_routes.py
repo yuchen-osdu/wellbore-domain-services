@@ -63,19 +63,22 @@ class BulkDataStatistics(BaseModel):
 
 
 api_description_text = """
-If wanted curves is an array:
-    - requests "ARRAY" retrieves all dimensions of the array
+If wanted curves is an array:  
+    - requests "ARRAY" retrieves all dimensions of the array  
     - requests "ARRAY[M:N]", retrieves all dimensions between M and N.
 """
+
+api_unit_conversion_text = "IMPORTANT: there is no unit conversion, bulk data are processed are they are"
 
 
 @router.get(
     '/{record_id}/data/statistics',
     summary="Returns statistics of record's data for selected curves",
-    description=f"""
-    Returns the statistics on bulk data identified by the record in its last version.
+    description=f"""Returns the statistics on bulk data identified by the record in its last version. 
 
-    {api_description_text}
+    {api_description_text}  
+      
+    {api_unit_conversion_text}
     """,
     responses={
         404: {"description": "Statistics or record not found"},
@@ -110,10 +113,10 @@ async def get_bulk_statistics(
 @router.get(
     '/{record_id}/versions/{version}/data/statistics',
     summary="Returns statistics of record's data for selected curves at requested version",
-    description=f"""
-    Returns the statistics on bulk data identified by the record and given version.
-
-    {api_description_text}
+    description=f"""Returns the statistics on bulk data identified by the record and given version.  
+    {api_description_text}  
+      
+    {api_unit_conversion_text}
     """,
     responses={
         404: {"description": "Statistics or record not found"},
@@ -164,6 +167,11 @@ async def get_bulk_statistics_version(
 @router.post(
     '/{record_id}/data/statistics',
     summary="Trigger computations of record's data statistics of record's data",
+    description=f"""Trigger the computation of statistics on bulk data for 
+    the record identified by the record_id at its last version   
+      
+    {api_unit_conversion_text}
+    """,
     responses={
         404: {"description": "Statistics or record not found"},
         200: {"description": "Statistics computation started"},
