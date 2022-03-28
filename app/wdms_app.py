@@ -297,13 +297,15 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
 
 
 # Statistics endpoints
+v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check), Depends(set_osdu_bulk_id_access)]
 wdms_app.include_router(
     statistics_routes.router,
     prefix=DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
     tags=["WellLog"],
     dependencies=[
         *basic_dependencies,
-        Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))
+        Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
+        Depends(set_osdu_bulk_id_access)
     ],
     include_in_schema=True)
 
