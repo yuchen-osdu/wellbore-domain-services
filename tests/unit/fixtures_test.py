@@ -68,6 +68,48 @@ def test_mock_storage_client_holding_well_v3_record_data(
         )
 
 
+def test_mock_storage_client_holding_well_v3_record_with_version_data(
+    mock_storage_client_holding_data, well_v3_record_list
+):
+    """Test the mock_storage_client_holding_data behavior, along with the well_v2_record data itself"""
+    single_record_v0 = well_v3_record_list[0]
+    record_id = single_record_v0.id
+    single_record_v1 = single_record_v0.copy(deep=True)
+    single_record_v0.version = 0
+    single_record_v1.version = 1
+    single_record_v1.data['FacilityName'] = single_record_v0.data['FacilityName'] + "_updated"
+
+    storage_client = mock_storage_client_holding_data([single_record_v0, single_record_v1])
+
+    # grab current eventloop if we already have one, otherwise creates it
+    loop = asyncio.get_event_loop()
+
+    # get latest
+    assert (
+            loop.run_until_complete(
+                storage_client.get_record(record_id, "fake_data_partition_id")
+            ).version == single_record_v1.version
+    )
+
+    # get V0
+    r = loop.run_until_complete(
+        storage_client.get_record_version(record_id, 0, "fake_data_partition_id")
+    )
+    assert r.version == 0 and r.data['FacilityName'] == single_record_v0.data['FacilityName']
+
+    # get V1
+    r = loop.run_until_complete(
+        storage_client.get_record_version(record_id, 1, "fake_data_partition_id")
+    )
+    assert r.version == 1 and r.data['FacilityName'] == single_record_v1.data['FacilityName']
+
+    # get versions
+    r = loop.run_until_complete(
+        storage_client.get_all_record_versions(record_id, "fake_data_partition_id")
+    )
+    assert set(r.versions) == {0, 1}
+
+
 def test_mock_storage_client_holding_wellbore_v2_record_data(
     mock_storage_client_holding_data, wellbore_v2_record_list
 ):
