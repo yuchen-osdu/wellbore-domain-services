@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydantic import BaseModel
+from typing import Optional, List
+from fastapi import Query
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
+from app.model.model_chunking import GetDataParams
 
 from app.context import Context, get_ctx
 
@@ -29,11 +33,9 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
+import app.bulk_persistence.statistics.exceptions as statistics_exceptions
 
-from pydantic import BaseModel
-from typing import Optional, List
-from fastapi import Query
-
+from app.helper.logger import get_logger
 from helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
@@ -100,14 +102,19 @@ async def get_bulk_statistics(
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         accept_type: MimeType = Depends(read_bulk_accept_type)
 ):
-    return await get_bulk_statistics_version(request=request,
-                                             record_id=record_id,
-                                             version=str(),
-                                             curves=curves,
-                                             ctx=ctx,
-                                             dask_blob_storage=dask_blob_storage,
-                                             bulk_uri_access=bulk_uri_access,
-                                             accept_type=accept_type)
+    try:
+        return await get_bulk_statistics_version(request=request,
+                                                 record_id=record_id,
+                                                 version=str(),
+                                                 curves=curves,
+                                                 ctx=ctx,
+                                                 dask_blob_storage=dask_blob_storage,
+                                                 bulk_uri_access=bulk_uri_access,
+                                                 accept_type=accept_type)
+    except (statistics_exceptions.StatisticsNotFoundError,
+            statistics_exceptions.RequestedCurvesError) as e:
+        get_logger().exception("get_bulk_statistics() has raised an exception")
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.get(
@@ -173,8 +180,9 @@ async def get_bulk_statistics_version(
     {api_unit_conversion_text}
     """,
     responses={
-        404: {"description": "Statistics or record not found"},
-        200: {"description": "Statistics computation started"},
+        status.HTTP_404_NOT_FOUND: {"description": "Statistics or record not found"},
+        status.HTTP_409_CONFLICT: {"description": "Statistics computation already started"},
+        status.HTTP_200_OK: {"description": "Statistics computation started"},
     }
 )
 async def compute_bulk_statistics(
@@ -195,5 +203,8 @@ async def compute_bulk_statistics(
     if not bulk_uri.is_valid():
         raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
 
-    return await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id)
-    # return await dask_blob_storage.compute_bulk_statistics(record.id, bulk_uri.bulk_id)
+    try:
+        return await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id)
+    except statistics_exceptions.ComputationRunningError as e:
+        get_logger().exception("compute_bulk_statistics() has raised an exception")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))

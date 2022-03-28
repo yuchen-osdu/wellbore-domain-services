@@ -1,12 +1,15 @@
-from typing import List
-
+from typing import List, Callable
+import itertools
 import pandas as pd
 
+from app.helper.logger import get_logger
+
+from .. import DataframeSerializerSync
+from ..dask.traces import submit_with_trace
 from ..dask.bulk_catalog import BulkCatalog
 from ..dask.dask_bulk_storage import DaskBulkStorage
-import itertools
 from ..dask import storage_path_builder as path_builder
-from .. import DataframeSerializerSync
+from .exceptions import ComputationRunningError, RequestedCurvesError, StatisticsNotFoundError
 
 
 def grouper(n, iterable):
@@ -26,6 +29,9 @@ class BulkStatistics:
 
     def __init__(self, dask_blob_storage: DaskBulkStorage):
         self.dask_blob_storage = dask_blob_storage
+
+    def _submit_with_trace(self, target_func: Callable, *args, **kwargs):
+        return submit_with_trace(self.dask_blob_storage.client, target_func, *args, **kwargs)
 
     def _get_columns_count(self, nb_rows, nb_cols):
         """
@@ -49,7 +55,6 @@ class BulkStatistics:
                                                             bulk_id,
                                                             self.dask_blob_storage.protocol)
         bulk_statistics_path = path_builder.join(base_bulk_base_path, 'statistics')
-        self.dask_blob_storage._ensure_dir_tree_exists(bulk_statistics_path)
         return bulk_statistics_path
 
     def _fetch_bulks(self, catalog, columns):
@@ -57,23 +62,27 @@ class BulkStatistics:
         record_path = self._bulk_folder(catalog.record_id)
         column_paths = catalog.get_paths_for_columns(columns, record_path)
 
-        files_to_load = [col_path.paths for col_path in column_paths]
-        files_to_load = itertools.chain.from_iterable(files_to_load)
+        def read_parquets_same_schema(_col_path):
+            _columns, _files_to_load = _col_path.labels, _col_path.paths
 
-        dfs = (pd.read_parquet(file, columns=columns) for file in files_to_load)
+            _dfs = (pd.read_parquet(file, columns=_columns) for file in _files_to_load)
+            return pd.concat(_dfs, ignore_index=True)
+
+        dfs = [read_parquets_same_schema(col_path) for col_path in column_paths]
         return pd.concat(dfs, ignore_index=True)
 
     def _compute(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
 
         bulk_df = self._fetch_bulks(catalog, columns)
-        computed_stats = bulk_df.describe().transpose()
+        computed_stats = bulk_df.describe(datetime_is_numeric=True).transpose()
 
         self._save(computed_stats, record_id, bulk_uri)
 
     def _save(self, df_statistics, record_id: str, bulk_id: str):
         bulk_statistics_path = self._statistics_folder(record_id, bulk_id)
+        self.dask_blob_storage._ensure_dir_tree_exists(bulk_statistics_path)
 
-        filename = f"statistics_{df_statistics.index[0]}.parquet"
+        filename = f"statistics_{df_statistics.index[0]}-{df_statistics.index[-1]}.parquet"
         full_file_path = path_builder.join(bulk_statistics_path, filename)
 
         DataframeSerializerSync.to_parquet(df_statistics,
@@ -84,42 +93,45 @@ class BulkStatistics:
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_columns = catalog.all_columns_dtypes.keys()
 
+        bulk_statistics_path = self._statistics_folder(record_id, bulk_uri)
+        if self.dask_blob_storage._fs.exists(bulk_statistics_path):
+            raise ComputationRunningError("Statistics already computed")
+
         nb_rows = catalog.nb_rows
         nb_cols = len(existing_columns)
-
         wanted_columns_number = self._get_columns_count(nb_rows, nb_cols)
 
         started_tasks = []
         for group_columns in grouper(wanted_columns_number, existing_columns):
-            f = self.dask_blob_storage._submit_with_trace(self._compute,
-                                                          catalog,
-                                                          group_columns,
-                                                          record_id,
-                                                          bulk_uri)
+            f = self._submit_with_trace(self._compute,
+                                        catalog,
+                                        group_columns,
+                                        record_id,
+                                        bulk_uri)
             started_tasks.append(f)
 
-        print("started_tasks", len(started_tasks))
+        get_logger().info(f"compute statistics: started_tasks {len(started_tasks)}.")
 
     def _fetch_statistics(self, bulk_statistics_path: str, columns: List[str]):
 
-        parquet_files = [f for f in self.dask_blob_storage._fs.ls(bulk_statistics_path) if f.endswith(".parquet")]
-        dfs = (pd.read_parquet(file) for file in parquet_files)
-        statistics_df = pd.concat(dfs)
+        statistics_df = pd.read_parquet(bulk_statistics_path,
+                                        storage_options=self.dask_blob_storage._parameters.storage_options)
 
         return statistics_df.filter(items=columns, axis=0)
 
     async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) -> pd.DataFrame:
 
+        bulk_statistics_path = self._statistics_folder(record_id, bulk_uri)
+        if not self.dask_blob_storage._fs.exists(bulk_statistics_path):
+            raise StatisticsNotFoundError("Statistics does not exist")
+
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_col = catalog.all_columns_dtypes
-
-        base_bulk_base_path = path_builder.record_bulk_path(self.base_directory, record_id, bulk_uri, self.protocol)
-        bulk_statistics_path = path_builder.join(base_bulk_base_path, 'statistics')
 
         if not columns:
             columns = existing_col.keys()
         else:
             if any((wanted_col not in existing_col for wanted_col in columns)):
-                raise Exception("Requested curves unknown")
+                raise RequestedCurvesError("Requested curves unknown")
 
-        return self.dask_blob_storage._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)
+        return await self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)
