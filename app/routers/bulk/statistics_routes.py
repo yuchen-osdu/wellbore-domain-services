@@ -36,7 +36,7 @@ from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 import app.bulk_persistence.statistics.exceptions as statistics_exceptions
 
 from app.helper.logger import get_logger
-from helper.traces import TracingRoute
+from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
 
