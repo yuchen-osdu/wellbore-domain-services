@@ -71,9 +71,6 @@ from app.routers.bulk.bulk_uri_dependencies import (
     set_log_bulk_id_access
 )
 
-base_app = FastAPI()
-base_app.router.route_class = TracingRoute
-
 # The sub application which contains all the routers
 wdms_app = FastAPI(title=__app_name__,
                    description='build ' + __build_number__,
@@ -83,7 +80,6 @@ wdms_app.router.route_class = TracingRoute
 
 app_injector = AppInjector()
 
-base_app.mount(Config.openapi_prefix.value, wdms_app)
 
 
 def custom_openapi(*args, **kwargs):
@@ -126,7 +122,7 @@ def make_entity_type_dependency(entity_type: Entity, version: str):
     return _set_entity_type
 
 
-@base_app.on_event("startup")
+@wdms_app.on_event("startup")
 async def startup_event():
     service_name = Config.service_name.value
 
@@ -153,7 +149,7 @@ async def startup_event():
     add_modules_routers()
 
 
-@base_app.on_event('shutdown')
+@wdms_app.on_event('shutdown')
 async def shutdown_event():
     # clients close
     storage_client = await app_injector.get(StorageRecordServiceClient)

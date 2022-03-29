@@ -18,7 +18,8 @@ from app.middleware.basic_context_middleware import require_data_partition_id
 from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client
 from app.helper.traces import CombinedExporter
 from app.injector.app_injector import WithLifeTime
-from app.wdms_app import base_app, wdms_app, app_injector
+from app.base import base_app
+from app.wdms_app import wdms_app, app_injector
 
 
 @pytest.fixture(scope="module")
@@ -108,11 +109,10 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
 
 
 @pytest.fixture(scope="module")
-def app_initialized_with_testclient(local_dev_config, dask_client):
+def base_app_initialized_with_testclient(local_dev_config, dask_client):
     """
     Fixture providing wdms_app started, along with a test client
     """
-    global base_app, wdms_app
 
     # retrieve the dask_client starter, but let the app close it.
     # CAREFUL about the fixture scope
@@ -121,14 +121,24 @@ def app_initialized_with_testclient(local_dev_config, dask_client):
         # Mocking dask_client for app to use it
         with mock.patch('app.bulk_persistence.dask.client.DaskClient.create', dask_client_starter):
 
-            # this app, initialized, and as part of a hierarchy of apps
-            with TestClient(
-                base_app
-            ):  # TOFIX: currently necessary because base_app and wdms_app are interdependent
-                with TestClient(wdms_app) as client:
-                    yield wdms_app, client
+            with TestClient(base_app) as base_client:
+                yield base_client
 
             # slb_app shutdown event should call DaskClient.close()
+
+        # mock will return DaskClient.create to its original state
+    # context will close current client
+
+
+@pytest.fixture(scope="module")
+def app_initialized_with_testclient(base_app_initialized_with_testclient):
+    """
+    Fixture providing wdms_app started, along with a test client
+    """
+    # dependent fixture because base_app and wdms_app are interdependent
+
+    with TestClient(wdms_app) as client:
+        yield wdms_app, client
 
 
 @pytest.fixture
