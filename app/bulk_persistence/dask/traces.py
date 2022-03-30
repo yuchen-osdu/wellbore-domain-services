@@ -95,7 +95,7 @@ def _add_trace_attributes(attributes: dict, tracing_mode: TracingMode):
     span = None
 
     if tracing_mode == TracingMode.CURRENT_SPAN:
-        span = opencensus_tracer.tracer.current_span()
+        span = opencensus_tracer.current_span()
     elif tracing_mode == TracingMode.ROOT_SPAN:
         existing_spans = opencensus_tracer.tracer.list_collected_spans()
         span = existing_spans[0] if existing_spans else None
