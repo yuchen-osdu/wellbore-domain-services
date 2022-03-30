@@ -17,15 +17,14 @@ from typing import Callable
 
 from fastapi.routing import APIRoute
 from opencensus.common.transports.async_ import AsyncTransport
-from opencensus.trace import base_exporter
+from opencensus.trace import base_exporter, execution_context
 from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
 from opencensus.trace.span import SpanKind
 from starlette.requests import Request
 from starlette.responses import Response
 
 from app.conf import Config
-from app.helper.utils import rename_cloud_role_func, azure_traces_processing, COMPONENT
-from app.context import get_or_create_ctx
+from .utils import rename_cloud_role_func, azure_traces_processing, COMPONENT
 
 
 """
@@ -135,7 +134,7 @@ def with_trace(label: str, span_kind=SpanKind.CLIENT):
 
             @wraps(target)
             async def async_inner(*args, **kwargs):
-                tracer = get_or_create_ctx().tracer
+                tracer = execution_context.get_opencensus_tracer()
                 if tracer is None:
                     return await target(*args, **kwargs)
 
@@ -147,7 +146,7 @@ def with_trace(label: str, span_kind=SpanKind.CLIENT):
 
         @wraps(target)
         def sync_inner(*args, **kwargs):
-            tracer = get_or_create_ctx().tracer
+            tracer = execution_context.get_opencensus_tracer()
             if tracer is None:
                 return target(*args, **kwargs)
 
