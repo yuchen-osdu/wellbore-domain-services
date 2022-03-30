@@ -18,13 +18,9 @@ import numpy as np
 import pandas as pd
 
 import pytest
-from tests.unit.test_utils import ctx_fixture, nope_logger_fixture
+from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
-import mock
 
-from app.utils import DaskException
-from app.utils import DaskClient
-from app.helper import logger
 from app.persistence.sessions_storage import (Session, SessionState,
                                               SessionUpdateMode)
 from app.bulk_persistence.dask.dask_bulk_storage import (BulkRecordNotFound,
@@ -400,36 +396,6 @@ async def test_duplicate_index(test_session, dask_storage: DaskBulkStorage):
     # with session
     with pytest.raises(BulkNotProcessable):
         await add_chunk(dask_storage, test_session, df_ref)
-
-
-@pytest.mark.parametrize("system_memory, worker_created", [
-    (42, 0),
-    ((DaskClient.min_worker_memory_recommended + DaskClient.memory_leeway), 1),
-    ((DaskClient.min_worker_memory_recommended * 3 + DaskClient.memory_leeway), 3),
-    ((DaskClient.min_worker_memory_recommended * 3 + DaskClient.memory_leeway) + 1000, 3)
-])
-@pytest.mark.asyncio
-async def test_dask_workers_according_ram_available(system_memory, worker_created):
-    # clear existing Dask distributed client
-    await DaskClient.close()
-    logger._LOGGER = mock.MagicMock()
-
-    with mock.patch('app.utils.DaskClient._get_system_memory', mock.Mock(return_value=system_memory)):
-        with mock.patch('app.utils.DaskClient._recommended_workers_and_threads', mock.Mock(return_value=(10, 10))):
-
-            if DaskClient._available_memory_for_workers() < DaskClient.min_worker_memory_recommended:
-                with pytest.raises(DaskException):
-                    await DaskClient.create()
-            else:
-                client = await DaskClient.create()
-                expected_worker_memory = (system_memory - DaskClient.memory_leeway) / worker_created
-                assert worker_created == len(client.cluster.scheduler.workers)
-
-                workers_has_expected_memory = [w.memory_limit == int(expected_worker_memory)
-                                               for _, w in client.cluster.scheduler.workers.items()]
-                assert all(workers_has_expected_memory)
-
-    await DaskClient.close()
 
 
 @pytest.mark.asyncio

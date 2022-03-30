@@ -20,7 +20,7 @@ from contextlib import asynccontextmanager, contextmanager, suppress
 from typing import Union, AsyncGenerator, AsyncContextManager
 from dask.utils import format_bytes
 
-from app.utils import get_wdms_temp_dir
+from ..temp_dir import get_temp_dir
 from app.helper.logger import get_logger
 
 
@@ -116,7 +116,7 @@ class DaskLocalFileDataIPC:
     log_usage_error_threshold = 5 * GiB
 
     def __init__(self, base_folder=None, io_chunk_size=50*MiB):
-        self._base_folder = base_folder or get_wdms_temp_dir()
+        self._base_folder = base_folder or get_temp_dir()
         self._io_chunk_size = io_chunk_size
 
     class _AsyncSetterContextManager:

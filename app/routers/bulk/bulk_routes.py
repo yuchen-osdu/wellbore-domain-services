@@ -20,7 +20,8 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from app.model.filter import BulkReadFilters
 from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
 
-from app.utils import Context, OpenApiHandler, get_ctx
+from app.context import Context, get_ctx
+from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
 from app.conf import Config
 
@@ -41,12 +42,20 @@ from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_data_consistency_checks)
 
 # imports for session manipulation
-from app.persistence.sessions_storage import (Session, SessionException, SessionState, SessionUpdateMode)
-from app.routers.sessions import (SessionInternal,
-                                  UpdateSessionState,
-                                  UpdateSessionStateValue,
-                                  WithSessionStorages,
-                                  get_session_dependencies)
+from app.persistence.sessions_storage import (
+    Session,
+    SessionException,
+    SessionState,
+    SessionUpdateMode,
+    SessionInternal,
+    CommitSessionResponse
+)
+from app.routers.sessions import (
+    UpdateSessionState,
+    UpdateSessionStateValue,
+    WithSessionStorages,
+    get_session_dependencies,
+)
 
 # imports from bulk persistence
 from app.bulk_persistence.dataframe_validators import (auto_cast_columns_to_string,
@@ -301,7 +310,7 @@ async def get_data(
 @router.patch(
     "/{record_id}/sessions/{session_id}",
     summary='Update a session, either commit or abandon.',
-    response_model=Session
+    response_model=CommitSessionResponse
 )
 async def complete_session(
     record_id: str,
@@ -313,7 +322,7 @@ async def complete_session(
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
-) -> Session:
+) -> CommitSessionResponse:
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
 
@@ -364,12 +373,20 @@ async def complete_session(
                 # ==============>
                 # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
                 # ==============>
-                await set_bulk_field_and_send_record(ctx, new_bulk_id, record, bulk_uri_access)
+                new_record = await set_bulk_field_and_send_record(ctx, new_bulk_id, record, bulk_uri_access)
 
             i_session = commit_guard.session
             i_session.session.meta = i_session.session.meta or {}
             i_session.session.meta.update({"some_detail_about_merge": "like the shape, number of rows ..."})
-            return i_session.session
+
+            response = CommitSessionResponse(
+                **i_session.session.dict(exclude_unset=True, by_alias=True),
+                version=DMSV3RouterUtils.get_version_from_record_id_version(
+                    new_record.record_id_versions[0]
+                )
+            )
+
+            return response
 
         # --------  SESSION ABANDON SEQUENCE ----------------------
         if update_request.state == UpdateSessionStateValue.Abandon:
@@ -382,7 +399,9 @@ async def complete_session(
                 # ==============> ADD ABANDON CODE HERE <==============
                 # ==============>
 
-            return abandon_guard.session.session
+            return CommitSessionResponse(
+                **abandon_guard.session.session.dict(exclude_unset=True, by_alias=True)
+            )
 
     except SessionException as ex:
         ex.raise_as_http()

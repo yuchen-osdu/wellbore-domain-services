@@ -1,4 +1,6 @@
-from abc import ABC
+from abc import ABC, abstractmethod
+from typing import Iterable, Set
+import re
 
 import pandas as pd
 from fastapi import status
@@ -11,10 +13,31 @@ class ConsistencyException(BulkError):
 
 
 class DataConsistencyChecks(ABC):
+    # regular expression pattern for extracting column name from bulk data column label
+    _col_label_pattern = re.compile(r"^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$")
+
     @classmethod
+    @abstractmethod
     async def check_bulk_consistency_on_commit_session(cls, record: "Record", new_bulk_id):
         pass
 
     @classmethod
+    @abstractmethod
     def check_bulk_consistency_on_post_bulk(cls, record: "Record", df: pd.DataFrame):
         pass
+
+    @staticmethod
+    def _get_data_columns_name(col_labels: Iterable[str]) -> Set[str]:
+        """
+        Get column names from bulk data column labels
+        """
+
+        def _get_col_name_from_col_label(col_label: str):
+            match = DataConsistencyChecks._col_label_pattern.match(col_label)
+            if not match:
+                return col_label
+            return match["name"]
+
+        res = (_get_col_name_from_col_label(col) for col in col_labels if col)
+        return {r for r in res if r != ""}
+

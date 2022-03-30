@@ -14,7 +14,7 @@
 
 import json
 
-import mock
+from unittest import mock
 import pytest
 
 from fastapi import HTTPException, Header, status
@@ -32,7 +32,7 @@ from app.model.model_curated import *
 from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet, WellboreMarkerSet110
 from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.routers.search.search_wrapper import SearchWrapper
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import wdms_app, app_injector
 from tests.unit.test_utils import create_mock_class, make_record
 
@@ -142,7 +142,7 @@ SearchWrapperMock = create_mock_class(SearchWrapper)
 
 
 @pytest.fixture
-def client():
+def client(nope_logger_fixture):
     async def bypass_authorization():
         # empty method
         pass
@@ -190,6 +190,7 @@ def test_get_record_success(client, base_url, record_obj):
 
         # assert it validates the input object schema
         record_obj.validate(response.json())
+
 
 @pytest.mark.parametrize('base_url, record_obj', tests_errors_422)
 def test_get_record_422(client, base_url, record_obj):

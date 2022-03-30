@@ -15,7 +15,7 @@
 from fastapi import APIRouter, Depends, Query
 from odes_search.models import CursorQueryResponse
 
-from app.utils import Context
+from app.context import Context
 from .search_v3 import (
     SearchQueryRequest,
     DEFAULT_QUERYREQUEST,

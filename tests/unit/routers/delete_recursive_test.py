@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pytest
-import mock
+from unittest import mock
 from odes_search.models import CursorQueryResponse
 
 from starlette.exceptions import HTTPException as starletteHTTPException
@@ -23,7 +23,7 @@ from odes_search.exceptions import UnexpectedResponse as clientHTTPException
 from app.clients import StorageRecordServiceClient
 from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.model.entity_utils import Entity, get_kind, format_kind
-from app.utils import Context
+from app.context import Context
 from tests.unit.test_utils import create_mock_class, make_record
 from tests.unit.test_utils import ctx_fixture
 

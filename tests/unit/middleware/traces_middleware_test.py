@@ -11,20 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import re
-from typing import Optional
-from mock import AsyncMock
 
 from opencensus.trace import base_exporter
-from fastapi.testclient import TestClient
 import pytest
-from starlette.routing import Router, Route, Mount
+from app.wdms_app import DDMS_V2_PATH
 
-from app.clients import SearchServiceClient, StorageRecordServiceClient
-from app.wdms_app import wdms_app, base_app, DDMS_V2_PATH, app_injector
-from app.utils import get_or_create_ctx
-from tests.unit.test_utils import ctx_fixture
+from ..test_utils import gen_all_routes_request
 
 
 # Initialize traces exporter in app with a custom one to allow validating our traces
@@ -44,121 +37,106 @@ class ExporterInTest(base_exporter.Exporter):
                 return sd
 
 
-
-
-@pytest.fixture
-def client(ctx_fixture):
-    with TestClient(wdms_app) as client:
-        yield client
-
-
-@pytest.fixture
-def client_after_startup(ctx_fixture):
-    # using base_app client to trigger startup event.
-    with TestClient(base_app):
-
-        async def build_mock_storage():
-            return AsyncMock()
-
-        async def build_mock_search():
-            return AsyncMock()
-
-        app_injector.register(StorageRecordServiceClient, build_mock_storage)
-        app_injector.register(SearchServiceClient, build_mock_search)
-
-        with TestClient(wdms_app) as client:
-            yield client
-
-
 def build_url(path: str):
     return DDMS_V2_PATH + path
 
 
-def test_about_call_creates_correlation_id_if_absent(client: TestClient):
-
-    # Initialize traces exporter in app, like it is in app's startup_event
-    wdms_app.trace_exporter = ExporterInTest()
+def test_about_call_creates_correlation_id_if_absent(app_configurable_with_testclient):
+    app, client_after_startup = app_configurable_with_testclient(
+        trace_exporter=ExporterInTest(),
+        fake_opendes_authorized_user=False
+    )
 
     # no header -> works fine
-    response = client.get(build_url("/about"))
+    response = client_after_startup.get(build_url("/about"))
     assert response.status_code == 200
 
     # one call was exported, with correlation-id
-    assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
-    spandata = wdms_app.trace_exporter.exported[0]
+    assert len(app.trace_exporter.exported) == 1  # one call => one export
+    spandata = app.trace_exporter.exported[0]
     assert "correlation-id" in spandata.attributes.keys()
     assert spandata.attributes["correlation-id"] is not None
 
 
-def test_about_call_traces_existing_correlation_id(client: TestClient):
-
-    # Initialize traces exporter in app, like it is in app's startup_event
-    wdms_app.trace_exporter = ExporterInTest()
+def test_about_call_traces_existing_correlation_id(app_configurable_with_testclient):
+    app, client_after_startup = app_configurable_with_testclient(
+        trace_exporter=ExporterInTest(),
+        fake_opendes_authorized_user=False
+    )
 
     # no header -> works fine
-    response = client.get(
+    response = client_after_startup.get(
         build_url("/about"), headers={"correlation-id": "some correlation id"}
     )
     assert response.status_code == 200
 
     # one call was exported, with correlation-id
-    assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
-    spandata = wdms_app.trace_exporter.exported[0]
+    assert len(app.trace_exporter.exported) == 1  # one call => one export
+    spandata = app.trace_exporter.exported[0]
     assert "correlation-id" in spandata.attributes.keys()
     assert spandata.attributes["correlation-id"] == "some correlation id"
 
 
 @pytest.mark.parametrize("header_name", ["x-app-id", "data-partition-id"])
-def test_about_call_traces_request_header(header_name, client: TestClient):
-
-    # Initialize traces exporter in app, like it is in app's startup_event
-    wdms_app.trace_exporter = ExporterInTest()
+def test_about_call_traces_request_header(app_configurable_with_testclient, header_name):
+    app, client_after_startup = app_configurable_with_testclient(
+        trace_exporter=ExporterInTest(),
+        fake_opendes_authorized_user=False
+    )
 
     # no header -> works fine
-    response = client.get(build_url("/about"))
+    response = client_after_startup.get(build_url("/about"))
     assert response.status_code == 200
 
     # one call was exported, without header
-    assert len(wdms_app.trace_exporter.exported) == 1  # one call => one export
-    spandata = wdms_app.trace_exporter.exported[0]
+    assert len(app.trace_exporter.exported) == 1  # one call => one export
+    spandata = app.trace_exporter.exported[0]
     assert header_name in spandata.attributes.keys()
     assert spandata.attributes[header_name] is None
 
     # with header -> works as well
-    client.get(build_url("/about"), headers={header_name: "some value"})
+    client_after_startup.get(build_url("/about"), headers={header_name: "some value"})
     assert response.status_code == 200
 
     # a second call was exported, with header
-    assert len(wdms_app.trace_exporter.exported) == 2  # one call => one export
-    spandata = wdms_app.trace_exporter.exported[1]
+    assert len(app.trace_exporter.exported) == 2  # one call => one export
+    spandata = app.trace_exporter.exported[1]
     assert header_name in spandata.attributes.keys()
     assert spandata.attributes[header_name] == "some value"
 
 
-def gen_all_routes_request(rtr: Router, prefix: Optional[str] = None):
-    if prefix is None:
-        prefix = ""
+def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_holding_data, well_v2_record_list, well_v3_record_list):
+    # empty storage client mock required because we use get_record result in route.
+    storage_client_mock = mock_storage_client_holding_data(data=[])
 
-    for route in rtr.routes:
-        if isinstance(route, Mount):
-            # if this is a Mount, we need to recurse on the route
-            yield from gen_all_routes_request(route.app, route.path)
-        elif isinstance(route, Route):
-            for method in route.methods:
-                yield method, prefix + route.path
-        else:
-            RuntimeError(f"{route} routes retrieval not implemented")
-
-
-def test_call_trace_url(client_after_startup: TestClient):
-    # Initialize traces exporter in app, like it is in app's startup_event
-    client_after_startup.app.trace_exporter = ExporterInTest()
+    app, client_after_startup = app_configurable_with_testclient(
+        storage_client_mock=storage_client_mock,
+        trace_exporter=ExporterInTest(),
+        fake_opendes_authorized_user=False
+    )
 
     path_var_rgx = re.compile(r"/{[\w:]*}")
 
+    # special id case
+    well_v2_var_rgx = re.compile(r"/v2/wells/{wellid[:\w]?}")
+    well_v3_var_rgx = re.compile(r"/v3/wells/{wellid[:\w]?}")
+
+    def path_sub(path):
+        path_with_id = path
+        # modify on regex match, or noop
+
+        # special id case -> pick one id from example data
+        path_with_id = re.sub(well_v2_var_rgx, f"/v2/wells/{well_v2_record_list[0].id}", path_with_id)
+        path_with_id = re.sub(well_v3_var_rgx, f"/v3/wells/{well_v3_record_list[0].id}", path_with_id)
+
+        # other cases...
+        path_with_id = re.sub(path_var_rgx, r"/123456", path_with_id)
+
+        return path_with_id
+
     call_count = 0
 
-    # startup event has been called (client has been called in a contest), so all routers should be mounted
+    # startup event has been called (client has been called in a context), so all routers should be mounted
     for method, path in gen_all_routes_request(client_after_startup.app):
 
         # skip routes created on app instantiation
@@ -171,13 +149,12 @@ def test_call_trace_url(client_after_startup: TestClient):
         ]:
             continue
 
-        # replace variable in path with fake id...
-        fake_path = re.sub(path_var_rgx, r"/123456", path)
-        print(fake_path)
-
+        path_with_id = path_sub(path)
         call_count += 1
 
-        client_after_startup.request(method=method, url=fake_path)
+        # Note : most of these will fail because of authentication -> we do not need to mock complex behaviour
+        resp = client_after_startup.request(method=method, url=path_with_id)
+        print(f"{path_with_id} -> {resp.status_code}")
 
         # one call was exported
         assert (
@@ -186,5 +163,5 @@ def test_call_trace_url(client_after_startup: TestClient):
         spandata = client_after_startup.app.trace_exporter.exported[call_count - 1]
 
         # with expected name and route
-        assert spandata.name == fake_path
+        assert spandata.name == path_with_id
         assert spandata.attributes["http.route"] == path

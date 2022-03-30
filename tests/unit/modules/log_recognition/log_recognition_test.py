@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import time
-import mock
+from unittest import mock
 import pytest
 
 from fastapi import Header, status
@@ -28,7 +28,7 @@ from app.clients import *
 from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.modules.log_recognition.routers.log_recognition import family_processor_manager
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import wdms_app, add_modules_routers, remove_modules_routers
 from tests.unit.test_utils import create_mock_class
 
@@ -57,16 +57,6 @@ def client():
                 yield client
             finally:
                 wdms_app.dependency_overrides = previous_overrides  # clean up
-
-
-@pytest.fixture(autouse=True)
-def setup_teardown():
-    # setup
-    # run the test
-    yield
-    # teardown
-    family_processor_manager._processors["opendes"] = None
-    family_processor_manager._catalog_lifetime = 200
 
 
 # Initialize traces exporter in app, like it is in app's startup decorator
@@ -369,11 +359,14 @@ def test_swagger_generation():
     assert swagger_dict is not None
 
 
-# Global module setup / teardown
-def setup_module(nope_logger_fixture):
+@pytest.fixture(autouse=True)
+def log_recognition_enabled(nope_logger_fixture):
     ConfigurationContainer.modules.value = "log_recognition.routers.log_recognition"
     add_modules_routers()
 
-def teardown_module():
+    yield
+
     remove_modules_routers()
+    family_processor_manager._processors["opendes"] = None
+    family_processor_manager._catalog_lifetime = 200
 

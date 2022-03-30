@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, Path, Query, status
 import app.routers.dipset.persistence as persistence
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.dipset.dip_model import Dip
-from app.utils import Context, get_ctx
+from app.context import Context, get_ctx
 from app.helper.traces import TracingRoute
 
 # TODO reference: setup reference type  family, unit ...

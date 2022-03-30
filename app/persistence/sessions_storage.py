@@ -25,7 +25,8 @@ from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
 
 from app.helper.traces import with_trace
-from app.utils import Context, capture_timings
+from app.context import Context
+from app.utils import capture_timings
 
 
 class SessionState(str, Enum):
@@ -96,6 +97,24 @@ class Session(BaseModel):
     @property
     def elapsed_since_update(self) -> float:
         return (datetime.utcnow() - self.updatedTime).total_seconds()
+
+
+class CommitSessionResponse(Session):
+    class Config:
+        validate_assignment = True
+        schema_extra = {
+            "example": {
+                **Session.Config.schema_extra["example"],
+                "version": 123456789,
+            }
+        }
+
+    version: Optional[int] = Field(
+        None,
+        description='Record version in case of successful commit',
+        example=1562066009929332,
+        title='Version Number',
+    )
 
 
 class SessionInternal(BaseModel):

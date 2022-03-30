@@ -24,7 +24,7 @@ from far.family_processor.family_processor import FamilyProcessor as FamilyProce
 from odes_storage.exceptions import UnexpectedResponse
 
 from app.clients.storage_service_client import get_storage_record_service
-from app.utils import Context
+from app.context import Context
 from app.helper.traces import with_trace
 
 

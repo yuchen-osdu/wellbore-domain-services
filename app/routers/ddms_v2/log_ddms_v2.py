@@ -46,7 +46,8 @@ from app.model.model_utils import from_record, to_record
 from app.routers.ddms_v2.persistence import Persistence
 from app.routers.common_parameters import json_orient_parameter, REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.record_utils import fetch_record, update_records
-from app.utils import Context, OpenApiHandler, OpenApiResponse, get_ctx, load_schema_example
+from app.context import Context, get_ctx
+from app.utils import OpenApiHandler, OpenApiResponse, load_schema_example
 from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)

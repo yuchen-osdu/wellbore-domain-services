@@ -27,10 +27,10 @@ from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from app.persistence.sessions_storage import Session
-from app.utils import DaskClient, capture_timings
+from app.utils import capture_timings
 from app.conf import Config
 
-
+from .client import DaskClient
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
 from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span, trace_attributes_current_span

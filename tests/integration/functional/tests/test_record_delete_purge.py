@@ -37,8 +37,9 @@ def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
     if entity_type == 'welllog':
         result = build_request_create_osdu_welllog(False, col).call(with_wdms_env)
     elif entity_type == 'wellboretrajectory':
-        result = build_request_create_osdu_wellboretrajectory(False).call(with_wdms_env)
+        result = build_request_create_osdu_wellboretrajectory(False, col).call(with_wdms_env)
 
+    result.assert_ok()
     resobj = result.get_response_obj()
 
     data = generate_df(col, range(8))

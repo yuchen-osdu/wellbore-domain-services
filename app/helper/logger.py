@@ -22,7 +22,7 @@ from structlog.contextvars import merge_contextvars
 from opencensus.trace import config_integration
 
 from app.conf import Config
-from app.utils import get_or_create_ctx
+from app.context import get_or_create_ctx
 from app.helper.utils import rename_cloud_role_func
 
 _LOGGER = None

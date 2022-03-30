@@ -29,7 +29,7 @@ async def resolve_tenant(data_partition_id: str) -> Tenant:
         return Tenant(
             data_partition_id=data_partition_id,
             project_id='',
-            bucket_name='wdms-osdu'
+            bucket_name=Config.az_bulk_container
         )
 
     if Config.cloud_provider.value == 'ibm':

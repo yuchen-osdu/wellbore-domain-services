@@ -6,9 +6,9 @@ from app.auth.auth import require_opendes_authorized_user
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import app_injector, wdms_app
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)

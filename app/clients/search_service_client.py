@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from app.clients import SearchServiceClient
-from app.utils import Context
+from app.context import Context
 
 
 async def get_search_service(ctx: Context) -> SearchServiceClient:

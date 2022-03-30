@@ -14,7 +14,7 @@
 
 import json
 import pytest
-import mock
+from unittest import mock
 from fastapi import Header, HTTPException
 
 from fastapi.testclient import TestClient
@@ -23,13 +23,13 @@ import starlette.status as status
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.errors.exception_handlers import create_custom_http_exception_handler
 from app.middleware import require_data_partition_id
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import wdms_app
 from app.clients import *
 from app.helper import traces, logger
 from app.auth.auth import require_opendes_authorized_user
 
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class
 from odes_storage.exceptions import (
     UnexpectedResponse as OSDUStorageUnexpectedResponse,
     ResponseValidationError as OSDUStorageResponseValidationError,

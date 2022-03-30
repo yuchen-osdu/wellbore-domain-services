@@ -23,7 +23,9 @@ from app.model.osdu_model import (
 )
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 from app.routers.record_utils import fetch_record
-from app.utils import Context, get_ctx
+from app.context import Context, get_ctx
+
+OSDU_ENTITY_VERSION_REGEX = re.compile(r"^[\w\-\.]+:[^\:]+:[\w\-\.\:\%]+:(?P<version>[0-9]+)$")
 
 OSDU_WELL_VERSION_REGEX = re.compile(r"^([\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+):([0-9]*)$")
 OSDU_WELL_REGEX = re.compile(r"^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$")
@@ -54,6 +56,15 @@ entity_names = {
 
 
 class DMSV3RouterUtils:
+
+    @staticmethod
+    def get_version_from_record_id_version(record_id_version: str) -> int:
+        match = OSDU_ENTITY_VERSION_REGEX.match(record_id_version)
+        if not match:
+            raise RuntimeError(f"{record_id_version} is not a  valid, it must match {OSDU_ENTITY_VERSION_REGEX}")
+
+        return int(match["version"])
+
     @staticmethod
     def is_osdu_wellbore_id(entity_id: str) -> bool:
         return OSDU_WELLBORE_REGEX.match(entity_id) is not None

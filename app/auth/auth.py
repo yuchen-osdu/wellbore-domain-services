@@ -18,7 +18,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.authentication import AuthCredentials
 
 
-from app.utils import Context
+from app.context import Context
 
 
 security = HTTPBearer()

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import httpx
-import mock
+from unittest import mock
 import pytest
 from pytest_httpx import HTTPXMock
 from httpx import (RemoteProtocolError, TimeoutException)
@@ -28,7 +28,7 @@ from app.clients import (
     SearchServiceClient)
 from app.clients.backoff_policy import backoff_policy, _exceptions_type_to_retry
 
-from app.utils import get_or_create_ctx
+from app.context import get_or_create_ctx
 from tests.unit.test_utils import make_record
 from odes_storage.exceptions import ResponseHandlingException
 from app.conf import Config
@@ -36,13 +36,13 @@ from app.conf import Config
 from tests.unit.test_utils import ctx_fixture
 
 @pytest.mark.asyncio
-async def test_make_storage_client(httpx_mock: HTTPXMock, ctx_fixture):
-    host = 'http://my_host:81234'
-    async with make_storage_record_client(host) as client:
+async def test_make_storage_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
+    async with make_storage_record_client(host=local_dev_config.service_host_storage.value,
+                                          timeout=local_dev_config.de_client_config_timeout.value) as client:
         assert isinstance(client, StorageRecordServiceClient)
 
         # ensure host
-        assert client.api_client.host == host
+        assert client.api_client.host == local_dev_config.service_host_storage.value
         # using literal here to make config change visible
         assert client.api_client._async_client.timeout == httpx.Timeout(timeout=10)
 
@@ -54,13 +54,13 @@ async def test_make_storage_client(httpx_mock: HTTPXMock, ctx_fixture):
 
 
 @pytest.mark.asyncio
-async def test_make_search_client(httpx_mock: HTTPXMock, ctx_fixture):
-    host = 'http://my_host:81234'
-    async with make_search_client(host) as client:
+async def test_make_search_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
+    async with make_search_client(host=local_dev_config.service_host_search.value,
+                                  timeout=local_dev_config.de_client_config_timeout.value) as client:
         assert isinstance(client, SearchServiceClient)
 
         # ensure host
-        assert client.api_client.host == host
+        assert client.api_client.host == local_dev_config.service_host_search.value
         assert client.api_client._async_client.timeout == httpx.Timeout(timeout=10)
         get_or_create_ctx()
 

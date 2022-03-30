@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-import mock
+from unittest import mock
 import pytest
 import uuid
 
@@ -32,7 +32,7 @@ from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.wdms_app import wdms_app, app_injector
-from app.utils import Context
+from app.context import Context
 from app.routers.record_utils import fetch_record, update_records
 from tests.unit.test_utils import create_mock_class, ctx_fixture
 

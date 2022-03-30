@@ -1,5 +1,5 @@
 import pytest
-import mock
+from unittest import mock
 from fastapi import Header
 
 from fastapi.testclient import TestClient
@@ -11,9 +11,9 @@ from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.routers.search.search_wrapper import SearchWrapper
-from app.utils import Context
+from app.context import Context
 from app.wdms_app import app_injector, wdms_app
-from tests.unit.test_utils import create_mock_class, nope_logger_fixture
+from tests.unit.test_utils import create_mock_class
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 SearchServiceClientMock = create_mock_class(SearchServiceClient)

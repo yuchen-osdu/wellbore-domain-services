@@ -15,8 +15,8 @@
 import pytest
 import os
 import uuid
-import mock
-from app.utils import Context
+from unittest import mock
+from app.context import Context
 
 import app.conf as conf
 from app.helper.traces import create_exporter
@@ -88,6 +88,8 @@ def test_azure_configuration_checker(azure_config_fixture):
     variables_dict = azure_config.as_printable_dict().keys()
 
     check_environment(azure_config)
+
+    assert azure_config.az_bulk_container == 'wdms-osdu'
 
     # below attribute are gcp only
     assert "default_data_tenant_project_id" not in variables_dict

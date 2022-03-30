@@ -26,9 +26,8 @@ from pandas.testing import assert_frame_equal
 from tests.unit.conftest import do_nothing, set_default_partition
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 
-from tests.unit.test_utils import nope_logger_fixture
 
-from app.routers.bulk.utils import set_welllog_data_consistency_check
+from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
 
 Definitions = {
     'WellLog': {
@@ -164,6 +163,7 @@ def dasked_test_app_without_consistency(dasked_test_app):
     # disable wellLog data consistency check for tests
     previous_overrides = wdms_app.dependency_overrides
     app.dependency_overrides[set_welllog_data_consistency_check] = do_nothing
+    app.dependency_overrides[set_trajectory_data_consistency_check] = do_nothing
     yield app
     app.dependency_overrides = previous_overrides
 
@@ -407,6 +407,7 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
     commit_response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
     assert commit_response.status_code == 200
     assert commit_response.json()['state'] == SessionState.Committed
+    assert commit_response.json()['version']
     return created_dfs
 
 
@@ -536,6 +537,7 @@ def test_abandon_session_with_data_push_data_again(dasked_test_app_without_consi
                                           json={'state': 'abandon'})
     assert abort_session_response.status_code == 200
     assert abort_session_response.json()['state'] == SessionState.Abandoned
+    assert abort_session_response.json()['version'] == None
 
     chunk_2 = generate_df(['MD', 'X'], range(11, 20))
     chunk2_response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
@@ -1309,7 +1311,7 @@ def test_session_update_previous_storage_version(dasked_test_app_without_consist
     assert list(df['X'].values) == [10, 11, 20, 21]
 
 
-import mock
+from unittest import mock
 from app.bulk_persistence.dask.traces import TracingMode
 from app.persistence.sessions_storage import SessionsStorage, SessionState, SessionUpdateMode
 

@@ -2,10 +2,11 @@ import pytest
 from app.routers.bulk.bulk_routes import router
 from app.routers.ddms_v2 import log_ddms_v2
 from app.routers.ddms_v3 import wellbore_trajectory_ddms_v3, welllog_ddms_v3
-from app.wdms_app import ALPHA_APIS_PREFIX, DDMS_V2_PATH, DDMS_V3_PATH
+from app.wdms_app import wdms_app, ALPHA_APIS_PREFIX, DDMS_V2_PATH, DDMS_V3_PATH
 from fastapi.testclient import TestClient
-from tests.unit.test_utils import nope_logger_fixture
 from tests.unit.routers.chunking_test import dasked_test_app
+
+from ..test_utils import gen_all_routes_request
 
 base_paths = [
     DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
@@ -32,12 +33,6 @@ def dependencies_check_app(dasked_test_app):
     dasked_test_app.dependency_overrides = {}
 
 
-def _get_all_wdms_app_routes():
-    """ Retrieve all routes of wdms app """
-    from app.wdms_app import wdms_app
-    return [(route.path, method) for route in wdms_app.routes for method in route.methods]
-
-
 def _is_trajectories_v3_route(route_url: str):
     """ Return true if given route_url is OSDU Trajectory v3 api """
     return route_url.startswith(DDMS_V3_PATH + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH)
@@ -48,7 +43,7 @@ def _is_welllogs_v3_route(route_url: str):
     return route_url.startswith(DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH)
 
 
-@pytest.mark.parametrize("route_url,method", _get_all_wdms_app_routes())
+@pytest.mark.parametrize("route_url,method", list(gen_all_routes_request(wdms_app)))
 def test_ensure_bulk_apis_dependencies_injection(dependencies_check_app, route_url, method):
     client = dependencies_check_app
 

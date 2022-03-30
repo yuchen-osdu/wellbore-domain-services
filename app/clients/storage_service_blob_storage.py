@@ -16,9 +16,12 @@ import hashlib
 import uuid
 from asyncio import gather, iscoroutinefunction
 from typing import List
+import httpx
 
 from app.model import model_utils
-from fastapi import HTTPException, status
+
+from odes_storage import UnexpectedResponse
+
 from odes_storage.models import (CreateUpdateRecordsResponse, Record,
                                  RecordVersions)
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -115,7 +118,7 @@ class StorageRecordServiceBlobStorage:
         # manual for now
         return CreateUpdateRecordsResponse(recordCount=len(record_list),
                                            recordIds=[record.id for record in record_list],
-                                           recordIdVersions=[record.version for record in record_list],
+                                           recordIdVersions=[f"{record.id}:{record.version}" for record in record_list],
                                            skipped_record_ids=[])
 
     async def get_record_version(self,
@@ -134,7 +137,13 @@ class StorageRecordServiceBlobStorage:
                 object_name)
             return Record.parse_raw(bin_data)
         except (FileNotFoundError, ResourceNotFoundException):
-            raise HTTPException(status_code=404, detail="Item not found")
+            raise UnexpectedResponse(
+                status_code=404,
+                reason_phrase="Item not found",
+                # not sure what to put here at this time
+                content="".encode(encoding="utf-8"),
+                headers=httpx.Headers(),
+            )
 
     async def get_all_record_versions(self,
                                       id: str,
@@ -167,7 +176,24 @@ class StorageRecordServiceBlobStorage:
                     Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
                     object_name)
             except FileNotFoundError:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+                raise UnexpectedResponse(
+                    status_code=404,
+                    reason_phrase="Item not found",
+                    # not sure what to put here at this time
+                    content="".encode(encoding="utf-8"),
+                    headers=httpx.Headers(),
+                )
+
+    async def delete_records(self, data_partition_id: str, request_body: List[str]) -> None:
+        await gather(*[
+            self._storage.delete(
+                Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
+                record_id
+            )
+            for record_id in request_body
+        ], return_exceptions=False)  # return_exceptions False means will throw if a single error occurs
+
+        return httpx.Response(status_code=204)
 
     async def get_schema(self, kind, data_partition_id=None, appkey=None, token=None, *args, **kwargs):
         raise NotImplementedError('StorageServiceBlobStorage.get_schema')
