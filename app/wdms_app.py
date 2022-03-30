@@ -130,7 +130,7 @@ def make_entity_type_dependency(entity_type: Entity, version: str):
 async def startup_event():
     service_name = Config.service_name.value
 
-    logger.init_logger(service_name=service_name)
+    logger.init_logger(service_name=service_name, config=Config)
 
     #check python version >=3.8
     assert sys.version_info.major == 3 and sys.version_info.minor >= 8, 'Python version required >=3.8'
