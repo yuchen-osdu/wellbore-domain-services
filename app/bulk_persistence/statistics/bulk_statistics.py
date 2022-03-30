@@ -1,4 +1,4 @@
-from typing import List, Callable
+from typing import List, Callable, Iterable
 import itertools
 import pandas as pd
 
@@ -12,9 +12,14 @@ from ..dask import storage_path_builder as path_builder
 from .exceptions import ComputationRunningError, RequestedCurvesError, StatisticsNotFoundError
 
 
-def grouper(n, iterable):
+def grouper(n, container: Iterable):
+    """
+    Return generator over a sub-list of 'n' elements of the given 'container'
+    >>> list(grouper(4,['A', 'B', 'C', 'D', 'E', 'F']))
+    returns: [('A', 'B', 'C', 'D'), ('E', 'F')]
+    """
     n = int(n)
-    it = iter(iterable)
+    it = iter(container)
     while True:
         chunk = tuple(itertools.islice(it, n))
         if not chunk:
