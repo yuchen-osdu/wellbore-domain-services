@@ -59,8 +59,7 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
                                 api_key=api_key)
 
         Context.clear_current()
-        ctx = Context(logger=get_logger(),
-                      correlation_id=correlation_id,
+        ctx = Context(correlation_id=correlation_id,
                       request_id=request_id,
                       dev_mode=self._config.get('dev_mode'),
                       partition_id=partition_id,

@@ -20,7 +20,7 @@ async def test_should_start_and_leave_cleared_context(local_dev_config):
     type(request_mock).url = PropertyMock(return_value=URL())
 
     properties_to_check = [
-        'tracer', 'logger', 'correlation_id', 'request_id', 'dev_mode', 'auth', 'partition_id',
+        'tracer', 'correlation_id', 'request_id', 'dev_mode', 'auth', 'partition_id',
         'app_key', 'api_key', 'user', 'app_injector', 'x_user_id']
 
     # GIVEN set current with values and request with no headers
@@ -62,7 +62,7 @@ async def test_should_leave_cleared_context_in_case_of_exception(local_dev_confi
     type(request_mock).url = PropertyMock(return_value=URL())
 
     properties_to_check = [
-        'tracer', 'logger', 'correlation_id', 'request_id', 'dev_mode', 'auth', 'partition_id',
+        'tracer', 'correlation_id', 'request_id', 'dev_mode', 'auth', 'partition_id',
         'app_key', 'api_key', 'user', 'app_injector', 'x_user_id']
 
     # GIVEN set current with values and request with no headers

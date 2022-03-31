@@ -25,8 +25,8 @@ from logging import INFO
 from aiohttp import ClientSession
 import dask
 
+from .helper.logger import get_logger
 from .bulk_persistence import get_temp_dir
-from .context import Context
 
 POOL_EXECUTOR_MAX_WORKER = 4
 
@@ -56,7 +56,7 @@ def load_schema_example(file_name: str):
 
 def make_log_captured_timing_handler(level=INFO):
     def log_captured_timing(tag, wall, cpu):
-        Context.current().logger.log(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
+        get_logger().log(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
 
     return log_captured_timing
 

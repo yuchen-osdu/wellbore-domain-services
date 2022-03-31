@@ -33,6 +33,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 from app.context import get_ctx
+from app.helper.logger import get_logger
 
 OSDU_DATA_ECOSYSTEM_SEARCH = "osdu-data-ecosystem-search"
 OSDU_DATA_ECOSYSTEM_STORAGE = "osdu-data-ecosystem-storage"
@@ -54,7 +55,7 @@ async def http_search_error_handler(request: Request, exc: OSDUSearchException) 
     """
     Catches and handles Exceptions raised by os-python-client
     """
-    get_ctx().logger.exception(f"http_search_error_handler - url: '{request.url}'")
+    get_logger().exception(f"http_search_error_handler - url: '{request.url}'")
     if isinstance(exc, OSDUSearchUnexpectedResponse):
         status = exc.status_code
         errors = [load_content(exc.content)]
@@ -75,7 +76,7 @@ async def http_storage_error_handler(request: Request, exc: OSDUStorageException
     """
     Catches and handles Exceptions raised by os-python-client
     """
-    get_ctx().logger.exception(f"http_storage_error_handler - url: '{request.url}'")
+    get_logger().exception(f"http_storage_error_handler - url: '{request.url}'")
     if isinstance(exc, OSDUStorageUnexpectedResponse) or isinstance(exc, OSDUStorageResponseValidationError):
         status = exc.status_code
         errors = [load_content(exc.content)]
@@ -93,7 +94,7 @@ async def http_partition_error_handler(request: Request, exc: OSDUPartitionExcep
     """
     Catches and handles Exceptions raised by os-python-client
     """
-    get_ctx().logger.exception(f"http_partition_error_handler - url: '{request.url}'")
+    get_logger().exception(f"http_partition_error_handler - url: '{request.url}'")
 
     return JSONResponse({"origin": OSDU_DATA_ECOSYSTEM_PARTITION, "errors": [exc.message]}, 
                         status_code=exc.status_code)
