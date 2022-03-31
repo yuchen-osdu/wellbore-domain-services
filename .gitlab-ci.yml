@@ -240,10 +240,14 @@ osdu-gcp-test-python:
 osdu-gcp-dev2-test-python:
   extends: .osdu-gcp-dev2-variables
   stage: integration
-  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  image: python:3.8
   needs: ["osdu-gcp-dev2-deploy-deployment"]
   script:
-    - apt-get install -y python3-venv
+    - bash
+    - curl https://sdk.cloud.google.com > install.sh
+    - bash install.sh --disable-prompts
+    - source /root/google-cloud-sdk/completion.bash.inc
+    - source /root/google-cloud-sdk/path.bash.inc
     - python3 -m venv env
     - source env/bin/activate
     - pip install --upgrade pip
