@@ -9,8 +9,7 @@ from app.model.osdu_model import WellboreTrajectory110
 from app.helper.traces import with_trace
 from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
 from app.bulk_persistence.dask.dask_bulk_storage import BulkRecordNotFound
-from app.bulk_persistence import DaskBulkStorage
-from app.bulk_persistence.dask.traces import submit_with_trace
+from app.bulk_persistence import DaskBulkStorage, submit_with_trace
 from app.model.model_utils import from_record
 from app.context import get_ctx
 

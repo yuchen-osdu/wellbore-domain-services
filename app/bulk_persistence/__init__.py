@@ -21,7 +21,7 @@ from .dask.storage_path_builder import hash_record_id
 from .dask.traces import trace_dataframe_attributes, submit_with_trace, trace_attributes_root_span
 from .dataframe_persistence import create_and_store_dataframe, get_dataframe, download_bulk
 from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerSync
-from .dataframe_validators import auto_cast_columns_to_string, DataFrameValidationFunc, no_validation
+from .dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, DataFrameValidationFunc, no_validation
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes, MimeType
 from .tenant_provider import resolve_tenant
