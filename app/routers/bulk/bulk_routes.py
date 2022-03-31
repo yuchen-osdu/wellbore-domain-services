@@ -63,13 +63,10 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
     get_dataframe, download_bulk,
     DaskBulkStorage,
     MimeTypes, MimeType,
-    trace_dataframe_attributes, trace_attributes_root_span
+    trace_dataframe_attributes, trace_attributes_root_span,
+    BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
+    DataConsistencyChecks
                                   )
-from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
-
-
-from app.bulk_persistence import DataConsistencyChecks
-
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 

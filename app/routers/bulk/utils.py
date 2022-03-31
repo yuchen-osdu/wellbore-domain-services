@@ -11,11 +11,11 @@ import dask.dataframe as dd
 import pandas as pd
 from pyarrow.lib import ArrowInvalid
 
-from app.bulk_persistence.dask.errors import FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.bulk_persistence import DaskBulkStorage, DataframeSerializerAsync, \
     MimeTypes, MimeType, JSONOrient, trace_dataframe_attributes, capture_timings, \
     auto_cast_columns_to_string, columns_type_must_be_string, \
-    no_validation, DataFrameValidationFunc
+    no_validation, DataFrameValidationFunc, \
+    FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import get_ctx, Context
 from app.utils import OpenApiHandler
