@@ -16,17 +16,22 @@ import pytest
 import os
 import uuid
 from unittest import mock
-from app.context import Context
 
-import app.conf as conf
 from app.helper.traces import create_exporter
-from app.conf import ConfigurationContainer, Config, check_environment, validator_path_must_exist, \
+from app.conf import ConfigurationContainer, check_environment, validator_path_must_exist, \
     cloud_provider_additional_environment
 
 
 @pytest.fixture
 def testing_config():
-    return Config
+    config = ConfigurationContainer.with_load_all()
+
+    # patching Config in app.conf module, so it is found by other modules
+    with mock.patch('app.conf.Config', config):
+        # returning the config for explicit use in tests.
+        yield config
+
+    # mock.patch will restore original Config on exiting context, after fixture use.
 
 
 @pytest.fixture()
@@ -38,14 +43,16 @@ def gcp_config_fixture():
     environment_dict['SERVICE_HOST_STORAGE'] = 'https://test-endpoint/api/storage'
     environment_dict['SERVICE_HOST_SEARCH'] = 'https://test-endpoint/api/search'
 
-    conf.Config = ConfigurationContainer.with_load_all(
+    config = ConfigurationContainer.with_load_all(
         environment_dict=environment_dict,
         contextual_loader=cloud_provider_additional_environment)
 
-    yield conf.Config, provider_name
+    # patching Config in app.conf module, so it is found by other modules
+    with mock.patch('app.conf.Config', config):
+        # returning the config for explicit use in tests.
+        yield config
 
-    # restore initial config
-    ConfigurationContainer.with_load_all(environment_dict=os.environ, contextual_loader=None)
+    # mock.patch will restore original Config on exiting context, after fixture use.
 
 
 @pytest.fixture()
@@ -59,20 +66,22 @@ def azure_config_fixture():
     environment_dict['SERVICE_HOST_SEARCH'] = 'https://test-endpoint/api/search'
     environment_dict['USE_PARTITION_SERVICE'] = 'disabled'
 
-    conf.Config = ConfigurationContainer.with_load_all(
+    config = ConfigurationContainer.with_load_all(
         environment_dict=environment_dict,
         contextual_loader=cloud_provider_additional_environment)
 
-    yield conf.Config, provider_name
+    # patching Config in app.conf module, so it is found by other modules
+    with mock.patch('app.conf.Config', config):
+        # returning the config for explicit use in tests.
+        yield config
 
-    # restore initial config
-    ConfigurationContainer.with_load_all(environment_dict=os.environ, contextual_loader=None)
+    # mock.patch will restore original Config on exiting context, after fixture use.
 
 
 def test_gcp_configuration_checker(gcp_config_fixture):
-    gcp_config, provider_name = gcp_config_fixture
+    gcp_config = gcp_config_fixture
 
-    assert gcp_config.cloud_provider.value == provider_name
+    assert gcp_config.cloud_provider.value == "gcp"
     variables_dict = gcp_config.as_printable_dict()
 
     assert "default_data_tenant_project_id" in variables_dict.keys()
@@ -82,7 +91,7 @@ def test_gcp_configuration_checker(gcp_config_fixture):
 
 
 def test_azure_configuration_checker(azure_config_fixture):
-    azure_config, provider_name = azure_config_fixture
+    azure_config = azure_config_fixture
 
     assert azure_config.cloud_provider.value == 'az'
     variables_dict = azure_config.as_printable_dict().keys()

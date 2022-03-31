@@ -13,6 +13,7 @@ from unittest.mock import AsyncMock, create_autospec
 
 from fastapi.testclient import TestClient
 
+from app.conf import ConfigurationContainer, cloud_provider_additional_environment
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware.basic_context_middleware import require_data_partition_id
 from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client
@@ -23,23 +24,23 @@ from app.wdms_app import base_app, wdms_app, app_injector
 
 @pytest.fixture(scope="module")
 def local_dev_config():
-    # local import
-    from app.conf import Config
-
-    # set config to a local dev config (assumption for running unit tests)
-    Config.dev_mode.value = True
-    Config.cloud_provider.value = "local"
-    Config.service_host_search.value = "https://test-endpoint/api/search"
-    Config.service_host_storage.value = "https://test-endpoint/api/storage"
-    Config.modules.value = "log_recognition.routers.log_recognition"
-    # This one is necessary as long as we have can_run() in modules dependending on it
-    Config.environment_name.value = "evd"
+    config = ConfigurationContainer.with_load_all(environment_dict={
+        # set config to a local dev config (assumption for running unit tests)
+        "OS_WELLBORE_DDMS_DEV_MODE": "True",
+        "CLOUD_PROVIDER": "local",
+        "SERVICE_HOST_STORAGE": "https://test-endpoint/api/storage",
+        "SERVICE_HOST_SEARCH": "https://test-endpoint/api/search",
+        "MODULES": "log_recognition.routers.log_recognition",
+        # This one is necessary as long as we have can_run() in modules dependending on it
+        "ENVIRONMENT_NAME": "evd"
+    }, contextual_loader=cloud_provider_additional_environment)
 
     # patching Config in app.conf module, so it is found by other modules
-    with mock.patch('app.conf') as app_conf:
-        app_conf.Config = Config
+    with mock.patch('app.conf.Config', config):
+        # returning the config for explicit use in tests.
+        yield config
 
-        yield Config
+    # mock.patch will restore original Config on exiting context, after fixture use.
 
 
 @pytest.fixture
