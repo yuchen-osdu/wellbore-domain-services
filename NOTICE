@@ -7,50 +7,23 @@ Apache-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- aiobotocore (from https://github.com/aio-libs/aiobotocore)
-- aiohttp (from https://github.com/aio-libs/aiohttp/)
-- async-timeout (from https://github.com/aio-libs/async_timeout/)
-- boto3 (from https://github.com/boto/boto3)
-- botocore (from https://github.com/boto/botocore)
-- coverage (from https://coverage.readthedocs.io)
-- cryptography (from https://github.com/pyca/cryptography)
-- google-api-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
-- google-auth (from https://github.com/googleapis/google-auth-library-python)
+- aiohttp (from https://github.com/aio-libs/aiohttp)
+- coverage (from https://github.com/nedbat/coveragepy)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
-- google-cloud-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
-- google-cloud-monitoring (from https://github.com/GoogleCloudPlatform/google-cloud-python)
-- google-cloud-trace (from https://github.com/googleapis/googleapis)
+- google-cloud-core (from https://github.com/googleapis/python-cloud-core)
 - googleapis-common-protos (from https://github.com/googleapis/googleapis)
 - grpcio (from https://grpc.io)
-- importlib-metadata (from http://importlib-metadata.readthedocs.io/)
-- jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
+- importlib-metadata (from )
 - msgpack (from http://msgpack.org/)
 - multidict (from https://github.com/aio-libs/multidict/)
-- numpy (from http://www.numpy.org)
-- openapi-spec-validator (from https://github.com/p1c2u/openapi-spec-validator)
-- opencensus (from https://github.com/census-instrumentation/opencensus-python)
-- opencensus-context (from https://github.com/census-instrumentation/opencensus-python/tree/master/context/opencensus-context)
-- opencensus-ext-azure (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure)
-- opencensus-ext-logging (from )
-- opencensus-ext-ocagent (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent)
-- opencensus-ext-stackdriver (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver)
-- opencensus-proto (from https://github.com/census-instrumentation/opencensus-proto/tree/master/gen-python)
-- packaging (from https://github.com/pypa/packaging)
-- pandas (from http://pandas.pydata.org)
-- pep517 (from https://github.com/takluyver/pep517)
-- proto-plus (from https://github.com/googleapis/proto-plus-python.git)
+- numpy (from )
+- pandas (from https://pandas.pydata.org)
 - pyarrow (from https://arrow.apache.org/)
 - pytest-asyncio (from https://github.com/pytest-dev/pytest-asyncio)
-- pytest-dependency (from https://github.com/RKrahl/pytest-dependency)
-- python-dateutil (from https://dateutil.readthedocs.org)
-- python-multipart (from http://github.com/andrew-d/python-multipart)
-- requests (from https://requests.readthedocs.io)
 - rfc3986 (from https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
-- s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio)
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
-- structlog (from http://www.structlog.org/)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - tornado (from http://www.tornadoweb.org/)
 - yarl (from https://github.com/aio-libs/yarl/)
@@ -64,9 +37,8 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
-- numpy (from http://www.numpy.org)
-- packaging (from https://github.com/pypa/packaging)
-- ply (from http://www.dabeaz.com/ply/)
+- numpy (from )
+- pandas (from https://pandas.pydata.org)
 - pyasn1 (from http://sourceforge.net/projects/pyasn1/)
 - pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
 - pycparser (from https://github.com/eliben/pycparser)
@@ -79,17 +51,12 @@ BSD-3-Clause
 The following software have components provided under the terms of this license:
 
 - HeapDict (from http://stutzbachenterprises.com/)
+- MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
 - adlfs (from https://github.com/hayesgb/adlfs/)
-- asgiref (from http://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - colorama (from https://github.com/tartley/colorama)
-- cryptography (from https://github.com/pyca/cryptography)
-- dask (from http://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
-- distributed (from https://distributed.readthedocs.io/en/latest/)
-- fsspec (from http://github.com/intake/filesystem_spec)
-- gcsfs (from https://github.com/dask/gcsfs)
 - grpcio (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore)
@@ -98,29 +65,21 @@ The following software have components provided under the terms of this license:
 - isodate (from http://cheeseshop.python.org/pypi/isodate)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
-- numpy (from http://www.numpy.org)
+- numpy (from )
 - oauthlib (from https://github.com/idan/oauthlib)
-- openapi-schema-validator (from https://github.com/p1c2u/openapi-schema-validator)
-- packaging (from https://github.com/pypa/packaging)
-- pandas (from http://pandas.pydata.org)
+- pandas (from https://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- pip-tools (from http://pypi.python.org/pypi/pip-tools/1.8.1rc3)
-- ply (from http://www.dabeaz.com/ply/)
+- pip-tools (from https://github.com/jazzband/pip-tools/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
 - pyarrow (from https://arrow.apache.org/)
 - pyasn1 (from http://sourceforge.net/projects/pyasn1/)
 - pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
 - pycparser (from https://github.com/eliben/pycparser)
+- pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
-- python-dateutil (from https://dateutil.readthedocs.org)
-- python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
-- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
-- s3fs (from http://github.com/dask/s3fs/)
-- starlette (from https://github.com/encode/starlette)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn)
 - wrapt (from https://github.com/GrahamDumpleton/wrapt)
 - zict (from http://github.com/dask/zict/)
 
@@ -130,14 +89,8 @@ CC-BY-4.0
 The following software have components provided under the terms of this license:
 
 - adlfs (from https://github.com/hayesgb/adlfs/)
-- dask (from http://github.com/dask/dask/)
-- distributed (from https://distributed.readthedocs.io/en/latest/)
-- fsspec (from http://github.com/intake/filesystem_spec)
-- gcsfs (from https://github.com/dask/gcsfs)
-- numpy (from http://www.numpy.org)
-- pandas (from http://pandas.pydata.org)
+- numpy (from )
 - partd (from http://github.com/dask/partd/)
-- s3fs (from http://github.com/dask/s3fs/)
 - toolz (from http://github.com/pytoolz/toolz/)
 
 ========================================================================
@@ -145,14 +98,21 @@ CC-BY-SA-3.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- numpy (from http://www.numpy.org)
+- numpy (from )
+
+========================================================================
+CC0-1.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- pandas (from https://pandas.pydata.org)
 
 ========================================================================
 GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 
 ========================================================================
@@ -167,9 +127,8 @@ GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- coverage (from https://coverage.readthedocs.io)
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
-- pyparsing (from http://pyparsing.wikispaces.com/)
 - rfc3986 (from https://rfc3986.readthedocs.org)
 
 ========================================================================
@@ -178,7 +137,6 @@ ISC
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 
 ========================================================================
 Info-ZIP
@@ -188,19 +146,11 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 
 ========================================================================
-JSON
-========================================================================
-The following software have components provided under the terms of this license:
-
-- python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
-
-========================================================================
 LGPL-2.1-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - chardet (from https://github.com/chardet/chardet)
-- charset-normalizer (from https://github.com/ousret/charset_normalizer)
 
 ========================================================================
 LGPL-2.1-or-later
@@ -223,67 +173,48 @@ MIT
 The following software have components provided under the terms of this license:
 
 - PyJWT (from http://github.com/jpadilla/pyjwt)
-- PyYAML (from http://pyyaml.org/wiki/PyYAML)
+- PyYAML (from )
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
-- aiohttp (from https://github.com/aio-libs/aiohttp/)
-- aioitertools (from https://github.com/jreese/aioitertools)
-- aioredis (from https://github.com/aio-libs/aioredis)
-- anyio (from https://pypi.org/project/anyio/3.3.0/)
-- asgiref (from http://github.com/django/asgiref/)
-- atomicwrites (from https://github.com/untitaker/python-atomicwrites)
-- attrs (from https://attrs.readthedocs.io/)
+- aiohttp (from https://github.com/aio-libs/aiohttp)
+- attrs (from https://www.attrs.org/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
-- azure-core (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/core/azure-core)
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
-- azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/identity/azure-identity)
-- azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
-- azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-certificates)
-- azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
-- azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
 - azure-storage-blob (from https://github.com/Azure/azure-storage-python)
-- backoff (from https://github.com/litl/backoff)
-- botocore (from https://github.com/boto/botocore)
+- backoff (from )
 - cachetools (from https://github.com/tkem/cachetools)
-- cffi (from http://cffi.readthedocs.org)
-- charset-normalizer (from https://github.com/ousret/charset_normalizer)
-- coverage (from https://coverage.readthedocs.io)
-- fastapi (from https://github.com/tiangolo/fastapi)
+- cffi (from )
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
-- h11 (from https://github.com/python-hyper/h11)
+- h11 (from )
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig)
 - jmespath (from https://github.com/jmespath/jmespath.py)
-- jsonschema (from http://github.com/Julian/jsonschema)
-- mockito (from https://github.com/kaste/mockito-python)
+- jsonschema (from )
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
-- msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
 - msrest (from https://github.com/Azure/msrest-for-python)
-- munch (from http://github.com/Infinidat/munch)
 - natsort (from https://github.com/SethMMorton/natsort)
-- numpy (from http://www.numpy.org)
-- pandas (from http://pandas.pydata.org)
-- pep517 (from https://github.com/takluyver/pep517)
-- pluggy (from https://github.com/pytest-dev/pluggy)
+- numpy (from )
+- ordered-set (from http://github.com/LuminosoInsight/ordered-set)
+- pandas (from https://pandas.pydata.org)
+- pluggy (from )
 - py (from http://pylib.readthedocs.org/)
 - pyarrow (from https://arrow.apache.org/)
-- pydantic (from https://github.com/samuelcolvin/pydantic)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
-- pytest (from http://pytest.org)
+- pytest (from https://docs.pytest.org/en/latest/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
-- pytest-httpx (from https://colin-b.github.io/pytest_httpx/)
 - pytest-mock (from https://github.com/pytest-dev/pytest-mock/)
-- python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
-- python-ulid (from https://github.com/mdomke/python-ulid)
 - pytz (from http://pythonhosted.org/pytz)
-- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 - six (from http://pypi.python.org/pypi/six/)
 - sniffio (from https://github.com/python-trio/sniffio)
-- structlog (from http://www.structlog.org/)
 - toml (from https://github.com/uiri/toml)
-- tomli (from https://pypi.org/project/tomli/1.2.1/)
 - urllib3 (from https://urllib3.readthedocs.io/)
-- xmltodict (from https://github.com/martinblech/xmltodict)
-- zipp (from https://github.com/jaraco/zipp)
+
+========================================================================
+MIT-CMU
+========================================================================
+The following software have components provided under the terms of this license:
+
+- pyparsing (from http://pyparsing.wikispaces.com/)
 
 ========================================================================
 MPL-2.0
@@ -291,21 +222,20 @@ MPL-2.0
 The following software have components provided under the terms of this license:
 
 - certifi (from http://certifi.io/)
-- charset-normalizer (from https://github.com/ousret/charset_normalizer)
 
 ========================================================================
 NCSA
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- numpy (from http://www.numpy.org)
+- numpy (from )
 
 ========================================================================
 OPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- numpy (from http://www.numpy.org)
+- numpy (from )
 
 ========================================================================
 OpenSSL
@@ -319,16 +249,10 @@ Python-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- async-timeout (from https://github.com/aio-libs/async_timeout/)
-- coverage (from https://coverage.readthedocs.io)
-- distributed (from https://distributed.readthedocs.io/en/latest/)
-- google-auth (from https://github.com/googleapis/google-auth-library-python)
+- coverage (from https://github.com/nedbat/coveragepy)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
-- numpy (from http://www.numpy.org)
-- pandas (from http://pandas.pydata.org)
-- ply (from http://www.dabeaz.com/ply/)
-- portalocker (from https://github.com/WoLpH/portalocker)
-- python-dateutil (from https://dateutil.readthedocs.org)
+- numpy (from )
+- pandas (from https://pandas.pydata.org)
 - pytz (from http://pythonhosted.org/pytz)
 - rsa (from https://stuvel.eu/rsa)
 - sniffio (from https://github.com/python-trio/sniffio)
@@ -340,7 +264,14 @@ SunPro
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- numpy (from http://www.numpy.org)
+- numpy (from )
+
+========================================================================
+TCL
+========================================================================
+The following software have components provided under the terms of this license:
+
+- pandas (from https://pandas.pydata.org)
 
 ========================================================================
 Unlicense
@@ -348,20 +279,6 @@ Unlicense
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-
-========================================================================
-WTFPL
-========================================================================
-The following software have components provided under the terms of this license:
-
-- jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
-
-========================================================================
-X11
-========================================================================
-The following software have components provided under the terms of this license:
-
-- numpy (from http://www.numpy.org)
 
 ========================================================================
 ZPL-2.1
@@ -376,18 +293,15 @@ Zlib
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-- numpy (from http://www.numpy.org)
+- numpy (from )
 
 ========================================================================
 public-domain
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- botocore (from https://github.com/boto/botocore)
 - grpcio (from https://grpc.io)
-- numpy (from http://www.numpy.org)
-- pandas (from http://pandas.pydata.org)
+- numpy (from )
 - py (from http://pylib.readthedocs.org/)
 - pytz (from http://pythonhosted.org/pytz)
-
 
