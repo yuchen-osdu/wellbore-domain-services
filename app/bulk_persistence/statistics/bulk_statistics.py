@@ -79,7 +79,7 @@ class BulkStatistics:
     def _compute(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
 
         bulk_df = self._fetch_bulks(catalog, columns)
-        computed_stats = bulk_df.describe(datetime_is_numeric=True).transpose()
+        computed_stats = bulk_df.describe(datetime_is_numeric=True).astype('string').transpose()
 
         self._save(computed_stats, record_id, bulk_uri)
 
