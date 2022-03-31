@@ -116,6 +116,7 @@ class BulkStatistics:
             started_tasks.append(f)
 
         get_logger().info(f"compute statistics: started_tasks {len(started_tasks)}.")
+        return started_tasks
 
     def _fetch_statistics(self, bulk_statistics_path: str, columns: List[str]):
 

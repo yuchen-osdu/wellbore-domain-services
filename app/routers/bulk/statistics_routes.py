@@ -204,7 +204,7 @@ async def compute_bulk_statistics(
         raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
 
     try:
-        return await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id)
+        await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id)
     except statistics_exceptions.ComputationRunningError as e:
         get_logger().exception("compute_bulk_statistics() has raised an exception")
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
