@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import numpy as np
 
 import mock
 import pandas as pd
@@ -52,44 +53,41 @@ async def bulk_stats_fixture(app_initialized_with_testclient, tmp_path, nope_log
     local_dask.client.close()
 
 
-@pytest.fixture()
-async def bulk_stats_fixture_with_data(bulk_stats_fixture):
+def generate_typed_df(columns, index):
+
+    def gen_values(col_name, size):
+        if col_name.startswith('float'):
+            return np.random.random_sample(size=size)
+        if col_name.startswith('str'):
+            return [f'string_value_{i}' for i in range(size)]
+        if col_name.startswith('bool'):
+            return np.random.choice(a=[False, True], size=size)
+        if col_name.startswith('date'):
+            return pd.date_range(start='1/1/2022', periods=size)
+        return np.random.randint(-100, 1000, size=size)
+
+    df = pd.DataFrame({c: gen_values(c, len(index))
+                       for c in columns}, index=index)
+    return df
+
+
+async def add_bulk_data_to_fixture(bulk_stats_fixture, typed_df):
     bulk_statistics, dask_blob_storage = bulk_stats_fixture
-    session = create_test_session()
+    session = create_test_bulk_session()
 
-    from tests.unit.generate_data import generate_df
-    import numpy as np
-    def generate_df_typed(columns, index):
-
-        def gen_values(col_name, size):
-            if col_name.startswith('float'):
-                return np.random.random_sample(size=size)
-            if col_name.startswith('str'):
-                return [f'string_value_{i}' for i in range(size)]
-            if col_name.startswith('bool'):
-                return np.random.choice(a=[False, True], size=size)
-            if col_name.startswith('date'):
-                return pd.date_range(start='1/1/2022', periods=size)
-            return np.random.randint(-100, 1000, size=size)
-
-        df = pd.DataFrame({c: gen_values(c, len(index))
-                           for c in columns}, index=index)
-        return df
-
-    typed_df = generate_df_typed(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))
     parquet_data = typed_df.to_parquet(engine='pyarrow')
 
     await dask_blob_storage.add_chunk_in_session(parquet_data, MimeTypes.PARQUET, no_validation, session.recordId, session.id)
     new_bulk_id = await dask_blob_storage.session_commit(session)
     assert new_bulk_id
 
-    yield bulk_statistics, session.recordId, new_bulk_id
+    return bulk_statistics, session.recordId, new_bulk_id
 
     # bob = await dask_blob_storage.load_bulk(session.recordId, new_bulk_id)
     # print(bob)
 
 
-def create_test_session() -> Session:
+def create_test_bulk_session() -> Session:
     record_id = "my-record-id"
     session_id = "my-session-id"
 
@@ -105,20 +103,13 @@ def create_test_session() -> Session:
     return session
 
 
-# @pytest.mark.asyncio
-# async def test_bulk_statistics_compute_bulk_statistics(bulk_stats_fixture: BulkStatistics):
-#     record_id = "incorrect-record-id"
-#     bulk_uri = ""
-#
-#     bulk_statistics, _ = bulk_stats_fixture
-#     from app.bulk_persistence.dask.errors import BulkRecordNotFound
-#     with pytest.raises(BulkRecordNotFound):
-#         await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri)
-
-
 @pytest.mark.asyncio
-async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture_with_data: BulkStatistics):
-    bulk_statistics, record_id, bulk_uri = bulk_stats_fixture_with_data
+async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture: BulkStatistics):
+
+    typed_df = generate_typed_df(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))
+
+    #todo: add parametrize to add tests cases + handle several chunks with list of df instead
+    bulk_statistics, record_id, bulk_uri = await add_bulk_data_to_fixture(bulk_stats_fixture, typed_df)
 
     with pytest.raises(StatisticsNotFoundError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
@@ -130,6 +121,5 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture_with_data:
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
 
     df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
-    # raise RequestedCurvesError("Requested curves unknown")
     assert len(df_stats.columns) == 8
     assert len(df_stats) == 3
