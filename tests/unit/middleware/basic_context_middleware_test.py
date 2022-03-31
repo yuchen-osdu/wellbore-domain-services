@@ -12,15 +12,15 @@ def test_ensure_basic_context_middleware_is_first():
 
 
 @pytest.mark.asyncio
-async def test_should_start_and_leave_cleared_context():
-    middleware = CreateBasicContextMiddleware(None, app=None)
+async def test_should_start_and_leave_cleared_context(local_dev_config):
+    middleware = CreateBasicContextMiddleware(config=local_dev_config, injector=None, app=None)
     request_mock = Mock()
     type(request_mock).headers = PropertyMock(return_value={})
     type(request_mock).scope = PropertyMock(return_value={})
     type(request_mock).url = PropertyMock(return_value=URL())
 
     properties_to_check = [
-        'tracer', 'logger', 'correlation_id', 'request_id', 'auth', 'partition_id',
+        'tracer', 'logger', 'correlation_id', 'request_id', 'dev_mode', 'auth', 'partition_id',
         'app_key', 'api_key', 'user', 'app_injector', 'x_user_id']
 
     # GIVEN set current with values and request with no headers
@@ -54,15 +54,15 @@ async def test_should_start_and_leave_cleared_context():
 
 
 @pytest.mark.asyncio
-async def test_should_leave_cleared_context_in_case_of_exception():
-    middleware = CreateBasicContextMiddleware(None, app=None)
+async def test_should_leave_cleared_context_in_case_of_exception(local_dev_config):
+    middleware = CreateBasicContextMiddleware(config=local_dev_config, injector=None, app=None)
     request_mock = Mock()
     type(request_mock).headers = PropertyMock(return_value={})
     type(request_mock).scope = PropertyMock(return_value={})
     type(request_mock).url = PropertyMock(return_value=URL())
 
     properties_to_check = [
-        'tracer', 'logger', 'correlation_id', 'request_id', 'auth', 'partition_id',
+        'tracer', 'logger', 'correlation_id', 'request_id', 'dev_mode', 'auth', 'partition_id',
         'app_key', 'api_key', 'user', 'app_injector', 'x_user_id']
 
     # GIVEN set current with values and request with no headers

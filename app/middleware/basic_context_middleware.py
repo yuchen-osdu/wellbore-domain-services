@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import uuid
-
+from typing import Optional
 from fastapi import Depends, Header
 from fastapi.security.api_key import APIKeyHeader
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -28,8 +28,9 @@ from app.helper.logger import get_logger
 
 
 class CreateBasicContextMiddleware(BaseHTTPMiddleware):
-    def __init__(self, injector: AppInjector, **kwargs):
+    def __init__(self, *, config: conf.ConfigurationContainer, injector: Optional[AppInjector], **kwargs):
         super().__init__(**kwargs)
+        self._config = config
         self._app_injector = injector
 
     @staticmethod
@@ -61,6 +62,7 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
         ctx = Context(logger=get_logger(),
                       correlation_id=correlation_id,
                       request_id=request_id,
+                      dev_mode=self._config.get('dev_mode'),
                       partition_id=partition_id,
                       app_key=app_key,
                       api_key=api_key,
