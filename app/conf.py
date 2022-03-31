@@ -292,7 +292,7 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             env_var_key='AZ_AI_INSTRUMENTATION_KEY',
                             description='azure app insights instrumentation key',
                             secret=True,
-                            is_mandatory=True,
+                            is_mandatory=False,
                             override=True)
 
         config.add_from_env(attribute_name='az_logger_level',
