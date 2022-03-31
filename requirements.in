@@ -12,6 +12,7 @@ python-multipart
 jsonpath-ng # TODO: remove when bulk_path no longer supported
 jsonbender==0.9.3
 natsort
+prometheus-fastapi-instrumentator
 
 opencensus
 opencensus-ext-stackdriver
