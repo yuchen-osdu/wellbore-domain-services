@@ -23,7 +23,6 @@ from opencensus.trace.span import SpanKind
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.conf import Config
 from .utils import rename_cloud_role_func, azure_traces_processing, COMPONENT
 
 
@@ -75,22 +74,22 @@ def _create_gcp_exporter():
     return StackdriverExporter(transport=AsyncTransport)
 
 
-def create_exporter(service_name):
+def create_exporter(*, service_name, config):
     """
     Create exporters to sent tracing to different tracing platforms e.g. Stackdriver (Google) or Azure
     c.f. documentation https://opencensus.io/exporters/supported-exporters/python/
     """
     combined_exporter = CombinedExporter(service_name=service_name)
 
-    if Config.cloud_provider.value == 'gcp':
+    if config.cloud_provider.value == 'gcp':
         print("Registering OpenCensus trace Stackdriver")
 
         stackdriver_exporter = _create_gcp_exporter()
         combined_exporter.add_exporter(stackdriver_exporter)
-    elif Config.cloud_provider.value == 'az':
+    elif config.cloud_provider.value == 'az':
         print("Registering OpenCensus trace AzureExporter")
 
-        key = Config.get('az_ai_instrumentation_key')
+        key = config.get('az_ai_instrumentation_key')
         try:
             az_exporter = _create_azure_exporter(key)
             az_exporter.add_telemetry_processor(rename_cloud_role_func(service_name))

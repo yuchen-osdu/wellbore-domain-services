@@ -137,7 +137,7 @@ async def startup_event():
 
     check_environment(Config)
     MainInjector().configure(app_injector)
-    wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
+    wdms_app.trace_exporter = traces.create_exporter(service_name=service_name, config=Config)
 
     # seems that the lock is not in the same event loop as requests
     # so we need to wait instead of just fire a task
