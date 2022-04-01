@@ -24,6 +24,7 @@ from app.routers.search import search_wrapper
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.model.entity_utils import Entity, format_kind, get_kind_meta
 from app.context import Context
+from app.helper.logger import get_logger
 
 
 class StorageHelper:
@@ -83,7 +84,7 @@ class StorageHelper:
 
         # first delete the source entity, if it fail, we must not delete the others
         await storage_service.delete_record(id=entity_id, data_partition_id=data_partition_id)
-        ctx.logger.debug(f'record {entity_id} successfully deleted')
+        get_logger().debug(f'record {entity_id} successfully deleted')
 
         # execute all deletion concurrently, do not stop at first fail
         delete_results = await asyncio.gather(*[
@@ -102,12 +103,12 @@ class StorageHelper:
 
         # log successfully deleted entities for debugging purposes
         for r in filter(lambda r: r.status_code == status.HTTP_200_OK, results):
-            ctx.logger.debug(f'{r.entity["id"]} of kind {r.entity["kind"]} '
+            get_logger().debug(f'{r.entity["id"]} of kind {r.entity["kind"]} '
                              f'successfully deleted (from recursive delete of {entity_id})')
 
         # warn for already deleted entity
         for r in filter(lambda r: r.status_code == status.HTTP_404_NOT_FOUND, results):
-            ctx.logger.warning(f'entity {r.entity["id"]} of kind {r.entity["kind"]} was already deleted')
+            get_logger().warning(f'entity {r.entity["id"]} of kind {r.entity["kind"]} was already deleted')
 
         # errors treatment (i.e. not 200, not 404), gather them by status
         in_errors = list(filter(
@@ -117,7 +118,7 @@ class StorageHelper:
 
         # log errors
         for r in in_errors:
-            ctx.logger.error(f'error on deleted entity {r.entity["id"]} of kind {r.entity["kind"]},'
+            get_logger().error(f'error on deleted entity {r.entity["id"]} of kind {r.entity["kind"]},'
                              f'status code: {r.status_code}, detail: {str(r.result)}')
 
         if len(in_errors) == 1:  # a single error, just forward

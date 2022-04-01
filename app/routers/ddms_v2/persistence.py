@@ -23,6 +23,7 @@ from app.model.log_bulk import LogBulkHelper
 
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 from app.helper.traces import with_trace
+from app.helper.logger import get_logger
 
 
 class Persistence:
@@ -50,5 +51,5 @@ class Persistence:
         try:
             return await create_and_store_dataframe(ctx, dataframe)
         except Exception:
-            ctx.logger.exception("write_bulk")
+            get_logger().exception("write_bulk")
             raise
