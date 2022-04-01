@@ -16,9 +16,9 @@ import contextvars
 from typing import Optional
 import json
 
-from app.conf import Config
 from app.model.user import User
 from app.injector.app_injector import AppInjector
+
 
 class Context:
     """
@@ -45,7 +45,7 @@ class Context:
                  logger=None,
                  correlation_id: Optional[str] = None,
                  request_id: Optional[str] = None,
-                 dev_mode: bool = Config.dev_mode.value,
+                 dev_mode: Optional[bool] = None,
                  auth=None,
                  partition_id: Optional[str] = None,
                  app_key: Optional[str] = None,
@@ -91,7 +91,7 @@ class Context:
     @classmethod
     def set_current_with_value(cls, tracer=None, logger=None, correlation_id=None, request_id=None, auth=None,
                                partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                               dev_mode=Config.dev_mode.value, x_user_id=None,
+                               dev_mode=None, x_user_id=None,
                                **keys) -> 'Context':
         """
         clone the current context with the given values, set the new ctx as current and returns it
@@ -193,7 +193,7 @@ class Context:
 
     def with_value(self, tracer=None, logger=None, correlation_id=None, request_id=None, auth=None,
                    partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                   dev_mode=Config.dev_mode.value, x_user_id=None, **keys) -> 'Context':
+                   dev_mode=None, x_user_id=None, **keys) -> 'Context':
         """ Clone context, adding all keys in future logs """
         cloned = self.__class__(
             tracer=tracer or self._tracer,
@@ -231,7 +231,7 @@ class Context:
         return self._request_id
 
     @property
-    def dev_mode(self) -> bool:
+    def dev_mode(self) -> Optional[bool]:
         return self._dev_mode
 
     @property
