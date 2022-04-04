@@ -1,13 +1,13 @@
 import asyncio
 import datetime
-import numpy as np
+from typing import List
 
 import mock
-import pandas as pd
 import pytest
 
 from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError
 from tests.unit.test_utils import ctx_fixture
+from tests.unit.generate_data import generate_df
 
 from app.persistence.sessions_storage import Session, SessionUpdateMode, SessionState
 
@@ -47,44 +47,50 @@ def app_initialized_with_testclient(local_dev_config, dask_client):
 @pytest.fixture()
 async def bulk_stats_fixture(app_initialized_with_testclient, tmp_path, nope_logger_fixture, ctx_fixture) \
         -> (BulkStatistics, DaskBulkStorage):
-
     local_dask = await make_local_dask_bulk_storage(str(tmp_path))
-    yield BulkStatistics(dask_blob_storage=local_dask), local_dask
+
+    bulk_stats = BulkStatistics(dask_blob_storage=local_dask)
+    bulk_stats.max_number_values = 500_000
+    bulk_stats.max_colums_count = 100
+    yield bulk_stats, local_dask
+
     local_dask.client.close()
 
 
-def generate_typed_df(columns, index):
-
-    def gen_values(col_name, size):
-        if col_name.startswith('float'):
-            return np.random.random_sample(size=size)
-        if col_name.startswith('str'):
-            return [f'string_value_{i}' for i in range(size)]
-        if col_name.startswith('bool'):
-            return np.random.choice(a=[False, True], size=size)
-        if col_name.startswith('date'):
-            return pd.date_range(start='1/1/2022', periods=size)
-        return np.random.randint(-100, 1000, size=size)
-
-    df = pd.DataFrame({c: gen_values(c, len(index))
-                       for c in columns}, index=index)
-    return df
-
-
-async def add_bulk_data_to_fixture(bulk_stats_fixture, typed_df):
-    bulk_statistics, dask_blob_storage = bulk_stats_fixture
+async def add_bulk_data_to_fixture(dask_blob_storage, typed_df):
     session = create_test_bulk_session()
 
     parquet_data = typed_df.to_parquet(engine='pyarrow')
 
-    await dask_blob_storage.add_chunk_in_session(parquet_data, MimeTypes.PARQUET, no_validation, session.recordId, session.id)
+    await dask_blob_storage.add_chunk_in_session(parquet_data, MimeTypes.PARQUET, no_validation, session.recordId,
+                                                 session.id)
     new_bulk_id = await dask_blob_storage.session_commit(session)
     assert new_bulk_id
 
-    return bulk_statistics, session.recordId, new_bulk_id
+    return session.recordId, new_bulk_id
 
-    # bob = await dask_blob_storage.load_bulk(session.recordId, new_bulk_id)
-    # print(bob)
+
+async def add_bulk_data_by_chunks_to_fixture(dask_blob_storage, cols_with_index: List[tuple]):
+    session = create_test_bulk_session()
+
+    coroutines = []
+    for columns_name, values_index in cols_with_index:
+        chunk_df = generate_df(columns_name, values_index)
+        chunk_data = chunk_df.to_parquet(engine='pyarrow')
+
+        routine = dask_blob_storage.add_chunk_in_session(chunk_data,
+                                                         MimeTypes.PARQUET,
+                                                         no_validation,
+                                                         session.recordId,
+                                                         session.id)
+        coroutines.append(routine)
+
+    for r in grouper(100, coroutines):
+        await asyncio.gather(*r)
+
+    new_bulk_id = await dask_blob_storage.session_commit(session)
+    assert new_bulk_id
+    return session.recordId, new_bulk_id
 
 
 def create_test_bulk_session() -> Session:
@@ -104,12 +110,37 @@ def create_test_bulk_session() -> Session:
 
 
 @pytest.mark.asyncio
-async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture: BulkStatistics):
-
-    typed_df = generate_typed_df(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))
-
-    #todo: add parametrize to add tests cases + handle several chunks with list of df instead
-    bulk_statistics, record_id, bulk_uri = await add_bulk_data_to_fixture(bulk_stats_fixture, typed_df)
+@pytest.mark.parametrize("cols_name_by_index, expected_shape", [
+    (
+            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], (3, 8)
+    ),
+    (
+            [(['int-A', 'float-B', 'date-C'], range(1_000_000))], (3, 8)
+    ),
+    (
+            [
+                (['float-A', 'float-B', 'float-C'], range(100_000)),
+                (['float-A', 'float-B', 'float-C'], range(100_000, 200_000)),
+                (['float-A', 'float-B', 'float-C'], range(400_000, 500_000)),
+                (['float-A', 'float-B', 'float-C'], range(500_000, 1_000_000)),
+            ],
+            (3, 8)
+    ),
+    (
+            [
+                (['float-A'], range(1_000_000)),
+                (['float-B'], range(1_000_000)),
+                (['float-A'], range(1_000_000, 2_000_000)),
+                (['float-B'], range(1_000_000, 2_000_000)),
+                (['float-A'], range(3_000_000, 4_000_000)),
+                (['float-B'], range(3_000_000, 4_000_000)),
+            ],
+            (2, 8)
+    ),
+])
+async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name_by_index, expected_shape):
+    bulk_statistics, dask_storage = bulk_stats_fixture
+    record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
 
     with pytest.raises(StatisticsNotFoundError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
@@ -121,5 +152,29 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture: BulkStati
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
 
     df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
-    assert len(df_stats.columns) == 8
-    assert len(df_stats) == 3
+    assert df_stats.shape == expected_shape
+
+
+@pytest.mark.asyncio
+async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
+    columns_count = 1_000
+    rows_count = 2_000
+
+    cols_name_by_index = [
+        ([array_col], range(rows_count)) for array_col in [f'bob-{i}' for i in range(columns_count)]
+    ]
+
+    bulk_statistics, dask_storage = bulk_stats_fixture
+    record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+
+    with pytest.raises(StatisticsNotFoundError):
+        await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+
+    futures = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri)
+    await asyncio.gather(*futures)
+
+    with pytest.raises(RequestedCurvesError):
+        await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
+
+    df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    assert df_stats.shape == (columns_count, 8)
