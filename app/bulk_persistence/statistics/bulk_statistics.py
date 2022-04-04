@@ -3,6 +3,7 @@ import itertools
 import pandas as pd
 
 from app.helper.logger import get_logger
+from app.conf import Config
 
 from .. import DataframeSerializerSync
 from ..dask.traces import submit_with_trace
@@ -30,7 +31,7 @@ def grouper(n, container: Iterable):
 class BulkStatistics:
     dask_blob_storage: DaskBulkStorage = None
     max_number_values = 10_000_000
-    max_colums_count = 500
+    max_colums_count = Config.max_columns_return.value
 
     def __init__(self, dask_blob_storage: DaskBulkStorage):
         self.dask_blob_storage = dask_blob_storage
@@ -41,7 +42,8 @@ class BulkStatistics:
     def _get_columns_count(self, nb_rows, nb_cols):
         """
         Return the numbers of columns to be read in bulk files
-        to not go over the limit of values bulks data to read at once
+        to not go over the limit of values bulks data to read at once.
+        Maximum number of column is Config.
         """
         total_nb_values = nb_rows * nb_cols
         block_count = max(total_nb_values / self.max_number_values, 1)
@@ -73,7 +75,7 @@ class BulkStatistics:
             _dfs = (pd.read_parquet(file, columns=_columns) for file in _files_to_load)
             return pd.concat(_dfs, ignore_index=True)
 
-        dfs = [read_parquets_same_schema(col_path) for col_path in column_paths]
+        dfs = (read_parquets_same_schema(col_path) for col_path in column_paths)
         return pd.concat(dfs, ignore_index=True)
 
     def _compute(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
