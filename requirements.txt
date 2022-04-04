@@ -254,11 +254,11 @@ opencensus-ext-stackdriver==0.7.4
     # via -r requirements.in
 opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
-osdu-api==0.12.1
+osdu-api==0.14.0
     # via osdu-core-lib-python-aws
 osdu-core-lib-python==2.0.0
     # via -r requirements.in
-osdu-core-lib-python-aws==1.0.0
+osdu-core-lib-python-aws==1.0.1
     # via -r requirements.in
 osdu-core-lib-python-azure==3.0.0
     # via -r requirements.in
