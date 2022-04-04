@@ -75,6 +75,9 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                              appkey: str = None,
                              token: str = None) -> odes_storage.models.Record:
             # return the latest
+            if attribute is not None:
+                raise NotImplementedError("mocked_get_record does not support 'attribute' parameter")
+
             return await self.get_record_version(id, None, data_partition_id, appkey, token)
 
         async def mocked_get_record_version(self,
@@ -83,12 +86,27 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                                      data_partition_id: str = None,
                                      appkey: str = None,
                                      token: str = None) -> odes_storage.models.Record:
+            """
+            If version is None it will return the latest version. To determine the latest version, two cases:
+              * the version field in the record is not set or None => considered as the latest
+              * the version field set and not None => latest = record with the greater version (basic int comparison)
+            """
+
+            latest = None
             for d in data:
                 # CAREFUL: id might be optional in the model (not set on write)
                 # Also storage seems to have problematic behavior with id ending in ':'
                 if id is not None and (id == d.id or id + ":" == d.id):
-                    if version is None or version == d.version:  # Note: version None means latest
+                    if version == d.version:
                         return d
+
+                    if latest is None \
+                       or latest.version is None \
+                       or (d.version is not None and d.version > latest.version):
+                        latest = d
+
+            if latest is not None:
+                return latest
 
             # if not found, attempt to emulate behavior of the actual client
             raise odes_storage.UnexpectedResponse(
@@ -99,9 +117,33 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                 headers=httpx.Headers(),
             )
 
+        async def mocked_get_all_record_versions(self,
+                                                 id: str,
+                                                 data_partition_id: str) -> odes_storage.models.RecordVersions:
+            versions = []
+            record_found = False
+            for d in data:
+                # CAREFUL: id might be optional in the model (not set on write)
+                # Also storage seems to have problematic behavior with id ending in ':'
+                if id is not None and (id == d.id or id + ":" == d.id):
+                    record_found = True
+                    if d.version is not None:  # Note: version None means latest
+                        versions.append(d.version)
+            # if not found, attempt to emulate behavior of the actual client
+            if not record_found:
+                raise odes_storage.UnexpectedResponse(
+                    status_code=404,
+                    reason_phrase="Item not found",
+                    # not sure what to put here at this time
+                    content="".encode(encoding="utf-8"),
+                    headers=httpx.Headers(),
+                )
+            return odes_storage.models.RecordVersions(recordId=id, versions=versions or None)
+
         # override get_record method on the instance to return sample data
         mock.get_record = types.MethodType(mocked_get_record, mock)
         mock.get_record_version = types.MethodType(mocked_get_record_version, mock)
+        mock.get_all_record_versions = types.MethodType(mocked_get_all_record_versions, mock)
 
         return mock
 
