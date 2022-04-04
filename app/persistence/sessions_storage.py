@@ -25,7 +25,7 @@ from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
 
 from app.helper.traces import with_trace
-from app.utils import capture_timings
+from app.bulk_persistence import capture_timings
 from app.helper.logger import get_logger
 
 

@@ -22,9 +22,8 @@ from contextlib import suppress
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 
-from .traces import submit_with_trace, trace_attributes_root_span
-from app.helper.traces import with_trace
-from app.utils import capture_timings
+from ...helper.traces import with_trace
+from ..capture_timings import capture_timings
 from .storage_path_builder import join, remove_protocol
 from .utils import worker_capture_timing_handlers
 

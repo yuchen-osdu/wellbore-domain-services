@@ -24,10 +24,10 @@ import pyarrow.parquet as pa
 
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
-from app.helper.logger import get_logger
-from app.helper.traces import with_trace
+from ...helper.logger import get_logger
+from ...helper.traces import with_trace
 from app.persistence.sessions_storage import Session
-from app.utils import capture_timings
+from ..capture_timings import capture_timings
 from app.conf import Config
 
 from .client import DaskClient
