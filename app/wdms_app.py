@@ -312,7 +312,7 @@ update_operation_ids(wdms_app)
 
 
 # order is last executed first
-wdms_app.add_middleware(TracingMiddleware)
+wdms_app.add_middleware(TracingMiddleware, skip_for_path_suffix=[r.path for r in probes.router.routes])
 
 # must be added last to be executed first, it's responsible to clean and create WDMS Context
 wdms_app.add_middleware(CreateBasicContextMiddleware, config=Config, injector=app_injector)

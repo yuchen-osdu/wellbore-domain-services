@@ -9,3 +9,5 @@ def test_probe_request(app_configurable_with_testclient, probe_path, nope_logger
     response_json = response.json()
     assert response.status_code == 200
     assert response_json == {'status': 'healthy'}
+
+    nope_logger_fixture.info.assert_not_called()
