@@ -24,7 +24,7 @@ from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.model.osdu_model import Well, Wellbore
-from app.persistence.sessions_storage import SessionsStorage
+from app.bulk_persistence import SessionsStorage
 from app.wdms_app import app_injector, wdms_app
 from fastapi import status
 from fastapi.testclient import TestClient

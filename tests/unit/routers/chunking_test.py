@@ -15,7 +15,7 @@ from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.persistence.sessions_storage import SessionsStorage, SessionState
+from app.bulk_persistence import SessionsStorage, SessionState
 from app.conf import Config
 
 from app.wdms_app import app_injector, wdms_app
@@ -1313,7 +1313,7 @@ def test_session_update_previous_storage_version(dasked_test_app_without_consist
 
 from unittest import mock
 from app.bulk_persistence.dask.traces import TracingMode
-from app.persistence.sessions_storage import SessionsStorage, SessionState, SessionUpdateMode
+from app.bulk_persistence import SessionsStorage, SessionState, SessionUpdateMode
 
 
 def assert_mock_chunk(tracing_mock, chunk_df):
