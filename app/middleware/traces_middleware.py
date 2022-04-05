@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable
+from typing import Any
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -133,6 +133,5 @@ class TracingMiddleware(BaseHTTPMiddleware):
                 raise
             finally:
                 status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
-                if not request.url.path.endswith('healthz'):
-                    get_logger().info(utils.process_message(request, status))
+                get_logger().info(utils.process_message(request, status))
                 self._after_request(request, response, tracer)
