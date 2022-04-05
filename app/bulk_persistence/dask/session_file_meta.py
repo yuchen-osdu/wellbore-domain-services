@@ -25,7 +25,7 @@ import pandas as pd
 from .utils import share_items
 from ...helper.logger import get_logger
 from ...helper.traces import with_trace
-from app.persistence.sessions_storage import Session
+from ..sessions_storage import Session
 from ..capture_timings import capture_timings
 
 from .storage_path_builder import add_protocol, record_session_path

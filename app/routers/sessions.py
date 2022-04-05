@@ -7,10 +7,10 @@ from starlette.requests import Request
 
 from app.bulk_persistence import resolve_tenant
 from app.clients import StorageRecordServiceClient
-from app.persistence.sessions_storage import (Session,
-                                              SessionInternal,
-                                              SessionsStorage,
-                                              SessionUpdateMode)
+from app.bulk_persistence import (Session,
+                                  SessionInternal,
+                                  SessionsStorage,
+                                  SessionUpdateMode)
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.context import Context

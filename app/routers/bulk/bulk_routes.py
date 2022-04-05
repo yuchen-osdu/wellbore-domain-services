@@ -42,7 +42,7 @@ from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_data_consistency_checks)
 
 # imports for session manipulation
-from app.persistence.sessions_storage import (
+from app.bulk_persistence import (
     Session,
     SessionException,
     SessionState,
