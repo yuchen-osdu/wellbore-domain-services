@@ -15,16 +15,15 @@
 This module groups function related to bulk catalog.
 A catalog contains metadata of the chunks
 """
+import asyncio
+import functools
 import json
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 
-from dask.distributed import get_client
-
-from .traces import submit_with_trace, trace_attributes_root_span
-from app.helper.traces import with_trace
-from app.utils import capture_timings
+from ...helper.traces import with_trace
+from ..capture_timings import capture_timings
 from .storage_path_builder import join, remove_protocol
 from .utils import worker_capture_timing_handlers
 
@@ -179,32 +178,26 @@ CATALOG_FILE_NAME = 'bulk_catalog.json'
 
 @capture_timings('save_bulk_catalog', handlers=worker_capture_timing_handlers)
 @with_trace('save_bulk_catalog')
-def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> None:
+async def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> None:
     """save a bulk catalog to a json file in the given folder path"""
+
     folder_path, _ = remove_protocol(folder_path)
     meta_path = join(folder_path, CATALOG_FILE_NAME)
     with filesystem.open(meta_path, 'w') as outfile:
-        data = json.dumps(catalog.as_dict(), indent=0)
+        _func = functools.partial(json.dumps, catalog.as_dict(), indent=0)
+        data = await asyncio.get_running_loop().run_in_executor(None, _func)
         outfile.write(data)
-        # json.dump(catalog.as_dict(), outfile) # don't know why json.dump is slower (local windows)
 
 
 @capture_timings('load_bulk_catalog', handlers=worker_capture_timing_handlers)
 @with_trace('load_bulk_catalog')
-def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalog]:
+async def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalog]:
     """load a bulk catalog from a json file in the given folder path"""
+
     folder_path, _ = remove_protocol(folder_path)
     meta_path = join(folder_path, CATALOG_FILE_NAME)
     with suppress(FileNotFoundError):
         with filesystem.open(meta_path) as json_file:
-            data = json.load(json_file)
+            data = await asyncio.get_running_loop().run_in_executor(None, json.load, json_file)
             return BulkCatalog.from_dict(data)
     return None
-
-
-async def async_load_bulk_catalog(filesystem, folder_path: str) -> BulkCatalog:
-    return await submit_with_trace(get_client(), load_bulk_catalog, filesystem, folder_path)
-
-
-async def async_save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> None:
-    return await submit_with_trace(get_client(), save_bulk_catalog, filesystem, folder_path, catalog)

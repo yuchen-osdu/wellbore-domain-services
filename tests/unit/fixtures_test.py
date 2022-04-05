@@ -7,6 +7,8 @@ from app.clients.search_service_client import get_search_service
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import Context, get_ctx
 
+from app.model.osdu_model import Well, Wellbore, WellboreMarkerSet110, WellboreTrajectory110, WellLog110
+
 
 def test_local_dev_config(local_dev_config):
 
@@ -66,6 +68,48 @@ def test_mock_storage_client_holding_well_v3_record_data(
             )
             == [w for w in well_v3_record_list if w.id == w3id][0]
         )
+
+
+def test_mock_storage_client_holding_well_v3_record_with_version_data(
+    mock_storage_client_holding_data, well_v3_record_list
+):
+    """Test the mock_storage_client_holding_data behavior, along with the well_v2_record data itself"""
+    single_record_v0 = well_v3_record_list[0]
+    record_id = single_record_v0.id
+    single_record_v1 = single_record_v0.copy(deep=True)
+    single_record_v0.version = 0
+    single_record_v1.version = 1
+    single_record_v1.data['FacilityName'] = single_record_v0.data['FacilityName'] + "_updated"
+
+    storage_client = mock_storage_client_holding_data([single_record_v0, single_record_v1])
+
+    # grab current eventloop if we already have one, otherwise creates it
+    loop = asyncio.get_event_loop()
+
+    # get latest
+    assert (
+            loop.run_until_complete(
+                storage_client.get_record(record_id, "fake_data_partition_id")
+            ).version == single_record_v1.version
+    )
+
+    # get V0
+    r = loop.run_until_complete(
+        storage_client.get_record_version(record_id, 0, "fake_data_partition_id")
+    )
+    assert r.version == 0 and r.data['FacilityName'] == single_record_v0.data['FacilityName']
+
+    # get V1
+    r = loop.run_until_complete(
+        storage_client.get_record_version(record_id, 1, "fake_data_partition_id")
+    )
+    assert r.version == 1 and r.data['FacilityName'] == single_record_v1.data['FacilityName']
+
+    # get versions
+    r = loop.run_until_complete(
+        storage_client.get_all_record_versions(record_id, "fake_data_partition_id")
+    )
+    assert set(r.versions) == {0, 1}
 
 
 def test_mock_storage_client_holding_wellbore_v2_record_data(
@@ -213,3 +257,32 @@ def test_app_configurable_with_client_and_mocks(
         # remove the route we added to not mess with other tests
         app.router.routes = [r for r in app.routes if r.name != inside_out_handler.__name__]
 
+
+def test_well100_v3_list(well100_v3_list):
+    assert len(well100_v3_list) > 0
+    for inst in well100_v3_list:
+        Well.validate(inst)
+
+
+def test_wellbore100_v3_list(wellbore100_v3_list):
+    assert len(wellbore100_v3_list) > 0
+    for inst in wellbore100_v3_list:
+        Wellbore.validate(inst)
+
+
+def test_welllog110_v3_list(welllog110_v3_list):
+    assert len(welllog110_v3_list) > 0
+    for inst in welllog110_v3_list:
+        WellLog110.validate(inst)
+
+
+def test_marker110_v3_list(marker110_v3_list):
+    assert len(marker110_v3_list) > 0
+    for inst in marker110_v3_list:
+        WellboreMarkerSet110.validate(inst)
+
+
+def test_trajectory110_v3_list(trajectory110_v3_list):
+    assert len(trajectory110_v3_list) > 0
+    for inst in trajectory110_v3_list:
+        WellboreTrajectory110.validate(inst)

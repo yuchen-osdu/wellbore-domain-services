@@ -16,9 +16,9 @@ import contextvars
 from typing import Optional
 import json
 
-from app.conf import Config
 from app.model.user import User
 from app.injector.app_injector import AppInjector
+
 
 class Context:
     """
@@ -26,7 +26,6 @@ class Context:
     """
     __slots__ = [
         '_tracer',
-        '_logger',
         '_correlation_id',
         '_request_id',
         '_dev_mode',
@@ -42,10 +41,9 @@ class Context:
 
     def __init__(self,
                  tracer=None,
-                 logger=None,
                  correlation_id: Optional[str] = None,
                  request_id: Optional[str] = None,
-                 dev_mode: bool = Config.dev_mode.value,
+                 dev_mode: Optional[bool] = None,
                  auth=None,
                  partition_id: Optional[str] = None,
                  app_key: Optional[str] = None,
@@ -56,7 +54,6 @@ class Context:
                  **keys):
 
         self._tracer = tracer
-        self._logger = logger
         self._correlation_id = correlation_id
         self._request_id = request_id
         self._dev_mode = dev_mode
@@ -89,9 +86,9 @@ class Context:
         Context.__ctx_var.set(self)
 
     @classmethod
-    def set_current_with_value(cls, tracer=None, logger=None, correlation_id=None, request_id=None, auth=None,
+    def set_current_with_value(cls, tracer=None, correlation_id=None, request_id=None, auth=None,
                                partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                               dev_mode=Config.dev_mode.value, x_user_id=None,
+                               dev_mode=None, x_user_id=None,
                                **keys) -> 'Context':
         """
         clone the current context with the given values, set the new ctx as current and returns it
@@ -100,7 +97,6 @@ class Context:
         current = cls.current()
         assert current is not None, 'no existing current context'
         new_ctx = current.with_value(tracer=tracer,
-                                     logger=logger,
                                      correlation_id=correlation_id,
                                      request_id=request_id,
                                      auth=auth,
@@ -133,7 +129,6 @@ class Context:
     def __copy__(self):
         return self.__class__(
             tracer=self._tracer,
-            logger=self._logger,
             correlation_id=self._correlation_id,
             request_id=self._request_id,
             dev_mode=self._dev_mode,
@@ -191,13 +186,12 @@ class Context:
         clone._app_injector = app_injector
         return clone
 
-    def with_value(self, tracer=None, logger=None, correlation_id=None, request_id=None, auth=None,
+    def with_value(self, tracer=None, correlation_id=None, request_id=None, auth=None,
                    partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                   dev_mode=Config.dev_mode.value, x_user_id=None, **keys) -> 'Context':
+                   dev_mode=None, x_user_id=None, **keys) -> 'Context':
         """ Clone context, adding all keys in future logs """
         cloned = self.__class__(
             tracer=tracer or self._tracer,
-            logger=logger or self._logger,
             correlation_id=correlation_id or self._correlation_id,
             request_id=request_id or self._request_id,
             dev_mode=dev_mode or self._dev_mode,
@@ -219,10 +213,6 @@ class Context:
         return self._tracer
 
     @property
-    def logger(self):
-        return self._logger
-
-    @property
     def correlation_id(self) -> Optional[str]:
         return self._correlation_id
 
@@ -231,7 +221,7 @@ class Context:
         return self._request_id
 
     @property
-    def dev_mode(self) -> bool:
+    def dev_mode(self) -> Optional[bool]:
         return self._dev_mode
 
     @property
@@ -265,7 +255,6 @@ class Context:
     def __dict__(self):
         return {
             "tracer": self.tracer,
-            "logger": self.logger,
             "correlation_id": self.correlation_id,
             "request_id": self.request_id,
             "dev_mode": self.dev_mode,

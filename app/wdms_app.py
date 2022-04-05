@@ -130,14 +130,14 @@ def make_entity_type_dependency(entity_type: Entity, version: str):
 async def startup_event():
     service_name = Config.service_name.value
 
-    logger.init_logger(service_name=service_name)
+    logger.init_logger(service_name=service_name, config=Config)
 
     #check python version >=3.8
     assert sys.version_info.major == 3 and sys.version_info.minor >= 8, 'Python version required >=3.8'
 
     check_environment(Config)
     MainInjector().configure(app_injector)
-    wdms_app.trace_exporter = traces.create_exporter(service_name=service_name)
+    wdms_app.trace_exporter = traces.create_exporter(service_name=service_name, config=Config)
 
     # seems that the lock is not in the same event loop as requests
     # so we need to wait instead of just fire a task
@@ -330,7 +330,7 @@ update_operation_ids(wdms_app)
 wdms_app.add_middleware(TracingMiddleware)
 
 # must be added last to be executed first, it's responsible to clean and create WDMS Context
-wdms_app.add_middleware(CreateBasicContextMiddleware, injector=app_injector)
+wdms_app.add_middleware(CreateBasicContextMiddleware, config=Config, injector=app_injector)
 
 
 # adding exception handling

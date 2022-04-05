@@ -26,6 +26,7 @@ from opencensus.trace.span import SpanKind
 from app.helper import traces, utils
 from app.context import get_or_create_ctx
 from app import conf
+from app.helper.logger import get_logger
 
 
 class TracingMiddleware(BaseHTTPMiddleware):
@@ -121,17 +122,17 @@ class TracingMiddleware(BaseHTTPMiddleware):
             ctx.set_current_with_value(tracer=tracer)
 
             self._before_request(request, tracer)
-            ctx.logger.debug(f'Request start: {request.method} {request.url}')
+            get_logger().debug(f'Request start: {request.method} {request.url}')
 
             response = None
             try:
                 response = await call_next(request)
                 return response
             except Exception:
-                ctx.logger.exception(f"Exception occurred when calling: {request.url.path}")
+                get_logger().exception(f"Exception occurred when calling: {request.url.path}")
                 raise
             finally:
                 status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
                 if not request.url.path.endswith('healthz'):
-                    ctx.logger.info(utils.process_message(request, status))
+                    get_logger().info(utils.process_message(request, status))
                 self._after_request(request, response, tracer)

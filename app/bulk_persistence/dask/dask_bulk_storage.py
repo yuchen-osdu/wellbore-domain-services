@@ -24,16 +24,16 @@ import pyarrow.parquet as pa
 
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
-from app.helper.logger import get_logger
-from app.helper.traces import with_trace
+from ...helper.logger import get_logger
+from ...helper.traces import with_trace
 from app.persistence.sessions_storage import Session
-from app.utils import capture_timings
+from ..capture_timings import capture_timings
 from app.conf import Config
 
 from .client import DaskClient
 from .dask_worker_plugin import DaskWorkerPlugin
 from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
-from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span
+from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span, trace_attributes_current_span
 from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, join_dataframes, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
 from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
@@ -42,8 +42,8 @@ from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
 from .bulk_catalog import (BulkCatalog, ChunkGroup,
-                           async_load_bulk_catalog,
-                           async_save_bulk_catalog)
+                           load_bulk_catalog,
+                           save_bulk_catalog)
 from ..mime_types import MimeType
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
@@ -181,6 +181,11 @@ class DaskBulkStorage:
         if index_df:
             dfs.append(index_df)
 
+        trace_attributes_current_span({
+            'parquet-files-to-load-count': len(files_to_load),
+            'df-to-merge-count': len(dfs)
+        })
+
         if not dfs:
             raise RuntimeError("cannot find requested columns")
 
@@ -251,7 +256,7 @@ class DaskBulkStorage:
     @with_trace('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str, generate_if_not_exists=True) -> BulkCatalog:
         bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
-        catalog = await async_load_bulk_catalog(self._fs, bulk_path)
+        catalog = await load_bulk_catalog(self._fs, bulk_path)
         if catalog:
             return catalog
 
@@ -468,8 +473,7 @@ class DaskBulkStorage:
             self._fill_catalog_columns_info(catalog, chunk_metas, bulk_id)
         )
 
-        fcatalog = await self.client.scatter(catalog)
-        await async_save_bulk_catalog(self._fs, commit_path, fcatalog)
+        await save_bulk_catalog(self._fs, commit_path, catalog)
         trace_attributes_root_span({
             'catalog-row-count': catalog.nb_rows,
             'catalog-col-count': catalog.all_columns_count

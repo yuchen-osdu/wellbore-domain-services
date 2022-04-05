@@ -21,7 +21,6 @@ import structlog
 from structlog.contextvars import merge_contextvars
 from opencensus.trace import config_integration
 
-from app.conf import Config
 from app.context import get_or_create_ctx
 from app.helper.utils import rename_cloud_role_func
 
@@ -87,12 +86,16 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
         return msg, kwargs
 
 
-def init_logger(service_name):
+def init_logger(*, service_name, config):
     global _LOGGER
 
-    if Config.cloud_provider.value == 'az':
-        _LOGGER = create_azure_logger(service_name)
-    elif Config.cloud_provider.value == 'gcp':
+    if config.cloud_provider.value == 'az':
+        _LOGGER = create_azure_logger(
+            service_name=service_name,
+            az_ai_instrumentation_key=config.get('az_ai_instrumentation_key'),
+            az_logger_level=config.get('az_logger_level')
+        )
+    elif config.cloud_provider.value == 'gcp':
         _LOGGER = create_gcp_logger(service_name)
     else:
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
@@ -101,8 +104,7 @@ def init_logger(service_name):
     return _LOGGER
 
 
-def create_azure_logger(service_name):
-    from opencensus.ext.azure.log_exporter import AzureLogHandler
+def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_level):
     """
     Create logger with two handlers:
      - AzureLogHandler: to see Dependencies, Requests, Traces and Exception into Azure monitoring
@@ -117,8 +119,8 @@ def create_azure_logger(service_name):
     stdout_handler = logging.StreamHandler(sys.stdout)
 
     #  AzurelogHandler for logging to azure appinsight
-    key = Config.get('az_ai_instrumentation_key')
-    logger_level = Config.get('az_logger_level')
+    key = az_ai_instrumentation_key
+    logger_level = az_logger_level
     az_handler = AzureLogHandler(connection_string=f'InstrumentationKey={key}')
     az_handler.setLevel(logging.getLevelName(logger_level))
     az_handler.add_telemetry_processor(rename_cloud_role_func(service_name))

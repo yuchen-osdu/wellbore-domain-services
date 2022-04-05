@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 import pytest
 from unittest import mock
@@ -21,6 +22,7 @@ from contextlib import contextmanager
 
 from opencensus.trace.span_context import SpanContext
 from odes_storage.models import Record, StorageAcl, Legal
+from starlette.routing import Mount, Router, Route
 
 from app.model.model_utils import record_to_dict
 from app.context import get_or_create_ctx
@@ -145,3 +147,18 @@ def format_routes(app, prefix, tags):
 
 def side_effect_raise(*args, **kwargs):
     raise ValueError("side effect")
+
+
+def gen_all_routes_request(rtr: Router, prefix: Optional[str] = None):
+    if prefix is None:
+        prefix = ""
+
+    for route in rtr.routes:
+        if isinstance(route, Mount):
+            # if this is a Mount, we need to recurse on the route
+            yield from gen_all_routes_request(route.app, route.path)
+        elif isinstance(route, Route):
+            for method in route.methods:
+                yield method, prefix + route.path
+        else:
+            RuntimeError(f"{route} routes retrieval not implemented")

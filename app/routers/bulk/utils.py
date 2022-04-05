@@ -19,10 +19,11 @@ from app.bulk_persistence.dataframe_validators import auto_cast_columns_to_strin
 from app.bulk_persistence import DataframeSerializerAsync
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence import JSONOrient
+from app.bulk_persistence import capture_timings
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import get_ctx, Context
-from app.utils import capture_timings, OpenApiHandler
+from app.utils import OpenApiHandler
 from app.helper.traces import with_trace
 from app.model.filter import BulkReadFilterOperator, BulkReadFilters
 from app.model.model_chunking import GetDataParams, DataframeDescribe

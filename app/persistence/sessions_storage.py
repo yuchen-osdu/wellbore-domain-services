@@ -25,8 +25,8 @@ from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
 
 from app.helper.traces import with_trace
-from app.context import Context
-from app.utils import capture_timings
+from app.bulk_persistence import capture_timings
+from app.helper.logger import get_logger
 
 
 class SessionState(str, Enum):
@@ -260,14 +260,14 @@ class SessionsStorage:
         internal = await self._get_session(tenant, record_id, session_id)
 
         if not internal.session.is_closed:
-            Context.current().logger.error(f"Invalid state for session deletion: {internal.session}")
+            get_logger().error(f"Invalid state for session deletion: {internal.session}")
             if not force_delete:
                 raise RuntimeError("Session cannot be deleted. "
                                    "Invalid state. The session must be completed or abandoned before")
 
         object_name = self._build_session_complete_name(record_id, session_id)
         await self._storage.delete(tenant, object_name)
-        Context.current().logger.debug(f'session deleted: {internal.session}')
+        get_logger().debug(f'session deleted: {internal.session}')
 
     class CompletionContextManager:
         def __init__(self, client: 'SessionsStorage', tenant: Tenant, record_id: str, session_id: str, commit: bool):
@@ -373,7 +373,7 @@ class SessionsStorage:
                                               f"session cannot be {SessionState.Committing.value}")
 
                 # let's continue and finish the session
-                Context.current().logger.warning(
+                get_logger().warning(
                     f"session {i_session.session.id} for record {i_session.session.recordId} "
                     f"appears idle in state {i_session.session.state} since {i_session.session.updatedTime}."
                     f" State update allowed, will be {new_state}"

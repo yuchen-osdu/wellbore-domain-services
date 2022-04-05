@@ -28,7 +28,7 @@ def wrap_trace_process(*args, **kwargs):
         raise AttributeError("Keyword arguments should contain 'target_func' and 'tracing_headers'")
 
     if _EXPORTER is None:
-        _EXPORTER = traces.create_exporter(service_name=Config.service_name.value)
+        _EXPORTER = traces.create_exporter(service_name=Config.service_name.value, config=Config)
 
     span_context = traces.get_trace_propagator().from_headers(tracing_headers)
     tracer = open_tracer.Tracer(span_context=span_context,
@@ -95,7 +95,7 @@ def _add_trace_attributes(attributes: dict, tracing_mode: TracingMode):
     span = None
 
     if tracing_mode == TracingMode.CURRENT_SPAN:
-        span = opencensus_tracer.tracer.current_span()
+        span = opencensus_tracer.current_span()
     elif tracing_mode == TracingMode.ROOT_SPAN:
         existing_spans = opencensus_tracer.tracer.list_collected_spans()
         span = existing_spans[0] if existing_spans else None
