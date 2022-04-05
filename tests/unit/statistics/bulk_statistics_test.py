@@ -32,7 +32,7 @@ def test_grouper(container, step):
 
 
 @pytest.fixture(scope="module")
-def app_initialized_with_testclient(local_dev_config, dask_client):
+def app_initialized_with_testclient(dask_client):
     """
     Fixture providing wdms_app started, along with a test client
     """
@@ -157,11 +157,12 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
 
 @pytest.mark.asyncio
 async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
+    # todo: to be update if it lasts too long as unit tests.
     columns_count = 1_000
     rows_count = 2_000
 
     cols_name_by_index = [
-        ([array_col], range(rows_count)) for array_col in [f'bob-{i}' for i in range(columns_count)]
+        ([array_col], range(rows_count)) for array_col in [f'float-{i}' for i in range(columns_count)]
     ]
 
     bulk_statistics, dask_storage = bulk_stats_fixture

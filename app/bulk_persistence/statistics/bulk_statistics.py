@@ -47,7 +47,7 @@ class BulkStatistics:
         """
         total_nb_values = nb_rows * nb_cols
         block_count = max(total_nb_values / self.max_number_values, 1)
-        wanted_nb_col = int(nb_cols / block_count)
+        wanted_nb_col = max(int(nb_cols / block_count), 1)
         return min(self.max_colums_count, wanted_nb_col)
 
     def _bulk_folder(self, record_id: str):
@@ -131,7 +131,7 @@ class BulkStatistics:
 
         bulk_statistics_path = self._statistics_folder(record_id, bulk_uri)
         if not self.dask_blob_storage._fs.exists(bulk_statistics_path):
-            raise StatisticsNotFoundError("Statistics does not exist")
+            raise StatisticsNotFoundError("Statistics do not exist")
 
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_col = catalog.all_columns_dtypes
