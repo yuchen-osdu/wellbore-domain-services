@@ -321,7 +321,7 @@ Then access app on `http://127.0.0.1:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
 IMAGE_TAG="os-wellbore-ddms:dev"
 
 # Build Image
-docker build -t=$IMAGE_TAG --rm . -f ./build/dockerfile --build-arg PIP_WHEEL_DIR=python-packages
+docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages
 ```
 
 #### Run Image

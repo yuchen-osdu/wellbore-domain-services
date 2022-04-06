@@ -27,7 +27,7 @@ from app.helper.traces import TracingRoute
 from app.model.entity_utils import Entity
 from app.modules import discoverer
 
-from app.helper import traces, logger
+from app.helper import traces, logger, metric
 from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
@@ -151,6 +151,7 @@ async def startup_event():
         asyncio.create_task(run_in_pool_executor(executor_startup_task))
 
     add_modules_routers()
+    metric.init_metric(wdms_app)
 
 
 @base_app.on_event('shutdown')

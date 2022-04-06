@@ -112,7 +112,7 @@ def test_azure_trace_exporter_created(azure_config_fixture):
     mock_exporter.configure_mock(**{'exporter_name': exporter_name})
 
     with mock.patch('app.helper.traces._create_azure_exporter', mock.Mock(return_value=mock_exporter)):
-        exporter = create_exporter(service_name='test-service', config=azure_config_fixture)
+        exporter = create_exporter('test-service')
         assert len(exporter.exporters) == 1
         # ensure called method is azure exporter
         azure_exporter = exporter.exporters[0]

@@ -135,6 +135,7 @@ fastapi==0.68.1
     #   -r requirements.in
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
+    #   prometheus-fastapi-instrumentator
 fsspec==2021.7.0
     # via
     #   -r requirements.in
@@ -285,6 +286,10 @@ ply==3.11
     # via jsonpath-ng
 portalocker==1.7.1
     # via msal-extensions
+prometheus-client==0.13.1
+    # via prometheus-fastapi-instrumentator
+prometheus-fastapi-instrumentator==5.7.1
+    # via -r requirements.in
 protobuf==3.17.3
     # via
     #   google-api-core
