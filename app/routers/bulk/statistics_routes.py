@@ -70,8 +70,15 @@ If wanted curves is an array:
     - requests "ARRAY[M:N]", retrieves all dimensions between M and N.
 """
 
-api_unit_conversion_text = "IMPORTANT: there is no unit conversion, bulk data are processed are they are"
+api_unit_conversion_text = "No unit conversion is supported. Statistics will be returned using the same units" \
+                           " as recorded in Curves[].CurveUnit"
 
+api_supported_types_txt = """
+Data types supported:  
+            - int  
+            - float  
+            - date  
+"""
 
 @router.get(
     '/{record_id}/data/statistics',
@@ -79,6 +86,8 @@ api_unit_conversion_text = "IMPORTANT: there is no unit conversion, bulk data ar
     description=f"""Returns the statistics on bulk data identified by the record in its last version. 
 
     {api_description_text}  
+    
+    {api_supported_types_txt}  
       
     {api_unit_conversion_text}
     """,
@@ -123,6 +132,8 @@ async def get_bulk_statistics(
     description=f"""Returns the statistics on bulk data identified by the record and given version.  
     {api_description_text}  
       
+    {api_supported_types_txt}  
+    
     {api_unit_conversion_text}
     """,
     responses={

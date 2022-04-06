@@ -50,7 +50,11 @@ class BulkStatistics:
         wanted_nb_col = max(int(nb_cols / block_count), 1)
         return min(self.max_colums_count, wanted_nb_col)
 
-    def _bulk_folder(self, record_id: str):
+    def _record_path(self, record_id: str):
+        """
+        Return the path to bulk data for record identified by the given record_id.
+        It includes protocol in it: file, az, gcs, etc...
+        """
         return path_builder.record_path(self.dask_blob_storage.base_directory,
                                         record_id,
                                         self.dask_blob_storage.protocol)
@@ -66,7 +70,7 @@ class BulkStatistics:
 
     def _fetch_bulks(self, catalog, columns):
 
-        record_path = self._bulk_folder(catalog.record_id)
+        record_path = self._record_path(catalog.record_id)
         column_paths = catalog.get_paths_for_columns(columns, record_path)
 
         def read_parquets_same_schema(_col_path):
