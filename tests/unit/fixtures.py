@@ -18,12 +18,15 @@ from app.auth.auth import require_opendes_authorized_user
 from app.middleware.basic_context_middleware import require_data_partition_id
 from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client
 from app.helper.traces import CombinedExporter
-from app.injector.app_injector import WithLifeTime
-from app.wdms_app import base_app, wdms_app, app_injector
 
 
 @pytest.fixture(scope="module")
-def local_dev_config():
+def local_dev_config(tmp_path_factory):
+    """
+    NOTE: pay attention to not import certain modules such as wdms_app or injector BEFORE running this fixture
+    in this current test file, otherwise this testing config won't be used.
+    """
+
     config = ConfigurationContainer.with_load_all(environment_dict={
         # set config to a local dev config (assumption for running unit tests)
         "OS_WELLBORE_DDMS_DEV_MODE": "True",
@@ -31,7 +34,8 @@ def local_dev_config():
         "SERVICE_HOST_STORAGE": "https://test-endpoint/api/storage",
         "SERVICE_HOST_SEARCH": "https://test-endpoint/api/search",
         "MODULES": "log_recognition.routers.log_recognition",
-        # This one is necessary as long as we have can_run() in modules dependending on it
+        'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="foo-")),
+        # This one is necessary as long as we have can_run() in modules depending on it
         "ENVIRONMENT_NAME": "evd"
     }, contextual_loader=cloud_provider_additional_environment)
 
@@ -155,7 +159,7 @@ def app_initialized_with_testclient(local_dev_config, dask_client):
     """
     Fixture providing wdms_app started, along with a test client
     """
-    global base_app, wdms_app
+    from app.wdms_app import base_app, wdms_app
 
     # retrieve the dask_client starter, but let the app close it.
     # CAREFUL about the fixture scope
@@ -185,6 +189,8 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
 
     For example usage, check fixtures_test.py
     """
+    from app.injector.app_injector import WithLifeTime
+    from app.wdms_app import app_injector
 
     app, client = app_initialized_with_testclient
 
