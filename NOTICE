@@ -23,8 +23,8 @@ The following software have components provided under the terms of this license:
 - google-cloud-trace (from https://github.com/googleapis/googleapis)
 - googleapis-common-protos (from https://github.com/googleapis/googleapis)
 - grpcio (from https://grpc.io)
+- importlib-metadata
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
-- importlib-metadata (from )
 - msgpack (from http://msgpack.org/)
 - multidict (from https://github.com/aio-libs/multidict/)
 - numpy
@@ -47,6 +47,7 @@ The following software have components provided under the terms of this license:
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
 - rfc3986 (from https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
+- s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio)
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
 - tblib (from https://github.com/ionelmc/python-tblib)
@@ -83,9 +84,9 @@ The following software have components provided under the terms of this license:
 - adlfs (from https://github.com/hayesgb/adlfs/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
+- colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
 - dask (from http://github.com/dask/dask/)
-- colorama (from https://github.com/tartley/colorama)
 - decorator (from https://github.com/micheles/decorator)
 - grpcio (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
@@ -137,14 +138,6 @@ The following software have components provided under the terms of this license:
 - partd (from http://github.com/dask/partd/)
 - s3fs (from http://github.com/dask/s3fs/)
 - toolz (from http://github.com/pytoolz/toolz/)
-
-========================================================================
-CC0-1.0
-========================================================================
-The following software have components provided under the terms of this license:
-
-- numpy
-- pandas (from https://pandas.pydata.org)
 
 ========================================================================
 CC0-1.0
@@ -224,7 +217,7 @@ MIT
 The following software have components provided under the terms of this license:
 
 - PyJWT (from http://github.com/jpadilla/pyjwt)
-- PyYAML (from )
+- PyYAML (from http://pyyaml.org/wiki/PyYAML)
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
