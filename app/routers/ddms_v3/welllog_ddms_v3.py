@@ -24,9 +24,10 @@ from app.consistency import (
 )
 from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import WellLog110 as WellLog
+from app.model.osdu_record_id import split_record_id_version
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.routers.ddms_v3.ddms_v3_utils import OSDU_WELLLOG_VERSION_REGEX, DMSV3RouterUtils
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.delete.delete_bulk_data import delete_record
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
@@ -53,8 +54,8 @@ async def get_welllog_osdu(
         welllogid: str, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
     storage_client = await get_storage_record_service(ctx)
-    welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
-                                                                  welllogid)
+    welllogid, _ = split_record_id_version(welllogid)
+
     welllog_record = await storage_client.get_record(
         id=welllogid, data_partition_id=ctx.partition_id
     )
@@ -83,7 +84,7 @@ async def del_osdu_welllog(
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
 ):
-    welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX, welllogid)
+    welllogid, _ = split_record_id_version(welllogid)
     await delete_record(record_id=welllogid, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
 
 
@@ -103,8 +104,8 @@ async def get_osdu_welllog_versions(
     record = await fetch_record(ctx, welllogid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
-    welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX,
-                                                                  welllogid)
+    welllogid, _ = split_record_id_version(welllogid)
+
     return await storage_client.get_all_record_versions(
         id=welllogid, data_partition_id=ctx.partition_id
     )
@@ -125,7 +126,7 @@ async def get_osdu_welllog_version(
     welllogid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
     storage_client = await get_storage_record_service(ctx)
-    welllogid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLLOG_VERSION_REGEX, welllogid)
+    welllogid, _ = split_record_id_version(welllogid)
     welllog_record = await storage_client.get_record_version(
         id=welllogid, version=version, data_partition_id=ctx.partition_id
     )
