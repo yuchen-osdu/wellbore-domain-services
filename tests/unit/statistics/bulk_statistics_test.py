@@ -120,10 +120,10 @@ def create_test_bulk_session() -> Session:
 @pytest.mark.asyncio
 @pytest.mark.parametrize("cols_name_by_index, expected_shape", [
     (
-            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], (3, 8)
+            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], (3, 9)
     ),
     (
-            [(['int-A', 'float-B', 'date-C'], range(1_000_000))], (3, 8)
+            [(['int-A', 'float-B', 'date-C'], range(1_000_000))], (3, 9)
     ),
     (
             [
@@ -132,7 +132,7 @@ def create_test_bulk_session() -> Session:
                 (['float-A', 'float-B', 'float-C'], range(400_000, 500_000)),
                 (['float-A', 'float-B', 'float-C'], range(500_000, 1_000_000)),
             ],
-            (3, 8)
+            (3, 9)
     ),
     (
             [

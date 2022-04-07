@@ -173,8 +173,6 @@ async def get_bulk_statistics_version(
     columns = list(dict.fromkeys(columns))
 
     stats_df = await BulkStatistics(dask_blob_storage).get_bulk_statistics(record.id, bulk_uri.bulk_id, columns)
-    # stats_df = await dask_blob_storage.get_bulk_statistics(record.id, bulk_uri.bulk_id, columns)
-
     return await DataFrameRender.df_render(stats_df,
                                            GetDataParams(describe=False),
                                            accept_type,
