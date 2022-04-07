@@ -72,6 +72,7 @@ include:
   image: python:3.8-bullseye
 
 verify_existing_requirements:
+  tags: ["osdu-small"]
   extends:
     - .python
     - .skipForTriggeringMergeRequests
@@ -102,8 +103,8 @@ compile-and-unit-test:
       - all-requirements.txt
       - spec/generated/openapi.json
 
-
 verify_models:
+  tags: ["osdu-small"]
   extends:
     - .python
     - .skipForTriggeringMergeRequests
@@ -113,12 +114,11 @@ verify_models:
   script:
     - python -m doctest docs/model/model_curated.md
 
-
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
   image: docker:19.03
-  tags: ["osdu-medium"]
+  tags: ["osdu-small"]
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
   script:
@@ -147,7 +147,7 @@ osdu-gcp-containerize-gitlab:
   stage: containerize
   image: docker:19.03
   cache: {}
-  tags: ["osdu-medium"]
+  tags: ["osdu-small"]
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA
     IMAGE_TAG_LATEST: $CI_REGISTRY_IMAGE/osdu-gcp:latest
@@ -177,7 +177,7 @@ osdu-gcp-containerize-for-release:
   stage: containerize
   image: docker:19.03
   cache: {}
-  tags: ["osdu-medium"]
+  tags: ["osdu-small"]
   only:
     variables:
       - $OSDU_GCP == 'true' && $CI_COMMIT_TAG != null
