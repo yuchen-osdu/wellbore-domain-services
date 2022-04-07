@@ -50,7 +50,7 @@ async def get_well_osdu(
 ) -> Well:
     # Note: version is dropped here
     record_id, _ = split_record_id_version(wellid)
-    if OSDU_WELL_REGEX.match(wellid) is None:
+    if OSDU_WELL_REGEX.match(record_id) is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Well")
 
     storage_client = await get_storage_record_service(ctx)

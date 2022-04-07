@@ -48,7 +48,7 @@ async def get_wellbore_osdu(
 ) -> Wellbore:
     # Note: version is dropped here
     record_id, _ = split_record_id_version(wellboreid)
-    if OSDU_WELLBORE_REGEX.match(wellboreid) is None:
+    if OSDU_WELLBORE_REGEX.match(record_id) is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
 
     storage_client = await get_storage_record_service(ctx)
