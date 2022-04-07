@@ -90,3 +90,10 @@ def test_get_stats(app_configurable_with_testclient):
     }
     get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response.status_code == 404
+
+    params = {
+        'curves': "bool-D,string-E"
+    }
+    get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    # todo: Update BulkStatistics class + swagger when only not computable columns are requested, 400 error is expected
+    assert get_stats_response.status_code == 400
