@@ -34,7 +34,8 @@ def local_dev_config(tmp_path_factory):
         "SERVICE_HOST_STORAGE": "https://test-endpoint/api/storage",
         "SERVICE_HOST_SEARCH": "https://test-endpoint/api/search",
         "MODULES": "log_recognition.routers.log_recognition",
-        'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="foo-")),
+        'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="blob-")),
+        'USE_INTERNAL_STORAGE_SERVICE_WITH_PATH': str(tmp_path_factory.mktemp(basename="storage-")),
         # This one is necessary as long as we have can_run() in modules depending on it
         "ENVIRONMENT_NAME": "evd"
     }, contextual_loader=cloud_provider_additional_environment)
@@ -233,12 +234,14 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         """
         nonlocal app, client
 
-        ## configure app_injector -- needs to be reset after fixture execution ##
-        if storage_client_mock is not None:
-            app_injector.register(
-                StorageRecordServiceClient, injection_coro_builder(return_value=storage_client_mock),
-        WithLifeTime.Singleton()
-            )
+        # todo: Find correct way to use storage with local blob storage
+
+        # ## configure app_injector -- needs to be reset after fixture execution ##
+        # if storage_client_mock is not None:
+        #     app_injector.register(
+        #         StorageRecordServiceClient, injection_coro_builder(return_value=storage_client_mock),
+        # WithLifeTime.Singleton()
+        #     )
 
         if search_client_mock is not None:
             app_injector.register(SearchServiceClient, injection_coro_builder(return_value=search_client_mock),

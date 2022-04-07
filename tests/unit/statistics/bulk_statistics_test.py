@@ -137,6 +137,7 @@ def create_test_bulk_session() -> Session:
             ],
             (2, 8)
     ),
+    # todo: add test case with NaN values
 ])
 async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name_by_index, expected_shape):
     bulk_statistics, dask_storage = bulk_stats_fixture
