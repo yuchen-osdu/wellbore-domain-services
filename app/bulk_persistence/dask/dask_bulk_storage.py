@@ -26,8 +26,8 @@ from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
 from ...helper.logger import get_logger
 from ...helper.traces import with_trace
-from app.persistence.sessions_storage import Session
 from ..capture_timings import capture_timings
+from ..sessions_storage import Session
 from app.conf import Config
 
 from .client import DaskClient

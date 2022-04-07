@@ -23,6 +23,9 @@ from .consistency_checks import ConsistencyException, DataConsistencyChecks
 from .dask.client import DaskClient
 from .dask.localcluster import DaskException
 from .capture_timings import capture_timings
+from .sessions_storage import Session, SessionsStorage, \
+            SessionNotFound, SessionInvalidState, SessionUpdatedEtagUnmatched, SessionException, \
+            SessionState, SessionUpdateMode, SessionInternal, CommitSessionResponse
 
 # TMP: this should probably not be exposed outside of the bulk_persistence package
 from .temp_dir import get_temp_dir

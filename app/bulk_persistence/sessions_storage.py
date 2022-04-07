@@ -25,9 +25,9 @@ from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
 
 from app.helper.traces import with_trace
-from app.bulk_persistence import capture_timings
 from app.helper.logger import get_logger
 
+from .capture_timings import capture_timings
 
 class SessionState(str, Enum):
     Open = 'open',
