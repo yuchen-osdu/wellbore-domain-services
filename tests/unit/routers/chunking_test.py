@@ -18,7 +18,6 @@ from app.middleware import require_data_partition_id
 from app.persistence.sessions_storage import SessionsStorage, SessionState
 from app.conf import Config
 
-from app.wdms_app import app_injector, wdms_app
 from fastapi.testclient import TestClient
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
@@ -90,7 +89,7 @@ def _df_to_format(df, data_format):
         raise ValueError(f"Unknown content-type: '{data_format}'")
 
 
-def _create_record(client, entity_type):
+def _create_record(client: TestClient, entity_type):
     entity_def = Definitions[entity_type]
     create_url = entity_def['base_url']
     kind = entity_def['kind']
@@ -126,6 +125,7 @@ def _cast_datetime_to_datetime64_ns(result_df):
 
 @pytest.fixture
 def dasked_test_app(init_fixtures, event_loop, tmp_path, nope_logger_fixture):
+    from app.wdms_app import app_injector, wdms_app
 
     local_blob_storage = LocalFSBlobStorage(directory=tmp_path)
 
@@ -159,6 +159,8 @@ def dasked_test_app(init_fixtures, event_loop, tmp_path, nope_logger_fixture):
 
 @pytest.fixture
 def dasked_test_app_without_consistency(dasked_test_app):
+    from app.wdms_app import wdms_app
+
     app = dasked_test_app
     # disable wellLog data consistency check for tests
     previous_overrides = wdms_app.dependency_overrides
@@ -387,7 +389,7 @@ def _send_chunk(client, url, chunk_df, data_format):
     assert chunk_response.status_code == 200
 
 
-def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='update', data_format='json'):
+def _create_chunks(client, entity_type: str, cols_ranges, record_id, session_mode='update', data_format='json'):
     """ Create session, add chunks with given columns and index, validate the session """
 
     chunking_url = Definitions[entity_type]["chunking_url"]
