@@ -46,10 +46,10 @@ router = APIRouter(route_class=TracingRoute)
 async def get_wellbore_osdu(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
+    if OSDU_WELLBORE_REGEX.match(wellboreid) is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
     # Note: version is dropped here
     record_id, _ = split_record_id_version(wellboreid)
-    if OSDU_WELLBORE_REGEX.match(record_id) is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
 
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)

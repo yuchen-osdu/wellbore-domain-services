@@ -48,10 +48,10 @@ router = APIRouter(route_class=TracingRoute)
 async def get_well_osdu(
     wellid: str, ctx: Context = Depends(get_ctx)
 ) -> Well:
+    if OSDU_WELL_REGEX.match(wellid) is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Well")
     # Note: version is dropped here
     record_id, _ = split_record_id_version(wellid)
-    if OSDU_WELL_REGEX.match(record_id) is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Well")
 
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
