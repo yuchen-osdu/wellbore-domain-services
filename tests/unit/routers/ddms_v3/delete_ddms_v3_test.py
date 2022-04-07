@@ -22,7 +22,7 @@ from opencensus.trace import base_exporter
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence import DaskBulkStorage
 from app.clients import StorageRecordServiceClient
 from odes_storage.models import RecordVersions
 

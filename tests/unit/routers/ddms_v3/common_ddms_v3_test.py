@@ -18,13 +18,11 @@ from odes_storage import UnexpectedResponse
 import pandas as pd
 import pytest
 from app.auth.auth import require_opendes_authorized_user
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
+from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage, SessionsStorage
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.model.osdu_model import Well, Wellbore
-from app.bulk_persistence import SessionsStorage
 from app.wdms_app import app_injector, wdms_app
 from fastapi import status
 from fastapi.testclient import TestClient

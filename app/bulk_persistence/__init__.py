@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from .bulk_uri import BulkURI
+from .dask.dask_bulk_storage import DaskBulkStorage
+from .dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from .dataframe_persistence import create_and_store_dataframe, get_dataframe, download_bulk
 from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerSync
 from .json_orient import JSONOrient

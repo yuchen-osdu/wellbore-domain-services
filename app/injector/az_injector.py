@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from app.bulk_persistence import resolve_tenant
-from app.bulk_persistence.dask.dask_bulk_storage import (DaskBulkStorage)
+from app.bulk_persistence import DaskBulkStorage
 from app.context import Context
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu_az.storage.blob_storage_az import AzureAioBlobStorage
