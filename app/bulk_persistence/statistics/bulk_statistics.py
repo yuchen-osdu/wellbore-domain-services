@@ -86,6 +86,7 @@ class BulkStatistics:
 
         bulk_df = self._fetch_bulks(catalog, columns)
         computed_stats = bulk_df.describe(datetime_is_numeric=True).astype('string').transpose()
+        computed_stats["total_count"] = catalog.nb_rows
 
         self._save(computed_stats, record_id, bulk_uri)
 

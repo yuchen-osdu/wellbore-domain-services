@@ -3,6 +3,7 @@ import datetime
 from typing import List
 
 import mock
+import numpy as np
 import pytest
 
 from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError
@@ -71,11 +72,18 @@ async def add_bulk_data_to_fixture(dask_blob_storage, typed_df):
 
 
 async def add_bulk_data_by_chunks_to_fixture(dask_blob_storage, cols_with_index: List[tuple]):
-    session = create_test_bulk_session()
 
+    session = create_test_bulk_session()
     coroutines = []
     for columns_name, values_index in cols_with_index:
         chunk_df = generate_df(columns_name, values_index)
+
+        cols_with_nan = [c for c in chunk_df.columns if c.endswith('nan')]
+        for col_with_nan in cols_with_nan:
+            col_data = chunk_df[col_with_nan]
+            for i in range(0, col_data.size, 2):
+                col_data[i] = np.NAN
+
         chunk_data = chunk_df.to_parquet(engine='pyarrow')
 
         routine = dask_blob_storage.add_chunk_in_session(chunk_data,
@@ -149,11 +157,54 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
     futures = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri)
     await asyncio.gather(*futures)
 
+    df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    assert df_stats.shape == expected_shape
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("cols_name_by_index, expected_shape", [
+    (
+            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], (3, 9)
+    ),
+    (
+            [(['int-A-nan', 'float-B', 'date-C-nan', 'bool-D', 'string-E'], range(500))], (3, 9)
+    ),
+])
+async def test_bulk_statistics_get_statistics(bulk_stats_fixture, cols_name_by_index, expected_shape):
+    bulk_statistics, dask_storage = bulk_stats_fixture
+    record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+
+    all_cols = []
+    for requested_cols, _ in cols_name_by_index:
+        all_cols.extend(requested_cols)
+    distinct_cols = set(all_cols)
+    valid_cols = [c for c in distinct_cols
+                  if not c.startswith('bool') and not c.startswith('string')]
+
+    assert valid_cols, "At least one columns needs to be valid for test cases below"
+
+    futures = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri)
+    await asyncio.gather(*futures)
+
     with pytest.raises(RequestedCurvesError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
 
-    df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
-    assert df_stats.shape == expected_shape
+    computable_col_plus_invalid_cols = [valid_cols[0], 'incorrect-column-name']
+    with pytest.raises(RequestedCurvesError):
+        await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=computable_col_plus_invalid_cols)
+
+    not_computable_cols = ['bool-D', 'string-E']
+    result_df_1 = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=not_computable_cols)
+    assert result_df_1.empty
+
+    not_computable_cols_plus_valid_cols = not_computable_cols + [valid_cols[0]]
+    result_df_2 = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=not_computable_cols_plus_valid_cols)
+    assert result_df_2.shape == (1, 9)
+    assert result_df_2.index == [valid_cols[0]]
+
+    result_df_with_nan_cols = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    assert result_df_with_nan_cols.shape == (3, 9)
+    assert list(result_df_with_nan_cols.index) == valid_cols
 
 
 @pytest.mark.asyncio
