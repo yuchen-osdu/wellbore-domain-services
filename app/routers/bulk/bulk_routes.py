@@ -17,9 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
-from app.model.filter import BulkReadFilters
-from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
-
+from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace

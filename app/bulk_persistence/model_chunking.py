@@ -18,8 +18,8 @@ import re
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from .filter import BulkReadFilterOperator, BulkFilter
-from ..bulk_persistence.dask.errors import FilterError
+from .bulk_filter import BulkReadFilterOperator, BulkFilter
+from .dask.errors import FilterError
 
 
 class GetDataParams:

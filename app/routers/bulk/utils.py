@@ -25,8 +25,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.context import get_ctx, Context
 from app.utils import OpenApiHandler
 from app.helper.traces import with_trace
-from app.model.filter import BulkReadFilterOperator, BulkReadFilters
-from app.model.model_chunking import GetDataParams, DataframeDescribe
+from app.bulk_persistence import BulkReadFilterOperator, BulkReadFilters, GetDataParams, DataframeDescribe
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 
 from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks, TrajectoryDataConsistencyChecks

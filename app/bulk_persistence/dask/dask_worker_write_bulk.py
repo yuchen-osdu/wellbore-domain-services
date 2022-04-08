@@ -5,7 +5,7 @@ import fsspec
 import pandas as pd
 
 from .utils import WDMS_INDEX_NAME
-from app.model.model_chunking import DataframeBasicDescribe
+from ..model_chunking import DataframeBasicDescribe
 
 # imports from bulk_persistence
 from ..json_orient import JSONOrient
