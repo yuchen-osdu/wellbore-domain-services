@@ -22,9 +22,10 @@ from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import to_record, from_record
+from app.model.osdu_record_id import split_record_id_version
 from app.model.osdu_model import WellboreMarkerSet110 as WellboreMarkerSet
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils, OSDU_WELLBOREMARKERSET_VERSION_REGEX
+from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
@@ -46,11 +47,11 @@ router = APIRouter(route_class=TracingRoute)
 async def get_wellbore_markerset_osdu(
         wellboremarkersetid: str, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreMarkerSet:
+    # Note: version is dropped here
+    record_id, _ = split_record_id_version(wellboremarkersetid)
     storage_client = await get_storage_record_service(ctx)
-    wellboremarkersetid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBOREMARKERSET_VERSION_REGEX,
-                                                                  wellboremarkersetid)
     wellboreMarkerset_record = await storage_client.get_record(
-        id=wellboremarkersetid, data_partition_id=ctx.partition_id
+        id=record_id, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreMarkerset_record, request.state)
     return from_record(WellboreMarkerSet, wellboreMarkerset_record)
@@ -73,8 +74,7 @@ async def get_wellbore_markerset_osdu(
 )
 async def del_osdu_wellboreMarkerset(wellboremarkersetid: str, ctx: Context = Depends(get_ctx)):
     storage_client = await get_storage_record_service(ctx)
-    wellboremarkersetid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBOREMARKERSET_VERSION_REGEX,
-                                                                  wellboremarkersetid)
+    wellboremarkersetid, _ = split_record_id_version(wellboremarkersetid)
     await storage_client.delete_record(
         id=wellboremarkersetid, data_partition_id=ctx.partition_id
     )
@@ -116,8 +116,8 @@ async def get_osdu_wellboreMarkerset_version(
         wellboremarkersetid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreMarkerSet:
     storage_client = await get_storage_record_service(ctx)
-    wellboremarkersetid = DMSV3RouterUtils.get_id_without_version(OSDU_WELLBOREMARKERSET_VERSION_REGEX,
-                                                                  wellboremarkersetid)
+    wellboremarkersetid, _ = split_record_id_version(wellboremarkersetid)
+
     wellboreMarkerset_record = await storage_client.get_record_version(
         id=wellboremarkersetid, version=version, data_partition_id=ctx.partition_id
     )

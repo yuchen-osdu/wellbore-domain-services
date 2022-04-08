@@ -16,6 +16,8 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
 from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
 from starlette.requests import Request
 
+from app.model.osdu_record_id import split_record_id_version, OSDU_WELLBORE_REGEX
+
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import from_record, to_record
 from app.model.osdu_model import Wellbore
@@ -28,14 +30,6 @@ from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
-
-
-async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
-    storage_client = await get_storage_record_service(ctx)
-    wellbore_record = await storage_client.get_record(
-        id=wellboreid, data_partition_id=ctx.partition_id
-    )
-    return from_record(Wellbore, wellbore_record)
 
 
 @router.get(
@@ -52,12 +46,14 @@ async def get_osdu_wellbore(wellboreid: str, ctx: Context) -> Wellbore:
 async def get_wellbore_osdu(
     wellboreid: str, ctx: Context = Depends(get_ctx)
 ) -> Wellbore:
-    is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versioned_wellbore_id(wellboreid)
-    if is_osdu_versioned:
-        return await get_osdu_wellbore(osdu_id, ctx)
-    if DMSV3RouterUtils.is_osdu_wellbore_id(wellboreid):
-        return await get_osdu_wellbore(wellboreid, ctx)
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
+    if OSDU_WELLBORE_REGEX.match(wellboreid) is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Wellbore")
+    # Note: version is dropped here
+    record_id, _ = split_record_id_version(wellboreid)
+
+    storage_client = await get_storage_record_service(ctx)
+    well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
+    return from_record(Wellbore, well_record)
 
 
 @router.delete(

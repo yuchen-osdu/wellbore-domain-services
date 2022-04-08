@@ -18,6 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe
+from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
@@ -375,13 +376,14 @@ async def complete_session(
 
             i_session = commit_guard.session
             i_session.session.meta = i_session.session.meta or {}
-            i_session.session.meta.update({"some_detail_about_merge": "like the shape, number of rows ..."})
+
+            _, updated_version = split_record_id_version(new_record.record_id_versions[0])
+            if updated_version is None:
+                raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
 
             response = CommitSessionResponse(
                 **i_session.session.dict(exclude_unset=True, by_alias=True),
-                version=DMSV3RouterUtils.get_version_from_record_id_version(
-                    new_record.record_id_versions[0]
-                )
+                version=updated_version
             )
 
             return response
