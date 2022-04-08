@@ -22,6 +22,7 @@ from odes_storage.models import (
     RecordVersions,
 )
 from app.model.osdu_model import Well
+from app.model.osdu_record_id import split_record_id_version, OSDU_WELL_REGEX
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
@@ -31,14 +32,6 @@ from app.routers.record_utils import fetch_record
 from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
-
-
-async def get_osdu_well(wellid: str, ctx: Context) -> Well:
-    storage_client = await get_storage_record_service(ctx)
-    well_record = await storage_client.get_record(
-        id=wellid, data_partition_id=ctx.partition_id
-    )
-    return from_record(Well, well_record)
 
 
 @router.get(
@@ -55,13 +48,14 @@ async def get_osdu_well(wellid: str, ctx: Context) -> Well:
 async def get_well_osdu(
     wellid: str, ctx: Context = Depends(get_ctx)
 ) -> Well:
-    is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versioned_well_id(wellid)
-    if is_osdu_versioned:
-        return await get_osdu_well(osdu_id, ctx)
-    if DMSV3RouterUtils.is_osdu_well_id(wellid):
-        return await get_osdu_well(wellid, ctx)
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Well")
+    if OSDU_WELL_REGEX.match(wellid) is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Well")
+    # Note: version is dropped here
+    record_id, _ = split_record_id_version(wellid)
 
+    storage_client = await get_storage_record_service(ctx)
+    well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
+    return from_record(Well, well_record)
 
 
 @router.delete(
