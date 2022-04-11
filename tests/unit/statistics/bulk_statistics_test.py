@@ -139,11 +139,10 @@ def _bulk_stats_columns_if_date_type_only() -> List[str]:
             [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], 3, _bulk_stats_columns()
     ),
     (
-
-            [(['date-C'], range(100))], 1, _bulk_stats_columns_if_date_type_only()
+            [(['date-C', 'date-D'], range(100))], 1, _bulk_stats_columns_if_date_type_only()
     ),
     (
-            [(['int-A', 'float-B', 'date-C'], range(2_000_000))], 3, _bulk_stats_columns()
+            [(['int-A', 'float-B', 'date-C'], range(1_000_000))], 3, _bulk_stats_columns()
     ),
     (
             [

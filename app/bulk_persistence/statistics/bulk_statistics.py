@@ -1,5 +1,7 @@
 from typing import List, Callable, Iterable
 import itertools
+
+import numpy as np
 import pandas as pd
 
 from app.helper.logger import get_logger
@@ -95,8 +97,13 @@ class BulkStatistics:
         computed_stats = bulk_df.describe(
             datetime_is_numeric=True,
             percentiles=BulkStatistics._percentiles
-        ).astype('string').transpose()
+        )
+        if 'std' not in computed_stats.index:
+            # if only dates dtypes are in bulk_df, standard deviation column (std) will be omitted,
+            # it forces the creation
+            computed_stats.loc['std'] = np.nan
 
+        computed_stats = computed_stats.astype('string').transpose()
         computed_stats[BulkStatistics._valid_values_label] = catalog.nb_rows
         computed_stats.rename(columns=BulkStatistics._renaming_stats_labels)
 
