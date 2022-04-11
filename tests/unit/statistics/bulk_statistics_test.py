@@ -117,13 +117,33 @@ def create_test_bulk_session() -> Session:
     return session
 
 
+def _bulk_stats_columns() -> List[str]:
+    """
+        Return the expected list of columns of bulk stats
+    """
+    return sorted(['count', 'mean', 'min', '10%', '50%', '90%', 'max', 'std', 'total_count'])
+
+
+def _bulk_stats_columns_if_date_type_only() -> List[str]:
+    """
+        # If there is only date, 'std' (standard deviation) is NaN then ignored from result
+    """
+    columns = _bulk_stats_columns()
+    columns.remove('std')
+    return columns
+
+
 @pytest.mark.asyncio
-@pytest.mark.parametrize("cols_name_by_index, expected_shape", [
+@pytest.mark.parametrize("cols_name_by_index, expected_rows, expected_cols", [
     (
-            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], (3, 9)
+            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], 3, _bulk_stats_columns()
     ),
     (
-            [(['int-A', 'float-B', 'date-C'], range(1_000_000))], (3, 9)
+
+            [(['date-C'], range(100))], 1, _bulk_stats_columns_if_date_type_only()
+    ),
+    (
+            [(['int-A', 'float-B', 'date-C'], range(2_000_000))], 3, _bulk_stats_columns()
     ),
     (
             [
@@ -132,7 +152,7 @@ def create_test_bulk_session() -> Session:
                 (['float-A', 'float-B', 'float-C'], range(400_000, 500_000)),
                 (['float-A', 'float-B', 'float-C'], range(500_000, 1_000_000)),
             ],
-            (3, 9)
+            3, _bulk_stats_columns()
     ),
     (
             [
@@ -143,11 +163,13 @@ def create_test_bulk_session() -> Session:
                 (['float-A'], range(3_000_000, 4_000_000)),
                 (['float-B'], range(3_000_000, 4_000_000)),
             ],
-            (2, 8)
+            2, _bulk_stats_columns()
     ),
     # todo: add test case with NaN values
 ])
-async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name_by_index, expected_shape):
+async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name_by_index,
+                                                   expected_rows, expected_cols):
+
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
 
@@ -158,16 +180,19 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
     await asyncio.gather(*futures)
 
     df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
-    assert df_stats.shape == expected_shape
+    assert len(df_stats) == expected_rows
+    assert sorted(list(df_stats.columns)) == expected_cols
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("cols_name_by_index, expected_shape", [
     (
-            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], (3, 9)
+            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))],
+            (3, len(_bulk_stats_columns_if_date_type_only()))
     ),
     (
-            [(['int-A-nan', 'float-B', 'date-C-nan', 'bool-D', 'string-E'], range(500))], (3, 9)
+            [(['int-A-nan', 'float-B', 'date-C-nan', 'bool-D', 'string-E'], range(500))],
+            (3, len(_bulk_stats_columns_if_date_type_only()))
     ),
 ])
 async def test_bulk_statistics_get_statistics(bulk_stats_fixture, cols_name_by_index, expected_shape):
@@ -230,4 +255,4 @@ async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
 
     df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
-    assert df_stats.shape == (columns_count, 8)
+    assert df_stats.shape == (columns_count, len(_bulk_stats_columns()))

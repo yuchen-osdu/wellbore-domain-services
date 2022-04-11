@@ -33,6 +33,10 @@ class BulkStatistics:
     max_number_values = 10_000_000
     max_colums_count = Config.max_columns_return.value
 
+    _valid_values_label = 'total_count'
+    _renaming_stats_labels = {'count': 'count_valid_values'}
+    _percentiles = [.10, .5, .90]
+
     def __init__(self, dask_blob_storage: DaskBulkStorage):
         self.dask_blob_storage = dask_blob_storage
 
@@ -83,10 +87,18 @@ class BulkStatistics:
         return pd.concat(dfs, ignore_index=True)
 
     def _compute(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
-
+        """
+        Note: Column 'std' (standard deviation) can be missing from results, when bulk data are made of date dtype.
+              Indeed, 'std' columns is NaN value, and it is ignored from resulting dataframe.
+        """
         bulk_df = self._fetch_bulks(catalog, columns)
-        computed_stats = bulk_df.describe(datetime_is_numeric=True).astype('string').transpose()
-        computed_stats["total_count"] = catalog.nb_rows
+        computed_stats = bulk_df.describe(
+            datetime_is_numeric=True,
+            percentiles=BulkStatistics._percentiles
+        ).astype('string').transpose()
+
+        computed_stats[BulkStatistics._valid_values_label] = catalog.nb_rows
+        computed_stats.rename(columns=BulkStatistics._renaming_stats_labels)
 
         self._save(computed_stats, record_id, bulk_uri)
 

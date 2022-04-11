@@ -75,7 +75,7 @@ def test_get_stats(app_configurable_with_testclient):
     get_stats_version_response = client.get(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert get_stats_version_response.status_code == 200
     df_result_1 = _create_df_from_response(get_stats_version_response)
-    assert df_result_1.shape == (2, 8)
+    assert df_result_1.shape == (2, 9)
 
     params = {
         'curves': "MD,X"
@@ -83,7 +83,7 @@ def test_get_stats(app_configurable_with_testclient):
     get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response.status_code == 200
     df_result_2 = _create_df_from_response(get_stats_response)
-    assert df_result_2.shape == (2, 8)
+    assert df_result_2.shape == (2, 9)
 
     params = {
         'curves': "UnknownColumnName"
