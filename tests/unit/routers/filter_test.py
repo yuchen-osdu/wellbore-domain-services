@@ -1,8 +1,8 @@
 import pytest
 
 from app.bulk_persistence.dask.errors import FilterError
-from app.model.model_chunking import GetDataParams
-from app.model.filter import BulkReadFilterOperator, BulkReadFilters
+from app.bulk_persistence import GetDataParams, \
+    BulkReadFilterOperator, BulkReadFilters
 
 
 @pytest.mark.parametrize("filters, expected", [
