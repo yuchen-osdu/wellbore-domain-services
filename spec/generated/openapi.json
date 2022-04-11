@@ -17037,6 +17037,7 @@
             "name": "wellboremarkersetid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboremarkersetid",
               "type": "string"
             }
@@ -17091,6 +17092,7 @@
             "name": "wellboremarkersetid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboremarkersetid",
               "type": "string"
             }
@@ -17154,6 +17156,7 @@
             "name": "wellboremarkersetid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboremarkersetid",
               "type": "string"
             }
@@ -17217,6 +17220,7 @@
             "name": "wellboremarkersetid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboremarkersetid",
               "type": "string"
             }
@@ -17463,6 +17467,7 @@
             "name": "wellboreid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboreid",
               "type": "string"
             }
@@ -17517,6 +17522,7 @@
             "name": "wellboreid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboreid",
               "type": "string"
             }
@@ -17580,6 +17586,7 @@
             "name": "wellboreid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboreid",
               "type": "string"
             }
@@ -17643,6 +17650,7 @@
             "name": "wellboreid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboreid",
               "type": "string"
             }
@@ -18838,6 +18846,7 @@
             "name": "wellboretrajectoryid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboretrajectoryid",
               "type": "string"
             }
@@ -18902,6 +18911,7 @@
             "name": "wellboretrajectoryid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboretrajectoryid",
               "type": "string"
             }
@@ -18965,6 +18975,7 @@
             "name": "wellboretrajectoryid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboretrajectoryid",
               "type": "string"
             }
@@ -19028,6 +19039,7 @@
             "name": "wellboretrajectoryid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellboretrajectoryid",
               "type": "string"
             }
@@ -19990,6 +20002,7 @@
             "name": "welllogid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
               "title": "Welllogid",
               "type": "string"
             }
@@ -20054,6 +20067,7 @@
             "name": "welllogid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
               "title": "Welllogid",
               "type": "string"
             }
@@ -20117,6 +20131,7 @@
             "name": "welllogid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
               "title": "Welllogid",
               "type": "string"
             }
@@ -20180,6 +20195,7 @@
             "name": "welllogid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
               "title": "Welllogid",
               "type": "string"
             }
@@ -20354,6 +20370,7 @@
             "name": "wellid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellid",
               "type": "string"
             }
@@ -20408,6 +20425,7 @@
             "name": "wellid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellid",
               "type": "string"
             }
@@ -20471,6 +20489,7 @@
             "name": "wellid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellid",
               "type": "string"
             }
@@ -20534,6 +20553,7 @@
             "name": "wellid",
             "required": true,
             "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
               "title": "Wellid",
               "type": "string"
             }
