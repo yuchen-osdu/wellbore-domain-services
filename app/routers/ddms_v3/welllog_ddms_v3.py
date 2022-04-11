@@ -55,7 +55,7 @@ async def get_welllog_osdu(
         welllogid: WellLogId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellLog:
     storage_client = await get_storage_record_service(ctx)
-    # TODO version is dropped here, it would be better to either return an error or return the version not the latest
+    # Note: version is dropped here
     welllogid, _ = split_record_id_version(welllogid)
 
     welllog_record = await storage_client.get_record(

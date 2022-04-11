@@ -51,7 +51,7 @@ async def get_wellbore_trajectory_osdu(
     wellboretrajectoryid: WellboreTrajectoryId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreTrajectory:
     storage_client = await get_storage_record_service(ctx)
-    # TODO version is dropped here, it would be better to either return an error or return the version not the latest
+    # Note: version is dropped here
     wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
 
     wellboreTrajectory_record = await storage_client.get_record(

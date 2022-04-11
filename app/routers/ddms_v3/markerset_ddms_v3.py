@@ -47,13 +47,11 @@ router = APIRouter(route_class=TracingRoute)
 async def get_wellbore_markerset_osdu(
         wellboremarkersetid: WellboreMarkerSetId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreMarkerSet:
-    # TODO version is dropped here, it would be better to either return an error or return the version not the latest
-    wellboremarkersetid, _ = split_record_id_version(wellboremarkersetid)
+    # Note: version is dropped here
+    record_id, _ = split_record_id_version(wellboremarkersetid)
     storage_client = await get_storage_record_service(ctx)
 
-    wellboreMarkerset_record = await storage_client.get_record(
-        id=wellboremarkersetid, data_partition_id=ctx.partition_id
-    )
+    wellboreMarkerset_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreMarkerset_record, request.state)
     return from_record(WellboreMarkerSet, wellboreMarkerset_record)
 

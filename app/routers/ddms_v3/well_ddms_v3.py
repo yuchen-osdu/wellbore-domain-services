@@ -46,7 +46,7 @@ router = APIRouter(route_class=TracingRoute)
     },
 )
 async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Well:
-    # TODO version is dropped here, it would be better to either return an error or return the version not the latest
+    # Note: version is dropped here
     record_id, _ = split_record_id_version(wellid)
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
