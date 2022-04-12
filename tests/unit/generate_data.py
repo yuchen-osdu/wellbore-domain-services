@@ -11,7 +11,7 @@ def generate_df(columns, index):
         if col_name.startswith('bool'):
             return np.random.choice(a=[False, True], size=size)
         if col_name.startswith('date'):
-            return pd.date_range(start='1/1/2022', freq='us', periods=size)
+            return pd.date_range(start='1/1/2022', freq='s', periods=size)
         if col_name.startswith('array_'):
             array_size = int(col_name.split('_')[1])
             return [np.array(np.random.random_sample(size=array_size)) for _i in range(size)]
