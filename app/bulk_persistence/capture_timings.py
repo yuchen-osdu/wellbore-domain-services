@@ -4,7 +4,7 @@ from functools import wraps
 import asyncio
 from time import perf_counter, process_time
 
-from app.helper.logger import get_logger
+from ..helper.logger import get_logger
 
 
 def make_log_captured_timing_handler(level=INFO):

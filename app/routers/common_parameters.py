@@ -1,7 +1,7 @@
 from fastapi import Query, Request, HTTPException
 from pandas import DataFrame
 
-from app.bulk_persistence import MimeType, MimeTypes
+from app.bulk_persistence.mime_types import MimeType, MimeTypes
 from app.bulk_persistence import JSONOrient
 
 

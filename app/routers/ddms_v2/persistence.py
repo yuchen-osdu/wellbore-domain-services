@@ -16,10 +16,12 @@ import pandas as pd
 
 from odes_storage.models import Record
 
-from app.bulk_persistence import create_and_store_dataframe, get_dataframe, trace_dataframe_attributes
+from app.bulk_persistence import create_and_store_dataframe
+from app.bulk_persistence import get_dataframe
 from app.context import Context
 from app.model.log_bulk import LogBulkHelper
 
+from app.bulk_persistence.dask.traces import trace_dataframe_attributes
 from app.helper.traces import with_trace
 from app.helper.logger import get_logger
 

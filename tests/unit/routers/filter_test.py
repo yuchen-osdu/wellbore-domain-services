@@ -1,7 +1,8 @@
 import pytest
 
+from app.bulk_persistence.dask.errors import FilterError
 from app.bulk_persistence import GetDataParams, \
-    BulkReadFilterOperator, BulkReadFilters, FilterError
+    BulkReadFilterOperator, BulkReadFilters
 
 
 @pytest.mark.parametrize("filters, expected", [

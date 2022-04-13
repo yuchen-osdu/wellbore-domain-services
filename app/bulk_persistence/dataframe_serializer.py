@@ -24,7 +24,7 @@ from pydantic import BaseModel
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes, MimeType
 from app.pool_executor import get_pool_executor
-from app.helper.traces import with_trace
+from ..helper.traces import with_trace
 
 
 class DataframeSerializerSync:

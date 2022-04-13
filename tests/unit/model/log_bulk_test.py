@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from app.model.log_bulk import LogBulkHelper
-from app.bulk_persistence import BulkURI
+from app.bulk_persistence.bulk_uri import BulkURI
 from tests.unit.test_utils import basic_record
 import uuid
 import pytest
