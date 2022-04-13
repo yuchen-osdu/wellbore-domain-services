@@ -18,6 +18,7 @@ from app.auth.auth import require_opendes_authorized_user
 from app.middleware.basic_context_middleware import require_data_partition_id
 from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client
 from app.helper.traces import CombinedExporter
+from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
 
 
 @pytest.fixture(scope="module")
@@ -219,15 +220,17 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         ):
             print(f"configure {return_value} in app_injector")
             return return_value
+
         return injection_coro
 
     def configure_app(
-        *,
-        search_client_mock=default_search_mock,
-        storage_client_mock=default_storage_mock,
-        trace_exporter=create_autospec(CombinedExporter, spec_set=True, instance=True),
-        fake_opendes_authorized_user: bool = True,
-        fake_data_partition_id: bool = False
+            *,
+            search_client_mock=default_search_mock,
+            storage_client_mock=default_storage_mock,
+            trace_exporter=create_autospec(CombinedExporter, spec_set=True, instance=True),
+            fake_opendes_authorized_user: bool = True,
+            fake_data_partition_id: bool = False,
+            disable_bulk_consistency: bool = False,
     ):
         """builder generator that output an app mocked by default, and cleanup properly after use.
         If None is passed as a mock, then the original implementation is used.
@@ -250,19 +253,17 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         ## configure app -- needs to be reset after fixture execution ##
         app.trace_exporter = trace_exporter
 
-        async def opendes_authorized_user_mock_depend():
-            pass
-
         app.dependency_overrides[
             require_opendes_authorized_user
-        ] = opendes_authorized_user_mock_depend if fake_opendes_authorized_user else require_opendes_authorized_user
-
-        async def require_data_partition_id_mock_depend():
-            pass
+        ] = lambda: None if fake_opendes_authorized_user else require_opendes_authorized_user
 
         app.dependency_overrides[
             require_data_partition_id
-        ] = require_data_partition_id_mock_depend if fake_data_partition_id else require_data_partition_id
+        ] = lambda: None if fake_data_partition_id else require_data_partition_id
+
+        if disable_bulk_consistency:
+            app.dependency_overrides[set_welllog_data_consistency_check] = lambda: None
+            app.dependency_overrides[set_trajectory_data_consistency_check] = lambda: None
 
         # return the app, ready to be started along with the client
         return app, client
