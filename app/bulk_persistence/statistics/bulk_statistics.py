@@ -94,13 +94,16 @@ class BulkStatistics:
               Indeed, 'std' columns is NaN value, and it is ignored from resulting dataframe.
         """
         bulk_df = self._fetch_bulks(catalog, columns)
+
         computed_stats = bulk_df.describe(
             datetime_is_numeric=True,
             percentiles=BulkStatistics._percentiles
         )
         if 'std' not in computed_stats.index:
-            # if only dates dtypes are in bulk_df, standard deviation column (std) will be omitted,
-            # it forces the creation
+            # The standard deviation column 'std' is omitted from df.describe() result when
+            # all the dtypes of bulk data are date.
+            # To prevent the omission of 'std' column when reading parquet files later on,
+            # the creation of 'std' column is manually added.
             computed_stats.loc['std'] = np.nan
 
         computed_stats = computed_stats.astype('string').transpose()
