@@ -16,7 +16,7 @@ class DaskException(Exception):
 memory_leeway = parse_bytes("600Mi")
 
 
-def min_worker_memory_recommended(config: Config):
+def min_worker_memory_recommended(config):
     """Minimal amount of memory required for a Dask worker to not get bad performances"""
     return parse_bytes(config.min_worker_memory.value)
 
@@ -36,7 +36,7 @@ def recommended_workers_and_threads():
     return nprocesses_nthreads()
 
 
-def get_dask_configuration(*, config: Config, logger: Logger):
+def get_dask_configuration(*, config, logger: Logger):
     """
     Return recommended Dask workers configuration
     """
