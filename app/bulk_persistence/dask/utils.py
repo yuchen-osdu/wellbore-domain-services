@@ -20,7 +20,7 @@ import dask.dataframe as dd
 import pandas as pd
 import pyarrow.parquet as pa
 
-from ...helper.logger import get_logger
+from app.helper.logger import get_logger
 from ..capture_timings import capture_timings
 
 
