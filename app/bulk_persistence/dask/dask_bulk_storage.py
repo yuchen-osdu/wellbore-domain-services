@@ -24,8 +24,8 @@ import pyarrow.parquet as pa
 
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
-from ...helper.logger import get_logger
-from ...helper.traces import with_trace
+from app.helper.logger import get_logger
+from app.helper.traces import with_trace
 from ..capture_timings import capture_timings
 from ..sessions_storage import Session
 from app.conf import Config
