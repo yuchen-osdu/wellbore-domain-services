@@ -7,8 +7,10 @@ from dask.dataframe.core import DataFrame as DaskDataFrame
 from odes_storage.models import Record
 
 from app.helper.traces import with_trace
-from app.bulk_persistence import BulkRecordNotFound, \
-	DaskBulkStorage, ConsistencyException, DataConsistencyChecks, submit_with_trace
+from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
+from app.bulk_persistence.dask.dask_bulk_storage import BulkRecordNotFound
+from app.bulk_persistence import DaskBulkStorage
+from app.bulk_persistence.dask.traces import submit_with_trace
 from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
 from app.context import get_ctx

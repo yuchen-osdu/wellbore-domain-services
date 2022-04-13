@@ -18,7 +18,7 @@ from jsonpath_ng import parse as parse_jsonpath
 from jsonpath_ng.jsonpath import Parent as JsonParent
 from odes_storage.models import Record
 
-from app.bulk_persistence import BulkURI
+from app.bulk_persistence.bulk_uri import BulkURI
 
 
 class LogBulkHelper:

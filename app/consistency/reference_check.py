@@ -1,7 +1,7 @@
 import pandas as pd
 import math
 from pydantic import BaseModel
-from app.bulk_persistence import ConsistencyException, DataConsistencyChecks
+from app.bulk_persistence.consistency_checks import ConsistencyException, DataConsistencyChecks
 
 
 class ReferenceCurveException(ConsistencyException):
