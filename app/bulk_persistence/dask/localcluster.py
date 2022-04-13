@@ -5,7 +5,7 @@ from dask.utils import format_bytes, parse_bytes
 from distributed import system
 from distributed.deploy.utils import nprocesses_nthreads
 
-from app.conf import Config
+#from app.conf import Config
 
 
 class DaskException(Exception):

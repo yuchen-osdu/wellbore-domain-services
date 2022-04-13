@@ -14,7 +14,7 @@
 
 from dask.distributed import WorkerPlugin
 from app.helper.logger import get_logger, init_logger
-from app.conf import Config
+#from app.conf import Config
 
 
 class DaskWorkerPlugin(WorkerPlugin):

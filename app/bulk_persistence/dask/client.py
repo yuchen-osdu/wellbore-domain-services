@@ -19,7 +19,7 @@ from dask.utils import format_bytes
 from dask.distributed import Client as DaskDistributedClient
 from distributed import LocalCluster
 
-from app.conf import Config
+#from app.conf import Config
 
 from .localcluster import get_dask_configuration
 

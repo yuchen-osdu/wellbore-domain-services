@@ -5,7 +5,7 @@ import pandas as pd
 
 from .dask.utils import WDMS_INDEX_NAME
 from .dask.errors import BulkNotProcessable
-from app.conf import Config
+#from app.conf import Config
 
 
 ValidationResult = Tuple[bool, str]  # Tuple (is_dataframe_valid, failure_reason)

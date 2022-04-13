@@ -28,7 +28,7 @@ from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from ..capture_timings import capture_timings
 from ..sessions_storage import Session
-from app.conf import Config
+#from app.conf import Config
 
 from .client import DaskClient
 from .dask_worker_plugin import DaskWorkerPlugin

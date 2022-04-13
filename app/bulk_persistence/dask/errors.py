@@ -17,7 +17,7 @@ from dask.distributed import scheduler
 from pyarrow.lib import ArrowException, ArrowInvalid
 from functools import wraps
 
-from app.conf import Config
+#from app.conf import Config
 from app.helper.logger import get_logger
 
 
