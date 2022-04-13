@@ -17,20 +17,17 @@ def test_invalid_cases(app_configurable_with_testclient,mock_storage_client_hold
     get_stats_response = client.get(f'/ddms/v3/welllogs/{incorrect_record_id}/data/statistics')
     assert get_stats_response.status_code == 404
 
-    get_stats_response = client.post(f'/ddms/v3/welllogs/{incorrect_record_id}/data/statistics')
-    assert get_stats_response.status_code == 404
+    post_stats_response = client.post(f'/ddms/v3/welllogs/{incorrect_record_id}/data/statistics')
+    assert post_stats_response.status_code == 404
 
     valid_record_id = welllog_v3_record_list[0].id
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
-    assert get_stats_response.status_code == 404
+    get_valid_stats_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
+    assert get_valid_stats_response.status_code == 404
 
     version = '123456789'
-    invalid_version_id_stats_response = client.get(
+    invalid_version_id_get_stats_response = client.get(
         f"/ddms/v3/welllogs/{valid_record_id}/versions/{version}/data/statistics")
-    assert invalid_version_id_stats_response.status_code == 404
-
-    with pytest.raises(BulkRecordNotFound):
-        client.post(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
+    assert invalid_version_id_get_stats_response.status_code == 404
 
 
 def test_compute_stats(app_configurable_with_testclient, mock_storage_client_holding_data, welllog_v3_record_list):
