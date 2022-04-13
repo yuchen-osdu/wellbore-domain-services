@@ -38,7 +38,7 @@ from odes_storage.models import (
 from pydantic import BaseModel, Field
 
 from app.bulk_persistence import DataframeSerializerAsync, DataframeSerializerSync, JSONOrient, MimeTypes, get_dataframe
-from app.bulk_persistence.bulk_uri import BulkURI
+from app.bulk_persistence import BulkURI
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.log_bulk import LogBulkHelper
 from app.model.model_curated import log
