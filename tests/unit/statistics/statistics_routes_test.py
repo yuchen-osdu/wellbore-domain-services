@@ -88,9 +88,35 @@ def test_get_stats(app_configurable_with_testclient):
     get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response.status_code == 404
 
+
+def test_get_stats_from_not_computable_columns(app_configurable_with_testclient):
+
+    _, client = app_configurable_with_testclient(fake_data_partition_id=True,
+                                                 disable_bulk_consistency=True)
+    record_id = _create_record(client, "WellLog")
+    _create_chunks(client, 'WellLog',
+                   record_id=record_id,
+                   cols_ranges=[(
+                       # ["bool-C", "int-A", "string-B", "string-D"],
+                       ['int-A', 'string-B', 'bool-C', 'string-D'],
+                       range(20))])
+
+    compute_stats_response = client.post(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+    assert compute_stats_response.status_code == 200
+    # todo: it should be replaced by a more robust mechanism that folder existence check in BulkStatistics class
+    time.sleep(1)
+
+    # not computable curves + unknown curves requested => 404
     params = {
-        'curves': "bool-D,string-E"
+        'curves': "bool-D,string-E,UnknownColumn"
     }
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    get_stats_response_1 = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    assert get_stats_response_1.status_code == 404
+
+    # not computable curves requested => 400
+    params = {
+        'curves': "bool-C,string-D"
+    }
     # todo: Update BulkStatistics class + swagger when only not computable columns are requested, 400 error is expected
-    assert get_stats_response.status_code == 400
+    get_stats_response_2 = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    assert get_stats_response_2.status_code == 400
