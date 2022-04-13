@@ -3,7 +3,7 @@ from abc import ABC
 from typing import Optional
 from fastapi import Request
 
-from app.bulk_persistence.bulk_uri import BulkURI
+from app.bulk_persistence import BulkURI
 from app.model.log_bulk import LogBulkHelper
 
 
