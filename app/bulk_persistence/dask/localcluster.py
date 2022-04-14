@@ -5,7 +5,7 @@ from dask.utils import format_bytes, parse_bytes
 from distributed import system
 from distributed.deploy.utils import nprocesses_nthreads
 
-#from app.conf import Config
+from ..bulk_persistence_config import BulkPersistenceConfig
 
 
 class DaskException(Exception):
@@ -16,7 +16,7 @@ class DaskException(Exception):
 memory_leeway = parse_bytes("600Mi")
 
 
-def min_worker_memory_recommended(config):
+def min_worker_memory_recommended(config: BulkPersistenceConfig):
     """Minimal amount of memory required for a Dask worker to not get bad performances"""
     return parse_bytes(config.min_worker_memory.value)
 
@@ -36,7 +36,7 @@ def recommended_workers_and_threads():
     return nprocesses_nthreads()
 
 
-def get_dask_configuration(*, config, logger: Logger):
+def get_dask_configuration(*, config: BulkPersistenceConfig, logger: Logger):
     """
     Return recommended Dask workers configuration
     """
