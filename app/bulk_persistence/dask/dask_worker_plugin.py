@@ -27,7 +27,7 @@ class DaskWorkerPlugin(WorkerPlugin):
         logger.debug("WorkerPlugin initialised")
 
     def setup(self, worker):
-        init_logger(service_name=Config.service_name.value, config=Config)
+        init_logger(service_name=Config.service_name, config=Config)
 
         self.worker = worker
         if self._register_fsspec_implementation:
