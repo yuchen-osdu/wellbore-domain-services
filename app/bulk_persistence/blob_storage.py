@@ -52,7 +52,7 @@ from .mime_types import MimeType, MimeTypes
 # - using faster format, e.g. hd5
 # - threshold about the busyness of the service (if not busy and not huge data -> direct write)
 # - better proc fork and arg serialization
-from ..helper.traces import with_trace
+from app.helper.traces import with_trace
 
 
 def export_to_parquet(

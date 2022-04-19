@@ -17,10 +17,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
-from app.model.filter import BulkReadFilters
-from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
+from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe
 from app.model.osdu_record_id import split_record_id_version
-
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
@@ -44,13 +42,13 @@ from app.routers.bulk.utils import (with_dask_blob_storage,
 
 # imports for session manipulation
 from app.bulk_persistence import (
+    Session,
     SessionException,
     SessionState,
     SessionUpdateMode,
     SessionInternal,
     CommitSessionResponse
 )
-
 from app.routers.sessions import (
     UpdateSessionState,
     UpdateSessionStateValue,
@@ -59,18 +57,16 @@ from app.routers.sessions import (
 )
 
 # imports from bulk persistence
-from app.bulk_persistence.dataframe_validators import (auto_cast_columns_to_string,
-                                                       DataFrameValidationFunc,
-                                                       no_validation)
-from app.bulk_persistence import JSONOrient, get_dataframe, download_bulk
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
-from app.bulk_persistence.mime_types import MimeTypes, MimeType
-from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
-
-
-from app.bulk_persistence import DataConsistencyChecks
-
+from app.bulk_persistence import (auto_cast_columns_to_string,
+    DataFrameValidationFunc, no_validation,
+    JSONOrient,
+    get_dataframe, download_bulk,
+    DaskBulkStorage,
+    MimeTypes, MimeType,
+    trace_dataframe_attributes, trace_attributes_root_span,
+    BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
+    DataConsistencyChecks
+                                  )
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -381,7 +377,6 @@ async def complete_session(
 
             _, updated_version = split_record_id_version(new_record.record_id_versions[0])
             if updated_version is None:
-                # TODO same behavior as before but should we raise or just set 'version' to None ?
                 raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
 
             response = CommitSessionResponse(
