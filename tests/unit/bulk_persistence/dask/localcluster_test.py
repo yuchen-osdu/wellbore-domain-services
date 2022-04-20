@@ -3,8 +3,8 @@ import pytest
 from distributed.deploy.utils import nprocesses_nthreads
 
 
+from app.bulk_persistence.bulk_persistence_config import Config
 from app.bulk_persistence.dask.localcluster import (
-    min_worker_memory_recommended,
     memory_leeway,
     get_dask_configuration,
     DaskException,
@@ -32,7 +32,7 @@ def test_get_dask_configuration_just_enough_memory(
 ):
     def mock_system_memory():
         return (
-            min_worker_memory_recommended(local_dev_config) * memory_space_for_worker
+            Config.min_worker_memory_recommended * memory_space_for_worker
             + memory_leeway
         )
 
