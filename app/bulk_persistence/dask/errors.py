@@ -96,7 +96,7 @@ class TooManyColumnsRequested(BulkError):
     def __init__(self, nb_requested_cols):
         ex_message = (
             f"Too many columns: requested '{nb_requested_cols}',"
-            f" maximum allowed '{Config.max_columns_return.value}'")
+            f" maximum allowed '{Config.max_columns_return}'")
         super().__init__(ex_message)
             
 

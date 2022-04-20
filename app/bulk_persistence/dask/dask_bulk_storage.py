@@ -93,7 +93,7 @@ class DaskBulkStorage:
     @property
     def _data_ipc(self):
         # may be also adapted depending of size to data
-        if Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
+        if Config.dask_data_ipc == DaskLocalFileDataIPC.ipc_type:
             return DaskLocalFileDataIPC()
         assert self.client is not None, 'Dask client not initialized'
         return DaskNativeDataIPC(self.client)

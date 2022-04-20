@@ -67,8 +67,8 @@ def validate_index(df: pd.DataFrame) -> ValidationResult:
 
 def validate_number_of_columns(df: pd.DataFrame) -> ValidationResult:
     """ Verify max number of columns """
-    if len(df.columns) > Config.max_columns_per_chunk_write.value:
-        return False, f"Too many columns : maximum allowed '{Config.max_columns_per_chunk_write.value}'"
+    if len(df.columns) > Config.max_columns_per_chunk_write:
+        return False, f"Too many columns : maximum allowed '{Config.max_columns_per_chunk_write}'"
     return ValidationSuccess
 
 
