@@ -24,7 +24,6 @@ from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerS
 from .dataframe_validators import auto_cast_columns_to_string, columns_type_must_be_string, DataFrameValidationFunc, no_validation
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes, MimeType
-from .tenant_provider import resolve_tenant
 from .exceptions import UnknownChannelsException, InvalidBulkException, NoBulkException, NoDataException, RecordNotFoundException
 from .consistency_checks import ConsistencyException, DataConsistencyChecks
 from .dask.client import DaskClient
