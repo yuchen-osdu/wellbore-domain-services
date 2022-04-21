@@ -102,6 +102,7 @@ compile-and-unit-test:
     when: always
     paths:
       - all-requirements.txt
+      - ./**/python-*-output.txt
       - spec/generated/openapi.json
 
 verify_models:
