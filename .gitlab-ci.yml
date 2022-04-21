@@ -282,3 +282,5 @@ osdu-gcp-dev2-test:
 # Allow failure on private development deployments
 ibm-deploy-devpri:
   allow_failure: true
+aws-test-python:
+  allow_failure: true
