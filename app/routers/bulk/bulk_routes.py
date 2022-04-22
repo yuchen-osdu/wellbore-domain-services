@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import asyncio
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -66,8 +67,7 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
 from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
-
-
+from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 from app.bulk_persistence import DataConsistencyChecks
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
@@ -102,7 +102,7 @@ async def post_data(record_id: str,
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
 
     """
-    Handle a post data outside of a session. The given bulk will fully replace any existing one
+    Handle a post data outside a session. The given bulk will fully replace any existing one
     """
     record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
@@ -125,6 +125,9 @@ async def post_data(record_id: str,
                                                                   bulk_id=bulk_id,
                                                                   record=record,
                                                                   bulk_uri_access=bulk_uri_access)
+
+    await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, record.version)
+
     return update_record_response
     # TODO proposal: adding basic describe of data that has been stored
     # return PostDataResponse(**update_record_response.dict(exclude_unset=True, by_alias=True), dataStat=basic_describe)
@@ -368,7 +371,11 @@ async def complete_session(
 
                 new_bulk_id = await dask_blob_storage.session_commit(i_session.session, previous_bulk_id)
 
-                await consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id)
+                await asyncio.gather(
+                    consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id),
+                    BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, record.version)
+                )
+
                 # ==============>
                 # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
                 # ==============>

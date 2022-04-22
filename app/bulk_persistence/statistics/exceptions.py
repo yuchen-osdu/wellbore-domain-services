@@ -10,4 +10,9 @@ class ComputationRunningError(Exception):
 
 
 class StatisticsNotFoundError(Exception):
-    """ Raised if requestes bulk statistics does not exist"""
+    """ Raised if requested bulk statistics does not exist"""
+
+
+class ComputationNotCompleteError(Exception):
+    """ Raised if computation of requested bulk statistics is not finished yet """
+    pass

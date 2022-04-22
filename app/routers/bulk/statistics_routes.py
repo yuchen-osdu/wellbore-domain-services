@@ -80,6 +80,7 @@ Data types supported:
             - date  
 """
 
+
 @router.get(
     '/{record_id}/data/statistics',
     summary="Returns statistics of record's data for selected curves",
@@ -121,7 +122,9 @@ async def get_bulk_statistics(
                                                  bulk_uri_access=bulk_uri_access,
                                                  accept_type=accept_type)
     except (statistics_exceptions.StatisticsNotFoundError,
-            statistics_exceptions.RequestedCurvesError) as e:
+            statistics_exceptions.RequestedCurvesError,
+            statistics_exceptions.ComputationNotCompleteError,
+            BulkRecordNotFound) as e:
         get_logger().exception("get_bulk_statistics() has raised an exception")
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -213,7 +216,7 @@ async def compute_bulk_statistics(
         raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
 
     try:
-        await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id)
+        await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id, record.version)
     except statistics_exceptions.ComputationRunningError as e:
         get_logger().exception("compute_bulk_statistics() has raised an exception")
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))

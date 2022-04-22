@@ -52,7 +52,7 @@ async def bulk_stats_fixture(app_initialized_with_testclient, tmp_path, nope_log
 
     bulk_stats = BulkStatistics(dask_blob_storage=local_dask)
     bulk_stats.max_number_values = 500_000
-    bulk_stats.max_colums_count = 100
+    bulk_stats.max_columns_count = 100
     yield bulk_stats, local_dask
 
     local_dask.client.close()
