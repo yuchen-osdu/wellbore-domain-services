@@ -19,19 +19,21 @@ def post_welllog_data(client, record_id, columns, range_index):
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
 
-def wait_for_stats_3s(client, record_id):
+
+def fetch_stats_for_3s(client, record_id):
     api_results = []
 
     for i in range(6):
         get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
-        api_results.append(get_stats_response.status_code)
+        api_results.append(get_stats_response)
         if get_stats_response.status_code == 200:
             break
 
         asyncio.get_event_loop().run_until_complete(asyncio.sleep(0.5))
 
-    successful_response = [r for r in api_results if r == 200]
-    assert successful_response
+    successful_response = [r for r in api_results if r.status_code == 200]
+    faulty_responses = [r.content for r in api_results if r.status_code != 200]
+    assert successful_response, faulty_responses if faulty_responses else ""
     return successful_response[0]
 
 
@@ -94,7 +96,7 @@ def test_double_compute_stats(app_configurable_with_testclient):
                                                                         (['MD', 'X'], range(10, 30)),
                                                                         (['MD', 'X'], range(25, 40))])
 
-    wait_for_stats_3s(client, record_id)
+    fetch_stats_for_3s(client, record_id)
 
     compute_stats_response = client.post(f'/ddms/v3/welllogs/{record_id}/data/statistics')
     assert compute_stats_response.status_code == 409
@@ -108,7 +110,7 @@ def test_get_stats(app_configurable_with_testclient):
                                                                         (['MD', 'X'], range(10, 30)),
                                                                         (['MD', 'X'], range(25, 40))])
 
-    wait_for_stats_3s(client, record_id)
+    fetch_stats_for_3s(client, record_id)
 
     record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
     assert record_response.status_code == 200
@@ -150,7 +152,7 @@ def test_get_stats_from_not_computable_columns(app_configurable_with_testclient)
                        ['int-A', 'string-B', 'bool-C', 'string-D'],
                        range(20))])
 
-    wait_for_stats_3s(client, record_id)
+    fetch_stats_for_3s(client, record_id)
 
     # not computable curves + unknown curves requested => 404
     params = {
@@ -173,8 +175,8 @@ def test_get_stats_after_post_data(app_configurable_with_testclient):
     _, client = app_configurable_with_testclient(fake_data_partition_id=True,
                                                  disable_bulk_consistency=True)
     record_id = _create_record(client, "WellLog")
-    post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(100))
+    post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
 
-    response = wait_for_stats_3s(client, record_id)
+    response = fetch_stats_for_3s(client, record_id)
     assert response
     # todo: check stats values
