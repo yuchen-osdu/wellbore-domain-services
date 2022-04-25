@@ -111,7 +111,7 @@ def test_crud_get_as_record(delfi_id, kind, with_wdms_env):
 
     # Get it as osdu wellbore with delfi id
     result = build_request(f'crud.osdu_{kind}.get_osdu_{kind}').call(with_wdms_env)
-    result.assert_status_code(400)
+    result.assert_status_code(422)
 
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
