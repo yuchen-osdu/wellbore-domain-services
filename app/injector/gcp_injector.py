@@ -18,7 +18,8 @@ from osdu_gcp.storage.blob_storage_gcp import GCloudAioStorage
 from app.utils import get_http_client_session
 from .app_injector import AppInjector, AppInjectorModule
 from app.context import Context
-from app.bulk_persistence import resolve_tenant, DaskBulkStorage
+from app.tenant import resolve_tenant
+from app.bulk_persistence import DaskBulkStorage
 from osdu_gcp.storage.dask_storage_parameters import get_dask_storage_parameters as gcp_parameters
 
 
