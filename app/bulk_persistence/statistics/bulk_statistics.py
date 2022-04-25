@@ -10,6 +10,7 @@ import pandas as pd
 
 from app.helper.logger import get_logger
 from app.conf import Config
+from .models import BulkDataStatisticsMeta, BulkStatisticsStatus
 
 from .. import DataframeSerializerSync
 from dask.distributed import fire_and_forget
@@ -143,10 +144,10 @@ class BulkStatistics:
         existing_columns = catalog.all_columns_dtypes.keys()
 
         bulk_statistics_path = self._statistics_folder(record_id, bulk_uri)
-        stats_meta_data = dict(creation_utc_date=datetime.utcnow(),
-                               record_id=record_id,
-                               record_version=str(record_version),
-                               computation_status="started")
+        stats_meta_data = BulkDataStatisticsMeta(creation_utc_date=datetime.utcnow(),
+                                                 record_id=record_id,
+                                                 record_version=str(record_version),
+                                                 computation_status=BulkStatisticsStatus.Started)
         try:
             stats_meta_data = await self._push_statistics_meta_file(bulk_statistics_path,
                                                                     stats_meta_data,
@@ -167,26 +168,25 @@ class BulkStatistics:
                                         bulk_uri)
             started_tasks.append(f)
 
-        stats_meta_data.update({"computation_status": "running"})
+        stats_meta_data.computation_status = BulkStatisticsStatus.Running
         await self._push_statistics_meta_file(bulk_statistics_path, stats_meta_data, overwrite_meta_file=True)
-        get_logger().info(f"compute statistics: started_tasks {len(started_tasks)}.")
 
         future = self._submit_with_trace(self._set_statistics_file_as_complete,
                                          started_tasks,
                                          bulk_statistics_path,
-                                         dict(stats_meta_data))
+                                         stats_meta_data)
         fire_and_forget(future)
         return future
 
-    def _set_statistics_file_as_complete(self, compute_tasks, bulk_statistics_path: str, stats_meta_data: dict):
+    def _set_statistics_file_as_complete(self, compute_tasks, bulk_statistics_path: str,
+                                         stats_meta_data: BulkDataStatisticsMeta):
 
-        stats_meta_data.update({"computation_status": "complete"})
+        stats_meta_data.computation_status = BulkStatisticsStatus.Complete
         bulk_statistics_file_path = join(bulk_statistics_path, 'statistics.json')
 
         with self.dask_blob_storage._fs.open(bulk_statistics_file_path, 'w') as stats_meta_file:
-            data = json.dumps(stats_meta_data, indent=0, default=str)
-            stats_meta_file.write(data)
-
+            content = stats_meta_data.json()
+            stats_meta_file.write(content)
 
     def _fetch_statistics(self, bulk_statistics_path: str, columns: List[str]):
         statistics_df = pd.read_parquet(bulk_statistics_path,
@@ -194,24 +194,24 @@ class BulkStatistics:
 
         return statistics_df.filter(items=columns, axis=0)
 
-    @staticmethod
-    async def _blob_storage():
-        """ Return blob storage client on pointing out to the current data partition """
-        ctx = get_ctx()
+    # @staticmethod
+    # async def _blob_storage():
+    #     """ Return blob storage client on pointing out to the current data partition """
+    #     ctx = get_ctx()
+    #
+    #     # todo: need to double to make sure `get_ctx()` is still viable in case of delayed computation
+    #     tenant, storage = await asyncio.gather(
+    #         resolve_tenant(ctx.partition_id),
+    #         ctx.app_injector.get(BlobStorageBase)
+    #     )
+    #
+    #     return storage, tenant
 
-        # todo: need to double to make sure `get_ctx()` is still viable in case of delayed computation
-        tenant, storage = await asyncio.gather(
-            resolve_tenant(ctx.partition_id),
-            ctx.app_injector.get(BlobStorageBase)
-        )
-
-        return storage, tenant
-
-    async def _push_statistics_meta_file(self, bulk_statistics_path, stats_meta_data, overwrite_meta_file):
+    async def _push_statistics_meta_file(self, bulk_statistics_path: str, stats_meta_data: BulkDataStatisticsMeta,
+                                         overwrite_meta_file: bool):
 
         file_path = join(bulk_statistics_path, 'statistics.json')
-        json_dumps_with_kwargs = functools.partial(json.dumps, stats_meta_data, indent=0, default=str)
-        stats_meta_json = await asyncio.get_running_loop().run_in_executor(None, json_dumps_with_kwargs)
+        stats_meta_content = await asyncio.get_running_loop().run_in_executor(None, stats_meta_data.json)
 
         # todo: find a way to use blob storage client instead
         # storage, tenant = await self._blob_storage()
@@ -221,15 +221,16 @@ class BulkStatistics:
         #                      file_data=stats_meta_json,
         #                      content_type='application/json',
         #                      )
+
         if not overwrite_meta_file and self.dask_blob_storage._fs.exists(file_path):
             raise osdu_storage_exception.ResourceExistsException(file_path)
 
         with self.dask_blob_storage._fs.open(file_path, 'w', overwrite=overwrite_meta_file) as stats_meta_file:
-            stats_meta_file.write(stats_meta_json)
+            stats_meta_file.write(stats_meta_content)
 
         return stats_meta_data
 
-    async def _fetch_statistics_meta_file(self, bulk_statistics_path):
+    async def _fetch_statistics_meta_file(self, bulk_statistics_path) -> BulkDataStatisticsMeta:
 
         file_path = join(bulk_statistics_path, 'statistics.json')
 
@@ -239,9 +240,10 @@ class BulkStatistics:
 
         with self.dask_blob_storage._fs.open(file_path, 'r') as stats_meta_file:
             blob_content = stats_meta_file.read()
-            return await asyncio.get_running_loop().run_in_executor(None, json.loads, blob_content)
+            return await asyncio.get_running_loop().run_in_executor(None, BulkDataStatisticsMeta.parse_raw, blob_content)
 
-    async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) -> pd.DataFrame:
+    async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) \
+            -> (pd.DataFrame, BulkDataStatisticsMeta):
 
         bulk_statistics_path = self._statistics_folder(record_id, bulk_uri)
         try:
@@ -249,8 +251,7 @@ class BulkStatistics:
         except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError):
             raise StatisticsNotFoundError("Statistics do not exist")
 
-        # todo: use enum instead of plain text value
-        if statistics_meta.get('computation_status') != "complete":
+        if statistics_meta.computation_status != BulkStatisticsStatus.Complete:
             raise ComputationNotCompleteError("Statistics computation not finished yet")
 
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
@@ -264,4 +265,6 @@ class BulkStatistics:
 
 
         bulk_statistics_path = join(bulk_statistics_path, 'data')
-        return await self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)
+        stats_df = await self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)
+
+        return stats_df, statistics_meta

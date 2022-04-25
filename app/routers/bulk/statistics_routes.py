@@ -32,8 +32,10 @@ from app.bulk_persistence import JSONOrient
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound
 from app.bulk_persistence.mime_types import MimeTypes, MimeType
+
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
-import app.bulk_persistence.statistics.exceptions as statistics_exceptions
+from app.bulk_persistence.statistics.models import BulkDataStatistics, BulkDataStatisticsResponse
+from app.bulk_persistence.statistics import exceptions as statistics_exceptions
 
 from app.helper.logger import get_logger
 from app.helper.traces import TracingRoute
@@ -42,7 +44,6 @@ router = APIRouter(route_class=TracingRoute)
 
 
 async def fetch_record_info(ctx, bulk_uri_access, request, record_id, version):
-
     record = await fetch_record(ctx, record_id, version)
     if hasattr(request.state, 'version') and request.state.version != "V2":
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
@@ -55,13 +56,6 @@ async def fetch_record_info(ctx, bulk_uri_access, request, record_id, version):
         raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
 
     return record, bulk_uri
-
-
-class BulkDataStatistics(BaseModel):
-    columns: List[str]
-    index: List[str]
-    columns: List[str]
-    data: List[List[float]]
 
 
 api_description_text = """
@@ -110,23 +104,14 @@ async def get_bulk_statistics(
         ctx: Context = Depends(get_ctx),
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-        accept_type: MimeType = Depends(read_bulk_accept_type)
 ):
-    try:
-        return await get_bulk_statistics_version(request=request,
-                                                 record_id=record_id,
-                                                 version=str(),
-                                                 curves=curves,
-                                                 ctx=ctx,
-                                                 dask_blob_storage=dask_blob_storage,
-                                                 bulk_uri_access=bulk_uri_access,
-                                                 accept_type=accept_type)
-    except (statistics_exceptions.StatisticsNotFoundError,
-            statistics_exceptions.RequestedCurvesError,
-            statistics_exceptions.ComputationNotCompleteError,
-            BulkRecordNotFound) as e:
-        get_logger().exception("get_bulk_statistics() has raised an exception")
-        raise HTTPException(status_code=404, detail=str(e))
+    return await get_bulk_statistics_version(request=request,
+                                             record_id=record_id,
+                                             version=None,
+                                             curves=curves,
+                                             ctx=ctx,
+                                             dask_blob_storage=dask_blob_storage,
+                                             bulk_uri_access=bulk_uri_access)
 
 
 @router.get(
@@ -143,7 +128,6 @@ async def get_bulk_statistics(
         404: {"description": "Statistics or record not found"},
         200: {"content": {
             MimeTypes.JSON.type: {},
-            MimeTypes.PARQUET.type: {},
         }
         }
     }
@@ -157,8 +141,7 @@ async def get_bulk_statistics_version(
                                       example='MD,GR'),
         ctx: Context = Depends(get_ctx),
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-        accept_type: MimeType = Depends(read_bulk_accept_type)
+        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
     # todo: refactor re-used code
     record = await fetch_record(ctx, record_id, version)
@@ -175,12 +158,18 @@ async def get_bulk_statistics_version(
     columns = filter(None, map(str.strip, curves.split(',')))
     columns = list(dict.fromkeys(columns))
 
-    stats_df = await BulkStatistics(dask_blob_storage).get_bulk_statistics(record.id, bulk_uri.bulk_id, columns)
-    return await DataFrameRender.df_render(stats_df,
-                                           GetDataParams(describe=False),
-                                           accept_type,
-                                           orient=JSONOrient.split,
-                                           stat=None)
+    try:
+        stats_df, stats_meta = await BulkStatistics(dask_blob_storage).get_bulk_statistics(record.id,
+                                                                                           bulk_uri.bulk_id,
+                                                                                           columns)
+    except (statistics_exceptions.StatisticsNotFoundError,
+            statistics_exceptions.RequestedCurvesError,
+            statistics_exceptions.ComputationNotCompleteError,
+            BulkRecordNotFound) as e:
+        get_logger().exception("get_bulk_statistics() has raised an exception")
+        raise HTTPException(status_code=404, detail=str(e))
+
+    return BulkDataStatisticsResponse(**stats_meta.dict(), data=stats_df.to_dict(orient='dict'))
 
 
 @router.post(
