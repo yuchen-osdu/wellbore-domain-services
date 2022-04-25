@@ -31,9 +31,9 @@ def split_record_id_version(record_id: str) -> Tuple[Optional[str], Optional[int
     return match["record_id"], None if not version else int(version)
 
 
-# specific record_id model regex
-OSDU_WELL_REGEX = re.compile(r"^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$")
-OSDU_WELLBORE_REGEX = re.compile(r"^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$")
-OSDU_WELLLOG_REGEX = re.compile(r"^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$")
-OSDU_WELLBORETRAJECTORY_REGEX = re.compile(r"^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$")
-OSDU_WELLBOREMARKERSET_REGEX = re.compile(r"^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$")
+# specific record_id model, type const str with regex
+WellId = constr(regex=r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')
+WellboreId = constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')
+WellboreTrajectoryId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$')
+WellboreMarkerSetId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$')
+WellLogId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')

@@ -23,6 +23,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra, Field, constr
 from .model_curated import DDMSBaseModel
+from .osdu_record_id import WellId, WellboreId, WellboreTrajectoryId, WellboreMarkerSetId, WellLogId
+
 
 class Tags(BaseModel):
     class Config:
@@ -1257,7 +1259,7 @@ class Well(DDMSBaseModel):
     The origin of a set of wellbores.
     """
 
-    id: Optional[constr(regex=r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')] = Field(
+    id: Optional[WellId] = Field(
         None,
         description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
         example='namespace:master-data--Well:6c60ceb0-3521-57b7-9bd8-e1d7c9f66230',
@@ -1398,9 +1400,7 @@ class Wellbore(DDMSBaseModel):
     A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.
     """
 
-    id: Optional[
-        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')
-    ] = Field(
+    id: Optional[WellboreId] = Field(
         None,
         description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
         example='namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9',
@@ -1709,9 +1709,7 @@ class WellLogData110(
 
 
 class WellLog(DDMSBaseModel):
-    id: Optional[
-        constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')
-    ] = Field(
+    id: Optional[WellLogId] = Field(
         None,
         description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
         example='namespace:work-product-component--WellLog:c2c79f1c-90ca-5c92-b8df-04dbe438f414',
@@ -2147,11 +2145,7 @@ class WellboreTrajectory(DDMSBaseModel):
     Work Product Component describing an individual instance of a wellbore trajectory data object. Also called a deviation survey, wellbore trajectory is data that is used to calculate the position and spatial uncertainty of a planned or actual wellbore in 2-dimensional and 3-dimensional space.
     """
 
-    id: Optional[
-        constr(
-            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$'
-        )
-    ] = Field(
+    id: Optional[WellboreTrajectoryId] = Field(
         None,
         description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
         example='namespace:work-product-component--WellboreTrajectory:606f224a-ef1f-5690-9843-d26cd7e33e10',
@@ -2456,11 +2450,7 @@ class WellboreMarkerSet(DDMSBaseModel):
     Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.
     """
 
-    id: Optional[
-        constr(
-            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$'
-        )
-    ] = Field(
+    id: Optional[WellboreMarkerSetId] = Field(
         None,
         description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
         example='namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c',
