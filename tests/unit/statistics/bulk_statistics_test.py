@@ -175,8 +175,8 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
     with pytest.raises(StatisticsNotFoundError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
 
-    futures = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri)
-    await asyncio.gather(*futures)
+    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
+    await future
 
     df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
     assert len(df_stats) == expected_rows
@@ -207,8 +207,8 @@ async def test_bulk_statistics_get_statistics(bulk_stats_fixture, cols_name_by_i
 
     assert valid_cols, "At least one columns needs to be valid for test cases below"
 
-    futures = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri)
-    await asyncio.gather(*futures)
+    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
+    await future
 
     with pytest.raises(RequestedCurvesError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
@@ -247,8 +247,8 @@ async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
     with pytest.raises(StatisticsNotFoundError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
 
-    futures = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri)
-    await asyncio.gather(*futures)
+    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
+    await future
 
     with pytest.raises(RequestedCurvesError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])

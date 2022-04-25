@@ -176,6 +176,7 @@ class BulkStatistics:
                                          bulk_statistics_path,
                                          dict(stats_meta_data))
         fire_and_forget(future)
+        return future
 
     def _set_statistics_file_as_complete(self, compute_tasks, bulk_statistics_path: str, stats_meta_data: dict):
 
@@ -220,6 +221,8 @@ class BulkStatistics:
         #                      file_data=stats_meta_json,
         #                      content_type='application/json',
         #                      )
+        if not overwrite_meta_file and self.dask_blob_storage._fs.exists(file_path):
+            raise osdu_storage_exception.ResourceExistsException(file_path)
 
         with self.dask_blob_storage._fs.open(file_path, 'w', overwrite=overwrite_meta_file) as stats_meta_file:
             stats_meta_file.write(stats_meta_json)
@@ -243,9 +246,10 @@ class BulkStatistics:
         bulk_statistics_path = self._statistics_folder(record_id, bulk_uri)
         try:
             statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
-        except osdu_storage_exception.ResourceNotFoundException:
+        except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError):
             raise StatisticsNotFoundError("Statistics do not exist")
 
+        # todo: use enum instead of plain text value
         if statistics_meta.get('computation_status') != "complete":
             raise ComputationNotCompleteError("Statistics computation not finished yet")
 

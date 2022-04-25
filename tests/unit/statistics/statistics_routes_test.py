@@ -19,6 +19,21 @@ def post_welllog_data(client, record_id, columns, range_index):
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
 
+def wait_for_stats_3s(client, record_id):
+    api_results = []
+
+    for i in range(6):
+        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+        api_results.append(get_stats_response.status_code)
+        if get_stats_response.status_code == 200:
+            break
+
+        asyncio.get_event_loop().run_until_complete(asyncio.sleep(0.5))
+
+    successful_response = [r for r in api_results if r == 200]
+    assert successful_response
+    return successful_response[0]
+
 
 def test_invalid_cases(app_configurable_with_testclient):
 
@@ -71,7 +86,7 @@ def test_with_bulk_stats_not_complete(app_configurable_with_testclient):
         assert valid_record_with_bulk_response.content == b'{"detail":"Statistics computation not finished yet"}'
 
 
-def test_compute_stats(app_configurable_with_testclient):
+def test_double_compute_stats(app_configurable_with_testclient):
 
     _, client = app_configurable_with_testclient(fake_data_partition_id=True)
     record_id = _create_record(client, "WellLog")
@@ -79,11 +94,7 @@ def test_compute_stats(app_configurable_with_testclient):
                                                                         (['MD', 'X'], range(10, 30)),
                                                                         (['MD', 'X'], range(25, 40))])
 
-    # compute_stats_response = client.post(f'/ddms/v3/welllogs/{record_id}/data/statistics')
-    # assert compute_stats_response.status_code == 200
-
-    # todo: it should be replaced by a more robust mechanism that folder existence check in BulkStatistics class
-    # time.sleep(.5)
+    wait_for_stats_3s(client, record_id)
 
     compute_stats_response = client.post(f'/ddms/v3/welllogs/{record_id}/data/statistics')
     assert compute_stats_response.status_code == 409
@@ -97,10 +108,7 @@ def test_get_stats(app_configurable_with_testclient):
                                                                         (['MD', 'X'], range(10, 30)),
                                                                         (['MD', 'X'], range(25, 40))])
 
-    # compute_stats_response = client.post(f'/ddms/v3/welllogs/{record_id}/data/statistics')
-    # assert compute_stats_response.status_code == 200
-    # todo: it should be replaced by a more robust mechanism that folder existence check in BulkStatistics class
-    # time.sleep(1)
+    wait_for_stats_3s(client, record_id)
 
     record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
     assert record_response.status_code == 200
@@ -142,10 +150,7 @@ def test_get_stats_from_not_computable_columns(app_configurable_with_testclient)
                        ['int-A', 'string-B', 'bool-C', 'string-D'],
                        range(20))])
 
-    # compute_stats_response = client.post(f'/ddms/v3/welllogs/{record_id}/data/statistics')
-    # assert compute_stats_response.status_code == 200
-    # todo: it should be replaced by a more robust mechanism that folder existence check in BulkStatistics class
-    time.sleep(1)
+    wait_for_stats_3s(client, record_id)
 
     # not computable curves + unknown curves requested => 404
     params = {
@@ -163,35 +168,13 @@ def test_get_stats_from_not_computable_columns(app_configurable_with_testclient)
     assert get_stats_response_2.status_code == 400
 
 
-# @pytest.fixture()
-# async def bob_bob():
-#     tenant = mock.Mock()
-#     tenant.project_id = ''
-#     tenant.bucket_name = ""
-#
-#     with mock.patch('app.bulk_persistence.statistics.bulk_statistics.resolve_tenant', mock.AsyncMock(return_value=tenant)) as bobby:
-#         print(bobby)
-#
-#         # from app.bulk_persistence import resolve_tenant
-#         # toto = await resolve_tenant('bob')
-#         yield
-
-
-@pytest.mark.asyncio
-async def test_get_stats_after_post_data(app_configurable_with_testclient):
+def test_get_stats_after_post_data(app_configurable_with_testclient):
 
     _, client = app_configurable_with_testclient(fake_data_partition_id=True,
                                                  disable_bulk_consistency=True)
     record_id = _create_record(client, "WellLog")
     post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(100))
 
-    from datetime import datetime
-    print("post bulk - AFTER", datetime.now())
-    # todo: it should be replaced by a more robust mechanism that folder existence check in BulkStatistics class
-    # time.sleep(30)
-    await asyncio.sleep(5)
-
-    print("get stats - BEFORE", datetime.now(), flush=True)
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
-    assert get_stats_response.status_code == 200, get_stats_response.content
-    print("get stats - AFTER", datetime.now(), flush=True)
+    response = wait_for_stats_3s(client, record_id)
+    assert response
+    # todo: check stats values
