@@ -178,7 +178,7 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
     future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
     await future
 
-    df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
     assert len(df_stats) == expected_rows
     assert sorted(list(df_stats.columns)) == expected_cols
 
@@ -218,15 +218,15 @@ async def test_bulk_statistics_get_statistics(bulk_stats_fixture, cols_name_by_i
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=computable_col_plus_invalid_cols)
 
     not_computable_cols = ['bool-D', 'string-E']
-    result_df_1 = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=not_computable_cols)
+    result_df_1, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=not_computable_cols)
     assert result_df_1.empty
 
     not_computable_cols_plus_valid_cols = not_computable_cols + [valid_cols[0]]
-    result_df_2 = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=not_computable_cols_plus_valid_cols)
+    result_df_2, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=not_computable_cols_plus_valid_cols)
     assert result_df_2.shape == (1, 9)
     assert result_df_2.index == [valid_cols[0]]
 
-    result_df_with_nan_cols = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    result_df_with_nan_cols, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
     assert result_df_with_nan_cols.shape == (3, 9)
     assert list(result_df_with_nan_cols.index) == valid_cols
 
@@ -253,5 +253,5 @@ async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
     with pytest.raises(RequestedCurvesError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
 
-    df_stats = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
     assert df_stats.shape == (columns_count, len(_bulk_stats_columns()))

@@ -1,11 +1,12 @@
 import asyncio
-import time
-import pytest
+from datetime import datetime
+import pandas as pd
 
 from unittest import mock
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 import osdu.core.api.storage.exceptions as osdu_storage_exception
 
+from app.bulk_persistence.statistics.models import BulkDataStatisticsMeta, BulkStatisticsStatus
 from tests.unit.generate_data import generate_df
 from tests.unit.routers.chunking_test import _create_chunks, _create_record, _create_df_from_response, Definitions
 
@@ -18,6 +19,11 @@ def post_welllog_data(client, record_id, columns, range_index):
 
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
+
+
+def create_df_from_dict(response):
+    dict_data = response.json()['data']
+    return pd.DataFrame.from_dict(dict_data)
 
 
 def fetch_stats_for_3s(client, record_id):
@@ -38,18 +44,19 @@ def fetch_stats_for_3s(client, record_id):
 
 
 def test_invalid_cases(app_configurable_with_testclient):
-
     _, client = app_configurable_with_testclient(fake_data_partition_id=True)
     valid_record_id = _create_record(client, "WellLog")
 
-    #todo: check response error message
+    # todo: check response error message
 
     incorrect_record_id = 'incorrect-id'
     get_stats_response = client.get(f'/ddms/v3/welllogs/{incorrect_record_id}/data/statistics')
     assert get_stats_response.status_code == 404
+    assert get_stats_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
     post_stats_response = client.post(f'/ddms/v3/welllogs/{incorrect_record_id}/data/statistics')
     assert post_stats_response.status_code == 404
+    assert post_stats_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
     valid_record_no_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
     assert valid_record_no_bulk_response.status_code == 404
@@ -61,7 +68,6 @@ def test_invalid_cases(app_configurable_with_testclient):
 
 
 def test_with_bulk_no_stats(app_configurable_with_testclient):
-
     with mock.patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
         bob.side_effect = osdu_storage_exception.ResourceNotFoundException()
 
@@ -75,12 +81,15 @@ def test_with_bulk_no_stats(app_configurable_with_testclient):
 
 
 def test_with_bulk_stats_not_complete(app_configurable_with_testclient):
-
     with mock.patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
-        bob.return_value = {"computation_status": "started"}
-
         _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True)
         valid_record_id = _create_record(client, "WellLog")
+
+        bob.return_value = BulkDataStatisticsMeta(creation_utc_date=datetime.utcnow(),
+                                                  record_id=valid_record_id,
+                                                  record_version=str(123456789),
+                                                  computation_status=BulkStatisticsStatus.Started)
+
         post_welllog_data(client, valid_record_id, ['int-A'], range(10))
 
         valid_record_with_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
@@ -89,7 +98,6 @@ def test_with_bulk_stats_not_complete(app_configurable_with_testclient):
 
 
 def test_double_compute_stats(app_configurable_with_testclient):
-
     _, client = app_configurable_with_testclient(fake_data_partition_id=True)
     record_id = _create_record(client, "WellLog")
     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
@@ -103,7 +111,6 @@ def test_double_compute_stats(app_configurable_with_testclient):
 
 
 def test_get_stats(app_configurable_with_testclient):
-
     _, client = app_configurable_with_testclient(fake_data_partition_id=True)
     record_id = _create_record(client, "WellLog")
     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
@@ -122,7 +129,7 @@ def test_get_stats(app_configurable_with_testclient):
     version = record_json['version']
     get_stats_version_response = client.get(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert get_stats_version_response.status_code == 200
-    df_result_1 = _create_df_from_response(get_stats_version_response)
+    df_result_1 = create_df_from_dict(get_stats_version_response)
     assert df_result_1.shape == (2, 9)
 
     params = {
@@ -130,7 +137,7 @@ def test_get_stats(app_configurable_with_testclient):
     }
     get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response.status_code == 200
-    df_result_2 = _create_df_from_response(get_stats_response)
+    df_result_2 = create_df_from_dict(get_stats_response)
     assert df_result_2.shape == (2, 9)
 
     params = {
@@ -141,7 +148,6 @@ def test_get_stats(app_configurable_with_testclient):
 
 
 def test_get_stats_from_not_computable_columns(app_configurable_with_testclient):
-
     _, client = app_configurable_with_testclient(fake_data_partition_id=True,
                                                  disable_bulk_consistency=True)
     record_id = _create_record(client, "WellLog")
@@ -171,7 +177,6 @@ def test_get_stats_from_not_computable_columns(app_configurable_with_testclient)
 
 
 def test_get_stats_after_post_data(app_configurable_with_testclient):
-
     _, client = app_configurable_with_testclient(fake_data_partition_id=True,
                                                  disable_bulk_consistency=True)
     record_id = _create_record(client, "WellLog")

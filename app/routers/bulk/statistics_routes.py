@@ -12,29 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 from fastapi import Query
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from app.model.model_chunking import GetDataParams
-
 from app.context import Context, get_ctx
 
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
-from app.routers.common_parameters import read_bulk_accept_type
 from app.routers.record_utils import fetch_record
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
-from app.routers.bulk.utils import (with_dask_blob_storage,
-                                    DataFrameRender)
+from app.routers.bulk.utils import with_dask_blob_storage
 
-from app.bulk_persistence import JSONOrient
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound
-from app.bulk_persistence.mime_types import MimeTypes, MimeType
+from app.bulk_persistence.mime_types import MimeTypes
 
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
-from app.bulk_persistence.statistics.models import BulkDataStatistics, BulkDataStatisticsResponse
+from app.bulk_persistence.statistics.models import BulkDataStatisticsResponse
 from app.bulk_persistence.statistics import exceptions as statistics_exceptions
 
 from app.helper.logger import get_logger
@@ -153,7 +147,7 @@ async def get_bulk_statistics_version(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI') from e
     if not bulk_uri.is_valid():
-        raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
+        raise BulkRecordNotFound(record_id=record_id).raise_as_http()
 
     columns = filter(None, map(str.strip, curves.split(',')))
     columns = list(dict.fromkeys(columns))

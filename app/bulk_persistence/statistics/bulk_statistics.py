@@ -104,17 +104,19 @@ class BulkStatistics:
         dfs = (read_parquets_same_schema(col_path) for col_path in column_paths)
         return pd.concat(dfs, ignore_index=True)
 
-    def _compute(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
+    @staticmethod
+    def _compute_stats(bulk_df: pd.DataFrame, catalog) -> pd.DataFrame:
         """
-        Note: Column 'std' (standard deviation) can be missing from results, when bulk data are made of date dtype.
-              Indeed, 'std' columns is NaN value, and it is ignored from resulting dataframe.
+            Perform statistics computation on given piece of bulk data
+            Note: Column 'std' (standard deviation) can be missing from results, when bulk data are made of date dtype.
+                  Indeed, 'std' columns is NaN value, and it is ignored from resulting dataframe.
         """
-        bulk_df = self._fetch_bulks(catalog, columns)
 
         computed_stats = bulk_df.describe(
             datetime_is_numeric=True,
             percentiles=BulkStatistics._percentiles
         )
+
         if 'std' not in computed_stats.index:
             # The standard deviation column 'std' is omitted from df.describe() result when
             # all the dtypes of bulk data are date.
@@ -126,9 +128,27 @@ class BulkStatistics:
         computed_stats[BulkStatistics._valid_values_label] = catalog.nb_rows
         computed_stats.rename(columns=BulkStatistics._renaming_stats_labels)
 
+        return computed_stats
+
+    def _compute(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
+        """
+        Entrypoint forDask workers to run computation: fetch piece of bulk data, compute and save results
+
+        :param catalog: bulk data calog
+        :param columns: selected columns to be computed
+        :param record_id: record id on which computation will be performed
+        :param bulk_uri: URI of bulk data on which computation will be performed
+
+        """
+        bulk_df = self._fetch_bulks(catalog, columns)
+
+        computed_stats = self._compute_stats(bulk_df, catalog)
+
         self._save(computed_stats, record_id, bulk_uri)
 
-    def _save(self, df_statistics, record_id: str, bulk_id: str):
+    def _save(self, df_statistics: pd.DataFrame, record_id: str, bulk_id: str):
+        """ Save given statistic to parquet file, file path is determined with record_id and bulk_id """
+
         bulk_statistics_path = join(self._statistics_folder(record_id, bulk_id), 'data')
         self.dask_blob_storage._ensure_dir_tree_exists(bulk_statistics_path)
 
@@ -175,11 +195,21 @@ class BulkStatistics:
                                          started_tasks,
                                          bulk_statistics_path,
                                          stats_meta_data)
+
+        # Dask optimization could not run this task otherwise, it ensures this task is run
         fire_and_forget(future)
         return future
 
     def _set_statistics_file_as_complete(self, compute_tasks, bulk_statistics_path: str,
                                          stats_meta_data: BulkDataStatisticsMeta):
+        """
+        Update meta-data file to mark statistics computation as complete
+
+        :param compute_tasks is set as argument but not used, it required to make Dask scheduler aware of the
+        predecessor-successor link between `started_tasks` in compute_bulk_statistics() and this method.
+
+        Note: this method is run by a Dask worker => sync required here.
+        """
 
         stats_meta_data.computation_status = BulkStatisticsStatus.Complete
         bulk_statistics_file_path = join(bulk_statistics_path, 'statistics.json')
@@ -189,6 +219,9 @@ class BulkStatistics:
             stats_meta_file.write(content)
 
     def _fetch_statistics(self, bulk_statistics_path: str, columns: List[str]):
+        """
+        Read parquet files of computed statistics, then filter rows according to given columns.
+        """
         statistics_df = pd.read_parquet(bulk_statistics_path,
                                         storage_options=self.dask_blob_storage._parameters.storage_options)
 
@@ -209,6 +242,10 @@ class BulkStatistics:
 
     async def _push_statistics_meta_file(self, bulk_statistics_path: str, stats_meta_data: BulkDataStatisticsMeta,
                                          overwrite_meta_file: bool):
+        """
+        Update meta-data file of statistics computation with given status of given stats_meta_data.
+        This method aims to be run by main thread, that's why it is async and could use async blob storage client.
+        """
 
         file_path = join(bulk_statistics_path, 'statistics.json')
         stats_meta_content = await asyncio.get_running_loop().run_in_executor(None, stats_meta_data.json)
