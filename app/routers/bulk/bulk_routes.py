@@ -14,6 +14,7 @@
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from odes_storage.models import Record
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
@@ -32,7 +33,7 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            read_bulk_accept_type,
                                            write_bulk_content_type)
 
-from app.routers.record_utils import fetch_record
+from app.routers.record_utils import fetch_record, fetch_record_dependency, fetch_latest_version_record_dependency
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
@@ -97,12 +98,12 @@ async def post_data(record_id: str,
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
-                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
+                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+                    record: Record = Depends(fetch_latest_version_record_dependency)):
 
     """
     Handle a post data outside of a session. The given bulk will fully replace any existing one
     """
-    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
     # process and store the data
@@ -147,10 +148,10 @@ async def post_chunk_data(record_id: str,
                           content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-                          df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func)
+                          df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
+                          record: Record = Depends(fetch_latest_version_record_dependency)
                           ) -> DataframeBasicDescribe:
     if hasattr(request.state, 'version') and request.state.version != "V2":
-        record = await fetch_record(with_session.ctx, record_id)
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
     # fetch the session
@@ -205,9 +206,9 @@ async def get_data_version(
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
-    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+    record: Record = Depends(fetch_record_dependency)
 ):
-    record = await fetch_record(ctx, record_id, version)
     if hasattr(request.state, 'version') and request.state.version != "V2":
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
@@ -299,9 +300,10 @@ async def get_data(
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
-    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+    record: Record = Depends(fetch_latest_version_record_dependency)
 ):
-    return await get_data_version(record_id, None, request, ctrl_p, accept_type, orient, ctx, bulk_uri_access)
+    return await get_data_version(record_id, None, request, ctrl_p, accept_type, orient, ctx, bulk_uri_access, record)
 
 
 @router.patch(

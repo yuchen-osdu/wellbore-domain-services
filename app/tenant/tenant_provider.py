@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .bulk_persistence_config import Config
+from app.conf import Config
 from osdu.core.api.storage.tenant import Tenant
 
 async def resolve_tenant(data_partition_id: str) -> Tenant:

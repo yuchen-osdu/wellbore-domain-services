@@ -14,7 +14,9 @@
 
 from typing import List, Optional
 
-from app.context import Context
+from fastapi import Depends
+
+from app.context import Context, get_ctx
 from app.clients.storage_service_client import get_storage_record_service
 
 from odes_storage.models import (
@@ -22,6 +24,14 @@ from odes_storage.models import (
     Record
 )
 from pydantic import BaseModel
+
+
+async def fetch_record_dependency(record_id: str, version: int) -> Record:
+    return await fetch_record(get_ctx(), record_id, version)
+
+
+async def fetch_latest_version_record_dependency(record_id: str) -> Record:
+    return await fetch_record(get_ctx(), record_id)
 
 
 async def fetch_record(ctx: Context, record_id: str, version=None) -> Record:
@@ -58,5 +68,3 @@ async def update_records(ctx: Context, records: List[BaseModel]) -> CreateUpdate
     return await storage_client.create_or_update_records(
         record=records, data_partition_id=ctx.partition_id
     )
-
-

@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.bulk_persistence import resolve_tenant, hash_record_id
+from app.tenant import resolve_tenant
+from app.bulk_persistence import hash_record_id
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import asyncio
 

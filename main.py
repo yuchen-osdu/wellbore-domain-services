@@ -14,7 +14,7 @@
 
 import uvicorn
 import click
-from app.wdms_app import base_app
+from app.base import base_app
 from app.conf import Config
 import os
 

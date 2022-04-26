@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.bulk_persistence import resolve_tenant
+from app.tenant import resolve_tenant
 from app.bulk_persistence import DaskBulkStorage
 from app.context import Context
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase

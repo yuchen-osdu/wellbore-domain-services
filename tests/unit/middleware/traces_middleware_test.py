@@ -16,6 +16,7 @@ import re
 from opencensus.trace import base_exporter
 import pytest
 from app.wdms_app import DDMS_V2_PATH
+from app.routers import probes
 
 from ..test_utils import gen_all_routes_request
 
@@ -146,7 +147,7 @@ def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_ho
             "/docs",
             "/docs/oauth2-redirect",
             "/redoc",
-        ]:
+        ] + [r.path for r in probes.router.routes]:  # we also need to exclude probes routes as they are not traced
             continue
 
         path_with_id = path_sub(path)

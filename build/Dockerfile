@@ -40,4 +40,4 @@ RUN addgroup --system appuser && adduser --system appuser && adduser appuser app
 
 USER appuser
 
-CMD ["uvicorn", "app.wdms_app:base_app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.base:base_app", "--host", "0.0.0.0", "--port", "8080"]

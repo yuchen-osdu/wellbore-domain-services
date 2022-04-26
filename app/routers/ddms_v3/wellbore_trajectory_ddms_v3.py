@@ -13,13 +13,14 @@
 # limitations under the License.
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
-from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
 from starlette.requests import Request
+
+from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.consistency import DuplicatedStationProperties, check_trajectory_consistency
 from app.model.model_utils import from_record, to_record
-from app.model.osdu_record_id import split_record_id_version
+from app.model.osdu_record_id import split_record_id_version, WellboreTrajectoryId
 from app.model.osdu_model import WellboreTrajectory110 as WellboreTrajectory
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
@@ -47,9 +48,10 @@ WELLBORE_TRAJECTORIES_API_BASE_PATH = '/wellboretrajectories'
     },
 )
 async def get_wellbore_trajectory_osdu(
-    wellboretrajectoryid: str, request: Request, ctx: Context = Depends(get_ctx)
+    wellboretrajectoryid: WellboreTrajectoryId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreTrajectory:
     storage_client = await get_storage_record_service(ctx)
+    # Note: version is dropped here
     wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
 
     wellboreTrajectory_record = await storage_client.get_record(
@@ -73,7 +75,7 @@ async def get_wellbore_trajectory_osdu(
     },
 )
 async def del_osdu_wellboreTrajectory(
-    wellboretrajectoryid: str,
+    wellboretrajectoryid: WellboreTrajectoryId,
     purge: bool = False,
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
@@ -93,7 +95,7 @@ async def del_osdu_wellboreTrajectory(
     },
 )
 async def get_osdu_wellboreTrajectory_versions(
-    wellboretrajectoryid: str, request: Request, ctx: Context = Depends(get_ctx)
+    wellboretrajectoryid: WellboreTrajectoryId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
     record = await fetch_record(ctx, wellboretrajectoryid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
@@ -117,11 +119,10 @@ async def get_osdu_wellboreTrajectory_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_wellboreTrajectory_version(
-    wellboretrajectoryid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
+    wellboretrajectoryid: WellboreTrajectoryId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> WellboreTrajectory:
     storage_client = await get_storage_record_service(ctx)
     wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
-
     wellboreTrajectory_record = await storage_client.get_record_version(
         id=wellboretrajectoryid, version=version, data_partition_id=ctx.partition_id
     )
