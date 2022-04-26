@@ -8,7 +8,6 @@ from os.path import join
 import numpy as np
 import pandas as pd
 
-from app.helper.logger import get_logger
 from app.conf import Config
 from .models import BulkDataStatisticsMeta, BulkStatisticsStatus
 
@@ -16,7 +15,7 @@ from .. import DataframeSerializerSync
 from dask.distributed import fire_and_forget
 from ..dask.traces import submit_with_trace
 from ..dask.bulk_catalog import BulkCatalog
-from ..dask.dask_bulk_storage import DaskBulkStorage
+from ..dask.dask_bulk_storage import DaskBulkStorage, DASK_BACKGROUND_TASK_PRIORITY
 from ..dask import storage_path_builder as path_builder
 from .exceptions import (
     ComputationRunningError,
@@ -24,9 +23,9 @@ from .exceptions import (
     StatisticsNotFoundError,
     ComputationNotCompleteError)
 
+from osdu.core.api.storage import exceptions as osdu_storage_exception
 from app.context import get_ctx
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu.core.api.storage import exceptions as osdu_storage_exception
 from ..tenant_provider import resolve_tenant
 
 
@@ -185,7 +184,8 @@ class BulkStatistics:
                                         catalog,
                                         group_columns,
                                         record_id,
-                                        bulk_uri)
+                                        bulk_uri,
+                                        priority=DASK_BACKGROUND_TASK_PRIORITY)
             started_tasks.append(f)
 
         stats_meta_data.computation_status = BulkStatisticsStatus.Running
@@ -194,7 +194,8 @@ class BulkStatistics:
         future = self._submit_with_trace(self._set_statistics_file_as_complete,
                                          started_tasks,
                                          bulk_statistics_path,
-                                         stats_meta_data)
+                                         stats_meta_data,
+                                         priority=DASK_BACKGROUND_TASK_PRIORITY)
 
         # Dask optimization could not run this task otherwise, it ensures this task is run
         fire_and_forget(future)

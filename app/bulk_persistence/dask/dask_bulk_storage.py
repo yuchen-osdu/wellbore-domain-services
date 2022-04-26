@@ -50,6 +50,9 @@ from . import dask_worker_write_bulk as bulk_writer
 from ..consistency_checks import DataConsistencyChecks
 
 
+DASK_BACKGROUND_TASK_PRIORITY = -5
+
+
 def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
     """call dask.dataframe.read_parquet with default parameters
     Dask read_parquet parameters:
