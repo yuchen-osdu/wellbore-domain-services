@@ -5,7 +5,7 @@ from asyncio import gather
 
 from starlette.requests import Request
 
-from app.bulk_persistence import resolve_tenant
+from app.tenant import resolve_tenant
 from app.clients import StorageRecordServiceClient
 from app.bulk_persistence import (Session,
                                   SessionInternal,
