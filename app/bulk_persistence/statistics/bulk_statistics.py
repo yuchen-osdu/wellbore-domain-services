@@ -263,6 +263,7 @@ class BulkStatistics:
             if any((wanted_col not in existing_col for wanted_col in columns)):
                 raise RequestedCurvesError("Requested curves unknown")
 
+        # todo: find a way to return 400 if requested columns are only not computable columns
 
         bulk_statistics_path = join(bulk_statistics_path, 'data')
         stats_df = await self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)
