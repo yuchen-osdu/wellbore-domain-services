@@ -10,7 +10,7 @@ from opencensus.trace.span import SpanKind
 from opencensus.trace import tracer as open_tracer
 from opencensus.trace.samplers import AlwaysOnSampler
 
-from ..bulk_persistence_config import Config
+from app.conf import Config
 from app.helper import traces
 from app.context import get_ctx
 from opencensus.trace import execution_context
