@@ -42,7 +42,7 @@ class BulkPersistenceConfig:
         return self._max_columns_per_chunk_write
 
     @property
-    def dask_data_ipc(self) -> int:
+    def dask_data_ipc(self) -> str:
         return self._dask_data_ipc
 
     @property
