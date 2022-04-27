@@ -58,7 +58,7 @@ from app.utils import (
     get_http_client_session,
     OpenApiHandler,
     POOL_EXECUTOR_MAX_WORKER)
-from app.bulk_persistence import DaskClient
+from app.bulk_persistence import DaskClient, BulkPersistenceConfig, setup_bulk_persistence
 from app.routers.bulk.utils import (
     update_operation_ids,
     set_v3_input_dataframe_check,
@@ -132,6 +132,15 @@ async def startup_event():
     assert sys.version_info.major == 3 and sys.version_info.minor >= 8, 'Python version required >=3.8'
 
     check_environment(Config)
+    # set the bulk persistence specific configuration after retrieving the global app config
+    setup_bulk_persistence(BulkPersistenceConfig(
+        min_worker_memory_recommended=Config.min_worker_memory.value,
+        max_columns_return=Config.max_columns_return.value,
+        max_columns_per_chunk_write=Config.max_columns_per_chunk_write.value,
+        dask_data_ipc=Config.dask_data_ipc.value,
+        service_name=Config.service_name.value
+    ))
+
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name, config=Config)
 
