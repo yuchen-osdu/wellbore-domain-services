@@ -21,6 +21,15 @@ from app.helper.traces import CombinedExporter
 from app.injector.app_injector import WithLifeTime
 from app.base import base_app
 from app.wdms_app import wdms_app, app_injector
+from app.bulk_persistence import BulkPersistenceConfig
+
+
+@pytest.fixture
+def local_bulk_persistence_config():
+    """
+    Creates a new instance of BulkPersistenceConfig with default inits
+    """
+    return BulkPersistenceConfig()
 
 
 @pytest.fixture(scope="module")
