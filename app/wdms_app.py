@@ -134,7 +134,7 @@ async def startup_event():
     check_environment(Config)
     # set the bulk persistence specific configuration after retrieving the global app config
     setup_bulk_persistence(BulkPersistenceConfig(
-        min_worker_memory_recommended=Config.min_worker_memory.value,
+        min_worker_memory=Config.min_worker_memory.value,
         max_columns_return=Config.max_columns_return.value,
         max_columns_per_chunk_write=Config.max_columns_per_chunk_write.value,
         dask_data_ipc=Config.dask_data_ipc.value,
