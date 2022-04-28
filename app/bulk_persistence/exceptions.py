@@ -13,6 +13,11 @@ class NoBulkException(Exception):
     pass
 
 
+class BulkStorageVersionNotSupported(Exception):
+    """ Raised current bulk storage version in not supported """
+    pass
+
+
 class InvalidBulkException(Exception):
     """ Raised when asking data for a Record that have an invalid bulkURI """
     pass

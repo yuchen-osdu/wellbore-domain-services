@@ -17,6 +17,7 @@ import pandas as pd
 from odes_storage.models import Record
 
 from app.bulk_persistence import create_and_store_dataframe, get_dataframe, trace_dataframe_attributes
+from app.bulk_persistence.exceptions import BulkStorageVersionNotSupported
 from app.context import Context
 from app.model.log_bulk import LogBulkHelper
 
@@ -34,7 +35,11 @@ class Persistence:
         bulk_id_path: str,
     ) -> pd.DataFrame:
         bulk_uri = LogBulkHelper.get_bulk_uri(record, bulk_id_path)
-        # TODO use prefix to know how to read the bulk
+
+        if not bulk_uri.is_bulk_storage_V0():
+            # only support V0 bulk storage, V1+ should be managed by Dask
+            raise BulkStorageVersionNotSupported
+
         if not bulk_uri.is_valid():
             return pd.DataFrame()
 

@@ -35,10 +35,12 @@ from odes_storage.models import (
     CreateUpdateRecordsResponse,
     RecordVersions,
 )
+from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from pydantic import BaseModel, Field
 
 from app.bulk_persistence import DataframeSerializerAsync, DataframeSerializerSync, JSONOrient, MimeTypes, get_dataframe
 from app.bulk_persistence import BulkURI
+from app.bulk_persistence.exceptions import BulkStorageVersionNotSupported
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.log_bulk import LogBulkHelper
 from app.model.model_curated import log
@@ -53,6 +55,7 @@ from app.helper.traces import TracingRoute
 router = APIRouter(route_class=TracingRoute)
 
 LOGS_API_BASE_PATH = '/logs'
+
 
 async def get_persistence() -> Persistence:
     return Persistence()
@@ -338,7 +341,14 @@ async def _get_log_data(
     # we may use an optimistic cache here
     log_record = await fetch_record(ctx, logid, version)
 
-    df = await persistence.read_bulk(ctx, log_record, bulk_id_path)
+    try:
+        df = await persistence.read_bulk(ctx, log_record, bulk_id_path)
+    except BulkStorageVersionNotSupported:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="Not supported bulk storage version.")
+    except ResourceNotFoundException:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="bulk data not found.")
+
     content = await DataframeSerializerAsync().to_json(df, orient=orient)
     return Response(content=content, media_type=MimeTypes.JSON.type) #  content is already jsonified no need to use JSONResponse
 
@@ -492,7 +502,13 @@ async def get_log_decimated(
         ctx: Context = Depends(get_ctx)):
     log_record = await fetch_record(ctx, logid)
 
-    df = await persistence.read_bulk(ctx, log_record, bulk_id_path)
+    try:
+        df = await persistence.read_bulk(ctx, log_record, bulk_id_path)
+    except BulkStorageVersionNotSupported:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="Not supported bulk storage version.")
+    except ResourceNotFoundException:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="bulk data not found.")
 
     # TODO : remove this after review what should be done with index column
     if len(df.columns) == 1:
@@ -500,7 +516,8 @@ async def get_log_decimated(
                             detail="data frame doesn't contain index")
 
     if df.dtypes[1] not in [np.float64, np.float32]:
-        raise HTTPException(status_code=422, detail="log is not compatible with decimation")
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="log is not compatible with decimation")
 
     # TODO: Make this async using dask distributed?
     if start is not None and stop is not None:
