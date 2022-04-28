@@ -17,7 +17,7 @@ from dask.distributed import scheduler
 from pyarrow.lib import ArrowException, ArrowInvalid
 from functools import wraps
 
-from ..bulk_persistence_config import Config
+from ..bulk_persistence_config import BulkConfig
 from app.helper.logger import get_logger
 
 
@@ -96,7 +96,7 @@ class TooManyColumnsRequested(BulkError):
     def __init__(self, nb_requested_cols):
         ex_message = (
             f"Too many columns: requested '{nb_requested_cols}',"
-            f" maximum allowed '{Config.max_columns_return}'")
+            f" maximum allowed '{BulkConfig.max_columns_return}'")
         super().__init__(ex_message)
             
 

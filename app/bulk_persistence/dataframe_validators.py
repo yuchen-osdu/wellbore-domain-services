@@ -5,7 +5,7 @@ import pandas as pd
 
 from .dask.utils import WDMS_INDEX_NAME
 from .dask.errors import BulkNotProcessable
-from .bulk_persistence_config import Config
+from .bulk_persistence_config import BulkConfig
 
 
 ValidationResult = Tuple[bool, str]  # Tuple (is_dataframe_valid, failure_reason)
@@ -67,8 +67,8 @@ def validate_index(df: pd.DataFrame) -> ValidationResult:
 
 def validate_number_of_columns(df: pd.DataFrame) -> ValidationResult:
     """ Verify max number of columns """
-    if len(df.columns) > Config.max_columns_per_chunk_write:
-        return False, f"Too many columns : maximum allowed '{Config.max_columns_per_chunk_write}'"
+    if len(df.columns) > BulkConfig.max_columns_per_chunk_write:
+        return False, f"Too many columns : maximum allowed '{BulkConfig.max_columns_per_chunk_write}'"
     return ValidationSuccess
 
 

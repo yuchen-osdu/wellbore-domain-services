@@ -53,11 +53,11 @@ class BulkPersistenceConfig:
 
 
 # Global BulkPersistenceConfig instance, for intra-module usage
-Config = BulkPersistenceConfig()
+BulkConfig = BulkPersistenceConfig()
 
 # Exported external BulkPersistenceConfig setup
 def setup_bulk_persistence(config: BulkPersistenceConfig):
-    global Config
-    Config = config
+    global BulkConfig
+    BulkConfig = config
 
 

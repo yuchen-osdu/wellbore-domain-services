@@ -28,7 +28,7 @@ def wrap_trace_process(*args, **kwargs):
         raise AttributeError("Keyword arguments should contain 'target_func' and 'tracing_headers'")
 
     if _EXPORTER is None:
-        _EXPORTER = traces.create_exporter(service_name=Config.service_name, config=Config)
+        _EXPORTER = traces.create_exporter(service_name=BulkConfig.service_name, config=BulkConfig)
 
     span_context = traces.get_trace_propagator().from_headers(tracing_headers)
     tracer = open_tracer.Tracer(span_context=span_context,

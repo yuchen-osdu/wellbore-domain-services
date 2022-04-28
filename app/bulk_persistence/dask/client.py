@@ -19,7 +19,7 @@ from dask.utils import format_bytes
 from dask.distributed import Client as DaskDistributedClient
 from distributed import LocalCluster
 
-from ..bulk_persistence_config import Config
+from ..bulk_persistence_config import BulkConfig
 
 from .localcluster import get_dask_configuration
 
@@ -45,7 +45,7 @@ class DaskClient:
                     logger = get_logger()
                     logger.info(f"Dask client initialization started...")
 
-                    n_workers, threads_per_worker, worker_memory_limit = get_dask_configuration(config=Config, logger=logger)
+                    n_workers, threads_per_worker, worker_memory_limit = get_dask_configuration(config=BulkConfig, logger=logger)
                     logger.info(f"Dask client worker configuration: {n_workers} workers running with "
                                 f"{format_bytes(worker_memory_limit)} of RAM and {threads_per_worker} threads each")
 

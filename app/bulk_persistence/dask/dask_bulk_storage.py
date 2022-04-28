@@ -28,7 +28,7 @@ from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from ..capture_timings import capture_timings
 from ..sessions_storage import Session
-from ..bulk_persistence_config import Config
+from ..bulk_persistence_config import BulkConfig
 
 from .client import DaskClient
 from .dask_worker_plugin import DaskWorkerPlugin
@@ -93,7 +93,7 @@ class DaskBulkStorage:
     @property
     def _data_ipc(self):
         # may be also adapted depending of size to data
-        if Config.dask_data_ipc == DaskLocalFileDataIPC.ipc_type:
+        if BulkConfig.dask_data_ipc == DaskLocalFileDataIPC.ipc_type:
             return DaskLocalFileDataIPC()
         assert self.client is not None, 'Dask client not initialized'
         return DaskNativeDataIPC(self.client)
