@@ -67,6 +67,6 @@ def setup_bulk_persistence(conf_dict: dict):
     global BulkConfig
     for key, value in conf_dict.items():
         if key in bulk_persistence_config_properties:
-            setattr(BulkConfig, key, value)
+            setattr(BulkConfig, '_' + key, value)
     if 'min_worker_memory' in conf_dict.keys():
-        setattr(BulkConfig, 'min_worker_memory_recommended', parse_bytes(conf_dict['min_worker_memory']))
+        setattr(BulkConfig, '_min_worker_memory_recommended', parse_bytes(conf_dict['min_worker_memory']))
