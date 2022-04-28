@@ -14,6 +14,7 @@
 
 from dask.utils import parse_bytes
 
+
 class BulkPersistenceConfig:
     """
     Single container for the app configuration elements relevant to bulk persistence.
@@ -24,7 +25,7 @@ class BulkPersistenceConfig:
                  max_columns_per_chunk_write: int = 500,
                  dask_data_ipc: str = 'dask_native',
                  service_name: str = 'os-wellbore-ddms---local'
-        ):
+                 ):
         self._min_worker_memory_recommended = parse_bytes(min_worker_memory)
         self._max_columns_return = max_columns_return
         self._max_columns_per_chunk_write = max_columns_per_chunk_write
@@ -55,9 +56,17 @@ class BulkPersistenceConfig:
 # Global BulkPersistenceConfig instance, for intra-module usage
 BulkConfig = BulkPersistenceConfig()
 
+# Properties list for setup from dictionary
+bulk_persistence_config_properties = [
+    prop for prop in dir(BulkPersistenceConfig) if isinstance(getattr(BulkPersistenceConfig, prop), property)
+]
+
+
 # Exported external BulkPersistenceConfig setup
-def setup_bulk_persistence(config: BulkPersistenceConfig):
+def setup_bulk_persistence(conf_dict: dict):
     global BulkConfig
-    BulkConfig = config
-
-
+    for key, value in conf_dict.items():
+        if key in bulk_persistence_config_properties:
+            setattr(BulkConfig, key, value)
+    if 'min_worker_memory' in conf_dict.keys():
+        setattr(BulkConfig, 'min_worker_memory_recommended', parse_bytes(conf_dict['min_worker_memory']))
