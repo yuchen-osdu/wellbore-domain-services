@@ -1,7 +1,7 @@
 import pytest
 
 from app.bulk_persistence import DaskException
-from app.bulk_persistence.bulk_persistence_config import Config
+from app.bulk_persistence.bulk_persistence_config import BulkConfig
 from app.bulk_persistence.dask.localcluster import memory_leeway
 
 
@@ -27,7 +27,7 @@ async def test_dask_workers_not_enough_ram_available(dask_client, nope_logger_fi
 @pytest.mark.asyncio
 async def test_dask_workers_enough_ram_available(local_dev_config, expected_workers, dask_client, nope_logger_fixture):
 
-    system_memory = Config.min_worker_memory_recommended * expected_workers + memory_leeway
+    system_memory = BulkConfig.min_worker_memory_recommended * expected_workers + memory_leeway
 
     with dask_client(system_memory_mock=system_memory,
                      worker_threads_mock=(10, 10),
