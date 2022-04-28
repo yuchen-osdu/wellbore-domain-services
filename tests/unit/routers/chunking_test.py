@@ -14,7 +14,8 @@ from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.conf import Config
+from app.bulk_persistence import setup_bulk_persistence
+from app.bulk_persistence.bulk_persistence_config import BulkConfig
 
 from app.wdms_app import app_injector, wdms_app
 from fastapi.testclient import TestClient
@@ -1186,7 +1187,9 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
     chunking_url = Definitions[entity_type]['chunking_url']
 
     max_cols_count = 100
-    Config.max_columns_return.value = max_cols_count
+    setup_bulk_persistence({
+        'max_columns_return': max_cols_count
+    })
 
     df = generate_df([f'var[{i}]' for i in range(max_cols_count + 1)], range(5))
     write_response = client.post(f'{chunking_url}/{record_id}/data',
@@ -1223,7 +1226,9 @@ def test_many_columns_ensure_effective_cols_count_matter(dasked_test_app_without
     chunking_url = Definitions[entity_type]['chunking_url']
 
     max_cols_count = 100
-    Config.max_columns_return.value = max_cols_count
+    setup_bulk_persistence({
+        'max_columns_return': max_cols_count
+    })
 
     effective_cols_count = 50
     df = generate_df([f'var[{i}]' for i in range(effective_cols_count)], range(2))
@@ -1245,7 +1250,7 @@ def test_write_too_many_columns(dasked_test_app_without_consistency_client, enti
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    df = generate_df([f'var[{i}]' for i in range(Config.max_columns_per_chunk_write.value + 1)], range(2))
+    df = generate_df([f'var[{i}]' for i in range(BulkConfig.max_columns_per_chunk_write + 1)], range(2))
     response = client.post(f'{chunking_url}/{record_id}/data',
                            data=df.to_parquet(engine="pyarrow"),
                            headers={'content-type': 'application/parquet'})
@@ -1263,7 +1268,7 @@ def test_write_too_many_columns_session(dasked_test_app_without_consistency_clie
     session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'overwrite'})
     session_id = session_response.json()['id']
 
-    df = generate_df([f'var[{i}]' for i in range(Config.max_columns_per_chunk_write.value + 1)], range(2))
+    df = generate_df([f'var[{i}]' for i in range(BulkConfig.max_columns_per_chunk_write + 1)], range(2))
     response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
                            data=df.to_parquet(engine="pyarrow"),
                            headers={'content-type': 'application/parquet'})
