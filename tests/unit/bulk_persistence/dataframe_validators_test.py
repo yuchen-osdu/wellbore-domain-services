@@ -16,6 +16,7 @@ from app.bulk_persistence.dataframe_validators import (
 )
 
 from app.bulk_persistence.dask.errors import BulkNotProcessable
+from app.bulk_persistence import BulkPersistenceConfig, setup_bulk_persistence
 from app.conf import Config
 
 
@@ -154,6 +155,14 @@ def test_any_reserved_column_name(columns, expected):
 ])
 def test_validate_number_of_columns(limit, nb_col, expected):
     Config.max_columns_per_chunk_write.value = limit
+    
+    setup_bulk_persistence(BulkPersistenceConfig(
+        min_worker_memory=Config.min_worker_memory.value,
+        max_columns_return=Config.max_columns_return.value,
+        max_columns_per_chunk_write=Config.max_columns_per_chunk_write.value,
+        dask_data_ipc=Config.dask_data_ipc.value,
+        service_name=Config.service_name.value
+    ))
 
     columns = [f'col_{i}' for i in range(nb_col)]
     result, _info = validate_number_of_columns(pd.DataFrame(columns=columns))
