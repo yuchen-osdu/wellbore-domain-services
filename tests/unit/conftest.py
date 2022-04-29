@@ -87,20 +87,19 @@ def pytest_configure(config):
     # Ref: https://hypothesis.readthedocs.io/en/latest/settings.html?highlight=profile#settings-profiles
 
     # A long deadline per example to generate various examples
-    settings.register_profile("debug", deadline=timedelta(milliseconds=1000), print_blob= True,
+    settings.register_profile("debug", deadline=timedelta(milliseconds=1000), print_blob=True,
                               suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.normal)
 
     # Only test with explicit examples, or replay failing examples.
     # Does NOT generate new examples. Do it locally with "debug" profile.
     settings.register_profile("ci", deadline=None, derandomize=True,
                               phases=[Phase.explicit, Phase.reuse, Phase.target, Phase.shrink],
-                              print_blob=True, report_multiple_bugs=False,
-                              suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.verbose)
-
-    settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "debug"))
-    # rough local perf test: $ time pytest -sv tests/unit/model/model_curated_test.py --hypothesis-profile
-    # debug: real    2m5.708s
-    # ci: real    0m9.520s
+                              print_blob=True, report_multiple_bugs=False, verbosity=Verbosity.verbose)
+    if 'CI' in os.environ:
+        # default to ci profile if environment looks like it.
+        settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "ci"))
+    else:
+        settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "debug"))
 
 
 def pytest_unconfigure(config):
