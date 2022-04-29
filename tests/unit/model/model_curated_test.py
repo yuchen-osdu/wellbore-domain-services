@@ -13,6 +13,11 @@ from pydantic import ValidationError
 
 import app.model.model_curated as model
 
+# need to import all data fixtures as we use them in decorators here
+from app.model.model_utils import from_record, to_record
+from ..data import *
+from ..data.model_examples import load_model_example_file_contents
+
 
 # typing utils
 def is_union_hint(hint):
@@ -835,9 +840,19 @@ def test_wellbore_data_allows_extra(wellbore_data):
 
 
 @given(wellbore_instance=st.from_type(model.wellbore))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
 def test_wellbore_dict_init_symmetric(wellbore_instance):
     """tests dict/init symmetry for wellbore model"""
-    assert model.wellbore(**wellbore_instance.dict()) == wellbore_instance
+    assert from_record(model.wellbore, to_record(wellbore_instance)) == wellbore_instance
+
+
+# module fixture to dynamically add hypothesis examples from model_examples data fixture
+@pytest.fixture
+def setup_wellbore_examples(wellbore_v3_record_list, wellbore_v2_record_list):
+    for w in [from_record(model.wellbore, w3) for w3 in wellbore_v3_record_list] +\
+             [from_record(model.wellbore, w2) for w2 in wellbore_v2_record_list]:
+        example(wellbore_instance=w)(test_wellbore_dict_init_symmetric)
+    return
 
 
 @given(channel_instance=st.from_type(model.channel))
@@ -907,9 +922,18 @@ def test_trajectory_data_allows_extra(trajectory_data):
 
 
 @given(trajectory_instance=st.from_type(model.trajectory))
-def test_trajectory_dict_init_symmetric(trajectory_instance):
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
+def test_trajectory_dict_init_symmetric(trajectory_instance, setup_trajectory_examples):
     """tests dict/init symmetry for trajectory model"""
-    assert model.trajectory(**trajectory_instance.dict()) == trajectory_instance
+    assert from_record(model.trajectory, to_record(trajectory_instance)) == trajectory_instance
+
+
+# module fixture to dynamically add hypothesis examples from model_examples data fixture
+@pytest.fixture
+def setup_trajectory_examples(trajectory_v3_record_list):
+    for t in [from_record(model.trajectory, tt) for tt in trajectory_v3_record_list]:
+        example(trajectory_instance=t)(test_trajectory_dict_init_symmetric)
+    return
 
 
 @given(marker_data=st.from_type(model.markerData))
@@ -929,9 +953,18 @@ def test_marker_data_allows_extra(marker_data):
 
 
 @given(marker_instance=st.from_type(model.marker))
-def test_marker_dict_init_symmetric(marker_instance):
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
+def test_marker_dict_init_symmetric(marker_instance, setup_marker_examples):
     """tests dict/init symmetry for marker model"""
-    assert model.marker(**marker_instance.dict()) == marker_instance
+    assert from_record(model.marker, to_record(marker_instance)) == marker_instance
+
+
+# module fixture to dynamically add hypothesis examples from model_examples data fixture
+@pytest.fixture
+def setup_marker_examples(marker_v3_record_list):
+    for m in [from_record(model.marker, mm) for mm in marker_v3_record_list]:
+        example(marker_instance=m)(test_marker_dict_init_symmetric)
+    return
 
 
 @given(well_data=st.from_type(model.wellData))
@@ -949,6 +982,16 @@ def test_well_data_allows_extra(well_data):
 
 
 @given(well_instance=st.from_type(model.well))
-def test_marker_dict_init_symmetric(well_instance):
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
+def test_well_dict_init_symmetric(well_instance, setup_well_examples):
     """tests dict/init symmetry for well model"""
-    assert model.well(**well_instance.dict()) == well_instance
+    assert from_record(model.well, to_record(well_instance)) == well_instance
+
+
+# module fixture to dynamically add hypothesis examples from model_examples data fixture
+@pytest.fixture
+def setup_well_examples(well_v3_record_list, well_v2_record_list):
+    for w in [from_record(model.well, w3) for w3 in well_v3_record_list] +\
+             [from_record(model.well, w2) for w2 in well_v2_record_list]:
+        example(well_instance=w)(test_well_dict_init_symmetric)
+    return

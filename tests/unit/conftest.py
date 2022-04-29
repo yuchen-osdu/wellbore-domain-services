@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from datetime import timedelta
 
 import asyncio
 import logging
@@ -24,7 +25,7 @@ from app.conf import ConfigurationContainer
 from app.context import Context
 
 from fastapi import Header
-from hypothesis import settings, Verbosity, HealthCheck
+from hypothesis import settings, Verbosity, HealthCheck, Phase
 
 from .data import (
     well_v2_file_contents, well_v3_file_contents, wellbore_v2_file_contents, wellbore_v3_file_contents,
@@ -84,9 +85,22 @@ def pytest_configure(config):
     # defining settings profile for local dev runs or CI runs
     # they can be loaded via `$pytest --hypothesis-profile debug`
     # Ref: https://hypothesis.readthedocs.io/en/latest/settings.html?highlight=profile#settings-profiles
-    settings.register_profile("default", deadline=None, verbosity=Verbosity.normal)
-    settings.register_profile("debug", suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.verbose)
-    settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "default"))
+
+    # A long deadline per example to generate various examples
+    settings.register_profile("debug", deadline=timedelta(milliseconds=1000), print_blob= True,
+                              suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.normal)
+
+    # Only test with explicit examples, or replay failing examples.
+    # Does NOT generate new examples. Do it locally with "debug" profile.
+    settings.register_profile("ci", deadline=None, derandomize=True,
+                              phases=[Phase.explicit, Phase.reuse, Phase.target, Phase.shrink],
+                              print_blob=True, report_multiple_bugs=False,
+                              suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.verbose)
+
+    settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "debug"))
+    # rough local perf test: $ time pytest -sv tests/unit/model/model_curated_test.py --hypothesis-profile
+    # debug: real    2m5.708s
+    # ci: real    0m9.520s
 
 
 def pytest_unconfigure(config):
