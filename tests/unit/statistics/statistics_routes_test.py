@@ -44,7 +44,8 @@ def fetch_stats_for_3s(client, record_id):
 
 
 def test_invalid_cases(app_configurable_with_testclient):
-    _, client = app_configurable_with_testclient(fake_data_partition_id=True)
+    _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True,
+                                                         search_client_mock=None, storage_client_mock=None)
     valid_record_id = _create_record(client, "WellLog")
 
     # todo: check response error message
@@ -71,7 +72,8 @@ def test_with_bulk_no_stats(app_configurable_with_testclient):
     with mock.patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
         bob.side_effect = osdu_storage_exception.ResourceNotFoundException()
 
-        _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True)
+        _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True,
+                                                     search_client_mock=None, storage_client_mock=None)
         valid_record_id = _create_record(client, "WellLog")
         post_welllog_data(client, valid_record_id, ['int-A'], range(10))
 
@@ -82,7 +84,10 @@ def test_with_bulk_no_stats(app_configurable_with_testclient):
 
 def test_with_bulk_stats_not_complete(app_configurable_with_testclient):
     with mock.patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
-        _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True)
+        _, client = app_configurable_with_testclient(fake_data_partition_id=True,
+                                                     disable_bulk_consistency=True,
+                                                     search_client_mock=None,
+                                                     storage_client_mock=None)
         valid_record_id = _create_record(client, "WellLog")
 
         bob.return_value = BulkDataStatisticsMeta(creation_utc_date=datetime.utcnow(),
@@ -99,7 +104,8 @@ def test_with_bulk_stats_not_complete(app_configurable_with_testclient):
 
 
 def test_double_compute_stats(app_configurable_with_testclient):
-    _, client = app_configurable_with_testclient(fake_data_partition_id=True)
+    _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True,
+                                                         search_client_mock=None, storage_client_mock=None)
     record_id = _create_record(client, "WellLog")
     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
                                                                         (['MD', 'X'], range(10, 30)),
@@ -112,7 +118,8 @@ def test_double_compute_stats(app_configurable_with_testclient):
 
 
 def test_get_stats(app_configurable_with_testclient):
-    _, client = app_configurable_with_testclient(fake_data_partition_id=True)
+    _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True,
+                                                         search_client_mock=None, storage_client_mock=None)
     record_id = _create_record(client, "WellLog")
     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
                                                                         (['MD', 'X'], range(10, 30)),
@@ -149,8 +156,8 @@ def test_get_stats(app_configurable_with_testclient):
 
 
 def test_get_stats_from_not_computable_columns(app_configurable_with_testclient):
-    _, client = app_configurable_with_testclient(fake_data_partition_id=True,
-                                                 disable_bulk_consistency=True)
+    _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True,
+                                                         search_client_mock=None, storage_client_mock=None)
     record_id = _create_record(client, "WellLog")
     _create_chunks(client, 'WellLog',
                    record_id=record_id,
@@ -179,8 +186,8 @@ def test_get_stats_from_not_computable_columns(app_configurable_with_testclient)
 
 
 def test_get_stats_after_post_data(app_configurable_with_testclient):
-    _, client = app_configurable_with_testclient(fake_data_partition_id=True,
-                                                 disable_bulk_consistency=True)
+    _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True,
+                                                         search_client_mock=None, storage_client_mock=None)
     record_id = _create_record(client, "WellLog")
     post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
 

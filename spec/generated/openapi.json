@@ -706,6 +706,107 @@
         "title": "Body_upload_log_data_file_ddms_v2_logs__logid__upload_data_post",
         "type": "object"
       },
+      "BulkDataStatisticsResponse": {
+        "description": "Status available for computation of bulk data statistics",
+        "example": {
+          "computation_status": "complete",
+          "creation_utc_date": "2022-04-27 11:46:58.708615",
+          "data": {
+            "ARR[0]": {
+              "10%": "11.0",
+              "50%": "451.0",
+              "90%": "891.0",
+              "count": "499579.0",
+              "max": "999.0",
+              "mean": "450.1040135794339",
+              "min": "-99.0",
+              "std": "317.570786686891",
+              "total_count": 1000000
+            },
+            "ARR[1]": {
+              "10%": "10.0",
+              "50%": "450.0",
+              "90%": "890.0",
+              "count": "1000000.0",
+              "max": "999.0",
+              "mean": "449.82156",
+              "min": "-100.0",
+              "std": "317.4500948207909",
+              "total_count": 1000000
+            },
+            "ARR[2]": {
+              "10%": "10.0",
+              "50%": "449.0",
+              "90%": "889.0",
+              "count": "1000000.0",
+              "max": "999.0",
+              "mean": "449.189524",
+              "min": "-100.0",
+              "std": "317.43579447840636",
+              "total_count": 1000000
+            },
+            "ARR[3]": {
+              "10%": "9.0",
+              "50%": "449.0",
+              "90%": "889.0",
+              "count": "499811.0",
+              "max": "999.0",
+              "mean": "449.513766203625",
+              "min": "-99.0",
+              "std": "317.39295021204254",
+              "total_count": 1000000
+            }
+          },
+          "record_id": "my-record-id",
+          "record_version": "123456789"
+        },
+        "properties": {
+          "computation_status": {
+            "$ref": "#/components/schemas/BulkStatisticsStatus"
+          },
+          "creation_utc_date": {
+            "format": "date-time",
+            "title": "Creation Utc Date",
+            "type": "string"
+          },
+          "data": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CurveStatistics"
+            },
+            "example": "{'MyCurveName': {'count': '499579.0','mean': '450.1040135794339','std': '317.570786686891','min': '-99.0', '10%': '11.0', '50%': '451.0','90%': '891.0','max': '999.0','total_count': 1000000}}",
+            "title": "Curves statistics' values",
+            "type": "object"
+          },
+          "record_id": {
+            "title": "Record Id",
+            "type": "string"
+          },
+          "record_version": {
+            "title": "Record Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "creation_utc_date",
+          "record_id",
+          "record_version",
+          "computation_status",
+          "data"
+        ],
+        "title": "BulkDataStatisticsResponse",
+        "type": "object"
+      },
+      "BulkStatisticsStatus": {
+        "description": "Status available for computation of bulk data statistics",
+        "enum": [
+          "error",
+          "started",
+          "running",
+          "complete"
+        ],
+        "title": "BulkStatisticsStatus",
+        "type": "string"
+      },
       "ByBoundingBox": {
         "properties": {
           "bottomRight": {
@@ -1210,6 +1311,59 @@
           }
         },
         "title": "Curve110",
+        "type": "object"
+      },
+      "CurveStatistics": {
+        "properties": {
+          "10%": {
+            "title": "10th percentiles",
+            "type": "string"
+          },
+          "50%": {
+            "title": "50th percentiles",
+            "type": "string"
+          },
+          "90%": {
+            "title": "50th percentiles",
+            "type": "string"
+          },
+          "count_valid_values": {
+            "title": "Number of valid values in the curve",
+            "type": "string"
+          },
+          "max": {
+            "title": "Minimum value",
+            "type": "string"
+          },
+          "mean": {
+            "title": "Mean value",
+            "type": "string"
+          },
+          "min": {
+            "title": "Maximum value",
+            "type": "string"
+          },
+          "std": {
+            "title": "Standard deviation value",
+            "type": "string"
+          },
+          "total_count": {
+            "title": "Number of values in the curve",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mean",
+          "std",
+          "min",
+          "10%",
+          "50%",
+          "90%",
+          "max",
+          "total_count",
+          "count_valid_values"
+        ],
+        "title": "CurveStatistics",
         "type": "object"
       },
       "DataType": {
@@ -19465,7 +19619,7 @@
     },
     "/ddms/v3/welllogs/{record_id}/data/statistics": {
       "get": {
-        "description": "Returns the statistics on bulk data identified by the record in its last version. \n\n    \nIf wanted curves is an array:  \n    - requests \"ARRAY\" retrieves all dimensions of the array  \n    - requests \"ARRAY[M:N]\", retrieves all dimensions between M and N.\n  \n      \n    IMPORTANT: there is no unit conversion, bulk data are processed are they are\n    ",
+        "description": "Returns the statistics on bulk data identified by the record in its last version. \n\n    \nIf wanted curves is an array:  \n    - requests \"ARRAY\" retrieves all dimensions of the array  \n    - requests \"ARRAY[M:N]\", retrieves all dimensions between M and N.\n  \n    \n    \nData types supported:  \n            - int  \n            - float  \n            - date  \n  \n      \n    No unit conversion is supported. Statistics will be returned using the same units as recorded in Curves[].CurveUnit\n    ",
         "operationId": "get_bulk_statistics_ddms_v3_welllogs__record_id__data_statistics_get",
         "parameters": [
           {
@@ -19507,14 +19661,48 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
-              },
-              "application/x-parquet": {}
+                "schema": {
+                  "$ref": "#/components/schemas/BulkDataStatisticsResponse"
+                }
+              }
             },
             "description": "Successful Response"
           },
           "404": {
-            "description": "Statistics or record not found"
+            "content": {
+              "application/json": {
+                "examples": {
+                  "data-not-found": {
+                    "summary": "Statistics data not found",
+                    "value": {
+                      "errorType": "DATA_NOT_FOUND",
+                      "message": "Statistics do not exist"
+                    }
+                  },
+                  "default": {
+                    "summary": "Record not found",
+                    "value": {
+                      "detail": "Record not found"
+                    }
+                  },
+                  "stats-computation-error": {
+                    "summary": "Computation still running",
+                    "value": {
+                      "errorType": "COMPUTATION_NOT_COMPLETE",
+                      "message": "Statistics computation not finished yet"
+                    }
+                  },
+                  "stats-curves-error": {
+                    "summary": "Requested curves unknown",
+                    "value": {
+                      "errorType": "CURVES_NOT_FOUND",
+                      "message": "Requested curves unknown"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not found"
           },
           "422": {
             "content": {
@@ -19538,7 +19726,7 @@
         ]
       },
       "post": {
-        "description": "Trigger the computation of statistics on bulk data for \n    the record identified by the record_id at its last version   \n      \n    IMPORTANT: there is no unit conversion, bulk data are processed are they are\n    ",
+        "description": "Trigger the computation of statistics on bulk data for \n    the record identified by the record_id at its last version   \n      \n    No unit conversion is supported. Statistics will be returned using the same units as recorded in Curves[].CurveUnit\n    ",
         "operationId": "compute_bulk_statistics_ddms_v3_welllogs__record_id__data_statistics_post",
         "parameters": [
           {
@@ -20119,7 +20307,7 @@
     },
     "/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics": {
       "get": {
-        "description": "Returns the statistics on bulk data identified by the record and given version.  \n    \nIf wanted curves is an array:  \n    - requests \"ARRAY\" retrieves all dimensions of the array  \n    - requests \"ARRAY[M:N]\", retrieves all dimensions between M and N.\n  \n      \n    IMPORTANT: there is no unit conversion, bulk data are processed are they are\n    ",
+        "description": "Returns the statistics on bulk data identified by the record and given version.  \n    \nIf wanted curves is an array:  \n    - requests \"ARRAY\" retrieves all dimensions of the array  \n    - requests \"ARRAY[M:N]\", retrieves all dimensions between M and N.\n  \n      \n    \nData types supported:  \n            - int  \n            - float  \n            - date  \n  \n    \n    No unit conversion is supported. Statistics will be returned using the same units as recorded in Curves[].CurveUnit\n    ",
         "operationId": "get_bulk_statistics_version_ddms_v3_welllogs__record_id__versions__version__data_statistics_get",
         "parameters": [
           {
@@ -20170,14 +20358,48 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
-              },
-              "application/x-parquet": {}
+                "schema": {
+                  "$ref": "#/components/schemas/BulkDataStatisticsResponse"
+                }
+              }
             },
             "description": "Successful Response"
           },
           "404": {
-            "description": "Statistics or record not found"
+            "content": {
+              "application/json": {
+                "examples": {
+                  "data-not-found": {
+                    "summary": "Statistics data not found",
+                    "value": {
+                      "errorType": "DATA_NOT_FOUND",
+                      "message": "Statistics do not exist"
+                    }
+                  },
+                  "default": {
+                    "summary": "Record not found",
+                    "value": {
+                      "detail": "Record not found"
+                    }
+                  },
+                  "stats-computation-error": {
+                    "summary": "Computation still running",
+                    "value": {
+                      "errorType": "COMPUTATION_NOT_COMPLETE",
+                      "message": "Statistics computation not finished yet"
+                    }
+                  },
+                  "stats-curves-error": {
+                    "summary": "Requested curves unknown",
+                    "value": {
+                      "errorType": "CURVES_NOT_FOUND",
+                      "message": "Requested curves unknown"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not found"
           },
           "422": {
             "content": {

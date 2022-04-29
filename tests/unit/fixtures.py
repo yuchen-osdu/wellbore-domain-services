@@ -239,12 +239,12 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
 
         # todo: Find correct way to use storage with local blob storage
 
-        # ## configure app_injector -- needs to be reset after fixture execution ##
-        # if storage_client_mock is not None:
-        #     app_injector.register(
-        #         StorageRecordServiceClient, injection_coro_builder(return_value=storage_client_mock),
-        # WithLifeTime.Singleton()
-        #     )
+        ## configure app_injector -- needs to be reset after fixture execution ##
+        if storage_client_mock is not None:
+            app_injector.register(
+                StorageRecordServiceClient, injection_coro_builder(return_value=storage_client_mock),
+        WithLifeTime.Singleton()
+            )
 
         if search_client_mock is not None:
             app_injector.register(SearchServiceClient, injection_coro_builder(return_value=search_client_mock),
