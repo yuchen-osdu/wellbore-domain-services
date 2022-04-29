@@ -53,6 +53,40 @@ async def fetch_record_info(ctx, bulk_uri_access, request, record_id, version):
 
     return record, bulk_uri
 
+responses_404_examples = {
+            "description": "Not found",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "default": {
+                            "summary": "Record not found",
+                            "value": {"detail": "Record not found"}
+                        },
+                        "data-not-found": {
+                            "summary": "Statistics data not found",
+                            "value": {
+                                "errorType": "DATA_NOT_FOUND",
+                                "message": "Statistics do not exist",
+                            }
+                        },
+                        "stats-curves-error": {
+                            "summary": "Requested curves unknown",
+                            "value": {
+                                "errorType": "CURVES_NOT_FOUND",
+                                "message": "Requested curves unknown",
+                            }
+                        },
+                        "stats-computation-error": {
+                            "summary": "Computation still running",
+                            "value": {
+                                "errorType": "COMPUTATION_NOT_COMPLETE",
+                                "message": "Statistics computation not finished yet",
+                            }
+                        },
+                    }
+                }
+            }
+        }
 
 api_description_text = """
 If wanted curves is an array:  
@@ -84,7 +118,7 @@ Data types supported:
     """,
     response_model=BulkDataStatisticsResponse,
     responses={
-        404: {"description": "Statistics or record not found"},
+        404: responses_404_examples
     }
 )
 async def get_bulk_statistics(
@@ -117,7 +151,7 @@ class BulkStatisticsHTTPException(Exception):
         self.message = message
 
     def to_dict(self):
-        return {'error_type': self.error_type, 'message': self.message}
+        return {'errorType': self.error_type, 'message': self.message}
 
 
 async def http_stats_error_handler(request, e: BulkStatisticsHTTPException) -> JSONResponse:
@@ -139,9 +173,7 @@ async def http_stats_error_handler(request, e: BulkStatisticsHTTPException) -> J
     {api_unit_conversion_text}
     """,
     responses={
-        404: {'error_type': "DATA_NOT_FOUND",
-              'message': 'Statistics or record not found'
-              }
+        404: responses_404_examples
     }
 )
 async def get_bulk_statistics_version(
@@ -185,6 +217,7 @@ async def get_bulk_statistics_version(
     finally:
         get_logger().exception("get_bulk_statistics() has raised an exception")
 
+    # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
     return BulkDataStatisticsResponse(**stats_meta.dict(), data=stats_df.to_dict(orient='index'))
 
 

@@ -77,7 +77,7 @@ def test_with_bulk_no_stats(app_configurable_with_testclient):
 
         valid_record_with_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
         assert valid_record_with_bulk_response.status_code == 404
-        assert valid_record_with_bulk_response.content == b'{"error_type":"DATA_NOT_FOUND","message":"Statistics do not exist"}'
+        assert valid_record_with_bulk_response.content == b'{"errorType":"DATA_NOT_FOUND","message":"Statistics do not exist"}'
 
 
 def test_with_bulk_stats_not_complete(app_configurable_with_testclient):
@@ -95,7 +95,7 @@ def test_with_bulk_stats_not_complete(app_configurable_with_testclient):
         valid_record_with_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
         assert valid_record_with_bulk_response.status_code == 404
         assert valid_record_with_bulk_response.content \
-               == b'{"error_type":"COMPUTATION_NOT_COMPLETE","message":"Statistics computation not finished yet"}'
+               == b'{"errorType":"COMPUTATION_NOT_COMPLETE","message":"Statistics computation not finished yet"}'
 
 
 def test_double_compute_stats(app_configurable_with_testclient):
