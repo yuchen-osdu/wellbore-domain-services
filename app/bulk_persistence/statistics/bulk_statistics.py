@@ -82,11 +82,13 @@ class BulkStatistics:
 
     def _statistics_folder(self, record_id: str, bulk_id: str):
 
-        base_bulk_base_path = path_builder.record_bulk_path(self.dask_blob_storage.base_directory,
-                                                            record_id,
-                                                            bulk_id,
-                                                            self.dask_blob_storage.protocol)
-        bulk_statistics_path = path_builder.join(base_bulk_base_path, f'statistics.v{self._stats_api_version}')
+        prefix = f'statistics.v{self._stats_api_version}'
+        bulk_statistics_path = path_builder.record_statistics_base_path(self.dask_blob_storage.base_directory,
+                                                                        record_id,
+                                                                        bulk_id,
+                                                                        prefix,
+                                                                        self.dask_blob_storage.protocol)
+
         return bulk_statistics_path
 
     def _fetch_bulks(self, catalog, columns):
@@ -148,7 +150,7 @@ class BulkStatistics:
     def _save(self, df_statistics: pd.DataFrame, record_id: str, bulk_id: str):
         """ Save given statistic to parquet file, file path is determined with record_id and bulk_id """
 
-        bulk_statistics_path = join(self._statistics_folder(record_id, bulk_id), 'data')
+        bulk_statistics_path = self._statistics_folder(record_id, bulk_id)
         self.dask_blob_storage._ensure_dir_tree_exists(bulk_statistics_path)
 
         filename = f"statistics_{df_statistics.index[0]}-{df_statistics.index[-1]}.parquet"
@@ -278,7 +280,8 @@ class BulkStatistics:
 
         with self.dask_blob_storage._fs.open(file_path, 'r') as stats_meta_file:
             blob_content = stats_meta_file.read()
-            return await asyncio.get_running_loop().run_in_executor(None, BulkDataStatisticsMeta.parse_raw, blob_content)
+            return await asyncio.get_running_loop().run_in_executor(None, BulkDataStatisticsMeta.parse_raw,
+                                                                    blob_content)
 
     async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) \
             -> (pd.DataFrame, BulkDataStatisticsMeta):
