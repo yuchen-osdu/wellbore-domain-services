@@ -125,7 +125,7 @@ class BulkStatistics:
 
         computed_stats = computed_stats.astype('string').transpose()
         computed_stats[BulkStatistics._valid_values_label] = catalog.nb_rows
-        computed_stats.rename(columns=BulkStatistics._renaming_stats_labels)
+        computed_stats.rename(columns=BulkStatistics._renaming_stats_labels, inplace=True)
 
         return computed_stats
 
@@ -302,6 +302,10 @@ class BulkStatistics:
                 raise RequestedCurvesError("Requested curves unknown")
 
         # todo: find a way to return 400 if requested columns are only not computable columns
+        # computable_columns = [col_name for col_name, col_type in existing_col.items()
+        #                       if not (col_type == 'bool' or col_type == 'object')]
+        # if not computable_columns:
+        #     raise Exception("Error 400: not computable columns requested")
 
         bulk_statistics_path = join(bulk_statistics_path, 'data')
         stats_df = await self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)

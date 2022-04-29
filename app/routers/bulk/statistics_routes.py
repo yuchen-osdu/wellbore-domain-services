@@ -25,7 +25,6 @@ from app.routers.bulk.utils import with_dask_blob_storage
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound
-from app.bulk_persistence.mime_types import MimeTypes
 
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 from app.bulk_persistence.statistics.models import BulkDataStatisticsResponse
@@ -33,6 +32,9 @@ from app.bulk_persistence.statistics import exceptions as statistics_exceptions
 
 from app.helper.logger import get_logger
 from app.helper.traces import TracingRoute
+
+from fastapi.encoders import jsonable_encoder
+from starlette.responses import JSONResponse
 
 router = APIRouter(route_class=TracingRoute)
 
@@ -80,13 +82,9 @@ Data types supported:
       
     {api_unit_conversion_text}
     """,
+    response_model=BulkDataStatisticsResponse,
     responses={
         404: {"description": "Statistics or record not found"},
-        200: {"content": {
-            MimeTypes.JSON.type: {},
-            MimeTypes.PARQUET.type: {},
-        }
-        }
     }
 )
 async def get_bulk_statistics(
@@ -108,9 +106,31 @@ async def get_bulk_statistics(
                                              bulk_uri_access=bulk_uri_access)
 
 
+class BulkStatisticsHTTPException(Exception):
+    status_code: int
+    error_type: str
+    message = str
+
+    def __init__(self, status_code: int, error_type: str, message: str):
+        self.status_code = status_code
+        self.error_type = error_type
+        self.message = message
+
+    def to_dict(self):
+        return {'error_type': self.error_type, 'message': self.message}
+
+
+async def http_stats_error_handler(request, e: BulkStatisticsHTTPException) -> JSONResponse:
+    """
+    Catches and handles pydantic validation errors
+    """
+    return JSONResponse(content=jsonable_encoder(e.to_dict()), status_code=e.status_code)
+
+
 @router.get(
     '/{record_id}/versions/{version}/data/statistics',
     summary="Returns statistics of record's data for selected curves at requested version",
+    response_model=BulkDataStatisticsResponse,
     description=f"""Returns the statistics on bulk data identified by the record and given version.  
     {api_description_text}  
       
@@ -119,11 +139,9 @@ async def get_bulk_statistics(
     {api_unit_conversion_text}
     """,
     responses={
-        404: {"description": "Statistics or record not found"},
-        200: {"content": {
-            MimeTypes.JSON.type: {},
-        }
-        }
+        404: {'error_type': "DATA_NOT_FOUND",
+              'message': 'Statistics or record not found'
+              }
     }
 )
 async def get_bulk_statistics_version(
@@ -156,14 +174,18 @@ async def get_bulk_statistics_version(
         stats_df, stats_meta = await BulkStatistics(dask_blob_storage).get_bulk_statistics(record.id,
                                                                                            bulk_uri.bulk_id,
                                                                                            columns)
+    except BulkRecordNotFound as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except (statistics_exceptions.StatisticsNotFoundError,
             statistics_exceptions.RequestedCurvesError,
-            statistics_exceptions.ComputationNotCompleteError,
-            BulkRecordNotFound) as e:
+            statistics_exceptions.ComputationNotCompleteError) as e:
+        raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                          error_type=e.public_error_type,
+                                          message=str(e))
+    finally:
         get_logger().exception("get_bulk_statistics() has raised an exception")
-        raise HTTPException(status_code=404, detail=str(e))
 
-    return BulkDataStatisticsResponse(**stats_meta.dict(), data=stats_df.to_dict(orient='dict'))
+    return BulkDataStatisticsResponse(**stats_meta.dict(), data=stats_df.to_dict(orient='index'))
 
 
 @router.post(
