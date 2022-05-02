@@ -105,8 +105,7 @@ stages:
         steps:
           - template: /devops/azure/template/steps-e2e-tests.yaml
             parameters:
-              # TODO: use ISTIO_WDMS_BASE_PATH instead of base_path from global_var,
-              # to stop relying on global_vars here.
+              # base_path comes from global_vars, that should be used globally in the pipeline
               serviceUrl: https://$(ISTIO_DNS_HOST)$(base_path)
               osduBaseUrl: https://$(ISTIO_DNS_HOST)
               aclDomain: $(DOMAIN)
