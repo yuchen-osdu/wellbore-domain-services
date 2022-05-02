@@ -121,16 +121,16 @@ class BulkStatistics:
             percentiles=BulkStatistics._percentiles
         )
 
-        if 'std' not in computed_stats.index:
+        computed_stats = computed_stats.astype('string').transpose()
+        computed_stats[BulkStatistics._valid_values_label] = catalog.nb_rows
+        computed_stats.rename(columns=BulkStatistics._renaming_stats_labels, inplace=True)
+
+        if 'std' not in computed_stats.columns:
             # The standard deviation column 'std' is omitted from df.describe() result when
             # all the dtypes of bulk data are date.
             # To prevent the omission of 'std' column when reading parquet files later on,
             # the creation of 'std' column is manually added.
-            computed_stats.loc['std'] = np.nan
-
-        computed_stats = computed_stats.astype('string').transpose()
-        computed_stats[BulkStatistics._valid_values_label] = catalog.nb_rows
-        computed_stats.rename(columns=BulkStatistics._renaming_stats_labels, inplace=True)
+            computed_stats['std'] = np.nan
 
         return computed_stats
 
