@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError
+from app.bulk_persistence import DaskClient
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
@@ -33,7 +34,7 @@ def test_grouper(container, step):
 
 
 @pytest.fixture(scope="module")
-def local_dask_client_initialized_with(dask_client):
+async def local_dask_client_initialized(dask_client):
     """
     Fixture providing wdms_app started, along with a test client
     """
@@ -43,10 +44,11 @@ def local_dask_client_initialized_with(dask_client):
         # Mocking dask_client for app to use it
         with mock.patch('app.bulk_persistence.dask.client.DaskClient.create', dask_client_starter):
             yield dask_client_starter
+            await DaskClient.close()
 
 
-@pytest.fixture()
-async def bulk_stats_fixture(local_dask_client_initialized_with, tmp_path, nope_logger_fixture, ctx_fixture) \
+@pytest.fixture
+async def bulk_stats_fixture(local_dask_client_initialized, tmp_path, nope_logger_fixture, ctx_fixture) \
         -> (BulkStatistics, DaskBulkStorage):
     local_dask = await make_local_dask_bulk_storage(str(tmp_path))
 
@@ -54,9 +56,6 @@ async def bulk_stats_fixture(local_dask_client_initialized_with, tmp_path, nope_
     bulk_stats.max_number_values = 500_000
     bulk_stats.max_columns_count = 100
     yield bulk_stats, local_dask
-
-    local_dask.client.shutdown()
-    local_dask.client.close()
 
 
 async def add_bulk_data_to_fixture(dask_blob_storage, typed_df):
