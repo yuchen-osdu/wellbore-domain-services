@@ -80,16 +80,19 @@ class BulkStatistics:
                                         record_id,
                                         self.dask_blob_storage.protocol)
 
-    def _statistics_folder(self, record_id: str, bulk_id: str):
+    def _statistics_base_path(self, record_id: str, bulk_id: str):
+        """ Return the base path for bulk data statistics for current version """
 
-        prefix = f'statistics.v{self._stats_api_version}'
-        bulk_statistics_path = path_builder.record_statistics_base_path(self.dask_blob_storage.base_directory,
-                                                                        record_id,
-                                                                        bulk_id,
-                                                                        prefix,
-                                                                        self.dask_blob_storage.protocol)
+        suffix = f'statistics.v{self._stats_api_version}'
+        return path_builder.record_statistics_base_path(self.dask_blob_storage.base_directory,
+                                                        record_id,
+                                                        bulk_id,
+                                                        suffix,
+                                                        self.dask_blob_storage.protocol)
 
-        return bulk_statistics_path
+    def _statistics_data_path(self, record_id: str, bulk_id):
+        """ Return the path for where statistics files are saved for a given record and bulk id """
+        return join(self._statistics_base_path(record_id, bulk_id), 'data')
 
     def _fetch_bulks(self, catalog, columns):
 
@@ -150,11 +153,11 @@ class BulkStatistics:
     def _save(self, df_statistics: pd.DataFrame, record_id: str, bulk_id: str):
         """ Save given statistic to parquet file, file path is determined with record_id and bulk_id """
 
-        bulk_statistics_path = self._statistics_folder(record_id, bulk_id)
-        self.dask_blob_storage._ensure_dir_tree_exists(bulk_statistics_path)
+        bulk_statistics_data_path = self._statistics_data_path(record_id, bulk_id)
+        self.dask_blob_storage._ensure_dir_tree_exists(bulk_statistics_data_path)
 
         filename = f"statistics_{df_statistics.index[0]}-{df_statistics.index[-1]}.parquet"
-        full_file_path = path_builder.join(bulk_statistics_path, filename)
+        full_file_path = path_builder.join(bulk_statistics_data_path, filename)
 
         DataframeSerializerSync.to_parquet(df_statistics,
                                            full_file_path,
@@ -164,7 +167,7 @@ class BulkStatistics:
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_columns = catalog.all_columns_dtypes.keys()
 
-        bulk_statistics_path = self._statistics_folder(record_id, bulk_uri)
+        bulk_statistics_path = self._statistics_base_path(record_id, bulk_uri)
         stats_meta_data = BulkDataStatisticsMeta(creation_utc_date=datetime.utcnow(),
                                                  record_id=record_id,
                                                  record_version=str(record_version),
@@ -221,11 +224,11 @@ class BulkStatistics:
             content = stats_meta_data.json()
             stats_meta_file.write(content)
 
-    def _fetch_statistics(self, bulk_statistics_path: str, columns: List[str]):
+    def _fetch_statistics(self, bulk_statistics_data_path: str, columns: List[str]):
         """
         Read parquet files of computed statistics, then filter rows according to given columns.
         """
-        statistics_df = pd.read_parquet(bulk_statistics_path,
+        statistics_df = pd.read_parquet(bulk_statistics_data_path,
                                         storage_options=self.dask_blob_storage._parameters.storage_options)
 
         return statistics_df.filter(items=columns, axis=0)
@@ -286,7 +289,7 @@ class BulkStatistics:
     async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) \
             -> (pd.DataFrame, BulkDataStatisticsMeta):
 
-        bulk_statistics_path = self._statistics_folder(record_id, bulk_uri)
+        bulk_statistics_path = self._statistics_base_path(record_id, bulk_uri)
         try:
             statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
         except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError):
@@ -310,7 +313,7 @@ class BulkStatistics:
         # if not computable_columns:
         #     raise Exception("Error 400: not computable columns requested")
 
-        bulk_statistics_path = join(bulk_statistics_path, 'data')
-        stats_df = await self._submit_with_trace(self._fetch_statistics, bulk_statistics_path, columns)
+        bulk_statistics_data_path = self._statistics_data_path(record_id, bulk_uri)
+        stats_df = await self._submit_with_trace(self._fetch_statistics, bulk_statistics_data_path, columns)
 
         return stats_df, statistics_meta
