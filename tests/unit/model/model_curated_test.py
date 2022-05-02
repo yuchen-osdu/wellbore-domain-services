@@ -961,8 +961,8 @@ def test_marker_dict_init_symmetric(marker_instance, setup_marker_examples):
 
 # module fixture to dynamically add hypothesis examples from model_examples data fixture
 @pytest.fixture
-def setup_marker_examples(marker_v3_record_list):
-    for m in [from_record(model.marker, mm) for mm in marker_v3_record_list]:
+def setup_marker_examples(marker_v2_record_list):
+    for m in [from_record(model.marker, mm) for mm in marker_v2_record_list]:
         example(marker_instance=m)(test_marker_dict_init_symmetric)
     return
 

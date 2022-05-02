@@ -41,6 +41,11 @@ def wellbore_v3_file_contents() -> str:
 
 
 @pytest.fixture(scope="session")
+def marker_v2_file_contents() -> str:
+    return load_model_example_file_contents("marker_v2.json")
+
+
+@pytest.fixture(scope="session")
 def marker_v3_file_contents() -> str:
     return load_model_example_file_contents("marker_v3.json")
 
@@ -135,6 +140,19 @@ def wellbore_v3_record_list(wellbore_v3_file_contents, domain, data_partition, l
 def wellbore100_v3_list(wellbore_v3_record_list) -> List[Wellbore]:
     """ provide a list of wellbore v.1.0.0"""
     return [Wellbore(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_record_list]
+
+
+@pytest.fixture
+def marker_v2_record_list(marker_v2_file_contents, domain, data_partition, legal_tags) -> List[Record]:
+
+    vars_to_replace = Variables.from_dict({
+        "domain": domain,
+        "datapartitionid": data_partition,
+        "legaltags": legal_tags,
+    })
+
+    # single record content
+    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in marker_v2_file_contents]
 
 
 @pytest.fixture
