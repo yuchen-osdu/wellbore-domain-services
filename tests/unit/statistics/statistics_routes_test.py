@@ -187,7 +187,7 @@ def test_get_stats_from_not_computable_columns(app_configurable_with_testclient)
 
 def test_get_stats_after_post_data(app_configurable_with_testclient):
     _, client = app_configurable_with_testclient(fake_data_partition_id=True, disable_bulk_consistency=True,
-                                                         search_client_mock=None, storage_client_mock=None)
+                                                 search_client_mock=None, storage_client_mock=None)
     record_id = _create_record(client, "WellLog")
     post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
 

@@ -49,7 +49,8 @@ from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
 from ..consistency_checks import DataConsistencyChecks
 
-
+# https://distributed.dask.org/en/latest/priority.html
+# low priority -10 < default priority = 0 < high priority 10
 DASK_BACKGROUND_TASK_PRIORITY = -5
 
 

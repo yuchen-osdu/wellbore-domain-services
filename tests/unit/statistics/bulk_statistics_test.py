@@ -33,7 +33,7 @@ def test_grouper(container, step):
 
 
 @pytest.fixture(scope="module")
-def app_initialized_with_testclient(dask_client):
+def local_dask_client_initialized_with(dask_client):
     """
     Fixture providing wdms_app started, along with a test client
     """
@@ -46,7 +46,7 @@ def app_initialized_with_testclient(dask_client):
 
 
 @pytest.fixture()
-async def bulk_stats_fixture(app_initialized_with_testclient, tmp_path, nope_logger_fixture, ctx_fixture) \
+async def bulk_stats_fixture(local_dask_client_initialized_with, tmp_path, nope_logger_fixture, ctx_fixture) \
         -> (BulkStatistics, DaskBulkStorage):
     local_dask = await make_local_dask_bulk_storage(str(tmp_path))
 
@@ -55,6 +55,7 @@ async def bulk_stats_fixture(app_initialized_with_testclient, tmp_path, nope_log
     bulk_stats.max_columns_count = 100
     yield bulk_stats, local_dask
 
+    local_dask.client.shutdown()
     local_dask.client.close()
 
 
