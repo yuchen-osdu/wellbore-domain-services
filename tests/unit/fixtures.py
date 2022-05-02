@@ -253,9 +253,12 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         ## configure app -- needs to be reset after fixture execution ##
         app.trace_exporter = trace_exporter
 
+        async def opendes_authorized_user_mock_depend():
+            pass
+
         app.dependency_overrides[
             require_opendes_authorized_user
-        ] = lambda: None if fake_opendes_authorized_user else require_opendes_authorized_user
+        ] = opendes_authorized_user_mock_depend if fake_opendes_authorized_user else require_opendes_authorized_user
 
         app.dependency_overrides[
             require_data_partition_id
