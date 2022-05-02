@@ -7,7 +7,14 @@ import pydantic
 from string import printable
 
 import pytest
-from hypothesis import given, example, settings, Verbosity, HealthCheck
+from hypothesis import (
+    given,
+    example,
+    settings,
+    Verbosity,
+    HealthCheck,
+    reproduce_failure,
+)
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
@@ -220,10 +227,39 @@ def test_point_dict_init_symmetric(point):
     assert model.Point(**point.dict()) == point
 
 
+# register specific strategy for Legal
+st.register_type_strategy(
+    model.Legal,
+    st.builds(
+        model.Legal,
+        legaltags=st.from_type(typing.Optional[List[str]]),
+        otherRelevantDataCountries=st.from_type(typing.Optional[List[str]]),
+        # status should be None, to allow round-trip to Record
+        status=st.none(),
+    ),
+)
+
+
 @given(legal=st.from_type(model.Legal))
 def test_legal_dict_init_symmetric(legal):
     """tests dict/init symmetry for Legal model"""
     assert model.Legal(**legal.dict()) == legal
+
+
+# register specific strategy for TagDictionary
+st.register_type_strategy(
+    model.TagDictionary,
+    # TagDictionary should NOT be empty, to allow round-trip to Record
+    st.builds(
+        model.TagDictionary.parse_obj,
+        st.fixed_dictionaries(
+            {
+                "viewers": st.lists(elements=st.from_type(str), max_size=2),
+                "owners": st.lists(elements=st.from_type(str), max_size=2),
+            }
+        ),
+    ),
+)
 
 
 @given(tag_dictionary=st.from_type(model.TagDictionary))
@@ -735,19 +771,54 @@ def test_wellbore_data_dict_init_symmetric(wellbore_data):
     assert model.wellboreData(**wellbore_data.dict()) == wellbore_data
 
 
+# register specific strategy for trajectory
+st.register_type_strategy(
+    model.wellbore,
+    st.builds(
+        model.wellbore,
+        # acls should NOT be empty, to allow round-trip to Record
+        acl=st.from_type(model.TagDictionary),
+        # data should NOT be optional, to allow round-trip to Record
+        data=st.from_type(model.wellboreData),
+        id=st.from_type(typing.Optional[str]),
+        # kind should NOT be optional, to allow round-trip to Record
+        kind=st.from_type(str),
+        # legal should NOT be optional, to allow round-trip to Record
+        legal=st.from_type(model.Legal),
+        # version should be an int, to allow round-trip to Record
+        version=st.from_type(typing.Optional[int]),
+    ),
+)
+
+
 @given(wellbore_instance=st.from_type(model.wellbore))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
-def test_wellbore_dict_init_symmetric(wellbore_instance):
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture]
+)  # , verbosity=Verbosity.verbose)
+def test_wellbore_record_round_trip(wellbore_instance):
     """tests dict/init symmetry for wellbore model"""
-    assert from_record(model.wellbore, to_record(wellbore_instance)) == wellbore_instance
+    assert (
+        from_record(model.wellbore, to_record(wellbore_instance)) == wellbore_instance
+    )
 
 
 # module fixture to dynamically add hypothesis examples from model_examples data fixture
 @pytest.fixture
-def setup_wellbore_examples(wellbore_v3_record_list, wellbore_v2_record_list):
-    for w in [from_record(model.wellbore, w3) for w3 in wellbore_v3_record_list] +\
-             [from_record(model.wellbore, w2) for w2 in wellbore_v2_record_list]:
-        example(wellbore_instance=w)(test_wellbore_dict_init_symmetric)
+def setup_wellbore_examples(
+    wellbore_v3_record_list,
+    wellbore_v2_record_list,
+    wellbore_wks_record,
+    wellbore_wks_mini_record,
+):
+    for w in (
+        [from_record(model.wellbore, w3) for w3 in wellbore_v3_record_list]
+        + [from_record(model.wellbore, w2) for w2 in wellbore_v2_record_list]
+        + [
+            from_record(model.wellbore, wellbore_wks_record),
+            from_record(model.wellbore, wellbore_wks_mini_record),
+        ]
+    ):
+        example(wellbore_instance=w)(test_wellbore_record_round_trip)
     return
 
 
@@ -787,18 +858,43 @@ def test_trajectory_data_dict_init_symmetric(trajectory_data):
     assert model.trajectoryData(**trajectory_data.dict()) == trajectory_data
 
 
+# register specific strategy for trajectory
+st.register_type_strategy(
+    model.trajectory,
+    st.builds(
+        model.trajectory,
+        # acls should NOT be empty, to allow round-trip to Record
+        acl=st.from_type(model.TagDictionary),
+        # data should NOT be optional, to allow round-trip to Record
+        data=st.from_type(model.trajectoryData),
+        id=st.from_type(typing.Optional[str]),
+        # kind should NOT be optional, to allow round-trip to Record
+        kind=st.from_type(str),
+        # legal should NOT be optional, to allow round-trip to Record
+        legal=st.from_type(model.Legal),
+        # version should be an int, to allow round-trip to Record
+        version=st.from_type(typing.Optional[int]),
+    ),
+)
+
+
 @given(trajectory_instance=st.from_type(model.trajectory))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
-def test_trajectory_dict_init_symmetric(trajectory_instance, setup_trajectory_examples):
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture]
+)  # , verbosity=Verbosity.verbose)
+def test_trajectory_record_round_trip(trajectory_instance, setup_trajectory_examples):
     """tests dict/init symmetry for trajectory model"""
-    assert from_record(model.trajectory, to_record(trajectory_instance)) == trajectory_instance
+    assert (
+        from_record(model.trajectory, to_record(trajectory_instance))
+        == trajectory_instance
+    )
 
 
 # module fixture to dynamically add hypothesis examples from model_examples data fixture
 @pytest.fixture
 def setup_trajectory_examples(trajectory_v3_record_list):
     for t in [from_record(model.trajectory, tt) for tt in trajectory_v3_record_list]:
-        example(trajectory_instance=t)(test_trajectory_dict_init_symmetric)
+        example(trajectory_instance=t)(test_trajectory_record_round_trip)
     return
 
 
@@ -808,9 +904,29 @@ def test_marker_data_dict_init_symmetric(marker_data):
     assert model.markerData(**marker_data.dict()) == marker_data
 
 
+# register specific strategy for marker
+st.register_type_strategy(
+    model.marker,
+    st.builds(
+        model.marker,
+        # acls should NOT be optional, to allow round-trip to Record
+        acl=st.from_type(model.TagDictionary),
+        # data should NOT be optional, to allow round-trip to Record
+        data=st.from_type(model.markerData),
+        id=st.from_type(typing.Optional[str]),
+        kind=st.from_type(str),
+        legal=st.from_type(model.Legal),
+        # version should be an int, to allow round-trip to Record
+        version=st.from_type(typing.Optional[int]),
+    ),
+)
+
+
 @given(marker_instance=st.from_type(model.marker))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
-def test_marker_dict_init_symmetric(marker_instance, setup_marker_examples):
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture]
+)  # , verbosity=Verbosity.verbose)
+def test_marker_record_round_trip(marker_instance, setup_marker_examples):
     """tests dict/init symmetry for marker model"""
     assert from_record(model.marker, to_record(marker_instance)) == marker_instance
 
@@ -819,7 +935,7 @@ def test_marker_dict_init_symmetric(marker_instance, setup_marker_examples):
 @pytest.fixture
 def setup_marker_examples(marker_v2_record_list):
     for m in [from_record(model.marker, mm) for mm in marker_v2_record_list]:
-        example(marker_instance=m)(test_marker_dict_init_symmetric)
+        example(marker_instance=m)(test_marker_record_round_trip)
     return
 
 
@@ -829,17 +945,47 @@ def test_well_data_dict_init_symmetric(well_data):
     assert model.wellData(**well_data.dict()) == well_data
 
 
+# register specific strategy for well
+st.register_type_strategy(
+    model.well,
+    st.builds(
+        model.well,
+        # acls should NOT be empty, to allow round-trip to Record
+        acl=st.from_type(model.TagDictionary),
+        # data should NOT be optional, to allow round-trip to Record
+        data=st.from_type(model.wellData),
+        id=st.from_type(typing.Optional[str]),
+        # kind should NOT be optional, to allow round-trip to Record
+        kind=st.from_type(str),
+        # legal should NOT be optional, to allow round-trip to Record
+        legal=st.from_type(model.Legal),
+        # version should be an int, to allow round-trip to Record
+        version=st.from_type(typing.Optional[int]),
+    ),
+)
+
+
 @given(well_instance=st.from_type(model.well))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
-def test_well_dict_init_symmetric(well_instance, setup_well_examples):
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture]
+)  # , verbosity=Verbosity.verbose)
+def test_well_record_round_trip(well_instance, setup_well_examples):
     """tests dict/init symmetry for well model"""
     assert from_record(model.well, to_record(well_instance)) == well_instance
 
 
 # module fixture to dynamically add hypothesis examples from model_examples data fixture
 @pytest.fixture
-def setup_well_examples(well_v3_record_list, well_v2_record_list):
-    for w in [from_record(model.well, w3) for w3 in well_v3_record_list] +\
-             [from_record(model.well, w2) for w2 in well_v2_record_list]:
-        example(well_instance=w)(test_well_dict_init_symmetric)
+def setup_well_examples(
+    well_v3_record_list, well_v2_record_list, well_wks_record, well_wks_mini_record
+):
+    for w in (
+        [from_record(model.well, w3) for w3 in well_v3_record_list]
+        + [from_record(model.well, w2) for w2 in well_v2_record_list]
+        + [
+            from_record(model.well, well_wks_record),
+            from_record(model.well, well_wks_mini_record),
+        ]
+    ):
+        example(well_instance=w)(test_well_record_round_trip)
     return
