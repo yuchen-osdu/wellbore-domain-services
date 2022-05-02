@@ -196,14 +196,6 @@ def test_ddms_base_model_with_extra_allows_extra(ddms_basemodel_with_extra):
     assert instance.another_key == "the other value"
 
 
-@given(link_list=st.from_type(model.LinkList))
-def test_link_list_allows_extra(link_list):
-    """tests LinkList allows extra fields"""
-
-    instance = model.LinkList(**{**link_list.dict(), "another_key": "the other value"})
-    assert instance.another_key == "the other value"
-
-
 @given(kind=st.from_type(model.Kind))
 def test_kind_dict_init_symmetric(kind):
     """.value/init symmetry for Kind enum"""
@@ -214,14 +206,6 @@ def test_kind_dict_init_symmetric(kind):
 def test_meta_item_dict_init_symmetric(meta_item):
     """tests dict/init symmetry for MetaItem model"""
     assert model.MetaItem(**meta_item.dict()) == meta_item
-
-
-@given(meta_item=st.from_type(model.MetaItem))
-def test_meta_item_allows_extra(meta_item):
-    """tests MetaItem allows extra fields"""
-
-    instance = model.MetaItem(**{**meta_item.dict(), "another_key": "the other value"})
-    assert instance.another_key == "the other value"
 
 
 @given(ddms_base_record=st.from_type(model.DDMSBaseRecord))
@@ -246,16 +230,6 @@ def test_legal_dict_init_symmetric(legal):
 def test_tag_dictionary_dict_init_symmetric(tag_dictionary):
     """tests dict/init symmetry for TagDictionary model"""
     assert model.TagDictionary(**tag_dictionary.dict()) == tag_dictionary
-
-
-@given(tag_dictionary=st.from_type(model.TagDictionary))
-def test_tag_dictionary_allows_extra(tag_dictionary):
-    """tests TagDictionary allows extra fields"""
-
-    instance = model.TagDictionary(
-        **{**tag_dictionary.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(to_one_relationship=st.from_type(model.ToOneRelationship))
@@ -449,16 +423,6 @@ def test_logset_relationships_dict_init_symmetric(logset_relationships_instance)
     )
 
 
-@given(logset_relationships_instance=st.from_type(model.logsetrelationships))
-def test_logset_relationships_allows_extra(logset_relationships_instance):
-    """tests logsetrelationships allows extra fields"""
-
-    instance = model.logsetrelationships(
-        **{**logset_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(dipset_relationships_instance=st.from_type(model.dipsetrelationships))
 def test_dipset_relationships_dict_init_symmetric(dipset_relationships_instance):
     """tests dict/init symmetry for dipsetrelationships model"""
@@ -466,16 +430,6 @@ def test_dipset_relationships_dict_init_symmetric(dipset_relationships_instance)
         model.dipsetrelationships(**dipset_relationships_instance.dict())
         == dipset_relationships_instance
     )
-
-
-@given(dipset_relationships_instance=st.from_type(model.dipsetrelationships))
-def test_dipset_relationships_allows_extra(dipset_relationships_instance):
-    """tests dipsetrelationships allows extra fields"""
-
-    instance = model.dipsetrelationships(
-        **{**dipset_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(data_type=st.from_type(model.DataType_1))
@@ -510,16 +464,6 @@ def test_trajectory_relationships_dict_init_symmetric(
     )
 
 
-@given(trajectory_relationships_instance=st.from_type(model.trajectoryrelationships))
-def test_trajectory_relationships_allows_extra(trajectory_relationships_instance):
-    """tests trajectoryrelationships allows extra fields"""
-
-    instance = model.dipsetrelationships(
-        **{**trajectory_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(wgs84_position=st.from_type(model.wgs84Position))
 def test_wgs84_position_dict_init_symmetric(wgs84_position):
     """tests dict/init symmetry for wgs84Position model"""
@@ -533,16 +477,6 @@ def test_marker_relationships_dict_init_symmetric(marker_relationships_instance)
         model.markerrelationships(**marker_relationships_instance.dict())
         == marker_relationships_instance
     )
-
-
-@given(marker_relationships_instance=st.from_type(model.markerrelationships))
-def test_marker_relationships_allows_extra(marker_relationships_instance):
-    """tests markerrelationships allows extra fields"""
-
-    instance = model.markerrelationships(
-        **{**marker_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(data_type_2=st.from_type(model.DataType_2))
@@ -578,16 +512,6 @@ def test_log_relationships_dict_init_symmetric(log_relationships_instance):
     )
 
 
-@given(log_relationships_instance=st.from_type(model.logRelationships))
-def test_log_relationships_allows_extra(log_relationships_instance):
-    """tests logRelationships allows extra fields"""
-
-    instance = model.logRelationships(
-        **{**log_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(basin_context=st.from_type(model.basinContext))
 def test_basin_context_dict_init_symmetric(basin_context):
     """tests dict/init symmetry for basinContext model"""
@@ -601,16 +525,6 @@ def test_well_relationships_dict_init_symmetric(well_relationships_instance):
         model.wellrelationships(**well_relationships_instance.dict())
         == well_relationships_instance
     )
-
-
-@given(well_relationships_instance=st.from_type(model.wellrelationships))
-def test_well_relationships_allows_extra(well_relationships_instance):
-    """tests wellrelationships allows extra fields"""
-
-    instance = model.wellrelationships(
-        **{**well_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(direction_well=st.from_type(model.DirectionWell))
@@ -782,14 +696,6 @@ def test_log_data_dict_init_symmetric(log_data):
     assert model.logData(**log_data.dict()) == log_data
 
 
-@given(log_data=st.from_type(model.logData))
-def test_log_data_allows_extra(log_data):
-    """tests logData allows extra fields"""
-
-    instance = model.logData(**{**log_data.dict(), "another_key": "the other value"})
-    assert instance.another_key == "the other value"
-
-
 @given(log_instance=st.from_type(model.log))
 def test_log_dict_init_symmetric(log_instance):
     """tests dict/init symmetry for log model"""
@@ -829,16 +735,6 @@ def test_wellbore_data_dict_init_symmetric(wellbore_data):
     assert model.wellboreData(**wellbore_data.dict()) == wellbore_data
 
 
-@given(wellbore_data=st.from_type(model.wellboreData))
-def test_wellbore_data_allows_extra(wellbore_data):
-    """tests wellboreData allows extra fields"""
-
-    instance = model.wellboreData(
-        **{**wellbore_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(wellbore_instance=st.from_type(model.wellbore))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
 def test_wellbore_dict_init_symmetric(wellbore_instance):
@@ -867,30 +763,10 @@ def test_log_set_data_dict_init_symmetric(log_set_data):
     assert model.logSetData(**log_set_data.dict()) == log_set_data
 
 
-@given(log_set_data=st.from_type(model.logSetData))
-def test_log_set_data_allows_extra(log_set_data):
-    """tests logSetData allows extra fields"""
-
-    instance = model.logSetData(
-        **{**log_set_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(dip_set_data=st.from_type(model.dipSetData))
 def test_dip_set_data_dict_init_symmetric(dip_set_data):
     """tests dict/init symmetry for dipSetData model"""
     assert model.dipSetData(**dip_set_data.dict()) == dip_set_data
-
-
-@given(dip_set_data=st.from_type(model.dipSetData))
-def test_dip_set_data_allows_extra(dip_set_data):
-    """tests dipSetData allows extra fields"""
-
-    instance = model.dipSetData(
-        **{**dip_set_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(log_set_instance=st.from_type(model.logset))
@@ -909,16 +785,6 @@ def test_dip_set_dict_init_symmetric(dip_set_instance):
 def test_trajectory_data_dict_init_symmetric(trajectory_data):
     """tests dict/init symmetry for trajectoryData model"""
     assert model.trajectoryData(**trajectory_data.dict()) == trajectory_data
-
-
-@given(trajectory_data=st.from_type(model.trajectoryData))
-def test_trajectory_data_allows_extra(trajectory_data):
-    """tests trajectoryData allows extra fields"""
-
-    instance = model.trajectoryData(
-        **{**trajectory_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(trajectory_instance=st.from_type(model.trajectory))
@@ -942,16 +808,6 @@ def test_marker_data_dict_init_symmetric(marker_data):
     assert model.markerData(**marker_data.dict()) == marker_data
 
 
-@given(marker_data=st.from_type(model.markerData))
-def test_marker_data_allows_extra(marker_data):
-    """tests markerData allows extra fields"""
-
-    instance = model.markerData(
-        **{**marker_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(marker_instance=st.from_type(model.marker))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])  # , verbosity=Verbosity.verbose)
 def test_marker_dict_init_symmetric(marker_instance, setup_marker_examples):
@@ -971,14 +827,6 @@ def setup_marker_examples(marker_v2_record_list):
 def test_well_data_dict_init_symmetric(well_data):
     """tests dict/init symmetry for wellData model"""
     assert model.wellData(**well_data.dict()) == well_data
-
-
-@given(well_data=st.from_type(model.wellData))
-def test_well_data_allows_extra(well_data):
-    """tests wellData allows extra fields"""
-
-    instance = model.wellData(**{**well_data.dict(), "another_key": "the other value"})
-    assert instance.another_key == "the other value"
 
 
 @given(well_instance=st.from_type(model.well))
