@@ -8,24 +8,11 @@ import pandas.api.types as ptypes
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from app.auth.auth import require_opendes_authorized_user
-from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage
-from app.clients import StorageRecordServiceClient
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.helper import traces
-from app.middleware import require_data_partition_id
 from app.conf import Config
 
-from app.wdms_app import app_injector, wdms_app
-from fastapi.testclient import TestClient
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from pandas.testing import assert_frame_equal
-from tests.unit.conftest import do_nothing, set_default_partition
 from tests.unit.persistence.dask_blob_storage_test import generate_df
 
-
-from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
 
 Definitions = {
     'WellLog': {
@@ -122,53 +109,13 @@ def _cast_datetime_to_datetime64_ns(result_df):
     return result_df
 
 
-@pytest.fixture
-def dasked_test_app(init_fixtures, event_loop, tmp_path, nope_logger_fixture):
-
-    local_blob_storage = LocalFSBlobStorage(directory=tmp_path)
-
-    async def storage_service_builder(*args, **kwargs):
-        return StorageRecordServiceBlobStorage(local_blob_storage, 'myProject', 'myContainer')
-
-    async def blob_storage_builder(*args, **kwargs):
-        return local_blob_storage
-
-    async def sessions_storage_builder(*args, **kwargs):
-        return SessionsStorage(local_blob_storage)
-
-    async def dask_blob_storage_builder() -> DaskBulkStorage:
-        return await make_local_dask_bulk_storage(base_directory=tmp_path)
-
-    app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
-    app_injector.register(BlobStorageBase, blob_storage_builder)
-    app_injector.register(SessionsStorage, sessions_storage_builder)
-    app_injector.register(StorageRecordServiceClient, storage_service_builder)
-
-    wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-
-    # Initialize traces exporter in app, like it is in app's startup decorator
-    wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
-
-    yield wdms_app
-    # clean up
-    wdms_app.dependency_overrides = {}
-
-
-@pytest.fixture
-def dasked_test_app_without_consistency(dasked_test_app):
-    app = dasked_test_app
-    # disable wellLog data consistency check for tests
-    previous_overrides = wdms_app.dependency_overrides
-    app.dependency_overrides[set_welllog_data_consistency_check] = do_nothing
-    app.dependency_overrides[set_trajectory_data_consistency_check] = do_nothing
-    yield app
-    app.dependency_overrides = previous_overrides
-
-
-@pytest.fixture
-def dasked_test_app_without_consistency_client(dasked_test_app_without_consistency):
-    yield TestClient(dasked_test_app_without_consistency)
+@pytest.fixture()
+def dasked_test_app_without_consistency_client(app_configurable_with_testclient):
+    _, client = app_configurable_with_testclient(fake_data_partition_id=True,
+                                                 disable_bulk_consistency=True,
+                                                 search_client_mock=None,
+                                                 storage_client_mock=None)
+    yield client
 
 
 def test_post_data_merge_extension_properties(dasked_test_app_without_consistency_client):
