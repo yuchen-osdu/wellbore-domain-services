@@ -29,6 +29,9 @@ unit_tests_report.xml
 
 # Ignore files cached by Hypothesis...
 .hypothesis/*
+# except for the examples directory
+!.hypothesis/examples/
+
 # Environments
 .env
 .venv*
