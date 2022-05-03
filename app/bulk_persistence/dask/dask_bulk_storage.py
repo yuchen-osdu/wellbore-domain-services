@@ -26,8 +26,8 @@ from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
 from ...helper.logger import get_logger
 from ...helper.traces import with_trace
-from app.persistence.sessions_storage import Session
 from ..capture_timings import capture_timings
+from ..sessions_storage import Session
 from app.conf import Config
 
 from .client import DaskClient
@@ -37,7 +37,7 @@ from .traces import map_with_trace, submit_with_trace, trace_attributes_root_spa
 from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, join_dataframes, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
 from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
-from .. import DataframeSerializerSync
+from ..dataframe_serializer import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id

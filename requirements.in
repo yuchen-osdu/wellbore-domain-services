@@ -12,6 +12,7 @@ python-rapidjson
 python-multipart
 jsonpath-ng # TODO: remove when bulk_path no longer supported
 natsort
+prometheus-fastapi-instrumentator
 
 opencensus
 opencensus-ext-stackdriver

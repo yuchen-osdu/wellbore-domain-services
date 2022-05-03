@@ -9,13 +9,11 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 from app.auth.auth import require_opendes_authorized_user
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
+from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.persistence.sessions_storage import SessionsStorage, SessionState
 from app.conf import Config
 
 from fastapi.testclient import TestClient
@@ -1315,7 +1313,7 @@ def test_session_update_previous_storage_version(dasked_test_app_without_consist
 
 from unittest import mock
 from app.bulk_persistence.dask.traces import TracingMode
-from app.persistence.sessions_storage import SessionsStorage, SessionState, SessionUpdateMode
+from app.bulk_persistence import SessionsStorage, SessionState, SessionUpdateMode
 
 
 def assert_mock_chunk(tracing_mock, chunk_df):

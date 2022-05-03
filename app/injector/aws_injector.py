@@ -16,8 +16,8 @@ from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu_aws.storage.storage_aws import AwsStorage
 from osdu_aws.storage.dask_storage_parameters import get_dask_storage_parameters as aws_parameters
 from app.context import Context
-from app.bulk_persistence import resolve_tenant
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.tenant import resolve_tenant
+from app.bulk_persistence import DaskBulkStorage
 from .app_injector import AppInjector, AppInjectorModule
 from app.conf import Config
 

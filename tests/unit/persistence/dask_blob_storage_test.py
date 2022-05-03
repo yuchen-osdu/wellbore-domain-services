@@ -21,7 +21,7 @@ import pytest
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
-from app.persistence.sessions_storage import (Session, SessionState,
+from app.bulk_persistence import (Session, SessionState,
                                               SessionUpdateMode)
 from app.bulk_persistence.dask.dask_bulk_storage import (BulkRecordNotFound,
                                                          BulkNotProcessable,

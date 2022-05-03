@@ -35,11 +35,8 @@ def current_test():
     return cur_test.split('::')[-1].replace(' (call)', '').strip()
 
 
-def make_correlation_id(prefix: str = None):
-    if not prefix:
-        prefix = 'wdms_e2e_' + current_test()
-
-    return f'{prefix}_{uuid.uuid4()}'
+def make_correlation_id():
+    return f'wdms_e2e/{uuid.uuid4()}'
 
 
 @dataclass
@@ -243,7 +240,8 @@ class RequestRunner:
         result = RunResult(start_ts=start_ts, end_ts=datetime.now(), request=rq, response=response)
 
         if log_level == 1:
-            logger.info(f'{current_test()} <= {rq.name} status_code={result.response.status_code} ({result.elapsed} ms)')
+            logger.info(f'{current_test()} <= {rq.name} status_code={result.response.status_code} '
+                        f'({result.elapsed} ms), cid={rq.headers.get("correlation-id", "[none]")}')
         elif log_level > 1:
             logger.info(f'{current_test()} <= ')
             logger.info(result)

@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.bulk_persistence import resolve_tenant
+from app.tenant import resolve_tenant
+from app.bulk_persistence import hash_record_id
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import asyncio
 
-from app.bulk_persistence.dask.storage_path_builder import hash_record_id
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_client import get_storage_record_service
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess

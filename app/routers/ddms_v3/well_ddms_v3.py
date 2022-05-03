@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Response, status, Body, HTTPException
+from fastapi import APIRouter, Depends, Response, status, Body
 from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
@@ -22,6 +22,7 @@ from odes_storage.models import (
     RecordVersions,
 )
 from app.model.osdu_model import Well
+from app.model.osdu_record_id import split_record_id_version, WellId
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
@@ -31,14 +32,6 @@ from app.routers.record_utils import fetch_record
 from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
-
-
-async def get_osdu_well(wellid: str, ctx: Context) -> Well:
-    storage_client = await get_storage_record_service(ctx)
-    well_record = await storage_client.get_record(
-        id=wellid, data_partition_id=ctx.partition_id
-    )
-    return from_record(Well, well_record)
 
 
 @router.get(
@@ -52,16 +45,12 @@ async def get_osdu_well(wellid: str, ctx: Context) -> Well:
         status.HTTP_404_NOT_FOUND: {"description": "Well not found"}
     },
 )
-async def get_well_osdu(
-    wellid: str, ctx: Context = Depends(get_ctx)
-) -> Well:
-    is_osdu_versioned, osdu_id, version = DMSV3RouterUtils.is_osdu_versioned_well_id(wellid)
-    if is_osdu_versioned:
-        return await get_osdu_well(osdu_id, ctx)
-    if DMSV3RouterUtils.is_osdu_well_id(wellid):
-        return await get_osdu_well(wellid, ctx)
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Id is not OSDU Well")
-
+async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Well:
+    # Note: version is dropped here
+    record_id, _ = split_record_id_version(wellid)
+    storage_client = await get_storage_record_service(ctx)
+    well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
+    return from_record(Well, well_record)
 
 
 @router.delete(
@@ -79,11 +68,9 @@ async def get_well_osdu(
         },
     },
 )
-async def del_osdu_well(wellid: str, ctx: Context = Depends(get_ctx)):
+async def del_osdu_well(wellid: WellId, ctx: Context = Depends(get_ctx)):
     storage_client = await get_storage_record_service(ctx)
-    await storage_client.delete_record(
-        id=wellid, data_partition_id=ctx.partition_id
-    )
+    await storage_client.delete_record(id=wellid, data_partition_id=ctx.partition_id)
 
 
 @router.get(
@@ -96,15 +83,11 @@ async def del_osdu_well(wellid: str, ctx: Context = Depends(get_ctx)):
         status.HTTP_404_NOT_FOUND: {"description": "Well not found"}
     },
 )
-async def get_osdu_well_versions(
-    wellid: str, request: Request, ctx: Context = Depends(get_ctx)
-) -> RecordVersions:
+async def get_osdu_well_versions(wellid: WellId, request: Request, ctx: Context = Depends(get_ctx)) -> RecordVersions:
     record = await fetch_record(ctx, wellid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
-    return await storage_client.get_all_record_versions(
-        id=wellid, data_partition_id=ctx.partition_id
-    )
+    return await storage_client.get_all_record_versions(id=wellid, data_partition_id=ctx.partition_id)
 
 
 @router.get(
@@ -119,7 +102,7 @@ async def get_osdu_well_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_well_version(
-    wellid: str, version: int, request: Request, ctx: Context = Depends(get_ctx)
+    wellid: WellId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Well:
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record_version(
@@ -147,7 +130,8 @@ async def post_well_osdu(
     DMSV3RouterUtils.validate_record_against_kinds_schema(wells)
     storage_client = await get_storage_record_service(ctx)
 
-    return await storage_client.create_or_update_records(
+    r= await storage_client.create_or_update_records(
         record=[to_record(w) for w in wells],
         data_partition_id=ctx.partition_id,
     )
+    return r

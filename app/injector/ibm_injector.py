@@ -4,8 +4,8 @@ from osdu_ibm.storage.blob_storage_ibm import IBMObjectStorage
 from app.utils import get_http_client_session
 from app.context import Context
 from .app_injector import AppInjector, AppInjectorModule
-from app.bulk_persistence import resolve_tenant
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.tenant import resolve_tenant
+from app.bulk_persistence import DaskBulkStorage
 from osdu_ibm.storage.dask_storage_parameters import DaskStorageParametersFactoryIBM
 
 

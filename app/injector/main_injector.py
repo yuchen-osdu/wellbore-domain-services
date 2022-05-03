@@ -25,10 +25,9 @@ from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.clients.search_service_client import SearchServiceClient
 from app.clients import make_search_client, make_storage_record_client
-from app.persistence.sessions_storage import SessionsStorage
+from app.bulk_persistence import SessionsStorage
 
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
+from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage
 
 
 class MainInjector(AppInjectorModule):

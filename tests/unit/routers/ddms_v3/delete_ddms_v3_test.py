@@ -22,7 +22,7 @@ from opencensus.trace import base_exporter
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence import DaskBulkStorage
 from app.clients import StorageRecordServiceClient
 from odes_storage.models import RecordVersions
 
@@ -98,9 +98,11 @@ versions = [1972724675421999416275969243854301388, 19727246917190413694256303710
 v3_entities = ["welllogs", "wellboretrajectories"]
 
 
-@pytest.mark.parametrize("v3_entity", v3_entities)
-def test_delete_purge_record(client_delete, logger_fixture, v3_entity):
-    record_id = f'opendes:work-product-component--{v3_entity}:00001234'
+@pytest.mark.parametrize("url_base_path, record_id", [
+    ("/ddms/v3/welllogs", "opendes:work-product-component--WellLog:00001234"),
+    ("/ddms/v3/wellboretrajectories", "opendes:work-product-component--WellboreTrajectory:00001234")
+])
+def test_delete_purge_record(client_delete, logger_fixture, url_base_path, record_id):
     record_versions = RecordVersions(record_id=record_id,
                                      versions=versions)
     mock_storage_service_delete_record = mock.AsyncMock(return_value=status.HTTP_204_NO_CONTENT,
@@ -120,7 +122,7 @@ def test_delete_purge_record(client_delete, logger_fixture, v3_entity):
          mock.patch.object(BlobStorageMock, "delete", mock_blob_storage), \
          mock.patch.object(delete_bulk_data, "_get_bulk_uri_from_version", mock_get_bulk_uri_from_version):
         response = client_delete.delete(
-            f"/ddms/v3/{v3_entity}/{record_id}?purge=true",
+            f"{url_base_path}/{record_id}?purge=true",
             headers={"data-partition-id": "testing_partition"},
         )
         assert response.status_code == status.HTTP_204_NO_CONTENT

@@ -91,10 +91,11 @@ def create_exporter(*, service_name, config):
 
         key = config.get('az_ai_instrumentation_key')
         try:
-            az_exporter = _create_azure_exporter(key)
-            az_exporter.add_telemetry_processor(rename_cloud_role_func(service_name))
-            az_exporter.add_telemetry_processor(azure_traces_processing)
-            combined_exporter.add_exporter(az_exporter)
+            if type(key) is not None:
+                az_exporter = _create_azure_exporter(key)
+                az_exporter.add_telemetry_processor(rename_cloud_role_func(service_name))
+                az_exporter.add_telemetry_processor(azure_traces_processing)
+                combined_exporter.add_exporter(az_exporter)
         except ValueError as e:
             print('Unable to create AzureExporter:', str(e))
     else:

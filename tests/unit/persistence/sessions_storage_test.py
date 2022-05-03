@@ -18,7 +18,7 @@ import pytest
 from asyncio import sleep
 from fastapi import HTTPException
 from osdu.core.api.storage.tenant import Tenant
-from app.persistence.sessions_storage import (Session,
+from app.bulk_persistence import (Session,
                                               SessionInternal,
                                               SessionsStorage,
                                               SessionState,

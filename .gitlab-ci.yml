@@ -15,6 +15,7 @@
 
 variables:
   PIP_REQUIREMENTS: "requirements.txt requirements_dev.txt"
+  IGNORE_PYTHON_SETUP: "wdms_client/request_builders/wdms/recursive_delete/ wdms_client/request_builders/wdms/search_apis/"
 
   AZURE_SERVICE: wellbore-ddms
   AZURE_DOCKER_SUBDIR: build/Dockerfile
@@ -72,6 +73,7 @@ include:
   image: python:3.8-bullseye
 
 verify_existing_requirements:
+  tags: ["osdu-small"]
   extends:
     - .python
     - .skipForTriggeringMergeRequests
@@ -100,10 +102,11 @@ compile-and-unit-test:
     when: always
     paths:
       - all-requirements.txt
+      - ./**/python-*-output.txt
       - spec/generated/openapi.json
 
-
 verify_models:
+  tags: ["osdu-small"]
   extends:
     - .python
     - .skipForTriggeringMergeRequests
@@ -113,12 +116,11 @@ verify_models:
   script:
     - python -m doctest docs/model/model_curated.md
 
-
 containerize:
   extends: .skipForTriggeringMergeRequests
   stage: containerize
   image: docker:19.03
-  tags: ["osdu-medium"]
+  tags: ["osdu-small"]
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
   script:
@@ -147,7 +149,7 @@ osdu-gcp-containerize-gitlab:
   stage: containerize
   image: docker:19.03
   cache: {}
-  tags: ["osdu-medium"]
+  tags: ["osdu-small"]
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA
     IMAGE_TAG_LATEST: $CI_REGISTRY_IMAGE/osdu-gcp:latest
@@ -177,7 +179,7 @@ osdu-gcp-containerize-for-release:
   stage: containerize
   image: docker:19.03
   cache: {}
-  tags: ["osdu-medium"]
+  tags: ["osdu-small"]
   only:
     variables:
       - $OSDU_GCP == 'true' && $CI_COMMIT_TAG != null
@@ -281,4 +283,6 @@ osdu-gcp-dev2-test:
 
 # Allow failure on private development deployments
 ibm-deploy-devpri:
+  allow_failure: true
+aws-test-python:
   allow_failure: true
