@@ -24,9 +24,9 @@ from .exceptions import (
     ComputationNotCompleteError)
 
 from osdu.core.api.storage import exceptions as osdu_storage_exception
-from app.context import get_ctx
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from ..tenant_provider import resolve_tenant
+# from app.context import get_ctx
+# from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+# from app.tenant import resolve_tenant
 
 
 def grouper(n, container: Iterable):

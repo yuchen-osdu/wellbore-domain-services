@@ -8,6 +8,8 @@ import pandas.api.types as ptypes
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
+from starlette.testclient import TestClient
+
 from app.conf import Config
 
 from pandas.testing import assert_frame_equal
