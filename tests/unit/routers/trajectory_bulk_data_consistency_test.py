@@ -1,10 +1,8 @@
 import pytest
 from app.clients import SearchServiceClient, StorageRecordServiceClient
-from fastapi.testclient import TestClient
 from tests.unit.test_utils import create_mock_class
 
 import re
-from .chunking_test import dasked_test_app
 
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
@@ -12,8 +10,9 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_client(dasked_test_app, nope_logger_fixture):
-    yield TestClient(dasked_test_app)
+def dasked_test_app_client(testing_app_local_chunking_with_consistency):
+    _, client = testing_app_local_chunking_with_consistency
+    return client
 
 
 def _create_record(client, data):

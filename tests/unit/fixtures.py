@@ -21,10 +21,14 @@ from app.helper.traces import CombinedExporter
 from app.injector.app_injector import WithLifeTime
 from app.base import base_app
 from app.wdms_app import wdms_app, app_injector
+from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
+from app.bulk_persistence import DaskBulkStorage
+from app.bulk_persistence import SessionsStorage
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 
 @pytest.fixture(scope="module")
-def local_dev_config():
+def local_dev_config(tmp_path_factory):
     config = ConfigurationContainer.with_load_all(environment_dict={
         # set config to a local dev config (assumption for running unit tests)
         "OS_WELLBORE_DDMS_DEV_MODE": "True",
@@ -32,6 +36,8 @@ def local_dev_config():
         "SERVICE_HOST_STORAGE": "https://test-endpoint/api/storage",
         "SERVICE_HOST_SEARCH": "https://test-endpoint/api/search",
         "MODULES": "log_recognition.routers.log_recognition",
+        'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="blob-")),
+        'USE_INTERNAL_STORAGE_SERVICE_WITH_PATH': str(tmp_path_factory.mktemp(basename="storage-")),
         # This one is necessary as long as we have can_run() in modules dependending on it
         "ENVIRONMENT_NAME": "evd"
     }, contextual_loader=cloud_provider_additional_environment)
@@ -228,9 +234,13 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         *,
         search_client_mock=default_search_mock,
         storage_client_mock=default_storage_mock,
+        dask_bulk_storage_mock=None,
+        blob_storage_base_mock=None,
+        sessions_storage_mock=None,
         trace_exporter=create_autospec(CombinedExporter, spec_set=True, instance=True),
         fake_opendes_authorized_user: bool = True,
-        fake_data_partition_id: bool = False
+        fake_data_partition_id: bool = False,
+        disable_bulk_consistency: bool = False,
     ):
         """builder generator that output an app mocked by default, and cleanup properly after use.
         If None is passed as a mock, then the original implementation is used.
@@ -248,6 +258,16 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
             app_injector.register(SearchServiceClient, injection_coro_builder(return_value=search_client_mock),
         WithLifeTime.Singleton())
 
+        if dask_bulk_storage_mock is not None:
+            app_injector.register(DaskBulkStorage, injection_coro_builder(return_value=dask_bulk_storage_mock))
+
+        if blob_storage_base_mock is not None:
+            app_injector.register(BlobStorageBase, injection_coro_builder(return_value=blob_storage_base_mock))
+
+        if sessions_storage_mock is not None:
+            app_injector.register(SessionsStorage, injection_coro_builder(return_value=sessions_storage_mock))
+
+
         ## configure app -- needs to be reset after fixture execution ##
         app.trace_exporter = trace_exporter
 
@@ -264,6 +284,10 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         app.dependency_overrides[
             require_data_partition_id
         ] = require_data_partition_id_mock_depend if fake_data_partition_id else require_data_partition_id
+
+        if disable_bulk_consistency:
+            app.dependency_overrides[set_welllog_data_consistency_check] = lambda: None
+            app.dependency_overrides[set_trajectory_data_consistency_check] = lambda: None
 
         # return the app, ready to be started along with the client
         return app, client
