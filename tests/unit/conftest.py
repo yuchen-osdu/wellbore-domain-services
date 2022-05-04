@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from datetime import timedelta
 
 import asyncio
 import logging
@@ -24,14 +25,14 @@ from app.conf import ConfigurationContainer
 from app.context import Context
 
 from fastapi import Header
-from hypothesis import settings, Verbosity, HealthCheck
+from hypothesis import settings, Verbosity, HealthCheck, Phase
 
 from .data import (
     well_v2_file_contents, well_v3_file_contents, wellbore_v2_file_contents, wellbore_v3_file_contents,
-    marker_v3_file_contents, trajectory_v3_file_contents, welllog_v3_file_contents,
+    marker_v2_file_contents, marker_v3_file_contents, trajectory_v3_file_contents, welllog_v3_file_contents,
     domain, data_partition, legal_tags,
     well_v2_record_list, well_v3_record_list, wellbore_v2_record_list, wellbore_v3_record_list,
-    marker_v3_record_list, trajectory_v3_record_list, welllog_v3_record_list,
+    marker_v2_record_list, marker_v3_record_list, trajectory_v3_record_list, welllog_v3_record_list,
     well100_v3_list, wellbore100_v3_list, welllog110_v3_list, marker110_v3_list, trajectory110_v3_list,
     well_wks_record, well_wks_mini_record, wellbore_wks_record, wellbore_wks_mini_record
 )
@@ -45,7 +46,9 @@ from .fixtures import (
 )
 
 from .fixtures_pkg import (
-    dask_client
+    dask_client,
+    testing_app_local_chunking_no_consistency,
+    testing_app_local_chunking_with_consistency
 )
 
 
@@ -84,9 +87,21 @@ def pytest_configure(config):
     # defining settings profile for local dev runs or CI runs
     # they can be loaded via `$pytest --hypothesis-profile debug`
     # Ref: https://hypothesis.readthedocs.io/en/latest/settings.html?highlight=profile#settings-profiles
-    settings.register_profile("default", deadline=None, verbosity=Verbosity.normal)
-    settings.register_profile("debug", suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.verbose)
-    settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "default"))
+
+    # A long deadline per example to generate various examples
+    settings.register_profile("debug", deadline=timedelta(milliseconds=1000), print_blob=True,
+                              suppress_health_check=[HealthCheck.too_slow], verbosity=Verbosity.normal)
+
+    # Only test with explicit examples, or replay failing examples.
+    # Does NOT generate new examples. Do it locally with "debug" profile.
+    settings.register_profile("ci", deadline=None, derandomize=True,
+                              phases=[Phase.explicit, Phase.reuse, Phase.target, Phase.shrink],
+                              print_blob=True, report_multiple_bugs=False, verbosity=Verbosity.verbose)
+    if 'CI' in os.environ:
+        # default to ci profile if environment looks like it.
+        settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "ci"))
+    else:
+        settings.load_profile(os.getenv(u"HYPOTHESIS_PROFILE", "debug"))
 
 
 def pytest_unconfigure(config):

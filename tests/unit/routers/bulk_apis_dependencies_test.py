@@ -3,8 +3,6 @@ from app.routers.bulk.bulk_routes import router
 from app.routers.ddms_v2 import log_ddms_v2
 from app.routers.ddms_v3 import wellbore_trajectory_ddms_v3, welllog_ddms_v3
 from app.wdms_app import wdms_app, ALPHA_APIS_PREFIX, DDMS_V2_PATH, DDMS_V3_PATH
-from fastapi.testclient import TestClient
-from tests.unit.routers.chunking_test import dasked_test_app
 
 from ..test_utils import gen_all_routes_request
 
@@ -17,8 +15,14 @@ bulk_routes_path = [(route.path, route.methods) for route in router.routes]
 
 
 @pytest.fixture()
-def dependencies_check_app(dasked_test_app):
+def dependencies_check_app(testing_app_local_chunking_no_consistency):
+
     from app.routers.bulk.utils import set_legacy_input_dataframe_check, set_v3_input_dataframe_check
+
+    app, client = testing_app_local_chunking_no_consistency
+
+    # app dependency_overrides will be restored by the fixture after the test.
+    # we can modify them here for our needs
 
     async def expected_legacy_check_func():
         raise ArithmeticError("I'm raising for legacy injection")
@@ -26,11 +30,10 @@ def dependencies_check_app(dasked_test_app):
     async def expected_v3_check_func():
         raise RuntimeError("I'm raising for v3 injection")
 
-    dasked_test_app.dependency_overrides[set_legacy_input_dataframe_check] = expected_legacy_check_func
-    dasked_test_app.dependency_overrides[set_v3_input_dataframe_check] = expected_v3_check_func
+    app.dependency_overrides[set_legacy_input_dataframe_check] = expected_legacy_check_func
+    app.dependency_overrides[set_v3_input_dataframe_check] = expected_v3_check_func
 
-    yield TestClient(dasked_test_app)
-    dasked_test_app.dependency_overrides = {}
+    return client
 
 
 def _is_trajectories_v3_route(route_url: str):

@@ -7,11 +7,23 @@ import pydantic
 from string import printable
 
 import pytest
-from hypothesis import given, example, settings, Verbosity, HealthCheck
+from hypothesis import (
+    given,
+    example,
+    settings,
+    Verbosity,
+    HealthCheck,
+    reproduce_failure,
+)
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
 import app.model.model_curated as model
+
+# need to import all data fixtures as we use them in decorators here
+from app.model.model_utils import from_record, to_record
+from ..data import *
+from ..data.model_examples import load_model_example_file_contents
 
 
 # typing utils
@@ -191,14 +203,6 @@ def test_ddms_base_model_with_extra_allows_extra(ddms_basemodel_with_extra):
     assert instance.another_key == "the other value"
 
 
-@given(link_list=st.from_type(model.LinkList))
-def test_link_list_allows_extra(link_list):
-    """tests LinkList allows extra fields"""
-
-    instance = model.LinkList(**{**link_list.dict(), "another_key": "the other value"})
-    assert instance.another_key == "the other value"
-
-
 @given(kind=st.from_type(model.Kind))
 def test_kind_dict_init_symmetric(kind):
     """.value/init symmetry for Kind enum"""
@@ -209,14 +213,6 @@ def test_kind_dict_init_symmetric(kind):
 def test_meta_item_dict_init_symmetric(meta_item):
     """tests dict/init symmetry for MetaItem model"""
     assert model.MetaItem(**meta_item.dict()) == meta_item
-
-
-@given(meta_item=st.from_type(model.MetaItem))
-def test_meta_item_allows_extra(meta_item):
-    """tests MetaItem allows extra fields"""
-
-    instance = model.MetaItem(**{**meta_item.dict(), "another_key": "the other value"})
-    assert instance.another_key == "the other value"
 
 
 @given(ddms_base_record=st.from_type(model.DDMSBaseRecord))
@@ -231,26 +227,45 @@ def test_point_dict_init_symmetric(point):
     assert model.Point(**point.dict()) == point
 
 
+# register specific strategy for Legal
+st.register_type_strategy(
+    model.Legal,
+    st.builds(
+        model.Legal,
+        legaltags=st.from_type(typing.Optional[List[str]]),
+        otherRelevantDataCountries=st.from_type(typing.Optional[List[str]]),
+        # status should be None, to allow round-trip to Record
+        status=st.none(),
+    ),
+)
+
+
 @given(legal=st.from_type(model.Legal))
 def test_legal_dict_init_symmetric(legal):
     """tests dict/init symmetry for Legal model"""
     assert model.Legal(**legal.dict()) == legal
 
 
+# register specific strategy for TagDictionary
+st.register_type_strategy(
+    model.TagDictionary,
+    # TagDictionary should NOT be empty, to allow round-trip to Record
+    st.builds(
+        model.TagDictionary.parse_obj,
+        st.fixed_dictionaries(
+            {
+                "viewers": st.lists(elements=st.from_type(str), max_size=2),
+                "owners": st.lists(elements=st.from_type(str), max_size=2),
+            }
+        ),
+    ),
+)
+
+
 @given(tag_dictionary=st.from_type(model.TagDictionary))
 def test_tag_dictionary_dict_init_symmetric(tag_dictionary):
     """tests dict/init symmetry for TagDictionary model"""
     assert model.TagDictionary(**tag_dictionary.dict()) == tag_dictionary
-
-
-@given(tag_dictionary=st.from_type(model.TagDictionary))
-def test_tag_dictionary_allows_extra(tag_dictionary):
-    """tests TagDictionary allows extra fields"""
-
-    instance = model.TagDictionary(
-        **{**tag_dictionary.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(to_one_relationship=st.from_type(model.ToOneRelationship))
@@ -444,16 +459,6 @@ def test_logset_relationships_dict_init_symmetric(logset_relationships_instance)
     )
 
 
-@given(logset_relationships_instance=st.from_type(model.logsetrelationships))
-def test_logset_relationships_allows_extra(logset_relationships_instance):
-    """tests logsetrelationships allows extra fields"""
-
-    instance = model.logsetrelationships(
-        **{**logset_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(dipset_relationships_instance=st.from_type(model.dipsetrelationships))
 def test_dipset_relationships_dict_init_symmetric(dipset_relationships_instance):
     """tests dict/init symmetry for dipsetrelationships model"""
@@ -461,16 +466,6 @@ def test_dipset_relationships_dict_init_symmetric(dipset_relationships_instance)
         model.dipsetrelationships(**dipset_relationships_instance.dict())
         == dipset_relationships_instance
     )
-
-
-@given(dipset_relationships_instance=st.from_type(model.dipsetrelationships))
-def test_dipset_relationships_allows_extra(dipset_relationships_instance):
-    """tests dipsetrelationships allows extra fields"""
-
-    instance = model.dipsetrelationships(
-        **{**dipset_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(data_type=st.from_type(model.DataType_1))
@@ -505,16 +500,6 @@ def test_trajectory_relationships_dict_init_symmetric(
     )
 
 
-@given(trajectory_relationships_instance=st.from_type(model.trajectoryrelationships))
-def test_trajectory_relationships_allows_extra(trajectory_relationships_instance):
-    """tests trajectoryrelationships allows extra fields"""
-
-    instance = model.dipsetrelationships(
-        **{**trajectory_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(wgs84_position=st.from_type(model.wgs84Position))
 def test_wgs84_position_dict_init_symmetric(wgs84_position):
     """tests dict/init symmetry for wgs84Position model"""
@@ -528,16 +513,6 @@ def test_marker_relationships_dict_init_symmetric(marker_relationships_instance)
         model.markerrelationships(**marker_relationships_instance.dict())
         == marker_relationships_instance
     )
-
-
-@given(marker_relationships_instance=st.from_type(model.markerrelationships))
-def test_marker_relationships_allows_extra(marker_relationships_instance):
-    """tests markerrelationships allows extra fields"""
-
-    instance = model.markerrelationships(
-        **{**marker_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(data_type_2=st.from_type(model.DataType_2))
@@ -573,16 +548,6 @@ def test_log_relationships_dict_init_symmetric(log_relationships_instance):
     )
 
 
-@given(log_relationships_instance=st.from_type(model.logRelationships))
-def test_log_relationships_allows_extra(log_relationships_instance):
-    """tests logRelationships allows extra fields"""
-
-    instance = model.logRelationships(
-        **{**log_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(basin_context=st.from_type(model.basinContext))
 def test_basin_context_dict_init_symmetric(basin_context):
     """tests dict/init symmetry for basinContext model"""
@@ -596,16 +561,6 @@ def test_well_relationships_dict_init_symmetric(well_relationships_instance):
         model.wellrelationships(**well_relationships_instance.dict())
         == well_relationships_instance
     )
-
-
-@given(well_relationships_instance=st.from_type(model.wellrelationships))
-def test_well_relationships_allows_extra(well_relationships_instance):
-    """tests wellrelationships allows extra fields"""
-
-    instance = model.wellrelationships(
-        **{**well_relationships_instance.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(direction_well=st.from_type(model.DirectionWell))
@@ -777,14 +732,6 @@ def test_log_data_dict_init_symmetric(log_data):
     assert model.logData(**log_data.dict()) == log_data
 
 
-@given(log_data=st.from_type(model.logData))
-def test_log_data_allows_extra(log_data):
-    """tests logData allows extra fields"""
-
-    instance = model.logData(**{**log_data.dict(), "another_key": "the other value"})
-    assert instance.another_key == "the other value"
-
-
 @given(log_instance=st.from_type(model.log))
 def test_log_dict_init_symmetric(log_instance):
     """tests dict/init symmetry for log model"""
@@ -824,20 +771,55 @@ def test_wellbore_data_dict_init_symmetric(wellbore_data):
     assert model.wellboreData(**wellbore_data.dict()) == wellbore_data
 
 
-@given(wellbore_data=st.from_type(model.wellboreData))
-def test_wellbore_data_allows_extra(wellbore_data):
-    """tests wellboreData allows extra fields"""
-
-    instance = model.wellboreData(
-        **{**wellbore_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
+# register specific strategy for trajectory
+st.register_type_strategy(
+    model.wellbore,
+    st.builds(
+        model.wellbore,
+        # acls should NOT be empty, to allow round-trip to Record
+        acl=st.from_type(model.TagDictionary),
+        # data should NOT be optional, to allow round-trip to Record
+        data=st.from_type(model.wellboreData),
+        id=st.from_type(typing.Optional[str]),
+        # kind should NOT be optional, to allow round-trip to Record
+        kind=st.from_type(str),
+        # legal should NOT be optional, to allow round-trip to Record
+        legal=st.from_type(model.Legal),
+        # version should be an int, to allow round-trip to Record
+        version=st.from_type(typing.Optional[int]),
+    ),
+)
 
 
 @given(wellbore_instance=st.from_type(model.wellbore))
-def test_wellbore_dict_init_symmetric(wellbore_instance):
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture]
+)  # , verbosity=Verbosity.verbose)
+def test_wellbore_record_round_trip(wellbore_instance):
     """tests dict/init symmetry for wellbore model"""
-    assert model.wellbore(**wellbore_instance.dict()) == wellbore_instance
+    assert (
+        from_record(model.wellbore, to_record(wellbore_instance)) == wellbore_instance
+    )
+
+
+# module fixture to dynamically add hypothesis examples from model_examples data fixture
+@pytest.fixture
+def setup_wellbore_examples(
+    wellbore_v3_record_list,
+    wellbore_v2_record_list,
+    wellbore_wks_record,
+    wellbore_wks_mini_record,
+):
+    for w in (
+        [from_record(model.wellbore, w3) for w3 in wellbore_v3_record_list]
+        + [from_record(model.wellbore, w2) for w2 in wellbore_v2_record_list]
+        + [
+            from_record(model.wellbore, wellbore_wks_record),
+            from_record(model.wellbore, wellbore_wks_mini_record),
+        ]
+    ):
+        example(wellbore_instance=w)(test_wellbore_record_round_trip)
+    return
 
 
 @given(channel_instance=st.from_type(model.channel))
@@ -852,30 +834,10 @@ def test_log_set_data_dict_init_symmetric(log_set_data):
     assert model.logSetData(**log_set_data.dict()) == log_set_data
 
 
-@given(log_set_data=st.from_type(model.logSetData))
-def test_log_set_data_allows_extra(log_set_data):
-    """tests logSetData allows extra fields"""
-
-    instance = model.logSetData(
-        **{**log_set_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
-
-
 @given(dip_set_data=st.from_type(model.dipSetData))
 def test_dip_set_data_dict_init_symmetric(dip_set_data):
     """tests dict/init symmetry for dipSetData model"""
     assert model.dipSetData(**dip_set_data.dict()) == dip_set_data
-
-
-@given(dip_set_data=st.from_type(model.dipSetData))
-def test_dip_set_data_allows_extra(dip_set_data):
-    """tests dipSetData allows extra fields"""
-
-    instance = model.dipSetData(
-        **{**dip_set_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
 
 
 @given(log_set_instance=st.from_type(model.logset))
@@ -896,20 +858,44 @@ def test_trajectory_data_dict_init_symmetric(trajectory_data):
     assert model.trajectoryData(**trajectory_data.dict()) == trajectory_data
 
 
-@given(trajectory_data=st.from_type(model.trajectoryData))
-def test_trajectory_data_allows_extra(trajectory_data):
-    """tests trajectoryData allows extra fields"""
-
-    instance = model.trajectoryData(
-        **{**trajectory_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
+# register specific strategy for trajectory
+st.register_type_strategy(
+    model.trajectory,
+    st.builds(
+        model.trajectory,
+        # acls should NOT be empty, to allow round-trip to Record
+        acl=st.from_type(model.TagDictionary),
+        # data should NOT be optional, to allow round-trip to Record
+        data=st.from_type(model.trajectoryData),
+        id=st.from_type(typing.Optional[str]),
+        # kind should NOT be optional, to allow round-trip to Record
+        kind=st.from_type(str),
+        # legal should NOT be optional, to allow round-trip to Record
+        legal=st.from_type(model.Legal),
+        # version should be an int, to allow round-trip to Record
+        version=st.from_type(typing.Optional[int]),
+    ),
+)
 
 
 @given(trajectory_instance=st.from_type(model.trajectory))
-def test_trajectory_dict_init_symmetric(trajectory_instance):
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture]
+)  # , verbosity=Verbosity.verbose)
+def test_trajectory_record_round_trip(trajectory_instance, setup_trajectory_examples):
     """tests dict/init symmetry for trajectory model"""
-    assert model.trajectory(**trajectory_instance.dict()) == trajectory_instance
+    assert (
+        from_record(model.trajectory, to_record(trajectory_instance))
+        == trajectory_instance
+    )
+
+
+# module fixture to dynamically add hypothesis examples from model_examples data fixture
+@pytest.fixture
+def setup_trajectory_examples(trajectory_v3_record_list):
+    for t in [from_record(model.trajectory, tt) for tt in trajectory_v3_record_list]:
+        example(trajectory_instance=t)(test_trajectory_record_round_trip)
+    return
 
 
 @given(marker_data=st.from_type(model.markerData))
@@ -918,20 +904,39 @@ def test_marker_data_dict_init_symmetric(marker_data):
     assert model.markerData(**marker_data.dict()) == marker_data
 
 
-@given(marker_data=st.from_type(model.markerData))
-def test_marker_data_allows_extra(marker_data):
-    """tests markerData allows extra fields"""
-
-    instance = model.markerData(
-        **{**marker_data.dict(), "another_key": "the other value"}
-    )
-    assert instance.another_key == "the other value"
+# register specific strategy for marker
+st.register_type_strategy(
+    model.marker,
+    st.builds(
+        model.marker,
+        # acls should NOT be optional, to allow round-trip to Record
+        acl=st.from_type(model.TagDictionary),
+        # data should NOT be optional, to allow round-trip to Record
+        data=st.from_type(model.markerData),
+        id=st.from_type(typing.Optional[str]),
+        kind=st.from_type(str),
+        legal=st.from_type(model.Legal),
+        # version should be an int, to allow round-trip to Record
+        version=st.from_type(typing.Optional[int]),
+    ),
+)
 
 
 @given(marker_instance=st.from_type(model.marker))
-def test_marker_dict_init_symmetric(marker_instance):
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture]
+)  # , verbosity=Verbosity.verbose)
+def test_marker_record_round_trip(marker_instance, setup_marker_examples):
     """tests dict/init symmetry for marker model"""
-    assert model.marker(**marker_instance.dict()) == marker_instance
+    assert from_record(model.marker, to_record(marker_instance)) == marker_instance
+
+
+# module fixture to dynamically add hypothesis examples from model_examples data fixture
+@pytest.fixture
+def setup_marker_examples(marker_v2_record_list):
+    for m in [from_record(model.marker, mm) for mm in marker_v2_record_list]:
+        example(marker_instance=m)(test_marker_record_round_trip)
+    return
 
 
 @given(well_data=st.from_type(model.wellData))
@@ -940,15 +945,47 @@ def test_well_data_dict_init_symmetric(well_data):
     assert model.wellData(**well_data.dict()) == well_data
 
 
-@given(well_data=st.from_type(model.wellData))
-def test_well_data_allows_extra(well_data):
-    """tests wellData allows extra fields"""
-
-    instance = model.wellData(**{**well_data.dict(), "another_key": "the other value"})
-    assert instance.another_key == "the other value"
+# register specific strategy for well
+st.register_type_strategy(
+    model.well,
+    st.builds(
+        model.well,
+        # acls should NOT be empty, to allow round-trip to Record
+        acl=st.from_type(model.TagDictionary),
+        # data should NOT be optional, to allow round-trip to Record
+        data=st.from_type(model.wellData),
+        id=st.from_type(typing.Optional[str]),
+        # kind should NOT be optional, to allow round-trip to Record
+        kind=st.from_type(str),
+        # legal should NOT be optional, to allow round-trip to Record
+        legal=st.from_type(model.Legal),
+        # version should be an int, to allow round-trip to Record
+        version=st.from_type(typing.Optional[int]),
+    ),
+)
 
 
 @given(well_instance=st.from_type(model.well))
-def test_marker_dict_init_symmetric(well_instance):
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture]
+)  # , verbosity=Verbosity.verbose)
+def test_well_record_round_trip(well_instance, setup_well_examples):
     """tests dict/init symmetry for well model"""
-    assert model.well(**well_instance.dict()) == well_instance
+    assert from_record(model.well, to_record(well_instance)) == well_instance
+
+
+# module fixture to dynamically add hypothesis examples from model_examples data fixture
+@pytest.fixture
+def setup_well_examples(
+    well_v3_record_list, well_v2_record_list, well_wks_record, well_wks_mini_record
+):
+    for w in (
+        [from_record(model.well, w3) for w3 in well_v3_record_list]
+        + [from_record(model.well, w2) for w2 in well_v2_record_list]
+        + [
+            from_record(model.well, well_wks_record),
+            from_record(model.well, well_wks_mini_record),
+        ]
+    ):
+        example(well_instance=w)(test_well_record_round_trip)
+    return

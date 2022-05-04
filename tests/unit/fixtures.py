@@ -18,19 +18,17 @@ from app.auth.auth import require_opendes_authorized_user
 from app.middleware.basic_context_middleware import require_data_partition_id
 from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client
 from app.helper.traces import CombinedExporter
-# from app.injector.app_injector import WithLifeTime
-# from app.base import base_app
-# from app.wdms_app import wdms_app, app_injector
+from app.injector.app_injector import WithLifeTime
+from app.base import base_app
+from app.wdms_app import wdms_app, app_injector
 from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
+from app.bulk_persistence import DaskBulkStorage
+from app.bulk_persistence import SessionsStorage
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 
 @pytest.fixture(scope="module")
 def local_dev_config(tmp_path_factory):
-    """
-    NOTE: pay attention to not import certain modules such as wdms_app or injector BEFORE running this fixture
-    in this current test file, otherwise this testing config won't be used.
-    """
-
     config = ConfigurationContainer.with_load_all(environment_dict={
         # set config to a local dev config (assumption for running unit tests)
         "OS_WELLBORE_DDMS_DEV_MODE": "True",
@@ -164,7 +162,6 @@ def base_app_initialized_with_testclient(local_dev_config, dask_client):
     """
     Fixture providing wdms_app started, along with a test client
     """
-    from app.base import base_app
 
     # retrieve the dask_client starter, but let the app close it.
     # CAREFUL about the fixture scope
@@ -188,7 +185,6 @@ def app_initialized_with_testclient(base_app_initialized_with_testclient):
     Fixture providing wdms_app started, along with a test client
     """
     # dependent fixture because base_app and wdms_app are interdependent
-    from app.wdms_app import wdms_app
 
     with TestClient(wdms_app) as client:
         yield wdms_app, client
@@ -205,8 +201,6 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
 
     For example usage, check fixtures_test.py
     """
-    from app.injector.app_injector import WithLifeTime
-    from app.wdms_app import app_injector
 
     app, client = app_initialized_with_testclient
 
@@ -237,13 +231,16 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         return injection_coro
 
     def configure_app(
-            *,
-            search_client_mock=default_search_mock,
-            storage_client_mock=default_storage_mock,
-            trace_exporter=create_autospec(CombinedExporter, spec_set=True, instance=True),
-            fake_opendes_authorized_user: bool = True,
-            fake_data_partition_id: bool = False,
-            disable_bulk_consistency: bool = False,
+        *,
+        search_client_mock=default_search_mock,
+        storage_client_mock=default_storage_mock,
+        dask_bulk_storage_mock=None,
+        blob_storage_base_mock=None,
+        sessions_storage_mock=None,
+        trace_exporter=create_autospec(CombinedExporter, spec_set=True, instance=True),
+        fake_opendes_authorized_user: bool = True,
+        fake_data_partition_id: bool = False,
+        disable_bulk_consistency: bool = False,
     ):
         """builder generator that output an app mocked by default, and cleanup properly after use.
         If None is passed as a mock, then the original implementation is used.
@@ -261,6 +258,16 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
             app_injector.register(SearchServiceClient, injection_coro_builder(return_value=search_client_mock),
         WithLifeTime.Singleton())
 
+        if dask_bulk_storage_mock is not None:
+            app_injector.register(DaskBulkStorage, injection_coro_builder(return_value=dask_bulk_storage_mock))
+
+        if blob_storage_base_mock is not None:
+            app_injector.register(BlobStorageBase, injection_coro_builder(return_value=blob_storage_base_mock))
+
+        if sessions_storage_mock is not None:
+            app_injector.register(SessionsStorage, injection_coro_builder(return_value=sessions_storage_mock))
+
+
         ## configure app -- needs to be reset after fixture execution ##
         app.trace_exporter = trace_exporter
 
@@ -271,9 +278,12 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
             require_opendes_authorized_user
         ] = opendes_authorized_user_mock_depend if fake_opendes_authorized_user else require_opendes_authorized_user
 
+        async def require_data_partition_id_mock_depend():
+            pass
+
         app.dependency_overrides[
             require_data_partition_id
-        ] = lambda: None if fake_data_partition_id else require_data_partition_id
+        ] = require_data_partition_id_mock_depend if fake_data_partition_id else require_data_partition_id
 
         if disable_bulk_consistency:
             app.dependency_overrides[set_welllog_data_consistency_check] = lambda: None
