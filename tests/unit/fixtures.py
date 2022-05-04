@@ -22,6 +22,9 @@ from app.injector.app_injector import WithLifeTime
 from app.base import base_app
 from app.wdms_app import wdms_app, app_injector
 from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
+from app.bulk_persistence import DaskBulkStorage
+from app.bulk_persistence import SessionsStorage
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 
 @pytest.fixture(scope="module")
@@ -231,6 +234,9 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         *,
         search_client_mock=default_search_mock,
         storage_client_mock=default_storage_mock,
+        dask_bulk_storage_mock=None,
+        blob_storage_base_mock=None,
+        sessions_storage_mock=None,
         trace_exporter=create_autospec(CombinedExporter, spec_set=True, instance=True),
         fake_opendes_authorized_user: bool = True,
         fake_data_partition_id: bool = False,
@@ -251,6 +257,16 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         if search_client_mock is not None:
             app_injector.register(SearchServiceClient, injection_coro_builder(return_value=search_client_mock),
         WithLifeTime.Singleton())
+
+        if dask_bulk_storage_mock is not None:
+            app_injector.register(DaskBulkStorage, injection_coro_builder(return_value=dask_bulk_storage_mock))
+
+        if blob_storage_base_mock is not None:
+            app_injector.register(BlobStorageBase, injection_coro_builder(return_value=blob_storage_base_mock))
+
+        if sessions_storage_mock is not None:
+            app_injector.register(SessionsStorage, injection_coro_builder(return_value=sessions_storage_mock))
+
 
         ## configure app -- needs to be reset after fixture execution ##
         app.trace_exporter = trace_exporter

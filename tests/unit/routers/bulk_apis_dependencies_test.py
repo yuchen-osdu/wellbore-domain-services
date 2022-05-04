@@ -15,12 +15,11 @@ bulk_routes_path = [(route.path, route.methods) for route in router.routes]
 
 
 @pytest.fixture()
-def dependencies_check_app(app_configurable_with_testclient):
+def dependencies_check_app(testing_app_local_chunking_no_consistency):
 
     from app.routers.bulk.utils import set_legacy_input_dataframe_check, set_v3_input_dataframe_check
 
-    app, client = app_configurable_with_testclient(fake_data_partition_id=True,
-                                                   disable_bulk_consistency=True)
+    app, client = testing_app_local_chunking_no_consistency
 
     # app dependency_overrides will be restored by the fixture after the test.
     # we can modify them here for our needs

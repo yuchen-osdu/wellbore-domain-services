@@ -110,11 +110,8 @@ def _cast_datetime_to_datetime64_ns(result_df):
 
 
 @pytest.fixture()
-def dasked_test_app_without_consistency_client(app_configurable_with_testclient):
-    _, client = app_configurable_with_testclient(fake_data_partition_id=True,
-                                                 disable_bulk_consistency=True,
-                                                 search_client_mock=None,
-                                                 storage_client_mock=None)
+def dasked_test_app_without_consistency_client(testing_app_local_chunking_no_consistency):
+    _, client = testing_app_local_chunking_no_consistency
     yield client
 
 

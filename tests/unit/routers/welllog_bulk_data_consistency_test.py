@@ -8,10 +8,9 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_client(app_configurable_with_testclient):
-    _, client = app_configurable_with_testclient(fake_data_partition_id=True,
-                                                 search_client_mock=None,
-                                                 storage_client_mock=None)
+def dasked_test_app_client(testing_app_local_chunking_with_consistency):
+    _, client = testing_app_local_chunking_with_consistency
+
     return client
 
 
