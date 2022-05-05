@@ -2,7 +2,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, Optional, Union, List
 from asyncio import gather
-from uuid import UUID
 
 from starlette.requests import Request
 
@@ -17,7 +16,7 @@ from app.routers.record_utils import fetch_record
 from app.context import Context
 from app.helper.traces import TracingRoute
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from pydantic import BaseModel, Field
@@ -94,10 +93,6 @@ class WithSessionStorages:
 
     @SessionsStorage.raise_http_exception
     async def get_session(self, record_id: str, session_id: str) -> SessionInternal:
-        try:
-            UUID(session_id)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid session id ")
         return await self.sessions_storage.get_session(self.tenant, record_id, session_id)
 
 
