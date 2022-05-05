@@ -23,7 +23,7 @@ from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
-from app.conf import Config
+from app.bulk_persistence.bulk_persistence_config import BulkConfig
 
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
@@ -181,7 +181,7 @@ GET_DATA_DESCRIPTION = f"""
 Multiple media types response are available ("application/json", "application/x-parquet").  
 The desired format can be specify in the "Accept" header, default is Parquet.  
 When bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  
-The requested columns must not exceed {Config.max_columns_return.value}. The query parameter __curves__ can be use to limit the number of columns."""
+The requested columns must not exceed {BulkConfig.max_columns_return}. The query parameter __curves__ can be use to limit the number of columns."""
 
 
 @router.get(
@@ -257,7 +257,7 @@ async def _process_request_v1(record_id: str,
     if not data_param.describe: # don't limit columns when describe parameter is True
         # if curves parameter is None, it means that we are going to load all existing columns
         nb_cols_to_return = len(columns_to_load) if columns_to_load else len(existing_col)
-        if nb_cols_to_return > Config.max_columns_return.value:
+        if nb_cols_to_return > BulkConfig.max_columns_return:
             raise TooManyColumnsRequested(nb_cols_to_return)
 
     if filters.has_filter():
