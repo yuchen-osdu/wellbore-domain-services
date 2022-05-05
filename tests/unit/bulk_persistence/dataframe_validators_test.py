@@ -16,7 +16,6 @@ from app.bulk_persistence.dataframe_validators import (
 )
 
 from app.bulk_persistence.dask.errors import BulkNotProcessable
-from app.bulk_persistence import setup_bulk_persistence
 
 
 def test_no_validation_always_success():
