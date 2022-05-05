@@ -40,6 +40,10 @@ class BulkPersistenceConfig:
     def max_columns_return(self) -> int:
         return self._max_columns_return
 
+    @max_columns_return.setter
+    def max_columns_return(self, value: int):
+        self._max_columns_return = value
+
     @property
     def max_columns_per_chunk_write(self) -> int:
         return self._max_columns_per_chunk_write
