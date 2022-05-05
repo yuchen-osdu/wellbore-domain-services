@@ -152,11 +152,9 @@ def test_any_reserved_column_name(columns, expected):
     (100, 101, False),
     (50, 100, False),
 ])
-def test_validate_number_of_columns(limit, nb_col, expected):
+def test_validate_number_of_columns(limit, nb_col, expected, local_bulk_persistence_config):
 
-    setup_bulk_persistence({
-        'max_columns_per_chunk_write': limit
-    })
+    local_bulk_persistence_config.max_columns_per_chunk_write = limit
 
     columns = [f'col_{i}' for i in range(nb_col)]
     result, _info = validate_number_of_columns(pd.DataFrame(columns=columns))

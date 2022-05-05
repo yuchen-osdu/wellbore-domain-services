@@ -41,12 +41,14 @@ def local_bulk_persistence_config(local_dev_config):
         service_name=local_dev_config.service_name.value
     )
 
-    # patching BulkConfig in app.routers.bulk.bulk_routes.BulkConfig module
-    with mock.patch('app.routers.bulk.bulk_routes.BulkConfig', bulk_config):
-        # patching BulkConfig in app.bulk_persistence.bulk_persistence_config module, so it is found by other modules
-        with mock.patch('app.bulk_persistence.bulk_persistence_config.BulkConfig', bulk_config):
-            # returning the config for explicit use in tests.
-            yield bulk_config
+    # config patch for dataframe validators
+    with mock.patch('app.bulk_persistence.dataframe_validators.BulkConfig', bulk_config):
+        # patching BulkConfig in app.routers.bulk.bulk_routes.BulkConfig module
+        with mock.patch('app.routers.bulk.bulk_routes.BulkConfig', bulk_config):
+            # patching BulkConfig in app.bulk_persistence.bulk_persistence_config module, so it is found by other modules
+            with mock.patch('app.bulk_persistence.bulk_persistence_config.BulkConfig', bulk_config):
+                # returning the config for explicit use in tests.
+                yield bulk_config
 
     # mock.patch will restore original BulkConfig on exiting context, after fixture use.
 
