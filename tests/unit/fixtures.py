@@ -28,12 +28,25 @@ from app.bulk_persistence import SessionsStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 
-@pytest.fixture
-def local_bulk_persistence_config():
+@pytest.fixture(scope="module")
+def local_bulk_persistence_config(local_dev_config):
     """
     Creates a new instance of BulkPersistenceConfig with default inits
     """
-    return BulkPersistenceConfig()
+    bulk_config = BulkPersistenceConfig(
+        min_worker_memory=local_dev_config.min_worker_memory.value,
+        max_columns_return=local_dev_config.max_columns_return,
+        max_columns_per_chunk_write=local_dev_config.max_columns_per_chunk_write.value,
+        dask_data_ipc=local_dev_config.dask_data_ipc.value,
+        service_name=local_dev_config.service_name.value
+    )
+
+    # patching BulkConfig in app.bulk_persistence.bulk_persistence_config module, so it is found by other modules
+    with mock.patch('app.bulk_persistence.bulk_persistence_config.BulkConfig', bulk_config):
+        # returning the config for explicit use in tests.
+        yield bulk_config
+
+    # mock.patch will restore original BulkConfig on exiting context, after fixture use.
 
 
 @pytest.fixture(scope="module")
