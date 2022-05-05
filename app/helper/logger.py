@@ -134,6 +134,10 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
     # Acquire the logger for osdu-core-lib-python-azure
     osdu_core_lib_logger = __getLogger(logger_name='osdu_az', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
 
+    # Sent Dask distributed messages to AppInsights
+    __getLogger(logger_name='distributed.worker', log_level=logging.WARNING,
+                stdout_handler=stdout_handler, azure_handler=az_handler)
+
     # Ensure logging messages from Dask (killing, restart worker) are exported
     dask_nanny_logger = logging.getLogger('distributed.nanny')
     dask_nanny_logger.setLevel(logging.INFO)
