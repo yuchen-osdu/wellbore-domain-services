@@ -32,6 +32,9 @@ class BulkPersistenceConfig:
         self._dask_data_ipc = dask_data_ipc
         self._service_name = service_name
 
+        global BulkConfig
+        BulkConfig = self
+
     @property
     def min_worker_memory_recommended(self) -> int:
         return self._min_worker_memory_recommended
@@ -61,20 +64,9 @@ class BulkPersistenceConfig:
         return self._service_name
 
 
-# Global BulkPersistenceConfig instance, for intra-module usage
-BulkConfig = BulkPersistenceConfig()
-
-# Properties list for setup from dictionary
-bulk_persistence_config_properties = [
-    prop for prop in dir(BulkPersistenceConfig) if isinstance(getattr(BulkPersistenceConfig, prop), property)
-]
-
-
-# Exported external BulkPersistenceConfig setup
-def setup_bulk_persistence(conf_dict: dict):
-    global BulkConfig
-    for key, value in conf_dict.items():
-        if key in bulk_persistence_config_properties:
-            setattr(BulkConfig, '_' + key, value)
-    if 'min_worker_memory' in conf_dict.keys():
-        setattr(BulkConfig, '_min_worker_memory_recommended', parse_bytes(conf_dict['min_worker_memory']))
+# Global BulkPersistenceConfig instance
+# TODO: should be None and set only after config is loaded from environment
+BulkConfig = None
+# Calling constructor to have an existing instance for modules that need it at load time
+# TODO: We should be able to remove this without breaking the code
+BulkPersistenceConfig()

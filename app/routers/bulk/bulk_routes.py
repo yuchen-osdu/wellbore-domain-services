@@ -23,7 +23,7 @@ from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
-from app.bulk_persistence.bulk_persistence_config import BulkConfig
+from app.bulk_persistence import BulkConfig
 
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
@@ -177,6 +177,7 @@ async def post_chunk_data(record_id: str,
         ex.raise_as_http()
 
 
+# TODO: set bulk config when configuration is reloaded from environment
 GET_DATA_DESCRIPTION = f"""  
 Multiple media types response are available ("application/json", "application/x-parquet").  
 The desired format can be specify in the "Accept" header, default is Parquet.  
