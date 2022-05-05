@@ -214,7 +214,7 @@ def app_initialized_with_testclient(base_app_initialized_with_testclient):
         yield wdms_app, client
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def app_configurable_with_testclient(app_initialized_with_testclient):
     """
     Fixture to configure wdms_app after it has been started.
