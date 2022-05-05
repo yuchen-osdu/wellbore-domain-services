@@ -20,7 +20,7 @@ async def create_bulk_mocks(local_blob_path: str, local_storage_path: str):
     }
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def testing_app_local_chunking_no_consistency(app_configurable_with_testclient, tmp_path_factory):
 
     super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
@@ -34,7 +34,7 @@ async def testing_app_local_chunking_no_consistency(app_configurable_with_testcl
     yield app, client
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def testing_app_local_chunking_with_consistency(app_configurable_with_testclient, tmp_path_factory):
 
     super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
