@@ -11,8 +11,7 @@ from app.bulk_persistence import DaskClient
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
-from app.persistence.sessions_storage import Session, SessionUpdateMode, SessionState
-
+from app.bulk_persistence import (Session, SessionState, SessionUpdateMode)
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics, grouper
 from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
