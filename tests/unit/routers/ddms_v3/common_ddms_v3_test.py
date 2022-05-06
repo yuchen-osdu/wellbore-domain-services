@@ -14,24 +14,20 @@
 import json
 import os
 from unittest import mock
-from odes_storage import UnexpectedResponse
+from fastapi import status
 import pandas as pd
 import pytest
-from app.wdms_app import DDMS_V3_PATH
-from app.auth.auth import require_opendes_authorized_user
-from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage, SessionsStorage
-from app.clients import SearchServiceClient, StorageRecordServiceClient
-from app.helper import traces
-from app.middleware import require_data_partition_id
-from app.model.osdu_model import Well, Wellbore
-from app.wdms_app import app_injector, wdms_app
-from fastapi import status
-from fastapi.testclient import TestClient
-from odes_storage.models import CreateUpdateRecordsResponse, Record, RecordVersions
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from starlette.responses import Response
-from tests.unit.conftest import do_nothing, set_default_partition
+
+from odes_storage import UnexpectedResponse
+from odes_storage.models import CreateUpdateRecordsResponse, Record, RecordVersions
+from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
+
+from app.wdms_app import DDMS_V3_PATH
+from app.clients import SearchServiceClient, StorageRecordServiceClient
+from app.model.osdu_model import Well, Wellbore
+from tests.unit.fixtures_pkg.testing_app_chunking import create_bulk_mocks
+
 from tests.unit.test_utils import create_mock_class
 
 
@@ -40,49 +36,20 @@ Contains unified common tests for the different kind. Mainly CRUD test cases
 """
 
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_with_mocked_core_service(event_loop, tmp_path, nope_logger_fixture):
+async def dasked_test_app_with_mocked_core_service(app_configurable_with_testclient, tmp_path_factory):
+    super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
+                                          local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")))
+    super_mocks['storage_client_mock'] = StorageRecordServiceClientMock
 
-    local_blob_storage = LocalFSBlobStorage(directory=str(tmp_path))
-
-    async def build_mock_storage():
-        return StorageRecordServiceClientMock()
-
-    async def build_mock_search():
-        return SearchServiceClientMock()
-
-    async def blob_storage_builder(*args, **kwargs):
-        return local_blob_storage
-
-    async def sessions_storage_builder(*args, **kwargs):
-        return SessionsStorage(local_blob_storage)
-
-    async def dask_blob_storage_builder() -> DaskBulkStorage:
-        return await make_local_dask_bulk_storage(base_directory=str(tmp_path))
-
-    app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
-    app_injector.register(BlobStorageBase, blob_storage_builder)
-    app_injector.register(SessionsStorage, sessions_storage_builder)
-    app_injector.register(StorageRecordServiceClient, build_mock_storage)
-    app_injector.register(SearchServiceClient, build_mock_search)
-
-    # override authentication dependency
-    previous_overrides = wdms_app.dependency_overrides
-
-    try:
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-        client = TestClient(wdms_app)
-        yield client
-    finally:
-        wdms_app.dependency_overrides = previous_overrides  # clean up
-
-
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
+    _, client = app_configurable_with_testclient(
+        fake_opendes_authorized_user=True,
+        fake_data_partition_id=True,
+        **super_mocks
+    )
+    yield client
 
 
 def test_post_records_successful(dasked_test_app_with_mocked_core_service):
