@@ -45,17 +45,6 @@ def sessions_storage(ctx_fixture, tmp_path):
 def testing_tenant() -> Tenant:
     return Tenant(project_id='p', bucket_name='b', data_partition_id='d')
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize("mode, meta, internal", [
-    (SessionUpdateMode.Overwrite, {'custom1': 'value1'}, {'internal1': 1337}),
-    (SessionUpdateMode.Update, None, None),
-    (SessionUpdateMode.Update, {'custom1': 'value1', 'custom2': 'value2'}, 42)])
-async def test_session_id(sessions_storage, mode, meta, internal):
-    tenant = Tenant(data_partition_id='dp', project_id='prj', bucket_name='bck')
-    new_session = await sessions_storage.create_session(tenant, '123', 0, 60,
-                                                       mode,
-                                                       meta=meta,
-                                                       internal=internal)
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("mode, meta, internal", [
@@ -107,7 +96,6 @@ async def test_multiple_session(sessions_storage, testing_tenant):
     session_ids = await sessions_storage.list_sessions(testing_tenant, '123')
     assert str(s1.session.id) in session_ids
     assert str(s2.session.id) in session_ids
-
 
 @pytest.mark.asyncio
 async def test_error_during_commit_should_reset_state(sessions_storage, testing_tenant):
