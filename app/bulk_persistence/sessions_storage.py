@@ -136,7 +136,7 @@ class SessionException(Exception):
                  session_id: UUID = None,
                  message: str = None,
                  http_status_equivalent=status.HTTP_500_INTERNAL_SERVER_ERROR):
-        super().__init__(f'Error on session {session_id} for record {record_id}: {message or "unknown"}')
+        super().__init__(f'Error on session {str(session_id)} for record {record_id}: {message or "unknown"}')
         self.record_id = record_id
         self.session_id = session_id
         self.http_status = http_status_equivalent
@@ -181,7 +181,7 @@ class SessionsStorage:
 
     @staticmethod
     def _build_session_complete_name(record_id: str, session_id: UUID):
-        return f'sessions/{record_id}/{session_id}'
+        return f'sessions/{record_id}/{str(session_id)}'
 
     @with_trace('blob_storage_upload_session')
     async def _store_session(self, tenant: Tenant, session: SessionInternal) -> SessionInternal:
@@ -238,7 +238,7 @@ class SessionsStorage:
                              *,
                              meta: Optional[Dict[str, str]] = None, internal: Optional[Any] = None) -> SessionInternal:
         utc_now = datetime.utcnow()
-        session = Session(id=str(uuid.uuid4()), fromVersion=from_version, recordId=record_id, mode=mode,
+        session = Session(id=uuid.uuid4(), fromVersion=from_version, recordId=record_id, mode=mode,
                           createdTime=utc_now, updatedTime=utc_now, expiry=utc_now + timedelta(minutes=ttl),
                           state=SessionState.Open, meta=meta)
 

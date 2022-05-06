@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import asyncio
+import uuid
 from typing import Awaitable, Callable, List, Optional, Union, AsyncGenerator, Tuple
 from uuid import UUID
 

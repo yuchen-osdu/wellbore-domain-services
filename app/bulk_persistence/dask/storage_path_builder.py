@@ -77,7 +77,7 @@ def record_session_path(
 ) -> str:
     """Return the path corresponding to the specified session."""
     entity_path = record_path(base_directory, record_id, protocol)
-    return join(entity_path, 'session', session_id, 'data')
+    return join(entity_path, 'session', str(session_id), 'data')
 
 
 def record_relative_path(base_directory: str, record_id: str, path: str) -> str:

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
+import uuid
 from datetime import datetime, timedelta
 import dask.dataframe as dd
 import numpy as np
@@ -43,7 +44,8 @@ async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path) -> DaskBulkSt
 @pytest.fixture()
 def test_session(mode=SessionUpdateMode.Overwrite) -> Session:
     utc_now = datetime.utcnow()
-    return Session(id='fake_session_id', recordId='fake_record_id', fromVersion=0,
+    fake_session_id = uuid.uuid4()
+    return Session(id=fake_session_id, recordId='fake_record_id', fromVersion=0,
                    mode=mode, createdTime=utc_now, updatedTime=utc_now,
                    expiry=utc_now + timedelta(minutes=5),
                    state=SessionState.Open)
@@ -51,7 +53,8 @@ def test_session(mode=SessionUpdateMode.Overwrite) -> Session:
 
 def get_update_session() -> Session:
     utc_now = datetime.utcnow()
-    return Session(id='fake_session_id_update', recordId='fake_record_id', fromVersion=0,
+    fake_session_id_update = uuid.uuid4()
+    return Session(id=fake_session_id_update, recordId='fake_record_id', fromVersion=0,
                    mode=SessionUpdateMode.Update, createdTime=utc_now, updatedTime=utc_now,
                    expiry=utc_now + timedelta(minutes=5),
                    state=SessionState.Open)
