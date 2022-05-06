@@ -13,7 +13,7 @@ from tests.unit.generate_data import generate_df
 
 from app.bulk_persistence import (Session, SessionState, SessionUpdateMode)
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics, grouper
+from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics, grouper, get_columns_count
 from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from app.bulk_persistence import MimeTypes
 from app.bulk_persistence.dataframe_validators import no_validation
@@ -30,6 +30,21 @@ def test_grouper(container, step):
     result = list(grouper(step, container))
     for r in result:
         assert len(r) == min(step, len(container))
+
+
+@pytest.mark.parametrize("max_columns_count, nb_rows, nb_cols, expected", [
+    (100, 10, 10, 10),
+    (100, 100, 10, 1),
+    (100, 1000, 10, 1),
+
+    (10, 2, 100, 10),
+])
+def test_get_columns_count(max_columns_count, nb_rows, nb_cols, expected):
+
+    max_number_values = 100
+
+    result = get_columns_count(max_number_values, max_columns_count, nb_rows, nb_cols)
+    assert result == expected
 
 
 @pytest.fixture(scope="module")
@@ -52,8 +67,8 @@ async def bulk_stats_fixture(local_dask_client_initialized, tmp_path, nope_logge
     local_dask = await make_local_dask_bulk_storage(str(tmp_path))
 
     bulk_stats = BulkStatistics(dask_blob_storage=local_dask)
-    bulk_stats.max_number_values = 500_000
-    bulk_stats.max_columns_count = 100
+    bulk_stats._paging_size_per_batch = 500_000
+    bulk_stats._max_cols_per_batch = 100
     yield bulk_stats, local_dask
 
 

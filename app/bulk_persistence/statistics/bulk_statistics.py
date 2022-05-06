@@ -1,5 +1,3 @@
-import functools
-import json
 import asyncio
 from typing import List, Callable, Iterable
 import itertools
@@ -24,9 +22,6 @@ from .exceptions import (
     ComputationNotCompleteError)
 
 from osdu.core.api.storage import exceptions as osdu_storage_exception
-# from app.context import get_ctx
-# from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-# from app.tenant import resolve_tenant
 
 
 def grouper(n, container: Iterable):
@@ -44,10 +39,34 @@ def grouper(n, container: Iterable):
         yield chunk
 
 
+def get_columns_count(max_number_values: int, max_columns_count: int, nb_rows: int, nb_cols: int) -> int:
+    """
+    Return the numbers of columns to be read at once in parquet files to stay under a given limit of maximum values.
+
+    @param max_number_values: maximum number of values to be read at once, within several bulk files
+    @param max_columns_count: maximum number of columns to be read whenever the limit is reached
+    @param nb_rows: number of rows per bulk files (which must have the same shape)
+    @param nb_cols: number of columns per bulk files (which must have the same shape)
+
+        >>> get_columns_count(max_number_values=100_000, max_columns_count=500, nb_rows=10_000, nb_cols=10)
+        >>> 10
+
+        >>>> get_columns_count(max_number_values=100_000, max_columns_count=100, nb_rows=100_000, nb_cols=10)
+        >>> 1
+    """
+
+    total_nb_values = nb_rows * nb_cols
+    block_count = max(total_nb_values / max_number_values, 1)
+    wanted_nb_col = max(int(nb_cols / block_count), 1)
+    return min(max_columns_count, wanted_nb_col)
+
+
 class BulkStatistics:
-    dask_blob_storage: DaskBulkStorage = None
-    max_number_values = 10_000_000
-    max_columns_count = Config.max_columns_return.value
+
+    # maximum number of bulk values to be fetched and computed per batch
+    _paging_size_per_batch: int = 10_000_000
+    # maximum number of columns of data to be fetched per batch of bulk files
+    _max_cols_per_batch: int = Config.max_columns_return.value
 
     _stats_api_version = "1"
     _valid_values_label = 'total_count'
@@ -58,23 +77,12 @@ class BulkStatistics:
         self.dask_blob_storage = dask_blob_storage
 
     def _submit_with_trace(self, target_func: Callable, *args, **kwargs):
+        """ Enable tracing of given target_func run into Dask """
         return submit_with_trace(self.dask_blob_storage.client, target_func, *args, **kwargs)
-
-    def _get_columns_count(self, nb_rows, nb_cols):
-        """
-        Return the numbers of columns to be read in bulk files
-        to not go over the limit of values bulks data to read at once.
-        Maximum number of column is Config.
-        """
-        total_nb_values = nb_rows * nb_cols
-        block_count = max(total_nb_values / self.max_number_values, 1)
-        wanted_nb_col = max(int(nb_cols / block_count), 1)
-        return min(self.max_columns_count, wanted_nb_col)
 
     def _record_path(self, record_id: str):
         """
         Return the path to bulk data for record identified by the given record_id.
-        It includes protocol in it: file, az, gcs, etc...
         """
         return path_builder.record_path(self.dask_blob_storage.base_directory,
                                         record_id,
@@ -94,8 +102,14 @@ class BulkStatistics:
         """ Return the path for where statistics files are saved for a given record and bulk id """
         return join(self._statistics_base_path(record_id, bulk_id), 'data')
 
-    def _fetch_bulks(self, catalog, columns):
+    def _fetch_bulk_batch(self, catalog: BulkCatalog, columns: List[str]) -> pd.DataFrame:
+        """
+            Read requested columns over bulk data parquet files and return it into one DataFrame.
 
+            Data to be fetched can be in several files that possibly contains other unwanted columns.
+            Requested Columns are fetched in each file provided by the bulk_catalog
+             and then concatenate into one pd.DataFrame.
+        """
         record_path = self._record_path(catalog.record_id)
         column_paths = catalog.get_paths_for_columns(columns, record_path)
 
@@ -111,7 +125,7 @@ class BulkStatistics:
         return pd.concat(dfs, ignore_index=True)
 
     @staticmethod
-    def _compute_stats(bulk_df: pd.DataFrame, catalog) -> pd.DataFrame:
+    def _compute_statistics_batch(bulk_df: pd.DataFrame, catalog) -> pd.DataFrame:
         """
             Perform statistics computation on given piece of bulk data
             Note: Column 'std' (standard deviation) can be missing from results, when bulk data are made of date dtype.
@@ -136,23 +150,22 @@ class BulkStatistics:
 
         return computed_stats
 
-    def _compute(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
+    def _compute_stats_on_bulk_batch(self, catalog: BulkCatalog, columns: List[str], record_id: str, bulk_uri: str):
         """
-        Entrypoint forDask workers to run computation: fetch piece of bulk data, compute and save results
+        Entrypoint for Dask workers to run statistics computation: fetch pieces of bulk data, compute and save results
 
-        :param catalog: bulk data calog
-        :param columns: selected columns to be computed
-        :param record_id: record id on which computation will be performed
-        :param bulk_uri: URI of bulk data on which computation will be performed
-
+        @param catalog: bulk data calog
+        @param columns: selected columns to be computed
+        @param record_id: record id on which computation will be performed
+        @param bulk_uri: URI of bulk data on which computation will be performed
         """
-        bulk_df = self._fetch_bulks(catalog, columns)
+        bulk_df = self._fetch_bulk_batch(catalog, columns)
 
-        computed_stats = self._compute_stats(bulk_df, catalog)
+        computed_stats = self._compute_statistics_batch(bulk_df, catalog)
 
-        self._save(computed_stats, record_id, bulk_uri)
+        self._save_statistics_batch(computed_stats, record_id, bulk_uri)
 
-    def _save(self, df_statistics: pd.DataFrame, record_id: str, bulk_id: str):
+    def _save_statistics_batch(self, df_statistics: pd.DataFrame, record_id: str, bulk_id: str):
         """ Save given statistic to parquet file, file path is determined with record_id and bulk_id """
 
         bulk_statistics_data_path = self._statistics_data_path(record_id, bulk_id)
@@ -183,11 +196,11 @@ class BulkStatistics:
 
         nb_rows = catalog.nb_rows
         nb_cols = len(existing_columns)
-        wanted_columns_number = self._get_columns_count(nb_rows, nb_cols)
+        wanted_columns_number = get_columns_count(self._paging_size_per_batch, self._max_cols_per_batch, nb_rows, nb_cols)
 
         started_tasks = []
         for group_columns in grouper(wanted_columns_number, existing_columns):
-            f = self._submit_with_trace(self._compute,
+            f = self._submit_with_trace(self._compute_stats_on_bulk_batch,
                                         catalog,
                                         group_columns,
                                         record_id,
@@ -235,37 +248,16 @@ class BulkStatistics:
 
         return statistics_df.filter(items=columns, axis=0)
 
-    # @staticmethod
-    # async def _blob_storage():
-    #     """ Return blob storage client on pointing out to the current data partition """
-    #     ctx = get_ctx()
-    #
-    #     # todo: need to double to make sure `get_ctx()` is still viable in case of delayed computation
-    #     tenant, storage = await asyncio.gather(
-    #         resolve_tenant(ctx.partition_id),
-    #         ctx.app_injector.get(BlobStorageBase)
-    #     )
-    #
-    #     return storage, tenant
-
     async def _push_statistics_meta_file(self, bulk_statistics_path: str, stats_meta_data: BulkDataStatisticsMeta,
                                          overwrite_meta_file: bool):
         """
         Update meta-data file of statistics computation with given status of given stats_meta_data.
-        This method aims to be run by main thread, that's why it is async and could use async blob storage client.
+
+        @note: This method aims to be run by main thread, that's why it is async and could use async blob storage client.
         """
 
         file_path = join(bulk_statistics_path, 'statistics.json')
         stats_meta_content = await asyncio.get_running_loop().run_in_executor(None, stats_meta_data.json)
-
-        # todo: find a way to use blob storage client instead
-        # storage, tenant = await self._blob_storage()
-        # await storage.upload(tenant,
-        #                      overwrite=overwrite_meta_file,
-        #                      object_name=file_path,
-        #                      file_data=stats_meta_json,
-        #                      content_type='application/json',
-        #                      )
 
         if not overwrite_meta_file and self.dask_blob_storage._fs.exists(file_path):
             raise osdu_storage_exception.ResourceExistsException(file_path)
@@ -276,12 +268,9 @@ class BulkStatistics:
         return stats_meta_data
 
     async def _fetch_statistics_meta_file(self, bulk_statistics_path) -> BulkDataStatisticsMeta:
+        """ Read statistics meta file at given path """
 
         file_path = join(bulk_statistics_path, 'statistics.json')
-
-        # todo: find a way to use blob storage client instead
-        # storage, tenant = await self._blob_storage()
-        # blob_content = await storage.download(tenant, object_name='statistics.json')
 
         with self.dask_blob_storage._fs.open(file_path, 'r') as stats_meta_file:
             blob_content = stats_meta_file.read()
@@ -290,6 +279,13 @@ class BulkStatistics:
 
     async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) \
             -> (pd.DataFrame, BulkDataStatisticsMeta):
+        """
+        @return The statistics data of given record identified by its record_id and bulk_uri
+
+        @param columns: name of columns to be fetched
+        @param record_id: record id on which computation has been performed
+        @param bulk_uri: URI of bulk data on which computation has been performed
+        """
 
         bulk_statistics_path = self._statistics_base_path(record_id, bulk_uri)
         try:

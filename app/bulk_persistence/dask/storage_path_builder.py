@@ -79,7 +79,6 @@ def record_statistics_base_path(
     return join(entity_path, 'bulk', bulk_id, statistics_suffix)
 
 
-
 def record_session_path(
     base_directory: str, session_id: str, record_id: str, protocol: Optional[str] = None
 ) -> str:
