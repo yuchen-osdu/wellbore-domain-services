@@ -102,7 +102,9 @@ class BulkStatistics:
         def read_parquets_same_schema(_col_path):
             _columns, _files_to_load = _col_path.labels, _col_path.paths
 
-            _dfs = (pd.read_parquet(file, columns=_columns) for file in _files_to_load)
+            _dfs = (pd.read_parquet(file, columns=_columns,
+                                    storage_options=self.dask_blob_storage._parameters.storage_options)
+                    for file in _files_to_load)
             return pd.concat(_dfs, ignore_index=True)
 
         dfs = (read_parquets_same_schema(col_path) for col_path in column_paths)
