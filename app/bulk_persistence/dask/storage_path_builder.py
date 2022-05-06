@@ -19,6 +19,7 @@ Utility functions that gathers method to build path for bulk storage
 import hashlib
 from os.path import join, relpath
 from typing import Optional, Tuple
+from uuid import UUID
 
 
 def hash_record_id(record_id: str) -> str:
@@ -72,7 +73,7 @@ def record_bulk_path(
 
 
 def record_session_path(
-    base_directory: str, session_id: str, record_id: str, protocol: Optional[str] = None
+    base_directory: str, session_id: UUID, record_id: str, protocol: Optional[str] = None
 ) -> str:
     """Return the path corresponding to the specified session."""
     entity_path = record_path(base_directory, record_id, protocol)

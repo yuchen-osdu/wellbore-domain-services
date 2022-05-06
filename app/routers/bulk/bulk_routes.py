@@ -314,7 +314,7 @@ async def get_data(
 )
 async def complete_session(
     record_id: str,
-    session_id: str,
+    session_id: UUID,
     request: Request,
     update_request: UpdateSessionState,
     with_session: WithSessionStorages = Depends(get_session_dependencies),

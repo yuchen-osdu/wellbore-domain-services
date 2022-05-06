@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, Optional, Union, List
 from asyncio import gather
+from uuid import UUID
 
 from starlette.requests import Request
 
@@ -92,7 +93,7 @@ class WithSessionStorages:
         self.storage_service_client: StorageRecordServiceClient = storage_client
 
     @SessionsStorage.raise_http_exception
-    async def get_session(self, record_id: str, session_id: str) -> SessionInternal:
+    async def get_session(self, record_id: str, session_id: UUID) -> SessionInternal:
         return await self.sessions_storage.get_session(self.tenant, record_id, session_id)
 
 
@@ -164,7 +165,7 @@ async def create_session(record_id: str,
     response_model=Session
 )
 async def get_session(record_id: str,
-                      session_id: str,
+                      session_id: UUID,
                       request: Request,
                       with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> Session:
     if hasattr(request.state, 'version') and request.state.version != "V2":
@@ -181,7 +182,7 @@ async def get_session(record_id: str,
     include_in_schema=False
 )
 async def delete_session(record_id: str,
-                         session_id: str,
+                         session_id: UUID,
                          with_storages: WithSessionStorages = Depends(get_session_dependencies)):
     force_delete = True
     await with_storages.sessions_storage.delete_session(with_storages.tenant, record_id, session_id, force_delete)
