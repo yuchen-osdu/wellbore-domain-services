@@ -28,7 +28,7 @@ from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 from ..capture_timings import capture_timings
 from ..sessions_storage import Session
-from ..bulk_persistence_config import BulkConfig
+from ..bulk_persistence_config import BulkPersistenceConfig
 
 from .client import DaskClient
 from .dask_worker_plugin import DaskWorkerPlugin
@@ -36,7 +36,12 @@ from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_except
 from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span, trace_attributes_current_span
 from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, join_dataframes, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
-from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
+from ..dataframe_validators import (is_reserved_column_name,
+                                    DataFrameValidationFunc,
+                                    make_number_of_columns_validator,
+                                    make_multi_validator,
+                                    columns_not_in_reserved_names,
+                                    validate_index)
 from ..dataframe_serializer import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
@@ -85,27 +90,32 @@ class DaskBulkStorage:
     client: DaskDistributedClient = None
     """ Dask client """
 
-    def __init__(self) -> None:
+    def __init__(self, config: BulkPersistenceConfig) -> None:
         """ use `create` to create instance """
         self._parameters = None
         self._fs = None
+        self._config = config
+
+    @property
+    def max_columns_return(self):
+        return self._config.max_columns_return
 
     @property
     def _data_ipc(self):
         # may be also adapted depending of size to data
-        if BulkConfig.dask_data_ipc == DaskLocalFileDataIPC.ipc_type:
+        if self._config.dask_data_ipc == DaskLocalFileDataIPC.ipc_type:
             return DaskLocalFileDataIPC()
         assert self.client is not None, 'Dask client not initialized'
         return DaskNativeDataIPC(self.client)
 
     @classmethod
     @with_trace("DaskBulkStorage-create()")
-    async def create(cls, parameters: DaskStorageParameters, dask_client=None) -> 'DaskBulkStorage':
-        instance = cls()
+    async def create(cls, parameters: DaskStorageParameters, config: BulkPersistenceConfig, dask_client=None) -> 'DaskBulkStorage':
+        instance = cls(config=config)
         instance._parameters = parameters
 
         # Initialise the dask client.
-        dask_client = dask_client or await DaskClient.create()
+        dask_client = dask_client or await DaskClient.create(config)
         if DaskBulkStorage.client is not dask_client:  # executed only once per dask client
             DaskBulkStorage.client = dask_client
 
@@ -113,7 +123,9 @@ class DaskBulkStorage:
                 parameters.register_fsspec_implementation()
 
             await DaskBulkStorage.client.register_worker_plugin(
-                DaskWorkerPlugin(logger=get_logger(), register_fsspec_implementation=parameters.register_fsspec_implementation),
+                DaskWorkerPlugin(service_name=config.service_name,
+                                 logger=get_logger(),
+                                 register_fsspec_implementation=parameters.register_fsspec_implementation),
                 name="LoggerWorkerPlugin")
 
             get_logger().info(f"Distributed Dask client initialized : {DaskBulkStorage.client}")
@@ -480,6 +492,17 @@ class DaskBulkStorage:
         })
         return bulk_id
 
+    def _make_df_validator(self, df_validator_func: DataFrameValidationFunc) -> DataFrameValidationFunc:
+        """
+        enrich dataframe validator with all basic validator
+        """
+        return make_multi_validator([
+            df_validator_func,
+            make_number_of_columns_validator(self._config.max_columns_return),
+            columns_not_in_reserved_names,
+            validate_index
+        ])
+
     @internal_bulk_exceptions
     @capture_timings('post_data_without_session', handlers=worker_capture_timing_handlers)
     @with_trace('post_data_without_session')
@@ -512,7 +535,7 @@ class DaskBulkStorage:
                                                   data_handle,
                                                   data_getter,
                                                   content_type,
-                                                  df_validator_func,
+                                                  self._make_df_validator(df_validator_func),
                                                   bulk_base_path,
                                                   self._parameters.storage_options,
                                                   consistency_checks,
@@ -551,7 +574,7 @@ class DaskBulkStorage:
                                                   data_handle,
                                                   data_getter,
                                                   content_type,
-                                                  df_validator_func,
+                                                  self._make_df_validator(df_validator_func),
                                                   base_path,
                                                   self._parameters.storage_options)
 

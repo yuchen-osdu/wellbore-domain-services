@@ -11,8 +11,7 @@ from ..model_chunking import DataframeBasicDescribe
 from ..json_orient import JSONOrient
 from ..mime_types import MimeType
 from ..dataframe_serializer import DataframeSerializerSync
-from ..dataframe_validators import (DataFrameValidationFunc, assert_df_validate, validate_index,
-                                    columns_not_in_reserved_names, validate_number_of_columns)
+from ..dataframe_validators import DataFrameValidationFunc
 
 from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as path_builder
@@ -74,7 +73,9 @@ def write_bulk_without_session(data_handle,
     data_handle = None  # unref
 
     # 2- input dataframe validation
-    assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
+    is_valid, reason = df_validator_func(df)
+    if not is_valid:
+        raise BulkNotProcessable(message=reason)
 
     # 2(bis)- checks data consistency
     consistency_checks.check_bulk_consistency_on_post_bulk(record, df)
@@ -124,7 +125,9 @@ def add_chunk_in_session(data_handle,
     data_handle = None  # unref
 
     # 2- perf some check
-    assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
+    is_valid, reason = df_validator_func(df)
+    if not is_valid:
+        raise BulkNotProcessable(message=reason)
 
     # sort column by names and set index column name  # TODO could it be avoided ? then we could keep input untouched and save serialization step?
     df = df[sorted(df.columns)]

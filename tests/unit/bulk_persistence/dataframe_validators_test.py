@@ -11,11 +11,9 @@ from app.bulk_persistence.dataframe_validators import (
     columns_not_in_reserved_names,
     any_reserved_column_name,
     validate_index,
-    assert_df_validate,
-    validate_number_of_columns
+    make_number_of_columns_validator,
+    make_multi_validator
 )
-
-from app.bulk_persistence.dask.errors import BulkNotProcessable
 
 
 def test_no_validation_always_success():
@@ -96,18 +94,19 @@ def test_valid_index():
 
 
 def test_assert_df_validate_empty_succeed():
-    assert_df_validate(pd.DataFrame(), [])
+    make_multi_validator([])(pd.DataFrame())
 
 
 def test_assert_df_validate_single():
     validation_fn = Mock(return_value=(True, "validation ok"))
-    assert_df_validate(pd.DataFrame(), [validation_fn])
+    make_multi_validator([validation_fn])(pd.DataFrame())
     validation_fn.assert_called_once()
 
 
 def test_validators_composition_success():
     df = pd.DataFrame({'A': [10], 'B': [20]}).set_index('A')
-    assert_df_validate(df, [validate_index, columns_not_in_reserved_names])
+    is_valid, _ = make_multi_validator([validate_index, columns_not_in_reserved_names])(df)
+    assert is_valid
 
 
 def test_validators_composition():
@@ -117,8 +116,8 @@ def test_validators_composition():
     validation_3 = Mock(return_value=(True, "validation3"))
 
     # WHEN
-    with pytest.raises(BulkNotProcessable) as ex_info:
-        assert_df_validate(pd.DataFrame(), [validation_1, validation_2, validation_3])
+    is_valid, error_msg = make_multi_validator([validation_1, validation_2, validation_3])(pd.DataFrame())
+    assert not is_valid
 
     # THEN all validations where called
     validation_1.assert_called_once()
@@ -126,7 +125,6 @@ def test_validators_composition():
     validation_3.assert_called_once()
 
     # and THEN error contains only failed reason
-    error_msg = str(ex_info.value)
     assert "validation1" in error_msg
     assert "validation2" in error_msg
     assert "validation3" not in error_msg
@@ -145,15 +143,15 @@ def test_validators_composition():
 def test_any_reserved_column_name(columns, expected):
     assert any_reserved_column_name(columns) == expected
 
+
 @pytest.mark.parametrize("limit,nb_col,expected", [
     (100, 50, True),
     (100, 100, True),
     (100, 101, False),
     (50, 100, False),
 ])
-def test_validate_number_of_columns(limit, nb_col, expected, local_bulk_persistence_config):
-
-    local_bulk_persistence_config.max_columns_per_chunk_write = limit
+def test_validate_number_of_columns(limit, nb_col, expected):
+    validate_number_of_columns = make_number_of_columns_validator(limit)
 
     columns = [f'col_{i}' for i in range(nb_col)]
     result, _info = validate_number_of_columns(pd.DataFrame(columns=columns))

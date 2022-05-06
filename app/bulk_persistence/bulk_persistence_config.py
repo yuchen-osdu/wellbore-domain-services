@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Callable
 from dask.utils import parse_bytes
 
 
@@ -31,9 +32,6 @@ class BulkPersistenceConfig:
         self._max_columns_per_chunk_write = max_columns_per_chunk_write
         self._dask_data_ipc = dask_data_ipc
         self._service_name = service_name
-
-        global BulkConfig
-        BulkConfig = self
 
     @property
     def min_worker_memory_recommended(self) -> int:
@@ -64,9 +62,13 @@ class BulkPersistenceConfig:
         return self._service_name
 
 
-# Global BulkPersistenceConfig instance
-# TODO: should be None and set only after config is loaded from environment
-BulkConfig = None
-# Calling constructor to have an existing instance for modules that need it at load time
-# TODO: We should be able to remove this without breaking the code
-BulkPersistenceConfig()
+#TODO review that
+def set_config_getter(getter: Callable[[], BulkPersistenceConfig]):
+    set_config_getter._getter = getter
+
+set_config_getter._getter = None
+
+
+def get_config() -> BulkPersistenceConfig:
+    assert set_config_getter._getter, "config getter not set"
+    return set_config_getter._getter()

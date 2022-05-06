@@ -1128,14 +1128,25 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    max_cols_count = 100
-    local_bulk_persistence_config.max_columns_return = max_cols_count
+    max_cols_count = local_bulk_persistence_config.max_columns_return
 
-    df = generate_df([f'var[{i}]' for i in range(max_cols_count + 1)], range(5))
-    write_response = client.post(f'{chunking_url}/{record_id}/data',
-                                 data=df.to_parquet(engine="pyarrow"),
-                                 headers={'content-type': 'application/parquet'})
-    assert write_response.status_code == 200
+    response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert response.status_code == 200
+    session_id = response.json()['id']
+
+    df = generate_df([f'var[{i}]' for i in range(int(max_cols_count/2) + 1)], range(5))
+    response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                           data=df.to_parquet(engine="pyarrow"),
+                           headers={'content-type': 'application/parquet'})
+    assert response.status_code == 200
+    df = generate_df([f'var2[{i}]' for i in range(int(max_cols_count/2) + 1)], range(5))
+    response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                           data=df.to_parquet(engine="pyarrow"),
+                           headers={'content-type': 'application/parquet'})
+    assert response.status_code == 200
+
+    response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    assert response.status_code == 200
 
     get_describe_response = client.get(f'{chunking_url}/{record_id}/data',
                                        headers={'Accept': 'application/parquet'},
@@ -1154,7 +1165,7 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
-                              params={'curves': f'var[0:{max_cols_count * 2}]'})
+                              params={'curves': f'var[0:{int(max_cols_count/2) + 1}],var2[0:{int(max_cols_count/2) + 1}]'})
     assert get_response.status_code == 400
     assert "Too many columns: requested" in get_response.json().get('detail', str())
 

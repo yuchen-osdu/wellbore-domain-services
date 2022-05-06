@@ -35,8 +35,9 @@ from odes_storage.models import Record, StorageAcl, Legal
 
 
 @pytest.fixture()
-async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path) -> DaskBulkStorage:
-    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path)
+async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path, local_bulk_persistence_config) -> DaskBulkStorage:
+    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path,
+                                                      bulk_config=local_bulk_persistence_config)
     yield dask_storage
 
 
@@ -91,6 +92,12 @@ async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_
         record=Record(id=record_id, kind="", acl=StorageAcl(viewers=[], owners=[]), legal=Legal(), data={}),
         bulk_id=bulk_id)
     return bulkid
+
+
+def test_make_validator(dask_storage: DaskBulkStorage):
+    v = dask_storage._make_df_validator(lambda _: (True, ""))
+    r = v(pd.DataFrame())
+    print(r)
 
 
 @pytest.mark.asyncio

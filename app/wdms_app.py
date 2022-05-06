@@ -58,7 +58,7 @@ from app.utils import (
     get_http_client_session,
     OpenApiHandler,
     POOL_EXECUTOR_MAX_WORKER)
-from app.bulk_persistence import DaskClient, BulkPersistenceConfig
+from app.bulk_persistence import DaskClient, BulkPersistenceConfig, set_config_getter
 from app.routers.bulk.utils import (
     update_operation_ids,
     set_v3_input_dataframe_check,
@@ -132,21 +132,24 @@ async def startup_event():
     assert sys.version_info.major == 3 and sys.version_info.minor >= 8, 'Python version required >=3.8'
 
     check_environment(Config)
-    # set the bulk persistence specific configuration after retrieving the global app config
-    BulkPersistenceConfig(
+    # build bulk persistence specific configuration
+    bulk_config = BulkPersistenceConfig(
         min_worker_memory=Config.min_worker_memory.value,
         max_columns_return=Config.max_columns_return.value,
         max_columns_per_chunk_write=Config.max_columns_per_chunk_write.value,
         dask_data_ipc=Config.dask_data_ipc.value,
         service_name=Config.service_name.value
     )
+    # TODO put it in the app and set the getter for now (see get_config() usage)
+    wdms_app.bulk_config = bulk_config
+    set_config_getter(lambda: wdms_app.bulk_config)
 
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name, config=Config)
 
     # seems that the lock is not in the same event loop as requests
     # so we need to wait instead of just fire a task
-    asyncio.create_task(DaskClient.create())
+    asyncio.create_task(DaskClient.create(bulk_config))
     create_custom_http_exception_handler(wdms_app, logger)
     # init executor pool
     logger.get_logger().info("Startup process pool executor")

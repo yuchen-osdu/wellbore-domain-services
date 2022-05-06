@@ -4,8 +4,6 @@ import re
 import pandas as pd
 
 from .dask.utils import WDMS_INDEX_NAME
-from .dask.errors import BulkNotProcessable
-from .bulk_persistence_config import BulkConfig
 
 
 ValidationResult = Tuple[bool, str]  # Tuple (is_dataframe_valid, failure_reason)
@@ -15,27 +13,25 @@ ValidationSuccess = (True, '')
 DataFrameValidationFunc = Callable[[pd.DataFrame], ValidationResult]
 
 
-def assert_df_validate(dataframe: pd.DataFrame,
-                       validation_funcs: List[DataFrameValidationFunc]):
-    """ call one or more validation function and throw BulkNotProcessable in case of invalid, run all validation before
-     returning """
-    if not validation_funcs:
-        return
-    all_validity, all_reasons = zip(*[fn(dataframe) for fn in validation_funcs])
-
-    if not all(all_validity):
-        # raise exception with all invalid reasons
-        raise BulkNotProcessable(message=",".join([msg for ok, msg in zip(all_validity, all_reasons) if not ok]))
-
-
-# the following functions are stateless and without side-effect so can be easily used in parallel/cross process context
-
 def no_validation(_) -> ValidationResult:
     """
     Always validate the given dataframe without error/warning
     return True, ''
     """
     return ValidationSuccess
+
+
+def make_multi_validator(validation_funcs: List[DataFrameValidationFunc]) -> DataFrameValidationFunc:
+    if not validation_funcs:
+        return no_validation
+
+    def _multi_validate(dataframe: pd.DataFrame):
+        all_validity, all_reasons = zip(*[fn(dataframe) for fn in validation_funcs])
+        return all(all_validity), ",".join([msg for ok, msg in zip(all_validity, all_reasons) if not ok])
+
+    return _multi_validate
+
+# the following functions are stateless and without side-effect so can be easily used in parallel/cross process context
 
 
 def auto_cast_columns_to_string(df: pd.DataFrame) -> ValidationResult:
@@ -65,11 +61,13 @@ def validate_index(df: pd.DataFrame) -> ValidationResult:
     return ValidationSuccess
 
 
-def validate_number_of_columns(df: pd.DataFrame) -> ValidationResult:
-    """ Verify max number of columns """
-    if len(df.columns) > BulkConfig.max_columns_per_chunk_write:
-        return False, f"Too many columns : maximum allowed '{BulkConfig.max_columns_per_chunk_write}'"
-    return ValidationSuccess
+def make_number_of_columns_validator(max_number_column) -> DataFrameValidationFunc:
+    def validate_number_of_columns(df: pd.DataFrame) -> ValidationResult:
+        """ Verify max number of columns """
+        if len(df.columns) > max_number_column:
+            return False, f"Too many columns : maximum allowed '{max_number_column}'"
+        return ValidationSuccess
+    return validate_number_of_columns
 
 
 PandasReservedIndexColRegexp = re.compile(r'__index_level_\d+__')

@@ -44,7 +44,7 @@ SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_with_mocked_core_service(event_loop, tmp_path, nope_logger_fixture):
+def dasked_test_app_with_mocked_core_service(event_loop, tmp_path, nope_logger_fixture, local_bulk_persistence_config):
 
     local_blob_storage = LocalFSBlobStorage(directory=str(tmp_path))
 
@@ -61,7 +61,8 @@ def dasked_test_app_with_mocked_core_service(event_loop, tmp_path, nope_logger_f
         return SessionsStorage(local_blob_storage)
 
     async def dask_blob_storage_builder() -> DaskBulkStorage:
-        return await make_local_dask_bulk_storage(base_directory=str(tmp_path))
+        return await make_local_dask_bulk_storage(base_directory=str(tmp_path),
+                                                  bulk_config=local_bulk_persistence_config)
 
     app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
     app_injector.register(BlobStorageBase, blob_storage_builder)

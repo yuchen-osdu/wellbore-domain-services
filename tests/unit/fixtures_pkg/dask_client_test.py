@@ -5,7 +5,7 @@ from app.bulk_persistence.dask.localcluster import memory_leeway
 
 
 @pytest.mark.asyncio
-async def test_dask_workers_not_enough_ram_available(dask_client, nope_logger_fixture):
+async def test_dask_workers_not_enough_ram_available(dask_client, nope_logger_fixture, local_bulk_persistence_config):
 
     with dask_client(system_memory_mock=42,
                      worker_threads_mock=(10, 10),
@@ -15,7 +15,7 @@ async def test_dask_workers_not_enough_ram_available(dask_client, nope_logger_fi
         with pytest.raises(DaskException) as exc:
             # creating the client should throw an exception
             async with dask_client_asynccontext() as client_starter:
-                await client_starter()
+                await client_starter(local_bulk_persistence_config)
 
         assert exc.value.args[0].startswith("Not enough memory")
 
@@ -24,7 +24,10 @@ async def test_dask_workers_not_enough_ram_available(dask_client, nope_logger_fi
     1, 3, 5
 ])
 @pytest.mark.asyncio
-async def test_dask_workers_enough_ram_available(local_bulk_persistence_config, expected_workers, dask_client, nope_logger_fixture):
+async def test_dask_workers_enough_ram_available(local_bulk_persistence_config,
+                                                 expected_workers,
+                                                 dask_client,
+                                                 nope_logger_fixture):
 
     system_memory = local_bulk_persistence_config.min_worker_memory_recommended * expected_workers + memory_leeway
 
@@ -35,7 +38,7 @@ async def test_dask_workers_enough_ram_available(local_bulk_persistence_config, 
 
         # the workers should use expected memory amount
         async with dask_client_asynccontext() as client_starter:
-            client = await client_starter()
+            client = await client_starter(local_bulk_persistence_config)
             expected_worker_memory = (system_memory - memory_leeway) / expected_workers
             assert expected_workers == len(client.cluster.scheduler.workers)
 
