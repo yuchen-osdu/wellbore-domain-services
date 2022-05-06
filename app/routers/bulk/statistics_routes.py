@@ -16,10 +16,10 @@ from typing import Optional
 from fastapi import Query
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from app.context import Context, get_ctx
+from odes_storage.models import Record
 
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
-from app.routers.record_utils import fetch_record
+from app.routers.record_utils import fetch_record_dependency, fetch_latest_version_record_dependency
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import with_dask_blob_storage
 
@@ -36,22 +36,9 @@ from app.helper.traces import TracingRoute
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
+from app.model.osdu_record_id import WellLogId
+
 router = APIRouter(route_class=TracingRoute)
-
-
-async def fetch_record_info(ctx, bulk_uri_access, request, record_id, version):
-    record = await fetch_record(ctx, record_id, version)
-    if hasattr(request.state, 'version') and request.state.version != "V2":
-        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
-    try:
-        bulk_uri = bulk_uri_access.get_bulk_uri(record=record)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail='Record contains an invalid bulk URI') from e
-    if not bulk_uri.is_valid():
-        raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
-
-    return record, bulk_uri
 
 responses_404_examples = {
             "description": "Not found",
@@ -123,19 +110,19 @@ Data types supported:
 )
 async def get_bulk_statistics(
         request: Request,
-        record_id: str,
-        curves: Optional[str] = Query(default="",
+        record_id: WellLogId,
+        record: Record = Depends(fetch_latest_version_record_dependency),
+        curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
                                       example='MD,GR'),
-        ctx: Context = Depends(get_ctx),
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
 ):
     return await get_bulk_statistics_version(request=request,
                                              record_id=record_id,
+                                             record=record,
                                              version=None,
                                              curves=curves,
-                                             ctx=ctx,
                                              dask_blob_storage=dask_blob_storage,
                                              bulk_uri_access=bulk_uri_access)
 
@@ -178,17 +165,15 @@ async def http_stats_error_handler(request, e: BulkStatisticsHTTPException) -> J
 )
 async def get_bulk_statistics_version(
         request: Request,
-        record_id: str,
-        version: str,
-        curves: Optional[str] = Query(default="",
+        record_id: WellLogId,
+        version: int,
+        record: Record = Depends(fetch_record_dependency),
+        curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
                                       example='MD,GR'),
-        ctx: Context = Depends(get_ctx),
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
+        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
 ):
-    # todo: refactor re-used code
-    record = await fetch_record(ctx, record_id, version)
     if hasattr(request.state, 'version') and request.state.version != "V2":
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
@@ -197,10 +182,12 @@ async def get_bulk_statistics_version(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI') from e
     if not bulk_uri.is_valid():
-        raise BulkRecordNotFound(record_id=record_id).raise_as_http()
+        raise BulkRecordNotFound(record_id=record.id).raise_as_http()
 
-    columns = filter(None, map(str.strip, curves.split(',')))
-    columns = list(dict.fromkeys(columns))
+    columns = []
+    if curves:
+        columns = filter(None, map(str.strip, curves.split(',')))
+        columns = list(dict.fromkeys(columns))
 
     try:
         stats_df, stats_meta = await BulkStatistics(dask_blob_storage).get_bulk_statistics(record.id,
@@ -237,21 +224,20 @@ async def get_bulk_statistics_version(
 )
 async def compute_bulk_statistics(
         request: Request,
-        record_id: str,
-        ctx: Context = Depends(get_ctx),
+        record_id: WellLogId,
+        record: Record = Depends(fetch_latest_version_record_dependency),
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    record = await fetch_record(ctx, record_id, None)
     if hasattr(request.state, 'version') and request.state.version != "V2":
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
-        bulk_uri = bulk_uri_access.get_bulk_uri(record=record)  # TODO PATH logv2
+        bulk_uri = bulk_uri_access.get_bulk_uri(record=record)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI') from e
     if not bulk_uri.is_valid():
-        raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
+        raise BulkRecordNotFound(record_id=record.id, bulk_id=None)
 
     try:
         await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id, record.version)

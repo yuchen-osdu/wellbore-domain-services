@@ -49,12 +49,12 @@ def test_invalid_cases(testing_app_local_chunking_no_consistency):
 
     # todo: check response error message
 
-    incorrect_record_id = 'incorrect-id'
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{incorrect_record_id}/data/statistics')
+    unknown_record_id = 'test:work-product-component--WellLog:8fef694e8a5a49ec96db9e51c7522bc9'
+    get_stats_response = client.get(f'/ddms/v3/welllogs/{unknown_record_id}/data/statistics')
     assert get_stats_response.status_code == 404
     assert get_stats_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
-    post_stats_response = client.post(f'/ddms/v3/welllogs/{incorrect_record_id}/data/statistics')
+    post_stats_response = client.post(f'/ddms/v3/welllogs/{unknown_record_id}/data/statistics')
     assert post_stats_response.status_code == 404
     assert post_stats_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
