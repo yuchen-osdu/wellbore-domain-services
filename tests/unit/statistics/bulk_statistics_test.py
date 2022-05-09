@@ -8,6 +8,7 @@ import pytest
 
 from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError
 from app.bulk_persistence import DaskClient
+from app.bulk_persistence.statistics.models import BulkStatisticsStatus
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
@@ -40,7 +41,6 @@ def test_grouper(container, step):
     (10, 2, 100, 10),
 ])
 def test_get_columns_count(max_columns_count, nb_rows, nb_cols, expected):
-
     max_number_values = 100
 
     result = get_columns_count(max_number_values, max_columns_count, nb_rows, nb_cols)
@@ -86,7 +86,6 @@ async def add_bulk_data_to_fixture(dask_blob_storage, typed_df):
 
 
 async def add_bulk_data_by_chunks_to_fixture(dask_blob_storage, cols_with_index: List[tuple]):
-
     session = create_test_bulk_session()
     coroutines = []
     for columns_name, values_index in cols_with_index:
@@ -94,12 +93,9 @@ async def add_bulk_data_by_chunks_to_fixture(dask_blob_storage, cols_with_index:
 
         cols_with_nan = [c for c in chunk_df.columns if c.endswith('nan')]
         for col_with_nan in cols_with_nan:
-            col_data = chunk_df[col_with_nan]
-            for i in range(0, col_data.size, 2):
-                col_data[i] = np.NAN
+            chunk_df.loc[chunk_df.sample(frac=0.1).index, col_with_nan] = np.nan
 
         chunk_data = chunk_df.to_parquet(engine='pyarrow')
-
         routine = dask_blob_storage.add_chunk_in_session(chunk_data,
                                                          MimeTypes.PARQUET,
                                                          no_validation,
@@ -113,6 +109,20 @@ async def add_bulk_data_by_chunks_to_fixture(dask_blob_storage, cols_with_index:
     new_bulk_id = await dask_blob_storage.session_commit(session)
     assert new_bulk_id
     return session.recordId, new_bulk_id
+
+
+def extract_distinct_cols(cols_name_by_index):
+    """ Extract distinct columns from input test cases"""
+    all_cols = []
+    for requested_cols, _ in cols_name_by_index:
+        all_cols.extend(requested_cols)
+
+    distinct_cols = set(all_cols)
+    valid_cols = [c for c in distinct_cols
+                  if not c.startswith('bool') and not c.startswith('string')]
+
+    assert valid_cols, "At least one column needs to be valid for test cases below"
+    return valid_cols
 
 
 def create_test_bulk_session() -> Session:
@@ -148,53 +158,49 @@ def _bulk_stats_columns_if_date_type_only() -> List[str]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("cols_name_by_index, expected_rows, expected_cols", [
+@pytest.mark.parametrize("cols_name_by_index, returned_curves_count, expected_cols", [
     (
+            # check common type of data types => check only integer, float and date are compatible.
             [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))], 3, _bulk_stats_columns()
     ),
     (
+            # ensure data by only datetime is correctly processed
             [(['date-C', 'date-D'], range(100))], 2, _bulk_stats_columns()
     ),
     (
-            [(['int-A', 'float-B', 'date-C'], range(1_000_000))], 3, _bulk_stats_columns()
+            # Check fetching and compute stats by batch of bulk is working properly one chunk data
+            [(['int-A', 'float-B', 'date-C'], range(400_000))], 3, _bulk_stats_columns()
     ),
     (
+            # Check fetching and compute stats by batch of bulk is working properly with chunked data
             [
                 (['float-A', 'float-B', 'float-C'], range(100_000)),
                 (['float-A', 'float-B', 'float-C'], range(100_000, 200_000)),
                 (['float-A', 'float-B', 'float-C'], range(400_000, 500_000)),
-                (['float-A', 'float-B', 'float-C'], range(500_000, 1_000_000)),
+                (['float-A', 'float-B', 'float-C'], range(500_000, 600_000)),
             ],
             3, _bulk_stats_columns()
     ),
-    (
-            [
-                (['float-A'], range(1_000_000)),
-                (['float-B'], range(1_000_000)),
-                (['float-A'], range(1_000_000, 2_000_000)),
-                (['float-B'], range(1_000_000, 2_000_000)),
-                (['float-A'], range(3_000_000, 4_000_000)),
-                (['float-B'], range(3_000_000, 4_000_000)),
-            ],
-            2, _bulk_stats_columns()
-    ),
-    # todo: add test case with NaN values
 ])
 async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name_by_index,
-                                                   expected_rows, expected_cols):
-
+                                                   returned_curves_count, expected_cols):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
 
+    fake_record_id = 123456789
     with pytest.raises(StatisticsNotFoundError):
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
 
-    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
+    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=fake_record_id)
     await future
 
     df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
-    assert len(df_stats) == expected_rows
+    assert len(df_stats) == returned_curves_count
     assert sorted(list(df_stats.columns)) == expected_cols
+
+    assert stats_meta.record_id == record_id
+    assert stats_meta.record_version == str(fake_record_id)
+    assert stats_meta.computation_status == BulkStatisticsStatus.Complete
 
 
 @pytest.mark.asyncio
@@ -208,18 +214,11 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
             (3, len(_bulk_stats_columns_if_date_type_only()))
     ),
 ])
-async def test_bulk_statistics_get_statistics(bulk_stats_fixture, cols_name_by_index, expected_shape):
+async def test_bulk_statistics_get_statistics_invalid_cols(bulk_stats_fixture, cols_name_by_index, expected_shape):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
 
-    all_cols = []
-    for requested_cols, _ in cols_name_by_index:
-        all_cols.extend(requested_cols)
-    distinct_cols = set(all_cols)
-    valid_cols = [c for c in distinct_cols
-                  if not c.startswith('bool') and not c.startswith('string')]
-
-    assert valid_cols, "At least one columns needs to be valid for test cases below"
+    valid_cols = extract_distinct_cols(cols_name_by_index)
 
     future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
     await future
@@ -232,17 +231,67 @@ async def test_bulk_statistics_get_statistics(bulk_stats_fixture, cols_name_by_i
         await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=computable_col_plus_invalid_cols)
 
     not_computable_cols = ['bool-D', 'string-E']
-    result_df_1, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=not_computable_cols)
+    result_df_1, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri,
+                                                                        columns=not_computable_cols)
     assert result_df_1.empty
 
-    not_computable_cols_plus_valid_cols = not_computable_cols + [valid_cols[0]]
-    result_df_2, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=not_computable_cols_plus_valid_cols)
-    assert result_df_2.shape == (1, 9)
-    assert result_df_2.index == [valid_cols[0]]
 
-    result_df_with_nan_cols, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
-    assert result_df_with_nan_cols.shape == (3, 9)
-    assert list(result_df_with_nan_cols.index) == valid_cols
+@pytest.mark.asyncio
+@pytest.mark.parametrize("cols_name_by_index, expected_shape", [
+    (
+            [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))],
+            (3, len(_bulk_stats_columns_if_date_type_only()))
+    ),
+    (
+            [(['int-A-nan', 'float-B', 'date-C-nan', 'bool-D', 'string-E'], range(500))],
+            (3, len(_bulk_stats_columns_if_date_type_only()))
+    ),
+])
+async def test_bulk_statistics_get_statistics_mix_requested_cols(bulk_stats_fixture, cols_name_by_index, expected_shape):
+    bulk_statistics, dask_storage = bulk_stats_fixture
+    record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+
+    computable_cols = extract_distinct_cols(cols_name_by_index)
+
+    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
+    await future
+
+    not_computable_cols = ['bool-D', 'string-E']
+    not_computable_cols_plus_valid_cols = not_computable_cols + [computable_cols[0]]
+    result_df_2, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri,
+                                                                        columns=not_computable_cols_plus_valid_cols)
+    assert result_df_2.shape == (1, 9)
+    assert result_df_2.index == [computable_cols[0]]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("cols_name_by_index, expected_shape", [
+    (
+            [(['int-A-nan', 'float-B', 'date-C-nan', 'bool-D', 'string-E'], range(500))],
+            (3, len(_bulk_stats_columns_if_date_type_only()))
+    ),
+])
+async def test_bulk_statistics_nan_columns(bulk_stats_fixture, cols_name_by_index, expected_shape):
+    bulk_statistics, dask_storage = bulk_stats_fixture
+    record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+
+    computable_cols = extract_distinct_cols(cols_name_by_index)
+    nan_cols = [c for c in computable_cols if 'nan' in c]
+
+    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
+    await future
+
+    result_df_with_nan_cols, _ = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    assert result_df_with_nan_cols.shape == (len(computable_cols), 9)
+    assert sorted(list(result_df_with_nan_cols.index)) == sorted(computable_cols)
+
+    all_valid_result_df, _ = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=computable_cols)
+    assert sorted(list(all_valid_result_df.index)) == sorted(computable_cols)
+
+    nan_cols_df = all_valid_result_df.filter(items=nan_cols, axis=0)
+    total_count = list(nan_cols_df['total_count'].astype(int))
+    count_valid_values = list(nan_cols_df['count_valid_values'].astype(float))
+    assert total_count > count_valid_values
 
 
 @pytest.mark.asyncio
