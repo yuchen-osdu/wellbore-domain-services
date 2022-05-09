@@ -16,42 +16,26 @@ from typing import Callable
 from dask.utils import parse_bytes
 
 
+MAX_COLUMNS_RETURN = 500
+MAX_COLUMNS_WRITE_CHUNK = 500
+
+
 class BulkPersistenceConfig:
     """
     Single container for the app configuration elements relevant to bulk persistence.
     """
 
     def __init__(self, min_worker_memory: str = "512Mi",
-                 max_columns_return: int = 500,
-                 max_columns_per_chunk_write: int = 500,
                  dask_data_ipc: str = 'dask_native',
                  service_name: str = 'os-wellbore-ddms---local'
                  ):
         self._min_worker_memory_recommended = parse_bytes(min_worker_memory)
-        self._max_columns_return = max_columns_return
-        self._max_columns_per_chunk_write = max_columns_per_chunk_write
         self._dask_data_ipc = dask_data_ipc
         self._service_name = service_name
 
     @property
     def min_worker_memory_recommended(self) -> int:
         return self._min_worker_memory_recommended
-
-    @property
-    def max_columns_return(self) -> int:
-        return self._max_columns_return
-
-    @max_columns_return.setter
-    def max_columns_return(self, value: int):
-        self._max_columns_return = value
-
-    @property
-    def max_columns_per_chunk_write(self) -> int:
-        return self._max_columns_per_chunk_write
-
-    @max_columns_per_chunk_write.setter
-    def max_columns_per_chunk_write(self, value: int):
-        self._max_columns_per_chunk_write = value
 
     @property
     def dask_data_ipc(self) -> str:

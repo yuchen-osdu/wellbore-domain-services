@@ -135,8 +135,6 @@ async def startup_event():
     # build bulk persistence specific configuration
     bulk_config = BulkPersistenceConfig(
         min_worker_memory=Config.min_worker_memory.value,
-        max_columns_return=Config.max_columns_return.value,
-        max_columns_per_chunk_write=Config.max_columns_per_chunk_write.value,
         dask_data_ipc=Config.dask_data_ipc.value,
         service_name=Config.service_name.value
     )

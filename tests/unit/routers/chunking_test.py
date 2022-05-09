@@ -1,6 +1,5 @@
 import io
 import math
-import platform
 
 import numpy as np
 import pandas as pd
@@ -11,7 +10,7 @@ import pytest
 
 from pandas.testing import assert_frame_equal
 from tests.unit.persistence.dask_blob_storage_test import generate_df
-
+from app.bulk_persistence import MAX_COLUMNS_WRITE_CHUNK, MAX_COLUMNS_RETURN
 
 Definitions = {
     'WellLog': {
@@ -1128,18 +1127,18 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    max_cols_count = local_bulk_persistence_config.max_columns_return
+    MAX_COLUMNS_WRITE_CHUNK, MAX_COLUMNS_RETURN
 
     response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert response.status_code == 200
     session_id = response.json()['id']
 
-    df = generate_df([f'var[{i}]' for i in range(int(max_cols_count/2) + 1)], range(5))
+    df = generate_df([f'var[{i}]' for i in range(int(MAX_COLUMNS_WRITE_CHUNK/2) + 1)], range(5))
     response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
                            data=df.to_parquet(engine="pyarrow"),
                            headers={'content-type': 'application/parquet'})
     assert response.status_code == 200
-    df = generate_df([f'var2[{i}]' for i in range(int(max_cols_count/2) + 1)], range(5))
+    df = generate_df([f'var[{i}]' for i in range(int(MAX_COLUMNS_WRITE_CHUNK/2) + 1, MAX_COLUMNS_WRITE_CHUNK + 1)], range(5))
     response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
                            data=df.to_parquet(engine="pyarrow"),
                            headers={'content-type': 'application/parquet'})
@@ -1160,12 +1159,12 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
-                              params={'curves': f'var[0:{max_cols_count - 1}]'})
+                              params={'curves': f'var[0:{MAX_COLUMNS_RETURN - 1}]'})
     assert get_response.status_code == 200
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
-                              params={'curves': f'var[0:{int(max_cols_count/2) + 1}],var2[0:{int(max_cols_count/2) + 1}]'})
+                              params={'curves': f'var[0:{MAX_COLUMNS_RETURN + 1}]'})
     assert get_response.status_code == 400
     assert "Too many columns: requested" in get_response.json().get('detail', str())
 
@@ -1199,7 +1198,7 @@ def test_write_too_many_columns(dasked_test_app_without_consistency_client, enti
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    df = generate_df([f'var[{i}]' for i in range(local_bulk_persistence_config.max_columns_per_chunk_write + 1)], range(2))
+    df = generate_df([f'var[{i}]' for i in range(MAX_COLUMNS_WRITE_CHUNK + 1)], range(2))
     response = client.post(f'{chunking_url}/{record_id}/data',
                            data=df.to_parquet(engine="pyarrow"),
                            headers={'content-type': 'application/parquet'})
@@ -1217,7 +1216,7 @@ def test_write_too_many_columns_session(dasked_test_app_without_consistency_clie
     session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'overwrite'})
     session_id = session_response.json()['id']
 
-    df = generate_df([f'var[{i}]' for i in range(local_bulk_persistence_config.max_columns_per_chunk_write + 1)], range(2))
+    df = generate_df([f'var[{i}]' for i in range(MAX_COLUMNS_WRITE_CHUNK + 1)], range(2))
     response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
                            data=df.to_parquet(engine="pyarrow"),
                            headers={'content-type': 'application/parquet'})

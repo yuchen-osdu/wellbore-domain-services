@@ -36,12 +36,7 @@ from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_except
 from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span, trace_attributes_current_span
 from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, join_dataframes, worker_capture_timing_handlers,
                     get_num_rows, set_index, index_union)
-from ..dataframe_validators import (is_reserved_column_name,
-                                    DataFrameValidationFunc,
-                                    make_number_of_columns_validator,
-                                    make_multi_validator,
-                                    columns_not_in_reserved_names,
-                                    validate_index)
+from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
 from ..dataframe_serializer import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
@@ -95,10 +90,6 @@ class DaskBulkStorage:
         self._parameters = None
         self._fs = None
         self._config = config
-
-    @property
-    def max_columns_return(self):
-        return self._config.max_columns_return
 
     @property
     def _data_ipc(self):
@@ -492,17 +483,6 @@ class DaskBulkStorage:
         })
         return bulk_id
 
-    def _make_df_validator(self, df_validator_func: DataFrameValidationFunc) -> DataFrameValidationFunc:
-        """
-        enrich dataframe validator with all basic validator
-        """
-        return make_multi_validator([
-            df_validator_func,
-            make_number_of_columns_validator(self._config.max_columns_return),
-            columns_not_in_reserved_names,
-            validate_index
-        ])
-
     @internal_bulk_exceptions
     @capture_timings('post_data_without_session', handlers=worker_capture_timing_handlers)
     @with_trace('post_data_without_session')
@@ -535,7 +515,7 @@ class DaskBulkStorage:
                                                   data_handle,
                                                   data_getter,
                                                   content_type,
-                                                  self._make_df_validator(df_validator_func),
+                                                  df_validator_func,
                                                   bulk_base_path,
                                                   self._parameters.storage_options,
                                                   consistency_checks,
@@ -574,7 +554,7 @@ class DaskBulkStorage:
                                                   data_handle,
                                                   data_getter,
                                                   content_type,
-                                                  self._make_df_validator(df_validator_func),
+                                                  df_validator_func,
                                                   base_path,
                                                   self._parameters.storage_options)
 

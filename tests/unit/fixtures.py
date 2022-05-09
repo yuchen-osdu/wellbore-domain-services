@@ -35,8 +35,6 @@ def local_bulk_persistence_config(local_dev_config):
     """
     bulk_config = BulkPersistenceConfig(
         min_worker_memory=local_dev_config.min_worker_memory.value,
-        max_columns_return=local_dev_config.max_columns_return.value,
-        max_columns_per_chunk_write=local_dev_config.max_columns_per_chunk_write.value,
         dask_data_ipc=local_dev_config.dask_data_ipc.value,
         service_name=local_dev_config.service_name.value
     )

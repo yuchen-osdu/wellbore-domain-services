@@ -94,12 +94,6 @@ async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_
     return bulkid
 
 
-def test_make_validator(dask_storage: DaskBulkStorage):
-    v = dask_storage._make_df_validator(lambda _: (True, ""))
-    r = v(pd.DataFrame())
-    print(r)
-
-
 @pytest.mark.asyncio
 async def test_save_bulk_with_bulk_id(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
