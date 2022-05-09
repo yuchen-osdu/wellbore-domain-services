@@ -3,6 +3,9 @@ from datetime import datetime
 import pandas as pd
 
 from unittest import mock
+
+import pytest
+
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 import osdu.core.api.storage.exceptions as osdu_storage_exception
 
@@ -60,11 +63,13 @@ def test_invalid_cases(testing_app_local_chunking_no_consistency):
 
     valid_record_no_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
     assert valid_record_no_bulk_response.status_code == 404
+    assert valid_record_no_bulk_response.json().get("detail") == f"bulk for record {valid_record_id} not found"
 
     version = '123456789'
     valid_record_invalid_version_response = client.get(
         f"/ddms/v3/welllogs/{valid_record_id}/versions/{version}/data/statistics")
     assert valid_record_invalid_version_response.status_code == 404
+    assert valid_record_invalid_version_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
 
 def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
@@ -126,30 +131,33 @@ def test_get_stats(testing_app_local_chunking_no_consistency):
 
     record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
     assert record_response.status_code == 200
-    record_json = record_response.json()
+    version = record_response.json()['version']
 
     get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
     assert get_stats_response.status_code == 200
+    df_result_last_version = create_df_from_dict(get_stats_response)
+    assert df_result_last_version.shape == (2, 9)
 
-    version = record_json['version']
     get_stats_version_response = client.get(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert get_stats_version_response.status_code == 200
-    df_result_1 = create_df_from_dict(get_stats_version_response)
-    assert df_result_1.shape == (2, 9)
+    df_result_version = create_df_from_dict(get_stats_version_response)
+    assert df_result_version.shape == (2, 9)
 
     params = {
         'curves': "MD,X"
     }
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
-    assert get_stats_response.status_code == 200
-    df_result_2 = create_df_from_dict(get_stats_response)
-    assert df_result_2.shape == (2, 9)
+    get_stats_response_selected_cols = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    assert get_stats_response_selected_cols.status_code == 200
+    df_result_selected_cols = create_df_from_dict(get_stats_response_selected_cols)
+    assert df_result_selected_cols.shape == (2, 9)
 
     params = {
         'curves': "UnknownColumnName"
     }
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
-    assert get_stats_response.status_code == 404
+    get_stats_response_unknown_cols = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    assert get_stats_response_unknown_cols.status_code == 404
+    assert get_stats_response_unknown_cols.content == \
+           b'{"errorType":"CURVES_NOT_FOUND","message":"Requested curves unknown"}'
 
 
 def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_consistency):
@@ -189,5 +197,32 @@ def test_get_stats_after_post_data(testing_app_local_chunking_no_consistency):
     post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
 
     response = fetch_stats_for_3s(client, record_id)
-    assert response
-    # todo: check stats values
+    assert response.status_code == 200
+
+    df_result_df = create_df_from_dict(response)
+    assert df_result_df.shape == (1, 9)
+
+
+@pytest.mark.parametrize("mode", ['chunking', 'all_at_once'])
+def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
+    _, client = testing_app_local_chunking_no_consistency
+
+    record_id = _create_record(client, "WellLog")
+    if mode == 'chunking':
+        _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20))])
+    elif mode == 'all_at_once':
+        post_welllog_data(client, record_id, ['MD', 'X'], range(20))
+
+    fetch_stats_for_3s(client, record_id)
+
+    record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+    assert record_response.status_code == 200
+    version = record_response.json()['version']
+
+    get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+    assert get_stats_response.status_code == 200
+
+    response_data = get_stats_response.json()
+    assert response_data['record_id'] == record_id
+    assert response_data['record_version'] == str(version)
+    assert response_data['computation_status'] == BulkStatisticsStatus.Complete
