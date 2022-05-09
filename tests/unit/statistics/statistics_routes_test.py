@@ -223,6 +223,6 @@ def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
     assert get_stats_response.status_code == 200
 
     response_data = get_stats_response.json()
-    assert response_data['record_id'] == record_id
-    assert response_data['record_version'] == str(version)
-    assert response_data['computation_status'] == BulkStatisticsStatus.Complete
+    assert response_data['recordId'] == record_id
+    assert response_data['recordVersion'] == str(version)
+    assert response_data['computationStatus'] == BulkStatisticsStatus.Complete
