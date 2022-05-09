@@ -374,10 +374,7 @@ async def complete_session(
 
                 new_bulk_id = await dask_blob_storage.session_commit(i_session.session, previous_bulk_id)
 
-                await asyncio.gather(
-                    consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id),
-                    BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, record.version)
-                )
+                await consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id)
 
                 # ==============>
                 # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
@@ -391,6 +388,9 @@ async def complete_session(
             if updated_version is None:
                 raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
 
+            # Trigger Wellbore statistics computation after having the new record version
+            await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, updated_version)
+
             response = CommitSessionResponse(
                 **i_session.session.dict(exclude_unset=True, by_alias=True),
                 version=updated_version
@@ -403,7 +403,7 @@ async def complete_session(
             async with sessions_storage.initiate_abandon(tenant, record_id, session_id) as abandon_guard:
                 # get the session if some information is needed
                 i_session: SessionInternal = abandon_guard.session
-                internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
+                internal = i_session.internal  # <=  contains details, may be irrelevant or not needed
 
                 # ==============>
                 # ==============> ADD ABANDON CODE HERE <==============
