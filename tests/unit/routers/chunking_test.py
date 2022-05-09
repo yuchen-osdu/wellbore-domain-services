@@ -1127,8 +1127,6 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    MAX_COLUMNS_WRITE_CHUNK, MAX_COLUMNS_RETURN
-
     response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
     assert response.status_code == 200
     session_id = response.json()['id']
