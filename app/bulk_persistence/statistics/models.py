@@ -13,12 +13,13 @@ class BulkStatisticsStatus(str, Enum):
     Complete = 'complete'
 
 
-class BulkDataStatisticsMeta(BaseModel):
+class StatisticsComputationMeta(BaseModel):
     """ Meta data of computation for bulk data statistics """
-    creation_utc_date: datetime
-    record_id: str
-    record_version: str
-    computation_status: BulkStatisticsStatus
+    computation_start_date: datetime = Field(title="Statistics computation start datetime in ISO format",
+                                             alias="computationStartDate")
+    record_id: str = Field(alias="recordId")
+    record_version: str = Field(alias="recordVersion")
+    computation_status: BulkStatisticsStatus = Field(alias="computationStatus")
 
 
 class CurveStatistics(BaseModel):
@@ -30,11 +31,11 @@ class CurveStatistics(BaseModel):
     p_90: str = Field(alias="90%", title="50th percentiles")
     max: str = Field(title="Minimum value")
     total_count: str = Field(title="Number of values in the curve")
-    count_valid_values: str = Field(title="Number of valid values in the curve")
+    non_absent_values_count: str = Field(title="Number of valid values in the curve")
 
 
-class BulkDataStatisticsResponse(BulkDataStatisticsMeta):
-    """ Status available for computation of bulk data statistics"""
+class BulkDataStatisticsResponse(StatisticsComputationMeta):
+    """ Response for bulk data statistics and its meta-data """
 
     data: Dict[str, CurveStatistics] = Field(title="Curves statistics' values",
                                              example="{'MyCurveName': {'count': '499579.0',"

@@ -9,7 +9,7 @@ import pytest
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 import osdu.core.api.storage.exceptions as osdu_storage_exception
 
-from app.bulk_persistence.statistics.models import BulkDataStatisticsMeta, BulkStatisticsStatus
+from app.bulk_persistence.statistics.models import StatisticsComputationMeta, BulkStatisticsStatus
 from tests.unit.generate_data import generate_df
 from tests.unit.routers.chunking_test import _create_chunks, _create_record, _create_df_from_response, Definitions
 
@@ -92,10 +92,10 @@ def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency)
         _, client = testing_app_local_chunking_no_consistency
         valid_record_id = _create_record(client, "WellLog")
 
-        bob.return_value = BulkDataStatisticsMeta(creation_utc_date=datetime.utcnow(),
-                                                  record_id=valid_record_id,
-                                                  record_version=str(123456789),
-                                                  computation_status=BulkStatisticsStatus.Started)
+        bob.return_value = StatisticsComputationMeta(computationStartDate=datetime.utcnow(),
+                                                     recordId=valid_record_id,
+                                                     recordVersion=str(123456789),
+                                                     computationStatus=BulkStatisticsStatus.Started)
 
         post_welllog_data(client, valid_record_id, ['int-A'], range(10))
 

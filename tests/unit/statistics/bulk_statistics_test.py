@@ -145,7 +145,7 @@ def _bulk_stats_columns() -> List[str]:
     """
         Return the expected list of columns of bulk stats
     """
-    return sorted(['count_valid_values', 'mean', 'min', '10%', '50%', '90%', 'max', 'std', 'total_count'])
+    return sorted(['non_absent_values_count', 'mean', 'min', '10%', '50%', '90%', 'max', 'std', 'total_count'])
 
 
 def _bulk_stats_columns_if_date_type_only() -> List[str]:
@@ -290,8 +290,8 @@ async def test_bulk_statistics_nan_columns(bulk_stats_fixture, cols_name_by_inde
 
     nan_cols_df = all_valid_result_df.filter(items=nan_cols, axis=0)
     total_count = list(nan_cols_df['total_count'].astype(int))
-    count_valid_values = list(nan_cols_df['count_valid_values'].astype(float))
-    assert total_count > count_valid_values
+    non_absent_values_count = list(nan_cols_df['non_absent_values_count'].astype(float))
+    assert total_count > non_absent_values_count
 
 
 @pytest.mark.asyncio

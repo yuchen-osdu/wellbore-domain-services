@@ -205,7 +205,7 @@ async def get_bulk_statistics_version(
         get_logger().exception("get_bulk_statistics() has raised an exception")
 
     # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
-    return BulkDataStatisticsResponse(**stats_meta.dict(), data=stats_df.to_dict(orient='index'))
+    return BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
 
 
 @router.post(

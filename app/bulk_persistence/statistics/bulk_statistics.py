@@ -1,4 +1,5 @@
 import asyncio
+import functools
 from typing import List, Callable, Iterable
 import itertools
 from datetime import datetime
@@ -7,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from app.conf import Config
-from .models import BulkDataStatisticsMeta, BulkStatisticsStatus
+from .models import StatisticsComputationMeta, BulkStatisticsStatus
 
 from .. import DataframeSerializerSync
 from dask.distributed import fire_and_forget
@@ -70,7 +71,7 @@ class BulkStatistics:
 
     _stats_api_version = "1"
     _valid_values_label = 'total_count'
-    _renaming_stats_labels = {'count': 'count_valid_values'}
+    _renaming_stats_labels = {'count': 'non_absent_values_count'}
     _percentiles = [.10, .5, .90]
 
     def __init__(self, dask_blob_storage: DaskBulkStorage):
@@ -154,7 +155,7 @@ class BulkStatistics:
         """
         Entrypoint for Dask workers to run statistics computation: fetch pieces of bulk data, compute and save results
 
-        @param catalog: bulk data calog
+        @param catalog: bulk data catalog
         @param columns: selected columns to be computed
         @param record_id: record id on which computation will be performed
         @param bulk_uri: URI of bulk data on which computation will be performed
@@ -183,10 +184,10 @@ class BulkStatistics:
         existing_columns = catalog.all_columns_dtypes.keys()
 
         bulk_statistics_path = self._statistics_base_path(record_id, bulk_uri)
-        stats_meta_data = BulkDataStatisticsMeta(creation_utc_date=datetime.utcnow(),
-                                                 record_id=record_id,
-                                                 record_version=str(record_version),
-                                                 computation_status=BulkStatisticsStatus.Started)
+        stats_meta_data = StatisticsComputationMeta(computationStartDate=datetime.utcnow(),
+                                                    recordId=record_id,
+                                                    recordVersion=str(record_version),
+                                                    computationStatus=BulkStatisticsStatus.Started)
         try:
             stats_meta_data = await self._push_statistics_meta_file(bulk_statistics_path,
                                                                     stats_meta_data,
@@ -196,10 +197,10 @@ class BulkStatistics:
 
         nb_rows = catalog.nb_rows
         nb_cols = len(existing_columns)
-        wanted_columns_number = get_columns_count(self._paging_size_per_batch, self._max_cols_per_batch, nb_rows, nb_cols)
+        columns_count_per_batch = get_columns_count(self._paging_size_per_batch, self._max_cols_per_batch, nb_rows, nb_cols)
 
         started_tasks = []
-        for group_columns in grouper(wanted_columns_number, existing_columns):
+        for group_columns in grouper(columns_count_per_batch, existing_columns):
             f = self._submit_with_trace(self._compute_stats_on_bulk_batch,
                                         catalog,
                                         group_columns,
@@ -222,7 +223,7 @@ class BulkStatistics:
         return future
 
     def _set_statistics_file_as_complete(self, compute_tasks, bulk_statistics_path: str,
-                                         stats_meta_data: BulkDataStatisticsMeta):
+                                         stats_meta_data: StatisticsComputationMeta):
         """
         Update meta-data file to mark statistics computation as complete
 
@@ -236,7 +237,7 @@ class BulkStatistics:
         bulk_statistics_file_path = join(bulk_statistics_path, 'statistics.json')
 
         with self.dask_blob_storage._fs.open(bulk_statistics_file_path, 'w') as stats_meta_file:
-            content = stats_meta_data.json()
+            content = stats_meta_data.json(by_alias=True)
             stats_meta_file.write(content)
 
     def _fetch_statistics(self, bulk_statistics_data_path: str, columns: List[str]):
@@ -248,7 +249,7 @@ class BulkStatistics:
 
         return statistics_df.filter(items=columns, axis=0)
 
-    async def _push_statistics_meta_file(self, bulk_statistics_path: str, stats_meta_data: BulkDataStatisticsMeta,
+    async def _push_statistics_meta_file(self, bulk_statistics_path: str, stats_meta_data: StatisticsComputationMeta,
                                          overwrite_meta_file: bool):
         """
         Update meta-data file of statistics computation with given status of given stats_meta_data.
@@ -257,7 +258,8 @@ class BulkStatistics:
         """
 
         file_path = join(bulk_statistics_path, 'statistics.json')
-        stats_meta_content = await asyncio.get_running_loop().run_in_executor(None, stats_meta_data.json)
+        json_by_alias_func = functools.partial(stats_meta_data.json, by_alias=True)
+        stats_meta_content = await asyncio.get_running_loop().run_in_executor(None, json_by_alias_func)
 
         if not overwrite_meta_file and self.dask_blob_storage._fs.exists(file_path):
             raise osdu_storage_exception.ResourceExistsException(file_path)
@@ -267,18 +269,18 @@ class BulkStatistics:
 
         return stats_meta_data
 
-    async def _fetch_statistics_meta_file(self, bulk_statistics_path) -> BulkDataStatisticsMeta:
+    async def _fetch_statistics_meta_file(self, bulk_statistics_path) -> StatisticsComputationMeta:
         """ Read statistics meta file at given path """
 
         file_path = join(bulk_statistics_path, 'statistics.json')
 
         with self.dask_blob_storage._fs.open(file_path, 'r') as stats_meta_file:
             blob_content = stats_meta_file.read()
-            return await asyncio.get_running_loop().run_in_executor(None, BulkDataStatisticsMeta.parse_raw,
+            return await asyncio.get_running_loop().run_in_executor(None, StatisticsComputationMeta.parse_raw,
                                                                     blob_content)
 
     async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) \
-            -> (pd.DataFrame, BulkDataStatisticsMeta):
+            -> (pd.DataFrame, StatisticsComputationMeta):
         """
         @return The statistics data of given record identified by its record_id and bulk_uri
 

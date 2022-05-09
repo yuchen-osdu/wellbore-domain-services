@@ -1327,7 +1327,7 @@
             "title": "50th percentiles",
             "type": "string"
           },
-          "count_valid_values": {
+          "non_absent_values_count": {
             "title": "Number of valid values in the curve",
             "type": "string"
           },
@@ -1361,7 +1361,7 @@
           "90%",
           "max",
           "total_count",
-          "count_valid_values"
+          "non_absent_values_count"
         ],
         "title": "CurveStatistics",
         "type": "object"
