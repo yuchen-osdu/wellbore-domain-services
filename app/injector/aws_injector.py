@@ -35,7 +35,7 @@ class AwsInjector(AppInjectorModule):
         )
 
     @staticmethod
-    async def build_aws_dask_blob_storage(bulk_config) -> DaskBulkStorage:
+    async def build_aws_dask_blob_storage() -> DaskBulkStorage:
         ctx: Context = Context.current()
         tenant = await resolve_tenant(ctx.partition_id)
         service_account_file=f'{Config.aws_region.value}$${Config.aws_env.value}'
