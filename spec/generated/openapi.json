@@ -707,7 +707,7 @@
         "type": "object"
       },
       "BulkDataStatisticsResponse": {
-        "description": "Status available for computation of bulk data statistics",
+        "description": "Response for bulk data statistics and its meta-data ",
         "example": {
           "computation_status": "complete",
           "creation_utc_date": "2022-04-27 11:46:58.708615",
@@ -761,13 +761,13 @@
           "record_version": "123456789"
         },
         "properties": {
-          "computation_status": {
-            "$ref": "#/components/schemas/BulkStatisticsStatus"
-          },
-          "creation_utc_date": {
+          "computationStartDate": {
             "format": "date-time",
-            "title": "Creation Utc Date",
+            "title": "Statistics computation start datetime in ISO format",
             "type": "string"
+          },
+          "computationStatus": {
+            "$ref": "#/components/schemas/BulkStatisticsStatus"
           },
           "data": {
             "additionalProperties": {
@@ -777,20 +777,20 @@
             "title": "Curves statistics' values",
             "type": "object"
           },
-          "record_id": {
-            "title": "Record Id",
+          "recordId": {
+            "title": "Recordid",
             "type": "string"
           },
-          "record_version": {
-            "title": "Record Version",
+          "recordVersion": {
+            "title": "Recordversion",
             "type": "string"
           }
         },
         "required": [
-          "creation_utc_date",
-          "record_id",
-          "record_version",
-          "computation_status",
+          "computationStartDate",
+          "recordId",
+          "recordVersion",
+          "computationStatus",
           "data"
         ],
         "title": "BulkDataStatisticsResponse",
@@ -1327,10 +1327,6 @@
             "title": "50th percentiles",
             "type": "string"
           },
-          "non_absent_values_count": {
-            "title": "Number of valid values in the curve",
-            "type": "string"
-          },
           "max": {
             "title": "Minimum value",
             "type": "string"
@@ -1341,6 +1337,10 @@
           },
           "min": {
             "title": "Maximum value",
+            "type": "string"
+          },
+          "non_absent_values_count": {
+            "title": "Number of valid values in the curve",
             "type": "string"
           },
           "std": {
@@ -19650,7 +19650,6 @@
             "name": "curves",
             "required": false,
             "schema": {
-              "default": "",
               "description": "List of curves or array to be returned. All curves if empty",
               "title": "Curves",
               "type": "string"
@@ -20337,7 +20336,7 @@
             "required": true,
             "schema": {
               "title": "Version",
-              "type": "string"
+              "type": "integer"
             }
           },
           {
@@ -20347,7 +20346,6 @@
             "name": "curves",
             "required": false,
             "schema": {
-              "default": "",
               "description": "List of curves or array to be returned. All curves if empty",
               "title": "Curves",
               "type": "string"
