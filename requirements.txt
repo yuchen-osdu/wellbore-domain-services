@@ -130,7 +130,7 @@ decorator==5.0.9
     #   jsonpath-ng
 distributed==2022.02.0
     # via dask
-fastapi==0.68.1
+fastapi==0.68.2
     # via
     #   -r requirements.in
     #   osdu-data-ecosystem-search

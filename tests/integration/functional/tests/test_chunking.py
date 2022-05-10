@@ -15,6 +15,7 @@
 import io
 from contextlib import contextmanager
 import random
+from uuid import UUID
 
 import numpy.testing as npt
 import pandas as pd
@@ -105,7 +106,7 @@ def build_request_post_data_without_dask(entity_type: str, record_id: str, paylo
     url = build_base_url_without_dask(entity_type) + f'/{record_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
-def build_request_post_chunk(entity_type: str, record_id: str, session_id: str, payload) -> RequestRunner:
+def build_request_post_chunk(entity_type: str, record_id: str, session_id: UUID, payload) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
@@ -123,7 +124,7 @@ def create_session(env, entity_type: str, record_id: str, overwrite: bool) -> st
     return runner.call(env, assert_status=200, headers={"Content-Type": "application/json"}).get_response_obj().id
 
 
-def complete_session(env, entity_type: str, record_id: str, session_id: str, commit: bool):
+def complete_session(env, entity_type: str, record_id: str, session_id: UUID, commit: bool):
     state = "commit" if commit else "abandon"
     url = build_base_url(entity_type) + f'/{record_id}/sessions/{session_id}'
     runner = build_request(f'{state} session', 'PATCH', url, payload={'state': state})

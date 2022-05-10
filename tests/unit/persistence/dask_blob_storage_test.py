@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
+import uuid
 from datetime import datetime, timedelta
 import dask.dataframe as dd
 import numpy as np
@@ -22,7 +23,7 @@ from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
 from app.bulk_persistence import (Session, SessionState,
-                                              SessionUpdateMode)
+                                  SessionUpdateMode)
 from app.bulk_persistence.dask.dask_bulk_storage import (BulkRecordNotFound,
                                                          BulkNotProcessable,
                                                          DaskBulkStorage)
@@ -44,7 +45,8 @@ async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path, local_bulk_pe
 @pytest.fixture()
 def test_session(mode=SessionUpdateMode.Overwrite) -> Session:
     utc_now = datetime.utcnow()
-    return Session(id='fake_session_id', recordId='fake_record_id', fromVersion=0,
+    fake_session_id = uuid.uuid4()
+    return Session(id=fake_session_id, recordId='fake_record_id', fromVersion=0,
                    mode=mode, createdTime=utc_now, updatedTime=utc_now,
                    expiry=utc_now + timedelta(minutes=5),
                    state=SessionState.Open)
@@ -52,7 +54,8 @@ def test_session(mode=SessionUpdateMode.Overwrite) -> Session:
 
 def get_update_session() -> Session:
     utc_now = datetime.utcnow()
-    return Session(id='fake_session_id_update', recordId='fake_record_id', fromVersion=0,
+    fake_session_id_update = uuid.uuid4()
+    return Session(id=fake_session_id_update, recordId='fake_record_id', fromVersion=0,
                    mode=SessionUpdateMode.Update, createdTime=utc_now, updatedTime=utc_now,
                    expiry=utc_now + timedelta(minutes=5),
                    state=SessionState.Open)
@@ -60,7 +63,7 @@ def get_update_session() -> Session:
 
 async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
     df = await DaskBulkStorage.client.compute(ddf)
-    assert not set(pdf.columns) ^ set(df.columns) # check contains same columns
+    assert not set(pdf.columns) ^ set(df.columns)  # check contains same columns
     df = df[pdf.columns]
     # df = df.sort_index()
     df.index.name = None
@@ -95,10 +98,21 @@ async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_
 
 
 @pytest.mark.asyncio
+async def test_invalid_session_id(dask_storage: DaskBulkStorage, mode=SessionUpdateMode.Overwrite):
+    invalid_session_id = "test_1234-abcd"
+    utc_now = datetime.utcnow()
+    with pytest.raises(ValueError, match=r".* value is not a valid uuid .*") as ex:
+        Session(id=invalid_session_id, recordId='fake_record_id', fromVersion=0,
+                mode=mode, createdTime=utc_now, updatedTime=utc_now,
+                expiry=utc_now + timedelta(minutes=5),
+                state=SessionState.Open)
+
+
+@pytest.mark.asyncio
 async def test_save_bulk_with_bulk_id(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     bulk_id = 'abcdef'
-    record_id='test_save_bulk_with_bulk_id_record_id'
+    record_id = 'test_save_bulk_with_bulk_id_record_id'
     bulk_id_returned = await save_bulk(dask_storage, df_ref, record_id=record_id, bulk_id=bulk_id)
     assert bulk_id == bulk_id_returned
 
@@ -109,7 +123,7 @@ async def test_save_bulk_with_bulk_id(dask_storage: DaskBulkStorage):
 @pytest.mark.asyncio
 async def test_save_bulk(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
-    record_id='test_save_bulk_record_id'
+    record_id = 'test_save_bulk_record_id'
     bulk_id = await save_bulk(dask_storage, df_ref, record_id=record_id)
     assert bulk_id
 
@@ -180,7 +194,7 @@ async def test_session_update_add_new_rows(test_session, dask_storage: DaskBulkS
 @pytest.mark.asyncio
 async def test_session_update_add_new_columns(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'floatB', 'strC'], range(1000))
-    
+
     bulk_id = await save_bulk(dask_storage, df_ref[['A']], record_id=test_session.recordId)
 
     for c in ['floatB', 'strC']:
@@ -198,8 +212,8 @@ async def test_session_update_add_new_columns(test_session, dask_storage: DaskBu
 async def test_session_update_add_new_columns_shifted(test_session, dask_storage: DaskBulkStorage):
     A = generate_df(['A'], range(100))
     C = generate_df(['A', 'strC'], index=range(100, 200))
-    df_ref = pd.concat([A,C])
-    
+    df_ref = pd.concat([A, C])
+
     bulk_id = await save_bulk(dask_storage, A, record_id=test_session.recordId)
 
     await add_chunk(dask_storage, test_session, C)
@@ -233,7 +247,7 @@ async def test_session_update_ovelap(test_session, dask_storage: DaskBulkStorage
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
     bulk_id = await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
-    
+
     # update A and B value for index > 500
     df_ref.loc[df_ref.index > 500, ['A']] = 1
     df_ref.loc[df_ref.index > 500, ['B']] = 2
@@ -420,7 +434,7 @@ async def test_duplicate_chunk(test_session, dask_storage: DaskBulkStorage):
     await add_chunk(dask_storage, test_session, chunk2)
     await add_chunk(dask_storage, test_session, chunk3)
     await add_chunk(dask_storage, test_session, chunk4)
-    
+
     bulk_id = await dask_storage.session_commit(test_session)
     ddf = await dask_storage.load_bulk(test_session.recordId, bulk_id)
 
@@ -437,7 +451,7 @@ async def test_named_index_chunk(test_session, dask_storage: DaskBulkStorage):
     chunk = chunk.set_index('idx')
 
     bulk_id = await save_bulk(dask_storage, chunk, test_session.recordId)
-    
+
     stat = await dask_storage.read_stat(test_session.recordId, bulk_id)
     assert {'A', 'B'} == set(stat['schema'])
 
