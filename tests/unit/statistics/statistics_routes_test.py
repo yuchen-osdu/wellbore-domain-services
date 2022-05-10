@@ -226,3 +226,24 @@ def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
     assert response_data['recordId'] == record_id
     assert response_data['recordVersion'] == str(version)
     assert response_data['computationStatus'] == BulkStatisticsStatus.Complete
+
+
+def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_consistency):
+
+    async def _compute_stats_on_bulk_batch(n):
+        if n % 2 == 0:
+            raise Exception("test_get_stats_if_error")
+    tasks = [asyncio.get_event_loop().create_task(_compute_stats_on_bulk_batch(i)) for i in range(5)]
+
+    with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
+        _, client = testing_app_local_chunking_no_consistency
+        bob.return_value = tasks
+
+        valid_record_id = _create_record(client, "WellLog")
+        post_welllog_data(client, valid_record_id, ['int-A'], range(10))
+
+        response = fetch_stats_for_3s(client, valid_record_id)
+        assert response.status_code == 200
+
+        response_data = response.json()
+        assert response_data['computationStatus'] == BulkStatisticsStatus.Error

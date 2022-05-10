@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 
 from app.conf import Config
+from app.helper.logger import get_logger
 from .models import StatisticsComputationMeta, BulkStatisticsStatus
 
 from .. import DataframeSerializerSync
-from dask.distributed import fire_and_forget
 from ..dask.traces import submit_with_trace
 from ..dask.bulk_catalog import BulkCatalog
 from ..dask.dask_bulk_storage import DaskBulkStorage, DASK_BACKGROUND_TASK_PRIORITY
@@ -179,6 +179,24 @@ class BulkStatistics:
                                            full_file_path,
                                            storage_options=self.dask_blob_storage._parameters.storage_options)
 
+    def trigger_stats_computation_in_dask(self, columns_count_per_batch, existing_columns,
+                                          catalog, record_id, bulk_uri):
+        def log_exception(_fut):
+            if _fut.exception():
+                get_logger().exception(f"Something wrong happened '{_fut.key}'", exc_info=_fut.exception())
+
+        started_tasks = []
+        for group_columns in grouper(columns_count_per_batch, existing_columns):
+            f = self._submit_with_trace(self._compute_stats_on_bulk_batch,
+                                        catalog,
+                                        group_columns,
+                                        record_id,
+                                        bulk_uri,
+                                        priority=DASK_BACKGROUND_TASK_PRIORITY)
+            f.add_done_callback(log_exception)
+            started_tasks.append(f)
+        return started_tasks
+
     async def compute_bulk_statistics(self, record_id: str, bulk_uri: str, record_version: int):
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_columns = catalog.all_columns_dtypes.keys()
@@ -197,48 +215,34 @@ class BulkStatistics:
 
         nb_rows = catalog.nb_rows
         nb_cols = len(existing_columns)
-        columns_count_per_batch = get_columns_count(self._paging_size_per_batch, self._max_cols_per_batch, nb_rows, nb_cols)
-
-        started_tasks = []
-        for group_columns in grouper(columns_count_per_batch, existing_columns):
-            f = self._submit_with_trace(self._compute_stats_on_bulk_batch,
-                                        catalog,
-                                        group_columns,
-                                        record_id,
-                                        bulk_uri,
-                                        priority=DASK_BACKGROUND_TASK_PRIORITY)
-            started_tasks.append(f)
+        columns_count_per_batch = get_columns_count(self._paging_size_per_batch, self._max_cols_per_batch, nb_rows,
+                                                    nb_cols)
+        stats_computation_tasks = self.trigger_stats_computation_in_dask(columns_count_per_batch, existing_columns,
+                                                                         catalog, record_id, bulk_uri)
 
         stats_meta_data.computation_status = BulkStatisticsStatus.Running
         await self._push_statistics_meta_file(bulk_statistics_path, stats_meta_data, overwrite_meta_file=True)
 
-        future = self._submit_with_trace(self._set_statistics_file_as_complete,
-                                         started_tasks,
-                                         bulk_statistics_path,
-                                         stats_meta_data,
-                                         priority=DASK_BACKGROUND_TASK_PRIORITY)
+        asyncio.create_task(self._set_statistics_file_as_complete(stats_computation_tasks,
+                                                                  bulk_statistics_path,
+                                                                  stats_meta_data))
 
-        # Dask optimization could not run this task otherwise, it ensures this task is run
-        fire_and_forget(future)
-        return future
-
-    def _set_statistics_file_as_complete(self, compute_tasks, bulk_statistics_path: str,
-                                         stats_meta_data: StatisticsComputationMeta):
+    async def _set_statistics_file_as_complete(self, _started_tasks, bulk_statistics_path, stats_meta_data):
         """
         Update meta-data file to mark statistics computation as complete
 
-        :param compute_tasks is set as argument but not used, it required to make Dask scheduler aware of the
-        predecessor-successor link between `started_tasks` in compute_bulk_statistics() and this method.
-
-        Note: this method is run by a Dask worker => sync required here.
+        @param _started_tasks futures of computation tasks run into Dask
+        @param bulk_statistics_path: statistics meta file path
+        @param stats_meta_data: statistics meta data to be saved
         """
 
-        stats_meta_data.computation_status = BulkStatisticsStatus.Complete
-        bulk_statistics_file_path = join(bulk_statistics_path, 'statistics.json')
+        results = await asyncio.gather(*_started_tasks, return_exceptions=True)
+        if any(isinstance(r, BaseException) for r in results):
+            stats_meta_data.computation_status = BulkStatisticsStatus.Error
+        else:
+            stats_meta_data.computation_status = BulkStatisticsStatus.Complete
 
-        with self.dask_blob_storage._fs.open(bulk_statistics_file_path, 'w') as stats_meta_file:
-            content = stats_meta_data.json(by_alias=True)
-            stats_meta_file.write(content)
+        await self._push_statistics_meta_file(bulk_statistics_path, stats_meta_data, overwrite_meta_file=True)
 
     def _fetch_statistics(self, bulk_statistics_data_path: str, columns: List[str]):
         """
@@ -255,6 +259,8 @@ class BulkStatistics:
         Update meta-data file of statistics computation with given status of given stats_meta_data.
 
         @note: This method aims to be run by main thread, that's why it is async and could use async blob storage client.
+
+        @todo: replace `self.dask_blob_storage._fs.open()` by async blob storage object
         """
 
         file_path = join(bulk_statistics_path, 'statistics.json')
