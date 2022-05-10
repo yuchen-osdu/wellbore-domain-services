@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import asyncio
-from typing import Awaitable, Callable, List, Optional, Union, AsyncGenerator, Tuple
 import uuid
+from typing import Awaitable, Callable, List, Optional, Union, AsyncGenerator, Tuple
+from uuid import UUID
 
 import fsspec
 import pandas as pd
@@ -528,7 +529,7 @@ class DaskBulkStorage:
                                    content_type: MimeType,
                                    df_validator_func: DataFrameValidationFunc,
                                    record_id: str,
-                                   session_id: str,
+                                   session_id: UUID,
                                    bulk_id: Optional[str] = None) -> Tuple[str, bulk_writer.DataframeBasicDescribe]:
         """
         add a chunk data inside a session, delegate the entire work in Dask worker

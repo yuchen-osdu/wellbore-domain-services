@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from uuid import UUID
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -143,7 +144,7 @@ async def post_data(record_id: str,
     responses={400: {"description": "Record not found"}}
 )
 async def post_chunk_data(record_id: str,
-                          session_id: str,
+                          session_id: UUID,
                           request: Request,
                           content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
@@ -313,7 +314,7 @@ async def get_data(
 )
 async def complete_session(
     record_id: str,
-    session_id: str,
+    session_id: UUID,
     request: Request,
     update_request: UpdateSessionState,
     with_session: WithSessionStorages = Depends(get_session_dependencies),

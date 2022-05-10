@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 import os
+import uuid
 from unittest import mock
 from fastapi import status
 import pandas as pd
@@ -238,7 +239,7 @@ def test_restricted_record_id(
             validation_test_restricted_record_id(record_id, record_id_to_test, response,
                                                  status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-            session_id = "56df654df654df65"
+            session_id = uuid.uuid4()
             response = dasked_test_app_with_mocked_core_service.post(
                 f"{base_url}/{record_id_to_test}/sessions/{session_id}/data",
                 data=chunk.to_json(orient="split"),
