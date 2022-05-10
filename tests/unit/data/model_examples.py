@@ -5,7 +5,7 @@ import os
 import json
 
 from odes_storage.models import Record
-from app.model.osdu_model import Well, Wellbore, WellboreMarkerSet110, WellboreTrajectory110, WellLog110
+from app.model.osdu_model import Well, Wellbore, WellboreMarkerSet110, WellboreTrajectory110, WellLog110, WellLog120
 
 from wdms_client.variables import Variables
 
@@ -212,3 +212,9 @@ def welllog_v3_record_list(welllog_v3_file_contents, domain, data_partition, leg
 def welllog110_v3_list(welllog_v3_record_list) -> List[WellLog110]:
     """ provide a list of wellLog v.1.1.0"""
     return [WellLog110(**record.dict(exclude_unset=True, by_alias=True)) for record in welllog_v3_record_list]
+
+
+@pytest.fixture
+def welllog120_v3_list(welllog_v3_record_list) -> List[WellLog120]:
+    """ provide a list of wellLog v.1.1.0"""
+    return [WellLog120(**record.dict(exclude_unset=True, by_alias=True)) for record in welllog_v3_record_list]
