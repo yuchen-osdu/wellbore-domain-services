@@ -63,7 +63,6 @@ def get_columns_count(max_number_values: int, max_columns_count: int, nb_rows: i
 
 
 class BulkStatistics:
-
     # maximum number of bulk values to be fetched and computed per batch
     _paging_size_per_batch: int = 10_000_000
     # maximum number of columns of data to be fetched per batch of bulk files
@@ -298,11 +297,13 @@ class BulkStatistics:
         bulk_statistics_path = self._statistics_base_path(record_id, bulk_uri)
         try:
             statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
-        except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError):
+        except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError) as e:
             raise StatisticsNotFoundError("Statistics do not exist")
 
-        if statistics_meta.computation_status != BulkStatisticsStatus.Complete:
+        if statistics_meta.computation_status == BulkStatisticsStatus.Complete:
             raise ComputationNotCompleteError("Statistics computation not finished yet")
+        elif statistics_meta.computation_status == BulkStatisticsStatus.Error:
+            return pd.DataFrame(), statistics_meta
 
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_col = catalog.all_columns_dtypes
