@@ -222,9 +222,9 @@ class BulkStatistics:
         stats_meta_data.computation_status = BulkStatisticsStatus.Running
         await self._push_statistics_meta_file(bulk_statistics_path, stats_meta_data, overwrite_meta_file=True)
 
-        asyncio.create_task(self._set_statistics_file_as_complete(stats_computation_tasks,
-                                                                  bulk_statistics_path,
-                                                                  stats_meta_data))
+        return asyncio.create_task(self._set_statistics_file_as_complete(stats_computation_tasks,
+                                                                         bulk_statistics_path,
+                                                                         stats_meta_data))
 
     async def _set_statistics_file_as_complete(self, _started_tasks, bulk_statistics_path, stats_meta_data):
         """
@@ -300,10 +300,11 @@ class BulkStatistics:
         except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError) as e:
             raise StatisticsNotFoundError("Statistics do not exist")
 
-        if statistics_meta.computation_status == BulkStatisticsStatus.Complete:
-            raise ComputationNotCompleteError("Statistics computation not finished yet")
-        elif statistics_meta.computation_status == BulkStatisticsStatus.Error:
+        if statistics_meta.computation_status == BulkStatisticsStatus.Error:
             return pd.DataFrame(), statistics_meta
+        elif statistics_meta.computation_status != BulkStatisticsStatus.Complete:
+            raise ComputationNotCompleteError("Statistics computation not finished yet")
+
 
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_col = catalog.all_columns_dtypes
