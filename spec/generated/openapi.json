@@ -988,6 +988,7 @@
           },
           "id": {
             "description": "identifier of the current session.",
+            "format": "uuid",
             "title": "Id",
             "type": "string"
           },
@@ -3240,6 +3241,7 @@
           },
           "id": {
             "description": "identifier of the current session.",
+            "format": "uuid",
             "title": "Id",
             "type": "string"
           },
@@ -9196,6 +9198,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }
@@ -9262,6 +9265,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }
@@ -9341,6 +9345,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }
@@ -18621,6 +18626,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }
@@ -18687,6 +18693,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }
@@ -18766,6 +18773,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }
@@ -19947,6 +19955,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }
@@ -20013,6 +20022,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }
@@ -20092,6 +20102,7 @@
             "name": "session_id",
             "required": true,
             "schema": {
+              "format": "uuid",
               "title": "Session Id",
               "type": "string"
             }

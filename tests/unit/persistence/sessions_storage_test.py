@@ -94,9 +94,8 @@ async def test_multiple_session(sessions_storage, testing_tenant):
     assert s1.session.id != s2.session.id
 
     session_ids = await sessions_storage.list_sessions(testing_tenant, '123')
-    assert s1.session.id in session_ids
-    assert s2.session.id in session_ids
-
+    assert str(s1.session.id) in session_ids
+    assert str(s2.session.id) in session_ids
 
 @pytest.mark.asyncio
 async def test_error_during_commit_should_reset_state(sessions_storage, testing_tenant):
@@ -187,7 +186,7 @@ async def test_delete_session(sessions_storage, testing_tenant):
     await sessions_storage.delete_session(testing_tenant, '456', s1.session.id)
 
     session_ids = await sessions_storage.list_sessions(testing_tenant, '456')
-    assert session_ids == [s2.session.id]
+    assert session_ids == [str(s2.session.id)]
 
 
 
@@ -212,10 +211,10 @@ async def test_get_list_session(sessions_storage):
     assert session_actual.internal == session3.internal
 
     session_list = await sessions_storage.list_sessions(tenant, '123')
-    assert set(session_list) == {session1.session.id, session2.session.id}
+    assert set(session_list) == {str(session1.session.id), str(session2.session.id)}
 
     session_list = await sessions_storage.list_sessions(tenant, '456')
-    assert session_list == [session3.session.id]
+    assert session_list == [str(session3.session.id)]
 
 
 @pytest.mark.asyncio

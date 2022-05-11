@@ -1,6 +1,7 @@
 import io
 import math
 import platform
+import uuid
 
 import numpy as np
 import pandas as pd
@@ -497,7 +498,8 @@ def test_abandon_no_data_session(dasked_test_app_without_consistency_client, ent
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    commit_unknown_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/123456',
+    sessions_id = uuid.uuid4()
+    commit_unknown_session_response = client.patch(f'{chunking_url}/{record_id}/sessions/{sessions_id}',
                                                    json={'state': 'commit'})
     assert commit_unknown_session_response.status_code == 404
 
