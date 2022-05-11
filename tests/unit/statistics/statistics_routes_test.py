@@ -22,6 +22,7 @@ def post_welllog_data(client, record_id, columns, range_index):
 
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
+    return write_response
 
 
 def create_df_from_dict(response):
@@ -29,11 +30,17 @@ def create_df_from_dict(response):
     return pd.DataFrame.from_dict(dict_data, orient='index')
 
 
-def fetch_stats_for_3s(client, record_id):
+def fetch_stats_for_3s(client, record_id, columns=None):
     api_results = []
 
+    params = None
+    if columns:
+        params = {
+            "curves": ",".join(columns)
+        }
+
     for i in range(6):
-        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
         api_results.append(get_stats_response)
         if get_stats_response.status_code == 200:
             break
@@ -275,3 +282,25 @@ def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consisten
     assert compute_stats_response.status_code == 200
 
     fetch_stats_for_3s(client, record_id)
+
+
+# todo: add test case when using array data
+def test_get_stats_array(testing_app_local_chunking_no_consistency):
+    _, client = testing_app_local_chunking_no_consistency
+
+    record_id = _create_record(client, "WellLog")
+    array_cols = [f'ARRAY[{i}]' for i in range(10)]
+    _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
+
+    response = fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
+    assert response.status_code == 200
+
+
+def test_trigger_computations_after_error(testing_app_local_chunking_no_consistency):
+    pass
+
+
+
+# todo: check response with those data
+#  columns = ['int-A', 'int-A-with-nan', 'float-B', 'float-B-with-nan',
+#  'bool-D', 'string-E', 'date-C', 'date-C-with-nan']
