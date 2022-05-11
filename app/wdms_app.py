@@ -139,8 +139,8 @@ async def startup_event():
         service_name=Config.service_name.value
     )
     # TODO put it in the app and set the getter for now (see get_config() usage)
-    wdms_app.bulk_config = bulk_config
-    set_config_getter(lambda: wdms_app.bulk_config)
+    wdms_app.state.bulk_config = bulk_config
+    set_config_getter(lambda: wdms_app.state.bulk_config)
 
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name, config=Config)
