@@ -209,23 +209,25 @@ async def get_bulk_statistics_version(
 
 
 @router.post(
-    '/{record_id}/data/statistics',
+    '/{record_id}/versions/{version}/data/statistics',
     summary="Trigger computations of record's data statistics of record's data",
     description=f"""Trigger the computation of statistics on bulk data for 
     the record identified by the record_id at its last version   
-      
+
     {api_unit_conversion_text}
     """,
+    
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Statistics or record not found"},
-        status.HTTP_409_CONFLICT: {"description": "Statistics computation already started"},
+        status.HTTP_409_CONFLICT: {"description": "Statistics computation already running or complete"},
         status.HTTP_200_OK: {"description": "Statistics computation started"},
     }
 )
 async def compute_bulk_statistics(
         request: Request,
         record_id: WellLogId,
-        record: Record = Depends(fetch_latest_version_record_dependency),
+        version: int,
+        record: Record = Depends(fetch_record_dependency),
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):

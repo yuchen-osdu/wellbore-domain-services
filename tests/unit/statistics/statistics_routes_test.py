@@ -50,14 +50,14 @@ def test_invalid_cases(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
     valid_record_id = _create_record(client, "WellLog")
 
-    # todo: check response error message
-
+    version = '123456789'
     unknown_record_id = 'test:work-product-component--WellLog:8fef694e8a5a49ec96db9e51c7522bc9'
+
     get_stats_response = client.get(f'/ddms/v3/welllogs/{unknown_record_id}/data/statistics')
     assert get_stats_response.status_code == 404
     assert get_stats_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
-    post_stats_response = client.post(f'/ddms/v3/welllogs/{unknown_record_id}/data/statistics')
+    post_stats_response = client.post(f"/ddms/v3/welllogs/{unknown_record_id}/versions/{version}/data/statistics")
     assert post_stats_response.status_code == 404
     assert post_stats_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
@@ -65,7 +65,6 @@ def test_invalid_cases(testing_app_local_chunking_no_consistency):
     assert valid_record_no_bulk_response.status_code == 404
     assert valid_record_no_bulk_response.json().get("detail") == f"bulk for record {valid_record_id} not found"
 
-    version = '123456789'
     valid_record_invalid_version_response = client.get(
         f"/ddms/v3/welllogs/{valid_record_id}/versions/{version}/data/statistics")
     assert valid_record_invalid_version_response.status_code == 404
@@ -113,9 +112,13 @@ def test_double_compute_stats(testing_app_local_chunking_no_consistency):
                                                                         (['MD', 'X'], range(10, 30)),
                                                                         (['MD', 'X'], range(25, 40))])
 
+    record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+    assert record_response.status_code == 200
+    version = record_response.json()['version']
+
     fetch_stats_for_3s(client, record_id)
 
-    compute_stats_response = client.post(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+    compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert compute_stats_response.status_code == 409
 
 
@@ -247,3 +250,28 @@ def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_c
 
         response_data = response.json()
         assert response_data['computationStatus'] == BulkStatisticsStatus.Error
+
+
+def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consistency):
+
+    # Simulate the creation of a WellLog before Statistics features is available
+    with mock.patch.object(BulkStatistics, 'compute_bulk_statistics', return_value=mock.AsyncMock()) as bob:
+        _, client = testing_app_local_chunking_no_consistency
+
+        record_id = _create_record(client, "WellLog")
+        post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(1000))
+
+        asyncio.get_event_loop().run_until_complete(asyncio.sleep(2))
+        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+        assert get_stats_response.text == '{"errorType":"DATA_NOT_FOUND","message":"Statistics do not exist"}'
+        assert get_stats_response.status_code == 404
+
+    record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+    assert record_response.status_code == 200
+    version = record_response.json()['version']
+
+    # Then trigger computation manually at specific version
+    compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+    assert compute_stats_response.status_code == 200
+
+    fetch_stats_for_3s(client, record_id)

@@ -126,7 +126,8 @@ async def post_data(record_id: str,
                                                                   record=record,
                                                                   bulk_uri_access=bulk_uri_access)
 
-    await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, record.version)
+    _, updated_record_version = split_record_id_version(update_record_response.record_id_versions[0])
+    await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, updated_record_version)
 
     return update_record_response
     # TODO proposal: adding basic describe of data that has been stored
