@@ -69,6 +69,7 @@ steps:
     failTaskOnFailedTests: true
 
 - task: PublishPipelineArtifact@1
+  condition: succeededOrFailed()
   inputs:
     targetPath: $(System.DefaultWorkingDirectory)/spec/generated/openapi.json
     artifactName: OpenApiSpec
