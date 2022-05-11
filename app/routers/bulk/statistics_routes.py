@@ -204,6 +204,10 @@ async def get_bulk_statistics_version(
     finally:
         get_logger().exception("get_bulk_statistics() has raised an exception")
 
+    # replace np.nan by string "NaN" to have unified str type values for std column
+    if not stats_df.empty:
+        stats_df['std'].fillna(value=str("NaN"), inplace=True)
+
     # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
     return BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
 
