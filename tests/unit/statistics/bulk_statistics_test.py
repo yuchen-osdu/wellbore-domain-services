@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import uuid
 from typing import List
 
 from unittest import mock
@@ -127,7 +128,7 @@ def extract_distinct_cols(cols_name_by_index):
 
 def create_test_bulk_session() -> Session:
     record_id = "my-record-id"
-    session_id = "my-session-id"
+    session_id = uuid.uuid4()
 
     session = Session(id=session_id,
                       recordId=record_id,
