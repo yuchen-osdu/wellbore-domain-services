@@ -1177,25 +1177,21 @@ def test_many_columns_ensure_effective_cols_count_matter(dasked_test_app_without
     chunking_url = Definitions[entity_type]['chunking_url']
 
     max_cols_count = 100
-    saved_cols_count = local_bulk_persistence_config.max_columns_return
     local_bulk_persistence_config.max_columns_return = max_cols_count
 
-    try:
-        effective_cols_count = 50
-        df = generate_df([f'var[{i}]' for i in range(effective_cols_count)], range(2))
-        write_response = client.post(f'{chunking_url}/{record_id}/data',
-                                     data=df.to_parquet(engine="pyarrow"),
-                                     headers={'content-type': 'application/parquet'})
-        assert write_response.status_code == 200
+    effective_cols_count = 50
+    df = generate_df([f'var[{i}]' for i in range(effective_cols_count)], range(2))
+    write_response = client.post(f'{chunking_url}/{record_id}/data',
+                                 data=df.to_parquet(engine="pyarrow"),
+                                 headers={'content-type': 'application/parquet'})
+    assert write_response.status_code == 200
 
-        get_response = client.get(f'{chunking_url}/{record_id}/data',
-                                  headers={'Accept': 'application/parquet'},
-                                  params={'curves': f'var[0:{max_cols_count * 2}]'})
-        assert get_response.status_code == 200, \
-            "Ensure only existing columns are taken into account for max cols limit"
+    get_response = client.get(f'{chunking_url}/{record_id}/data',
+                              headers={'Accept': 'application/parquet'},
+                              params={'curves': f'var[0:{max_cols_count * 2}]'})
+    assert get_response.status_code == 200, \
+        "Ensure only existing columns are taken into account for max cols limit"
 
-    finally:
-        local_bulk_persistence_config.max_columns_return = saved_cols_count
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 def test_write_too_many_columns(dasked_test_app_without_consistency_client, entity_type, local_bulk_persistence_config):
