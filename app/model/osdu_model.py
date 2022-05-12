@@ -357,7 +357,7 @@ class AbstractCommonResources100(DDMSBaseModel):
     )
     TechnicalAssuranceID: Optional[
         constr(
-            regex='^[\w\-\.]+:reference-data\-\-TechnicalAssuranceType:[\w\-\.\:\%]+:[0-9]*$'
+            regex=r'^[\w\-\.]+:reference-data\-\-TechnicalAssuranceType:[\w\-\.\:\%]+:[0-9]*$'
         )
     ] = Field(
         None,
@@ -1226,6 +1226,106 @@ class Curve110(DDMSBaseModel):
     )
 
 
+class Curve120(DDMSBaseModel):
+    CurveID: Optional[str] = Field(None, description='The ID of the Well Log Curve')
+    DateStamp: Optional[datetime] = Field(
+        None, description='Date curve was created in the database'
+    )
+    CurveVersion: Optional[str] = Field(
+        None, description='The Version of the Log Curve.'
+    )
+    CurveQuality: Optional[str] = Field(
+        None, description='The Quality of the Log Curve.'
+    )
+    InterpreterName: Optional[str] = Field(
+        None, description='The name of person who interpreted this Log Curve.'
+    )
+    IsProcessed: Optional[bool] = Field(
+        None,
+        description='Indicates if the curve has been (pre)processed or if it is a raw recording',
+    )
+    NullValue: Optional[bool] = Field(
+        None, description='Indicates that there is no measurement within the curve'
+    )
+    DepthCoding: Optional[constr(regex=r'^REGULAR|DISCRETE$')] = Field(
+        None,
+        description='DEPRECATED: Replaced by boolean data.IsRegular. The Coding of the depth.',
+    )
+    Interpolate: Optional[bool] = Field(
+        None, description='Whether curve can be interpolated or not'
+    )
+    TopDepth: Optional[float] = Field(
+        None,
+        description="The curve's minimum 'depth', i.e., the reference value at which the curve has its first non-absent value. The curve may contain further absent values in between TopDepth and BaseDepth. Note that the SamplingDomainType may not be a depth as the property name indicates.",
+    )
+    BaseDepth: Optional[float] = Field(
+        None,
+        description="The curve's maximum 'depth' i.e., the reference value at which the curve has its last non-absent value. The curve may contain further absent values in between TopDepth and BaseDepth. Note that the SamplingDomainType may not be a depth as the property name indicates.",
+    )
+    DepthUnit: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(None, description='Unit of Measure for TopDepth and BaseDepth.')
+    CurveUnit: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(None, description='Unit of Measure for the Log Curve')
+    Mnemonic: Optional[str] = Field(
+        None,
+        description='The Mnemonic of the Log Curve is the value as received either from Raw Providers or from Internal Processing team',
+        example='PRES_HDRB.BAR',
+    )
+    LogCurveTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-LogCurveType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The related record id of the Log Curve Type - which is the standard mnemonic chosen by the company - OSDU provides an initial list',
+    )
+    LogCurveBusinessValueID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveBusinessValue:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None, description='The related record id of the Log Curve Business Value Type.'
+    )
+    LogCurveMainFamilyID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveMainFamily:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The related record id of the Log Curve Main Family Type - which is the Geological Physical Quantity measured - such as porosity.',
+    )
+    LogCurveFamilyID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-LogCurveFamily:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The related record id of the Log Curve Family - which is the detailed Geological Physical Quantity Measured - such as neutron porosity',
+    )
+    NumberOfColumns: Optional[int] = Field(
+        None,
+        description='The number of columns present in this Curve for a single reference value. For simple logs this is typically 1; for image logs this holds the number of image traces or property series. Further information about the columns can be obtained via the respective log or curve APIs of the Domain Data Management Service.',
+        example=192,
+        title='Number Of Columns',
+    )
+    CurveSampleTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CurveSampleType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The value type to be expected as curve sample values.',
+        example='namespace:reference-data--CurveSampleType:float:',
+        title='Curve Sample Type ID',
+    )
+    CurveDescription: Optional[str] = Field(
+        None,
+        description='Mnemonic-level curve description is used during parsing or reading and ingesting LAS or DLIS files, to explain the type of measurement being looked at, specifically for that moment. Curve description is specific to that single (log) mnemonic and for the entire log (acquisition run) interval. In essence, curve description defines the internal factors such as what the "curve" or measurement ideally is representing, how is it calculated, what are the assumptions and the "constants".',
+        example='CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant',
+        title='Curve Description',
+    )
+
+
 class WellData(AbstractCommonResources100, AbstractMaster100, AbstractFacility100):
     DefaultVerticalMeasurementID: Optional[str] = Field(
         None,
@@ -1708,6 +1808,165 @@ class WellLogData110(
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
 
+class WellLogData120(
+    AbstractCommonResources100, AbstractWPCGroupType100, AbstractWorkProductComponent100
+):
+    WellboreID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The Wellbore where the Well Log Work Product Component was recorded',
+    )
+    WellLogTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-LogType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Well Log Type short Description such as Raw; Evaluated; Composite;....',
+    )
+    TopMeasuredDepth: Optional[float] = Field(
+        None,
+        description='Informational Top Measured Depth of the Well Log. Always populate SamplingStart and SamplingStop, which represents the real sampling of the WellLog, including  non-depth sampling.',
+        title='Top Measured Depth',
+    )
+    BottomMeasuredDepth: Optional[float] = Field(
+        None,
+        description='Informational Bottom Measured Depth of the Well Log. Always populate SamplingStart and SamplingStop, which represents the real sampling of the WellLog, including  non-depth sampling.',
+        title='Bottom Measured Depth',
+    )
+    ServiceCompanyID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The relationship to a Service Company, typically the producer or logging contractor.',
+    )
+    LogSource: Optional[str] = Field(
+        None,
+        description='OSDU Native Log Source - will be updated for later releases - not to be used yet',
+    )
+    LogActivity: Optional[str] = Field(
+        None,
+        description='Log Activity, used to describe the type of pass such as Calibration Pass - Main Pass - Repeated Pass',
+    )
+    LogRun: Optional[str] = Field(
+        None,
+        description='Log Run - describe the run of the log - can be a number, but may be also a alphanumeric description such as a version name',
+    )
+    LogVersion: Optional[str] = Field(None, description='Log Version')
+    LoggingService: Optional[str] = Field(
+        None,
+        description='Logging Service - mainly a short concatenation of the names of the tools',
+    )
+    LogServiceDateInterval: Optional[LogServiceDateInterval] = Field(
+        None,
+        description='An interval built from two nested values : StartDate and EndDate. It applies to the whole log services and may apply to composite logs as [start of the first run job] and [end of the last run job]Log Service Date',
+        title='LogServiceDateInterval',
+    )
+    ToolStringDescription: Optional[str] = Field(
+        None,
+        description='Tool String Description - a long concatenation of the tools used for logging services such as GammaRay+NeutronPorosity',
+    )
+    LoggingDirection: Optional[str] = Field(
+        None, description='Specifies whether curves were collected downward or upward'
+    )
+    PassNumber: Optional[int] = Field(
+        None,
+        description="Indicates if the Pass is the Main one (1) or a repeated one - and it's level repetition",
+    )
+    ActivityType: Optional[str] = Field(
+        None,
+        description='General method or circumstance of logging - MWD, completion, ...',
+    )
+    DrillingFluidProperty: Optional[str] = Field(
+        None, description='Type of mud at time of logging (oil, water based,...)'
+    )
+    HoleTypeLogging: Optional[
+        constr(regex=r'^OPENHOLE|CASEDHOLE|CEMENTEDHOLE$')
+    ] = Field(
+        None,
+        description='Description of the hole related type of logging - POSSIBLE VALUE : OpenHole / CasedHole / CementedHole',
+    )
+    VerticalMeasurementID: Optional[str] = Field(
+        None,
+        description='DEPRECATED: Use data.VerticalMeasurement.VerticalReferenceID instead. References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all curve measured depths. Either VerticalMeasurementID or VerticalMeasurement are populated.',
+    )
+    VerticalMeasurement: Optional[AbstractFacilityVerticalMeasurement100] = Field(
+        None,
+        description='The vertical measurement reference for the log curves, which defines the vertical reference datum for the logged depths. Either VerticalMeasurement or VerticalMeasurementID are populated.',
+    )
+    Curves: Optional[List[Curve120]] = None
+    FrameIdentifier: Optional[str] = Field(
+        None,
+        description='For multi-frame or multi-section files, this identifier defines the source frame in the file. If the identifier is an index number the index starts with zero and is converted to a string for this property.',
+        example=0,
+        title='Frame Identifier',
+    )
+    SamplingInterval: Optional[float] = Field(
+        None,
+        description='For regularly sampled curves this property holds the sampling interval. For non regular sampling rate this property is not set. The IsRegular flag indicates whether SamplingInterval is required.',
+        example=0.0254,
+        title='Sampling Interval',
+    )
+    ReferenceCurveID: Optional[str] = Field(
+        None,
+        description='The data.Curves[].CurveID, which holds the primary index (reference) values.',
+        example='MD',
+        title='Reference Curve ID',
+    )
+    SamplingStart: Optional[float] = Field(
+        None,
+        description='The start value/first value of the ReferenceCurveID, typically the start depth of the logging.',
+        example=2500,
+        title='Sampling Start',
+    )
+    SamplingStop: Optional[float] = Field(
+        None,
+        description='The stop value/last value of the ReferenceCurveID, typically the end depth of the logging.',
+        example=7500,
+        title='Sampling Stop',
+    )
+    SamplingDomainTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellLogSamplingDomainType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The sampling domain, e.g. measured depth, true vertical, travel-time, calendar-time.',
+        example='namespace:reference-data--WellLogSamplingDomainType:Depth:',
+        title='Sampling Domain Type ID',
+    )
+    CompanyID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The relationship to company who engaged the service company (ServiceCompanyID) to perform the logging.',
+        title='Company ID',
+    )
+    CandidateReferenceCurveIDs: Optional[List[str]] = Field(
+        None,
+        description='Secondary index curves, which are alternative candidates to act as ReferenceCurveID. Generally not populated, except in the cases where multiple reference curves are present, e.g. measured depth and time.',
+    )
+    ZeroTime: Optional[datetime] = Field(
+        None,
+        description='Optional time reference for (calender) time logs. The ISO date time string representing zero time. Not to be confused with seismic travel time zero. The latter is defined by SeismicReferenceDatum.',
+    )
+    SeismicReferenceElevation: Optional[AbstractFacilityVerticalMeasurement100] = Field(
+        None,
+        description='Populated only if the WellLog represents time-depth relationships or checkshots. It is expressed via the standard AbstractFacilityVerticalMeasurement. The following properties are expected to be present: VerticalMeasurementPathID (typically elevation), VerticalMeasurementTypeID as SeismicReferenceDatum, VerticalMeasurement holding the offset to either the VerticalCRSID or the chained VerticalReferenceID in the parent Wellbore.',
+    )
+    IsRegular: Optional[bool] = Field(
+        None,
+        description='Boolean property indicating the sampling mode of the ReferenceCurveID. True means all reference curve values are regularly spaced (see SamplingInterval); false means irregular or discrete sample spacing.',
+        title='Is Regular Flag',
+    )
+    LogRemark: Optional[str] = Field(
+        None,
+        description='Log remark provides contextual information during the actual log object acquisition. Explains how the measurement in the wellbore is taken on a point in time or depth. Additional information may be included such as bad weather, tool failure, etc. Usually a part of the log header, log remark contains info specific for an acquisition run, specific for a given logging tool (multiple measurements) and/or a specific interval. In essence, log remark represents the external factors and operational environment, directly or indirectly affecting the measurement quality/uncertainty (dynamically over time/depth) - adding both noise and bias to the measurements.',
+        example='tool failure, bad weather',
+        title='Log Remark',
+    )
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
 class WellLog(DDMSBaseModel):
     id: Optional[WellLogId] = Field(
         None,
@@ -1856,6 +2115,84 @@ class WellLog110(DDMSBaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellLogData110] = None
+
+
+class WellLog120(DDMSBaseModel):
+    """
+    A well log is a data type that correlates a particular measurement or multiple measurements in a wellbore against depth and/or time within that wellbore. When plotted visually, well logs are typically long line graphs (called "curves") but may sometimes be discrete points or intervals. This schema object is intended for digital well logs, not raster log files or raster calibration files, but may be used for the latter in the absence of a defined OSDU schema for these use cases.
+    """
+
+    id: Optional[
+        constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')
+    ] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:work-product-component--WellLog:c2c79f1c-90ca-5c92-b8df-04dbe438f414',
+        title='Entity ID',
+    )
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:work-product-component--WellLog:1.2.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs, from which this record instance is derived.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellLogData120] = None
 
 
 class AvailableTrajectoryStationProperty(DDMSBaseModel):
