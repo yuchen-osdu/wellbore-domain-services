@@ -5,7 +5,7 @@ import os
 import json
 
 from odes_storage.models import Record
-from app.model.osdu_model import Well, Wellbore, WellboreMarkerSet110, WellboreTrajectory110, WellLog110, WellLog120
+from app.model.osdu_model import Well, Wellbore, WellboreMarkerSet110, WellboreTrajectory110, WellLog110
 
 from wdms_client.variables import Variables
 
@@ -56,10 +56,8 @@ def trajectory_v3_file_contents() -> str:
 
 
 @pytest.fixture(scope="session")
-def welllog_v3_file_contents():
-    def welllog_v3_version_json(filename):
-        return load_model_example_file_contents(filename)
-    return welllog_v3_version_json
+def welllog_v3_file_contents() -> str:
+    return load_model_example_file_contents("wellLog_v3.json")
 
 
 @pytest.fixture
@@ -195,28 +193,22 @@ def trajectory110_v3_list(trajectory_v3_record_list) -> List[WellboreTrajectory1
 
 
 @pytest.fixture
-def welllog_v3_record_list(welllog_v3_file_contents, domain, data_partition, legal_tags):
-    def welllog_v3_record_list_version(filename):
-        vars_to_replace = Variables.from_dict({
-                "domain": domain,
-                "datapartitionid": data_partition,
-                "legaltags": legal_tags,
-                # to replace missing data in example
-                "wellboreId": "wellbore-id-example",
-                "welllogName": "my-example-welllog",
-                "welllogId": "my-welllog-v3-example",
-            })
-        return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in welllog_v3_file_contents(filename)]
-    return welllog_v3_record_list_version
+def welllog_v3_record_list(welllog_v3_file_contents, domain, data_partition, legal_tags) -> List[Record]:
+
+    vars_to_replace = Variables.from_dict({
+        "domain": domain,
+        "datapartitionid": data_partition,
+        "legaltags": legal_tags,
+        # to replace missing data in example
+        "wellboreId": "wellbore-id-example",
+        "welllogName": "my-example-welllog",
+        "welllogId": "my-welllog-v3-example",
+    })
+
+    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in welllog_v3_file_contents]
 
 
 @pytest.fixture
 def welllog110_v3_list(welllog_v3_record_list) -> List[WellLog110]:
     """ provide a list of wellLog v.1.1.0"""
-    return [WellLog110(**record.dict(exclude_unset=True, by_alias=True)) for record in welllog_v3_record_list("wellLog_v3_110.json")]
-
-
-@pytest.fixture
-def welllog120_v3_list(welllog_v3_record_list) -> List[WellLog120]:
-    """ provide a list of wellLog v.1.2.0"""
-    return [WellLog120(**record.dict(exclude_unset=True, by_alias=True)) for record in welllog_v3_record_list("wellLog_v3_120.json")]
+    return [WellLog110(**record.dict(exclude_unset=True, by_alias=True)) for record in welllog_v3_record_list]

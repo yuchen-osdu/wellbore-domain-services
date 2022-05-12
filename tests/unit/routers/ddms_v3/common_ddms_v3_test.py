@@ -121,7 +121,7 @@ def records_with_version(records):
     ("wellbores", "wellbore100_v3_list"),
     ("wellboremarkersets", "marker110_v3_list"),
     ("wellboretrajectories", "trajectory110_v3_list"),
-    ("welllogs", "welllog120_v3_list")
+    ("welllogs", "welllog110_v3_list")
 ])
 def test_get_delete_v3_routes_success(app_configurable_with_testclient,
                                       mock_storage_client_holding_data,

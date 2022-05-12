@@ -108,6 +108,7 @@ def test_check_supported_kind(client, api, record_type, data):
         ("/ddms/v3/wellbores", "master-data--Wellbore:2.0.0", {}),
         ("/ddms/v3/welllogs", "work-product-component--foo:1.0.0", {}),
         ("/ddms/v3/welllogs", "work-product-component--WellLog:1.0.1", {}),
+        ("/ddms/v3/welllogs", "work-product-component--WellLog:1.2.0", {}),
         ("/ddms/v3/welllogs", "work-product-component--WellLog:2.0.0", {}),
         ("/ddms/v3/wellbores", "master-data--foo:1.0.0", {}),
         ("/ddms/v3/wellbores", "master-data--Wellbore:1.0.1", {}),

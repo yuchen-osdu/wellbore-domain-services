@@ -10,7 +10,7 @@ from app.helper.traces import with_trace
 from app.bulk_persistence import BulkRecordNotFound, \
 	DaskBulkStorage, ConsistencyException, DataConsistencyChecks, submit_with_trace
 from app.model.model_utils import from_record
-from app.model.osdu_model import WellLog120
+from app.model.osdu_model import WellLog110
 from app.context import get_ctx
 
 from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
@@ -31,14 +31,14 @@ class ColumnDoesNotMatchCurveIdException(ConsistencyException):
 
 
 @with_trace('welllog_consistency')
-def check_welllog_consistency(wl: WellLog120):
+def check_welllog_consistency(wl: WellLog110):
     """Check wellLog metadata.
 
     Curves ids in data.Curves must be unique
     Welllog must have a curve whose curveID value is equal to the  wellLog's ReferenceCurveID value if any
 
     Args:
-        wl (WellLog120): wellLog object to be verified
+        wl (WellLog110): wellLog object to be verified
 
     Returns:
         None
@@ -93,7 +93,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         Returns: None
         """
-        wl = from_record(WellLog120, record)
+        wl = from_record(WellLog110, record)
         cls._check_columns_consistency(wl, df.columns)
 
         if not (wl.data and wl.data.ReferenceCurveID):
@@ -118,7 +118,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         Returns: None
         """
-        wl = from_record(WellLog120, record)
+        wl = from_record(WellLog110, record)
 
         # check col match record.curves
         dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)
@@ -137,7 +137,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             return
 
         # wrap what should be called in dask workers
-        def check_welllog_reference(wl: WellLog120, ref_ddf: DaskDataFrame):
+        def check_welllog_reference(wl: WellLog110, ref_ddf: DaskDataFrame):
             ref = ref_ddf[wl.data.ReferenceCurveID].compute()
             check_reference_is_strictly_monotonic(ref)
             cls._check_top_bottom_reference(wl, ref)
@@ -145,11 +145,11 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         await submit_with_trace(dask_blob_storage.client, check_welllog_reference, wl, ref_ddf)
 
     @staticmethod
-    def _check_columns_consistency(wl: WellLog120, col_labels: Iterable[str]):
+    def _check_columns_consistency(wl: WellLog110, col_labels: Iterable[str]):
         """Checks bulk data column names match welllog record curves ids
 
         Args:
-            wl(WellLog120): welllog record
+            wl(WellLog110): welllog record
             col_labels: column's labels to check against the record
 
         Returns: None
@@ -170,7 +170,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             )
 
     @staticmethod
-    def _check_top_bottom_reference(wl: WellLog120, ref: pd.Series):
+    def _check_top_bottom_reference(wl: WellLog110, ref: pd.Series):
         raise_if_attr_value_is_different(
             record_data=wl.data,
             attr_name="SamplingStart",
