@@ -40,9 +40,10 @@ StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
 
 
 @pytest.fixture
-async def dasked_test_app_with_mocked_core_service(app_configurable_with_testclient, tmp_path_factory):
+async def dasked_test_app_with_mocked_core_service(app_configurable_with_testclient, tmp_path_factory, local_bulk_persistence_config):
     super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
-                                          local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")))
+                                          local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")),
+                                          bulk_config=local_bulk_persistence_config)
     super_mocks['storage_client_mock'] = StorageRecordServiceClientMock
 
     _, client = app_configurable_with_testclient(

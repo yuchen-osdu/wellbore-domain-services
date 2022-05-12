@@ -5,7 +5,7 @@ from dask.utils import format_bytes, parse_bytes
 from distributed import system
 from distributed.deploy.utils import nprocesses_nthreads
 
-from app.conf import Config
+from ..bulk_persistence_config import BulkPersistenceConfig
 
 
 class DaskException(Exception):
@@ -14,11 +14,6 @@ class DaskException(Exception):
 
 # Amount of memory Reserved for fastApi server + ProcessPoolExecutors
 memory_leeway = parse_bytes("600Mi")
-
-
-def min_worker_memory_recommended(config: Config):
-    """Minimal amount of memory required for a Dask worker to not get bad performances"""
-    return parse_bytes(config.min_worker_memory.value)
 
 
 def system_memory():
@@ -36,7 +31,7 @@ def recommended_workers_and_threads():
     return nprocesses_nthreads()
 
 
-def get_dask_configuration(*, config: Config, logger: Logger):
+def get_dask_configuration(*, config: BulkPersistenceConfig, logger: Logger):
     """
     Return recommended Dask workers configuration
     """
@@ -47,14 +42,14 @@ def get_dask_configuration(*, config: Config, logger: Logger):
     logger.info(
         f"Dask client - system.MEMORY_LIMIT: {format_bytes(system_memory())} "
         f"- available_memory_bytes: {format_bytes(available_memory_bytes)} "
-        f"- min_worker_memory_recommended: {format_bytes(min_worker_memory_recommended(config))} "
+        f"- min_worker_memory_recommended: {format_bytes(config.min_worker_memory_recommended)} "
         f"- computed worker_memory_limit: {format_bytes(worker_memory_limit)} for {n_workers} workers"
     )
 
-    if min_worker_memory_recommended(config) > worker_memory_limit:
-        n_workers = available_memory_bytes // min_worker_memory_recommended(config)
+    if config.min_worker_memory_recommended > worker_memory_limit:
+        n_workers = available_memory_bytes // config.min_worker_memory_recommended
         if not n_workers >= 1:
-            min_memory = min_worker_memory_recommended(config) + memory_leeway
+            min_memory = config.min_worker_memory_recommended + memory_leeway
             message = (
                 f"Not enough memory available to start Dask worker. "
                 f"Please, consider upgrading container memory to {format_bytes(min_memory)}"

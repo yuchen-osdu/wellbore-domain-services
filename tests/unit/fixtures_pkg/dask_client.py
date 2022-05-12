@@ -4,16 +4,16 @@ from unittest import mock
 import pytest
 
 from app.bulk_persistence import DaskClient
-from app.bulk_persistence.dask.localcluster import memory_leeway, min_worker_memory_recommended
+from app.bulk_persistence.dask.localcluster import memory_leeway
 
 
 @pytest.fixture(scope="module")
-def dask_client(event_loop, local_dev_config):
+def dask_client(event_loop, local_bulk_persistence_config):
 
     # a context manager to handle the mocks to configure the singleton
     @contextlib.contextmanager
     def configure(*,
-                  system_memory_mock=min_worker_memory_recommended(local_dev_config) + memory_leeway,
+                  system_memory_mock=local_bulk_persistence_config.min_worker_memory_recommended + memory_leeway,
                   worker_threads_mock=(2, 1),
                   autoclose_asynccontext=True
                   ):
