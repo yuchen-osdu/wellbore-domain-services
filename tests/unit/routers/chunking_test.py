@@ -1176,9 +1176,6 @@ def test_many_columns_ensure_effective_cols_count_matter(dasked_test_app_without
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    max_cols_count = 100
-    local_bulk_persistence_config.max_columns_return = max_cols_count
-
     effective_cols_count = 50
     df = generate_df([f'var[{i}]' for i in range(effective_cols_count)], range(2))
     write_response = client.post(f'{chunking_url}/{record_id}/data',
@@ -1188,7 +1185,7 @@ def test_many_columns_ensure_effective_cols_count_matter(dasked_test_app_without
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
-                              params={'curves': f'var[0:{max_cols_count * 2}]'})
+                              params={'curves': f'var[0:{MAX_COLUMNS_RETURN + 10}]'})
     assert get_response.status_code == 200, \
         "Ensure only existing columns are taken into account for max cols limit"
 
