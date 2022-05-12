@@ -1,0 +1,89 @@
+[{
+    "acl": {
+        "viewers": [
+            "data.default.viewers@{{datapartitionid}}.{{domain}}"
+        ],
+        "owners": [
+            "data.default.owners@{{datapartitionid}}.{{domain}}"
+        ]
+    },
+    "data": {
+        "Curves": [
+            {
+                "CurveID": "GR_ID",
+                "Mnemonic": "GR",
+                "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:",
+                "NumberOfColumns": 1,
+                "CurveDescription": "Gamma Ray",
+                "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:"
+            },
+            {
+                "CurveID": "POR_ID",
+                "Mnemonic": "NPOR",
+                "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:",
+                "NumberOfColumns": 1,
+                "CurveDescription": "Neutron Porosity",
+                "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:"
+            },
+            {
+                "CurveID": "Bulk Density",
+                "Mnemonic": "RHOB",
+                "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+                "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:BulkDensity:",
+                "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:"
+            }
+        ],
+        "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
+        "CreationDateTime": "2013-03-22T11:16:03Z",
+        "VerticalMeasurement": {
+            "VerticalMeasurement": 2680.5,
+            "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
+            "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:ft:"
+        },
+        "TopMeasuredDepth": 12345.6,
+        "BottomMeasuredDepth": 13856.2,
+        "Name": "{{welllogName}}",
+
+        "SamplingDomainTypeID": "{{datapartitionid}}:reference-data--WellLogSamplingDomainType:Depth:",
+        "IsRegular": true,
+        "LogRemark": "example data for API documentation",
+        "SamplingInterval": 0.1
+
+    },
+    "id": "{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
+    "kind": "osdu:wks:work-product-component--WellLog:1.2.0",
+    "legal": {
+        "legaltags": [
+            "{{legaltags}}"
+        ],
+        "otherRelevantDataCountries": [
+            "US",
+            "FR"
+        ]
+    },
+    "meta": [{
+            "kind": "Unit",
+            "name": "ft",
+            "persistableReference": "{\"scaleOffset\":{\"scale\":0.3048,\"offset\":0.0},\"symbol\":\"ft\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+            "propertyNames": [
+                "TopMeasuredDepth",
+                "BottomMeasuredDepth",
+                "SamplingInterval"
+            ],
+            "propertyValues": [
+                "ft"
+            ]
+        }, {
+            "kind": "DateTime",
+            "name": "datetime",
+            "persistableReference": "{\"format\":\"yyyy-MM-ddTHH:mm:ssZ\",\"timeZone\":\"UTC\",\"type\":\"DTM\"}",
+            "propertyNames": [
+                "dateModified",
+                "dateCreated"
+            ]
+        }
+    ]
+}
+]

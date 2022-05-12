@@ -365,7 +365,8 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: List[str]=['E
     },
     "IsRegular": true,
     "SamplingStart": 12345.6,
-    "SamplingStop": 12345.6,"""
+    "SamplingStop": 12345.6,
+    "LogRemark": "example data for API integration tests","""
 
     inner_curves = ""
     for c in curves:
@@ -382,7 +383,9 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: List[str]=['E
             "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
             "LogCurveBusinessValueID": "namespace:reference-data--LogCurveBusinessValue:SomeUniqueLogCurveBusinessValueID:",
             "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
-            "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:"
+            "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
+            "CurveDescription": "Sample curve for integration tests",
+            "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:"
           },"""
 
     if len(curves) > 0:
@@ -410,7 +413,7 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: List[str]=['E
 
 def get_cleaned_ref_and_res() -> dict:
     ref = {
-  "kind": "osdu:wks:work-product-component--WellLog:1.1.0",
+  "kind": "osdu:wks:work-product-component--WellLog:1.2.0",
   "acl": {
     "owners": [
       "someone@company.com"
@@ -708,6 +711,7 @@ def get_cleaned_ref_and_res() -> dict:
     "IsRegular": True,
     "SamplingStart": 12345.6,
     "SamplingStop": 12345.6,
+    "LogRemark": "example data for API integration tests",
 
     "Curves": [
       {
@@ -724,7 +728,9 @@ def get_cleaned_ref_and_res() -> dict:
         "LogCurveTypeID": "namespace:reference-data--LogCurveType:SomeUniqueLogCurveTypeID:",
         "LogCurveBusinessValueID": "namespace:reference-data--LogCurveBusinessValue:SomeUniqueLogCurveBusinessValueID:",
         "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
-        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:"
+        "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
+        "CurveDescription": "Sample curve for integration tests",
+        "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:"
       }
     ],
     "ExtensionProperties": {}
@@ -732,7 +738,7 @@ def get_cleaned_ref_and_res() -> dict:
 }
 
     # Add mandatory fields
-    ref["kind"] = "{{authorityKind}}:wks:master-data--WellLog:1.1.0"
+    ref["kind"] = "{{authorityKind}}:wks:master-data--WellLog:1.2.0"
     ref["acl"] = {
         "owners": ["{{acl_owner}}"],
         "viewers": ["{{acl_viewer}}"],
