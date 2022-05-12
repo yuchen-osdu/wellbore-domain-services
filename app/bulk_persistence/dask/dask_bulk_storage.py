@@ -522,6 +522,30 @@ class DaskBulkStorage:
         return bulk_id, df_describe
 
     @internal_bulk_exceptions
+    @capture_timings('post_dataframe_without_session', handlers=worker_capture_timing_handlers)
+    @with_trace('post_dataframe_without_session')
+    async def post_dataframe_without_session(self,
+                                             df: pd.DataFrame,
+                                             df_validator_func: DataFrameValidationFunc,
+                                             consistency_checks: DataConsistencyChecks,
+                                             record: "Record",
+                                             bulk_id: Optional[str] = None) -> Tuple[str, bulk_writer.DataframeBasicDescribe]:
+        bulk_id = bulk_id or new_bulk_id()
+        bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record.id, bulk_id, self.protocol)
+        # ensure directory exists for local storage, do nothing on remote storage
+        self._ensure_dir_tree_exists(bulk_base_path)
+
+        df_describe = await submit_with_trace(self.client,
+                                              bulk_writer.write_dataframe_without_session,
+                                              df,
+                                              df_validator_func,
+                                              bulk_base_path,
+                                              self._parameters.storage_options,
+                                              consistency_checks,
+                                              record)
+        return bulk_id, df_describe
+
+    @internal_bulk_exceptions
     @capture_timings('add_chunk_in_session', handlers=worker_capture_timing_handlers)
     @with_trace('add_chunk_in_session')
     async def add_chunk_in_session(self,
