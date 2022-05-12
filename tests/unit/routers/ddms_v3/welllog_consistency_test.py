@@ -47,7 +47,7 @@ def client(nope_logger_fixture):
         wdms_app.dependency_overrides = previous_overrides  # clean up
 
 
-kind = "osdu:wks:work-product-component--WellLog:1.2.0"
+kind = "osdu:wks:work-product-component--WellLog:1.1.0"
 legal = {"legaltags": ["foo"], "otherRelevantDataCountries": ["FR"]}
 acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
 
