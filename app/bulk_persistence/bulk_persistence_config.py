@@ -46,7 +46,6 @@ class BulkPersistenceConfig:
         return self._service_name
 
 
-#TODO review that
 def set_config_getter(getter: Callable[[], BulkPersistenceConfig]):
     set_config_getter._getter = getter
 

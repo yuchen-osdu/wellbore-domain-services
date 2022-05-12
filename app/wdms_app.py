@@ -138,7 +138,6 @@ async def startup_event():
         dask_data_ipc=Config.dask_data_ipc.value,
         service_name=Config.service_name.value
     )
-    # TODO put it in the app and set the getter for now (see get_config() usage)
     wdms_app.state.bulk_config = bulk_config
     set_config_getter(lambda: wdms_app.state.bulk_config)
 
