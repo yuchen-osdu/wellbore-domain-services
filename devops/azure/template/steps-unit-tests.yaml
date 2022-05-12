@@ -24,7 +24,6 @@ parameters:
   default: false
   
 steps:
-
 # Use Python version
 # Use the specified version of Python from the tool cache, optionally adding it to the PATH
 - task: UsePythonVersion@0
@@ -42,11 +41,12 @@ steps:
       echo ----- setup: installing dependencies --------
       echo $(System.DefaultWorkingDirectory)
       python --version
-      python -m pip install --upgrade pip
-      pip --version
-      pip install virtualenv
-      virtualenv venv
+      python -m venv venv
+
       source venv/bin/activate
+      python -m pip install --upgrade pip 2>&1
+
+      pip --version
       pip install -r ./requirements.txt
       pip install -r ./requirements_dev.txt
 
