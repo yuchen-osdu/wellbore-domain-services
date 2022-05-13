@@ -21,7 +21,7 @@ from wdms_client.request_builders.wdms.session import (
     build_create_session,
     build_delete_session,
     build_get_session,
-    build_list_session)
+    build_list_session, build_create_session_empty_payload)
 
 
 SESSION_URL_PREFIX = 'alpha/ddms/v3/welllogs'
@@ -48,6 +48,13 @@ def create_session(env, record_id, meta=None):
     result.assert_ok()
     return result.get_response_obj()
 
+
+@pytest.mark.parametrize('payload', [(None), ({})])
+@pytest.mark.tag('session', 'smoke', 'chunking')
+def test_create_session_empty_payload(with_wdms_env, with_welllog, payload):
+    record_id = with_welllog
+    result = build_create_session_empty_payload(record_id, SESSION_URL_PREFIX, payload).call(with_wdms_env)
+    result.assert_status_code(422)
 
 @pytest.mark.tag('session', 'smoke', 'chunking')
 def test_create_get_session(with_wdms_env, with_welllog):
