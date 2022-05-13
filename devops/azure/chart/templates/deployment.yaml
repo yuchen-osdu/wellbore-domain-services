@@ -39,7 +39,7 @@ spec:
     spec:   
 {{- if .Values.nodepool }}
       nodeSelector:
-        nodepool: {{ .Values.nodepool }} 
+        agentpool: {{ .Values.nodepool }} 
 {{- end }}   
       volumes:
         # Note:
