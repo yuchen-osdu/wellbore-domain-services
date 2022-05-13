@@ -124,7 +124,7 @@ async def get_session_dependencies():
 )
 async def create_session(record_id: str,
                          request: Request,
-                         create_rq: CreateDataSessionRequest = None,
+                         create_rq: CreateDataSessionRequest,
                          with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> Session:
     """
     when creating a session:
