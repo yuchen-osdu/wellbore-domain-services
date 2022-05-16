@@ -244,6 +244,10 @@ osdu-gcp-dev2-test:
   extends:
     - .osdu-gcp-dev2-variables
 
+osdu-gcp-anthos-test:
+  extends:
+    - .osdu-gcp-anthos-variables
+
 # Allow failure on private development deployments
 ibm-deploy-devpri:
   allow_failure: true
