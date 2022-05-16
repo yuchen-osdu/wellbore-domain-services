@@ -36,7 +36,9 @@ variables:
   OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
   OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
   OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s"
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: >
+    --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA 
+    --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s
   OSDU_GCP_HELM_CONFIG_SERVICE: wellbore-config
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE: wellbore-deploy
   OSDU_GCP_INT_TEST_TYPE: python
@@ -60,13 +62,35 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm-wellbore-git.yml"
 
-  - local: "/devops/azure/azure-wellbore.yml"
-
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
+
+  - local: "/devops/azure/azure-wellbore.yml"
+
+osdu-gcp-containerize-gitlab:
+  variables:
+    BUILD_PATH: "./build/Dockerfile"
+    BUILD_ARGS: >
+      --build-arg PIP_WHEEL_DIR=python-packages 
+      --build-arg build_date="$CI_JOB_STARTED_AT" 
+      --build-arg build_number=$CI_COMMIT_SHORT_SHA 
+      --build-arg commit_id=$CI_COMMIT_SHORT_SHA 
+      --build-arg build_origin="Gitlab" 
+      --build-arg commit_branch=$CI_COMMIT_BRANCH
+
+osdu-gcp-containerize-gcr:
+  variables:
+    BUILD_PATH: "./build/Dockerfile"
+    BUILD_ARGS: >
+      --build-arg PIP_WHEEL_DIR=python-packages 
+      --build-arg build_date="$CI_JOB_STARTED_AT" 
+      --build-arg build_number=$CI_COMMIT_SHORT_SHA 
+      --build-arg commit_id=$CI_COMMIT_SHORT_SHA 
+      --build-arg build_origin="Gitlab" 
+      --build-arg commit_branch=$CI_COMMIT_BRANCH
 
 #Override Python Image defined in python.yml
 .python:
@@ -144,67 +168,6 @@ containerize:
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
-
-osdu-gcp-containerize-gitlab:
-  stage: containerize
-  image: docker:19.03
-  cache: {}
-  tags: ["osdu-small"]
-  variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA
-    IMAGE_TAG_LATEST: $CI_REGISTRY_IMAGE/osdu-gcp:latest
-  script:
-    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
-    - apk update
-    - apk add git
-    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
-    - commit_id=$(git log -n 1 --pretty="%h")
-    - echo ---- ---- TAG NAME
-    - tag_name="_gitlab_$commit_id"
-    - echo $tag_name
-    - echo ---- ---- DATE
-    - current_utc_date=`date --utc`
-    - echo $current_utc_date
-    - echo ---- ---- COMMIT BRANCH
-    - commit_branch=$commit_id
-    - echo $commit_branch
-    - echo ---- ---- BUILD IMAGE
-    - docker build -t $IMAGE_TAG -t $IMAGE_TAG_LATEST --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - echo ---- ---- PUSH IMAGE
-    - docker push $IMAGE_TAG
-    - docker push $IMAGE_TAG_LATEST
-
-osdu-gcp-containerize-for-release:
-  stage: containerize
-  image: docker:19.03
-  cache: {}
-  tags: ["osdu-small"]
-  only:
-    variables:
-      - $OSDU_GCP == 'true' && $CI_COMMIT_TAG != null
-  variables:
-    IMAGE_TAG_RELEASE: $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_TAG
-  script:
-    - echo ---- ---- ---- SYSTEM DEPENDENCIES ---- ---- ----
-    - apk update
-    - apk add git
-    - echo ---- ---- ---- BUILD IMAGE ---- ---- ----
-    - commit_id=$(git log -n 1 --pretty="%h")
-    - echo ---- ---- TAG NAME
-    - tag_name="_gitlab_$commit_id"
-    - echo $tag_name
-    - echo ---- ---- DATE
-    - current_utc_date=`date --utc`
-    - echo $current_utc_date
-    - echo ---- ---- COMMIT BRANCH
-    - commit_branch=$commit_id
-    - echo $commit_branch
-    - echo ---- ---- BUILD IMAGE
-    - docker build -t $IMAGE_TAG_RELEASE --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - echo ---- ---- PUSH IMAGE
-    - docker push $IMAGE_TAG_RELEASE
 
 osdu-gcp-test-python:
   extends: .osdu-gcp-variables
