@@ -109,7 +109,8 @@ def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency)
                                               recordId=valid_record_id,
                                               recordVersion=str(123456789),
                                               computationStatus=BulkStatisticsStatus.Started)
-        bob.return_value = InternalStatisticsComputationMeta(computationAttempt=1, meta=meta_data)
+        bob.return_value = InternalStatisticsComputationMeta(computationAttempt=1, meta=meta_data,
+                                                             lastComputationDate=datetime.utcnow())
 
         post_welllog_data(client, valid_record_id, ['int-A'], range(10))
 
@@ -134,6 +135,7 @@ def test_double_compute_stats(testing_app_local_chunking_no_consistency):
 
     compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert compute_stats_response.status_code == 409
+    assert compute_stats_response.json()['detail'] == "Statistics computation already complete"
 
 
 def test_get_stats(testing_app_local_chunking_no_consistency):

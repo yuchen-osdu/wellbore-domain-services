@@ -113,6 +113,9 @@ class BulkStatistics:
         Return true if statistics computation can be triggered again based on stats meta,
         else raise an ComputationRunningError.
         """
+        if statistics_meta.meta.computation_status == BulkStatisticsStatus.Complete:
+            raise ComputationRunningError(f"Statistics computation already complete")
+
         if statistics_meta.meta.computation_status == BulkStatisticsStatus.Error \
                 and statistics_meta.computation_attempt >= self._max_computation_retry_count:
             raise ComputationRunningError(f"Statistics computation has already "
@@ -239,7 +242,7 @@ class BulkStatistics:
                                                     recordVersion=str(record_version),
                                                     computationStatus=BulkStatisticsStatus.Started)
             internal_statistics_meta = InternalStatisticsComputationMeta(lastComputationDate=datetime.utcnow(),
-                                                                         computationAttempt=0, meta=public_meta)
+                                                                         computationAttempt=1, meta=public_meta)
 
         await self._push_statistics_meta_file(bulk_statistics_path, internal_statistics_meta, overwrite_meta_file=True)
 
