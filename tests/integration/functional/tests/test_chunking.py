@@ -22,7 +22,7 @@ import pandas as pd
 import pytest
 from typing import List
 
-from tests.unit.generate_data import generate_df
+from ..generate_dataframe import generate_df
 
 from .fixtures import with_wdms_env
 from wdms_client.request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log
