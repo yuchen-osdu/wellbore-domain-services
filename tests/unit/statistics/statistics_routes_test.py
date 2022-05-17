@@ -1,17 +1,18 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
 
 from unittest import mock
-
+from unittest.mock import PropertyMock
 import pytest
 
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 import osdu.core.api.storage.exceptions as osdu_storage_exception
 
-from app.bulk_persistence.statistics.models import StatisticsComputationMeta, BulkStatisticsStatus
+from app.bulk_persistence.statistics.models import StatisticsComputationMeta, BulkStatisticsStatus, \
+    InternalStatisticsComputationMeta
 from tests.unit.generate_data import generate_df
 from tests.unit.routers.chunking_test import _create_chunks, _create_record, _create_df_from_response, Definitions
 
@@ -100,15 +101,15 @@ def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
 
 
 def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency):
-
     with mock.patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
         _, client = testing_app_local_chunking_no_consistency
         valid_record_id = _create_record(client, "WellLog")
 
-        bob.return_value = StatisticsComputationMeta(computationStartDate=datetime.utcnow(),
-                                                     recordId=valid_record_id,
-                                                     recordVersion=str(123456789),
-                                                     computationStatus=BulkStatisticsStatus.Started)
+        meta_data = StatisticsComputationMeta(computationStartDate=datetime.utcnow(),
+                                              recordId=valid_record_id,
+                                              recordVersion=str(123456789),
+                                              computationStatus=BulkStatisticsStatus.Started)
+        bob.return_value = InternalStatisticsComputationMeta(computationAttempt=1, meta=meta_data)
 
         post_welllog_data(client, valid_record_id, ['int-A'], range(10))
 
@@ -119,7 +120,6 @@ def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency)
 
 
 def test_double_compute_stats(testing_app_local_chunking_no_consistency):
-
     _, client = testing_app_local_chunking_no_consistency
     record_id = _create_record(client, "WellLog")
     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
@@ -204,7 +204,6 @@ def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_con
 
 
 def test_get_stats_after_post_data(testing_app_local_chunking_no_consistency):
-    
     _, client = testing_app_local_chunking_no_consistency
     record_id = _create_record(client, "WellLog")
     post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
@@ -242,10 +241,10 @@ def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
 
 
 def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_consistency):
-
     async def _compute_stats_on_bulk_batch(n):
         if n % 2 == 0:
             raise Exception("test_get_stats_if_error")
+
     tasks = [asyncio.get_event_loop().create_task(_compute_stats_on_bulk_batch(i)) for i in range(5)]
 
     with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
@@ -263,7 +262,6 @@ def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_c
 
 
 def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consistency):
-
     # Simulate the creation of a WellLog before Statistics features is available
     with mock.patch.object(BulkStatistics, 'compute_bulk_statistics', return_value=mock.AsyncMock()) as bob:
         _, client = testing_app_local_chunking_no_consistency
@@ -287,7 +285,6 @@ def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consisten
     fetch_stats_for_3s(client, record_id)
 
 
-# todo: add test case when using array data
 def test_get_stats_array(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
 
@@ -299,11 +296,74 @@ def test_get_stats_array(testing_app_local_chunking_no_consistency):
     assert response.status_code == 200
 
 
-def test_trigger_computations_after_error(testing_app_local_chunking_no_consistency):
-    pass
+def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consistency):
+    async def _compute_stats_on_bulk_batch():
+        raise Exception("test_get_stats_if_error")
+
+    task = asyncio.get_event_loop().create_task(_compute_stats_on_bulk_batch())
+
+    computation_retry_attempts = BulkStatistics._max_computation_retry_count
+
+    with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
+        _, client = testing_app_local_chunking_no_consistency
+        bob.return_value = [task]
+
+        record_id = _create_record(client, "WellLog")
+        post_welllog_data(client, record_id, ['int-A'], range(10))
+        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+        assert get_stats_response.status_code == 200
+        assert get_stats_response.json()['computationStatus'] == BulkStatisticsStatus.Error
+
+        record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+        version = record_response.json()['version']
+
+        # one try is already done after posting data "post_welllog_data(client, record_id, ['int-A'], range(10))"
+        for i in range(computation_retry_attempts - 1):
+            compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+            assert compute_stats_response.status_code == 200
+
+            get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+            assert get_stats_response.status_code == 200
+            assert get_stats_response.json()['computationStatus'] == BulkStatisticsStatus.Error
+
+        compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+        assert compute_stats_response.status_code == 409, \
+            f"After '{computation_retry_attempts}' retries, 409 should be returned"
 
 
+def test_trigger_computations_after_duration(testing_app_local_chunking_no_consistency):
+    with mock.patch.object(BulkStatistics, '_duration_before_recompute', new_callable=PropertyMock) \
+            as computations_parameter:
+        computations_parameter.return_value = timedelta(minutes=1)
+        _, client = testing_app_local_chunking_no_consistency
 
-# todo: check response with those data
-#  columns = ['int-A', 'int-A-with-nan', 'float-B', 'float-B-with-nan',
-#  'bool-D', 'string-E', 'date-C', 'date-C-with-nan']
+        # simulate something went wrong when posting new data
+        with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as mock_trigger_computation:
+            mock_trigger_computation.side_effect = RuntimeError("test_trigger_computations_after_duration")
+            record_id = _create_record(client, "WellLog")
+            post_welllog_data(client, record_id, ['int-A'], range(10))
+
+        # so stats data are not available
+        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+        assert get_stats_response.status_code == 404
+        assert get_stats_response.content == b'{"errorType":"COMPUTATION_NOT_COMPLETE",' \
+                                             b'"message":"Statistics computation not finished yet"}'
+
+        record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+        version = record_response.json()['version']
+
+        # Try to trigger computation several times, but `_duration_before_recompute` is not past yet => 409
+        for i in range(4):
+            compute_stats_response = client.post(
+                f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+            assert compute_stats_response.status_code == 409
+
+            get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+            assert get_stats_response.status_code == 404
+            assert get_stats_response.content == b'{"errorType":"COMPUTATION_NOT_COMPLETE",' \
+                                                 b'"message":"Statistics computation not finished yet"}'
+
+        # update on the fly the value of expected duration before re-computation, to simulate time is up
+        computations_parameter.return_value = timedelta(milliseconds=1)
+        compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+        assert compute_stats_response.status_code == 200

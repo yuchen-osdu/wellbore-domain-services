@@ -22,6 +22,13 @@ class StatisticsComputationMeta(BaseModel):
     computation_status: BulkStatisticsStatus = Field(alias="computationStatus")
 
 
+class InternalStatisticsComputationMeta(BaseModel):
+    meta: StatisticsComputationMeta
+    computation_attempt: int = Field(alias="computationAttempt")
+    last_computation_date: datetime = Field(title="Datetime of last computation run. Internal usage",
+                                            alias="lastComputationDate")
+
+
 class CurveStatistics(BaseModel):
     mean: str = Field(title="Mean value")
     std: str = Field(title="Standard deviation value")

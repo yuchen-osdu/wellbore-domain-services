@@ -2,14 +2,15 @@ import asyncio
 import functools
 from typing import List, Callable, Iterable
 import itertools
-from datetime import datetime
+from datetime import datetime, timedelta
 from os.path import join
 import numpy as np
 import pandas as pd
 
 from app.conf import Config
 from app.helper.logger import get_logger
-from .models import StatisticsComputationMeta, BulkStatisticsStatus
+from app.routers.bulk.utils import DataFrameRender
+from .models import StatisticsComputationMeta, BulkStatisticsStatus, InternalStatisticsComputationMeta
 
 from .. import DataframeSerializerSync
 from ..dask.traces import submit_with_trace
@@ -68,6 +69,11 @@ class BulkStatistics:
     # maximum number of columns of data to be fetched per batch of bulk files
     _max_cols_per_batch: int = Config.max_columns_return.value
 
+    # Maximum number of time the computation of statistics can be triggered
+    _max_computation_retry_count: int = 3
+    # Duration before allowing to re-computation statistics
+    _duration_before_recompute: timedelta = timedelta(hours=1)
+
     _stats_api_version = "1"
     _valid_values_label = 'total_count'
     _renaming_stats_labels = {'count': 'non_absent_values_count'}
@@ -101,6 +107,28 @@ class BulkStatistics:
     def _statistics_data_path(self, record_id: str, bulk_id):
         """ Return the path for where statistics files are saved for a given record and bulk id """
         return join(self._statistics_base_path(record_id, bulk_id), 'data')
+
+    def _check_recomputation_allowed(self, statistics_meta: InternalStatisticsComputationMeta) -> bool:
+        """
+        Return true if statistics computation can be triggered again based on stats meta,
+        else raise an ComputationRunningError.
+        """
+        if statistics_meta.meta.computation_status == BulkStatisticsStatus.Error \
+                and statistics_meta.computation_attempt >= self._max_computation_retry_count:
+            raise ComputationRunningError(f"Statistics computation has already "
+                                          f"failed {self._max_computation_retry_count} time. ABORT")
+
+        computations_status = statistics_meta.meta.computation_status
+        expire_date = statistics_meta.last_computation_date + self._duration_before_recompute
+        if computations_status == BulkStatisticsStatus.Running or computations_status == BulkStatisticsStatus.Started \
+                and expire_date > datetime.utcnow():
+            raise ComputationRunningError(f"Statistics computation is already running for less than"
+                                          f" {self._duration_before_recompute}. Please retry after {expire_date}")
+
+        statistics_meta.meta.computation_status = BulkStatisticsStatus.Started
+        statistics_meta.computation_attempt += 1
+        statistics_meta.last_computation_date = datetime.utcnow()
+        return True
 
     def _fetch_bulk_batch(self, catalog: BulkCatalog, columns: List[str]) -> pd.DataFrame:
         """
@@ -201,16 +229,19 @@ class BulkStatistics:
         existing_columns = catalog.all_columns_dtypes.keys()
 
         bulk_statistics_path = self._statistics_base_path(record_id, bulk_uri)
-        stats_meta_data = StatisticsComputationMeta(computationStartDate=datetime.utcnow(),
-                                                    recordId=record_id,
+
+        try:
+            internal_statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
+            self._check_recomputation_allowed(internal_statistics_meta)
+            # todo: clear data ?
+        except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError):
+            public_meta = StatisticsComputationMeta(computationStartDate=datetime.utcnow(), recordId=record_id,
                                                     recordVersion=str(record_version),
                                                     computationStatus=BulkStatisticsStatus.Started)
-        try:
-            stats_meta_data = await self._push_statistics_meta_file(bulk_statistics_path,
-                                                                    stats_meta_data,
-                                                                    overwrite_meta_file=False)
-        except osdu_storage_exception.ResourceExistsException:
-            raise ComputationRunningError("Statistics already computed or in progress")
+            internal_statistics_meta = InternalStatisticsComputationMeta(lastComputationDate=datetime.utcnow(),
+                                                                         computationAttempt=0, meta=public_meta)
+
+        await self._push_statistics_meta_file(bulk_statistics_path, internal_statistics_meta, overwrite_meta_file=True)
 
         nb_rows = catalog.nb_rows
         nb_cols = len(existing_columns)
@@ -219,12 +250,12 @@ class BulkStatistics:
         stats_computation_tasks = self.trigger_stats_computation_in_dask(columns_count_per_batch, existing_columns,
                                                                          catalog, record_id, bulk_uri)
 
-        stats_meta_data.computation_status = BulkStatisticsStatus.Running
-        await self._push_statistics_meta_file(bulk_statistics_path, stats_meta_data, overwrite_meta_file=True)
+        internal_statistics_meta.meta.computation_status = BulkStatisticsStatus.Running
+        await self._push_statistics_meta_file(bulk_statistics_path, internal_statistics_meta, overwrite_meta_file=True)
 
         return asyncio.create_task(self._set_statistics_file_as_complete(stats_computation_tasks,
                                                                          bulk_statistics_path,
-                                                                         stats_meta_data))
+                                                                         internal_statistics_meta))
 
     async def _set_statistics_file_as_complete(self, _started_tasks, bulk_statistics_path, stats_meta_data):
         """
@@ -237,9 +268,9 @@ class BulkStatistics:
 
         results = await asyncio.gather(*_started_tasks, return_exceptions=True)
         if any(isinstance(r, BaseException) for r in results):
-            stats_meta_data.computation_status = BulkStatisticsStatus.Error
+            stats_meta_data.meta.computation_status = BulkStatisticsStatus.Error
         else:
-            stats_meta_data.computation_status = BulkStatisticsStatus.Complete
+            stats_meta_data.meta.computation_status = BulkStatisticsStatus.Complete
 
         await self._push_statistics_meta_file(bulk_statistics_path, stats_meta_data, overwrite_meta_file=True)
 
@@ -252,8 +283,8 @@ class BulkStatistics:
 
         return statistics_df.filter(items=columns, axis=0)
 
-    async def _push_statistics_meta_file(self, bulk_statistics_path: str, stats_meta_data: StatisticsComputationMeta,
-                                         overwrite_meta_file: bool):
+    async def _push_statistics_meta_file(self, bulk_statistics_path: str,
+                                         stats_meta_data: InternalStatisticsComputationMeta, overwrite_meta_file: bool):
         """
         Update meta-data file of statistics computation with given status of given stats_meta_data.
 
@@ -274,14 +305,14 @@ class BulkStatistics:
 
         return stats_meta_data
 
-    async def _fetch_statistics_meta_file(self, bulk_statistics_path) -> StatisticsComputationMeta:
+    async def _fetch_statistics_meta_file(self, bulk_statistics_path) -> InternalStatisticsComputationMeta:
         """ Read statistics meta file at given path """
 
         file_path = join(bulk_statistics_path, 'statistics.json')
 
         with self.dask_blob_storage._fs.open(file_path, 'r') as stats_meta_file:
             blob_content = stats_meta_file.read()
-            return await asyncio.get_running_loop().run_in_executor(None, StatisticsComputationMeta.parse_raw,
+            return await asyncio.get_running_loop().run_in_executor(None, InternalStatisticsComputationMeta.parse_raw,
                                                                     blob_content)
 
     async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) \
@@ -296,15 +327,15 @@ class BulkStatistics:
 
         bulk_statistics_path = self._statistics_base_path(record_id, bulk_uri)
         try:
-            statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
+            internal_statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
         except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError) as e:
             raise StatisticsNotFoundError("Statistics do not exist")
 
-        if statistics_meta.computation_status == BulkStatisticsStatus.Error:
-            return pd.DataFrame(), statistics_meta
-        elif statistics_meta.computation_status != BulkStatisticsStatus.Complete:
-            raise ComputationNotCompleteError("Statistics computation not finished yet")
+        if internal_statistics_meta.meta.computation_status == BulkStatisticsStatus.Error:
+            return pd.DataFrame(), internal_statistics_meta.meta
 
+        elif internal_statistics_meta.meta.computation_status != BulkStatisticsStatus.Complete:
+            raise ComputationNotCompleteError("Statistics computation not finished yet")
 
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_col = catalog.all_columns_dtypes
@@ -324,4 +355,4 @@ class BulkStatistics:
         bulk_statistics_data_path = self._statistics_data_path(record_id, bulk_uri)
         stats_df = await self._submit_with_trace(self._fetch_statistics, bulk_statistics_data_path, columns)
 
-        return stats_df, statistics_meta
+        return stats_df, internal_statistics_meta.meta

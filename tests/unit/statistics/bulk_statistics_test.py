@@ -321,3 +321,23 @@ async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
 
     df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
     assert df_stats.shape == (columns_count, len(_bulk_stats_columns()))
+
+
+@pytest.mark.asyncio
+async def test_trigger_computations_after_error(bulk_stats_fixture):
+
+    async def _compute_stats_on_bulk_batch(n):
+        if n % 2 == 0:
+            raise Exception("test_get_stats_if_error")
+    tasks = [asyncio.get_event_loop().create_task(_compute_stats_on_bulk_batch(i)) for i in range(5)]
+
+    with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
+        bob.return_value = tasks
+
+        bulk_statistics, dask_storage = bulk_stats_fixture
+        columns_indexes = [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))]
+        record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, columns_indexes)
+
+        future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456)
+        await future
+
