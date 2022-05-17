@@ -33,6 +33,7 @@ from .sessions_storage import Session, SessionsStorage, \
             SessionNotFound, SessionInvalidState, SessionUpdatedEtagUnmatched, SessionException, \
             SessionState, SessionUpdateMode, SessionInternal, CommitSessionResponse
 from .dask.errors import BulkError, BulkRecordNotFound, BulkCurvesNotFound, TooManyColumnsRequested, FilterError, internal_bulk_exceptions
+from .bulk_persistence_config import BulkPersistenceConfig, get_config, set_config_getter, MAX_COLUMNS_RETURN, MAX_COLUMNS_WRITE_CHUNK
 
 # TMP: this should probably not be exposed outside of the bulk_persistence package
 from .temp_dir import get_temp_dir

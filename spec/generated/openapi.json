@@ -9145,7 +9145,8 @@
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -18573,7 +18574,8 @@
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -19902,7 +19904,8 @@
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {

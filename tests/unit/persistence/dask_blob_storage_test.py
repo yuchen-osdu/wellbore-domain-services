@@ -36,8 +36,9 @@ from odes_storage.models import Record, StorageAcl, Legal
 
 
 @pytest.fixture()
-async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path) -> DaskBulkStorage:
-    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path)
+async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path, local_bulk_persistence_config) -> DaskBulkStorage:
+    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path,
+                                                      bulk_config=local_bulk_persistence_config)
     yield dask_storage
 
 

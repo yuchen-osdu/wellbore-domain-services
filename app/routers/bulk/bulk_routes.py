@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from uuid import UUID
+
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from odes_storage.models import Record
@@ -23,8 +24,8 @@ from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
-from app.conf import Config
 from app.helper.logger import get_logger
+from app.bulk_persistence import MAX_COLUMNS_RETURN
 
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
@@ -61,14 +62,15 @@ from app.routers.sessions import (
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 # imports from bulk persistence
 from app.bulk_persistence import (auto_cast_columns_to_string,
-                                  DataFrameValidationFunc, no_validation,
-                                  JSONOrient,
-                                  get_dataframe, download_bulk,
-                                  DaskBulkStorage,
-                                  MimeTypes, MimeType,
-                                  trace_dataframe_attributes, trace_attributes_root_span,
-                                  BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
-                                  DataConsistencyChecks)
+    DataFrameValidationFunc, no_validation,
+    JSONOrient,
+    get_dataframe, download_bulk,
+    DaskBulkStorage,
+    MimeTypes, MimeType,
+    trace_dataframe_attributes, trace_attributes_root_span,
+    BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
+    DataConsistencyChecks
+                                  )
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -89,9 +91,9 @@ Support http chunked encoding transfer.
 """ + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["record_data"],
     responses={
-        404: {},
-        200: {}
-    })
+            404: {},
+            200: {}
+        })
 async def post_data(record_id: str,
                     request: Request,
                     content_type: MimeType = Depends(write_bulk_content_type),
@@ -144,7 +146,7 @@ async def post_data(record_id: str,
                 "This will create a new and single version aggregating all and previous bulk."
                 "Support JSON and Parquet format ('Content_Type' must be set accordingly). "
                 "Support http chunked encoding."
-                + REQUIRED_ROLES_WRITE,
+    + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["chunk_data"],
     response_model=DataframeBasicDescribe,
     responses={400: {"description": "Record not found"}}
@@ -184,19 +186,20 @@ async def post_chunk_data(record_id: str,
         ex.raise_as_http()
 
 
+# TODO: set bulk config when configuration is reloaded from environment
 GET_DATA_DESCRIPTION = f"""  
 Multiple media types response are available ("application/json", "application/x-parquet").  
 The desired format can be specify in the "Accept" header, default is Parquet.  
 When bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  
-The requested columns must not exceed {Config.max_columns_return.value}. The query parameter __curves__ can be use to limit the number of columns."""
+The requested columns must not exceed {MAX_COLUMNS_RETURN}. The query parameter __curves__ can be use to limit the number of columns."""
 
 
 @router.get(
     '/{record_id}/versions/{version}/data',
     summary='Returns data of the specified version.',
     description='Returns the data of a specific version according to the specified query parameters.'
-                + GET_DATA_DESCRIPTION
-                + REQUIRED_ROLES_READ,
+    + GET_DATA_DESCRIPTION
+    + REQUIRED_ROLES_READ,
     # response_model=RecordData,
     responses={
         404: {},
@@ -207,14 +210,14 @@ The requested columns must not exceed {Config.max_columns_return.value}. The que
     }
 )
 async def get_data_version(
-        record_id: str, version: int,
-        request: Request,
-        data_param: GetDataParams = Depends(),
-        accept_type: MimeType = Depends(read_bulk_accept_type),
-        orient: JSONOrient = Depends(json_orient_parameter),
-        ctx: Context = Depends(get_ctx),
-        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-        record: Record = Depends(fetch_record_dependency)
+    record_id: str, version: int,
+    request: Request,
+    data_param: GetDataParams = Depends(),
+    accept_type: MimeType = Depends(read_bulk_accept_type),
+    orient: JSONOrient = Depends(json_orient_parameter),
+    ctx: Context = Depends(get_ctx),
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+    record: Record = Depends(fetch_record_dependency)
 ):
     if hasattr(request.state, 'version') and request.state.version != "V2":
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
@@ -239,8 +242,7 @@ async def get_data_version(
         else:
             if data_param.offset or data_param.limit:
                 future_index = await DataFrameRender.load_index(record_id, bulk_id, dask_blob_storage)
-            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, bulk_filters,
-                                                          dask_blob_storage)
+            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, bulk_filters, dask_blob_storage)
 
         df = await DataFrameRender.process_params(df, data_param, bulk_filters, dask_blob_storage, future_index)
 
@@ -262,11 +264,11 @@ async def _process_request_v1(record_id: str,
         columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), existing_col)
         stat['schema'] = {k: stat['schema'][k] for k in columns_to_load}
 
-    if not data_param.describe:  # don't limit columns when describe parameter is True
+    if not data_param.describe: # don't limit columns when describe parameter is True
         # if curves parameter is None, it means that we are going to load all existing columns
         nb_cols_to_return = len(columns_to_load) if columns_to_load else len(existing_col)
-        if nb_cols_to_return > Config.max_columns_return.value:
-            raise TooManyColumnsRequested(nb_cols_to_return)
+        if nb_cols_to_return > MAX_COLUMNS_RETURN:
+            raise TooManyColumnsRequested(nb_cols_to_return, MAX_COLUMNS_RETURN)
 
     if filters.has_filter():
         # get column needed for filtering which are not yet in columns
@@ -290,8 +292,8 @@ async def _process_request_v1(record_id: str,
     "/{record_id}/data",
     summary='Returns the data according to the specified query parameters.',
     description='Returns the data according to the specified query parameters.'
-                + GET_DATA_DESCRIPTION
-                + REQUIRED_ROLES_READ,
+    + GET_DATA_DESCRIPTION
+    + REQUIRED_ROLES_READ,
     # response_model=Union[RecordData, Dict],
     responses={
         404: {},
@@ -302,14 +304,14 @@ async def _process_request_v1(record_id: str,
     }
 )
 async def get_data(
-        record_id: str,
-        request: Request,
-        ctrl_p: GetDataParams = Depends(),
-        accept_type: MimeType = Depends(read_bulk_accept_type),
-        orient: JSONOrient = Depends(json_orient_parameter),
-        ctx: Context = Depends(get_ctx),
-        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-        record: Record = Depends(fetch_latest_version_record_dependency)
+    record_id: str,
+    request: Request,
+    ctrl_p: GetDataParams = Depends(),
+    accept_type: MimeType = Depends(read_bulk_accept_type),
+    orient: JSONOrient = Depends(json_orient_parameter),
+    ctx: Context = Depends(get_ctx),
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+    record: Record = Depends(fetch_latest_version_record_dependency)
 ):
     return await get_data_version(record_id, None, request, ctrl_p, accept_type, orient, ctx, bulk_uri_access, record)
 
@@ -320,15 +322,15 @@ async def get_data(
     response_model=CommitSessionResponse
 )
 async def complete_session(
-        record_id: str,
-        session_id: UUID,
-        request: Request,
-        update_request: UpdateSessionState,
-        with_session: WithSessionStorages = Depends(get_session_dependencies),
-        dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-        ctx: Context = Depends(get_ctx),
-        bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-        consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
+    record_id: str,
+    session_id: UUID,
+    request: Request,
+    update_request: UpdateSessionState,
+    with_session: WithSessionStorages = Depends(get_session_dependencies),
+    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+    ctx: Context = Depends(get_ctx),
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+    consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
 ) -> CommitSessionResponse:
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
