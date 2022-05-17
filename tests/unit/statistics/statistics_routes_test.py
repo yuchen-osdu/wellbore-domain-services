@@ -287,17 +287,6 @@ def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consisten
     fetch_stats_for_3s(client, record_id)
 
 
-def test_get_stats_array(testing_app_local_chunking_no_consistency):
-    _, client = testing_app_local_chunking_no_consistency
-
-    record_id = _create_record(client, "WellLog")
-    array_cols = [f'ARRAY[{i}]' for i in range(10)]
-    _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
-
-    response = fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
-    assert response.status_code == 200
-
-
 def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consistency):
     async def _compute_stats_on_bulk_batch():
         raise Exception("test_get_stats_if_error")
@@ -369,3 +358,15 @@ def test_trigger_computations_after_duration(testing_app_local_chunking_no_consi
         computations_parameter.return_value = timedelta(milliseconds=1)
         compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
         assert compute_stats_response.status_code == 200
+
+
+# todo: make it pass
+def test_get_stats_array(testing_app_local_chunking_no_consistency):
+    _, client = testing_app_local_chunking_no_consistency
+
+    record_id = _create_record(client, "WellLog")
+    array_cols = [f'ARRAY[{i}]' for i in range(10)]
+    _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
+
+    response = fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
+    assert response.status_code == 200
