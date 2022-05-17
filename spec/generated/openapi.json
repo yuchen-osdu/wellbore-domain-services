@@ -19745,68 +19745,6 @@
         "tags": [
           "WellLog"
         ]
-      },
-      "post": {
-        "description": "Trigger the computation of statistics on bulk data for \n    the record identified by the record_id at its last version   \n      \n    No unit conversion is supported. Statistics will be returned using the same units as recorded in Curves[].CurveUnit\n    ",
-        "operationId": "compute_bulk_statistics_ddms_v3_welllogs__record_id__data_statistics_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "record_id",
-            "required": true,
-            "schema": {
-              "title": "Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Statistics computation started"
-          },
-          "404": {
-            "description": "Statistics or record not found"
-          },
-          "409": {
-            "description": "Statistics computation already started"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Trigger computations of record's data statistics of record's data",
-        "tags": [
-          "WellLog"
-        ]
       }
     },
     "/ddms/v3/welllogs/{record_id}/sessions": {
@@ -20442,6 +20380,77 @@
           }
         ],
         "summary": "Returns statistics of record's data for selected curves at requested version",
+        "tags": [
+          "WellLog"
+        ]
+      },
+      "post": {
+        "description": "Trigger the computation of statistics on bulk data for \n    the record identified by the record_id at its last version   \n\n    No unit conversion is supported. Statistics will be returned using the same units as recorded in Curves[].CurveUnit\n    ",
+        "operationId": "compute_bulk_statistics_ddms_v3_welllogs__record_id__versions__version__data_statistics_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Statistics computation started"
+          },
+          "404": {
+            "description": "Statistics or record not found"
+          },
+          "409": {
+            "description": "Statistics computation already running or complete"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Trigger computations of record's data statistics of record's data",
         "tags": [
           "WellLog"
         ]
