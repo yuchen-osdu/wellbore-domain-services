@@ -58,11 +58,11 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
 
 
 @pytest.mark.asyncio
-async def test_dask_native_ipc_basic_usage(dask_client):
+async def test_dask_native_ipc_basic_usage(dask_client, local_bulk_persistence_config):
 
     with dask_client(autoclose_asynccontext=True) as dask_client_asynccontext:
         async with dask_client_asynccontext() as client_starter:
-            client = await client_starter()
+            client = await client_starter(local_bulk_persistence_config)
 
             ipc_obj = DaskNativeDataIPC(dask_client=client)
 

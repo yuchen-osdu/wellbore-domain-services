@@ -25,11 +25,11 @@ import pyarrow.parquet as pa
 
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
-from ...helper.logger import get_logger
-from ...helper.traces import with_trace
+from app.helper.logger import get_logger
+from app.helper.traces import with_trace
 from ..capture_timings import capture_timings
 from ..sessions_storage import Session
-from app.conf import Config
+from ..bulk_persistence_config import BulkPersistenceConfig
 
 from .client import DaskClient
 from .dask_worker_plugin import DaskWorkerPlugin
@@ -86,27 +86,28 @@ class DaskBulkStorage:
     client: DaskDistributedClient = None
     """ Dask client """
 
-    def __init__(self) -> None:
+    def __init__(self, config: BulkPersistenceConfig) -> None:
         """ use `create` to create instance """
         self._parameters = None
         self._fs = None
+        self._config = config
 
     @property
     def _data_ipc(self):
         # may be also adapted depending of size to data
-        if Config.dask_data_ipc.value == DaskLocalFileDataIPC.ipc_type:
+        if self._config.dask_data_ipc == DaskLocalFileDataIPC.ipc_type:
             return DaskLocalFileDataIPC()
         assert self.client is not None, 'Dask client not initialized'
         return DaskNativeDataIPC(self.client)
 
     @classmethod
     @with_trace("DaskBulkStorage-create()")
-    async def create(cls, parameters: DaskStorageParameters, dask_client=None) -> 'DaskBulkStorage':
-        instance = cls()
+    async def create(cls, parameters: DaskStorageParameters, config: BulkPersistenceConfig, dask_client=None) -> 'DaskBulkStorage':
+        instance = cls(config=config)
         instance._parameters = parameters
 
         # Initialise the dask client.
-        dask_client = dask_client or await DaskClient.create()
+        dask_client = dask_client or await DaskClient.create(config)
         if DaskBulkStorage.client is not dask_client:  # executed only once per dask client
             DaskBulkStorage.client = dask_client
 
@@ -114,7 +115,9 @@ class DaskBulkStorage:
                 parameters.register_fsspec_implementation()
 
             await DaskBulkStorage.client.register_worker_plugin(
-                DaskWorkerPlugin(logger=get_logger(), register_fsspec_implementation=parameters.register_fsspec_implementation),
+                DaskWorkerPlugin(service_name=config.service_name,
+                                 logger=get_logger(),
+                                 register_fsspec_implementation=parameters.register_fsspec_implementation),
                 name="LoggerWorkerPlugin")
 
             get_logger().info(f"Distributed Dask client initialized : {DaskBulkStorage.client}")

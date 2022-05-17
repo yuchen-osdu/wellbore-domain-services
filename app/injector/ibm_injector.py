@@ -5,7 +5,7 @@ from app.utils import get_http_client_session
 from app.context import Context
 from .app_injector import AppInjector, AppInjectorModule
 from app.tenant import resolve_tenant
-from app.bulk_persistence import DaskBulkStorage
+from app.bulk_persistence import DaskBulkStorage, get_config
 from osdu_ibm.storage.dask_storage_parameters import DaskStorageParametersFactoryIBM
 
 
@@ -30,4 +30,4 @@ class IBMInjector(AppInjectorModule):
         ctx: Context = Context.current()
         tenant = await resolve_tenant(ctx.partition_id)
         params = await daskstoragefactory.get_dask_storage_parameters(tenant)
-        return await DaskBulkStorage.create(params)
+        return await DaskBulkStorage.create(params, get_config())

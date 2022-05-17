@@ -41,6 +41,23 @@ def build_create_session(record_id, prefix, *, meta: Dict[str, str] = None) -> R
     return RequestRunner(rq_proto)
 
 
+def build_create_session_empty_payload(record_id, prefix, payload: dict) -> RequestRunner:
+    rq_proto = Request(
+        name="Create session",
+        method="POST",
+        url="{{base_url}}/" + f"{prefix}/{record_id}/sessions",
+        headers={
+            "accept": "application/json",
+            "data-partition-id": "{{data_partition}}",
+            "Connection": "{{header_connection}}",
+            "Authorization": "Bearer {{token}}",
+        },
+        payload=payload,
+    )
+
+    return RequestRunner(rq_proto)
+
+
 def build_get_session(record_id, prefix, session_id) -> RequestRunner:
     rq_proto = Request(
         name="Get session",

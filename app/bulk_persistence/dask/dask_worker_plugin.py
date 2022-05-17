@@ -14,20 +14,21 @@
 
 from dask.distributed import WorkerPlugin
 from app.helper.logger import get_logger, init_logger
-from app.conf import Config
+from app.conf import Config as AppConfig
 
 
 class DaskWorkerPlugin(WorkerPlugin):
 
-    def __init__(self, logger=None, register_fsspec_implementation=None) -> None:
+    def __init__(self, service_name, logger=None, register_fsspec_implementation=None) -> None:
         self.worker = None
         self._register_fsspec_implementation = register_fsspec_implementation
+        self._service_name = service_name
 
         super().__init__()
         logger.debug("WorkerPlugin initialised")
 
     def setup(self, worker):
-        init_logger(service_name=Config.service_name.value, config=Config)
+        init_logger(service_name=self._service_name, config=AppConfig)
 
         self.worker = worker
         if self._register_fsspec_implementation:

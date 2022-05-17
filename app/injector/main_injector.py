@@ -27,7 +27,7 @@ from app.clients.search_service_client import SearchServiceClient
 from app.clients import make_search_client, make_storage_record_client
 from app.bulk_persistence import SessionsStorage
 
-from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage
+from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage, get_config
 
 
 class MainInjector(AppInjectorModule):
@@ -72,6 +72,11 @@ class MainInjector(AppInjectorModule):
             logger.info('using aws injector')
             AwsInjector().configure(app_injector)
 
+        if Config.cloud_provider.value == 'anthos':
+            from app.injector.anthos_injector import AnthosInjector
+            logger.info('using anthos injector')
+            AnthosInjector().configure(app_injector)
+
         async def make_sessions_storage():
             return SessionsStorage(await app_injector.get(BlobStorageBase))
 
@@ -100,7 +105,8 @@ class MainInjector(AppInjectorModule):
                 app_injector.register(BlobStorageBase, _blob_storage_builder)
 
                 async def _dask_blob_storage_builder() -> DaskBulkStorage:
-                    return await make_local_dask_bulk_storage(base_directory=blob_storage_localfs)
+                    return await make_local_dask_bulk_storage(base_directory=blob_storage_localfs,
+                                                              bulk_config=get_config())
 
                 app_injector.register(DaskBulkStorage, _dask_blob_storage_builder)
                 logger.warning(f'overriding DASK blob storage to use local fs on path ' + blob_storage_localfs)
