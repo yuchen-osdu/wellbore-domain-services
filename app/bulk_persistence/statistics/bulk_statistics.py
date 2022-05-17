@@ -212,8 +212,10 @@ class BulkStatistics:
     def trigger_stats_computation_in_dask(self, columns_count_per_batch, existing_columns,
                                           catalog, record_id, bulk_uri):
         def log_exception(_fut):
-            if _fut.exception():
-                get_logger().exception(f"Something wrong happened '{_fut.key}'", exc_info=_fut.exception())
+            task_exception = _fut.exception()
+            if task_exception:
+                get_logger().exception(f"One task of statistics' computation run in dask has failed: '{_fut.key}'",
+                                       exc_info=task_exception)
 
         started_tasks = []
         for group_columns in grouper(columns_count_per_batch, existing_columns):

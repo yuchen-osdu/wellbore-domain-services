@@ -39,9 +39,9 @@ class DaskWorkerPlugin(WorkerPlugin):
 
     def transition(self, key, start, finish, *args, **kwargs):
         if finish == 'error':
-            exc_info = None
+            exception_text = None
             ts = self.worker.tasks.get(key, None)
             if ts:
-                exc_info = (type(ts.exception), ts.exception, ts.traceback)
+                exception_text = ts.exception_text
+            get_logger().exception(f"Worker's task '{key}' has failed because of '{exception_text}'")
 
-            get_logger().exception(f"Worker's task has failed. Task name: '{key}'", exc_info=exc_info)
