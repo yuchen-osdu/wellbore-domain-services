@@ -360,13 +360,12 @@ def test_trigger_computations_after_duration(testing_app_local_chunking_no_consi
         assert compute_stats_response.status_code == 200
 
 
-# todo: make it pass
-# def test_get_stats_array(testing_app_local_chunking_no_consistency):
-#     _, client = testing_app_local_chunking_no_consistency
-#
-#     record_id = _create_record(client, "WellLog")
-#     array_cols = [f'ARRAY[{i}]' for i in range(10)]
-#     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
-#
-#     response = fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
-#     assert response.status_code == 200
+def test_get_stats_array(testing_app_local_chunking_no_consistency):
+    _, client = testing_app_local_chunking_no_consistency
+
+    record_id = _create_record(client, "WellLog")
+    array_cols = [f'ARRAY[{i}]' for i in range(10)]
+    _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
+
+    response = fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
+    assert response.status_code == 200

@@ -9,7 +9,7 @@ import pytest
 
 from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError
 from app.bulk_persistence import DaskClient
-from app.bulk_persistence.statistics.models import BulkStatisticsStatus
+from app.bulk_persistence.statistics.models import BulkStatisticsStatus, InternalStatisticsComputationMeta
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
@@ -188,15 +188,16 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
                                                    returned_curves_count, expected_cols):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
 
     fake_record_id = 123456789
     with pytest.raises(StatisticsNotFoundError):
-        await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+        await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=None)
 
     future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=fake_record_id)
     await future
 
-    df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=None)
     assert len(df_stats) == returned_curves_count
     assert sorted(list(df_stats.columns)) == expected_cols
 
@@ -219,21 +220,22 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
 async def test_bulk_statistics_get_statistics_invalid_cols(bulk_stats_fixture, cols_name_by_index, expected_shape):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
 
     valid_cols = extract_distinct_cols(cols_name_by_index)
 
-    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
+    future = await bulk_statistics.compute_bulk_statistics(catalog, record_id, bulk_uri, record_version=123456789)
     await future
 
     with pytest.raises(RequestedCurvesError):
-        await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
+        await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=['incorrect-column-name'])
 
     computable_col_plus_invalid_cols = [valid_cols[0], 'incorrect-column-name']
     with pytest.raises(RequestedCurvesError):
-        await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=computable_col_plus_invalid_cols)
+        await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=computable_col_plus_invalid_cols)
 
     not_computable_cols = ['bool-D', 'string-E']
-    result_df_1, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri,
+    result_df_1, stats_meta = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri,
                                                                         columns=not_computable_cols)
     assert result_df_1.empty
 
@@ -252,6 +254,7 @@ async def test_bulk_statistics_get_statistics_invalid_cols(bulk_stats_fixture, c
 async def test_bulk_statistics_get_statistics_mix_requested_cols(bulk_stats_fixture, cols_name_by_index, expected_shape):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
 
     computable_cols = extract_distinct_cols(cols_name_by_index)
 
@@ -260,7 +263,7 @@ async def test_bulk_statistics_get_statistics_mix_requested_cols(bulk_stats_fixt
 
     not_computable_cols = ['bool-D', 'string-E']
     not_computable_cols_plus_valid_cols = not_computable_cols + [computable_cols[0]]
-    result_df_2, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri,
+    result_df_2, stats_meta = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri,
                                                                         columns=not_computable_cols_plus_valid_cols)
     assert result_df_2.shape == (1, 9)
     assert result_df_2.index == [computable_cols[0]]
@@ -276,18 +279,19 @@ async def test_bulk_statistics_get_statistics_mix_requested_cols(bulk_stats_fixt
 async def test_bulk_statistics_nan_columns(bulk_stats_fixture, cols_name_by_index, expected_shape):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
 
     computable_cols = extract_distinct_cols(cols_name_by_index)
     nan_cols = [c for c in computable_cols if 'nan' in c]
 
-    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
+    future = await bulk_statistics.compute_bulk_statistics(catalog, record_id, bulk_uri, record_version=123456789)
     await future
 
-    result_df_with_nan_cols, _ = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    result_df_with_nan_cols, _ = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=None)
     assert result_df_with_nan_cols.shape == (len(computable_cols), 9)
     assert sorted(list(result_df_with_nan_cols.index)) == sorted(computable_cols)
 
-    all_valid_result_df, _ = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=computable_cols)
+    all_valid_result_df, _ = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=computable_cols)
     assert sorted(list(all_valid_result_df.index)) == sorted(computable_cols)
 
     nan_cols_df = all_valid_result_df.filter(items=nan_cols, axis=0)
@@ -309,17 +313,18 @@ async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
 
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
 
     with pytest.raises(StatisticsNotFoundError):
-        await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+        await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=None)
 
     future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
     await future
 
     with pytest.raises(RequestedCurvesError):
-        await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=['incorrect-column-name'])
+        await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=['incorrect-column-name'])
 
-    df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(record_id, bulk_uri, columns=None)
+    df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=None)
     assert df_stats.shape == (columns_count, len(_bulk_stats_columns()))
 
 
@@ -339,5 +344,7 @@ async def test_trigger_computations_after_error(bulk_stats_fixture):
         record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, columns_indexes)
 
         future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456)
-        await future
+        result: InternalStatisticsComputationMeta = await future
+        assert result.computation_attempt == 1
+        assert result.meta.computation_status == BulkStatisticsStatus.Error
 

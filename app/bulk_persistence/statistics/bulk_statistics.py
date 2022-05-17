@@ -69,6 +69,7 @@ class BulkStatistics:
     # maximum number of columns of data to be fetched per batch of bulk files
     _max_cols_per_batch: int = MAX_COLUMNS_RETURN
 
+    # todo: discuss about these two attributes below.
     # Maximum number of time the computation of statistics can be triggered
     _max_computation_retry_count: int = 3
     # Duration before allowing to re-computation statistics
@@ -278,6 +279,7 @@ class BulkStatistics:
             stats_meta_data.meta.computation_status = BulkStatisticsStatus.Complete
 
         await self._push_statistics_meta_file(bulk_statistics_path, stats_meta_data, overwrite_meta_file=True)
+        return stats_meta_data
 
     def _fetch_statistics(self, bulk_statistics_data_path: str, columns: List[str]):
         """
@@ -320,7 +322,7 @@ class BulkStatistics:
             return await asyncio.get_running_loop().run_in_executor(None, InternalStatisticsComputationMeta.parse_raw,
                                                                     blob_content)
 
-    async def get_bulk_statistics(self, record_id: str, bulk_uri: str, columns: List[str]) \
+    async def get_bulk_statistics(self, catalog: BulkCatalog, record_id: str, bulk_uri: str, columns: List[str]) \
             -> (pd.DataFrame, StatisticsComputationMeta):
         """
         @return The statistics data of given record identified by its record_id and bulk_uri
@@ -342,7 +344,6 @@ class BulkStatistics:
         elif internal_statistics_meta.meta.computation_status != BulkStatisticsStatus.Complete:
             raise ComputationNotCompleteError("Statistics computation not finished yet")
 
-        catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_col = catalog.all_columns_dtypes
 
         if not columns:
