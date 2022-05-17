@@ -63,9 +63,10 @@ async def local_dask_client_initialized(dask_client):
 
 
 @pytest.fixture
-async def bulk_stats_fixture(local_dask_client_initialized, tmp_path, nope_logger_fixture, ctx_fixture) \
-        -> (BulkStatistics, DaskBulkStorage):
-    local_dask = await make_local_dask_bulk_storage(str(tmp_path))
+async def bulk_stats_fixture(local_dask_client_initialized, tmp_path, nope_logger_fixture,
+                             ctx_fixture, local_bulk_persistence_config) -> (BulkStatistics, DaskBulkStorage):
+
+    local_dask = await make_local_dask_bulk_storage(str(tmp_path), local_bulk_persistence_config)
 
     bulk_stats = BulkStatistics(dask_blob_storage=local_dask)
     bulk_stats._paging_size_per_batch = 500_000

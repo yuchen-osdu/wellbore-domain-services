@@ -7,7 +7,7 @@ from os.path import join
 import numpy as np
 import pandas as pd
 
-from app.conf import Config
+from app.bulk_persistence.bulk_persistence_config import MAX_COLUMNS_RETURN
 from app.helper.logger import get_logger
 from app.routers.bulk.utils import DataFrameRender
 from .models import StatisticsComputationMeta, BulkStatisticsStatus, InternalStatisticsComputationMeta
@@ -67,7 +67,7 @@ class BulkStatistics:
     # maximum number of bulk values to be fetched and computed per batch
     _paging_size_per_batch: int = 10_000_000
     # maximum number of columns of data to be fetched per batch of bulk files
-    _max_cols_per_batch: int = Config.max_columns_return.value
+    _max_cols_per_batch: int = MAX_COLUMNS_RETURN
 
     # Maximum number of time the computation of statistics can be triggered
     _max_computation_retry_count: int = 3
