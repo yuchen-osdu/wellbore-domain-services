@@ -1,5 +1,7 @@
 import asyncio
 from datetime import datetime
+
+import numpy as np
 import pandas as pd
 
 from unittest import mock
@@ -18,7 +20,12 @@ def post_welllog_data(client, record_id, columns, range_index):
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions['WellLog']["chunking_url"]
 
-    data_to_send = generate_df(columns, range_index).to_parquet(engine='pyarrow')
+    data_df = generate_df(columns, range_index)
+    cols_with_nan = [c for c in data_df.columns if c.endswith('nan')]
+    for col_with_nan in cols_with_nan:
+        data_df.loc[data_df.sample(frac=0.1).index, col_with_nan] = np.nan
+
+    data_to_send = data_df.to_parquet(engine='pyarrow')
 
     write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
@@ -132,10 +139,9 @@ def test_double_compute_stats(testing_app_local_chunking_no_consistency):
 def test_get_stats(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
 
+    columns = ['int-A', 'int-A-with-nan', 'float-B', 'float-B-with-nan', 'date-C', 'date-C-with-nan']
     record_id = _create_record(client, "WellLog")
-    _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
-                                                                        (['MD', 'X'], range(10, 30)),
-                                                                        (['MD', 'X'], range(25, 40))])
+    post_welllog_data(client, record_id, columns, range(1000))
 
     fetch_stats_for_3s(client, record_id)
 
@@ -146,20 +152,21 @@ def test_get_stats(testing_app_local_chunking_no_consistency):
     get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
     assert get_stats_response.status_code == 200
     df_result_last_version = create_df_from_dict(get_stats_response)
-    assert df_result_last_version.shape == (2, 9)
+    assert df_result_last_version.shape == (len(columns), 9)
 
     get_stats_version_response = client.get(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert get_stats_version_response.status_code == 200
     df_result_version = create_df_from_dict(get_stats_version_response)
-    assert df_result_version.shape == (2, 9)
+    assert df_result_version.shape == (len(columns), 9)
 
+    sub_columns = ['int-A-with-nan', 'float-B', 'float-B-with-nan', 'date-C']
     params = {
-        'curves': "MD,X"
+        'curves': ','.join(sub_columns)
     }
     get_stats_response_selected_cols = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response_selected_cols.status_code == 200
     df_result_selected_cols = create_df_from_dict(get_stats_response_selected_cols)
-    assert df_result_selected_cols.shape == (2, 9)
+    assert df_result_selected_cols.shape == (len(sub_columns), 9)
 
     params = {
         'curves': "UnknownColumnName"
@@ -176,11 +183,7 @@ def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_con
     record_id = _create_record(client, "WellLog")
     _create_chunks(client, 'WellLog',
                    record_id=record_id,
-                   cols_ranges=[(
-                       # ["bool-C", "int-A", "string-B", "string-D"],
-                       ['int-A', 'string-B', 'bool-C', 'string-D'],
-                       range(20))])
-
+                   cols_ranges=[(['int-A', 'string-B', 'bool-C', 'string-D'], range(20))])
     fetch_stats_for_3s(client, record_id)
 
     # not computable curves + unknown curves requested => 404
