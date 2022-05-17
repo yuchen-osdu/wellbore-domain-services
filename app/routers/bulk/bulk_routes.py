@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from uuid import UUID
-import asyncio
-
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from odes_storage.models import Record
@@ -26,6 +24,7 @@ from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
 from app.conf import Config
+from app.helper.logger import get_logger
 
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
@@ -127,7 +126,10 @@ async def post_data(record_id: str,
                                                                   bulk_uri_access=bulk_uri_access)
 
     _, updated_record_version = split_record_id_version(update_record_response.record_id_versions[0])
-    await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, updated_record_version)
+    try:
+        await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, updated_record_version)
+    except Exception:
+        get_logger().exception(f"Statistics computation failed for record '{record.id}' with bulk id '{bulk_id}'")
 
     return update_record_response
     # TODO proposal: adding basic describe of data that has been stored
@@ -388,7 +390,11 @@ async def complete_session(
                 raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
 
             # Trigger Wellbore statistics computation after having the new record version
-            await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, updated_version)
+            try:
+                await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, updated_version)
+            except Exception:
+                get_logger().exception(
+                    f"Statistics computation failed for record '{record.id}' with bulk id '{new_bulk_id}'")
 
             response = CommitSessionResponse(
                 **i_session.session.dict(exclude_unset=True, by_alias=True),
