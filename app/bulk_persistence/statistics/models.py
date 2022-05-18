@@ -37,8 +37,8 @@ class CurveStatistics(BaseModel):
     p_50: str = Field(alias="50%", title="50th percentiles")
     p_90: str = Field(alias="90%", title="50th percentiles")
     max: str = Field(title="Minimum value")
-    total_count: str = Field(title="Number of values in the curve")
-    non_absent_values_count: str = Field(title="Number of valid values in the curve")
+    total_count: str = Field(title="Number of values in the curve", alias="totalCount")
+    non_absent_values_count: str = Field(title="Number of valid values in the curve", alias="nonAbsentValuesCount")
 
 
 class BulkDataStatisticsResponse(StatisticsComputationMeta):
@@ -57,46 +57,46 @@ class BulkDataStatisticsResponse(StatisticsComputationMeta):
 
     class Config:
         schema_extra = {
-            "example": {
-                'creation_utc_date': '2022-04-27 11:46:58.708615',
-                'record_id': 'my-record-id',
-                'record_version': '123456789',
-                'computation_status': 'complete',
-                'data': {'ARR[0]': {'count': '499579.0',
-                                    'mean': '450.1040135794339',
-                                    'std': '317.570786686891',
-                                    'min': '-99.0',
-                                    '10%': '11.0',
-                                    '50%': '451.0',
-                                    '90%': '891.0',
-                                    'max': '999.0',
-                                    'total_count': 1000000},
-                         'ARR[1]': {'count': '1000000.0',
-                                    'mean': '449.82156',
-                                    'std': '317.4500948207909',
-                                    'min': '-100.0',
-                                    '10%': '10.0',
-                                    '50%': '450.0',
-                                    '90%': '890.0',
-                                    'max': '999.0',
-                                    'total_count': 1000000},
-                         'ARR[2]': {'count': '1000000.0',
-                                    'mean': '449.189524',
-                                    'std': '317.43579447840636',
-                                    'min': '-100.0',
-                                    '10%': '10.0',
-                                    '50%': '449.0',
-                                    '90%': '889.0',
-                                    'max': '999.0',
-                                    'total_count': 1000000},
-                         'ARR[3]': {'count': '499811.0',
-                                    'mean': '449.513766203625',
-                                    'std': '317.39295021204254',
-                                    'min': '-99.0',
-                                    '10%': '9.0',
-                                    '50%': '449.0',
-                                    '90%': '889.0',
-                                    'max': '999.0',
-                                    'total_count': 1000000}}
-            }
+            "example": {'computationStartDate': '2022-05-18T16:22:16.010582',
+                        'recordId': 'osdu:work-product-component--WellLog:6d9c95c972254bbbaeaecbfa67fd1cf3',
+                        'recordVersion': '1998222529528913770053504387865218642',
+                        'computationStatus': 'complete',
+                        'data': {'ARR[0]': {'mean': '450.8438',
+                                            'std': '318.27778186518816',
+                                            'min': '-100.0',
+                                            '10%': '9.0',
+                                            '50%': '451.0',
+                                            '90%': '893.0',
+                                            'max': '999.0',
+                                            'totalCount': '100000',
+                                            'nonAbsentValuesCount': '100000.0'},
+                                 'ARR[1]': {'mean': '448.06855',
+                                            'std': '316.8023859891449',
+                                            'min': '-100.0',
+                                            '10%': '10.0',
+                                            '50%': '446.0',
+                                            '90%': '889.0',
+                                            'max': '999.0',
+                                            'totalCount': '100000',
+                                            'nonAbsentValuesCount': '100000.0'},
+                                 'ARR[2]': {'mean': '451.01309',
+                                            'std': '317.40833668820653',
+                                            'min': '-100.0',
+                                            '10%': '11.0',
+                                            '50%': '453.0',
+                                            '90%': '890.0',
+                                            'max': '999.0',
+                                            'totalCount': '100000',
+                                            'nonAbsentValuesCount': '100000.0'},
+                                 'ARR[3]': {'mean': '449.16661',
+                                            'std': '317.7767589547625',
+                                            'min': '-100.0',
+                                            '10%': '8.900000000001455',
+                                            '50%': '450.0',
+                                            '90%': '890.0',
+                                            'max': '999.0',
+                                            'totalCount': '100000',
+                                            'nonAbsentValuesCount': '100000.0'}
+                                 }
+                        }
         }

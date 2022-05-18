@@ -164,7 +164,7 @@ def _bulk_stats_columns() -> List[str]:
     """
         Return the expected list of columns of bulk stats
     """
-    return sorted(['non_absent_values_count', 'mean', 'min', '10%', '50%', '90%', 'max', 'std', 'total_count'])
+    return sorted(['nonAbsentValuesCount', 'mean', 'min', '10%', '50%', '90%', 'max', 'std', 'totalCount'])
 
 
 def _bulk_stats_columns_if_date_type_only() -> List[str]:

@@ -212,6 +212,9 @@ async def get_bulk_statistics_version(
     if not stats_df.empty:
         stats_df['std'].fillna(value=str("NaN"), inplace=True)
 
+    stats_df.rename(columns={'total_count': 'totalCount', 'non_absent_values_count': 'nonAbsentValuesCount'},
+                    inplace=True)
+
     # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
     return BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
 
