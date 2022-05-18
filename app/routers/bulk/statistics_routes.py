@@ -24,7 +24,7 @@ from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAcc
 from app.routers.bulk.utils import with_dask_blob_storage, DataFrameRender
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkRecordNotFound
+from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
 
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 from app.bulk_persistence.statistics.models import BulkDataStatisticsResponse
@@ -190,7 +190,12 @@ async def get_bulk_statistics_version(
         requested_columns = list(dict.fromkeys(requested_columns))
 
     catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
-    columns = DataFrameRender.get_matching_columns(requested_columns, set(catalog.all_columns_dtypes.keys()))
+    try:
+        columns = DataFrameRender.get_matching_columns(requested_columns, set(catalog.all_columns_dtypes.keys()))
+    except BulkCurvesNotFound as e:
+        raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                          error_type=statistics_exceptions.RequestedCurvesError.public_error_type,
+                                          message=str(e))
     try:
         stats_df, stats_meta = await BulkStatistics(dask_blob_storage).get_bulk_statistics(catalog, record.id,
                                                                                            bulk_uri.bulk_id, columns)

@@ -188,7 +188,7 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
                                                    returned_curves_count, expected_cols):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
-    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri)
 
     fake_record_id = 123456789
     with pytest.raises(StatisticsNotFoundError):
@@ -220,11 +220,11 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
 async def test_bulk_statistics_get_statistics_invalid_cols(bulk_stats_fixture, cols_name_by_index, expected_shape):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
-    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri)
 
     valid_cols = extract_distinct_cols(cols_name_by_index)
 
-    future = await bulk_statistics.compute_bulk_statistics(catalog, record_id, bulk_uri, record_version=123456789)
+    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
     await future
 
     with pytest.raises(RequestedCurvesError):
@@ -254,7 +254,7 @@ async def test_bulk_statistics_get_statistics_invalid_cols(bulk_stats_fixture, c
 async def test_bulk_statistics_get_statistics_mix_requested_cols(bulk_stats_fixture, cols_name_by_index, expected_shape):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
-    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri)
 
     computable_cols = extract_distinct_cols(cols_name_by_index)
 
@@ -279,12 +279,12 @@ async def test_bulk_statistics_get_statistics_mix_requested_cols(bulk_stats_fixt
 async def test_bulk_statistics_nan_columns(bulk_stats_fixture, cols_name_by_index, expected_shape):
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
-    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri)
 
     computable_cols = extract_distinct_cols(cols_name_by_index)
     nan_cols = [c for c in computable_cols if 'nan' in c]
 
-    future = await bulk_statistics.compute_bulk_statistics(catalog, record_id, bulk_uri, record_version=123456789)
+    future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456789)
     await future
 
     result_df_with_nan_cols, _ = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=None)
@@ -313,7 +313,7 @@ async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
 
     bulk_statistics, dask_storage = bulk_stats_fixture
     record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, cols_name_by_index)
-    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
+    catalog = await dask_storage.get_bulk_catalog(record_id, bulk_uri)
 
     with pytest.raises(StatisticsNotFoundError):
         await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=None)

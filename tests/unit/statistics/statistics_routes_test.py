@@ -176,7 +176,7 @@ def test_get_stats(testing_app_local_chunking_no_consistency):
     get_stats_response_unknown_cols = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response_unknown_cols.status_code == 404
     assert get_stats_response_unknown_cols.content == \
-           b'{"errorType":"CURVES_NOT_FOUND","message":"Requested curves unknown"}'
+           b'{"errorType":"CURVES_NOT_FOUND","message":"bulk for curves: [\'UnknownColumnName\'] not found"}'
 
 
 def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_consistency):
