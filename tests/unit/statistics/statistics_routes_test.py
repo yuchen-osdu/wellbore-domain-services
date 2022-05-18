@@ -38,8 +38,15 @@ def create_df_from_dict(response):
     return pd.DataFrame.from_dict(dict_data, orient='index')
 
 
-def fetch_stats_for_3s(client, record_id, columns=None):
+def fetch_stats_for_3s(client, record_id, *, columns=None, timeout=3):
+    """
+    Try to get statistics several times until the timeout is reached for given record id with given columns
+    """
+
     api_results = []
+    sleep_duration = 0.1
+    # at the minimum timeout must be equals to 0.5s
+    timeout = max(sleep_duration, timeout)
 
     params = None
     if columns:
@@ -47,13 +54,14 @@ def fetch_stats_for_3s(client, record_id, columns=None):
             "curves": ",".join(columns)
         }
 
-    for i in range(6):
+    attempts = int(timeout / sleep_duration)
+    for i in range(attempts):
         get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
         api_results.append(get_stats_response)
         if get_stats_response.status_code == 200:
             break
 
-        asyncio.get_event_loop().run_until_complete(asyncio.sleep(0.5))
+        asyncio.get_event_loop().run_until_complete(asyncio.sleep(sleep_duration))
 
     successful_response = [r for r in api_results if r.status_code == 200]
     faulty_responses = [r.content for r in api_results if r.status_code != 200]
@@ -369,3 +377,5 @@ def test_get_stats_array(testing_app_local_chunking_no_consistency):
 
     response = fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
     assert response.status_code == 200
+    df_result_df = create_df_from_dict(response)
+    assert df_result_df.shape == (10, 9)
