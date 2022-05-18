@@ -21,7 +21,6 @@ import structlog
 from structlog.contextvars import merge_contextvars
 from opencensus.trace import config_integration
 
-from app.conf import Config
 from app.context import get_or_create_ctx
 from app.helper.utils import rename_cloud_role_func
 
@@ -87,12 +86,16 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
         return msg, kwargs
 
 
-def init_logger(service_name):
+def init_logger(*, service_name, config):
     global _LOGGER
 
-    if Config.cloud_provider.value == 'az':
-        _LOGGER = create_azure_logger(service_name)
-    elif Config.cloud_provider.value == 'gcp':
+    if config.cloud_provider.value == 'az':
+        _LOGGER = create_azure_logger(
+            service_name=service_name,
+            az_ai_instrumentation_key=config.get('az_ai_instrumentation_key'),
+            az_logger_level=config.get('az_logger_level')
+        )
+    elif config.cloud_provider.value == 'gcp':
         _LOGGER = create_gcp_logger(service_name)
     else:
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
@@ -101,8 +104,7 @@ def init_logger(service_name):
     return _LOGGER
 
 
-def create_azure_logger(service_name):
-    from opencensus.ext.azure.log_exporter import AzureLogHandler
+def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_level):
     """
     Create logger with two handlers:
      - AzureLogHandler: to see Dependencies, Requests, Traces and Exception into Azure monitoring
@@ -117,22 +119,20 @@ def create_azure_logger(service_name):
     stdout_handler = logging.StreamHandler(sys.stdout)
 
     #  AzurelogHandler for logging to azure appinsight
-    key = Config.get('az_ai_instrumentation_key')
-    logger_level = Config.get('az_logger_level')
-    az_handler = AzureLogHandler(connection_string=f'InstrumentationKey={key}')
-    az_handler.setLevel(logging.getLevelName(logger_level))
-    az_handler.add_telemetry_processor(rename_cloud_role_func(service_name))
+    key = az_ai_instrumentation_key
+    logger_level = az_logger_level
+    if key:
+        az_handler = AzureLogHandler(connection_string=f'InstrumentationKey={key}')
+        az_handler.setLevel(logging.getLevelName(logger_level))
+        az_handler.add_telemetry_processor(rename_cloud_role_func(service_name))
+    else:
+        az_handler = None
 
     # Acquire the logger for azure library
-    az_logger = logging.getLogger('azure')
-    az_logger.setLevel(logging.INFO)
-    az_logger.addHandler(stdout_handler)
+    az_logger = __getLogger(logger_name='azure', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
 
     # Acquire the logger for osdu-core-lib-python-azure
-    osdu_core_lib_logger = logging.getLogger('osdu_az')
-    osdu_core_lib_logger.setLevel(logging.INFO)
-    osdu_core_lib_logger.addHandler(stdout_handler)
-    osdu_core_lib_logger.addHandler(az_handler)
+    osdu_core_lib_logger = __getLogger(logger_name='osdu_az', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
 
     # Ensure logging messages from Dask (killing, restart worker) are exported
     dask_nanny_logger = logging.getLogger('distributed.nanny')
@@ -140,10 +140,7 @@ def create_azure_logger(service_name):
     dask_nanny_logger.addHandler(az_handler)
 
     # Acquire the logger for wdms
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    logger.addHandler(stdout_handler)
-    logger.addHandler(az_handler)
+    logger = __getLogger(logger_name=__name__, log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
 
     # return wdms logger with Context adapter
     return AzureContextLoggerAdapter(logger, extra=dict())
@@ -188,3 +185,13 @@ def create_gcp_logger(service_name):
     std_ddms_app.propagate = False
 
     return my_logger
+
+def __getLogger(logger_name, log_level, stdout_handler, azure_handler=None):
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(log_level)
+    logger.addHandler(stdout_handler)
+
+    if azure_handler:
+        logger.addHandler(azure_handler)
+
+    return logger

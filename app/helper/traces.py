@@ -17,15 +17,13 @@ from typing import Callable
 
 from fastapi.routing import APIRoute
 from opencensus.common.transports.async_ import AsyncTransport
-from opencensus.trace import base_exporter
+from opencensus.trace import base_exporter, execution_context
 from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
 from opencensus.trace.span import SpanKind
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.conf import Config
-from app.helper.utils import rename_cloud_role_func, azure_traces_processing, COMPONENT
-from app.context import get_or_create_ctx
+from .utils import rename_cloud_role_func, azure_traces_processing, COMPONENT
 
 
 """
@@ -76,27 +74,28 @@ def _create_gcp_exporter():
     return StackdriverExporter(transport=AsyncTransport)
 
 
-def create_exporter(service_name):
+def create_exporter(*, service_name, config):
     """
     Create exporters to sent tracing to different tracing platforms e.g. Stackdriver (Google) or Azure
     c.f. documentation https://opencensus.io/exporters/supported-exporters/python/
     """
     combined_exporter = CombinedExporter(service_name=service_name)
 
-    if Config.cloud_provider.value == 'gcp':
+    if config.cloud_provider.value == 'gcp':
         print("Registering OpenCensus trace Stackdriver")
 
         stackdriver_exporter = _create_gcp_exporter()
         combined_exporter.add_exporter(stackdriver_exporter)
-    elif Config.cloud_provider.value == 'az':
+    elif config.cloud_provider.value == 'az':
         print("Registering OpenCensus trace AzureExporter")
 
-        key = Config.get('az_ai_instrumentation_key')
+        key = config.get('az_ai_instrumentation_key')
         try:
-            az_exporter = _create_azure_exporter(key)
-            az_exporter.add_telemetry_processor(rename_cloud_role_func(service_name))
-            az_exporter.add_telemetry_processor(azure_traces_processing)
-            combined_exporter.add_exporter(az_exporter)
+            if type(key) is not None:
+                az_exporter = _create_azure_exporter(key)
+                az_exporter.add_telemetry_processor(rename_cloud_role_func(service_name))
+                az_exporter.add_telemetry_processor(azure_traces_processing)
+                combined_exporter.add_exporter(az_exporter)
         except ValueError as e:
             print('Unable to create AzureExporter:', str(e))
     else:
@@ -135,7 +134,7 @@ def with_trace(label: str, span_kind=SpanKind.CLIENT):
 
             @wraps(target)
             async def async_inner(*args, **kwargs):
-                tracer = get_or_create_ctx().tracer
+                tracer = execution_context.get_opencensus_tracer()
                 if tracer is None:
                     return await target(*args, **kwargs)
 
@@ -147,7 +146,7 @@ def with_trace(label: str, span_kind=SpanKind.CLIENT):
 
         @wraps(target)
         def sync_inner(*args, **kwargs):
-            tracer = get_or_create_ctx().tracer
+            tracer = execution_context.get_opencensus_tracer()
             if tracer is None:
                 return target(*args, **kwargs)
 

@@ -13,11 +13,11 @@ from app.injector.main_injector import MainInjector
 
 
 @pytest.mark.asyncio
-async def test_fwd_correlation_id_to_outgoing_request_to_storage(httpx_mock: HTTPXMock, ctx_fixture):
-    storage_url = "http://example.com"  # well formed url required
+async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
     expected_correlation_id = 'some-correlation-id'
 
-    async with make_storage_record_client(storage_url) as storage_client:
+    async with make_storage_record_client(host=local_dev_config.service_host_storage.value,
+                                          timeout=local_dev_config.de_client_config_timeout.value) as storage_client:
         httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
 
         ctx_fixture.set_current_with_value(correlation_id=expected_correlation_id)
@@ -28,11 +28,11 @@ async def test_fwd_correlation_id_to_outgoing_request_to_storage(httpx_mock: HTT
 
 
 @pytest.mark.asyncio
-async def test_fwd_correlation_id_to_outgoing_request_to_search(httpx_mock: HTTPXMock, ctx_fixture):
-    storage_url = "http://example.com"  # well formed url required
+async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
     expected_correlation_id = 'some-correlation-id'
 
-    async with make_search_client(storage_url) as search_client:
+    async with make_search_client(host=local_dev_config.service_host_search.value,
+                                  timeout=local_dev_config.de_client_config_timeout.value) as search_client:
         httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
 
         ctx_fixture.set_current_with_value(correlation_id=expected_correlation_id)
@@ -42,36 +42,14 @@ async def test_fwd_correlation_id_to_outgoing_request_to_search(httpx_mock: HTTP
         assert response is not None
 
 
-@pytest.fixture()
-async def wdms_app_mocked(nope_logger_fixture):
+def test_outgoing_tracing_headers_with_incoming_headers(local_dev_config, app_configurable_with_testclient, httpx_mock):
 
-    from fastapi.testclient import TestClient
-    from app.wdms_app import wdms_app, app_injector
-    from app.clients import StorageRecordServiceClient
-
-    # we do not want dev mode, so that we are able to actually send http requests
-    conf.Config.dev_mode.value = False
-    conf.Config.service_host_search.value = "http://localhost:8888"
-    conf.Config.service_host_storage.value = "http://localhost:9999"
-
-    wdms_app.dependency_overrides[require_opendes_authorized_user] = lambda: True
-    wdms_app.dependency_overrides[require_data_partition_id] = lambda: True
-    wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
-    client = TestClient(wdms_app)
-
-    MainInjector().configure(app_injector)
-
-    yield client
-
-    wdms_app.dependency_overrides = {}
-
-    # explicit close client in teardown
-    storage_client = await app_injector.get(StorageRecordServiceClient)
-    if storage_client is not None:
-        await storage_client.api_client.close()
-
-
-def test_outgoing_tracing_headers_with_incoming_headers(wdms_app_mocked, httpx_mock):
+    app, client = app_configurable_with_testclient(
+        storage_client_mock=make_storage_record_client(host=local_dev_config.service_host_storage.value,
+                                                       timeout=local_dev_config.de_client_config_timeout.value),
+        fake_opendes_authorized_user=True,
+        fake_data_partition_id=True
+    )
 
     version = '00'
     trace_id = '80f22fa582f64d2584e76b4aac231f12'
@@ -96,11 +74,18 @@ def test_outgoing_tracing_headers_with_incoming_headers(wdms_app_mocked, httpx_m
 
     httpx_mock.add_callback(custom_response)
 
-    response = wdms_app_mocked.delete(f'/ddms/v2/logs/123456', headers=input_headers)
+    response = client.delete(f'/ddms/v2/logs/123456', headers=input_headers)
     assert response.status_code == 204
 
 
-def test_outgoing_tracing_headers_without_headers(wdms_app_mocked, httpx_mock):
+def test_outgoing_tracing_headers_without_headers(local_dev_config, app_configurable_with_testclient, httpx_mock):
+
+    app, client = app_configurable_with_testclient(
+        storage_client_mock=make_storage_record_client(host=local_dev_config.service_host_storage.value,
+                                                       timeout=local_dev_config.de_client_config_timeout.value),
+        fake_opendes_authorized_user=True,
+        fake_data_partition_id=True
+    )
 
     def custom_response(request: httpx.Request, *args, **kwargs):
         assert request.headers['traceparent'], "check if tracing header is present"
@@ -116,5 +101,5 @@ def test_outgoing_tracing_headers_without_headers(wdms_app_mocked, httpx_mock):
 
     httpx_mock.add_callback(custom_response)
 
-    response = wdms_app_mocked.delete('/ddms/v2/logs/123456')
+    response = client.delete('/ddms/v2/logs/123456')
     assert response.status_code == 204

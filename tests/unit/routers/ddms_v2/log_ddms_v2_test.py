@@ -38,7 +38,9 @@ from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware import require_data_partition_id
 from app.model.log_bulk import LogBulkHelper
-from app.bulk_persistence import MimeTypes
+from app.bulk_persistence import MimeTypes, BulkURI
+from app.bulk_persistence.bulk_storage_version import BulkStorageVersion_V1, BulkStorageVersion_V0
+from app.bulk_persistence.bulk_id import new_bulk_id
 from app.context import Context
 from app.wdms_app import wdms_app, app_injector
 from app.clients import *
@@ -484,3 +486,43 @@ def test_decimated_logs(client, decimated_test_data, expected_result, start, sto
         assert response.status_code == 200
         actual_df = pd.read_json(f, orient="values").replace("NaN", np.NaN)
         pd.testing.assert_frame_equal(expected_result, actual_df)
+
+
+def test_read_log_v2_data_422_bulk_storage_version_mismatch(client):
+    # given a record with a V1 bulk storage version URI
+    record = TestHelper.make_minimal_log_record('test_log', id='1337')
+    LogBulkHelper.update_bulk_uri(record, BulkURI(new_bulk_id(), BulkStorageVersion_V1))
+    TestHelper.post_record_to_storage(record)
+
+    # when reading data
+    response = client.get(TestHelper.build_url('/logs/1337/data?orient=split'),
+                          headers=TestHelper.BASE_HEADERS)
+
+    # the should 422, since read v2 only supports V0 bulk storage
+    assert response.status_code == 422
+
+    # when get decimated data
+    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'),
+                          headers=TestHelper.BASE_HEADERS)
+    # the should 422 as well
+    assert response.status_code == 422
+
+
+def test_read_log_v2_data_404_bulk_not_found(client):
+    # given a record with a not existing V0 bulk storage version URI
+    record = TestHelper.make_minimal_log_record('test_log', id='1337')
+    LogBulkHelper.update_bulk_uri(record, BulkURI(new_bulk_id(), BulkStorageVersion_V0))
+    TestHelper.post_record_to_storage(record)
+
+    # when reading data
+    response = client.get(TestHelper.build_url('/logs/1337/data?orient=split'),
+                          headers=TestHelper.BASE_HEADERS)
+
+    # the should 404
+    assert response.status_code == 404
+
+    # when get decimated data
+    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'),
+                          headers=TestHelper.BASE_HEADERS)
+    # the should 404 as well
+    assert response.status_code == 404

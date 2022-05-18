@@ -194,18 +194,6 @@ class ConfigurationContainer:
         factory=lambda x: x.lower()
     )
 
-    max_columns_return: EnvVar = EnvVar(
-        key='MAX_COLUMNS_RETURN',
-        description='Max number of columns that can be returned per data request',
-        default="500",
-        factory=lambda x: int(x))
-
-    max_columns_per_chunk_write: EnvVar = EnvVar(
-        key='MAX_COLUMNS_PER_CHUNK_WRITE',
-        description='Max number of columns that can be write per chunk',
-        default="500",
-        factory=lambda x: int(x))
-
     _environment_dict: Dict = os.environ
 
     _contextual_loader: Callable = None
@@ -305,7 +293,7 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             env_var_key='AZ_AI_INSTRUMENTATION_KEY',
                             description='azure app insights instrumentation key',
                             secret=True,
-                            is_mandatory=True,
+                            is_mandatory=False,
                             override=True)
 
         config.add_from_env(attribute_name='az_logger_level',
@@ -315,6 +303,8 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             secret=False,
                             is_mandatory=False,
                             override=True)
+
+        config.az_bulk_container = 'wdms-osdu'
 
     if provider == 'gcp':
         config.add_from_env(attribute_name='default_data_tenant_project_id',

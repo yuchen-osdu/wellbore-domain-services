@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Callable
+from typing import Any, List
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -26,12 +26,14 @@ from opencensus.trace.span import SpanKind
 from app.helper import traces, utils
 from app.context import get_or_create_ctx
 from app import conf
+from app.helper.logger import get_logger
 
 
 class TracingMiddleware(BaseHTTPMiddleware):
-    def __init__(self, **kwargs):
+    def __init__(self, *, skip_for_path_suffix: List[str], **kwargs):
         super().__init__(**kwargs)
         self._trace_propagator = traces.get_trace_propagator()
+        self._skip_for_path_suffix = skip_for_path_suffix
 
     @staticmethod
     def _before_request(request: Request, tracer: open_tracer.Tracer):
@@ -106,6 +108,9 @@ class TracingMiddleware(BaseHTTPMiddleware):
                                                  attribute_value=response_content_length)
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:
+        if request.url.path.endswith(tuple(self._skip_for_path_suffix)):
+            # early call_next and return if we want to skip the middleware behaviour
+            return await call_next(request)
 
         # Create tracing context, from headers if exists, else create a new one
         span_context = self._trace_propagator.from_headers(request.headers)
@@ -121,17 +126,16 @@ class TracingMiddleware(BaseHTTPMiddleware):
             ctx.set_current_with_value(tracer=tracer)
 
             self._before_request(request, tracer)
-            ctx.logger.debug(f'Request start: {request.method} {request.url}')
+            get_logger().debug(f'Request start: {request.method} {request.url}')
 
             response = None
             try:
                 response = await call_next(request)
                 return response
             except Exception:
-                ctx.logger.exception(f"Exception occurred when calling: {request.url.path}")
+                get_logger().exception(f"Exception occurred when calling: {request.url.path}")
                 raise
             finally:
                 status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
-                if not request.url.path.endswith('healthz'):
-                    ctx.logger.info(utils.process_message(request, status))
+                get_logger().info(utils.process_message(request, status))
                 self._after_request(request, response, tracer)

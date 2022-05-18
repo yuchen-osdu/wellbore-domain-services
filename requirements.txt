@@ -130,11 +130,12 @@ decorator==5.0.9
     #   jsonpath-ng
 distributed==2022.02.0
     # via dask
-fastapi==0.68.1
+fastapi==0.68.2
     # via
     #   -r requirements.in
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
+    #   prometheus-fastapi-instrumentator
 fsspec==2021.7.0
     # via
     #   -r requirements.in
@@ -255,8 +256,12 @@ opencensus-ext-stackdriver==0.7.4
 opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
 osdu-api==0.14.0
-    # via osdu-core-lib-python-aws
+    # via
+    #   osdu-core-lib-python-anthos
+    #   osdu-core-lib-python-aws
 osdu-core-lib-python==2.0.0
+    # via -r requirements.in
+osdu-core-lib-python-anthos==1.0.0
     # via -r requirements.in
 osdu-core-lib-python-aws==1.0.1
     # via -r requirements.in
@@ -285,6 +290,10 @@ ply==3.11
     # via jsonpath-ng
 portalocker==1.7.1
     # via msal-extensions
+prometheus-client==0.13.1
+    # via prometheus-fastapi-instrumentator
+prometheus-fastapi-instrumentator==5.7.1
+    # via -r requirements.in
 protobuf==3.17.3
     # via
     #   google-api-core

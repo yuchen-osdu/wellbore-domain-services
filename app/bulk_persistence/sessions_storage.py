@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import uuid
 from typing import Dict, Optional, List, Any
 from enum import Enum
-import uuid
 from asyncio import gather
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 from fastapi import status, HTTPException
@@ -25,9 +25,9 @@ from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
 
 from app.helper.traces import with_trace
-from app.context import Context
-from app.utils import capture_timings
+from app.helper.logger import get_logger
 
+from .capture_timings import capture_timings
 
 class SessionState(str, Enum):
     Open = 'open',
@@ -45,8 +45,8 @@ class SessionUpdateMode(str, Enum):
 class Session(BaseModel):
     """ model of session exposed  """
 
-    id: str = Field(..., description="identifier of the current session.",
-                    allow_mutation=False)
+    id: UUID = Field(..., description="identifier of the current session.",
+                          allow_mutation=False)
     recordId: str = Field(..., description="identifier of the record of which the session is attached to.",
                           allow_mutation=False)
     fromVersion: int = Field(..., description="record version on top of which the session is based.",
@@ -133,10 +133,10 @@ class SessionInternal(BaseModel):
 
 class SessionException(Exception):
     def __init__(self, record_id: str = None,
-                 session_id: str = None,
+                 session_id: UUID = None,
                  message: str = None,
                  http_status_equivalent=status.HTTP_500_INTERNAL_SERVER_ERROR):
-        super().__init__(f'Error on session {session_id} for record {record_id}: {message or "unknown"}')
+        super().__init__(f'Error on session {str(session_id)} for record {record_id}: {message or "unknown"}')
         self.record_id = record_id
         self.session_id = session_id
         self.http_status = http_status_equivalent
@@ -148,7 +148,7 @@ class SessionException(Exception):
 
 
 class SessionUpdatedEtagUnmatched(SessionException):
-    def __init__(self, record_id: str = None, session_id: str = None, message=None):
+    def __init__(self, record_id: str = None, session_id: UUID = None, message=None):
         super().__init__(record_id,
                          session_id,
                          message or "cannot update because precondition failed.",
@@ -156,7 +156,7 @@ class SessionUpdatedEtagUnmatched(SessionException):
 
 
 class SessionInvalidState(SessionException):
-    def __init__(self, record_id: str = None, session_id: str = None, message=None):
+    def __init__(self, record_id: str = None, session_id: UUID = None, message=None):
         super().__init__(record_id,
                          session_id,
                          message or "invalid state, session is no longer 'Opened'.",
@@ -164,7 +164,7 @@ class SessionInvalidState(SessionException):
 
 
 class SessionNotFound(SessionException):
-    def __init__(self, record_id: str = None, session_id: str = None, message=None):
+    def __init__(self, record_id: str = None, session_id: UUID = None, message=None):
         super().__init__(record_id,
                          session_id,
                          message or "not found.",
@@ -180,8 +180,8 @@ class SessionsStorage:
         self._storage = blob_storage
 
     @staticmethod
-    def _build_session_complete_name(record_id: str, session_id: str):
-        return f'sessions/{record_id}/{session_id}'
+    def _build_session_complete_name(record_id: str, session_id: UUID):
+        return f'sessions/{record_id}/{str(session_id)}'
 
     @with_trace('blob_storage_upload_session')
     async def _store_session(self, tenant: Tenant, session: SessionInternal) -> SessionInternal:
@@ -205,7 +205,7 @@ class SessionsStorage:
                                internal=session.internal)  # returned the updated session
 
     @with_trace('blob_storage_get_session')
-    async def _get_session(self, tenant: Tenant, record_id: str, session_id: str) -> SessionInternal:
+    async def _get_session(self, tenant: Tenant, record_id: str, session_id: UUID) -> SessionInternal:
         object_name = self._build_session_complete_name(record_id, session_id)
 
         try:
@@ -238,7 +238,7 @@ class SessionsStorage:
                              *,
                              meta: Optional[Dict[str, str]] = None, internal: Optional[Any] = None) -> SessionInternal:
         utc_now = datetime.utcnow()
-        session = Session(id=str(uuid.uuid4()), fromVersion=from_version, recordId=record_id, mode=mode,
+        session = Session(id=uuid.uuid4(), fromVersion=from_version, recordId=record_id, mode=mode,
                           createdTime=utc_now, updatedTime=utc_now, expiry=utc_now + timedelta(minutes=ttl),
                           state=SessionState.Open, meta=meta)
 
@@ -246,7 +246,7 @@ class SessionsStorage:
         return await self._store_session(tenant, internal)
 
     @capture_timings('get_session')
-    async def get_session(self, tenant: Tenant, record_id: str, session_id: str) -> Optional[SessionInternal]:
+    async def get_session(self, tenant: Tenant, record_id: str, session_id: UUID) -> Optional[SessionInternal]:
         return await self._get_session(tenant, record_id, session_id)
 
     async def list_sessions(self, tenant: Tenant, record_id: str) -> List[str]:
@@ -254,23 +254,23 @@ class SessionsStorage:
         names = await self._storage.list_objects(tenant, prefix=prefix)
         return [name.split('/')[-1] for name in names]
 
-    async def delete_session(self, tenant: Tenant, record_id: str, session_id: str, force_delete=False):
+    async def delete_session(self, tenant: Tenant, record_id: str, session_id: UUID, force_delete=False):
         """ delete a session. If force_delete is not True it will raise a runtime exception is session is not
         close (i.e. state not abandoned nor committed)"""
         internal = await self._get_session(tenant, record_id, session_id)
 
         if not internal.session.is_closed:
-            Context.current().logger.error(f"Invalid state for session deletion: {internal.session}")
+            get_logger().error(f"Invalid state for session deletion: {internal.session}")
             if not force_delete:
                 raise RuntimeError("Session cannot be deleted. "
                                    "Invalid state. The session must be completed or abandoned before")
 
         object_name = self._build_session_complete_name(record_id, session_id)
         await self._storage.delete(tenant, object_name)
-        Context.current().logger.debug(f'session deleted: {internal.session}')
+        get_logger().debug(f'session deleted: {internal.session}')
 
     class CompletionContextManager:
-        def __init__(self, client: 'SessionsStorage', tenant: Tenant, record_id: str, session_id: str, commit: bool):
+        def __init__(self, client: 'SessionsStorage', tenant: Tenant, record_id: str, session_id: UUID, commit: bool):
             self._tenant = tenant
             self._client = client
             self._record_id = record_id
@@ -306,7 +306,7 @@ class SessionsStorage:
                                                                     new_state, force_update=force_update)
             self._is_armed = False
 
-    def initiate_commit(self, tenant: Tenant, record_id: str, session_id: str) -> CompletionContextManager:
+    def initiate_commit(self, tenant: Tenant, record_id: str, session_id: UUID) -> CompletionContextManager:
         """ must be used in async context:
         ```
             async with sessions_storage.initiate_commit(...) as guard:
@@ -314,7 +314,7 @@ class SessionsStorage:
         ``` """
         return self.CompletionContextManager(self, tenant, record_id, session_id, commit=True)
 
-    def initiate_abandon(self, tenant: Tenant, record_id: str, session_id: str) -> CompletionContextManager:
+    def initiate_abandon(self, tenant: Tenant, record_id: str, session_id: UUID) -> CompletionContextManager:
         """ must be used in async context:
         ```
             async with sessions_storage.initiate_abandon(...) as guard:
@@ -323,7 +323,7 @@ class SessionsStorage:
         return self.CompletionContextManager(self, tenant, record_id, session_id, commit=False)
 
     def initiate_completion(self, tenant: Tenant, record_id: str,
-                            session_id: str, commit: bool) -> CompletionContextManager:
+                            session_id: UUID, commit: bool) -> CompletionContextManager:
         """ initiate completion, with commit = True is equivalent to `initiate_commit`,
          with commit = False is equivalent to `initiate_abandon`"""
         return self.CompletionContextManager(self, tenant, record_id, session_id, commit=commit)
@@ -331,7 +331,7 @@ class SessionsStorage:
     async def _update_session_state(self,
                                     tenant: Tenant,
                                     record_id: str,
-                                    session_id: str,
+                                    session_id: UUID,
                                     new_state: SessionState, *, force_update: bool = False) -> SessionInternal:
         """ State update possibility matrix
 | actual / requested => | open | committing               | committed | abandoning               | abandoned |
@@ -373,7 +373,7 @@ class SessionsStorage:
                                               f"session cannot be {SessionState.Committing.value}")
 
                 # let's continue and finish the session
-                Context.current().logger.warning(
+                get_logger().warning(
                     f"session {i_session.session.id} for record {i_session.session.recordId} "
                     f"appears idle in state {i_session.session.state} since {i_session.session.updatedTime}."
                     f" State update allowed, will be {new_state}"

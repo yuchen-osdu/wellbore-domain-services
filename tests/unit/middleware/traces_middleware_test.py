@@ -11,19 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
 import re
-import types
-from typing import Optional
-from unittest.mock import AsyncMock
 
 from opencensus.trace import base_exporter
-from fastapi.testclient import TestClient
 import pytest
-from starlette.routing import Router, Route, Mount
+from app.wdms_app import DDMS_V2_PATH
+from app.routers import probes
 
-from app.clients import SearchServiceClient, StorageRecordServiceClient
-from app.wdms_app import wdms_app, base_app, DDMS_V2_PATH, app_injector
+from ..test_utils import gen_all_routes_request
 
 
 # Initialize traces exporter in app with a custom one to allow validating our traces
@@ -111,21 +106,6 @@ def test_about_call_traces_request_header(app_configurable_with_testclient, head
     assert spandata.attributes[header_name] == "some value"
 
 
-def gen_all_routes_request(rtr: Router, prefix: Optional[str] = None):
-    if prefix is None:
-        prefix = ""
-
-    for route in rtr.routes:
-        if isinstance(route, Mount):
-            # if this is a Mount, we need to recurse on the route
-            yield from gen_all_routes_request(route.app, route.path)
-        elif isinstance(route, Route):
-            for method in route.methods:
-                yield method, prefix + route.path
-        else:
-            RuntimeError(f"{route} routes retrieval not implemented")
-
-
 def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_holding_data, well_v2_record_list, well_v3_record_list):
     # empty storage client mock required because we use get_record result in route.
     storage_client_mock = mock_storage_client_holding_data(data=[])
@@ -157,7 +137,7 @@ def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_ho
 
     call_count = 0
 
-    # startup event has been called (client has been called in a contest), so all routers should be mounted
+    # startup event has been called (client has been called in a context), so all routers should be mounted
     for method, path in gen_all_routes_request(client_after_startup.app):
 
         # skip routes created on app instantiation
@@ -167,7 +147,7 @@ def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_ho
             "/docs",
             "/docs/oauth2-redirect",
             "/redoc",
-        ]:
+        ] + [r.path for r in probes.router.routes]:  # we also need to exclude probes routes as they are not traced
             continue
 
         path_with_id = path_sub(path)

@@ -21,7 +21,7 @@ import pandas as pd
 import pyarrow.parquet as pa
 
 from app.helper.logger import get_logger
-from app.utils import capture_timings
+from ..capture_timings import capture_timings
 
 
 WDMS_INDEX_NAME = '_wdms_index_'

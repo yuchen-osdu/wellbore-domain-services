@@ -15,7 +15,7 @@
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 
-from app.conf import *
+from app.conf import Config
 from app.helper.logger import get_logger
 
 from .app_injector import AppInjector, AppInjectorModule, WithLifeTime
@@ -25,10 +25,9 @@ from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.clients.search_service_client import SearchServiceClient
 from app.clients import make_search_client, make_storage_record_client
-from app.persistence.sessions_storage import SessionsStorage
+from app.bulk_persistence import SessionsStorage
 
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
+from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage, get_config
 
 
 class MainInjector(AppInjectorModule):
@@ -73,6 +72,11 @@ class MainInjector(AppInjectorModule):
             logger.info('using aws injector')
             AwsInjector().configure(app_injector)
 
+        if Config.cloud_provider.value == 'anthos':
+            from app.injector.anthos_injector import AnthosInjector
+            logger.info('using anthos injector')
+            AnthosInjector().configure(app_injector)
+
         async def make_sessions_storage():
             return SessionsStorage(await app_injector.get(BlobStorageBase))
 
@@ -101,7 +105,8 @@ class MainInjector(AppInjectorModule):
                 app_injector.register(BlobStorageBase, _blob_storage_builder)
 
                 async def _dask_blob_storage_builder() -> DaskBulkStorage:
-                    return await make_local_dask_bulk_storage(base_directory=blob_storage_localfs)
+                    return await make_local_dask_bulk_storage(base_directory=blob_storage_localfs,
+                                                              bulk_config=get_config())
 
                 app_injector.register(DaskBulkStorage, _dask_blob_storage_builder)
                 logger.warning(f'overriding DASK blob storage to use local fs on path ' + blob_storage_localfs)
@@ -131,8 +136,24 @@ class MainInjector(AppInjectorModule):
 
     @staticmethod
     async def build_storage_service_client(host=None, *args, **kwargs) -> StorageRecordServiceClient:
-        return make_storage_record_client(host or Config.service_host_storage.value)
+        if host is None:
+            host = Config.service_host_storage.value
+
+        return make_storage_record_client(
+            host=host,
+            timeout=Config.de_client_config_timeout.value,
+            max_connections=Config.de_client_config_max_connection.value,
+            max_keepalive_connections=Config.de_client_config_max_keepalive.value
+        )
 
     @staticmethod
     async def build_search_service_client(host=None, *args, **kwargs) -> SearchServiceClient:
-        return make_search_client(host or Config.service_host_search.value)
+        if host is None:
+            host = Config.service_host_search.value
+
+        return make_search_client(
+            host=host,
+            timeout=Config.de_client_config_timeout.value,
+            max_connections=Config.de_client_config_max_connection.value,
+            max_keepalive_connections=Config.de_client_config_max_keepalive.value
+        )

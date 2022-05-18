@@ -31,15 +31,13 @@ def context_base():
 
 
 def test_context_repr(context_base):
-    expected = '{"tracer": null, "logger": "logger", "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "partition_id", "app_key": "app_key", "api_key": "api_key", "x_user_id": null}'
+    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "partition_id", "app_key": "app_key", "api_key": "api_key", "x_user_id": null}'
 
     assert str(context_base) == expected
     assert repr(context_base) == expected
 
 
 def test_context_basic(context_base):
-    assert context_base.logger == 'logger'
-    assert context_base['logger'] == 'logger'
 
     assert context_base.correlation_id == 'correlation_id'
     assert context_base.request_id == 'request_id'
@@ -64,7 +62,6 @@ def test_context_basic(context_base):
 def test_context_clone(context_base):
     new_context = context_base.with_value(correlation_id='new_correlation_id', custom1='new_c1', custom3='added_c3')
 
-    assert new_context.logger == context_base.logger
     assert new_context.correlation_id == 'new_correlation_id'
     assert new_context.request_id == context_base.request_id
     assert new_context.dev_mode == context_base.dev_mode

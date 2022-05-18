@@ -29,8 +29,8 @@ from .blob_storage import (
 from .bulk_id import new_bulk_id
 from .dask.errors import internal_bulk_exceptions
 from .mime_types import MimeTypes, MimeType
-from .tenant_provider import resolve_tenant
-from ..helper.traces import with_trace
+from app.tenant import resolve_tenant
+from app.helper.traces import with_trace
 
 
 async def create_and_store_dataframe(ctx: Context, df: pd.DataFrame) -> str:

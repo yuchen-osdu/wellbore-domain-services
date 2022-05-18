@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import copy
 import types
 from typing import List
@@ -12,33 +13,56 @@ from unittest.mock import AsyncMock, create_autospec
 
 from fastapi.testclient import TestClient
 
+from app.conf import ConfigurationContainer, cloud_provider_additional_environment
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware.basic_context_middleware import require_data_partition_id
 from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client
 from app.helper.traces import CombinedExporter
 from app.injector.app_injector import WithLifeTime
-from app.wdms_app import base_app, wdms_app, app_injector
+from app.base import base_app
+from app.wdms_app import wdms_app, app_injector
+from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
+from app.bulk_persistence import BulkPersistenceConfig
+from app.bulk_persistence import DaskBulkStorage
+from app.bulk_persistence import SessionsStorage
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 
 @pytest.fixture(scope="module")
-def local_dev_config():
-    # local import
-    from app.conf import Config
+def local_bulk_persistence_config(local_dev_config):
+    """
+    Creates a new instance of BulkPersistenceConfig with default inits
+    """
+    bulk_config = BulkPersistenceConfig(
+        min_worker_memory=local_dev_config.min_worker_memory.value,
+        dask_data_ipc=local_dev_config.dask_data_ipc.value,
+        service_name=local_dev_config.service_name.value
+    )
 
-    # set config to a local dev config (assumption for running unit tests)
-    Config.dev_mode.value = True
-    Config.cloud_provider.value = "local"
-    Config.service_host_search.value = "https://test-endpoint/api/search"
-    Config.service_host_storage.value = "https://test-endpoint/api/storage"
-    Config.modules.value = "log_recognition.routers.log_recognition"
-    # This one is necessary as long as we have can_run() in modules dependending on it
-    Config.environment_name.value = "evd"
+    yield bulk_config
+
+
+@pytest.fixture(scope="module")
+def local_dev_config(tmp_path_factory):
+    config = ConfigurationContainer.with_load_all(environment_dict={
+        # set config to a local dev config (assumption for running unit tests)
+        "OS_WELLBORE_DDMS_DEV_MODE": "True",
+        "CLOUD_PROVIDER": "local",
+        "SERVICE_HOST_STORAGE": "https://test-endpoint/api/storage",
+        "SERVICE_HOST_SEARCH": "https://test-endpoint/api/search",
+        "MODULES": "log_recognition.routers.log_recognition",
+        'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="blob-")),
+        'USE_INTERNAL_STORAGE_SERVICE_WITH_PATH': str(tmp_path_factory.mktemp(basename="storage-")),
+        # This one is necessary as long as we have can_run() in modules dependending on it
+        "ENVIRONMENT_NAME": "evd"
+    }, contextual_loader=cloud_provider_additional_environment)
 
     # patching Config in app.conf module, so it is found by other modules
-    with mock.patch('app.conf') as app_conf:
-        app_conf.Config = Config
+    with mock.patch('app.conf.Config', config):
+        # returning the config for explicit use in tests.
+        yield config
 
-        yield Config
+    # mock.patch will restore original Config on exiting context, after fixture use.
 
 
 @pytest.fixture
@@ -50,13 +74,14 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
      For usage examples, see fixtures_test.py in this directory
 
      We depend on :
-     - local_dev_config to ha ve a valid configuration, but also avoid doing unexpected network requests
+     - local_dev_config to have a valid configuration, but also avoid doing unexpected network requests
      - nope_logger_fixture because configuring this will mount middlewares, and they need a logger
     """
 
     def setup_data_for_mock(data):
         template_client = make_storage_record_client(
-            local_dev_config.service_host_storage
+            host=local_dev_config.service_host_storage.value,
+            timeout=local_dev_config.de_client_config_timeout.value
         )
 
         # Note: we want to be able to modify the mock to handle get_record and get_record_version specifically
@@ -72,6 +97,9 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                              appkey: str = None,
                              token: str = None) -> odes_storage.models.Record:
             # return the latest
+            if attribute is not None:
+                raise NotImplementedError("mocked_get_record does not support 'attribute' parameter")
+
             return await self.get_record_version(id, None, data_partition_id, appkey, token)
 
         async def mocked_get_record_version(self,
@@ -80,12 +108,27 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                                      data_partition_id: str = None,
                                      appkey: str = None,
                                      token: str = None) -> odes_storage.models.Record:
+            """
+            If version is None it will return the latest version. To determine the latest version, two cases:
+              * the version field in the record is not set or None => considered as the latest
+              * the version field set and not None => latest = record with the greater version (basic int comparison)
+            """
+
+            latest = None
             for d in data:
                 # CAREFUL: id might be optional in the model (not set on write)
                 # Also storage seems to have problematic behavior with id ending in ':'
                 if id is not None and (id == d.id or id + ":" == d.id):
-                    if version is None or version == d.version:  # Note: version None means latest
+                    if version == d.version:
                         return d
+
+                    if latest is None \
+                       or latest.version is None \
+                       or (d.version is not None and d.version > latest.version):
+                        latest = d
+
+            if latest is not None:
+                return latest
 
             # if not found, attempt to emulate behavior of the actual client
             raise odes_storage.UnexpectedResponse(
@@ -96,9 +139,33 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                 headers=httpx.Headers(),
             )
 
+        async def mocked_get_all_record_versions(self,
+                                                 id: str,
+                                                 data_partition_id: str) -> odes_storage.models.RecordVersions:
+            versions = []
+            record_found = False
+            for d in data:
+                # CAREFUL: id might be optional in the model (not set on write)
+                # Also storage seems to have problematic behavior with id ending in ':'
+                if id is not None and (id == d.id or id + ":" == d.id):
+                    record_found = True
+                    if d.version is not None:  # Note: version None means latest
+                        versions.append(d.version)
+            # if not found, attempt to emulate behavior of the actual client
+            if not record_found:
+                raise odes_storage.UnexpectedResponse(
+                    status_code=404,
+                    reason_phrase="Item not found",
+                    # not sure what to put here at this time
+                    content="".encode(encoding="utf-8"),
+                    headers=httpx.Headers(),
+                )
+            return odes_storage.models.RecordVersions(recordId=id, versions=versions or None)
+
         # override get_record method on the instance to return sample data
         mock.get_record = types.MethodType(mocked_get_record, mock)
         mock.get_record_version = types.MethodType(mocked_get_record_version, mock)
+        mock.get_all_record_versions = types.MethodType(mocked_get_all_record_versions, mock)
 
         return mock
 
@@ -106,18 +173,36 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
 
 
 @pytest.fixture(scope="module")
-def app_initialized_with_testclient(local_dev_config, request):
+def base_app_initialized_with_testclient(local_dev_config, dask_client):
     """
     Fixture providing wdms_app started, along with a test client
     """
-    global base_app, wdms_app
 
-    # this app, initialized, and as part of a hierarchy of apps
-    with TestClient(
-        base_app
-    ):  # TOFIX: currently necessary because base_app and wdms_app are interdependent
-        with TestClient(wdms_app) as client:
-            yield wdms_app, client
+    # retrieve the dask_client starter, but let the app close it.
+    # CAREFUL about the fixture scope
+    with dask_client(autoclose_asynccontext=False) as dask_client_starter:
+
+        # Mocking dask_client for app to use it
+        with mock.patch('app.bulk_persistence.dask.client.DaskClient.create', dask_client_starter):
+
+            with TestClient(base_app) as base_client:
+                yield base_client
+
+            # slb_app shutdown event should call DaskClient.close()
+
+        # mock will return DaskClient.create to its original state
+    # context will close current client
+
+
+@pytest.fixture(scope="module")
+def app_initialized_with_testclient(base_app_initialized_with_testclient):
+    """
+    Fixture providing wdms_app started, along with a test client
+    """
+    # dependent fixture because base_app and wdms_app are interdependent
+
+    with TestClient(wdms_app) as client:
+        yield wdms_app, client
 
 
 @pytest.fixture
@@ -164,9 +249,13 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         *,
         search_client_mock=default_search_mock,
         storage_client_mock=default_storage_mock,
+        dask_bulk_storage_mock=None,
+        blob_storage_base_mock=None,
+        sessions_storage_mock=None,
         trace_exporter=create_autospec(CombinedExporter, spec_set=True, instance=True),
         fake_opendes_authorized_user: bool = True,
-        fake_data_partition_id: bool = False
+        fake_data_partition_id: bool = False,
+        disable_bulk_consistency: bool = False,
     ):
         """builder generator that output an app mocked by default, and cleanup properly after use.
         If None is passed as a mock, then the original implementation is used.
@@ -184,6 +273,16 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
             app_injector.register(SearchServiceClient, injection_coro_builder(return_value=search_client_mock),
         WithLifeTime.Singleton())
 
+        if dask_bulk_storage_mock is not None:
+            app_injector.register(DaskBulkStorage, injection_coro_builder(return_value=dask_bulk_storage_mock))
+
+        if blob_storage_base_mock is not None:
+            app_injector.register(BlobStorageBase, injection_coro_builder(return_value=blob_storage_base_mock))
+
+        if sessions_storage_mock is not None:
+            app_injector.register(SessionsStorage, injection_coro_builder(return_value=sessions_storage_mock))
+
+
         ## configure app -- needs to be reset after fixture execution ##
         app.trace_exporter = trace_exporter
 
@@ -200,6 +299,10 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         app.dependency_overrides[
             require_data_partition_id
         ] = require_data_partition_id_mock_depend if fake_data_partition_id else require_data_partition_id
+
+        if disable_bulk_consistency:
+            app.dependency_overrides[set_welllog_data_consistency_check] = lambda: None
+            app.dependency_overrides[set_trajectory_data_consistency_check] = lambda: None
 
         # return the app, ready to be started along with the client
         return app, client

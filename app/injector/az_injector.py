@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.bulk_persistence import resolve_tenant
-from app.bulk_persistence.dask.dask_bulk_storage import (DaskBulkStorage)
+from app.tenant import resolve_tenant
+from app.bulk_persistence import DaskBulkStorage, get_config
 from app.context import Context
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu_az.storage.blob_storage_az import AzureAioBlobStorage
@@ -37,4 +37,4 @@ class AzureInjector(AppInjectorModule):
         ctx: Context = Context.current()
         tenant = await resolve_tenant(ctx.partition_id)
         params = await az_parameters(tenant)
-        return await DaskBulkStorage.create(params)
+        return await DaskBulkStorage.create(params, get_config())

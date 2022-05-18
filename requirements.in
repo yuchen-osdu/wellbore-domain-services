@@ -1,4 +1,4 @@
-fastapi==0.68.1
+fastapi==0.68.2
 pydantic>=1.9
 aiohttp==3.7.4.post0
 cryptography>=2.7
@@ -12,6 +12,7 @@ python-rapidjson
 python-multipart
 jsonpath-ng # TODO: remove when bulk_path no longer supported
 natsort
+prometheus-fastapi-instrumentator
 
 opencensus
 opencensus-ext-stackdriver
@@ -40,4 +41,5 @@ osdu-core-lib-python-ibm==2.0.0
 osdu-core-lib-python-gcp~=2.0.0
 osdu-core-lib-python-azure~=3.0.0
 osdu-core-lib-python-aws~=1.0.1
+osdu-core-lib-python-anthos~=1.0.0
 osdu-core-lib-python~=2.0.0

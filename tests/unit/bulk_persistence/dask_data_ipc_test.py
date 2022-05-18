@@ -10,14 +10,6 @@ from dask.distributed import Client
 from app.bulk_persistence.dask.dask_data_ipc import DaskNoneDataIPC, DaskLocalFileDataIPC, DaskNativeDataIPC
 
 
-@pytest.fixture
-async def dask_client(init_fixtures, event_loop):
-    # use a mono process, mono thread async client with a single worker
-    client = await Client(processes=False, asynchronous=True, direct_to_workers=True, n_workers=1, threads_per_worker=1)
-    yield client
-    await client.close()
-
-
 async def data_async_gen(data=b"123456789", chunk_size=3):
     for i in range(0, len(data), chunk_size):
         yield data[i:i + chunk_size]
@@ -66,23 +58,27 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
 
 
 @pytest.mark.asyncio
-async def test_dask_native_ipc_basic_usage(dask_client):
-    client = dask_client
-    ipc_obj = DaskNativeDataIPC(dask_client=client)
+async def test_dask_native_ipc_basic_usage(dask_client, local_bulk_persistence_config):
 
-    # worker function, simply read and return the data
-    def worker_func(ipc_data_ref, ipc_data_get_func):
-        with ipc_data_get_func(ipc_data_ref) as file_like_data:
-            return file_like_data.read()
+    with dask_client(autoclose_asynccontext=True) as dask_client_asynccontext:
+        async with dask_client_asynccontext() as client_starter:
+            client = await client_starter(local_bulk_persistence_config)
 
-    # set in IPC
-    async with ipc_obj.set(b"123456789") as (data_ref, getter):
+            ipc_obj = DaskNativeDataIPC(dask_client=client)
 
-        # WHEN submit task to dask client
-        result = await client.submit(worker_func, data_ref, getter)
+            # worker function, simply read and return the data
+            def worker_func(ipc_data_ref, ipc_data_get_func):
+                with ipc_data_get_func(ipc_data_ref) as file_like_data:
+                    return file_like_data.read()
 
-        # THEN worker as fetch and read the expected data
-        assert result == b"123456789"
+            # set in IPC
+            async with ipc_obj.set(b"123456789") as (data_ref, getter):
+
+                # WHEN submit task to dask client
+                result = await client.submit(worker_func, data_ref, getter)
+
+                # THEN worker as fetch and read the expected data
+                assert result == b"123456789"
 
 
 @pytest.mark.asyncio

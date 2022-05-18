@@ -64,6 +64,7 @@ def with_patched_get_record(well_record):
 
 @pytest.mark.asyncio
 async def test_delete_recursive_only_delete_entity_provided(ctx_fixture,
+                                                            nope_logger_fixture,
                                                             authority,
                                                             data_partition,
                                                             entity_source,
@@ -111,6 +112,7 @@ async def test_delete_recursive_only_delete_entity_provided(ctx_fixture,
 
 @pytest.mark.asyncio
 async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
+                                                             nope_logger_fixture,
                                                              authority,
                                                              data_partition,
                                                              entity_source,
@@ -151,14 +153,12 @@ async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
 @pytest.mark.asyncio
 async def test_delete_should_keep_delete_heterogeneous_failure(
         ctx_fixture,
+        nope_logger_fixture,
         authority,
         data_partition,
         entity_source,
         well_record,
         with_patched_get_record):
-    moc_logger = mock.MagicMock()
-    ctx = Context.set_current_with_value(logger=moc_logger)
-
     # in case of exception on delete call, should still call delete on all of them
 
     sub_ids = [f'id:{i}' for i in range(10)]
@@ -184,7 +184,7 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
                 side_effect=delete_success_only_well) as moc_storage_delete_record:
             with pytest.raises(fastApiHTTPException) as exp_info:  # expect to raise
                 await StorageHelper.delete_recursively(
-                    ctx,
+                    ctx_fixture,
                     well_record.id, 'well',
                     [Entity.LOGSET],
                     data_partition,
@@ -200,20 +200,18 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
             assert set(expect_delete_ids) == actual_deleted_id
 
             # check error are logged
-            assert moc_logger.error.call_count == len(sub_ids)
+            assert nope_logger_fixture.error.call_count == len(sub_ids)
 
 
 @pytest.mark.asyncio
 async def test_delete_should_keep_delete_homogenous_failure(
         ctx_fixture,
+        nope_logger_fixture,
         authority,
         data_partition,
         entity_source,
         well_record,
         with_patched_get_record):
-
-    moc_logger = mock.MagicMock()
-    ctx = Context.set_current_with_value(logger=moc_logger)
 
     # in case of exception on delete call, should still call delete on all of them
 
@@ -238,7 +236,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
                 side_effect=delete_success_only_well) as moc_storage_delete_record:
             with pytest.raises(fastApiHTTPException) as exp_info:  # expect to raise
                 await StorageHelper.delete_recursively(
-                    ctx,
+                    ctx_fixture,
                     well_record.id, 'well',
                     [Entity.LOGSET],
                     data_partition,
@@ -254,7 +252,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
             assert set(expect_delete_ids) == actual_deleted_id
 
             # check error are logged
-            assert moc_logger.error.call_count == len(sub_ids)
+            assert nope_logger_fixture.error.call_count == len(sub_ids)
 
 
 @pytest.mark.asyncio
@@ -265,6 +263,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
                                                            content=b'',
                                                            headers={})])
 async def test_delete_404_of_sub_delete_is_valid(ctx_fixture,
+                                                 nope_logger_fixture,
                                                  data_partition,
                                                  authority,
                                                  entity_source,
@@ -306,6 +305,7 @@ async def test_delete_404_of_sub_delete_is_valid(ctx_fixture,
                           fastApiHTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR),
                           RuntimeError()])
 async def test_delete_failure_get_record(ctx_fixture,
+                                         nope_logger_fixture,
                                          data_partition,
                                          entity_source,
                                          well_record,

@@ -13,26 +13,22 @@
 # limitations under the License.
 import json
 import os
+import uuid
 from unittest import mock
-from odes_storage import UnexpectedResponse
+from fastapi import status
 import pandas as pd
 import pytest
-from app.auth.auth import require_opendes_authorized_user
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
-from app.clients import SearchServiceClient, StorageRecordServiceClient
-from app.helper import traces
-from app.middleware import require_data_partition_id
-from app.model.osdu_model import Well, Wellbore
-from app.persistence.sessions_storage import SessionsStorage
-from app.wdms_app import app_injector, wdms_app
-from fastapi import status
-from fastapi.testclient import TestClient
-from odes_storage.models import CreateUpdateRecordsResponse, Record, RecordVersions
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from starlette.responses import Response
-from tests.unit.conftest import do_nothing, set_default_partition
+
+from odes_storage import UnexpectedResponse
+from odes_storage.models import CreateUpdateRecordsResponse, Record, RecordVersions
+from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
+
+from app.wdms_app import DDMS_V3_PATH
+from app.clients import SearchServiceClient, StorageRecordServiceClient
+from app.model.osdu_model import Well, Wellbore
+from tests.unit.fixtures_pkg.testing_app_chunking import create_bulk_mocks
+
 from tests.unit.test_utils import create_mock_class
 
 
@@ -40,81 +36,22 @@ from tests.unit.test_utils import create_mock_class
 Contains unified common tests for the different kind. Mainly CRUD test cases
 """
 
-tests_parameters = [
-    (
-        "/ddms/v3/wellbores",
-        r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        Wellbore(
-            id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:",
-            kind="namespace:osdu:master-data--Wellbore:1.0.0",
-            acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-            legal={
-                "legaltags": ["string"],
-                "otherRelevantDataCountries": ["FR"],
-            },
-            data={},
-        ),
-    ),
-    (
-        "/ddms/v3/wellbores",
-        r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        Wellbore(
-            id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:145",
-            kind="namespace:osdu:master-data--Wellbore:1.0.0",
-            acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-            legal={
-                "legaltags": ["string"],
-                "otherRelevantDataCountries": ["FR"],
-            },
-            data={},
-        ),
-    ),
-]
-
 StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
-def dasked_test_app_with_mocked_core_service(event_loop, tmp_path, nope_logger_fixture):
+async def dasked_test_app_with_mocked_core_service(app_configurable_with_testclient, tmp_path_factory, local_bulk_persistence_config):
+    super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
+                                          local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")),
+                                          bulk_config=local_bulk_persistence_config)
+    super_mocks['storage_client_mock'] = StorageRecordServiceClientMock
 
-    local_blob_storage = LocalFSBlobStorage(directory=str(tmp_path))
-
-    async def build_mock_storage():
-        return StorageRecordServiceClientMock()
-
-    async def build_mock_search():
-        return SearchServiceClientMock()
-
-    async def blob_storage_builder(*args, **kwargs):
-        return local_blob_storage
-
-    async def sessions_storage_builder(*args, **kwargs):
-        return SessionsStorage(local_blob_storage)
-
-    async def dask_blob_storage_builder() -> DaskBulkStorage:
-        return await make_local_dask_bulk_storage(base_directory=str(tmp_path))
-
-    app_injector.register(DaskBulkStorage, dask_blob_storage_builder)
-    app_injector.register(BlobStorageBase, blob_storage_builder)
-    app_injector.register(SessionsStorage, sessions_storage_builder)
-    app_injector.register(StorageRecordServiceClient, build_mock_storage)
-    app_injector.register(SearchServiceClient, build_mock_search)
-
-    # override authentication dependency
-    previous_overrides = wdms_app.dependency_overrides
-
-    try:
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-        client = TestClient(wdms_app)
-        yield client
-    finally:
-        wdms_app.dependency_overrides = previous_overrides  # clean up
-
-
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
+    _, client = app_configurable_with_testclient(
+        fake_opendes_authorized_user=True,
+        fake_data_partition_id=True,
+        **super_mocks
+    )
+    yield client
 
 
 def test_post_records_successful(dasked_test_app_with_mocked_core_service):
@@ -145,50 +82,81 @@ def test_post_records_successful(dasked_test_app_with_mocked_core_service):
         assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
 
 
-def replace_template(source_obj_str: str) -> str:
-    source_obj_str = (
-        source_obj_str.replace("{{datapartitionid}}", "datapartitionid")
-            .replace("{datapartitionid}", "datapartitionid")
-            .replace("{{domain}}", "domain")
-            .replace("{{wellboreId}}", "wellboreId")
-            .replace("{{wellId}}", "wellId")
+@pytest.mark.parametrize(
+    "method, relative_path",
+    [
+        # examples of string that are expected to fail because of id not matching regex
+        ("GET", "some_random_string"),
+        ("GET", "some_random_string/versions"),
+        ("GET", "some_random_string/versions/42"),
+        ("DELETE", "some_random_string"),
+    ],
+)
+@pytest.mark.parametrize("url_entity_base_path", [
+    "wells",
+    "wellbores",
+    "wellboremarkersets",
+    "wellboretrajectories",
+    "welllogs"])
+def test_get_delete_routes_refuse_incorrect_record_id(
+    app_configurable_with_testclient, method, relative_path, url_entity_base_path
+):
+    app, client = app_configurable_with_testclient()
+
+    response = client.request(method=method, url=f'{DDMS_V3_PATH}/{url_entity_base_path}/{relative_path}')
+    assert response.status_code == 422
+    assert "string does not match regex" in response.json()["detail"][0]["msg"]
+
+
+def records_with_version(records):
+    record_version = {}
+    for r in records:
+        previous_version = record_version.setdefault(r.id, 0)
+        r.version = previous_version+1
+        record_version[r.id] = r.version
+    return records
+
+
+@pytest.mark.parametrize("url_entity_base_path, record_list_fixture", [
+    ("wells", "well100_v3_list"),
+    ("wellbores", "wellbore100_v3_list"),
+    ("wellboremarkersets", "marker110_v3_list"),
+    ("wellboretrajectories", "trajectory110_v3_list"),
+    ("welllogs", "welllog110_v3_list")
+])
+def test_get_delete_v3_routes_success(app_configurable_with_testclient,
+                                      mock_storage_client_holding_data,
+                                      url_entity_base_path,
+                                      record_list_fixture,
+                                      request):
+    all_records = request.getfixturevalue(record_list_fixture)  # dynamically load fixture
+    record = all_records[0]  # using the first record
+    model_cls = record.__class__
+    _, client = app_configurable_with_testclient(
+        storage_client_mock=mock_storage_client_holding_data(data=records_with_version(all_records))
     )
-    return source_obj_str
 
+    # Get latest
+    response = client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}")
+    assert response.status_code == 200
+    record_data = response.json()
+    retrieved_wr = model_cls.parse_obj(record_data)
+    assert retrieved_wr == record
 
-get_invalid_id_parameters = [
-    (Wellbore, "/ddms/v3/wellbores", "toto"),
-    (Well, "/ddms/v3/wells", "schmurf"),
-]
+    # get all versions
+    response = client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}/versions")
+    assert response.status_code == 200
+    first_version = response.json()['versions'][0]
 
+    # get first version
+    response = client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}/versions/{first_version}")
+    assert response.status_code == 200
+    retrieved_wr = model_cls.parse_obj(response.json())
+    assert retrieved_wr == record
 
-@pytest.mark.parametrize("entity_class, base_url, record_id", get_invalid_id_parameters)
-def test_get_record_incorrect_id(dasked_test_app_with_mocked_core_service, entity_class, base_url, record_id):
-    response = dasked_test_app_with_mocked_core_service.get(
-        f"{base_url}/{record_id}",
-        headers={"data-partition-id": "testing_partition"},
-    )
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-@pytest.mark.parametrize("base_url, id, record_obj", tests_parameters)
-def test_get_record_success(dasked_test_app_with_mocked_core_service, base_url, id, record_obj):
-    record_id = record_obj.id
-    moc = mock.AsyncMock(return_value=record_obj)
-
-    with mock.patch.object(StorageRecordServiceClientMock, "get_record", moc):
-        # when
-        response = dasked_test_app_with_mocked_core_service.get(
-            f"{base_url}/{record_id}",
-            headers={"data-partition-id": "testing_partition"},
-        )
-        assert response.status_code == status.HTTP_200_OK
-
-        # then assert storage is called with the proper id and data_partition
-        moc.assert_called_with(id=id, data_partition_id="testing_partition")
-
-        # assert it validates the input object schema
-        record_obj.validate(response.json())
+    # delete
+    response = client.delete(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}")
+    assert response.status_code == 204
 
 
 tests_parameters_restricted_record_id = [
@@ -230,10 +198,7 @@ tests_parameters_restricted_well = [
 ]
 
 
-def validation_test_restricted_record_id(
-        record_id, record_id_to_test, response, ok_response=status.HTTP_200_OK,
-        error_response=status.HTTP_400_BAD_REQUEST
-):
+def validation_test_restricted_record_id(record_id, record_id_to_test, response, ok_response, error_response):
     if record_id != record_id_to_test:
         assert response.status_code == error_response
     else:
@@ -265,39 +230,34 @@ def test_restricted_record_id(
         response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
 
         validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                             error_response=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        response = dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}")
-        validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
-        response = dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}/versions")
-        validation_test_restricted_record_id(record_id, record_id_to_test, response)
-
-        response = dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}/versions/{version}")
-        validation_test_restricted_record_id(record_id, record_id_to_test, response)
+                                             status.HTTP_200_OK,status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         if base_url == "/ddms/v3/welllogs" or base_url == "/ddms/v3/wellboretrajectories":
             # Session
             response = dasked_test_app_with_mocked_core_service.post(
                 f"{base_url}/{record_id_to_test}/sessions", json={"fromVersion": 11351351, "mode": "update"}
             )
-            validation_test_restricted_record_id(record_id, record_id_to_test, response)
+            validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                                 status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-            session_id = "56df654df654df65"
+            session_id = uuid.uuid4()
             response = dasked_test_app_with_mocked_core_service.post(
                 f"{base_url}/{record_id_to_test}/sessions/{session_id}/data",
                 data=chunk.to_json(orient="split"),
                 headers={"Content-Type": "application/json"},
             )
-            validation_test_restricted_record_id(record_id, record_id_to_test, response)
+            validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                                 status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
             response = dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}/sessions")
-            validation_test_restricted_record_id(record_id, record_id_to_test, response)
+            validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                                 status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
             response = dasked_test_app_with_mocked_core_service.get(
                 f"{base_url}/{record_id_to_test}/sessions/{session_id}"
             )
-            validation_test_restricted_record_id(record_id, record_id_to_test, response)
+            validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                                 status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
             # Data
             moc_record = Record(
@@ -323,17 +283,20 @@ def test_restricted_record_id(
                 response = dasked_test_app_with_mocked_core_service.post(
                     f"{base_url}/{record_id_to_test}/data", data=data, headers=headers
                 )
-                validation_test_restricted_record_id(record_id, record_id_to_test, response)
+                validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                                     status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
                 response = dasked_test_app_with_mocked_core_service.get(
                     f"{base_url}/{record_id_to_test}/data?orient=split", headers={"Accept": "application/json"}
                 )
-                validation_test_restricted_record_id(record_id, record_id_to_test, response)
+                validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                                     status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
                 response = dasked_test_app_with_mocked_core_service.get(
                     f"{base_url}/{record_id_to_test}/versions/{version}/data"
                 )
-                validation_test_restricted_record_id(record_id, record_id_to_test, response)
+                validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                                     status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
 
 tests_parameters_record_ids = [

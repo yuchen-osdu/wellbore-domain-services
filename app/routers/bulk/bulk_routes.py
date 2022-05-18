@@ -11,19 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from uuid import UUID
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from odes_storage.models import Record
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
-from app.model.filter import BulkReadFilters
-from app.model.model_chunking import GetDataParams, DataframeBasicDescribe
-
+from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe
+from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
-from app.conf import Config
+from app.bulk_persistence import MAX_COLUMNS_RETURN
 
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
@@ -33,7 +34,7 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            read_bulk_accept_type,
                                            write_bulk_content_type)
 
-from app.routers.record_utils import fetch_record
+from app.routers.record_utils import fetch_record, fetch_record_dependency, fetch_latest_version_record_dependency
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
@@ -42,7 +43,7 @@ from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_data_consistency_checks)
 
 # imports for session manipulation
-from app.persistence.sessions_storage import (
+from app.bulk_persistence import (
     Session,
     SessionException,
     SessionState,
@@ -58,18 +59,16 @@ from app.routers.sessions import (
 )
 
 # imports from bulk persistence
-from app.bulk_persistence.dataframe_validators import (auto_cast_columns_to_string,
-                                                       DataFrameValidationFunc,
-                                                       no_validation)
-from app.bulk_persistence import JSONOrient, get_dataframe, download_bulk
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested
-from app.bulk_persistence.mime_types import MimeTypes, MimeType
-from app.bulk_persistence.dask.traces import trace_dataframe_attributes, trace_attributes_root_span
-
-
-from app.bulk_persistence import DataConsistencyChecks
-
+from app.bulk_persistence import (auto_cast_columns_to_string,
+    DataFrameValidationFunc, no_validation,
+    JSONOrient,
+    get_dataframe, download_bulk,
+    DaskBulkStorage,
+    MimeTypes, MimeType,
+    trace_dataframe_attributes, trace_attributes_root_span,
+    BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
+    DataConsistencyChecks
+                                  )
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -100,12 +99,12 @@ async def post_data(record_id: str,
                     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
-                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
+                    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+                    record: Record = Depends(fetch_latest_version_record_dependency)):
 
     """
     Handle a post data outside of a session. The given bulk will fully replace any existing one
     """
-    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
     # process and store the data
@@ -145,15 +144,15 @@ async def post_data(record_id: str,
     responses={400: {"description": "Record not found"}}
 )
 async def post_chunk_data(record_id: str,
-                          session_id: str,
+                          session_id: UUID,
                           request: Request,
                           content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-                          df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func)
+                          df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
+                          record: Record = Depends(fetch_latest_version_record_dependency)
                           ) -> DataframeBasicDescribe:
     if hasattr(request.state, 'version') and request.state.version != "V2":
-        record = await fetch_record(with_session.ctx, record_id)
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
     # fetch the session
@@ -179,11 +178,12 @@ async def post_chunk_data(record_id: str,
         ex.raise_as_http()
 
 
+# TODO: set bulk config when configuration is reloaded from environment
 GET_DATA_DESCRIPTION = f"""  
 Multiple media types response are available ("application/json", "application/x-parquet").  
 The desired format can be specify in the "Accept" header, default is Parquet.  
 When bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  
-The requested columns must not exceed {Config.max_columns_return.value}. The query parameter __curves__ can be use to limit the number of columns."""
+The requested columns must not exceed {MAX_COLUMNS_RETURN}. The query parameter __curves__ can be use to limit the number of columns."""
 
 
 @router.get(
@@ -208,9 +208,9 @@ async def get_data_version(
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
-    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+    record: Record = Depends(fetch_record_dependency)
 ):
-    record = await fetch_record(ctx, record_id, version)
     if hasattr(request.state, 'version') and request.state.version != "V2":
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
@@ -259,8 +259,8 @@ async def _process_request_v1(record_id: str,
     if not data_param.describe: # don't limit columns when describe parameter is True
         # if curves parameter is None, it means that we are going to load all existing columns
         nb_cols_to_return = len(columns_to_load) if columns_to_load else len(existing_col)
-        if nb_cols_to_return > Config.max_columns_return.value:
-            raise TooManyColumnsRequested(nb_cols_to_return)
+        if nb_cols_to_return > MAX_COLUMNS_RETURN:
+            raise TooManyColumnsRequested(nb_cols_to_return, MAX_COLUMNS_RETURN)
 
     if filters.has_filter():
         # get column needed for filtering which are not yet in columns
@@ -302,9 +302,10 @@ async def get_data(
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
-    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
+    bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
+    record: Record = Depends(fetch_latest_version_record_dependency)
 ):
-    return await get_data_version(record_id, None, request, ctrl_p, accept_type, orient, ctx, bulk_uri_access)
+    return await get_data_version(record_id, None, request, ctrl_p, accept_type, orient, ctx, bulk_uri_access, record)
 
 
 @router.patch(
@@ -314,7 +315,7 @@ async def get_data(
 )
 async def complete_session(
     record_id: str,
-    session_id: str,
+    session_id: UUID,
     request: Request,
     update_request: UpdateSessionState,
     with_session: WithSessionStorages = Depends(get_session_dependencies),
@@ -377,13 +378,14 @@ async def complete_session(
 
             i_session = commit_guard.session
             i_session.session.meta = i_session.session.meta or {}
-            i_session.session.meta.update({"some_detail_about_merge": "like the shape, number of rows ..."})
+
+            _, updated_version = split_record_id_version(new_record.record_id_versions[0])
+            if updated_version is None:
+                raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
 
             response = CommitSessionResponse(
                 **i_session.session.dict(exclude_unset=True, by_alias=True),
-                version=DMSV3RouterUtils.get_version_from_record_id_version(
-                    new_record.record_id_versions[0]
-                )
+                version=updated_version
             )
 
             return response
