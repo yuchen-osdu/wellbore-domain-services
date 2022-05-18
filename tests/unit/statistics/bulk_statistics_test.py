@@ -22,16 +22,33 @@ from app.bulk_persistence.dataframe_validators import no_validation
 
 
 @pytest.mark.parametrize("container", [
+    list(),
+    list(range(10))
+])
+@pytest.mark.parametrize("step,expected_values", [
+    (0, []),
+    (3, [(0, 1, 2), (3, 4, 5), (6, 7, 8), (9,)]),
+    (6, [(0, 1, 2, 3, 4, 5), (6, 7, 8, 9)]),
+    (10, [(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)]),
+    (11, [(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)]),
+])
+def test_grouper(container, step, expected_values):
+    result = list(grouper(step, container))
+    for r in result:
+        assert len(r) <= min(step, len(container))
+
+    if container:
+        assert result == expected_values
+
+
+@pytest.mark.parametrize("container", [
     list(range(10)),
     list()
 ])
-@pytest.mark.parametrize("step", [
-    0, 5, 10, 11
-])
-def test_grouper(container, step):
-    result = list(grouper(step, container))
-    for r in result:
-        assert len(r) == min(step, len(container))
+def test_grouper_incorrect_value(container):
+    step = -10
+    with pytest.raises(ValueError):
+        list(grouper(step, container))
 
 
 @pytest.mark.parametrize("max_columns_count, nb_rows, nb_cols, expected", [

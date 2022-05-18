@@ -1,6 +1,6 @@
 import asyncio
 import functools
-from typing import List, Callable, Iterable
+from typing import List, Callable, Iterable, Iterator
 import itertools
 from datetime import datetime, timedelta
 from os.path import join
@@ -26,7 +26,7 @@ from .exceptions import (
 from osdu.core.api.storage import exceptions as osdu_storage_exception
 
 
-def grouper(n, container: Iterable):
+def grouper(n, container: Iterable) -> Iterator[tuple]:
     """
     Return generator over a sub-list of 'n' elements of the given 'container'
     >>> list(grouper(4,['A', 'B', 'C', 'D', 'E', 'F']))
@@ -34,10 +34,7 @@ def grouper(n, container: Iterable):
     """
     n = int(n)
     it = iter(container)
-    while True:
-        chunk = tuple(itertools.islice(it, n))
-        if not chunk:
-            return
+    while chunk := tuple(itertools.islice(it, n)):
         yield chunk
 
 
@@ -69,7 +66,6 @@ class BulkStatistics:
     # maximum number of columns of data to be fetched per batch of bulk files
     _max_cols_per_batch: int = MAX_COLUMNS_RETURN
 
-    # todo: discuss about these two attributes below.
     # Maximum number of time the computation of statistics can be triggered
     _max_computation_retry_count: int = 3
     # Duration before allowing to re-computation statistics
@@ -212,25 +208,52 @@ class BulkStatistics:
 
     def trigger_stats_computation_in_dask(self, columns_count_per_batch, existing_columns,
                                           catalog, record_id, bulk_uri):
+        """
+        Create several batch of statistics' computation per group of columns to be read at once,
+        it is determined by the value of columns_count_per_batch.
+        Each batch in run into Dask cluster.
+
+        @return the list of future representing a running task into Dask
+        """
+
         def log_exception(_fut):
             task_exception = _fut.exception()
             if task_exception:
-                get_logger().exception(f"One task of statistics' computation run in dask has failed: '{_fut.key}'",
-                                       exc_info=task_exception)
+                get_logger().exception(f"One computation task of statistics ran in dask has failed: '{_fut.key}'."
+                                       f" Record id '{record_id}' with bulk-uri '{bulk_uri}'", exc_info=task_exception)
 
-        started_tasks = []
+        started_futures = []
         for group_columns in grouper(columns_count_per_batch, existing_columns):
-            f = self._submit_with_trace(self._compute_stats_on_bulk_batch,
-                                        catalog,
-                                        group_columns,
-                                        record_id,
-                                        bulk_uri,
-                                        priority=DASK_BACKGROUND_TASK_PRIORITY)
-            f.add_done_callback(log_exception)
-            started_tasks.append(f)
-        return started_tasks
+            future = self._submit_with_trace(self._compute_stats_on_bulk_batch,
+                                             catalog,
+                                             group_columns,
+                                             record_id,
+                                             bulk_uri,
+                                             priority=DASK_BACKGROUND_TASK_PRIORITY)
+            future.add_done_callback(log_exception)
+            started_futures.append(future)
+
+        get_logger().info(f"Bulk statistics - computation triggered for record id '{record_id}'"
+                          f" with bulk-uri '{bulk_uri}', started_futures count: {len(started_futures)}")
+        return started_futures
 
     async def compute_bulk_statistics(self, record_id: str, bulk_uri: str, record_version: int):
+        """
+            Start statistics' computation on whole bulk data of one record identified by its record_id and its bulk_uri.
+
+            This computation in run per batch of columns of the bulk data, identified by record_id + bulk_uri.
+            Each batch: fetch bulk data, compute statistics and save data statistics into blob storage
+
+            Bulk information come from bulk catalog retrieved with self.dask_blob_storage instance.
+
+            Computation statistics relies on meta-data file: to determine state of computation, error handling and
+            return the meta information to end-user. This file is stored close to bulk data of provided record_id.
+
+            @param record_id: record id on which computation will be performed
+            @param bulk_uri: URI of bulk data on which computation will be performed
+            @param record_version: record version on which computation will be performed
+        """
+
         catalog = await self.dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
         existing_columns = catalog.all_columns_dtypes.keys()
 
@@ -239,7 +262,6 @@ class BulkStatistics:
         try:
             internal_statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
             self._check_recomputation_allowed(internal_statistics_meta)
-            # todo: clear data ?
         except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError):
             public_meta = StatisticsComputationMeta(computationStartDate=datetime.utcnow(), recordId=record_id,
                                                     recordVersion=str(record_version),
@@ -251,28 +273,28 @@ class BulkStatistics:
 
         nb_rows = catalog.nb_rows
         nb_cols = len(existing_columns)
-        columns_count_per_batch = get_columns_count(self._paging_size_per_batch, self._max_cols_per_batch, nb_rows,
-                                                    nb_cols)
-        stats_computation_tasks = self.trigger_stats_computation_in_dask(columns_count_per_batch, existing_columns,
+        columns_count_per_batch = get_columns_count(self._paging_size_per_batch, self._max_cols_per_batch,
+                                                    nb_rows, nb_cols)
+        stats_computation_futures = self.trigger_stats_computation_in_dask(columns_count_per_batch, existing_columns,
                                                                          catalog, record_id, bulk_uri)
 
         internal_statistics_meta.meta.computation_status = BulkStatisticsStatus.Running
         await self._push_statistics_meta_file(bulk_statistics_path, internal_statistics_meta, overwrite_meta_file=True)
 
-        return asyncio.create_task(self._set_statistics_file_as_complete(stats_computation_tasks,
+        return asyncio.create_task(self._set_statistics_file_as_complete(stats_computation_futures,
                                                                          bulk_statistics_path,
                                                                          internal_statistics_meta))
 
-    async def _set_statistics_file_as_complete(self, _started_tasks, bulk_statistics_path, stats_meta_data):
+    async def _set_statistics_file_as_complete(self, stats_computation_futures, bulk_statistics_path, stats_meta_data):
         """
         Update meta-data file to mark statistics computation as complete
 
-        @param _started_tasks futures of computation tasks run into Dask
+        @param stats_computation_futures futures of computation tasks run into Dask
         @param bulk_statistics_path: statistics meta file path
         @param stats_meta_data: statistics meta data to be saved
         """
 
-        results = await asyncio.gather(*_started_tasks, return_exceptions=True)
+        results = await asyncio.gather(*stats_computation_futures, return_exceptions=True)
         if any(isinstance(r, BaseException) for r in results):
             stats_meta_data.meta.computation_status = BulkStatisticsStatus.Error
         else:
@@ -307,7 +329,7 @@ class BulkStatistics:
         if not overwrite_meta_file and self.dask_blob_storage._fs.exists(file_path):
             raise osdu_storage_exception.ResourceExistsException(file_path)
 
-        with self.dask_blob_storage._fs.open(file_path, 'w', overwrite=overwrite_meta_file) as stats_meta_file:
+        with self.dask_blob_storage._fs.open(file_path, 'w') as stats_meta_file:
             stats_meta_file.write(stats_meta_content)
 
         return stats_meta_data
@@ -327,6 +349,7 @@ class BulkStatistics:
         """
         @return The statistics data of given record identified by its record_id and bulk_uri
 
+        @param catalog: bulk catalog containing columns name and path to data files
         @param columns: name of columns to be fetched
         @param record_id: record id on which computation has been performed
         @param bulk_uri: URI of bulk data on which computation has been performed
@@ -353,10 +376,6 @@ class BulkStatistics:
                 raise RequestedCurvesError("Requested curves unknown")
 
         # todo: find a way to return 400 if requested columns are only not computable columns
-        # computable_columns = [col_name for col_name, col_type in existing_col.items()
-        #                       if not (col_type == 'bool' or col_type == 'object')]
-        # if not computable_columns:
-        #     raise Exception("Error 400: not computable columns requested")
 
         bulk_statistics_data_path = self._statistics_data_path(record_id, bulk_uri)
         stats_df = await self._submit_with_trace(self._fetch_statistics, bulk_statistics_data_path, columns)

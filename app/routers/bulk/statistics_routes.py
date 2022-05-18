@@ -174,8 +174,6 @@ async def get_bulk_statistics_version(
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
 ):
-    if hasattr(request.state, 'version') and request.state.version != "V2":
-        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
         bulk_uri = bulk_uri_access.get_bulk_uri(record=record)
     except ValueError as e:
@@ -241,8 +239,6 @@ async def compute_bulk_statistics(
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ):
-    if hasattr(request.state, 'version') and request.state.version != "V2":
-        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
         bulk_uri = bulk_uri_access.get_bulk_uri(record=record)
     except ValueError as e:
