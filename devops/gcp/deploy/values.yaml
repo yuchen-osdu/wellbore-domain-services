@@ -14,4 +14,4 @@ data:
 conf:
   configmap: "wellbore-config"
   app_name: "wellbore"
-  
+  domain: ""
