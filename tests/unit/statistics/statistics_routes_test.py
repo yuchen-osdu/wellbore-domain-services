@@ -7,6 +7,7 @@ import pandas as pd
 from unittest import mock
 from unittest.mock import PropertyMock
 import pytest
+from natsort import natsorted
 
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 import osdu.core.api.storage.exceptions as osdu_storage_exception
@@ -379,3 +380,36 @@ def test_get_stats_array(testing_app_local_chunking_no_consistency):
     assert response.status_code == 200
     df_result_df = create_df_from_dict(response)
     assert df_result_df.shape == (10, 9)
+
+
+def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_no_consistency):
+
+    with mock.patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
+            as computations_parameter:
+        computations_parameter.return_value = 10
+
+        with mock.patch.object(BulkStatistics, '_check_recomputation_allowed') as recompute_check_mock:
+            _, client = testing_app_local_chunking_no_consistency
+
+            record_id = _create_record(client, "WellLog")
+            columns = [f'ARRAY[{i}]' for i in range(100)]
+            post_welllog_data(client, record_id, columns, range(100))
+
+            get_stats_response = fetch_stats_for_3s(client, record_id)
+            df_result_df = create_df_from_dict(get_stats_response)
+            assert df_result_df.shape == (len(columns), 9)
+            assert natsorted(list(df_result_df.index)) == columns
+
+            record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+            version = record_response.json()['version']
+
+            # remove check to trigger again the computation
+            recompute_check_mock.return_value = True
+            compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+            assert compute_stats_response.status_code == 200
+
+        response = fetch_stats_for_3s(client, record_id)
+        assert response.status_code == 200
+        result_df = create_df_from_dict(response)
+        assert result_df.shape == (len(columns), 9)
+        assert natsorted(list(df_result_df.index)) == columns
