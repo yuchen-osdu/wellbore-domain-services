@@ -1101,14 +1101,20 @@
         "title": "CursorQueryResponse",
         "type": "object"
       },
-      "Curve110": {
+      "Curve120": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "BaseDepth": {
-            "description": "DEPRECATED: populate data.SamplingStart or data.SamplingStop instead, for informational purposes data.BottomMeasuredDepth. SamplingStart and SamplingStop support other domains than depth.",
+            "description": "The curve's maximum 'depth' i.e., the reference value at which the curve has its last non-absent value. The curve may contain further absent values in between TopDepth and BaseDepth. Note that the SamplingDomainType may not be a depth as the property name indicates.",
             "title": "Basedepth",
             "type": "number"
+          },
+          "CurveDescription": {
+            "description": "Mnemonic-level curve description is used during parsing or reading and ingesting LAS or DLIS files, to explain the type of measurement being looked at, specifically for that moment. Curve description is specific to that single (log) mnemonic and for the entire log (acquisition run) interval. In essence, curve description defines the internal factors such as what the \"curve\" or measurement ideally is representing, how is it calculated, what are the assumptions and the \"constants\".",
+            "example": "CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant",
+            "title": "Curve Description",
+            "type": "string"
           },
           "CurveID": {
             "description": "The ID of the Well Log Curve",
@@ -1118,6 +1124,13 @@
           "CurveQuality": {
             "description": "The Quality of the Log Curve.",
             "title": "Curvequality",
+            "type": "string"
+          },
+          "CurveSampleTypeID": {
+            "description": "The value type to be expected as curve sample values.",
+            "example": "namespace:reference-data--CurveSampleType:float:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CurveSampleType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Curve Sample Type ID",
             "type": "string"
           },
           "CurveUnit": {
@@ -1144,7 +1157,7 @@
             "type": "string"
           },
           "DepthUnit": {
-            "description": "DEPRECATED: use the meta[] to specify the sampling UnitOfMeasure (AbstractMetaItem of kind \"Unit\"; propertyNames[\"TopMeasuredDepth\", \"BottomMeasuredDepth\"]). Originally: Unit of Measure for Top and Base depth.",
+            "description": "Unit of Measure for TopDepth and BaseDepth.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Depthunit",
             "type": "string"
@@ -1190,6 +1203,7 @@
           },
           "Mnemonic": {
             "description": "The Mnemonic of the Log Curve is the value as received either from Raw Providers or from Internal Processing team",
+            "example": "PRES_HDRB.BAR",
             "title": "Mnemonic",
             "type": "string"
           },
@@ -1205,12 +1219,12 @@
             "type": "integer"
           },
           "TopDepth": {
-            "description": "DEPRECATED: populate data.SamplingStart or data.SamplingStop instead, for informational purposes data.TopMeasuredDepth. SamplingStart and SamplingStop support other domains than depth.",
+            "description": "The curve's minimum 'depth', i.e., the reference value at which the curve has its first non-absent value. The curve may contain further absent values in between TopDepth and BaseDepth. Note that the SamplingDomainType may not be a depth as the property name indicates.",
             "title": "Topdepth",
             "type": "number"
           }
         },
-        "title": "Curve110",
+        "title": "Curve120",
         "type": "object"
       },
       "DataType": {
@@ -4266,7 +4280,7 @@
         ],
         "title": "WellLocationType"
       },
-      "WellLog110": {
+      "WellLog120": {
         "additionalProperties": false,
         "description": "A well log is a data type that correlates a particular measurement or multiple measurements in a wellbore against depth and/or time within that wellbore. When plotted visually, well logs are typically long line graphs (called \"curves\") but may sometimes be discrete points or intervals. This schema object is intended for digital well logs, not raster log files or raster calibration files, but may be used for the latter in the absence of a defined OSDU schema for these use cases.",
         "properties": {
@@ -4285,7 +4299,7 @@
                 "$ref": "#/components/schemas/AbstractLegalParentList100"
               }
             ],
-            "description": "The links to data, which constitute the inputs.",
+            "description": "The links to data, which constitute the inputs, from which this record instance is derived.",
             "title": "Ancestry"
           },
           "createTime": {
@@ -4302,7 +4316,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellLogData110"
+            "$ref": "#/components/schemas/WellLogData120"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -4313,7 +4327,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellLog:1.1.0",
+            "example": "osdu:wks:work-product-component--WellLog:1.2.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -4369,10 +4383,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellLog110",
+        "title": "WellLog120",
         "type": "object"
       },
-      "WellLogData110": {
+      "WellLogData120": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4432,7 +4446,7 @@
           },
           "Curves": {
             "items": {
-              "$ref": "#/components/schemas/Curve110"
+              "$ref": "#/components/schemas/Curve120"
             },
             "title": "Curves",
             "type": "array"
@@ -4510,6 +4524,12 @@
             "title": "Logactivity",
             "type": "string"
           },
+          "LogRemark": {
+            "description": "Log remark provides contextual information during the actual log object acquisition. Explains how the measurement in the wellbore is taken on a point in time or depth. Additional information may be included such as bad weather, tool failure, etc. Usually a part of the log header, log remark contains info specific for an acquisition run, specific for a given logging tool (multiple measurements) and/or a specific interval. In essence, log remark represents the external factors and operational environment, directly or indirectly affecting the measurement quality/uncertainty (dynamically over time/depth) - adding both noise and bias to the measurements.",
+            "example": "tool failure, bad weather",
+            "title": "Log Remark",
+            "type": "string"
+          },
           "LogRun": {
             "description": "Log Run - describe the run of the log - can be a number, but may be also a alphanumeric description such as a version name",
             "title": "Logrun",
@@ -4522,7 +4542,7 @@
               }
             ],
             "description": "An interval built from two nested values : StartDate and EndDate. It applies to the whole log services and may apply to composite logs as [start of the first run job] and [end of the last run job]Log Service Date",
-            "title": "Logservicedateinterval"
+            "title": "LogServiceDateInterval"
           },
           "LogSource": {
             "description": "OSDU Native Log Source - will be updated for later releases - not to be used yet",
@@ -4717,7 +4737,7 @@
             "type": "string"
           }
         },
-        "title": "WellLogData110",
+        "title": "WellLogData120",
         "type": "object"
       },
       "WellPurpose": {
@@ -19148,14 +19168,18 @@
                     "CreationDateTime": "2013-03-22T11:16:03Z",
                     "Curves": [
                       {
+                        "CurveDescription": "Gamma Ray",
                         "CurveID": "GR_ID",
+                        "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:",
                         "Mnemonic": "GR",
                         "NumberOfColumns": 1
                       },
                       {
+                        "CurveDescription": "Neutron Porosity",
                         "CurveID": "POR_ID",
+                        "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:",
                         "Mnemonic": "NPOR",
@@ -19163,12 +19187,14 @@
                       },
                       {
                         "CurveID": "Bulk Density",
+                        "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:BulkDensity:",
                         "Mnemonic": "RHOB"
                       }
                     ],
                     "IsRegular": true,
+                    "LogRemark": "example data for API documentation",
                     "Name": "{{welllogName}}",
                     "SamplingDomainTypeID": "{{datapartitionid}}:reference-data--WellLogSamplingDomainType:Depth:",
                     "SamplingInterval": 0.1,
@@ -19181,7 +19207,7 @@
                     "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:"
                   },
                   "id": "{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
-                  "kind": "osdu:wks:work-product-component--WellLog:1.1.0",
+                  "kind": "osdu:wks:work-product-component--WellLog:1.2.0",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
@@ -19219,7 +19245,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellLog110"
+                  "$ref": "#/components/schemas/WellLog120"
                 },
                 "title": "Welllogs",
                 "type": "array"
@@ -20104,7 +20130,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellLog110"
+                  "$ref": "#/components/schemas/WellLog120"
                 }
               }
             },
@@ -20241,7 +20267,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellLog110"
+                  "$ref": "#/components/schemas/WellLog120"
                 }
               }
             },
