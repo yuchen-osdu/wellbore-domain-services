@@ -312,8 +312,8 @@ async def test_bulk_statistics_nan_columns(bulk_stats_fixture, cols_name_by_inde
     assert sorted(list(all_valid_result_df.index)) == sorted(computable_cols)
 
     nan_cols_df = all_valid_result_df.filter(items=nan_cols, axis=0)
-    total_count = list(nan_cols_df['total_count'].astype(int))
-    non_absent_values_count = list(nan_cols_df['non_absent_values_count'].astype(float))
+    total_count = list(nan_cols_df[BulkStatistics._valid_values_label].astype(int))
+    non_absent_values_count = list(nan_cols_df[BulkStatistics._renaming_stats_labels['count']].astype(float))
     assert total_count > non_absent_values_count
 
 

@@ -9,7 +9,6 @@ import pandas as pd
 
 from app.bulk_persistence.bulk_persistence_config import MAX_COLUMNS_RETURN
 from app.helper.logger import get_logger
-from app.routers.bulk.utils import DataFrameRender
 from .models import StatisticsComputationMeta, BulkStatisticsStatus, InternalStatisticsComputationMeta
 
 from .. import DataframeSerializerSync
@@ -72,8 +71,9 @@ class BulkStatistics:
     _duration_before_recompute: timedelta = timedelta(hours=1)
 
     _stats_api_version = "1"
-    _valid_values_label = 'total_count'
-    _renaming_stats_labels = {'count': 'non_absent_values_count'}
+
+    _valid_values_label = 'totalCount'
+    _renaming_stats_labels = {'count': 'nonAbsentValuesCount'}
     _percentiles = [.10, .5, .90]
 
     def __init__(self, dask_blob_storage: DaskBulkStorage):
