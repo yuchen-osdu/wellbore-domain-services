@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ from unittest import mock
 from unittest.mock import PropertyMock
 import pytest
 from natsort import natsorted
+from starlette.testclient import TestClient
 
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 import osdu.core.api.storage.exceptions as osdu_storage_exception
@@ -15,12 +17,13 @@ import osdu.core.api.storage.exceptions as osdu_storage_exception
 from app.bulk_persistence.statistics.models import StatisticsComputationMeta, BulkStatisticsStatus, \
     InternalStatisticsComputationMeta
 from tests.unit.generate_data import generate_df
-from tests.unit.routers.chunking_test import _create_chunks, _create_record, _create_df_from_response, Definitions
+from tests.unit.routers.chunking_test import _create_chunks, _create_record, _create_df_from_response, Definitions, \
+    EntityTypeParams
 
 
-def post_welllog_data(client, record_id, columns, range_index):
+def post_record_data(client: TestClient, record_id: str, entity_type: str, columns: List[str], range_index: range):
     headers = {'content-type': 'application/x-parquet'}
-    chunking_url = Definitions['WellLog']["chunking_url"]
+    chunking_url = Definitions[entity_type]["chunking_url"]
 
     data_df = generate_df(columns, range_index)
     cols_with_nan = [c for c in data_df.columns if c.endswith('nan')]
@@ -39,14 +42,14 @@ def create_df_from_dict(response):
     return pd.DataFrame.from_dict(dict_data, orient='index')
 
 
-def fetch_stats_for_3s(client, record_id, *, columns=None, timeout=3):
+def fetch_stats_for_3s(client, record_id, *, columns=None, timeout=3, assert_if_failed=True):
     """
     Try to get statistics several times until the timeout is reached for given record id with given columns
     """
 
     api_results = []
     sleep_duration = 0.1
-    # at the minimum timeout must be equals to 0.5s
+    # at the minimum timeout must be equals to sleep_duration
     timeout = max(sleep_duration, timeout)
 
     params = None
@@ -59,20 +62,21 @@ def fetch_stats_for_3s(client, record_id, *, columns=None, timeout=3):
     for i in range(attempts):
         get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
         api_results.append(get_stats_response)
-        if get_stats_response.status_code == 200:
+        if get_stats_response.status_code != 404:
             break
 
         asyncio.get_event_loop().run_until_complete(asyncio.sleep(sleep_duration))
 
     successful_response = [r for r in api_results if r.status_code == 200]
-    faulty_responses = [r.content for r in api_results if r.status_code != 200]
-    assert successful_response, faulty_responses if faulty_responses else ""
-    return successful_response[0]
+    faulty_responses = [r for r in api_results if r.status_code != 200]
+    if assert_if_failed:
+        assert successful_response, faulty_responses if faulty_responses else ""
+    return successful_response[0] if successful_response else faulty_responses[0]
 
 
 def test_invalid_cases(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
-    valid_record_id = _create_record(client, "WellLog")
+    valid_record_id = _create_record(client, 'WellLog')
 
     version = '123456789'
     unknown_record_id = 'test:work-product-component--WellLog:8fef694e8a5a49ec96db9e51c7522bc9'
@@ -101,8 +105,8 @@ def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
 
         _, client = testing_app_local_chunking_no_consistency
 
-        valid_record_id = _create_record(client, "WellLog")
-        post_welllog_data(client, valid_record_id, ['int-A'], range(10))
+        valid_record_id = _create_record(client, 'WellLog')
+        post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
 
         valid_record_with_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
         assert valid_record_with_bulk_response.status_code == 404
@@ -112,7 +116,7 @@ def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
 def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency):
     with mock.patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
         _, client = testing_app_local_chunking_no_consistency
-        valid_record_id = _create_record(client, "WellLog")
+        valid_record_id = _create_record(client, 'WellLog')
 
         meta_data = StatisticsComputationMeta(computationStartDate=datetime.utcnow(),
                                               recordId=valid_record_id,
@@ -121,7 +125,7 @@ def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency)
         bob.return_value = InternalStatisticsComputationMeta(computationAttempt=1, meta=meta_data,
                                                              lastComputationDate=datetime.utcnow())
 
-        post_welllog_data(client, valid_record_id, ['int-A'], range(10))
+        post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
 
         valid_record_with_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
         assert valid_record_with_bulk_response.status_code == 404
@@ -131,7 +135,7 @@ def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency)
 
 def test_double_compute_stats(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
-    record_id = _create_record(client, "WellLog")
+    record_id = _create_record(client, 'WellLog')
     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
                                                                         (['MD', 'X'], range(10, 30)),
                                                                         (['MD', 'X'], range(25, 40))])
@@ -151,8 +155,8 @@ def test_get_stats(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
 
     columns = ['int-A', 'int-A-with-nan', 'float-B', 'float-B-with-nan', 'date-C', 'date-C-with-nan']
-    record_id = _create_record(client, "WellLog")
-    post_welllog_data(client, record_id, columns, range(1000))
+    record_id = _create_record(client, 'WellLog')
+    post_record_data(client, record_id, 'WellLog', columns, range(1000))
 
     fetch_stats_for_3s(client, record_id)
 
@@ -191,7 +195,7 @@ def test_get_stats(testing_app_local_chunking_no_consistency):
 def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
 
-    record_id = _create_record(client, "WellLog")
+    record_id = _create_record(client, 'WellLog')
     _create_chunks(client, 'WellLog',
                    record_id=record_id,
                    cols_ranges=[(['int-A', 'string-B', 'bool-C', 'string-D'], range(20))])
@@ -216,8 +220,8 @@ def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_con
 
 def test_get_stats_after_post_data(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
-    record_id = _create_record(client, "WellLog")
-    post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
+    record_id = _create_record(client, 'WellLog')
+    post_record_data(client, record_id, 'WellLog', ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
 
     response = fetch_stats_for_3s(client, record_id)
     assert response.status_code == 200
@@ -230,11 +234,11 @@ def test_get_stats_after_post_data(testing_app_local_chunking_no_consistency):
 def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
     _, client = testing_app_local_chunking_no_consistency
 
-    record_id = _create_record(client, "WellLog")
+    record_id = _create_record(client, 'WellLog')
     if mode == 'chunking':
         _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20))])
     elif mode == 'all_at_once':
-        post_welllog_data(client, record_id, ['MD', 'X'], range(20))
+        post_record_data(client, record_id, 'WellLog', ['MD', 'X'], range(20))
 
     fetch_stats_for_3s(client, record_id)
 
@@ -262,8 +266,8 @@ def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_c
         _, client = testing_app_local_chunking_no_consistency
         bob.return_value = tasks
 
-        valid_record_id = _create_record(client, "WellLog")
-        post_welllog_data(client, valid_record_id, ['int-A'], range(10))
+        valid_record_id = _create_record(client, 'WellLog')
+        post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
 
         response = fetch_stats_for_3s(client, valid_record_id)
         assert response.status_code == 200
@@ -277,8 +281,8 @@ def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consisten
     with mock.patch.object(BulkStatistics, 'compute_bulk_statistics', return_value=mock.AsyncMock()) as bob:
         _, client = testing_app_local_chunking_no_consistency
 
-        record_id = _create_record(client, "WellLog")
-        post_welllog_data(client, record_id, ['int-A', 'string-B', 'bool-C', 'string-D'], range(1000))
+        record_id = _create_record(client, 'WellLog')
+        post_record_data(client, record_id, 'WellLog', ['int-A', 'string-B', 'bool-C', 'string-D'], range(1000))
 
         asyncio.get_event_loop().run_until_complete(asyncio.sleep(2))
         get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
@@ -308,8 +312,8 @@ def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consis
         _, client = testing_app_local_chunking_no_consistency
         bob.return_value = [task]
 
-        record_id = _create_record(client, "WellLog")
-        post_welllog_data(client, record_id, ['int-A'], range(10))
+        record_id = _create_record(client, 'WellLog')
+        post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
         get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
         assert get_stats_response.status_code == 200
         assert get_stats_response.json()['computationStatus'] == BulkStatisticsStatus.Error
@@ -317,7 +321,7 @@ def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consis
         record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
         version = record_response.json()['version']
 
-        # one try is already done after posting data "post_welllog_data(client, record_id, ['int-A'], range(10))"
+        # one try is already done after posting data "post_record_data(client, record_id, ['int-A'], range(10))"
         for i in range(computation_retry_attempts - 1):
             compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
             assert compute_stats_response.status_code == 200
@@ -340,8 +344,8 @@ def test_trigger_computations_after_duration(testing_app_local_chunking_no_consi
         # simulate something went wrong when posting new data
         with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as mock_trigger_computation:
             mock_trigger_computation.side_effect = RuntimeError("test_trigger_computations_after_duration")
-            record_id = _create_record(client, "WellLog")
-            post_welllog_data(client, record_id, ['int-A'], range(10))
+            record_id = _create_record(client, 'WellLog')
+            post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
 
         # so stats data are not available
         get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
@@ -372,7 +376,7 @@ def test_trigger_computations_after_duration(testing_app_local_chunking_no_consi
 def test_get_stats_array(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
 
-    record_id = _create_record(client, "WellLog")
+    record_id = _create_record(client, 'WellLog')
     array_cols = [f'ARRAY[{i}]' for i in range(10)]
     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
 
@@ -391,9 +395,9 @@ def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_
         with mock.patch.object(BulkStatistics, '_check_recomputation_allowed') as recompute_check_mock:
             _, client = testing_app_local_chunking_no_consistency
 
-            record_id = _create_record(client, "WellLog")
+            record_id = _create_record(client, 'WellLog')
             columns = [f'ARRAY[{i}]' for i in range(100)]
-            post_welllog_data(client, record_id, columns, range(100))
+            post_record_data(client, record_id, 'WellLog', columns, range(100))
 
             get_stats_response = fetch_stats_for_3s(client, record_id)
             df_result_df = create_df_from_dict(get_stats_response)
@@ -431,7 +435,7 @@ def test_stats_available_welllog_only_on_bulk_creation(testing_app_local_chunkin
         if mode == 'chunking':
             _create_chunks(client, entity_type, record_id=record_id, cols_ranges=[(['MD', 'X'], range(20))])
         elif mode == 'all_at_once':
-            post_welllog_data(client, record_id, entity_type, ['MD', 'X'], range(20))
+            post_record_data(client, record_id, entity_type, ['MD', 'X'], range(20))
 
         get_stats_response = fetch_stats_for_3s(client, record_id, assert_if_failed=False)
         assert get_stats_response.status_code == 422
@@ -443,7 +447,7 @@ def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunk
     _, client = testing_app_local_chunking_no_consistency
 
     record_id = _create_record(client, entity_type)
-    post_welllog_data(client, record_id, entity_type, ['MD', 'X'], range(20))
+    post_record_data(client, record_id, entity_type, ['MD', 'X'], range(20))
 
     get_stats_response = fetch_stats_for_3s(client, record_id, assert_if_failed=False)
     assert get_stats_response.status_code == 422
@@ -454,4 +458,4 @@ def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunk
     version = record_response.json()['version']
 
     compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
-    assert compute_stats_response == 422
+    assert compute_stats_response.status_code == 422
