@@ -709,56 +709,56 @@
       "BulkDataStatisticsResponse": {
         "description": "Response for bulk data statistics and its meta-data ",
         "example": {
-          "computation_status": "complete",
-          "creation_utc_date": "2022-04-27 11:46:58.708615",
+          "computationStartDate": "2022-05-18T16:22:16.010582",
+          "computationStatus": "complete",
           "data": {
             "ARR[0]": {
-              "10%": "11.0",
+              "10%": "9.0",
               "50%": "451.0",
-              "90%": "891.0",
-              "count": "499579.0",
+              "90%": "893.0",
               "max": "999.0",
-              "mean": "450.1040135794339",
-              "min": "-99.0",
-              "std": "317.570786686891",
-              "total_count": 1000000
+              "mean": "450.8438",
+              "min": "-100.0",
+              "nonAbsentValuesCount": "100000.0",
+              "std": "318.27778186518816",
+              "totalCount": "100000"
             },
             "ARR[1]": {
               "10%": "10.0",
-              "50%": "450.0",
-              "90%": "890.0",
-              "count": "1000000.0",
+              "50%": "446.0",
+              "90%": "889.0",
               "max": "999.0",
-              "mean": "449.82156",
+              "mean": "448.06855",
               "min": "-100.0",
-              "std": "317.4500948207909",
-              "total_count": 1000000
+              "nonAbsentValuesCount": "100000.0",
+              "std": "316.8023859891449",
+              "totalCount": "100000"
             },
             "ARR[2]": {
-              "10%": "10.0",
-              "50%": "449.0",
-              "90%": "889.0",
-              "count": "1000000.0",
+              "10%": "11.0",
+              "50%": "453.0",
+              "90%": "890.0",
               "max": "999.0",
-              "mean": "449.189524",
+              "mean": "451.01309",
               "min": "-100.0",
-              "std": "317.43579447840636",
-              "total_count": 1000000
+              "nonAbsentValuesCount": "100000.0",
+              "std": "317.40833668820653",
+              "totalCount": "100000"
             },
             "ARR[3]": {
-              "10%": "9.0",
-              "50%": "449.0",
-              "90%": "889.0",
-              "count": "499811.0",
+              "10%": "8.900000000001455",
+              "50%": "450.0",
+              "90%": "890.0",
               "max": "999.0",
-              "mean": "449.513766203625",
-              "min": "-99.0",
-              "std": "317.39295021204254",
-              "total_count": 1000000
+              "mean": "449.16661",
+              "min": "-100.0",
+              "nonAbsentValuesCount": "100000.0",
+              "std": "317.7767589547625",
+              "totalCount": "100000"
             }
           },
-          "record_id": "my-record-id",
-          "record_version": "123456789"
+          "recordId": "osdu:work-product-component--WellLog:6d9c95c972254bbbaeaecbfa67fd1cf3",
+          "recordVersion": "1998222529528913770053504387865218642"
         },
         "properties": {
           "computationStartDate": {
@@ -1340,7 +1340,7 @@
             "title": "Maximum value",
             "type": "string"
           },
-          "non_absent_values_count": {
+          "nonAbsentValuesCount": {
             "title": "Number of valid values in the curve",
             "type": "string"
           },
@@ -1348,7 +1348,7 @@
             "title": "Standard deviation value",
             "type": "string"
           },
-          "total_count": {
+          "totalCount": {
             "title": "Number of values in the curve",
             "type": "string"
           }
@@ -1361,8 +1361,8 @@
           "50%",
           "90%",
           "max",
-          "total_count",
-          "non_absent_values_count"
+          "totalCount",
+          "nonAbsentValuesCount"
         ],
         "title": "CurveStatistics",
         "type": "object"
