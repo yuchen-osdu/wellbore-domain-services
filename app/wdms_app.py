@@ -64,7 +64,8 @@ from app.routers.bulk.utils import (
     set_v3_input_dataframe_check,
     set_legacy_input_dataframe_check,
     set_welllog_data_consistency_check,
-    set_trajectory_data_consistency_check
+    set_trajectory_data_consistency_check,
+    enable_stats_computation
 )
 from app.routers.bulk.bulk_uri_dependencies import (
     set_osdu_bulk_id_access,
@@ -270,7 +271,8 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         dependencies=[
             *v3_bulk_dependencies, 
             Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
-            Depends(set_welllog_data_consistency_check)
+            Depends(set_welllog_data_consistency_check),
+            Depends(enable_stats_computation)
         ],
         include_in_schema=is_visible)
 

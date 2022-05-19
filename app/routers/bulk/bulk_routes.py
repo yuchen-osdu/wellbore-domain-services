@@ -41,7 +41,8 @@ from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
                                     set_bulk_field_and_send_record,
                                     DataFrameRender,
-                                    get_data_consistency_checks)
+                                    get_data_consistency_checks,
+                                    statistics_computation_enabled)
 
 # imports for session manipulation
 from app.bulk_persistence import (
@@ -71,6 +72,7 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
     BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
     DataConsistencyChecks
                                   )
+from model.entity_utils import Entity
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -102,7 +104,9 @@ async def post_data(record_id: str,
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-                    record: Record = Depends(fetch_latest_version_record_dependency)):
+                    record: Record = Depends(fetch_latest_version_record_dependency),
+                    stats_computation_enabled: bool = Depends(statistics_computation_enabled),
+                    ):
     """
     Handle a post data outside a session. The given bulk will fully replace any existing one
     """
@@ -127,11 +131,12 @@ async def post_data(record_id: str,
                                                                   record=record,
                                                                   bulk_uri_access=bulk_uri_access)
 
-    _, updated_record_version = split_record_id_version(update_record_response.record_id_versions[0])
-    try:
-        await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, updated_record_version)
-    except Exception:
-        get_logger().exception(f"Statistics computation failed for record '{record.id}' with bulk id '{bulk_id}'")
+    if stats_computation_enabled:
+        _, updated_record_version = split_record_id_version(update_record_response.record_id_versions[0])
+        try:
+            await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, updated_record_version)
+        except Exception:
+            get_logger().exception(f"Statistics computation failed for record '{record.id}' with bulk id '{bulk_id}'")
 
     return update_record_response
     # TODO proposal: adding basic describe of data that has been stored
@@ -331,6 +336,7 @@ async def complete_session(
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
+    stats_computation_enabled: bool = Depends(statistics_computation_enabled),
 ) -> CommitSessionResponse:
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
@@ -391,12 +397,12 @@ async def complete_session(
             if updated_version is None:
                 raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
 
-            # Trigger Wellbore statistics computation after having the new record version
-            try:
-                await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, updated_version)
-            except Exception:
-                get_logger().exception(
-                    f"Statistics computation failed for record '{record.id}' with bulk id '{new_bulk_id}'")
+            if stats_computation_enabled:
+                try:
+                    await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, updated_version)
+                except Exception:
+                    get_logger().exception(
+                        f"Statistics computation failed for record '{record.id}' with bulk id '{new_bulk_id}'")
 
             response = CommitSessionResponse(
                 **i_session.session.dict(exclude_unset=True, by_alias=True),

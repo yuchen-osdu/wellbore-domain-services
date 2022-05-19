@@ -413,3 +413,45 @@ def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_
         result_df = create_df_from_dict(response)
         assert result_df.shape == (len(columns), 9)
         assert natsorted(list(df_result_df.index)) == columns
+
+
+@pytest.mark.parametrize("mode", ['chunking', 'all_at_once'])
+@pytest.mark.parametrize("entity_type", [
+    "WellboreTrajectory",
+    "Log",
+])
+def test_stats_available_welllog_only_on_bulk_creation(testing_app_local_chunking_no_consistency, mode, entity_type):
+    _, client = testing_app_local_chunking_no_consistency
+
+    with mock.patch.object(BulkStatistics, 'compute_bulk_statistics') as compute_stats_triggered_mock:
+        # ensure BulkStatistics::compute_bulk_statistics() is not called which means that the dependency
+        # `stats_computation_enabled: bool = Depends(statistics_computation_enabled)` work correctly.
+
+        record_id = _create_record(client, entity_type)
+        if mode == 'chunking':
+            _create_chunks(client, entity_type, record_id=record_id, cols_ranges=[(['MD', 'X'], range(20))])
+        elif mode == 'all_at_once':
+            post_welllog_data(client, record_id, entity_type, ['MD', 'X'], range(20))
+
+        get_stats_response = fetch_stats_for_3s(client, record_id, assert_if_failed=False)
+        assert get_stats_response.status_code == 422
+        compute_stats_triggered_mock.assert_not_called()
+
+
+@pytest.mark.parametrize("entity_type", ["WellboreTrajectory", "Log"])
+def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunking_no_consistency, entity_type):
+    _, client = testing_app_local_chunking_no_consistency
+
+    record_id = _create_record(client, entity_type)
+    post_welllog_data(client, record_id, entity_type, ['MD', 'X'], range(20))
+
+    get_stats_response = fetch_stats_for_3s(client, record_id, assert_if_failed=False)
+    assert get_stats_response.status_code == 422
+
+    entity_url = Definitions[entity_type]['base_url']
+    record_response = client.get(f'{entity_url}/{record_id}')
+    assert record_response.status_code == 200
+    version = record_response.json()['version']
+
+    compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+    assert compute_stats_response == 422
