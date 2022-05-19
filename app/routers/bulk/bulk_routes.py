@@ -72,7 +72,6 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
     BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
     DataConsistencyChecks
                                   )
-from model.entity_utils import Entity
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
