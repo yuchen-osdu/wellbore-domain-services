@@ -202,11 +202,8 @@ async def get_bulk_statistics_version(
     except (statistics_exceptions.StatisticsNotFoundError,
             statistics_exceptions.RequestedCurvesError,
             statistics_exceptions.ComputationNotCompleteError) as e:
-        raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                          error_type=e.public_error_type,
+        raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND, error_type=e.public_error_type,
                                           message=str(e))
-    finally:
-        get_logger().exception("get_bulk_statistics() has raised an exception")
 
     # replace np.nan by string "NaN" to have unified str type values for std column
     if not stats_df.empty:
@@ -253,5 +250,4 @@ async def compute_bulk_statistics(
     try:
         await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id, record.version)
     except statistics_exceptions.ComputationRunningError as e:
-        get_logger().exception("compute_bulk_statistics() has raised an exception")
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
