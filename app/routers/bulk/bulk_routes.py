@@ -60,18 +60,17 @@ from app.routers.sessions import (
     get_session_dependencies,
 )
 
-from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 # imports from bulk persistence
 from app.bulk_persistence import (auto_cast_columns_to_string,
-    DataFrameValidationFunc, no_validation,
-    JSONOrient,
-    get_dataframe, download_bulk,
-    DaskBulkStorage,
-    MimeTypes, MimeType,
-    trace_dataframe_attributes, trace_attributes_root_span,
-    BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
-    DataConsistencyChecks
-                                  )
+                                  DataFrameValidationFunc, no_validation,
+                                  JSONOrient,
+                                  get_dataframe, download_bulk,
+                                  DaskBulkStorage,
+                                  MimeTypes, MimeType,
+                                  trace_dataframe_attributes, trace_attributes_root_span,
+                                  BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
+                                  DataConsistencyChecks,
+                                  BulkStatistics)
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 

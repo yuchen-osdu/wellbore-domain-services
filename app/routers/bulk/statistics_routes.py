@@ -18,19 +18,14 @@ from fastapi import Query
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from odes_storage.models import Record
 
-from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record_dependency, fetch_latest_version_record_dependency
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import with_dask_blob_storage, DataFrameRender
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
+from app.bulk_persistence import BulkStatistics, BulkDataStatisticsResponse, exceptions as statistics_exceptions
 
-from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
-from app.bulk_persistence.statistics.models import BulkDataStatisticsResponse
-from app.bulk_persistence.statistics import exceptions as statistics_exceptions
-
-from app.helper.logger import get_logger
 from app.helper.traces import TracingRoute
 
 from fastapi.encoders import jsonable_encoder
