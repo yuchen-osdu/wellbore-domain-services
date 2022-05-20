@@ -85,9 +85,9 @@ def test_get_bulk_statistic_basic_workflow(with_wdms_env, well_log_with_data):
     describe_result = df.describe(percentiles=[.10, .5, .90]).to_dict()
     expected_stats = dict()
     for curve, stat_dict in describe_result.items():
-        expected_stats[curve] = {'total_count': str(total_count)}
+        expected_stats[curve] = {'totalCount': str(total_count)}
         for k, v in stat_dict.items():
-            expected_stats[curve]['non_absent_values_count' if k == 'count'else k] = str(v)
+            expected_stats[curve]['nonAbsentValuesCount' if k == 'count' else k] = str(v)
 
     # WHEN call to trigger to statistic computation
     # THEN should returns 409 as computation already triggered
