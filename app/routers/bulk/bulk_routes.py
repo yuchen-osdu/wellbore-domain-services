@@ -41,8 +41,8 @@ from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
                                     set_bulk_field_and_send_record,
                                     DataFrameRender,
-                                    get_data_consistency_checks,
-                                    statistics_computation_enabled)
+                                    get_data_consistency_checks)
+from app.routers.bulk.statistics_routes_dependencies import is_statistics_computation_enabled
 
 # imports for session manipulation
 from app.bulk_persistence import (
@@ -103,7 +103,7 @@ async def post_data(record_id: str,
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
                     record: Record = Depends(fetch_latest_version_record_dependency),
-                    stats_computation_enabled: bool = Depends(statistics_computation_enabled),
+                    stats_computation_enabled: bool = Depends(is_statistics_computation_enabled),
                     ):
     """
     Handle a post data outside a session. The given bulk will fully replace any existing one
@@ -334,7 +334,7 @@ async def complete_session(
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
-    stats_computation_enabled: bool = Depends(statistics_computation_enabled),
+    stats_computation_enabled: bool = Depends(is_statistics_computation_enabled),
 ) -> CommitSessionResponse:
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
