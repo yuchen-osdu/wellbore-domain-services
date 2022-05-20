@@ -15,8 +15,8 @@ class BulkStatisticsStatus(str, Enum):
 
 class StatisticsComputationMeta(BaseModel):
     """ Meta data of computation for bulk data statistics """
-    computation_start_date: datetime = Field(title="Statistics computation start datetime in ISO format",
-                                             alias="computationStartDate")
+    computation_start_datetime: datetime = Field(title="Statistics computation start datetime in ISO format",
+                                                 alias="computationStartDatetime")
     record_id: str = Field(alias="recordId")
     record_version: str = Field(alias="recordVersion")
     computation_status: BulkStatisticsStatus = Field(alias="computationStatus")
@@ -57,7 +57,7 @@ class BulkDataStatisticsResponse(StatisticsComputationMeta):
 
     class Config:
         schema_extra = {
-            "example": {'computationStartDate': '2022-05-18T16:22:16.010582',
+            "example": {'computationStartDatetime': '2022-05-18T16:22:16.010582',
                         'recordId': 'osdu:work-product-component--WellLog:6d9c95c972254bbbaeaecbfa67fd1cf3',
                         'recordVersion': '1998222529528913770053504387865218642',
                         'computationStatus': 'complete',

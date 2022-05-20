@@ -118,7 +118,7 @@ def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency)
         _, client = testing_app_local_chunking_no_consistency
         valid_record_id = _create_record(client, 'WellLog')
 
-        meta_data = StatisticsComputationMeta(computationStartDate=datetime.utcnow(),
+        meta_data = StatisticsComputationMeta(computationStartDatetime=datetime.utcnow(),
                                               recordId=valid_record_id,
                                               recordVersion=str(123456789),
                                               computationStatus=BulkStatisticsStatus.Started)
@@ -253,6 +253,10 @@ def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
     assert response_data['recordId'] == record_id
     assert response_data['recordVersion'] == str(version)
     assert response_data['computationStatus'] == BulkStatisticsStatus.Complete
+
+    now = datetime.utcnow()
+    retrieved_datetime = datetime.fromisoformat(response_data['computationStartDatetime'])
+    assert now - timedelta(seconds=3) < retrieved_datetime < now + timedelta(seconds=3)
 
 
 def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_consistency):

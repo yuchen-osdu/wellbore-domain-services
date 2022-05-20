@@ -263,7 +263,7 @@ class BulkStatistics:
             internal_statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
             self._check_recomputation_allowed(internal_statistics_meta)
         except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError):
-            public_meta = StatisticsComputationMeta(computationStartDate=datetime.utcnow(), recordId=record_id,
+            public_meta = StatisticsComputationMeta(computationStartDatetime=datetime.utcnow(), recordId=record_id,
                                                     recordVersion=str(record_version),
                                                     computationStatus=BulkStatisticsStatus.Started)
             internal_statistics_meta = InternalStatisticsComputationMeta(lastComputationDate=datetime.utcnow(),

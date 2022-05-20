@@ -1,5 +1,5 @@
 import asyncio
-import datetime
+from datetime import datetime, timedelta
 import uuid
 from typing import List
 
@@ -152,9 +152,9 @@ def create_test_bulk_session() -> Session:
                       recordId=record_id,
                       fromVersion='123456',
                       mode=SessionUpdateMode.Overwrite,
-                      expiry=datetime.datetime.now(),
-                      createdTime=datetime.datetime.now(),
-                      updatedTime=datetime.datetime.now(),
+                      expiry=datetime.now(),
+                      createdTime=datetime.now(),
+                      updatedTime=datetime.now(),
                       state=SessionState.Open
                       )
     return session
@@ -221,6 +221,9 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
     assert stats_meta.record_id == record_id
     assert stats_meta.record_version == str(fake_record_id)
     assert stats_meta.computation_status == BulkStatisticsStatus.Complete
+
+    now = datetime.utcnow()
+    assert now - timedelta(seconds=3) < stats_meta.computation_start_datetime < now + timedelta(seconds=3)
 
 
 @pytest.mark.asyncio

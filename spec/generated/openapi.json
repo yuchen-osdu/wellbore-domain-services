@@ -709,7 +709,7 @@
       "BulkDataStatisticsResponse": {
         "description": "Response for bulk data statistics and its meta-data ",
         "example": {
-          "computationStartDate": "2022-05-18T16:22:16.010582",
+          "computationStartDatetime": "2022-05-18T16:22:16.010582",
           "computationStatus": "complete",
           "data": {
             "ARR[0]": {
@@ -761,7 +761,7 @@
           "recordVersion": "1998222529528913770053504387865218642"
         },
         "properties": {
-          "computationStartDate": {
+          "computationStartDatetime": {
             "format": "date-time",
             "title": "Statistics computation start datetime in ISO format",
             "type": "string"
@@ -787,7 +787,7 @@
           }
         },
         "required": [
-          "computationStartDate",
+          "computationStartDatetime",
           "recordId",
           "recordVersion",
           "computationStatus",
