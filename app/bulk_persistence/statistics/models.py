@@ -18,7 +18,7 @@ class StatisticsComputationMeta(BaseModel):
     computation_start_datetime: datetime = Field(title="Statistics computation start datetime in ISO format",
                                                  alias="computationStartDatetime")
     record_id: str = Field(alias="recordId")
-    record_version: str = Field(alias="recordVersion")
+    record_version: int = Field(alias="recordVersion")
     computation_status: BulkStatisticsStatus = Field(alias="computationStatus")
 
 

@@ -219,7 +219,7 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
     assert sorted(list(df_stats.columns)) == expected_cols
 
     assert stats_meta.record_id == record_id
-    assert stats_meta.record_version == str(fake_record_id)
+    assert stats_meta.record_version == fake_record_id
     assert stats_meta.computation_status == BulkStatisticsStatus.Complete
 
     now = datetime.utcnow()
