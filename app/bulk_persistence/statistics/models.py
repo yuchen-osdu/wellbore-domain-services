@@ -45,15 +45,15 @@ class BulkDataStatisticsResponse(StatisticsComputationMeta):
     """ Response for bulk data statistics and its meta-data """
 
     data: Dict[str, CurveStatistics] = Field(title="Curves statistics' values",
-                                             example="{'MyCurveName': {'count': '499579.0',"
-                                                     "'mean': '450.1040135794339',"
-                                                     "'std': '317.570786686891',"
-                                                     "'min': '-99.0', "
-                                                     "'10%': '11.0', "
-                                                     "'50%': '451.0',"
-                                                     "'90%': '891.0',"
-                                                     "'max': '999.0',"
-                                                     "'total_count': 1000000}}")
+                                             example="""{'CurveName': {'mean': '450.8438',
+                                            'std': '318.27778186518816',
+                                            'min': '-100.0',
+                                            '10%': '9.0',
+                                            '50%': '451.0',
+                                            '90%': '893.0',
+                                            'max': '999.0',
+                                            'totalCount': '100000',
+                                            'nonAbsentValuesCount': '100000.0'}""")
 
     class Config:
         schema_extra = {
