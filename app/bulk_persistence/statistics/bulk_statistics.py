@@ -25,7 +25,7 @@ from .exceptions import (
 from osdu.core.api.storage import exceptions as osdu_storage_exception
 
 
-def grouper(n, container: Iterable) -> Iterator[tuple]:
+def grouper(n: int, container: Iterable) -> Iterator[tuple]:
     """
     Return generator over a sub-list of 'n' elements of the given 'container'
     >>> list(grouper(4,['A', 'B', 'C', 'D', 'E', 'F']))

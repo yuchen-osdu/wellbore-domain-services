@@ -27,6 +27,7 @@ from app.bulk_persistence.dataframe_validators import no_validation
 ])
 @pytest.mark.parametrize("step,expected_values", [
     (0, []),
+    (2.8, [(0, 1), (2, 3), (4, 5), (6, 7), (8, 9)]),
     (3, [(0, 1, 2), (3, 4, 5), (6, 7, 8), (9,)]),
     (6, [(0, 1, 2, 3, 4, 5), (6, 7, 8, 9)]),
     (10, [(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)]),
@@ -45,8 +46,8 @@ def test_grouper(container, step, expected_values):
     list(range(10)),
     list()
 ])
-def test_grouper_incorrect_value(container):
-    step = -10
+@pytest.mark.parametrize("step", [-10, "string value", -10.8])
+def test_grouper_incorrect_value(container, step):
     with pytest.raises(ValueError):
         list(grouper(step, container))
 
