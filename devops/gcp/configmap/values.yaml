@@ -3,8 +3,9 @@
 # Declare variables to be passed into your templates.
 
 data:
-  os_wellbore_ddms_data_project_id: ""
+  osWellboreDdmsDataProjectId: ""
 
 conf:
   configmap: "wellbore-config"
-  app_name: "wellbore"
+  appName: "wellbore"
+  onPremEnabled: false

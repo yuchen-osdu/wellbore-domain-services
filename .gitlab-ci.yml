@@ -34,10 +34,10 @@ variables:
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_VENDOR: gcp
   OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.os_wellbore_ddms_data_project_id=$OSDU_GCP_PROJECT"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.osWellboreDdmsDataProjectId=$OSDU_GCP_PROJECT"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.osWellboreDdmsDataProjectId=$OSDU_GCP_PROJECT"
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: >
-    --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA 
+    --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA
     --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s
   OSDU_GCP_HELM_CONFIG_SERVICE: wellbore-config
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE: wellbore-deploy
@@ -74,22 +74,22 @@ osdu-gcp-containerize-gitlab:
   variables:
     BUILD_PATH: "./build/Dockerfile"
     BUILD_ARGS: >
-      --build-arg PIP_WHEEL_DIR=python-packages 
-      --build-arg build_date="$CI_JOB_STARTED_AT" 
-      --build-arg build_number=$CI_COMMIT_SHORT_SHA 
-      --build-arg commit_id=$CI_COMMIT_SHORT_SHA 
-      --build-arg build_origin="Gitlab" 
+      --build-arg PIP_WHEEL_DIR=python-packages
+      --build-arg build_date="$CI_JOB_STARTED_AT"
+      --build-arg build_number=$CI_COMMIT_SHORT_SHA
+      --build-arg commit_id=$CI_COMMIT_SHORT_SHA
+      --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
 osdu-gcp-containerize-gcr:
   variables:
     BUILD_PATH: "./build/Dockerfile"
     BUILD_ARGS: >
-      --build-arg PIP_WHEEL_DIR=python-packages 
-      --build-arg build_date="$CI_JOB_STARTED_AT" 
-      --build-arg build_number=$CI_COMMIT_SHORT_SHA 
-      --build-arg commit_id=$CI_COMMIT_SHORT_SHA 
-      --build-arg build_origin="Gitlab" 
+      --build-arg PIP_WHEEL_DIR=python-packages
+      --build-arg build_date="$CI_JOB_STARTED_AT"
+      --build-arg build_number=$CI_COMMIT_SHORT_SHA
+      --build-arg commit_id=$CI_COMMIT_SHORT_SHA
+      --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
 #Override Python Image defined in python.yml
