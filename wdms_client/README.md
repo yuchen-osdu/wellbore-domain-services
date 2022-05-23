@@ -42,7 +42,7 @@ environments variables given environment C:\SRC\opengroup\wellbore-domain-servic
 
 ## Describe api before call
 
-Use command `descibe` with an `api` and optionally an environment file. It will print details of corresponding request:
+Use command `describe` with an `api` and optionally an environment file. It will print details of corresponding request:
 
 
 ```
@@ -77,7 +77,7 @@ body: -------------------------------------------
 
 ## Perform a call
 
-Use command `descibe` with an `api` and optionally an environment file. It will run it and print the result:
+Use command `describe` with an `api` and optionally an environment file. It will run it and print the result:
 
 ```
 python -m wdms_client call about --environment="..\..\my_environment.json"

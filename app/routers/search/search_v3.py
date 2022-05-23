@@ -200,7 +200,8 @@ async def query_request(query_type: str, kind: str, ctx: Context,
 @router.post('/query/wellbores', summary='Query with cursor, get wellbores',
              description=f"""Get all Wellbores object.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
         returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
-             response_model=CursorQueryResponse)
+             response_model=CursorQueryResponse,
+             deprecated=True)
 async def query_wellbores(body: SearchQueryRequest = DEFAULT_SEARCHQUERYREQUEST, ctx: Context = Depends(get_ctx)):
     return await query_request(query_type, OSDU_WELLBORE_KIND, ctx, body)
 

@@ -74,7 +74,7 @@ tests_parameters = [
     )),
     ('/ddms/v3/welllogs', WellLog(
         id=r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="namespace:osdu:work-product-component--WellLog:1.1.0",
+        kind="namespace:osdu:work-product-component--WellLog:1.2.0",
         acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
         legal={
             "legaltags": ["string"],

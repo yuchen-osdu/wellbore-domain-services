@@ -16,7 +16,7 @@ def dasked_test_app_client(testing_app_local_chunking_with_consistency):
 
 def _create_record(client, data):
     record = {
-        "kind": "osdu:wks:work-product-component--WellLog:1.1.0",
+        "kind": "osdu:wks:work-product-component--WellLog:1.2.0",
         "acl": {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]},
         "legal": {
             "legaltags": ["opendes-storage-1602183747123"],

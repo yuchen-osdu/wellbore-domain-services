@@ -28,7 +28,8 @@ from .model_examples import (
     trajectory_v3_record_list,
     trajectory110_v3_list,
     welllog_v3_record_list,
-    welllog110_v3_list
+    welllog110_v3_list,
+    welllog120_v3_list
 )
 
 
