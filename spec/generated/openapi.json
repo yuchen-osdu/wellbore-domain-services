@@ -773,7 +773,19 @@
             "additionalProperties": {
               "$ref": "#/components/schemas/CurveStatistics"
             },
-            "example": "{'CurveName': {'mean': '450.8438',\n                                            'std': '318.27778186518816',\n                                            'min': '-100.0',\n                                            '10%': '9.0',\n                                            '50%': '451.0',\n                                            '90%': '893.0',\n                                            'max': '999.0',\n                                            'totalCount': '100000',\n                                            'nonAbsentValuesCount': '100000.0'}",
+            "example": {
+              "CurveName": {
+                "10%": "9.0",
+                "50%": "451.0",
+                "90%": "893.0",
+                "max": "999.0",
+                "mean": "450.8438",
+                "min": "-100.0",
+                "nonAbsentValuesCount": "100000.0",
+                "std": "318.27778186518816",
+                "totalCount": "100000"
+              }
+            },
             "title": "Curves statistics' values",
             "type": "object"
           },
