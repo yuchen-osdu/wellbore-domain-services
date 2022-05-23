@@ -73,6 +73,19 @@ def write_bulk_without_session(data_handle,
         raise BulkNotProcessable(f'parsing error: {e}') from e
     data_handle = None  # unref
 
+    return write_dataframe_without_session(
+        df, df_validator_func, bulk_base_path, storage_options, consistency_checks, record
+    )
+
+
+def write_dataframe_without_session(df,
+                                    df_validator_func: DataFrameValidationFunc,
+                                    bulk_base_path: str,
+                                    storage_options,
+                                    consistency_checks: DataConsistencyChecks,
+                                    record: "Record"
+                                    ) -> DataframeBasicDescribe:
+
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
 

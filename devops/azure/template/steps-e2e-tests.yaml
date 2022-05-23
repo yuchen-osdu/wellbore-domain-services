@@ -13,12 +13,9 @@
 # limitations under the License.
 
 parameters:
-  - name: baseUrl
+  - name: serviceUrl
     type: string
   - name: osduBaseUrl
-    type: string
-    default: "" # if empty will use baseUrl instead
-  - name: basePath
     type: string
   - name: cloudProvider
     type: string
@@ -51,9 +48,8 @@ steps:
       set -e
 
       echo "parameters.skipCertValidation: ${{ parameters.skipCertValidation }}"
-      echo "parameters.baseUrl: ${{ parameters.baseUrl }}"
+      echo "parameters.serviceUrl: ${{ parameters.serviceUrl }}"
       echo "parameters.osduBaseUrl: ${{ parameters.osduBaseUrl }}"
-      echo "parameters.basePath: ${{ parameters.basePath }}"
       echo "parameters.cloudProvider: ${{ parameters.cloudProvider }}"
       echo "parameters.aclDomain: ${{ parameters.aclDomain }}"
       echo "parameters.legalTag: ${{ parameters.legalTag }}"
@@ -100,24 +96,15 @@ steps:
 
     fi
 
-    # Depending on the value of environmentName, activate test on alpha feature
-    envName="${{ parameters.environmentName }}"
-
     echo "##vso[task.setvariable variable=insecure_flag]${insecure_flag}"
     echo "##vso[task.setvariable variable=checkCert]${checkCert}"
 
   displayName: 'Create test variables'
 
 - bash: |
-    set -e
+    set -ex
 
-    osduBaseUrl=${{ parameters.osduBaseUrl }}
-    if [ -z "$osduBaseUrl" ]
-    then
-          osduBaseUrl=${{ parameters.baseUrl }}
-    fi
-
-    python tests/integration/gen_postman_env.py --token $(token) --base_url ${osduBaseUrl} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
+    python tests/integration/gen_postman_env.py --token $(token) --base_url ${{ parameters.osduBaseUrl }} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
 
     newman run tests/dependencies/core_dependencies_test.postman_collection.json -e generated/postman_environment.json -r junit,cli --reporter-junit-export dependencies_tests_report_$(testReportBaseName).xml --timeout-request 10000 $(insecure_flag)
 
@@ -126,43 +113,45 @@ steps:
   continueOnError: true
 
 - bash: |
-    set -e
+    set -ex
 
-    appUrl=${{ parameters.baseUrl }}${{ parameters.basePath }}
-    echo "Testing App on ${appUrl}"
+    echo "Testing App on ${{ parameters.serviceUrl }}"
 
-    python tests/integration/gen_postman_env.py --token $(token) --base_url ${appUrl} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
+    python gen_postman_env.py --token $(token) \
+        --base_url ${{ parameters.serviceUrl }} \
+        --cloud_provider ${{ parameters.cloudProvider }} \
+        --acl_domain ${{ parameters.aclDomain }} \
+        --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
 
     pip install virtualenv
     virtualenv venv37
     source venv37/bin/activate
-    pip install -r ./requirements_dev.txt
+    pip install -r ../../requirements_dev.txt
 
-    pytest tests/integration/functional/ --filter-tag=!search --junit-xml=$(testReportBaseName)_int_tests_report.xml \
-        -o junit_suite_name="wdms_integration_$(testReportBaseName)" --environment=generated/postman_environment.json \
+    pytest functional/ --filter-tag=!search \
+        --junit-xml=$(testReportBaseName)_int_tests_report.xml  -o junit_suite_name="wdms_integration_$(testReportBaseName)" \
+        --environment=generated/postman_environment.json \
         --retry-on-error=502 \
-        $(insecure_flag) \
-        --param=ENVIRONMENT_NAME:$ENVIRONMENT_NAME
+        $(insecure_flag)
     deactivate
   displayName: 'RUN INTEGRATION-E2E'
-  env:
-    ENVIRONMENT_NAME: ${{ parameters.environmentName }}
+  workingDirectory: tests/integration
 
 - bash: |
-    set -e
+    set -ex
 
     pip install virtualenv
     virtualenv venv37
     source venv37/bin/activate
     pip install -r ./requirements_dev.txt
 
-    appUrl=${{ parameters.baseUrl }}${{ parameters.basePath }}
-    echo "Testing App on ${appUrl}"
+    echo "Testing App on ${{ parameters.serviceUrl }}"
 
-    pytest tests/integration/security/test_auth.py --base_url ${appUrl} --check_cert "$(checkCert)" --token="$(token)" --junit-xml=$(testReportBaseName)_auth_tests_report.xml -o junit_suite_name="wdms_auth_$(testReportBaseName)"
+    pytest tests/integration/security/test_auth.py --base_url ${{ parameters.serviceUrl }} --check_cert "$(checkCert)" --token="$(token)" --junit-xml=$(testReportBaseName)_auth_tests_report.xml -o junit_suite_name="wdms_auth_$(testReportBaseName)"
 
     deactivate
   displayName: 'RUN INTEGRATION-AUTH'
+  workingDirectory: ./
 
 
 - task: PublishTestResults@2

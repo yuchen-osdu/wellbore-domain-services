@@ -22,9 +22,24 @@ from app.injector.app_injector import WithLifeTime
 from app.base import base_app
 from app.wdms_app import wdms_app, app_injector
 from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
+from app.bulk_persistence import BulkPersistenceConfig
 from app.bulk_persistence import DaskBulkStorage
 from app.bulk_persistence import SessionsStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+
+
+@pytest.fixture(scope="module")
+def local_bulk_persistence_config(local_dev_config):
+    """
+    Creates a new instance of BulkPersistenceConfig with default inits
+    """
+    bulk_config = BulkPersistenceConfig(
+        min_worker_memory=local_dev_config.min_worker_memory.value,
+        dask_data_ipc=local_dev_config.dask_data_ipc.value,
+        service_name=local_dev_config.service_name.value
+    )
+
+    yield bulk_config
 
 
 @pytest.fixture(scope="module")

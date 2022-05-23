@@ -20,7 +20,6 @@ parameters:
         # providers:
         #   - name: Azure
         #     short_name: az
-        #     varGroupPrefix: ""
         #     environments: 
         #     - name: dev
         #       # TODO: The following templates needs to be injected as parameters
@@ -41,14 +40,18 @@ stages:
 
 - ${{ each provider in parameters.providers }}:
   - ${{ each environment in provider.environments }}:
-    - stage: 'Deploy_${{ provider.name }}_R3MVP_${{ environment.name }}'
+    - stage: 'Deploy_${{ provider.name }}_${{ environment.name }}'
+
       variables:
-      - group: '${{ provider.varGroupPrefix }}${{ provider.name }} Target Env Secrets - ${{ environment.name }}'
-      - group: '${{ provider.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
+
+      - group: '${{ provider.name }} Target Env Secrets - ${{ environment.name }}'
+      - group: '${{ provider.name }} Target Env - ${{ environment.name }}'
+
       - name: env # This variable is used as input of the helm template
         value: ${{ environment.name }}
+
       jobs:
-      - deployment: Deploy
+      - deployment: pull_push_deploy_${{ environment.name }}
         pool:
           vmImage: "ubuntu-latest"
         environment: ${{ environment.name }}
@@ -56,7 +59,7 @@ stages:
           runOnce:
             deploy:
               steps:
-              - template: steps-define-variables.yaml
+              - template: /devops/azure/template/steps-define-variables.yaml
               - template: ${{ provider.getImageTemplate }}
                 parameters: ${{ provider.getImageTemplateParameters }}
               - ${{ each preDeployTemplate in environment.preDeployTemplates }}:
@@ -64,7 +67,7 @@ stages:
                   parameters:
                     ${{ each parameter in preDeployTemplate.parameters }}:
                       ${{ parameter.key }}: ${{ parameter.value }}
-              - template: steps-push-image.yaml
+              - template: /devops/azure/template/steps-push-image.yaml
                 parameters:
                   azureSubscription: $(SERVICE_CONNECTION_NAME)
                   sourceACRName: $(us_acr_name)
@@ -80,36 +83,42 @@ stages:
                   chartPath: $(chartPath)
                   valuesFile: $(valuesFile)
                   hldRegPath: $(hldRegPath)
-              - template: devops/tasks/flux-service-wait.yml@pipelineTemplatesRepo
-                parameters:
-                  environment: ${{ environment.name }}
-                  serviceName: $(fluxServiceName)
-                  imageRepoName: $(app)
-                  skipDeploy: false
 
-    - stage: Test_${{ provider.name }}_R3MVP_${{ environment.name }}
-      dependsOn:
-      - Deploy_${{ provider.name }}_R3MVP_${{ environment.name }}
-      variables:
-      - group: '${{ provider.varGroupPrefix }}${{ provider.name }} Target Env - ${{ environment.name }}'
-      - template: 'vars/global_vars.yml'
-      jobs:
-        - job: e2e_test
-          steps:  
-            - template: steps-e2e-tests.yaml
-              parameters:
-                baseUrl: "https://$(DNS_HOST)"
-                basePath: ${{ variables.base_path }}
-                aclDomain: $(DOMAIN)
-                legalTag: $(LEGAL_TAG)
-                dataPartition: $(MY_TENANT)
-                cloudProvider:  ${{ provider.short_name }}
-                authenticationTemplate: ${{ environment.authenticationTemplate }}
-                authenticationTemplateParameters: ${{ environment.authenticationTemplateParameters }}
-                environmentName: ${{ environment.name }}
+      # specific deployment job to use the correct subscription
+      # verifies previous job, and allows independent retry in case of timeout
+      - deployment: verify_deployment_${{ environment.name }}
+        dependsOn: pull_push_deploy_${{ environment.name }}
+        environment: ${{ environment.name }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: devops/tasks/flux-service-wait.yml@pipelineTemplatesRepo
+                  parameters:
+                    environment: ${{ environment.name }}
+                    serviceName: $(fluxServiceName)
+                    imageRepoName: $(app)
+                    skipDeploy: false
 
-    - ${{ each postDeployTemplate in environment.postDeployTemplates }}:
+      - job: e2e_test_${{ environment.name }}
+        dependsOn: verify_deployment_${{ environment.name }}
+        steps:
+          - template: /devops/azure/template/steps-e2e-tests.yaml
+            parameters:
+              # base_path comes from global_vars, that should be used globally in the pipeline
+              serviceUrl: https://$(ISTIO_DNS_HOST)$(base_path)
+              osduBaseUrl: https://$(ISTIO_DNS_HOST)
+              aclDomain: $(DOMAIN)
+              legalTag: $(LEGAL_TAG)
+              dataPartition: $(MY_TENANT)
+              cloudProvider:  ${{ provider.short_name }}
+              authenticationTemplate: ${{ environment.authenticationTemplate }}
+              authenticationTemplateParameters: ${{ environment.authenticationTemplateParameters }}
+              environmentName: ${{ environment.name }}
+
+      - ${{ each postDeployTemplate in environment.postDeployTemplates }}:
         - template: ${{ postDeployTemplate.template }}
           parameters:
+            dependsOn: e2e_test_${{ environment.name }}
             ${{ each parameter in postDeployTemplate.parameters }}:
               ${{ parameter.key }}: ${{ parameter.value }}

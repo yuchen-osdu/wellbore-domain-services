@@ -17,7 +17,7 @@ from osdu_aws.storage.storage_aws import AwsStorage
 from osdu_aws.storage.dask_storage_parameters import get_dask_storage_parameters as aws_parameters
 from app.context import Context
 from app.tenant import resolve_tenant
-from app.bulk_persistence import DaskBulkStorage
+from app.bulk_persistence import DaskBulkStorage, get_config
 from .app_injector import AppInjector, AppInjectorModule
 from app.conf import Config
 
@@ -40,4 +40,4 @@ class AwsInjector(AppInjectorModule):
         tenant = await resolve_tenant(ctx.partition_id)
         service_account_file=f'{Config.aws_region.value}$${Config.aws_env.value}'
         params = await aws_parameters(tenant, service_account_file)
-        return await DaskBulkStorage.create(params)
+        return await DaskBulkStorage.create(params, get_config())

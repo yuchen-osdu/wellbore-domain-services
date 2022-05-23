@@ -1101,14 +1101,20 @@
         "title": "CursorQueryResponse",
         "type": "object"
       },
-      "Curve110": {
+      "Curve120": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
         "properties": {
           "BaseDepth": {
-            "description": "DEPRECATED: populate data.SamplingStart or data.SamplingStop instead, for informational purposes data.BottomMeasuredDepth. SamplingStart and SamplingStop support other domains than depth.",
+            "description": "The curve's maximum 'depth' i.e., the reference value at which the curve has its last non-absent value. The curve may contain further absent values in between TopDepth and BaseDepth. Note that the SamplingDomainType may not be a depth as the property name indicates.",
             "title": "Basedepth",
             "type": "number"
+          },
+          "CurveDescription": {
+            "description": "Mnemonic-level curve description is used during parsing or reading and ingesting LAS or DLIS files, to explain the type of measurement being looked at, specifically for that moment. Curve description is specific to that single (log) mnemonic and for the entire log (acquisition run) interval. In essence, curve description defines the internal factors such as what the \"curve\" or measurement ideally is representing, how is it calculated, what are the assumptions and the \"constants\".",
+            "example": "CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant",
+            "title": "Curve Description",
+            "type": "string"
           },
           "CurveID": {
             "description": "The ID of the Well Log Curve",
@@ -1118,6 +1124,13 @@
           "CurveQuality": {
             "description": "The Quality of the Log Curve.",
             "title": "Curvequality",
+            "type": "string"
+          },
+          "CurveSampleTypeID": {
+            "description": "The value type to be expected as curve sample values.",
+            "example": "namespace:reference-data--CurveSampleType:float:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CurveSampleType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Curve Sample Type ID",
             "type": "string"
           },
           "CurveUnit": {
@@ -1144,7 +1157,7 @@
             "type": "string"
           },
           "DepthUnit": {
-            "description": "DEPRECATED: use the meta[] to specify the sampling UnitOfMeasure (AbstractMetaItem of kind \"Unit\"; propertyNames[\"TopMeasuredDepth\", \"BottomMeasuredDepth\"]). Originally: Unit of Measure for Top and Base depth.",
+            "description": "Unit of Measure for TopDepth and BaseDepth.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Depthunit",
             "type": "string"
@@ -1190,6 +1203,7 @@
           },
           "Mnemonic": {
             "description": "The Mnemonic of the Log Curve is the value as received either from Raw Providers or from Internal Processing team",
+            "example": "PRES_HDRB.BAR",
             "title": "Mnemonic",
             "type": "string"
           },
@@ -1205,12 +1219,12 @@
             "type": "integer"
           },
           "TopDepth": {
-            "description": "DEPRECATED: populate data.SamplingStart or data.SamplingStop instead, for informational purposes data.TopMeasuredDepth. SamplingStart and SamplingStop support other domains than depth.",
+            "description": "The curve's minimum 'depth', i.e., the reference value at which the curve has its first non-absent value. The curve may contain further absent values in between TopDepth and BaseDepth. Note that the SamplingDomainType may not be a depth as the property name indicates.",
             "title": "Topdepth",
             "type": "number"
           }
         },
-        "title": "Curve110",
+        "title": "Curve120",
         "type": "object"
       },
       "DataType": {
@@ -4266,7 +4280,7 @@
         ],
         "title": "WellLocationType"
       },
-      "WellLog110": {
+      "WellLog120": {
         "additionalProperties": false,
         "description": "A well log is a data type that correlates a particular measurement or multiple measurements in a wellbore against depth and/or time within that wellbore. When plotted visually, well logs are typically long line graphs (called \"curves\") but may sometimes be discrete points or intervals. This schema object is intended for digital well logs, not raster log files or raster calibration files, but may be used for the latter in the absence of a defined OSDU schema for these use cases.",
         "properties": {
@@ -4285,7 +4299,7 @@
                 "$ref": "#/components/schemas/AbstractLegalParentList100"
               }
             ],
-            "description": "The links to data, which constitute the inputs.",
+            "description": "The links to data, which constitute the inputs, from which this record instance is derived.",
             "title": "Ancestry"
           },
           "createTime": {
@@ -4302,7 +4316,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellLogData110"
+            "$ref": "#/components/schemas/WellLogData120"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -4313,7 +4327,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellLog:1.1.0",
+            "example": "osdu:wks:work-product-component--WellLog:1.2.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -4369,10 +4383,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellLog110",
+        "title": "WellLog120",
         "type": "object"
       },
-      "WellLogData110": {
+      "WellLogData120": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4432,7 +4446,7 @@
           },
           "Curves": {
             "items": {
-              "$ref": "#/components/schemas/Curve110"
+              "$ref": "#/components/schemas/Curve120"
             },
             "title": "Curves",
             "type": "array"
@@ -4510,6 +4524,12 @@
             "title": "Logactivity",
             "type": "string"
           },
+          "LogRemark": {
+            "description": "Log remark provides contextual information during the actual log object acquisition. Explains how the measurement in the wellbore is taken on a point in time or depth. Additional information may be included such as bad weather, tool failure, etc. Usually a part of the log header, log remark contains info specific for an acquisition run, specific for a given logging tool (multiple measurements) and/or a specific interval. In essence, log remark represents the external factors and operational environment, directly or indirectly affecting the measurement quality/uncertainty (dynamically over time/depth) - adding both noise and bias to the measurements.",
+            "example": "tool failure, bad weather",
+            "title": "Log Remark",
+            "type": "string"
+          },
           "LogRun": {
             "description": "Log Run - describe the run of the log - can be a number, but may be also a alphanumeric description such as a version name",
             "title": "Logrun",
@@ -4522,7 +4542,7 @@
               }
             ],
             "description": "An interval built from two nested values : StartDate and EndDate. It applies to the whole log services and may apply to composite logs as [start of the first run job] and [end of the last run job]Log Service Date",
-            "title": "Logservicedateinterval"
+            "title": "LogServiceDateInterval"
           },
           "LogSource": {
             "description": "OSDU Native Log Source - will be updated for later releases - not to be used yet",
@@ -4717,7 +4737,7 @@
             "type": "string"
           }
         },
-        "title": "WellLogData110",
+        "title": "WellLogData120",
         "type": "object"
       },
       "WellPurpose": {
@@ -8677,6 +8697,7 @@
     },
     "/alpha/ddms/v2/logs/{record_id}/data": {
       "get": {
+        "deprecated": true,
         "description": "Returns the data according to the specified query parameters.  \nMultiple media types response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header, default is Parquet.  \nWhen bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  \nThe requested columns must not exceed 500. The query parameter __curves__ can be use to limit the number of columns.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_alpha_ddms_v2_logs__record_id__data_get",
         "parameters": [
@@ -8816,10 +8837,11 @@
         ],
         "summary": "Returns the data according to the specified query parameters.",
         "tags": [
-          "ALPHA feature: bulk data chunking"
+          "DEPRECATED"
         ]
       },
       "post": {
+        "deprecated": true,
         "description": "\nWrites data to the associated record. It creates a new version.\nPayload is expected to contain the entire bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http chunked encoding transfer.\n<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_data_alpha_ddms_v2_logs__record_id__data_post",
         "parameters": [
@@ -8892,12 +8914,13 @@
         ],
         "summary": "Writes data as a whole bulk, creates a new version.",
         "tags": [
-          "ALPHA feature: bulk data chunking"
+          "DEPRECATED"
         ]
       }
     },
     "/alpha/ddms/v2/logs/{record_id}/sessions": {
       "get": {
+        "deprecated": true,
         "operationId": "list_session_alpha_ddms_v2_logs__record_id__sessions_get",
         "parameters": [
           {
@@ -8955,10 +8978,11 @@
         ],
         "summary": "list session of the given record.",
         "tags": [
-          "ALPHA feature: bulk data chunking"
+          "DEPRECATED"
         ]
       },
       "post": {
+        "deprecated": true,
         "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
         "operationId": "create_session_alpha_ddms_v2_logs__record_id__sessions_post",
         "parameters": [
@@ -8991,7 +9015,8 @@
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -9022,12 +9047,13 @@
         ],
         "summary": "Create a new session on the given record for writing bulk data.",
         "tags": [
-          "ALPHA feature: bulk data chunking"
+          "DEPRECATED"
         ]
       }
     },
     "/alpha/ddms/v2/logs/{record_id}/sessions/{session_id}": {
       "get": {
+        "deprecated": true,
         "operationId": "get_session_alpha_ddms_v2_logs__record_id__sessions__session_id__get",
         "parameters": [
           {
@@ -9091,10 +9117,11 @@
         ],
         "summary": "get session.",
         "tags": [
-          "ALPHA feature: bulk data chunking"
+          "DEPRECATED"
         ]
       },
       "patch": {
+        "deprecated": true,
         "operationId": "complete_session_alpha_ddms_v2_logs__record_id__sessions__session_id__patch",
         "parameters": [
           {
@@ -9168,12 +9195,13 @@
         ],
         "summary": "Update a session, either commit or abandon.",
         "tags": [
-          "ALPHA feature: bulk data chunking"
+          "DEPRECATED"
         ]
       }
     },
     "/alpha/ddms/v2/logs/{record_id}/sessions/{session_id}/data": {
       "post": {
+        "deprecated": true,
         "description": "Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and single version aggregating all and previous bulk.Support JSON and Parquet format ('Content_Type' must be set accordingly). Support http chunked encoding.<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_chunk_data_alpha_ddms_v2_logs__record_id__sessions__session_id__data_post",
         "parameters": [
@@ -9258,12 +9286,13 @@
         ],
         "summary": "Send a data chunk. Session must be complete/commit once all chunks are sent.",
         "tags": [
-          "ALPHA feature: bulk data chunking"
+          "DEPRECATED"
         ]
       }
     },
     "/alpha/ddms/v2/logs/{record_id}/versions/{version}/data": {
       "get": {
+        "deprecated": true,
         "description": "Returns the data of a specific version according to the specified query parameters.  \nMultiple media types response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header, default is Parquet.  \nWhen bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  \nThe requested columns must not exceed 500. The query parameter __curves__ can be use to limit the number of columns.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_data_version_alpha_ddms_v2_logs__record_id__versions__version__data_get",
         "parameters": [
@@ -9412,7 +9441,7 @@
         ],
         "summary": "Returns data of the specified version.",
         "tags": [
-          "ALPHA feature: bulk data chunking"
+          "DEPRECATED"
         ]
       }
     },
@@ -9663,6 +9692,7 @@
     },
     "/ddms/fastquery/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs object.  <p>The Logs kind is\n        *:wks:log:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_logs_ddms_fastquery_logs_post",
         "parameters": [
@@ -9723,6 +9753,7 @@
     },
     "/ddms/fastquery/logset/{logset_id}/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs IDs objects using its relationship Logset ID.  <p>All Logs linked to this\n            specific ID will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_logs_bylogset_ddms_fastquery_logset__logset_id__logs_post",
         "parameters": [
@@ -9792,6 +9823,7 @@
     },
     "/ddms/fastquery/logsets/{logset_attribute}/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs IDs objects using a specific attribute of LogSets.  <p>All Logs linked to LogSets\n            with this specific attribute will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_logs_bylogsetattribute_ddms_fastquery_logsets__logset_attribute__logs_post",
         "parameters": [
@@ -9861,6 +9893,7 @@
     },
     "/ddms/fastquery/wellbore/{wellbore_id}/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs IDs objects using its relationship Wellbore ID.  <p>All Logs linked to this\n            specific ID will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_logs_bywellbore_ddms_fastquery_wellbore__wellbore_id__logs_post",
         "parameters": [
@@ -9930,6 +9963,7 @@
     },
     "/ddms/fastquery/wellbore/{wellbore_id}/logsets": {
       "post": {
+        "deprecated": true,
         "description": "Get all LogSets IDs objects using its relationship Wellbore ID.  <p>All LogSets linked to this\n            specific ID will be returned</p>\n            <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_logsets_bywellbore_ddms_fastquery_wellbore__wellbore_id__logsets_post",
         "parameters": [
@@ -9999,6 +10033,7 @@
     },
     "/ddms/fastquery/wellbore/{wellbore_id}/markers": {
       "post": {
+        "deprecated": true,
         "description": "Get all Markers IDs objects using its relationship Wellbore ID.  <p>All Markers linked to this\n            specific ID will be returned</p>\n            <p>The Marker kind is *:wks:marker:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_markers_bywellbore_ddms_fastquery_wellbore__wellbore_id__markers_post",
         "parameters": [
@@ -10068,6 +10103,7 @@
     },
     "/ddms/fastquery/wellbores": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores IDs object.  <p>The wellbore kind is\n        *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_wellbores_ddms_fastquery_wellbores_post",
         "parameters": [
@@ -10128,6 +10164,7 @@
     },
     "/ddms/fastquery/wellbores/byboundingbox": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores IDs objects in a specific area. <p>The specific area will be define by a square\n            based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_wellbores_byboundingbox_ddms_fastquery_wellbores_byboundingbox_post",
         "parameters": [
@@ -10224,6 +10261,7 @@
     },
     "/ddms/fastquery/wellbores/bydistance": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores IDs IDs objects in a specific area. <p>The specific area will be define by a circle\n            based on its center coordinates (lat, lon) and radius (meters) </p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records IDs IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_wellbores_bydistance_ddms_fastquery_wellbores_bydistance_post",
         "parameters": [
@@ -10311,6 +10349,7 @@
     },
     "/ddms/fastquery/wellbores/bygeopolygon": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores IDs objects in a specific area.  <p>The specific area will be define by a \n            polygon based on each of its coordinates (lat, lon) with a minimum of three</p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_wellbores_bygeopolygon_ddms_fastquery_wellbores_bygeopolygon_post",
         "parameters": [
@@ -10372,6 +10411,7 @@
     },
     "/ddms/fastquery/wellbores/{wellbore_attribute}/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs IDs objects using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_logs_bywellboreattribute_ddms_fastquery_wellbores__wellbore_attribute__logs_post",
         "parameters": [
@@ -10441,6 +10481,7 @@
     },
     "/ddms/fastquery/wellbores/{wellbore_attribute}/logsets": {
       "post": {
+        "deprecated": true,
         "description": "Get all LogSets IDs objects using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The LogSet kind is *:wks:logSet:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_logsets_bywellboreattribute_ddms_fastquery_wellbores__wellbore_attribute__logsets_post",
         "parameters": [
@@ -10510,6 +10551,7 @@
     },
     "/ddms/query": {
       "post": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_ddms_query_post",
         "parameters": [
@@ -10571,6 +10613,7 @@
     },
     "/ddms/query/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs object.  <p>The Logs kind is\n        *:wks:log:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_logs_ddms_query_logs_post",
         "parameters": [
@@ -10637,6 +10680,7 @@
     },
     "/ddms/query/logset/{logsetId}/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs object using its relationship Logset ID.  <p>All Logs linked to this\n            specific ID will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_logs_bylogset_ddms_query_logset__logsetId__logs_post",
         "parameters": [
@@ -10712,6 +10756,7 @@
     },
     "/ddms/query/logsets/{logsetAttribute}/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs object using a specific attribute of LogSets.  <p>All Logs linked to LogSets\n            with this specific attribute will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_logs_bylogsetattribute_ddms_query_logsets__logsetAttribute__logs_post",
         "parameters": [
@@ -10787,6 +10832,7 @@
     },
     "/ddms/query/wellbore/{wellboreId}/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs object using its relationship Wellbore ID.  <p>All Logs linked to this\n            specific ID will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_logs_bywellbore_ddms_query_wellbore__wellboreId__logs_post",
         "parameters": [
@@ -10862,6 +10908,7 @@
     },
     "/ddms/query/wellbore/{wellboreId}/logsets": {
       "post": {
+        "deprecated": true,
         "description": "Get all LogSets object using its relationship Wellbore ID.  <p>All LogSets linked to this\n            specific ID will be returned</p>\n            <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_logsets_bywellbore_ddms_query_wellbore__wellboreId__logsets_post",
         "parameters": [
@@ -10937,6 +10984,7 @@
     },
     "/ddms/query/wellbore/{wellboreId}/markers": {
       "post": {
+        "deprecated": true,
         "description": "Get all Markers object using its relationship Wellbore ID.  <p>All Markers linked to this\n            specific ID will be returned</p>\n            <p>The Marker kind is *:wks:marker:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_markers_bywellbore_ddms_query_wellbore__wellboreId__markers_post",
         "parameters": [
@@ -11012,6 +11060,7 @@
     },
     "/ddms/query/wellbores": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores object.  <p>The wellbore kind is\n        *:wks:wellbore:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_wellbores_ddms_query_wellbores_post",
         "parameters": [
@@ -11078,6 +11127,7 @@
     },
     "/ddms/query/wellbores/byboundingbox": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores object in a specific area. <p>The specific area will be define by a square\n            based on its top left coordinates (lat, lon) and its bottom right coordinates (log, lat) </p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_wellbores_byboundingbox_ddms_query_wellbores_byboundingbox_post",
         "parameters": [
@@ -11180,6 +11230,7 @@
     },
     "/ddms/query/wellbores/bydistance": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores object in a specific area. <p>The specific area will be define by a circle\n            based on its center coordinates (lat, lon) and radius (meters) </p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_wellbores_bydistance_ddms_query_wellbores_bydistance_post",
         "parameters": [
@@ -11273,6 +11324,7 @@
     },
     "/ddms/query/wellbores/bygeopolygon": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores object in a specific area.  <p>The specific area will be define by a \n            polygon based on each of its coordinates (lat, lon) with a minimum of three</p>\n            <p>The wellbore kind is *:wks:wellbore:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_wellbores_bygeopolygon_ddms_query_wellbores_bygeopolygon_post",
         "parameters": [
@@ -11334,6 +11386,7 @@
     },
     "/ddms/query/wellbores/{wellboreAttribute}/logs": {
       "post": {
+        "deprecated": true,
         "description": "Get all Logs object using a specific attribute of Wellbores.  <p>All Logs linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The Log kind is *:wks:log:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_logs_bywellboreattribute_ddms_query_wellbores__wellboreAttribute__logs_post",
         "parameters": [
@@ -11409,6 +11462,7 @@
     },
     "/ddms/query/wellbores/{wellboreAttribute}/logsets": {
       "post": {
+        "deprecated": true,
         "description": "Get all LogSets object using a specific attribute of Wellbores.  <p>All LogSets linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The LogSet kind is *:wks:logSet:* returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_logsets_bywellboreattribute_ddms_query_wellbores__wellboreAttribute__logsets_post",
         "parameters": [
@@ -11484,6 +11538,7 @@
     },
     "/ddms/query_with_cursor": {
       "post": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_with_cursor_ddms_query_with_cursor_post",
         "parameters": [
@@ -11545,6 +11600,7 @@
     },
     "/ddms/v2/dipsets": {
       "post": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_dipset",
         "parameters": [
@@ -11653,6 +11709,7 @@
     },
     "/ddms/v2/dipsets/{dipsetid}": {
       "delete": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_dipset",
         "parameters": [
@@ -11719,6 +11776,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "Get the DipSet object using its **id**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_dipset",
         "parameters": [
@@ -11782,6 +11840,7 @@
     },
     "/ddms/v2/dipsets/{dipsetid}/dips": {
       "get": {
+        "deprecated": true,
         "description": "Return dips from dipset from the given index until the given number of dips specifed in query parameters. \n    If not specified returns all dips from dipset. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_dips",
         "parameters": [
@@ -11867,6 +11926,7 @@
         ]
       },
       "post": {
+        "deprecated": true,
         "description": "Replace previous dips by provided dips. Sort dips by reference and azimuth. <p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_dips",
         "parameters": [
@@ -11947,6 +12007,7 @@
     },
     "/ddms/v2/dipsets/{dipsetid}/dips/insert": {
       "post": {
+        "deprecated": true,
         "description": "Insert dips in dipset. \n    Existing dips are not replaced. \n    Several dip can have same reference. \n    Operation will sort by reference all dips in dipset (may modify dip indexes). <p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "insert_dips",
         "parameters": [
@@ -12025,6 +12086,7 @@
     },
     "/ddms/v2/dipsets/{dipsetid}/dips/query": {
       "get": {
+        "deprecated": true,
         "description": "Search dip within reference interval and specific classification. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_dip",
         "parameters": [
@@ -12118,6 +12180,7 @@
     },
     "/ddms/v2/dipsets/{dipsetid}/dips/{index}": {
       "delete": {
+        "deprecated": true,
         "description": "Removes the dip at index. <p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "delete_dip_by_index",
         "parameters": [
@@ -12192,6 +12255,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "\"Return dip from dipset at the given index. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_dip_by_index",
         "parameters": [
@@ -12262,6 +12326,7 @@
         ]
       },
       "patch": {
+        "deprecated": true,
         "description": "\"Update dip at index     \n    Operation will sort by reference all dips in dipset (may modify dip indexes).",
         "operationId": "patch_dip",
         "parameters": [
@@ -12348,6 +12413,7 @@
     },
     "/ddms/v2/dipsets/{dipsetid}/versions": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_dipset_versions",
         "parameters": [
@@ -12411,6 +12477,7 @@
     },
     "/ddms/v2/dipsets/{dipsetid}/versions/{version}": {
       "get": {
+        "deprecated": true,
         "description": "\"Get the DipSet object using its **id**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_dipset_version",
         "parameters": [
@@ -12483,6 +12550,7 @@
     },
     "/ddms/v2/logs": {
       "post": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_log",
         "parameters": [
@@ -12631,6 +12699,7 @@
     },
     "/ddms/v2/logs/{logid}": {
       "delete": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_log",
         "parameters": [
@@ -12685,6 +12754,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "Get the log object using its data ecosystem **id**.  <p>If the log\n                kind is *wks:log:1.0.5* returns the record directly</p> <p>If the\n                wellbore kind is different *wks:log:1.0.5* it will get the raw\n                record and convert the results to match the *wks:log:1.0.5*. If\n                conversion is not possible returns an error **500**.</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_log",
         "parameters": [
@@ -12748,6 +12818,7 @@
     },
     "/ddms/v2/logs/{logid}/data": {
       "get": {
+        "deprecated": true,
         "description": "return full bulk data. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_log_data",
         "parameters": [
@@ -12836,6 +12907,7 @@
         ]
       },
       "post": {
+        "deprecated": true,
         "description": "Overwrite if exists. <p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "write_log_data",
         "parameters": [
@@ -13081,6 +13153,7 @@
     },
     "/ddms/v2/logs/{logid}/decimated": {
       "get": {
+        "deprecated": true,
         "description": "TODO\n            Note: row order is not preserved. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_log_decimated",
         "parameters": [
@@ -13192,6 +13265,7 @@
     },
     "/ddms/v2/logs/{logid}/statistics": {
       "get": {
+        "deprecated": true,
         "description": "This API will return count, mean, std, min, max and percentiles of each column. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_log_data_statistics_ddms_v2_logs__logid__statistics_get",
         "parameters": [
@@ -13267,6 +13341,7 @@
     },
     "/ddms/v2/logs/{logid}/upload_data": {
       "post": {
+        "deprecated": true,
         "description": "Overwrite if exists. <p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "upload_log_data",
         "parameters": [
@@ -13369,6 +13444,7 @@
     },
     "/ddms/v2/logs/{logid}/versions": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_log_versions",
         "parameters": [
@@ -13432,6 +13508,7 @@
     },
     "/ddms/v2/logs/{logid}/versions/{version}": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_log_version",
         "parameters": [
@@ -13504,6 +13581,7 @@
     },
     "/ddms/v2/logs/{logid}/versions/{version}/data": {
       "get": {
+        "deprecated": true,
         "description": "return full bulk data. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_log_data_by_version",
         "parameters": [
@@ -13603,6 +13681,7 @@
     },
     "/ddms/v2/logsets": {
       "post": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_logset",
         "parameters": [
@@ -13738,6 +13817,7 @@
     },
     "/ddms/v2/logsets/{logsetid}": {
       "delete": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_logset",
         "parameters": [
@@ -13804,6 +13884,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "Get the LogSet object using its **id**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_logset",
         "parameters": [
@@ -13867,6 +13948,7 @@
     },
     "/ddms/v2/logsets/{logsetid}/versions": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_logset_versions",
         "parameters": [
@@ -13930,6 +14012,7 @@
     },
     "/ddms/v2/logsets/{logsetid}/versions/{version}": {
       "get": {
+        "deprecated": true,
         "description": "\"Get the LogSet object using its **id**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_logset_version",
         "parameters": [
@@ -14002,6 +14085,7 @@
     },
     "/ddms/v2/markers": {
       "post": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_marker",
         "parameters": [
@@ -14121,6 +14205,7 @@
     },
     "/ddms/v2/markers/{markerid}": {
       "delete": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_marker",
         "parameters": [
@@ -14175,6 +14260,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "Get the Marker object using its **id**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_marker",
         "parameters": [
@@ -14238,6 +14324,7 @@
     },
     "/ddms/v2/markers/{markerid}/versions": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_marker_versions",
         "parameters": [
@@ -14301,6 +14388,7 @@
     },
     "/ddms/v2/markers/{markerid}/versions/{version}": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_marker_version",
         "parameters": [
@@ -14373,6 +14461,7 @@
     },
     "/ddms/v2/trajectories": {
       "post": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_trajectory",
         "parameters": [
@@ -14519,6 +14608,7 @@
     },
     "/ddms/v2/trajectories/{trajectoryid}": {
       "delete": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_trajectory",
         "parameters": [
@@ -14573,6 +14663,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "Get the Trajectory object using its **id**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_trajectory",
         "parameters": [
@@ -14636,6 +14727,7 @@
     },
     "/ddms/v2/trajectories/{trajectoryid}/data": {
       "get": {
+        "deprecated": true,
         "description": "return full bulk data. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_traj_data",
         "parameters": [
@@ -14736,6 +14828,7 @@
         ]
       },
       "post": {
+        "deprecated": true,
         "description": "Overwrite if exists. <p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_traj_data",
         "parameters": [
@@ -14930,6 +15023,7 @@
     },
     "/ddms/v2/trajectories/{trajectoryid}/versions": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_trajectory_versions",
         "parameters": [
@@ -14993,6 +15087,7 @@
     },
     "/ddms/v2/trajectories/{trajectoryid}/versions/{version}": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_trajectory_version",
         "parameters": [
@@ -15065,6 +15160,7 @@
     },
     "/ddms/v2/trajectories/{trajectoryid}/versions/{version}/data": {
       "get": {
+        "deprecated": true,
         "description": "return full bulk data. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_trajectory_data_by_version",
         "parameters": [
@@ -15167,6 +15263,7 @@
     },
     "/ddms/v2/wellbores": {
       "post": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_wellbore",
         "parameters": [
@@ -15375,6 +15472,7 @@
     },
     "/ddms/v2/wellbores/{wellboreid}": {
       "delete": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_wellbore",
         "parameters": [
@@ -15441,6 +15539,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "Get the Wellbore object using its **id**.  <p>If the wellbore kind is\n        *wks:wellbore:1.0.6* returns the record directly</p> <p>If the wellbore\n        kind is different *wks:wellbore:1.0.6* it will get the raw record and\n        convert the results to match the *wks:wellbore:1.0.6*. If convertion is\n        not possible returns an error **500**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_wellbore",
         "parameters": [
@@ -15504,6 +15603,7 @@
     },
     "/ddms/v2/wellbores/{wellboreid}/versions": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_wellbore_versions",
         "parameters": [
@@ -15567,6 +15667,7 @@
     },
     "/ddms/v2/wellbores/{wellboreid}/versions/{version}": {
       "get": {
+        "deprecated": true,
         "description": "\"Get the Wellbore object using its **id**.  <p>If the wellbore kind is\n        *wks:wellbore:1.0.6* returns the record directly</p> <p>If the wellbore\n        kind is different *wks:wellbore:1.0.6* it will get the raw record and\n        convert the results to match the *wks:wellbore:1.0.6*. If convertion is\n        not possible returns an error **500**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_wellbore_version",
         "parameters": [
@@ -15639,6 +15740,7 @@
     },
     "/ddms/v2/wells": {
       "post": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_well",
         "parameters": [
@@ -15735,6 +15837,7 @@
     },
     "/ddms/v2/wells/{wellid}": {
       "delete": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "del_well",
         "parameters": [
@@ -15801,6 +15904,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "Get the Well object using its **id**.  <p>If the well kind is\n        *wks:well:1.0.2* returns the record directly</p> <p>If the well\n        kind is different *wks:well:1.0.2* it will get the raw record and\n        convert the results to match the *wks:well:1.0.2*. If convertion is\n        not possible returns an error **500**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_well",
         "parameters": [
@@ -15864,6 +15968,7 @@
     },
     "/ddms/v2/wells/{wellid}/versions": {
       "get": {
+        "deprecated": true,
         "description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_well_versions",
         "parameters": [
@@ -15927,6 +16032,7 @@
     },
     "/ddms/v2/wells/{wellid}/versions/{version}": {
       "get": {
+        "deprecated": true,
         "description": "\"Get the Well object using its **id**.  <p>If the well kind is\n        *wks:well:1.0.2* returns the record directly</p> <p>If the well\n        kind is different *wks:well:1.0.2* it will get the raw record and\n        convert the results to match the *wks:well:1.0.2*. If convertion is\n        not possible returns an error **500**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "get_well_version",
         "parameters": [
@@ -15999,6 +16105,7 @@
     },
     "/ddms/v3/fastquery/wellbore/{wellbore_attribute}/welllogs": {
       "post": {
+        "deprecated": true,
         "description": "Get all WellLogs IDs objects using a specific attribute of Wellbores.  <p>All WellLogs linked to Wellbores\n            with this specific attribute will be returned</p>\n            <p>The LogSet kind is *:wks:work-product-component--WellLog:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_welllogs_bywellboreattribute_ddms_v3_fastquery_wellbore__wellbore_attribute__welllogs_post",
         "parameters": [
@@ -16074,6 +16181,7 @@
     },
     "/ddms/v3/fastquery/wellbores": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores IDs object.  <p>The wellbore kind is\n        *:wks:master-data--Wellbore:* returns all records IDs IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_wellbores_ddms_v3_fastquery_wellbores_post",
         "parameters": [
@@ -16140,6 +16248,7 @@
     },
     "/ddms/v3/fastquery/wellbores/{wellbore_id}/wellboremarkersets": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbore Markersets IDs objects using its relationship Wellbore ID.  <p>All Markers linked to this\n            specific ID will be returned</p>\n            <p>The Marker kind is *:wks:work-product-component--WellboreMarkerSet:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_markers_bywellbore_ddms_v3_fastquery_wellbores__wellbore_id__wellboremarkersets_post",
         "parameters": [
@@ -16215,6 +16324,7 @@
     },
     "/ddms/v3/fastquery/wellbores/{wellbore_id}/welllogs": {
       "post": {
+        "deprecated": true,
         "description": "Get all WellLogs IDs objects using its relationship Wellbore ID.  <p>All WellLogs linked to this\n            specific ID will be returned</p>\n            <p>The LogSet kind is *:wks:work-product-component--WellLog:* returns all records IDs directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "fastquery_welllogs_bywellbore_ddms_v3_fastquery_wellbores__wellbore_id__welllogs_post",
         "parameters": [
@@ -16365,6 +16475,7 @@
     },
     "/ddms/v3/query/wellbores": {
       "post": {
+        "deprecated": true,
         "description": "Get all Wellbores object.  <p>The wellbore kind is *:wks:master-data--Wellbore:*\n        returns all records directly based on existing schemas</p>\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n",
         "operationId": "query_wellbores_ddms_v3_query_wellbores_post",
         "parameters": [
@@ -18419,7 +18530,8 @@
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -19146,14 +19258,18 @@
                     "CreationDateTime": "2013-03-22T11:16:03Z",
                     "Curves": [
                       {
+                        "CurveDescription": "Gamma Ray",
                         "CurveID": "GR_ID",
+                        "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:",
                         "Mnemonic": "GR",
                         "NumberOfColumns": 1
                       },
                       {
+                        "CurveDescription": "Neutron Porosity",
                         "CurveID": "POR_ID",
+                        "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:",
                         "Mnemonic": "NPOR",
@@ -19161,12 +19277,14 @@
                       },
                       {
                         "CurveID": "Bulk Density",
+                        "CurveSampleTypeID": "{{datapartitionid}}:reference-data--CurveSampleType:float:",
                         "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                         "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:BulkDensity:",
                         "Mnemonic": "RHOB"
                       }
                     ],
                     "IsRegular": true,
+                    "LogRemark": "example data for API documentation",
                     "Name": "{{welllogName}}",
                     "SamplingDomainTypeID": "{{datapartitionid}}:reference-data--WellLogSamplingDomainType:Depth:",
                     "SamplingInterval": 0.1,
@@ -19179,7 +19297,7 @@
                     "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:"
                   },
                   "id": "{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
-                  "kind": "osdu:wks:work-product-component--WellLog:1.1.0",
+                  "kind": "osdu:wks:work-product-component--WellLog:1.2.0",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
@@ -19217,7 +19335,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellLog110"
+                  "$ref": "#/components/schemas/WellLog120"
                 },
                 "title": "Welllogs",
                 "type": "array"
@@ -19578,7 +19696,8 @@
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -20101,7 +20220,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellLog110"
+                  "$ref": "#/components/schemas/WellLog120"
                 }
               }
             },
@@ -20238,7 +20357,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellLog110"
+                  "$ref": "#/components/schemas/WellLog120"
                 }
               }
             },

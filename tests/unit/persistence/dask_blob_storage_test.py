@@ -36,8 +36,9 @@ from odes_storage.models import Record, StorageAcl, Legal
 
 
 @pytest.fixture()
-async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path) -> DaskBulkStorage:
-    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path)
+async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path, local_bulk_persistence_config) -> DaskBulkStorage:
+    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path,
+                                                      bulk_config=local_bulk_persistence_config)
     yield dask_storage
 
 
@@ -132,6 +133,38 @@ async def test_save_bulk(dask_storage: DaskBulkStorage):
     with pytest.raises(BulkRecordNotFound):
         await dask_storage.load_bulk(record_id="bad_record", bulk_id=bulk_id)
 
+
+@pytest.mark.asyncio
+async def test_post_dataframe_without_session_with_bulk_id(dask_storage: DaskBulkStorage):
+    df_ref = generate_df(['A', 'B', 'C'], range(1000))
+    bulk_id = 'abcdef'
+    record_id = 'test_save_bulk_with_bulk_id_record_id'
+    bulk_id_returned, _ = await dask_storage.post_dataframe_without_session(df_ref,
+                                                                            df_validator_func=no_validation,
+                                                                            consistency_checks=NoConsistencyChecks,
+                                                                            record=Record(id=record_id, kind="", acl=StorageAcl(viewers=[], owners=[]), legal=Legal(), data={}),
+                                                                            bulk_id=bulk_id)
+    assert bulk_id == bulk_id_returned
+
+    df = await dask_storage.load_bulk(record_id=record_id, bulk_id=bulk_id)
+    await compare_frame(df_ref, df)
+
+
+@pytest.mark.asyncio
+async def test_post_dataframe_without_session(dask_storage: DaskBulkStorage):
+    df_ref = generate_df(['A', 'B', 'C'], range(1000))
+    record_id = 'test_save_bulk_record_id'
+    bulk_id, _ = await dask_storage.post_dataframe_without_session(df_ref,
+                                                                   df_validator_func=no_validation,
+                                                                   consistency_checks=NoConsistencyChecks,
+                                                                   record=Record(id=record_id, kind="", acl=StorageAcl(viewers=[], owners=[]), legal=Legal(), data={}))
+    assert bulk_id
+
+    df = await dask_storage.load_bulk(record_id=record_id, bulk_id=bulk_id)
+    await compare_frame(df_ref, df)
+
+    with pytest.raises(BulkRecordNotFound):
+        await dask_storage.load_bulk(record_id="bad_record", bulk_id=bulk_id)
 
 @pytest.mark.asyncio
 async def test_save_blob_with_same_data_at_once(dask_storage: DaskBulkStorage):

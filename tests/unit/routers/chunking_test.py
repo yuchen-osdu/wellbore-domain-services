@@ -9,11 +9,10 @@ import pandas.api.types as ptypes
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from app.conf import Config
 
 from pandas.testing import assert_frame_equal
 from tests.unit.persistence.dask_blob_storage_test import generate_df
-
+from app.bulk_persistence import MAX_COLUMNS_WRITE_CHUNK, MAX_COLUMNS_RETURN
 
 Definitions = {
     'WellLog': {
@@ -1126,19 +1125,28 @@ def test_none_in_index_error(dasked_test_app_without_consistency_client, entity_
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_read_too_many_columns(dasked_test_app_without_consistency_client, entity_type):
+def test_read_too_many_columns(dasked_test_app_without_consistency_client, entity_type, local_bulk_persistence_config):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    max_cols_count = 100
-    Config.max_columns_return.value = max_cols_count
+    response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
+    assert response.status_code == 200
+    session_id = response.json()['id']
 
-    df = generate_df([f'var[{i}]' for i in range(max_cols_count + 1)], range(5))
-    write_response = client.post(f'{chunking_url}/{record_id}/data',
-                                 data=df.to_parquet(engine="pyarrow"),
-                                 headers={'content-type': 'application/parquet'})
-    assert write_response.status_code == 200
+    df = generate_df([f'var[{i}]' for i in range(int(MAX_COLUMNS_WRITE_CHUNK/2) + 1)], range(5))
+    response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                           data=df.to_parquet(engine="pyarrow"),
+                           headers={'content-type': 'application/parquet'})
+    assert response.status_code == 200
+    df = generate_df([f'var[{i}]' for i in range(int(MAX_COLUMNS_WRITE_CHUNK/2) + 1, MAX_COLUMNS_WRITE_CHUNK + 1)], range(5))
+    response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
+                           data=df.to_parquet(engine="pyarrow"),
+                           headers={'content-type': 'application/parquet'})
+    assert response.status_code == 200
+
+    response = client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
+    assert response.status_code == 200
 
     get_describe_response = client.get(f'{chunking_url}/{record_id}/data',
                                        headers={'Accept': 'application/parquet'},
@@ -1152,24 +1160,21 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
-                              params={'curves': f'var[0:{max_cols_count - 1}]'})
+                              params={'curves': f'var[0:{MAX_COLUMNS_RETURN - 1}]'})
     assert get_response.status_code == 200
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
-                              params={'curves': f'var[0:{max_cols_count * 2}]'})
+                              params={'curves': f'var[0:{MAX_COLUMNS_RETURN + 1}]'})
     assert get_response.status_code == 400
     assert "Too many columns: requested" in get_response.json().get('detail', str())
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_many_columns_ensure_effective_cols_count_matter(dasked_test_app_without_consistency_client, entity_type):
+def test_many_columns_ensure_effective_cols_count_matter(dasked_test_app_without_consistency_client, entity_type, local_bulk_persistence_config):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
-
-    max_cols_count = 100
-    Config.max_columns_return.value = max_cols_count
 
     effective_cols_count = 50
     df = generate_df([f'var[{i}]' for i in range(effective_cols_count)], range(2))
@@ -1180,18 +1185,18 @@ def test_many_columns_ensure_effective_cols_count_matter(dasked_test_app_without
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
-                              params={'curves': f'var[0:{max_cols_count * 2}]'})
+                              params={'curves': f'var[0:{MAX_COLUMNS_RETURN + 10}]'})
     assert get_response.status_code == 200, \
         "Ensure only existing columns are taken into account for max cols limit"
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_write_too_many_columns(dasked_test_app_without_consistency_client, entity_type):
+def test_write_too_many_columns(dasked_test_app_without_consistency_client, entity_type, local_bulk_persistence_config):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    df = generate_df([f'var[{i}]' for i in range(Config.max_columns_per_chunk_write.value + 1)], range(2))
+    df = generate_df([f'var[{i}]' for i in range(MAX_COLUMNS_WRITE_CHUNK + 1)], range(2))
     response = client.post(f'{chunking_url}/{record_id}/data',
                            data=df.to_parquet(engine="pyarrow"),
                            headers={'content-type': 'application/parquet'})
@@ -1200,7 +1205,7 @@ def test_write_too_many_columns(dasked_test_app_without_consistency_client, enti
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_write_too_many_columns_session(dasked_test_app_without_consistency_client, entity_type):
+def test_write_too_many_columns_session(dasked_test_app_without_consistency_client, entity_type, local_bulk_persistence_config):
     """ send parquet and json separately with two session, check if each session can be committed successfully"""
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
@@ -1209,7 +1214,7 @@ def test_write_too_many_columns_session(dasked_test_app_without_consistency_clie
     session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'overwrite'})
     session_id = session_response.json()['id']
 
-    df = generate_df([f'var[{i}]' for i in range(Config.max_columns_per_chunk_write.value + 1)], range(2))
+    df = generate_df([f'var[{i}]' for i in range(MAX_COLUMNS_WRITE_CHUNK + 1)], range(2))
     response = client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
                            data=df.to_parquet(engine="pyarrow"),
                            headers={'content-type': 'application/parquet'})

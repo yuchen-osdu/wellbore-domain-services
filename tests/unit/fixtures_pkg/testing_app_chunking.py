@@ -6,11 +6,11 @@ from app.bulk_persistence import make_local_dask_bulk_storage
 from app.bulk_persistence import SessionsStorage
 
 
-async def create_bulk_mocks(local_blob_path: str, local_storage_path: str):
+async def create_bulk_mocks(local_blob_path: str, local_storage_path: str, bulk_config):
     local_blob_storage = LocalFSBlobStorage(directory=local_blob_path)
     local_storage_service = StorageRecordServiceBlobStorage(local_blob_storage, 'myProject', 'myContainer')
     session_storage = SessionsStorage(local_blob_storage)
-    dask_storage_mock = await make_local_dask_bulk_storage(base_directory=local_storage_path)
+    dask_storage_mock = await make_local_dask_bulk_storage(base_directory=local_storage_path, bulk_config=bulk_config)
 
     return {
         "storage_client_mock": local_storage_service,
@@ -21,10 +21,11 @@ async def create_bulk_mocks(local_blob_path: str, local_storage_path: str):
 
 
 @pytest.fixture
-async def testing_app_local_chunking_no_consistency(app_configurable_with_testclient, tmp_path_factory):
+async def testing_app_local_chunking_no_consistency(app_configurable_with_testclient, tmp_path_factory, local_bulk_persistence_config):
 
     super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
-                                          local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")))
+                                          local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")),
+                                          bulk_config=local_bulk_persistence_config)
 
     app, client = app_configurable_with_testclient(fake_data_partition_id=True,
                                                    disable_bulk_consistency=True,
@@ -35,10 +36,11 @@ async def testing_app_local_chunking_no_consistency(app_configurable_with_testcl
 
 
 @pytest.fixture
-async def testing_app_local_chunking_with_consistency(app_configurable_with_testclient, tmp_path_factory):
+async def testing_app_local_chunking_with_consistency(app_configurable_with_testclient, tmp_path_factory, local_bulk_persistence_config):
 
     super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
-                                          local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")))
+                                          local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")),
+                                          bulk_config=local_bulk_persistence_config)
 
     app, client = app_configurable_with_testclient(fake_data_partition_id=True,
                                                    disable_bulk_consistency=False,

@@ -33,12 +33,13 @@ from .data import (
     domain, data_partition, legal_tags,
     well_v2_record_list, well_v3_record_list, wellbore_v2_record_list, wellbore_v3_record_list,
     marker_v2_record_list, marker_v3_record_list, trajectory_v3_record_list, welllog_v3_record_list,
-    well100_v3_list, wellbore100_v3_list, welllog110_v3_list, marker110_v3_list, trajectory110_v3_list,
+    well100_v3_list, wellbore100_v3_list, welllog110_v3_list, welllog120_v3_list, marker110_v3_list, trajectory110_v3_list,
     well_wks_record, well_wks_mini_record, wellbore_wks_record, wellbore_wks_mini_record
 )
 
 from .fixtures import (
     local_dev_config,
+    local_bulk_persistence_config,
     base_app_initialized_with_testclient,
     app_initialized_with_testclient,
     app_configurable_with_testclient,

@@ -60,6 +60,7 @@ def _commit_session(client, record_id, session_id):
 
 
 def generate_test_data():
+
     bulk_values = [
         [0.0, 2222.1],
         [0.5, 2222.2],
@@ -144,6 +145,7 @@ def generate_test_data():
 
 
 test_param = generate_test_data()
+
 
 test_param.append(
     pytest.param(
