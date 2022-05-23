@@ -198,7 +198,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         )
 
     @staticmethod
-    def _is_curve_family_measured_depth(wl: WellLog110, record: Record):
+    def _is_curve_family_measured_depth(wl: WellLog120, record: Record):
         for curve in wl.data.Curves:
             if curve.CurveID == wl.data.ReferenceCurveID:
                 log_curve_family_id_type = curve.LogCurveFamilyID
