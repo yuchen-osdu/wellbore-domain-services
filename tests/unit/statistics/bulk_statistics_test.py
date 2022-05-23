@@ -4,12 +4,18 @@ import uuid
 from typing import List
 
 from unittest import mock
+from unittest.mock import PropertyMock
+
 import numpy as np
+import pandas as pd
 import pytest
+from odes_storage.models import Record, StorageAcl, Legal
 
 from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError
 from app.bulk_persistence import DaskClient
 from app.bulk_persistence.statistics.models import BulkStatisticsStatus, InternalStatisticsComputationMeta
+from bulk_persistence import MimeType
+from consistency import NoConsistencyChecks
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
@@ -368,4 +374,50 @@ async def test_trigger_computations_after_error(bulk_stats_fixture):
         result: InternalStatisticsComputationMeta = await future
         assert result.computation_attempt == 1
         assert result.meta.computation_status == BulkStatisticsStatus.Error
+@pytest.mark.asyncio
+async def test_computations_values(bulk_stats_fixture):
+    with mock.patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
+            as computations_parameter:
+        computations_parameter.return_value = 3
 
+        bulk_statistics, dask_storage = bulk_stats_fixture
+
+        values_count = 500
+        bulk_df = pd.DataFrame({
+            'int-A': np.arange(-100, 400, step=1, dtype=int),
+            'int-A-nan': np.arange(-100, 1400, step=3, dtype=int),
+            'float-B': np.arange(-100, 650, step=1.5, dtype=float),
+            'float-B-nan': np.arange(-100, 1550, step=3.3, dtype=float),
+            'date-C': pd.date_range(start='1/1/2022', freq='s', periods=values_count),
+            'date-C-nan': pd.date_range(start='1/1/2022', freq='D', periods=values_count),
+            'bool-D': [i % 2 == 0 for i in range(values_count)],
+            'string-E': [f'string_value_{i}' for i in range(values_count)],
+        })
+
+        bulk_id = str(uuid.uuid4())
+        record_id = "MyRecordTestID"
+        await dask_storage.post_data_without_session(data=bulk_df.to_parquet(engine='pyarrow'),
+                                                     content_type=MimeTypes.PARQUET,
+                                                     df_validator_func=no_validation,
+                                                     consistency_checks=NoConsistencyChecks,
+                                                     record=Record(id=record_id, kind="",
+                                                                   acl=StorageAcl(viewers=[], owners=[]), legal=Legal(),
+                                                                   data={}),
+                                                     bulk_id=bulk_id,
+                                                     )
+
+        future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_id, record_version=123456)
+        await future
+
+        catalog = await dask_storage.get_bulk_catalog(record_id, bulk_id)
+        stats_df, stats_meta = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_id, columns=None)
+
+        expected_stats_df = bulk_df.describe(datetime_is_numeric=True, percentiles=[.10, .5, .90])
+        expected_stats_df = expected_stats_df.astype('string').transpose()
+        expected_stats_df['totalCount'] = values_count
+        expected_stats_df.rename(columns={'count': 'nonAbsentValuesCount'}, inplace=True)
+
+        expected_stats_df.sort_index(inplace=True)
+        stats_df.sort_index(inplace=True)
+
+        pd.testing.assert_frame_equal(stats_df, expected_stats_df)
