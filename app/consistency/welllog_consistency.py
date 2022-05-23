@@ -1,14 +1,16 @@
 import math
+import urllib
 from typing import Iterable
 
 import pandas as pd
 from dask.dataframe.core import DataFrame as DaskDataFrame
 
 from odes_storage.models import Record
+from pandas import DataFrame
 
 from app.helper.traces import with_trace
 from app.bulk_persistence import BulkRecordNotFound, \
-	DaskBulkStorage, ConsistencyException, DataConsistencyChecks, submit_with_trace
+    DaskBulkStorage, ConsistencyException, DataConsistencyChecks, submit_with_trace
 from app.model.model_utils import from_record
 from app.model.osdu_model import WellLog110
 from app.context import get_ctx
@@ -16,6 +18,8 @@ from app.context import get_ctx
 from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
 
 from .unique import get_unique_attr_values
+from ..clients.storage_service_client import get_storage_record_service
+from ..model.osdu_record_id import split_record_id_version
 
 
 class DuplicatedCurveIdException(ConsistencyException):
@@ -99,10 +103,15 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not (wl.data and wl.data.ReferenceCurveID):
             return
 
-        if wl.data.ReferenceCurveID in df:
-            ref = df[wl.data.ReferenceCurveID]
-            check_reference_is_strictly_monotonic(ref)
-            cls._check_top_bottom_reference(wl, ref)
+        if not wl.data.ReferenceCurveID in df:
+            return
+
+        if not cls._is_curve_family_measured_depth(wl, record):
+            return
+
+        ref = df[wl.data.ReferenceCurveID]
+        check_reference_is_strictly_monotonic(ref)
+        cls._check_top_bottom_reference(wl, ref)
 
     @classmethod
     @with_trace('bulk_consistency')
@@ -129,6 +138,9 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         # check reference
         if not (wl.data and wl.data.ReferenceCurveID):
+            return
+
+        if not cls._is_curve_family_measured_depth(wl, record):
             return
 
         try:
@@ -184,3 +196,15 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             reference_value=ref.iloc[-1],
             error_msg="Reference bottom value ({reference_value}) is different from {attr_name} value ({attr_value}) of the WellLog record."
         )
+
+    @staticmethod
+    def _is_curve_family_measured_depth(wl: WellLog110, record: Record):
+        for curve in wl.data.Curves:
+            if curve.CurveID == wl.data.ReferenceCurveID:
+                log_curve_family_id_type = curve.LogCurveFamilyID
+                data_partition = record.id.split(":")[0]
+                log_curve_family_id_expected = data_partition + ":reference-data--LogCurveFamily:Measured%20Depth:"
+                return log_curve_family_id_type == log_curve_family_id_expected
+        return None
+
+
