@@ -116,7 +116,7 @@ class BulkStatistics:
         if statistics_meta.meta.computation_status == BulkStatisticsStatus.Error \
                 and statistics_meta.computation_attempt >= self._max_computation_retry_count:
             raise ComputationRunningError(f"Statistics computation has already "
-                                          f"failed {self._max_computation_retry_count} time. ABORT")
+                                          f"failed {self._max_computation_retry_count} times. ABORT")
 
         computations_status = statistics_meta.meta.computation_status
         expire_date = statistics_meta.last_computation_date + self._duration_before_recompute

@@ -11,7 +11,8 @@ import pandas as pd
 import pytest
 from odes_storage.models import Record, StorageAcl, Legal
 
-from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError
+from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError, \
+    ComputationRunningError
 from app.bulk_persistence import DaskClient
 from app.bulk_persistence.statistics.models import BulkStatisticsStatus, InternalStatisticsComputationMeta
 from bulk_persistence import MimeType
@@ -370,10 +371,18 @@ async def test_trigger_computations_after_error(bulk_stats_fixture):
         columns_indexes = [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))]
         record_id, bulk_uri = await add_bulk_data_by_chunks_to_fixture(dask_storage, columns_indexes)
 
-        future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456)
-        result: InternalStatisticsComputationMeta = await future
-        assert result.computation_attempt == 1
-        assert result.meta.computation_status == BulkStatisticsStatus.Error
+        for i in range(1, 4):
+            future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456)
+            result: InternalStatisticsComputationMeta = await future
+            assert result.meta.computation_status == BulkStatisticsStatus.Error
+            assert result.computation_attempt == i
+            now = datetime.utcnow()
+            assert now - timedelta(seconds=1) < result.last_computation_date < now + timedelta(seconds=1)
+
+        with pytest.raises(ComputationRunningError, match="Statistics computation has already failed 3 times. ABORT"):
+            await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456)
+
+
 @pytest.mark.asyncio
 async def test_computations_values(bulk_stats_fixture):
     with mock.patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
