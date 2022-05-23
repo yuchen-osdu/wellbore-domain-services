@@ -425,7 +425,4 @@ async def test_computations_values(bulk_stats_fixture):
         expected_stats_df['totalCount'] = values_count
         expected_stats_df.rename(columns={'count': 'nonAbsentValuesCount'}, inplace=True)
 
-        expected_stats_df.sort_index(inplace=True)
-        stats_df.sort_index(inplace=True)
-
-        pd.testing.assert_frame_equal(stats_df, expected_stats_df)
+        pd.testing.assert_frame_equal(stats_df, expected_stats_df, check_like=True)
