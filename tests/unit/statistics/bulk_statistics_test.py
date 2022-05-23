@@ -15,7 +15,6 @@ from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, 
     ComputationRunningError
 from app.bulk_persistence import DaskClient
 from app.bulk_persistence.statistics.models import BulkStatisticsStatus, InternalStatisticsComputationMeta
-from bulk_persistence import MimeType
 from consistency import NoConsistencyChecks
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
