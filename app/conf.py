@@ -336,6 +336,20 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             override=True,
                             default='http://search/api/search')
 
+    if provider == 'anthos':
+        config.add_from_env(attribute_name='service_host_storage',
+                            env_var_key='SERVICE_HOST_STORAGE',
+                            description='Back-end for storage service',
+                            is_mandatory=False,
+                            override=True,
+                            default='http://storage/api/storage')
+        config.add_from_env(attribute_name='service_host_search',
+                            env_var_key='SERVICE_HOST_SEARCH',
+                            description='Back-end for search service',
+                            is_mandatory=False,
+                            override=True,
+                            default='http://search/api/search')
+
     if provider == 'ibm':
         config.add_from_env(attribute_name='default_data_tenant_project_id',
                             env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
