@@ -178,7 +178,7 @@ class BulkStatistics:
             computed_stats.loc['std'] = pd.NaT
 
         computed_stats = computed_stats.astype('string').transpose()
-        computed_stats[BulkStatistics._valid_values_label] = catalog.nb_rows
+        computed_stats[BulkStatistics._valid_values_label] = str(catalog.nb_rows)
         computed_stats.rename(columns=BulkStatistics._renaming_stats_labels, inplace=True)
 
         return computed_stats

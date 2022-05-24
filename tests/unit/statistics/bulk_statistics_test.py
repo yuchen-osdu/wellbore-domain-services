@@ -422,7 +422,7 @@ async def test_computations_values(bulk_stats_fixture):
 
         expected_stats_df = bulk_df.describe(datetime_is_numeric=True, percentiles=[.10, .5, .90])
         expected_stats_df = expected_stats_df.astype('string').transpose()
-        expected_stats_df['totalCount'] = values_count
+        expected_stats_df['totalCount'] = str(values_count)
         expected_stats_df.rename(columns={'count': 'nonAbsentValuesCount'}, inplace=True)
 
         pd.testing.assert_frame_equal(stats_df, expected_stats_df, check_like=True)
