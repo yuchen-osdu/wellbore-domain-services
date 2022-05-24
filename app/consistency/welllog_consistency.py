@@ -19,6 +19,7 @@ from .reference_check import check_reference_is_strictly_monotonic, raise_if_att
 
 from .unique import get_unique_attr_values
 from ..clients.storage_service_client import get_storage_record_service
+from ..model.entity_utils import get_data_partition_from_record_id
 from ..model.osdu_record_id import split_record_id_version
 
 
@@ -106,7 +107,8 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not wl.data.ReferenceCurveID in df:
             return
 
-        if not cls._is_curve_family_measured_depth(wl, record):
+        data_partition = get_data_partition_from_record_id(record)
+        if not cls._is_curve_reference_family_measured_depth(wl, data_partition):
             return
 
         ref = df[wl.data.ReferenceCurveID]
@@ -140,7 +142,8 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not (wl.data and wl.data.ReferenceCurveID):
             return
 
-        if not cls._is_curve_family_measured_depth(wl, record):
+        data_partition = get_data_partition_from_record_id(record)
+        if not cls._is_curve_reference_family_measured_depth(wl, data_partition):
             return
 
         try:
@@ -198,13 +201,12 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         )
 
     @staticmethod
-    def _is_curve_family_measured_depth(wl: WellLog120, record: Record):
+    def _is_curve_reference_family_measured_depth(wl: WellLog120, data_partition: str):
         for curve in wl.data.Curves:
             if curve.CurveID == wl.data.ReferenceCurveID:
                 log_curve_family_id_type = curve.LogCurveFamilyID
-                data_partition = record.id.split(":")[0]
                 log_curve_family_id_expected = data_partition + ":reference-data--LogCurveFamily:Measured%20Depth:"
                 return log_curve_family_id_type == log_curve_family_id_expected
-        return None
+        return False
 
 
