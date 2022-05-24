@@ -103,10 +103,10 @@ class ConfigurationContainer:
 
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
-        description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm',
+        description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm" or "anthos"',
         default=None,
         is_mandatory=True,
-        allowed_values=['aws', 'gcp', 'az', 'local', 'ibm'],
+        allowed_values=['aws', 'gcp', 'az', 'local', 'ibm', 'anthos'],
         factory=lambda x: x.lower()
     )
 
