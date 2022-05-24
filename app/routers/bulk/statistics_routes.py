@@ -200,9 +200,9 @@ async def get_bulk_statistics_version(
         raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND, error_type=e.public_error_type,
                                           message=str(e))
 
-    # # replace np.nan by string "NaN" to have unified str type values for std column
-    # if not stats_df.empty:
-    #     stats_df['std'].fillna(value=str("NaN"), inplace=True)
+    # replace np.nan by string "NaN" to have unified str type values for std column
+    if not stats_df.empty:
+        stats_df['std'].fillna(value=str("NaN"), inplace=True)
 
     # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
     return BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
