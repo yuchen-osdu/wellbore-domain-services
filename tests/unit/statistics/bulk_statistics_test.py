@@ -386,7 +386,7 @@ async def test_trigger_computations_after_error(bulk_stats_fixture):
 async def test_computations_values(bulk_stats_fixture):
     with mock.patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
             as computations_parameter:
-        computations_parameter.return_value = 3
+        computations_parameter.return_value = 1
 
         bulk_statistics, dask_storage = bulk_stats_fixture
 
