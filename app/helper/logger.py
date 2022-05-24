@@ -118,7 +118,7 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
     # stdout handler for direct logging output to stdout.
     stdout_handler = logging.StreamHandler(sys.stdout)
 
-    #  AzurelogHandler for logging to azure appinsight
+    #  AzurelogHandler for logging to azure AppInsights
     key = az_ai_instrumentation_key
     logger_level = az_logger_level
     if key:
@@ -129,14 +129,14 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
         az_handler = None
 
     # Acquire the logger for azure library
-    az_logger = __getLogger(logger_name='azure', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
+    __getLogger(logger_name='azure', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
 
     # Acquire the logger for osdu-core-lib-python-azure
-    osdu_core_lib_logger = __getLogger(logger_name='osdu_az', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
+    __getLogger(logger_name='osdu_az', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
 
     # Ensure logging messages from Dask (killing, restart worker) are exported
     dask_nanny_logger = logging.getLogger('distributed.nanny')
-    dask_nanny_logger.setLevel(logging.INFO)
+    dask_nanny_logger.setLevel(logging.WARNING)
     dask_nanny_logger.addHandler(az_handler)
 
     # Acquire the logger for wdms
@@ -185,6 +185,7 @@ def create_gcp_logger(service_name):
     std_ddms_app.propagate = False
 
     return my_logger
+
 
 def __getLogger(logger_name, log_level, stdout_handler, azure_handler=None):
     logger = logging.getLogger(logger_name)

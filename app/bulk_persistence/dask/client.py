@@ -74,7 +74,6 @@ class DaskClient:
                     get_logger().info(f"Dask client initialized : {DaskClient.client}")
         return DaskClient.client
 
-
     @staticmethod
     async def close():
         if not DaskClient.lock_client:

@@ -48,7 +48,7 @@ from app.routers.ddms_v3 import (
     wellbore_trajectory_ddms_v3,
     markerset_ddms_v3,
     delete_v3)
-from app.routers.bulk import bulk_routes
+from app.routers.bulk import bulk_routes, statistics_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_alpha
@@ -66,10 +66,12 @@ from app.routers.bulk.utils import (
     set_welllog_data_consistency_check,
     set_trajectory_data_consistency_check
 )
+from app.routers.bulk.statistics_routes_dependencies import set_statistics_computation_enabled
 from app.routers.bulk.bulk_uri_dependencies import (
     set_osdu_bulk_id_access,
     set_log_bulk_id_access
 )
+
 
 # The sub application which contains all the routers
 wdms_app = FastAPI(title=__app_name__,
@@ -249,9 +251,10 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         prefix=bulk_prefix + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["WellLog"],
         dependencies=[
-            *v3_bulk_dependencies, 
+            *v3_bulk_dependencies,
             Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
-            Depends(set_welllog_data_consistency_check)
+            Depends(set_welllog_data_consistency_check),
+            Depends(set_statistics_computation_enabled)
         ],
         include_in_schema=is_visible)
 
@@ -261,7 +264,7 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         prefix=bulk_prefix + wellbore_trajectory_ddms_v3.WELLBORE_TRAJECTORIES_API_BASE_PATH,
         tags=bulk_tags if bulk_tags else ["Trajectory v3"],
         dependencies=[
-            *basic_dependencies, 
+            *basic_dependencies,
             Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3")),
         ],
         include_in_schema=is_visible)
@@ -282,6 +285,19 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         ],
         include_in_schema=is_visible)
 
+# Statistics endpoints
+v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check),
+                        Depends(set_osdu_bulk_id_access)]
+wdms_app.include_router(
+    statistics_routes.router,
+    prefix=DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
+    tags=["WellLog"],
+    dependencies=[
+        *basic_dependencies,
+        Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
+        Depends(set_osdu_bulk_id_access)
+    ],
+    include_in_schema=True)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------

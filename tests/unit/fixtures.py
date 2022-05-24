@@ -53,7 +53,7 @@ def local_dev_config(tmp_path_factory):
         "MODULES": "log_recognition.routers.log_recognition",
         'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="blob-")),
         'USE_INTERNAL_STORAGE_SERVICE_WITH_PATH': str(tmp_path_factory.mktemp(basename="storage-")),
-        # This one is necessary as long as we have can_run() in modules dependending on it
+        # This one is necessary as long as we have can_run() in modules depending on it
         "ENVIRONMENT_NAME": "evd"
     }, contextual_loader=cloud_provider_additional_environment)
 

@@ -72,6 +72,14 @@ def record_bulk_path(
     return join(entity_path, 'bulk', bulk_id, 'data')
 
 
+def record_statistics_base_path(
+    base_directory: str, record_id: str, bulk_id: str, statistics_suffix: str, protocol: Optional[str] = None
+) -> str:
+    """Return the path corresponding to the statistics of specified bulk."""
+    entity_path = record_path(base_directory, record_id, protocol)
+    return join(entity_path, 'bulk', bulk_id, statistics_suffix)
+
+
 def record_session_path(
     base_directory: str, session_id: UUID, record_id: str, protocol: Optional[str] = None
 ) -> str:
