@@ -160,10 +160,16 @@ class BulkStatistics:
                   Indeed, 'std' columns is NaN value, and it is ignored from resulting dataframe.
         """
 
-        computed_stats = bulk_df.describe(
-            datetime_is_numeric=True,
-            percentiles=BulkStatistics._percentiles
-        )
+        try:
+            computed_stats = bulk_df.describe(
+                datetime_is_numeric=True,
+                percentiles=BulkStatistics._percentiles,
+                exclude=[object, bool]
+            )
+        except ValueError:
+            # if input values cannot be processed because of excluded dtypes
+            return pd.DataFrame()
+
         if 'std' not in computed_stats.index:
             # The standard deviation column 'std' is omitted from df.describe() result when
             # all the dtypes of input dataframe are date/datetime.
@@ -194,6 +200,9 @@ class BulkStatistics:
 
     def _save_statistics_batch(self, df_statistics: pd.DataFrame, record_id: str, bulk_id: str):
         """ Save given statistic to parquet file, file path is determined with record_id and bulk_id """
+
+        if df_statistics.empty:
+            return
 
         bulk_statistics_data_path = self._statistics_data_path(record_id, bulk_id)
         self.dask_blob_storage._ensure_dir_tree_exists(bulk_statistics_data_path)
@@ -306,8 +315,11 @@ class BulkStatistics:
         """
         Read parquet files of computed statistics, then filter rows according to given columns.
         """
-        statistics_df = pd.read_parquet(bulk_statistics_data_path,
-                                        storage_options=self.dask_blob_storage._parameters.storage_options)
+        try:
+            statistics_df = pd.read_parquet(bulk_statistics_data_path,
+                                            storage_options=self.dask_blob_storage._parameters.storage_options)
+        except FileNotFoundError:
+            return pd.DataFrame()
 
         return statistics_df.filter(items=columns, axis=0)
 

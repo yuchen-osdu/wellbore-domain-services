@@ -426,3 +426,40 @@ async def test_computations_values(bulk_stats_fixture):
         expected_stats_df.rename(columns={'count': 'nonAbsentValuesCount'}, inplace=True)
 
         pd.testing.assert_frame_equal(stats_df, expected_stats_df, check_like=True)
+
+
+@pytest.mark.asyncio
+async def test_computations_not_computable_values(bulk_stats_fixture):
+    with mock.patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
+            as computations_parameter:
+        computations_parameter.return_value = 1
+
+        bulk_statistics, dask_storage = bulk_stats_fixture
+
+        values_count = 10
+        bulk_df = pd.DataFrame({
+            'bool-D': [i % 2 == 0 for i in range(values_count)],
+            'string-E': [f'string_value_{i}' for i in range(values_count)],
+        })
+        _add_nan_values_in_df(bulk_df)
+
+        bulk_id = str(uuid.uuid4())
+        record_id = "MyRecordTestID"
+        await dask_storage.post_data_without_session(data=bulk_df.to_parquet(engine='pyarrow'),
+                                                     content_type=MimeTypes.PARQUET,
+                                                     df_validator_func=no_validation,
+                                                     consistency_checks=NoConsistencyChecks,
+                                                     record=Record(id=record_id, kind="",
+                                                                   acl=StorageAcl(viewers=[], owners=[]), legal=Legal(),
+                                                                   data={}),
+                                                     bulk_id=bulk_id,
+                                                     )
+
+        future = await bulk_statistics.compute_bulk_statistics(record_id, bulk_id, record_version=123456)
+        await future
+
+        catalog = await dask_storage.get_bulk_catalog(record_id, bulk_id)
+        stats_df, stats_meta = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_id, columns=None)
+
+        expected_empty_stats_df = pd.DataFrame()
+        pd.testing.assert_frame_equal(stats_df, expected_empty_stats_df)
