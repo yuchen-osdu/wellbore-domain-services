@@ -111,15 +111,19 @@ async def add_bulk_data_to_fixture(dask_blob_storage, typed_df):
     return session.recordId, new_bulk_id
 
 
+def _add_nan_values_in_df(chunk_df):
+    cols_with_nan = [c for c in chunk_df.columns if c.endswith('nan')]
+    for col_with_nan in cols_with_nan:
+        chunk_df.loc[chunk_df.sample(frac=0.1).index, col_with_nan] = np.nan
+
+
 async def add_bulk_data_by_chunks_to_fixture(dask_blob_storage, cols_with_index: List[tuple]):
     session = create_test_bulk_session()
     coroutines = []
     for columns_name, values_index in cols_with_index:
         chunk_df = generate_df(columns_name, values_index)
 
-        cols_with_nan = [c for c in chunk_df.columns if c.endswith('nan')]
-        for col_with_nan in cols_with_nan:
-            chunk_df.loc[chunk_df.sample(frac=0.1).index, col_with_nan] = np.nan
+        _add_nan_values_in_df(chunk_df)
 
         chunk_data = chunk_df.to_parquet(engine='pyarrow')
         routine = dask_blob_storage.add_chunk_in_session(chunk_data,
@@ -401,6 +405,7 @@ async def test_computations_values(bulk_stats_fixture):
             'bool-D': [i % 2 == 0 for i in range(values_count)],
             'string-E': [f'string_value_{i}' for i in range(values_count)],
         })
+        _add_nan_values_in_df(bulk_df)
 
         bulk_id = str(uuid.uuid4())
         record_id = "MyRecordTestID"
