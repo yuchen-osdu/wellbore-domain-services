@@ -202,11 +202,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
     @staticmethod
     def _is_curve_reference_family_measured_depth(wl: WellLog120, data_partition: str):
-        for curve in wl.data.Curves:
-            if curve.CurveID == wl.data.ReferenceCurveID:
-                log_curve_family_id_type = curve.LogCurveFamilyID
-                log_curve_family_id_expected = data_partition + ":reference-data--LogCurveFamily:Measured%20Depth:"
-                return log_curve_family_id_type == log_curve_family_id_expected
-        return False
+        log_curve_family_id_expected = data_partition + ":reference-data--LogCurveFamily:Measured%20Depth:"
+        return any(curve.LogCurveFamilyID == log_curve_family_id_expected for curve in wl.data.Curves if curve.CurveID == wl.data.ReferenceCurveID)
 
 
