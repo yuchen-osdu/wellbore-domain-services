@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
+from app.bulk_persistence import DaskBulkStorage, get_config
 from app.conf import Config
 from app.context import Context
 from app.tenant import resolve_tenant
@@ -39,4 +39,4 @@ class AnthosInjector(AppInjectorModule):
         ctx: Context = Context.current()
         tenant = await resolve_tenant(ctx.partition_id)
         params = await anthos_parameters(tenant)
-        return await DaskBulkStorage.create(params)
+        return await DaskBulkStorage.create(params, get_config())
