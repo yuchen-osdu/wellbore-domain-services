@@ -4,9 +4,9 @@
 
 data:
   requestsCpu: "0.1"
-  requestsMemory: "1024M"
+  requestsMemory: "1G"
   limitsCpu: "1"
-  limitsMemory: "2G"
+  limitsMemory: "3G"
   image: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp-wellbore:latest"
   imagePullPolicy: "IfNotPresent"
   serviceAccountName: "wellbore"

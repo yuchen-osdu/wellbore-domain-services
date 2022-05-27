@@ -80,6 +80,12 @@ osdu-gcp-containerize-gitlab:
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
+# should be deleted after release 0.15
+  before_script:
+  - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0.dev|g" requirements.txt
+  - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
+  - sed -i "s|osdu-core-lib-python-aws==1.0.1|# osdu-core-lib-python-aws==1.0.1|g" requirements.txt
+
 
 osdu-gcp-containerize-gcr:
   variables:
@@ -234,6 +240,41 @@ osdu-gcp-dev2-test-python:
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
+
+osdu-gcp-anthos-test-python:
+  extends: .osdu-gcp-anthos-variables
+  stage: integration
+  image: python:3.8
+  needs: ["osdu-gcp-anthos-deploy-deployment"]
+  script:
+    - bash
+    - wget -O /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+    - chmod +x /usr/local/bin/jq
+    - >
+      export TOKEN=$(curl --location --request POST "$TEST_OPENID_PROVIDER_URL/protocol/openid-connect/token"
+      --header "Content-Type: application/x-www-form-urlencoded"
+      --data-urlencode "client_id=$TEST_OPENID_PROVIDER_CLIENT_ID"
+      --data-urlencode "client_secret=$TEST_OPENID_PROVIDER_CLIENT_SECRET"
+      --data-urlencode "scope=openid"
+      --data-urlencode "grant_type=client_credentials" | jq -r ".id_token")
+    - python3 -m venv env
+    - source env/bin/activate
+    - pip install --upgrade pip
+    - pip install wheel pytest pytest-cov
+    - >
+      for REQ in $PIP_REQUIREMENTS ; do
+        pip install -r $REQ
+      done
+    - cd tests/integration
+    - >
+      python gen_postman_env.py
+      --token $TOKEN
+      --base_url $OSDU_GCP_WELLBORE_BASE_URL
+      --cloud_provider "anthos"
+      --data_partition $OSDU_GCP_TENANT
+      --acl_domain $DOMAIN
+      --legal_tag $LEGAL_TAG
+    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking'
 
 # Disable maven job in gcp common gke pipeline
 osdu-gcp-test:
