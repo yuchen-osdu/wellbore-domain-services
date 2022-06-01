@@ -14,7 +14,7 @@ Computable WellLog's curves data types are: integer, float and date/datetime.
 ## Required Python packages
 
 
-```python
+```bash
 !python -m pip install pip --upgrade
 !pip install httpx pandas pyarrow
 ```
@@ -163,7 +163,7 @@ record = {
         "owners": [f"data.default.owners@{data_partition}.{acl_domain}"]
       },
     "legal": {
-        "legaltags": legaltags,
+        "legaltags": [legal_tag],
         "otherRelevantDataCountries": ["US"],
     },
     "data": {
@@ -327,7 +327,7 @@ print_response(post_welllog_stats_response)
     POST : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:89bd0debbcf1411fb240d0a906da7cd4/versions/1653990573032433/data/statistics -> 200
 
 
-# 3. Display WellLog bulk data statistics already computed
+# 3. How to fetch WellLog bulk data statistics already computed
 
 Please, note that WellLog's curves with string and boolean data types are not computed
 
