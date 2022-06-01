@@ -186,7 +186,7 @@ types_col_record_id = response_typed.json()["recordIds"][0]
 print(types_col_record_id)
 ```
 
-    POST : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs -> 200
+    POST : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs -> 200
     
 
 ### POST WellLog data
@@ -220,7 +220,7 @@ print_response(write_response)
 | **99999** | 	-14  | 	812.0         | 0.976996 | 0.644540         | True    | string_value_99999	 | 2021-01-01 00:01:39.999	 | NaT                     |  
 
 
-    POST : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data -> 200
+    POST : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data -> 200
 
 ### Wait for statistic data to be computed...
 In case, the computation of statistics of WellLog bulk data is just triggered, below a code snippet to wait until the computation is ready 
@@ -253,15 +253,15 @@ display(example_json_stats)
 ```
     
     Attempt number 1:
-    GET : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics -> 404
+    GET : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics -> 404
     b'{"errorType":"COMPUTATION_NOT_COMPLETE","message":"Statistics computation not finished yet"}'
     
     
     Attempt number 2:
-    GET : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics -> 200
+    GET : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics -> 200
 
     {'computationStartDatetime': '2022-05-31T09:17:08.431223',
-     'recordId': 'opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
+     'recordId': 'osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
      'recordVersion': 1653988624188709,
      'computationStatus': 'complete',
      'data': {'int-A-with-nan': {'mean': '449.8925764705882',
@@ -323,8 +323,8 @@ post_welllog_stats_response = client.post(f'{welllog_url}/{legacy_record_id}/ver
 print_response(post_welllog_stats_response)
 ```
 
-    GET : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:89bd0debbcf1411fb240d0a906da7cd4 -> 200
-    POST : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:89bd0debbcf1411fb240d0a906da7cd4/versions/1653990573032433/data/statistics -> 200
+    GET : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:89bd0debbcf1411fb240d0a906da7cd4 -> 200
+    POST : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:89bd0debbcf1411fb240d0a906da7cd4/versions/1653990573032433/data/statistics -> 200
 
 
 # 3. How to fetch WellLog bulk data statistics already computed
@@ -350,10 +350,10 @@ display(json_posted_stats)
 
     CPU times: total: 141 ms
     Wall time: 2.01 s
-    GET : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics -> 200
+    GET : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics -> 200
     
     {'computationStartDatetime': '2022-05-31T09:17:08.431223',
-     'recordId': 'opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
+     'recordId': 'osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
      'recordVersion': 1653988624188709,
      'computationStatus': 'complete',
      'data': {'int-A-with-nan': {'mean': '449.8925764705882',
@@ -424,7 +424,7 @@ create_df_from_dict(post_welllog_stats_response)
 
 
     {'computationStartDatetime': '2022-05-31T09:17:08.431223',
-     'recordId': 'opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
+     'recordId': 'osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
      'recordVersion': 1653988624188709,
      'computationStatus': 'complete'}
 
@@ -493,11 +493,11 @@ display(json_posted_stats_example_1)
 ```
 
     {'curves': 'float-B,float-B-with-nan'}
-    GET : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics?curves=float-B%2Cfloat-B-with-nan -> 200
+    GET : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics?curves=float-B%2Cfloat-B-with-nan -> 200
 
 
     {'computationStartDatetime': '2022-05-31T09:17:08.431223',
-     'recordId': 'opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
+     'recordId': 'osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
      'recordVersion': 1653988624188709,
      'computationStatus': 'complete',
      'data': {'float-B': {'mean': '0.4980908954221541',
@@ -555,11 +555,11 @@ json_posted_stats_example_2 = welllog_stats_response_example_2.json()
 display(json_posted_stats_example_2)
 ```
 
-    GET : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/versions/1653988624188709/data/statistics?curves=float-B%2Cfloat-B-with-nan -> 200
+    GET : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/versions/1653988624188709/data/statistics?curves=float-B%2Cfloat-B-with-nan -> 200
     
 
     {'computationStartDatetime': '2022-05-31T09:17:08.431223',
-     'recordId': 'opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
+     'recordId': 'osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
      'recordVersion': 1653988624188709,
      'computationStatus': 'complete',
      'data': {'float-B': {'mean': '0.4980908954221541',
