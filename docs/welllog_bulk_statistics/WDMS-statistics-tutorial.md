@@ -1,10 +1,10 @@
 In this tutorial we will explain:
-
 * How to get bulk statistics on WellLog data created
   * after OSDU M12 release: statistics computation is automatic
   * before OSDU M12 release: statistics computation is manual
-  
 * Fetch WellLog bulk statistics code examples
+
+Note: Computable WellLog's curves data types are: integer, float and date/datetime.
 
 
 Computable WellLog's curves data types are: integer, float and date/datetime.
@@ -21,7 +21,7 @@ Computable WellLog's curves data types are: integer, float and date/datetime.
    
 
 ## Authorization
-For any call to Wellbore DDMS API's you need to pass into the header of the request a valid bearer token. This token can be obtained from any API catalog on the developer portal. You will need first to request a developer base subscription. Then from the developer base subscription pick any API and execute it. A valid bearer token is returns in the Curl section of the response. Copy this token value and assign it to the TOKEN variable below.
+For any call to Wellbore DDMS APIs you need to pass into the header of the request a valid bearer token. This token can be obtained from any API catalog on the developer portal. You will need first to request a developer base subscription. Then from the developer base subscription pick any API and execute it. A valid bearer token is returned into the Curl section of the response. Copy this token value and assign it to the TOKEN variable below.
 
 
 ```python
@@ -306,7 +306,7 @@ legacy_record_id = '' # pick one WellLog record id created before M12 release.
 ```
 
 ### Manually trigger bulk statistics computation
-Computation can be manually triggered if WellLog was create before M12 release or in case of computation error.
+Computation can be manually triggered if WellLog was created before M12 release or in case of computation error.
 
 API to use:
 `POST /ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics`
