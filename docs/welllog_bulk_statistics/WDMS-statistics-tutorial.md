@@ -204,160 +204,21 @@ data_to_send = different_type_df.to_parquet(engine='pyarrow')
 write_response = client.post(f'{welllog_url}/{types_col_record_id}/data', data=data_to_send, headers={'content-type': 'application/parquet'})
 print_response(write_response)
 ```
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
+| 	         | int-A | int-A-with-nan | float-B  | float-B-with-nan | 	bool-D | string-E            | date-C                   | date-C-with-nan         |
+|-----------|-------|----------------|----------|------------------|---------|---------------------|--------------------------|-------------------------|
+| **0**     | 	868  | 592.0          | 0.792575 | 0.113692         | False   | string_value_0      | 2021-01-01 00:00:00.000	 | 2021-01-01 00:00:00.000 |
+| **1**     | 	222  | 624.0          | 0.529602 | 0.047647         | True    | string_value_1      | 2021-01-01 00:00:00.001  | NaT                     |
+| **2**     | 	842  | 359.0          | 0.184516 | 0.783715         | True    | string_value_2      | 2021-01-01 00:00:00.002  | NaT                     |
+| **3**     | 	879  | 280.0          | 0.526019 | 0.288487         | False   | string_value_3      | 2021-01-01 00:00:00.003  | NaT                     |
+| **4**     | 	456  | 619.0          | 0.512207 | 0.373447         | True    | string_value_4      | 2021-01-01 00:00:00.004	 | 2021-01-01 00:00:00.004 |
+| **...**   | ...   | ...            | ...      | ...              | ...     | 	...                | 	...                     | 	...                    |
+| **99995** | 	560  | 	220.0         | 0.714021 | 0.064975	        | False   | string_value_99995  | 2021-01-01 00:01:39.995  | 2021-01-01 00:01:39.995 |
+| **99996** | 	861  | 	78.0          | 0.663497 | 0.560253	        | False   | string_value_99996  | 2021-01-01 00:01:39.996  | 2021-01-01 00:01:39.996 |
+| **99997** | 	916  | 	100.0         | 0.687259 | NaN              | False   | string_value_99997	 | 2021-01-01 00:01:39.997  | 2021-01-01 00:01:39.997 |
+| **99998** | 	354  | 	933.0         | 0.563194 | 0.921421         | False   | string_value_99998	 | 2021-01-01 00:01:39.998	 | 2021-01-01 00:01:39.998 | 
+| **99999** | 	-14  | 	812.0         | 0.976996 | 0.644540         | True    | string_value_99999	 | 2021-01-01 00:01:39.999	 | NaT                     |  
 
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>int-A</th>
-      <th>int-A-with-nan</th>
-      <th>float-B</th>
-      <th>float-B-with-nan</th>
-      <th>bool-D</th>
-      <th>string-E</th>
-      <th>date-C</th>
-      <th>date-C-with-nan</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>868</td>
-      <td>592.0</td>
-      <td>0.792575</td>
-      <td>0.113692</td>
-      <td>False</td>
-      <td>string_value_0</td>
-      <td>2021-01-01 00:00:00.000</td>
-      <td>2021-01-01 00:00:00.000</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>222</td>
-      <td>624.0</td>
-      <td>0.529602</td>
-      <td>0.047647</td>
-      <td>True</td>
-      <td>string_value_1</td>
-      <td>2021-01-01 00:00:00.001</td>
-      <td>NaT</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>842</td>
-      <td>359.0</td>
-      <td>0.184516</td>
-      <td>0.783715</td>
-      <td>True</td>
-      <td>string_value_2</td>
-      <td>2021-01-01 00:00:00.002</td>
-      <td>NaT</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>879</td>
-      <td>280.0</td>
-      <td>0.526019</td>
-      <td>0.288487</td>
-      <td>False</td>
-      <td>string_value_3</td>
-      <td>2021-01-01 00:00:00.003</td>
-      <td>NaT</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>456</td>
-      <td>619.0</td>
-      <td>0.512207</td>
-      <td>0.373447</td>
-      <td>True</td>
-      <td>string_value_4</td>
-      <td>2021-01-01 00:00:00.004</td>
-      <td>2021-01-01 00:00:00.004</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>99995</th>
-      <td>560</td>
-      <td>220.0</td>
-      <td>0.714021</td>
-      <td>0.064975</td>
-      <td>False</td>
-      <td>string_value_99995</td>
-      <td>2021-01-01 00:01:39.995</td>
-      <td>2021-01-01 00:01:39.995</td>
-    </tr>
-    <tr>
-      <th>99996</th>
-      <td>861</td>
-      <td>78.0</td>
-      <td>0.663497</td>
-      <td>0.560253</td>
-      <td>False</td>
-      <td>string_value_99996</td>
-      <td>2021-01-01 00:01:39.996</td>
-      <td>2021-01-01 00:01:39.996</td>
-    </tr>
-    <tr>
-      <th>99997</th>
-      <td>916</td>
-      <td>100.0</td>
-      <td>0.687259</td>
-      <td>NaN</td>
-      <td>False</td>
-      <td>string_value_99997</td>
-      <td>2021-01-01 00:01:39.997</td>
-      <td>2021-01-01 00:01:39.997</td>
-    </tr>
-    <tr>
-      <th>99998</th>
-      <td>354</td>
-      <td>933.0</td>
-      <td>0.563194</td>
-      <td>0.921421</td>
-      <td>False</td>
-      <td>string_value_99998</td>
-      <td>2021-01-01 00:01:39.998</td>
-      <td>2021-01-01 00:01:39.998</td>
-    </tr>
-    <tr>
-      <th>99999</th>
-      <td>-14</td>
-      <td>812.0</td>
-      <td>0.976996</td>
-      <td>0.644540</td>
-      <td>True</td>
-      <td>string_value_99999</td>
-      <td>2021-01-01 00:01:39.999</td>
-      <td>NaT</td>
-    </tr>
-  </tbody>
-</table>
-<p>100000 rows × 8 columns</p>
-</div>
 
     POST : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data -> 200
 
@@ -568,114 +429,14 @@ create_df_from_dict(post_welllog_stats_response)
      'computationStatus': 'complete'}
 
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>mean</th>
-      <th>std</th>
-      <th>min</th>
-      <th>10%</th>
-      <th>50%</th>
-      <th>90%</th>
-      <th>max</th>
-      <th>totalCount</th>
-      <th>nonAbsentValuesCount</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>int-A-with-nan</th>
-      <td>449.8925764705882</td>
-      <td>317.8241340241287</td>
-      <td>-100.0</td>
-      <td>10.0</td>
-      <td>450.0</td>
-      <td>890.0</td>
-      <td>999.0</td>
-      <td>100000</td>
-      <td>85000.0</td>
-    </tr>
-    <tr>
-      <th>date-C</th>
-      <td>2021-01-01 00:00:49.999499776</td>
-      <td>NaN</td>
-      <td>2021-01-01 00:00:00</td>
-      <td>2021-01-01 00:00:09.999899904</td>
-      <td>2021-01-01 00:00:49.999500032</td>
-      <td>2021-01-01 00:01:29.999100160</td>
-      <td>2021-01-01 00:01:39.999000</td>
-      <td>100000</td>
-      <td>100000</td>
-    </tr>
-    <tr>
-      <th>float-B-with-nan</th>
-      <td>0.4981784333593075</td>
-      <td>0.2888887958106551</td>
-      <td>3.56818820279603e-06</td>
-      <td>0.09984358734025209</td>
-      <td>0.4974533393916296</td>
-      <td>0.8997088186446737</td>
-      <td>0.9999888136429178</td>
-      <td>100000</td>
-      <td>85000.0</td>
-    </tr>
-    <tr>
-      <th>float-B</th>
-      <td>0.4980908954221541</td>
-      <td>0.2885563043838143</td>
-      <td>1.4538739944169876e-06</td>
-      <td>0.09894710442338889</td>
-      <td>0.4969224934210345</td>
-      <td>0.8987151676695218</td>
-      <td>0.9999918891377975</td>
-      <td>100000</td>
-      <td>100000.0</td>
-    </tr>
-    <tr>
-      <th>int-A</th>
-      <td>449.63618</td>
-      <td>317.49388998642064</td>
-      <td>-100.0</td>
-      <td>9.0</td>
-      <td>451.0</td>
-      <td>890.0</td>
-      <td>999.0</td>
-      <td>100000</td>
-      <td>100000.0</td>
-    </tr>
-    <tr>
-      <th>date-C-with-nan</th>
-      <td>2021-01-01 00:00:49.995083776</td>
-      <td>NaN</td>
-      <td>2021-01-01 00:00:00</td>
-      <td>2021-01-01 00:00:10.055899904</td>
-      <td>2021-01-01 00:00:49.966500096</td>
-      <td>2021-01-01 00:01:29.970099968</td>
-      <td>2021-01-01 00:01:39.998000</td>
-      <td>100000</td>
-      <td>85000</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+|                       | mean                          | std                | min                    | 10%                           | 50%                           | 90%                            | max                        | totalCount | nonAbsentValuesCount |
+|-----------------------|-------------------------------|--------------------|------------------------|-------------------------------|-------------------------------|--------------------------------|----------------------------|------------|----------------------|
+| **int-A-with-nan**	   | 449.8925764705882             | 317.8241340241287  | -100.0                 | 10.0                          | 450.0                         | 890.0                          | 999.0                      | 100000     | 85000.0              |
+| **date-C**	           | 2021-01-01 00:00:49.999499776 | NaN                | 2021-01-01 00:00:00    | 2021-01-01 00:00:09.999899904 | 2021-01-01 00:00:49.999500032 | 2021-01-01 00:01:29.999100160	 | 2021-01-01 00:01:39.999000 | 100000     | 	100000              |
+| **float-B-with-nan**	 | 0.4981784333593075            | 0.2888887958106551 | 3.56818820279603e-06   | 0.09984358734025209           | 0.4974533393916296            | 0.8997088186446737             | 0.9999888136429178         | 100000     | 85000.0              |
+| **float-B**       	   | 0.4980908954221541            | 0.2885563043838143 | 1.4538739944169876e-06 | 0.09894710442338889           | 0.4969224934210345            | 0.8987151676695218             | 0.9999918891377975         | 100000     | 100000.0             |
+| **int-A**             | 449.63618                     | 317.49388998642064 | -100.0                 | 9.0                           | 451.0                         | 890.0                          | 999.0                      | 100000     | 100000.0             |
+| **date-C-with-nan**   | 2021-01-01 00:00:49.995083776 | NaN                | 2021-01-01 00:00:00    | 2021-01-01 00:00:10.055899904 | 2021-01-01 00:00:49.966500096 | 2021-01-01 00:01:29.970099968	 | 2021-01-01 00:01:39.998000 | 100000     | 	85000               |
 
 
 # 4. Fetch WellLog bulk statistics code examples
