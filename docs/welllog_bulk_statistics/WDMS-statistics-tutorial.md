@@ -4,12 +4,12 @@ In this tutorial we will explain:
   * after OSDU M12 release: statistics computation is automatic
   * before OSDU M12 release: statistics computation is manual
   
-* How to troubleshoot missing WellLog bulk statistics data
+* Fetch WellLog bulk statistics code examples
 
 
 Computable WellLog's curves data types are: integer, float and date/datetime.
 
-# Prerequisites
+# 1. Prerequisites
 
 ## Required Python packages
 
@@ -142,15 +142,15 @@ aclient = httpx.AsyncClient(verify=False,
 )
 ```
 
-# How to trigger WellLog bulk data statistics computation
+# 2. How to trigger WellLog bulk data statistics computation
 
 
 
-## For WellLogs created or updated AFTER the OSDU M12 release 
+## 2.1. For WellLogs created or updated AFTER the OSDU M12 release 
 Computation of WellLog bulk statistics will be triggered automatically when updating WellLog bulk data using: Chunking or POST data APIs.  
 
 1. Send data: all at once or by chunks
-2. Wait for statistics to be computation in background...
+2. Wait for statistics to be computed in background...
 
 Below an example, using POST data API, that push WellLog data: 8 curves with DIFFERENT data type of 100k rows each:
 
@@ -361,7 +361,74 @@ print_response(write_response)
 
     POST : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data -> 200
 
-## For WellLogs created or updated BEFORE the OSDU M12 release  
+### Wait for statistic data to be computed...
+In case, the computation of statistics of WellLog bulk data is just triggered, below a code snippet to wait until the computation is ready 
+
+```python
+def wait_for_statistics(_url, _record_id, _params, *, attempts=5):
+    n = int(attempts)
+    if not _params:
+        _params = {}
+        
+    for i in range(n):
+        print(f"\nAttempt number {i+1}:")
+
+        _welllog_stats_response = client.get(f'{_url}/{_record_id}/data/statistics', params=_params)
+        print_response(_welllog_stats_response)
+
+        if not (_welllog_stats_response.status_code == 404 and _welllog_stats_response.json()['errorType'] == 'COMPUTATION_NOT_COMPLETE'):
+            break
+        waiting_time = i + 2 ** i
+        print(f"Wait for {waiting_time}s before retrying...")
+        time.sleep(waiting_time)
+
+    if _welllog_stats_response.status_code != 200:
+        raise Exception(f"Unable to get bulk statistics data after {i+1} attempts...", _welllog_stats_response.text)
+    return _welllog_stats_response
+
+example_json_stats_response = fetch_statistics_for(welllog_url, types_col_record_id, param={'curves': 'int-A-with-nan'}, attempts=5)
+example_json_stats = example_json_stats_response.json()
+display(example_json_stats)
+```
+    
+    Attempt number 1:
+    GET : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics -> 404
+    b'{"errorType":"COMPUTATION_NOT_COMPLETE","message":"Statistics computation not finished yet"}'
+    
+    
+    Attempt number 2:
+    GET : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms/ddms/v3/welllogs/opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data/statistics -> 200
+
+    {'computationStartDatetime': '2022-05-31T09:17:08.431223',
+     'recordId': 'opendes:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9',
+     'recordVersion': 1653988624188709,
+     'computationStatus': 'complete',
+     'data': {'int-A-with-nan': {'mean': '449.8925764705882',
+       'std': '317.8241340241287',
+       'min': '-100.0',
+       '10%': '10.0',
+       '50%': '450.0',
+       '90%': '890.0',
+       'max': '999.0',
+       'totalCount': '100000',
+       'nonAbsentValuesCount': '85000.0'}}}
+
+### Automatics WellLog data statistics computation finished with error
+In case `GET /ddms/v3/welllogs/{record_id}/data/statistics` or `GET /ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics`  
+returns `HTTP 200` with body like so:
+
+    {
+      "computationStartDatetime": "2022-05-18T16:22:16.010582",
+      "recordId": "osdu:work-product-component--WellLog:6d9c95c972254bbbaeaecbfa67fd1cf3",
+      "recordVersion": "1998222529528913770053504387865218642",
+      "computationStatus": "error",
+      "data": {}
+    }
+
+It is necessary to trigger manually the WellLog data statistics computation. Move to [Manually trigger bulk statistics computation](#manually-trigger-bulk-statistics-computation).
+
+
+## 2.2 For WellLogs created or updated BEFORE the OSDU M12 release  
 
 Bulk data statistics computation needs to be manually triggered whenever:
 - WellLogs data are posted before OSDU M12 release
@@ -399,7 +466,7 @@ print_response(post_welllog_stats_response)
     POST : https://evt.api.enterprisedata.cloud.slb-ds.com/api/os-wellbore-ddms---integration/ddms/v3/welllogs/opendes:work-product-component--WellLog:89bd0debbcf1411fb240d0a906da7cd4/versions/1653990573032433/data/statistics -> 200
 
 
-# Display WellLog bulk data statistics already computed
+# 3. Display WellLog bulk data statistics already computed
 
 Please, note that WellLog's curves with string and boolean data types are not computed
 
@@ -611,7 +678,7 @@ create_df_from_dict(post_welllog_stats_response)
 </div>
 
 
-# Fetch WellLog bulk statistics code examples
+# 4. Fetch WellLog bulk statistics code examples
 
 APIs:
 - GET /ddms/v3/welllogs/{record_id}/data/statistics
@@ -752,30 +819,3 @@ display(json_posted_stats_example_2)
        'max': '0.9999888136429178',
        'totalCount': '100000',
        'nonAbsentValuesCount': '85000.0'}}}
-
-
-
-### Wait for statistic data to be computed...
-In case, the computation of statistics of WellLog bulk data is just triggered, below a code snippet to wait until the computation is ready 
-
-```python
-def wait_for_statistics(_url, _record_id, _params, *, attempts=5):
-    n = int(attempts)
-    if not _params:
-        _params = {}
-        
-    for i in range(n):
-        print(f"\nAttempt number {i+1}:")
-
-        _welllog_stats_response = client.get(f'{_url}/{_record_id}/data/statistics', params=_params)
-        print_response(_welllog_stats_response)
-
-        if not (_welllog_stats_response.status_code == 404 and _welllog_stats_response.json()['errorType'] == 'COMPUTATION_NOT_COMPLETE'):
-            break
-        print(f"Wait for {1 + i}s before retrying...")
-        time.sleep(1 + i)
-
-    if _welllog_stats_response.status_code != 200:
-        raise Exception(f"Unable to get bulk statistics data after {i+1} attempts...", _welllog_stats_response.text)
-    return _welllog_stats_response
-```
