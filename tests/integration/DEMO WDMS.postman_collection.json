@@ -9921,7 +9921,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -9930,43 +9930,13 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
@@ -9981,7 +9951,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{}"
+							"body": "{\r\n  \"computationStartDatetime\": \"2022-05-18T16:22:16.010582\",\r\n  \"recordId\": \"osdu:work-product-component--WellLog:6d9c95c972254bbbaeaecbfa67fd1cf3\",\r\n  \"recordVersion\": \"1998222529528913770053504387865218642\",\r\n  \"computationStatus\": \"complete\",\r\n  \"data\": {\r\n    \"Curve1\": {\r\n      \"mean\": \"450.8438\",\r\n      \"std\": \"318.27778186518816\",\r\n      \"min\": \"-100.0\",\r\n      \"10%\": \"9.0\",\r\n      \"50%\": \"451.0\",\r\n      \"90%\": \"893.0\",\r\n      \"max\": \"999.0\",\r\n      \"totalCount\": \"100000\",\r\n      \"nonAbsentValuesCount\": \"100000.0\"\r\n    },\r\n    \"Curve2\": {\r\n      \"mean\": \"448.06855\",\r\n      \"std\": \"316.8023859891449\",\r\n      \"min\": \"-100.0\",\r\n      \"10%\": \"10.0\",\r\n      \"50%\": \"446.0\",\r\n      \"90%\": \"889.0\",\r\n      \"max\": \"999.0\",\r\n      \"totalCount\": \"100000\",\r\n      \"nonAbsentValuesCount\": \"100000.0\"\r\n    },\r\n    \"Curve3\": {\r\n      \"mean\": \"451.01309\",\r\n      \"std\": \"317.40833668820653\",\r\n      \"min\": \"-100.0\",\r\n      \"10%\": \"11.0\",\r\n      \"50%\": \"453.0\",\r\n      \"90%\": \"890.0\",\r\n      \"max\": \"999.0\",\r\n      \"totalCount\": \"100000\",\r\n      \"nonAbsentValuesCount\": \"100000.0\"\r\n    },\r\n    \"Curve4\": {\r\n      \"mean\": \"449.16661\",\r\n      \"std\": \"317.7767589547625\",\r\n      \"min\": \"-100.0\",\r\n      \"10%\": \"8.900000000001455\",\r\n      \"50%\": \"450.0\",\r\n      \"90%\": \"890.0\",\r\n      \"max\": \"999.0\",\r\n      \"totalCount\": \"100000\",\r\n      \"nonAbsentValuesCount\": \"100000.0\"\r\n    }\r\n  }\r\n}"
 						},
 						{
 							"name": "Not Found",
@@ -10000,7 +9970,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10009,43 +9979,13 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
@@ -10061,6 +10001,104 @@
 							],
 							"cookie": [],
 							"body": ""
+						},
+						{
+							"name": "Statistics data not found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data/statistics",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data",
+										"statistics"
+									],
+									"variable": [
+										{
+											"value": "magna pariatur",
+											"key": "recordId"
+										}
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"errorType\": \"DATA_NOT_FOUND\",\n    \"message\": \"Statistics do not exist\"\n}"
+						},
+						{
+							"name": "Statistics computation not complete",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data/statistics",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data",
+										"statistics"
+									],
+									"variable": [
+										{
+											"value": "magna pariatur",
+											"key": "recordId"
+										}
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"errorType\": \"COMPUTATION_NOT_COMPLETE\",\n  \"message\": \"Statistics computation not finished yet\"\n}"
 						},
 						{
 							"name": "Validation Error",
@@ -10079,7 +10117,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10088,43 +10126,13 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
@@ -10234,7 +10242,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10243,43 +10251,15 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
@@ -10313,7 +10293,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10322,43 +10302,15 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
@@ -10374,6 +10326,108 @@
 							],
 							"cookie": [],
 							"body": ""
+						},
+						{
+							"name": "Statistics data not found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
+									],
+									"variable": [
+										{
+											"value": "magna pariatur",
+											"key": "recordId"
+										}
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"errorType\": \"DATA_NOT_FOUND\",\n    \"message\": \"Statistics do not exist\"\n}"
+						},
+						{
+							"name": "Statistics computation not complete",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
+									],
+									"variable": [
+										{
+											"value": "magna pariatur",
+											"key": "recordId"
+										}
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"errorType\": \"COMPUTATION_NOT_COMPLETE\",\n  \"message\": \"Statistics computation not finished yet\"\n}"
 						},
 						{
 							"name": "Validation Error",
@@ -10392,7 +10446,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10401,43 +10455,15 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
@@ -10547,7 +10573,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10556,43 +10582,15 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
@@ -10626,7 +10624,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10635,43 +10633,15 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
@@ -10687,6 +10657,57 @@
 							],
 							"cookie": [],
 							"body": ""
+						},
+						{
+							"name": "Conflict",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
+									],
+									"variable": [
+										{
+											"value": "magna pariatur",
+											"key": "recordId"
+										}
+									]
+								}
+							},
+							"status": "Conflict",
+							"code": 409,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": \"Statistics computation already running or complete\"\n}"
 						},
 						{
 							"name": "Validation Error",
@@ -10705,7 +10726,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10714,43 +10735,15 @@
 										"v3",
 										"welllogs",
 										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
-										"data"
-									],
-									"query": [
-										{
-											"key": "offset",
-											"value": "5"
-										},
-										{
-											"key": "limit",
-											"value": "100"
-										},
-										{
-											"key": "curves",
-											"value": "MD,GR"
-										},
-										{
-											"key": "describe",
-											"value": "false"
-										},
-										{
-											"key": "filter",
-											"value": "dolor cupidatat nulla"
-										},
-										{
-											"key": "filter",
-											"value": "dolore sed minim et fugiat"
-										},
-										{
-											"key": "orient",
-											"value": "columns"
-										}
+										"versions",
+										"{{lastRecordVersion}}",
+										"data",
+										"statistics"
 									],
 									"variable": [
 										{
-											"key": "recordId",
 											"value": "magna pariatur",
-											"description": "(Required) "
+											"key": "recordId"
 										}
 									]
 								}
