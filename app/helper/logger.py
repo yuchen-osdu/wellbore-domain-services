@@ -66,6 +66,10 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
 
     @staticmethod
     def _set_extra_attrs(properties):
+        """
+        Retrieve context created in basic middleware from request info to append them
+        in log message as custom attributes
+        """
         ctx = get_or_create_ctx()
 
         properties.setdefault('correlation-id', ctx.correlation_id)
@@ -75,10 +79,7 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
         properties.setdefault('api-key', ctx.api_key)
 
     def process(self, msg, kwargs):
-        """
-        Retrieve context created in basic middleware from request info to append them
-        in log message as custom attributes
-        """
+        """ Add custom properties to logger message to be sent to AzureAppInsights """
         custom_properties = dict()
         self._set_extra_attrs(custom_properties)
         kwargs['extra'] = dict(custom_dimensions=custom_properties)
@@ -129,18 +130,16 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
         az_handler = None
 
     # Acquire the logger for azure library
-    __getLogger(logger_name='azure', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
+    _set_logger_handlers(logger_name='azure', log_level=logging.WARNING, handlers=[stdout_handler, az_handler])
 
     # Acquire the logger for osdu-core-lib-python-azure
-    __getLogger(logger_name='osdu_az', log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
+    _set_logger_handlers(logger_name='osdu_az', log_level=logging.INFO, handlers=[stdout_handler, az_handler])
 
-    # Ensure logging messages from Dask (killing, restart worker) are exported
-    dask_nanny_logger = logging.getLogger('distributed.nanny')
-    dask_nanny_logger.setLevel(logging.WARNING)
-    dask_nanny_logger.addHandler(az_handler)
+    # Ensure logging messages from Dask (killing, restart worker) are exported to Azure
+    _set_logger_handlers(logger_name='distributed.nanny', log_level=logging.WARNING, handlers=[az_handler])
 
     # Acquire the logger for wdms
-    logger = __getLogger(logger_name=__name__, log_level=logging.DEBUG, stdout_handler=stdout_handler, azure_handler=az_handler)
+    logger = _set_logger_handlers(logger_name=__name__, log_level=logging.DEBUG, handlers=[stdout_handler, az_handler])
 
     # return wdms logger with Context adapter
     return AzureContextLoggerAdapter(logger, extra=dict())
@@ -187,12 +186,13 @@ def create_gcp_logger(service_name):
     return my_logger
 
 
-def __getLogger(logger_name, log_level, stdout_handler, azure_handler=None):
+def _set_logger_handlers(logger_name, log_level, handlers: list):
+    """ Retrieve logger by its name and add handlers to it """
     logger = logging.getLogger(logger_name)
     logger.setLevel(log_level)
-    logger.addHandler(stdout_handler)
 
-    if azure_handler:
-        logger.addHandler(azure_handler)
+    for handler in handlers:
+        if handler:
+            logger.addHandler(handler)
 
     return logger
