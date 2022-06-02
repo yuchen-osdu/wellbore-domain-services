@@ -21,7 +21,7 @@ Computable WellLog's curves data types are: integer, float and date/datetime.
    
 
 ## Authorization
-For any call to Wellbore DDMS APIs you need to pass into the header of the request a valid bearer token. This token can be obtained from any API catalog on the developer portal. You will need first to request a developer base subscription. Then from the developer base subscription pick any API and execute it. A valid bearer token is returned into the Curl section of the response. Copy this token value and assign it to the TOKEN variable below.
+For any call to Wellbore DDMS APIs you need to pass into the header of the request a valid bearer token.
 
 
 ```python
@@ -219,6 +219,7 @@ print_response(write_response)
 | **99998** | 	354  | 	933.0         | 0.563194 | 0.921421         | False   | string_value_99998	 | 2021-01-01 00:01:39.998	 | 2021-01-01 00:01:39.998 | 
 | **99999** | 	-14  | 	812.0         | 0.976996 | 0.644540         | True    | string_value_99999	 | 2021-01-01 00:01:39.999	 | NaT                     |  
 
+Note: NaT means Not a Time, equivalent of NaN for dates.
 
     POST : https://<ENVIRONMENT_BASE_URL>/api/os-wellbore-ddms/ddms/v3/welllogs/osdu:work-product-component--WellLog:ac6ec4b8074941b19c4723b1dbdc0da9/data -> 200
 
