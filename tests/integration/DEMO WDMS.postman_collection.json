@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "07d8b4b1-ed05-460a-be5a-3d1d50787e7b",
+		"_postman_id": "d8373a55-559a-45bb-87c4-fbe38ec49b17",
 		"name": "DEMO WDMS",
 		"description": "Wellbore DDMS demo postman collection",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -7314,7 +7314,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"columns\": [\r\n    \"Ref\",\r\n    \"MD\",\r\n    \"GR\"\r\n  ],\r\n  \"index\": [\r\n    0,\r\n    1,\r\n    2,\r\n    3,\r\n    4\r\n  ],\r\n  \"data\": [\r\n    [\r\n      0,\r\n      1111.1,\r\n      2222.1\r\n    ],\r\n    [\r\n      0.5,\r\n      1111.2,\r\n      2222.2\r\n    ],\r\n    [\r\n      1,\r\n      1111.3,\r\n      2222.3\r\n    ],\r\n    [\r\n      1.5,\r\n      1111.4,\r\n      2222.4\r\n    ],\r\n    [\r\n      2,\r\n      1111.5,\r\n      2222.5\r\n    ]\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"columns\": [\r\n    \"GR_ID\",\r\n    \"POR_ID\",\r\n    \"Bulk Density\"\r\n  ],\r\n  \"index\": [\r\n    0,\r\n    1,\r\n    2,\r\n    3,\r\n    4\r\n  ],\r\n  \"data\": [\r\n    [\r\n      0,\r\n      1111.1,\r\n      2222.1\r\n    ],\r\n    [\r\n      0.5,\r\n      1111.2,\r\n      2222.2\r\n    ],\r\n    [\r\n      1,\r\n      1111.3,\r\n      2222.3\r\n    ],\r\n    [\r\n      1.5,\r\n      1111.4,\r\n      2222.4\r\n    ],\r\n    [\r\n      2,\r\n      1111.5,\r\n      2222.5\r\n    ]\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -7562,7 +7562,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=2&limit=100&curves=MD,GR&describe=false&orient=columns",
+							"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -7575,26 +7575,6 @@
 							],
 							"query": [
 								{
-									"key": "offset",
-									"value": "2",
-									"description": "The number of rows that are to be skipped and not included in the result."
-								},
-								{
-									"key": "limit",
-									"value": "100",
-									"description": "The maximum number of rows to be returned."
-								},
-								{
-									"key": "curves",
-									"value": "MD,GR",
-									"description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given."
-								},
-								{
-									"key": "describe",
-									"value": "false",
-									"description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)"
-								},
-								{
 									"key": "filter",
 									"value": "qui anim Ut",
 									"description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
@@ -7605,18 +7585,6 @@
 									"value": "sed proident",
 									"description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
 									"disabled": true
-								},
-								{
-									"key": "orient",
-									"value": "columns",
-									"description": "format for JSON only."
-								}
-							],
-							"variable": [
-								{
-									"key": "recordId",
-									"value": "magna pariatur",
-									"description": "(Required) "
 								}
 							]
 						},
@@ -9087,6 +9055,8 @@
 									"    pm.expect(pm.response.code).to.eql(200);\r",
 									"    var responseData = JSON.parse(responseBody)\r",
 									"    pm.collectionVariables.set(\"recordVersion\",responseData.versions[0]);\r",
+									"\r",
+									"    pm.collectionVariables.set(\"lastRecordVersion\", responseData.versions[responseData.versions.length - 1]);\r",
 									"});\r",
 									""
 								],
@@ -9124,13 +9094,6 @@
 								"welllogs",
 								"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
 								"versions"
-							],
-							"variable": [
-								{
-									"key": "welllogid",
-									"value": "do consequat",
-									"description": "(Required) "
-								}
 							]
 						},
 						"description": "\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n"
@@ -9554,7 +9517,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{recordVersion}}/data?offset=2&limit=100&curves=MD,GR&describe=false&orient=columns",
+							"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{recordVersion}}/data?offset=2&limit=100&describe=false&orient=columns&curves=GR_ID,POR_ID",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -9579,11 +9542,6 @@
 									"description": "The maximum number of rows to be returned."
 								},
 								{
-									"key": "curves",
-									"value": "MD,GR",
-									"description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given."
-								},
-								{
 									"key": "describe",
 									"value": "false",
 									"description": "The \"describe\" query option allows clients to request a description of the matching result. (number of rows, columns name)"
@@ -9604,18 +9562,10 @@
 									"key": "orient",
 									"value": "columns",
 									"description": "format for JSON only."
-								}
-							],
-							"variable": [
-								{
-									"key": "recordId",
-									"value": "magna pariatur",
-									"description": "(Required) "
 								},
 								{
-									"key": "version",
-									"value": "-69186111",
-									"description": "(Required) "
+									"key": "curves",
+									"value": "GR_ID,POR_ID"
 								}
 							]
 						},
@@ -9883,6 +9833,943 @@
 					]
 				},
 				{
+					"name": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data/statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Request test...\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"description": "identifier of the data partition to query",
+								"key": "data-partition-id",
+								"value": "{{datapartitionId}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data/statistics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ddms",
+								"v3",
+								"welllogs",
+								"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+								"data",
+								"statistics"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "qui anim Ut",
+									"description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+									"disabled": true
+								},
+								{
+									"key": "filter",
+									"value": "sed proident",
+									"description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{}"
+						},
+						{
+							"name": "Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Validation Error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"errors\": [\n  {\n   \"loc\": [\n    \"laborum voluptate irure\",\n    \"do laborum adipisicing\"\n   ],\n   \"msg\": \"culpa\",\n   \"type\": \"exercitation Ut et occaecat\"\n  },\n  {\n   \"loc\": [\n    \"reprehenderit\",\n    \"id irure nostrud Ut\"\n   ],\n   \"msg\": \"deserunt sint sunt\",\n   \"type\": \"eu id laboris\"\n  }\n ]\n}"
+						}
+					]
+				},
+				{
+					"name": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{recordVersion}}/data/statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Request test...\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"description": "identifier of the data partition to query",
+								"key": "data-partition-id",
+								"value": "{{datapartitionId}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ddms",
+								"v3",
+								"welllogs",
+								"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+								"versions",
+								"{{lastRecordVersion}}",
+								"data",
+								"statistics"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "qui anim Ut",
+									"description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+									"disabled": true
+								},
+								{
+									"key": "filter",
+									"value": "sed proident",
+									"description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{}"
+						},
+						{
+							"name": "Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Validation Error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"errors\": [\n  {\n   \"loc\": [\n    \"laborum voluptate irure\",\n    \"do laborum adipisicing\"\n   ],\n   \"msg\": \"culpa\",\n   \"type\": \"exercitation Ut et occaecat\"\n  },\n  {\n   \"loc\": [\n    \"reprehenderit\",\n    \"id irure nostrud Ut\"\n   ],\n   \"msg\": \"deserunt sint sunt\",\n   \"type\": \"eu id laboris\"\n  }\n ]\n}"
+						}
+					]
+				},
+				{
+					"name": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{recordVersion}}/data/statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Request test...\", () => {\r",
+									"    pm.expect(pm.response.code == 200 || pm.response.code == 409).to.be.true;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bearerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"description": "identifier of the data partition to query",
+								"key": "data-partition-id",
+								"value": "{{datapartitionId}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/versions/{{lastRecordVersion}}/data/statistics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ddms",
+								"v3",
+								"welllogs",
+								"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+								"versions",
+								"{{lastRecordVersion}}",
+								"data",
+								"statistics"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "qui anim Ut",
+									"description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+									"disabled": true
+								},
+								{
+									"key": "filter",
+									"value": "sed proident",
+									"description": "\nThe \"filter\" query parameter allows clients to filter data following the pattern $column_name:$operator:$value\n<br/>supported operation : eq,gt,gte,in,lt,lte,neq\n<br/>see [website for Filtering API Design](https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#rhs-colon/).\n",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Returns the data according to the specified query parameters. Multiple media types response are available (\"application/json\", \"application/x-parquet\"). The desired format can be specify in \"Accept\" header. The default is Parquet. When bulk statistics are requested using \"describe\" parameter, the response is always provided in JSON.\n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>\n"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{}"
+						},
+						{
+							"name": "Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Validation Error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": "Added as a part of security scheme: bearer",
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "identifier of the data partition to query",
+										"key": "data-partition-id",
+										"value": "{{datapartitionId}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}/data?offset=5&limit=100&curves=MD,GR&describe=false&filter=dolor cupidatat nulla&filter=dolore sed minim et fugiat&orient=columns",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"ddms",
+										"v3",
+										"welllogs",
+										"{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
+										"data"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "curves",
+											"value": "MD,GR"
+										},
+										{
+											"key": "describe",
+											"value": "false"
+										},
+										{
+											"key": "filter",
+											"value": "dolor cupidatat nulla"
+										},
+										{
+											"key": "filter",
+											"value": "dolore sed minim et fugiat"
+										},
+										{
+											"key": "orient",
+											"value": "columns"
+										}
+									],
+									"variable": [
+										{
+											"key": "recordId",
+											"value": "magna pariatur",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"errors\": [\n  {\n   \"loc\": [\n    \"laborum voluptate irure\",\n    \"do laborum adipisicing\"\n   ],\n   \"msg\": \"culpa\",\n   \"type\": \"exercitation Ut et occaecat\"\n  },\n  {\n   \"loc\": [\n    \"reprehenderit\",\n    \"id irure nostrud Ut\"\n   ],\n   \"msg\": \"deserunt sint sunt\",\n   \"type\": \"eu id laboris\"\n  }\n ]\n}"
+						}
+					]
+				},
+				{
 					"name": "{{baseUrl}}/ddms/v3/welllogs/{{datapartitionId}}:work-product-component--WellLog:{{welllogId}}",
 					"event": [
 						{
@@ -10111,6 +10998,10 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "WellLog statistics",
+			"item": []
 		},
 		{
 			"name": "Well",
@@ -11574,6 +12465,10 @@
 		{
 			"key": "wellboretrajectoryId",
 			"value": "{{recordId}}"
+		},
+		{
+			"key": "lastRecordVersion",
+			"value": ""
 		}
 	]
 }
