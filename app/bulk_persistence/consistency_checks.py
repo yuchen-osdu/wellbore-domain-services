@@ -27,7 +27,7 @@ class DataConsistencyChecks(ABC):
         pass
 
     @staticmethod
-    def _get_and_count_data_columns_name(col_labels: Iterable[str]) -> dict:
+    def _get_name_and_count_data_columns(col_labels: Iterable[str]) -> dict:
         """
         Get column names from bulk data column labels
         """

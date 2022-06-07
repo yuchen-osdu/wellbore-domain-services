@@ -62,27 +62,27 @@ def _commit_session(client, record_id, session_id):
 def generate_test_data():
 
     bulk_values = [
-        [0.0, 2222.1],
-        [0.5, 2222.2],
-        [2.0, 2222.5]
+        [0.0, 2222.1, 0.5, 2222.2, 0.5],
+        [0.5, 2222.2, 0.5, 2222.2, 0.5],
+        [2.0, 2222.5, 0.5, 2222.2, 0.5]
     ]
     bulk_data = {
-        "columns": ["MD", "GR"],
+        "columns": ["MD[0]", "MD[1]", "GR[0]", "GR[1]", "GR[2]"],
         "data": bulk_values
     }
 
     curves_data = [{
         "Curves": [
-            {"CurveID": "MD"},
-            {"CurveID": "GR"},
+            {"CurveID": "MD", "NumberOfColumns": 2},
+            {"CurveID": "GR", "NumberOfColumns": 3},
         ]},
         {"Curves": [
-            {"CurveID": "MD", "LogCurveFamilyID": None},
-            {"CurveID": "GR"},
+            {"CurveID": "MD", "NumberOfColumns": 2, "LogCurveFamilyID": None},
+            {"CurveID": "GR", "NumberOfColumns": 3},
         ]},
         {"Curves": [
-            {"CurveID": "MD", "LogCurveFamilyID": "osdu:reference-data--LogCurveFamily:Measured%20Depth:"},
-            {"CurveID": "GR"},
+            {"CurveID": "MD", "NumberOfColumns": 2, "LogCurveFamilyID": "osdu:reference-data--LogCurveFamily:Measured%20Depth:"},
+            {"CurveID": "GR", "NumberOfColumns": 3},
         ]}
     ]
 
@@ -155,8 +155,8 @@ test_param.append(
             "SamplingStart": 99,
             "SamplingStop": 99,
             "Curves": [
-                {"CurveID": "MD"},
-                {"CurveID": "GR"},
+                {"CurveID": "MD", "NumberOfColumns": 1},
+                {"CurveID": "GR", "NumberOfColumns": 1},
             ],
         },
         {
@@ -175,8 +175,8 @@ test_param.append(
             "SamplingStop": 99,
             "ReferenceCurveID": "MD",
             "Curves": [
-                {"CurveID": "MD"},
-                {"CurveID": "GR"}
+                {"CurveID": "MD", "NumberOfColumns": 1},
+                {"CurveID": "GR", "NumberOfColumns": 1}
             ],
         },
         {
@@ -208,21 +208,30 @@ def test_post_consistent_chunk(dasked_test_app_client, welllog_data, bulk_data):
 
 inconsistent_test_params_column_unmatch_curve_id = [
     pytest.param(
-        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD", "NumberOfColumns": 1}, {"CurveID": "GR", "NumberOfColumns": 1}]},
         {"columns": ["MD", "AA"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
         r"^Column\(s\) AA do\(es\) not match any CurveID of the WellLog record\.$",
     ),
     pytest.param(
-        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD", "NumberOfColumns": 1}, {"CurveID": "GR", "NumberOfColumns": 1}]},
         {"columns": ["BB", "AA"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
         r"^Column\(s\) ((\bAA, BB\b)|(\bBB, AA\b)) do\(es\) not match any CurveID of the WellLog record\.$",
     )]
+
+inconsistent_test_params_unmatch_number_column = [
+    pytest.param(
+        {"ReferenceCurveID": "MD",
+         "Curves": [{"CurveID": "MD", "NumberOfColumns": 2}, {"CurveID": "GR", "NumberOfColumns": 1}]},
+        {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
+        r"^Column\(s\) MD do\(es\) not match \'NumberOfColumns\' of the WellLog record\.$",
+    )
+]
 
 inconsistent_test_params = [
     pytest.param(
         {
             "ReferenceCurveID": "MD",
-            "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}],
+            "Curves": [{"CurveID": "MD", "NumberOfColumns": 1}, {"CurveID": "GR", "NumberOfColumns": 1}],
             "SamplingStart": 0.1,
             "SamplingStop": 2.0,
         },
@@ -232,7 +241,7 @@ inconsistent_test_params = [
     pytest.param(
         {
             "ReferenceCurveID": "MD",
-            "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}],
+            "Curves": [{"CurveID": "MD", "NumberOfColumns": 1}, {"CurveID": "GR", "NumberOfColumns": 1}],
             "SamplingStart": 0.0,
             "SamplingStop": 1.9,
         },
@@ -240,17 +249,17 @@ inconsistent_test_params = [
         r"^Reference bottom value \(2\.0\) is different from SamplingStop value \(1\.9\) of the WellLog record\.$",
     ),
     pytest.param(
-        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD", "NumberOfColumns": 1}, {"CurveID": "GR", "NumberOfColumns": 1}]},
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [0.9, 2222.4], [2.0, 2222.5]]},
         r"^Reference must be monotonically increasing or decreasing\.$",
     ),
     pytest.param(
-        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD", "NumberOfColumns": 1}, {"CurveID": "GR", "NumberOfColumns": 1}]},
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [None, 2222.5]]},
         r"^Nan values in a reference curve are not allowed\.$",
     ),
     pytest.param(
-        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD"}, {"CurveID": "GR"}]},
+        {"ReferenceCurveID": "MD", "Curves": [{"CurveID": "MD", "NumberOfColumns": 1}, {"CurveID": "GR", "NumberOfColumns": 1}]},
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.0, 2222.4], [2.0, 2222.5]]},
         r"^Repeated values in a reference curve aren't allowed\.$",
     ),
@@ -287,6 +296,26 @@ def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_no_log_curve_famil
     match = pattern.match(computed)
 
     assert match, f"{computed} should match regular expression {err}"
+
+@pytest.mark.parametrize("no_log_curve_family", [{"LogCurveFamilyID": None}, {}])
+@pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_unmatch_number_column)
+def test_post_inconsistent_whole_bulk_column_unmatch_number_column(dasked_test_app_client, welllog_data,
+                                                                                  bulk_data, err, no_log_curve_family):
+    welllog_data["Curves"][0].update(no_log_curve_family)
+    record["data"] = welllog_data
+    response = dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
+
+    assert response.status_code == 200
+    wid = response.json()["recordIds"][0]
+
+    response = _post_data(dasked_test_app_client, wid, bulk_data)
+
+    assert response.status_code == 400
+    computed = response.json()["detail"]
+    pattern = re.compile(err)
+    match = pattern.match(computed)
+
+    assert match
 
 
 @pytest.mark.parametrize("welllog_data, bulk_data, _", inconsistent_test_params)

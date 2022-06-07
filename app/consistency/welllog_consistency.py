@@ -35,6 +35,10 @@ class ColumnDoesNotMatchCurveIdException(ConsistencyException):
     """raised when column doesn't match any CurveID"""
 
 
+class ColumnDoesNotMatchNumberOfColumnsException(ConsistencyException):
+    """raised when column doesn't match number of columns"""
+
+
 @with_trace('welllog_consistency')
 def check_welllog_consistency(wl: WellLog120):
     """Check wellLog metadata.
@@ -176,12 +180,20 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             raise ColumnDoesNotMatchCurveIdException(f"Column(s) do(es) not match any CurveID of the WellLog record.")
 
         curve_ids, _ = get_unique_attr_values(wl.data.Curves, "CurveID")
-        col_names = DataConsistencyChecks._get_and_count_data_columns_name(col_labels).keys()
+        nb_col_per_names = DataConsistencyChecks._get_name_and_count_data_columns(col_labels)
 
-        not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
+        not_matching_col_name = [col_name for col_name in nb_col_per_names.keys() if col_name not in curve_ids]
         if any(not_matching_col_name):
             raise ColumnDoesNotMatchCurveIdException(
                 f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any CurveID of the WellLog record."
+            )
+
+        not_matching_nb_col = [curve.CurveID for curve in wl.data.Curves
+                               if curve.CurveID in nb_col_per_names
+                               and nb_col_per_names[curve.CurveID] is not curve.NumberOfColumns]
+        if any(not_matching_nb_col):
+            raise ColumnDoesNotMatchNumberOfColumnsException(
+                f"Column(s) {', '.join(not_matching_nb_col)} do(es) not match 'NumberOfColumns' of the WellLog record."
             )
 
     @staticmethod
