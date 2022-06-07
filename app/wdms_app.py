@@ -25,7 +25,6 @@ from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers, create_custom_http_exception_handler
 from app.helper.traces import TracingRoute
 from app.model.entity_utils import Entity
-from app.modules import discoverer
 
 from app.helper import traces, logger, metric
 from app.injector.app_injector import AppInjector
@@ -51,6 +50,7 @@ from app.routers.ddms_v3 import (
 from app.routers.bulk import bulk_routes, statistics_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
+from app.routers.log_recognition import log_recognition
 from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_alpha
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.pool_executor import run_in_pool_executor
@@ -157,7 +157,6 @@ async def startup_event():
     for _ in range(POOL_EXECUTOR_MAX_WORKER):
         asyncio.create_task(run_in_pool_executor(executor_startup_task))
 
-    add_modules_routers()
     metric.init_metric(wdms_app)
 
 
@@ -301,6 +300,16 @@ wdms_app.include_router(
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------- Log recognition ---------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
+wdms_app.include_router(log_recognition.router,
+                        dependencies=[Depends(require_data_partition_id, use_cache=False),
+                                      Depends(require_opendes_authorized_user, use_cache=False)])
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------- Deprecated API set ---------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
@@ -364,27 +373,3 @@ wdms_app.add_middleware(CreateBasicContextMiddleware, config=Config, injector=ap
 
 # adding exception handling
 add_exception_handlers(wdms_app)
-
-
-def remove_modules_routers():
-    discoverer.reset_routers()
-
-
-# Load and add router modules
-def add_modules_routers():
-    for router in discoverer.get_routers():
-        add_modules_router(router)
-
-
-def add_modules_router(router):
-    log = logger.get_logger()
-    name = router.prefix
-    try:
-        log.info(f'Adding router family `{name}`')
-        wdms_app.include_router(router, dependencies=[Depends(require_data_partition_id, use_cache=False),
-                                                      Depends(require_opendes_authorized_user, use_cache=False)])
-        log.info(f'Done. `{name}` added')
-    except ValueError as error:
-        log.warning(f'Failed to add `{name}` router. {error}')
-    except:
-        log.warning(f'Failed to add `{name}` router. {sys.exc_info()[0]}')
