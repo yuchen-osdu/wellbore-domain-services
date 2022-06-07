@@ -17,6 +17,7 @@ from odes_storage.exceptions import ApiException as OSDUStorageException
 from osdu_az.exceptions.data_access_error import DataAccessError as OSDUPartitionException
 from starlette import status
 
+from app.routers.bulk.statistics_routes import BulkStatisticsHTTPException, http_stats_error_handler
 from .unhandled_error import unhandled_error_handler
 from .validation_error import http422_error_handler
 from .client_error import (
@@ -46,6 +47,7 @@ def create_custom_http_exception_handler(app, logger):
 
 
 def add_exception_handlers(app):
+    app.add_exception_handler(BulkStatisticsHTTPException, http_stats_error_handler)
     app.add_exception_handler(ValidationError, http422_error_handler)
     app.add_exception_handler(OSDUSearchException, http_search_error_handler)
     app.add_exception_handler(OSDUStorageException, http_storage_error_handler)

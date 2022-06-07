@@ -1,0 +1,7 @@
+{{- if .Values.conf.onPremEnabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "{{ .Values.data.serviceAccountName }}"
+  namespace: "{{ .Release.Namespace }}"
+{{- end }}

@@ -13,15 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from app.utils import Context
-from app.bulk_persistence import resolve_tenant
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from .app_injector import AppInjector, AppInjectorModule
+from app.bulk_persistence import DaskBulkStorage, get_config
 from app.conf import Config
-
+from app.context import Context
+from app.tenant import resolve_tenant
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from osdu_anthos.storage.dask_storage_parameters import \
+    get_dask_storage_parameters as anthos_parameters
 from osdu_anthos.storage.storage_anthos import AnthosStorage
-from osdu_anthos.storage.dask_storage_parameters import get_dask_storage_parameters as anthos_parameters
+
+from .app_injector import AppInjector, AppInjectorModule
+
 
 class AnthosInjector(AppInjectorModule):
     def configure(self, app_injector: AppInjector):
@@ -37,4 +39,4 @@ class AnthosInjector(AppInjectorModule):
         ctx: Context = Context.current()
         tenant = await resolve_tenant(ctx.partition_id)
         params = await anthos_parameters(tenant)
-        return await DaskBulkStorage.create(params)
+        return await DaskBulkStorage.create(params, get_config())

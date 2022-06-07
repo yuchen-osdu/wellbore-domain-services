@@ -1,11 +1,15 @@
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: "{{ .Values.conf.app_name }}"
+  name: "{{ .Values.conf.appName }}"
   namespace: "{{ .Release.Namespace }}"
 spec:
   hosts:
+    {{- if .Values.conf.domain }}
+    - {{ printf "osdu.%s" .Values.conf.domain | quote }}
+    {{- else }}
     - "*"
+    {{- end }}
   gateways:
     - service-gateway
   http:
@@ -14,6 +18,6 @@ spec:
             prefix: /api/os-wellbore-ddms
       route:
         - destination:
-            host: "{{ .Values.conf.app_name }}"
+            host: "{{ .Values.conf.appName }}"
             port:
               number: 80

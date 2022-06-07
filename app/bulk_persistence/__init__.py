@@ -34,6 +34,9 @@ from .sessions_storage import Session, SessionsStorage, \
             SessionState, SessionUpdateMode, SessionInternal, CommitSessionResponse
 from .dask.errors import BulkError, BulkRecordNotFound, BulkCurvesNotFound, TooManyColumnsRequested, FilterError, internal_bulk_exceptions
 from .bulk_persistence_config import BulkPersistenceConfig, get_config, set_config_getter, MAX_COLUMNS_RETURN, MAX_COLUMNS_WRITE_CHUNK
+from .statistics import BulkStatistics
+from .statistics.models import BulkDataStatisticsResponse
+from .statistics import exceptions
 
-# TMP: this should probably not be exposed outside of the bulk_persistence package
+# TMP: this should probably not be exposed outside the bulk_persistence package
 from .temp_dir import get_temp_dir

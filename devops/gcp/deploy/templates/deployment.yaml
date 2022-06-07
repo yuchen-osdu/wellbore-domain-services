@@ -2,30 +2,36 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: "{{ .Release.Namespace }}"
-  name: "{{ .Values.conf.app_name }}"
+  name: "{{ .Values.conf.appName }}"
   labels:
-    app: "{{ .Values.conf.app_name }}"
+    app: "{{ .Values.conf.appName }}"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: "{{ .Values.conf.app_name }}"
+      app: "{{ .Values.conf.appName }}"
   template:
     metadata:
       labels:
-        app: "{{ .Values.conf.app_name }}"
+        app: "{{ .Values.conf.appName }}"
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       serviceAccountName: "{{ .Values.data.serviceAccountName }}"
       containers:
-        - name: "{{ .Values.conf.app_name }}"
+        - name: "{{ .Values.conf.appName }}"
           image: "{{ .Values.data.image }}"
           imagePullPolicy: "{{ .Values.data.imagePullPolicy }}"
           envFrom:
             - configMapRef:
                 name: "{{ .Values.conf.configmap }}"
+            {{- if .Values.conf.onPremEnabled }}
+            - secretRef:
+                name: "{{ .Values.conf.keycloakSecretName }}"
+            - secretRef:
+                name: "{{ .Values.conf.minioSecretName }}"
+            {{- end }}
           ports:
             - name: http
               containerPort: 8080
@@ -40,8 +46,8 @@ spec:
               port: http
           resources:
             requests:
-              cpu: "{{ .Values.data.requests_cpu }}"
-              memory: "{{ .Values.data.requests_memory }}"
+              cpu: "{{ .Values.data.requestsCpu }}"
+              memory: "{{ .Values.data.requestsMemory }}"
             limits:
-              cpu: "{{ .Values.data.limits_cpu }}"
-              memory: "{{ .Values.data.limits_memory }}"
+              cpu: "{{ .Values.data.limitsCpu }}"
+              memory: "{{ .Values.data.limitsMemory }}"

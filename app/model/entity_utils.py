@@ -14,6 +14,8 @@
 
 from enum import Enum
 
+from odes_storage.models import Record
+
 from app.model import schema_version
 
 
@@ -61,6 +63,10 @@ current_version = \
 
 def get_version(entity: Entity):
     return current_version.get(entity)
+
+
+def get_data_partition_from_record_id(record: Record):
+    return record.id.split(":")[0]
 
 
 def format_kind(authority: str, source: str, entity: str, version: str):

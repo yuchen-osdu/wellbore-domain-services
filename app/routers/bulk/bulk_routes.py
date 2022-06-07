@@ -24,6 +24,7 @@ from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute, with_trace
+from app.helper.logger import get_logger
 from app.bulk_persistence import MAX_COLUMNS_RETURN
 
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
@@ -41,6 +42,7 @@ from app.routers.bulk.utils import (with_dask_blob_storage,
                                     set_bulk_field_and_send_record,
                                     DataFrameRender,
                                     get_data_consistency_checks)
+from app.routers.bulk.statistics_routes_dependencies import is_statistics_computation_enabled
 
 # imports for session manipulation
 from app.bulk_persistence import (
@@ -60,15 +62,15 @@ from app.routers.sessions import (
 
 # imports from bulk persistence
 from app.bulk_persistence import (auto_cast_columns_to_string,
-    DataFrameValidationFunc, no_validation,
-    JSONOrient,
-    get_dataframe, download_bulk,
-    DaskBulkStorage,
-    MimeTypes, MimeType,
-    trace_dataframe_attributes, trace_attributes_root_span,
-    BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
-    DataConsistencyChecks
-                                  )
+                                  DataFrameValidationFunc, no_validation,
+                                  JSONOrient,
+                                  get_dataframe, download_bulk,
+                                  DaskBulkStorage,
+                                  MimeTypes, MimeType,
+                                  trace_dataframe_attributes, trace_attributes_root_span,
+                                  BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
+                                  DataConsistencyChecks,
+                                  BulkStatistics)
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -100,10 +102,11 @@ async def post_data(record_id: str,
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-                    record: Record = Depends(fetch_latest_version_record_dependency)):
-
+                    record: Record = Depends(fetch_latest_version_record_dependency),
+                    stats_computation_enabled: bool = Depends(is_statistics_computation_enabled),
+                    ):
     """
-    Handle a post data outside of a session. The given bulk will fully replace any existing one
+    Handle a post data outside a session. The given bulk will fully replace any existing one
     """
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
@@ -125,6 +128,14 @@ async def post_data(record_id: str,
                                                                   bulk_id=bulk_id,
                                                                   record=record,
                                                                   bulk_uri_access=bulk_uri_access)
+
+    if stats_computation_enabled:
+        _, updated_record_version = split_record_id_version(update_record_response.record_id_versions[0])
+        try:
+            await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, updated_record_version)
+        except Exception:
+            get_logger().exception(f"Statistics computation failed for record '{record.id}' with bulk id '{bulk_id}'")
+
     return update_record_response
     # TODO proposal: adding basic describe of data that has been stored
     # return PostDataResponse(**update_record_response.dict(exclude_unset=True, by_alias=True), dataStat=basic_describe)
@@ -323,6 +334,7 @@ async def complete_session(
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
+    stats_computation_enabled: bool = Depends(is_statistics_computation_enabled),
 ) -> CommitSessionResponse:
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
@@ -383,6 +395,13 @@ async def complete_session(
             if updated_version is None:
                 raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
 
+            if stats_computation_enabled:
+                try:
+                    await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, updated_version)
+                except Exception:
+                    get_logger().exception(
+                        f"Statistics computation failed for record '{record.id}' with bulk id '{new_bulk_id}'")
+
             response = CommitSessionResponse(
                 **i_session.session.dict(exclude_unset=True, by_alias=True),
                 version=updated_version
@@ -395,7 +414,7 @@ async def complete_session(
             async with sessions_storage.initiate_abandon(tenant, record_id, session_id) as abandon_guard:
                 # get the session if some information is needed
                 i_session: SessionInternal = abandon_guard.session
-                internal = i_session.internal  # <=  contains details details, may be irrelevant or not needed
+                internal = i_session.internal  # <=  contains details, may be irrelevant or not needed
 
                 # ==============>
                 # ==============> ADD ABANDON CODE HERE <==============

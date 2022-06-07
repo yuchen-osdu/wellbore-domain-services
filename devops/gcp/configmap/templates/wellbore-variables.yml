@@ -2,10 +2,15 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: "{{ .Values.conf.app_name }}"
+    app: "{{ .Values.conf.appName }}"
   name: "{{ .Values.conf.configmap }}"
   namespace: "{{ .Release.Namespace }}"
 data:
+  {{- if not .Values.conf.onPremEnabled }}
   CLOUD_PROVIDER: "gcp"
-  OS_WELLBORE_DDMS_DATA_PROJECT_ID: "{{ .Values.data.os_wellbore_ddms_data_project_id }}"
-
+  OS_WELLBORE_DDMS_DATA_PROJECT_ID: "{{ .Values.data.osWellboreDdmsDataProjectId }}"
+  {{- else }}
+  KEYCLOAK_AUTH: "yes"
+  BASE_BUCKET: "wellbore"
+  CLOUD_PROVIDER: "anthos"
+  {{- end }}

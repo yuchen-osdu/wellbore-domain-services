@@ -3,15 +3,18 @@
 # Declare variables to be passed into your templates.
 
 data:
-  requests_cpu: "0.1"
-  requests_memory: "1024M"
-  limits_cpu: "1"
-  limits_memory: "2G"
-  image: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp:latest"
+  requestsCpu: "0.1"
+  requestsMemory: "1G"
+  limitsCpu: "1"
+  limitsMemory: "3G"
+  image: "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/osdu-gcp-wellbore:latest"
   imagePullPolicy: "IfNotPresent"
-  serviceAccountName: ""
+  serviceAccountName: "wellbore"
 
 conf:
   configmap: "wellbore-config"
-  app_name: "wellbore"
-  
+  appName: "wellbore"
+  keycloakSecretName: "wellbore-keycloak-secret"
+  minioSecretName: "wellbore-minio-secret"
+  domain: ""
+  onPremEnabled: false

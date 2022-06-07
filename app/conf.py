@@ -103,10 +103,10 @@ class ConfigurationContainer:
 
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
-        description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm',
+        description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm" or "anthos"',
         default=None,
         is_mandatory=True,
-        allowed_values=['aws', 'gcp', 'az', 'local', 'ibm'],
+        allowed_values=['aws', 'gcp', 'az', 'local', 'ibm', 'anthos'],
         factory=lambda x: x.lower()
     )
 
@@ -329,6 +329,20 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             override=True,
                             default='http://storage/api/storage')
 
+        config.add_from_env(attribute_name='service_host_search',
+                            env_var_key='SERVICE_HOST_SEARCH',
+                            description='Back-end for search service',
+                            is_mandatory=False,
+                            override=True,
+                            default='http://search/api/search')
+
+    if provider == 'anthos':
+        config.add_from_env(attribute_name='service_host_storage',
+                            env_var_key='SERVICE_HOST_STORAGE',
+                            description='Back-end for storage service',
+                            is_mandatory=False,
+                            override=True,
+                            default='http://storage/api/storage')
         config.add_from_env(attribute_name='service_host_search',
                             env_var_key='SERVICE_HOST_SEARCH',
                             description='Back-end for search service',

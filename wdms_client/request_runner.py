@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import pandas as pd
 import requests
 from .variables import Variables, CmdLineSpecialVar
 from typing import Any, Dict, List
@@ -208,7 +208,7 @@ class RequestRunner:
 
         rq.headers = self._make_headers(env, headers)
 
-        if self.request_prototype.payload:
+        if self.request_prototype.payload is not None:
             rq.payload = env.resolve(self.request_prototype.payload)
 
         timeout = CmdLineSpecialVar.get_timeout_request(env) or 0
@@ -221,8 +221,13 @@ class RequestRunner:
 
         verify = not CmdLineSpecialVar.get_disable_ssl_validation(env)
 
-        if isinstance(rq.payload, dict):
+        if isinstance(rq.payload, dict) or isinstance(rq.payload, list):
             rq.payload = json.dumps(rq.payload)
+
+        if isinstance(rq.payload, pd.DataFrame):
+            # auto serializer pandas dataframe to parquet
+            rq.payload = rq.payload.to_parquet(engine="pyarrow")
+            rq.headers['Content-Type'] = 'application/x-parquet'
 
         if dry_run:
             response = requests.Response()
@@ -258,3 +263,26 @@ class RequestRunner:
             r_str += str(run)
             r_str += linesep + linesep + linesep
         return r_str
+
+
+def make_basic_request_proto(method: str, url: str, *, name=None, payload=None, content_type='application/json'):
+    headers = {
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}'
+        }
+    if payload is not None and content_type:
+        headers['Content-Type'] = content_type
+
+    return Request(
+        name=name or f"{method} - {url}",
+        method=method,
+        url=url,
+        headers=headers,
+        payload=payload
+    )
+
+
+def make_basic_wdms_request_proto(method: str, path: str, *, name=None, payload=None, content_type='application/json'):
+    return make_basic_request_proto(method, "{{base_url}}" + path, name=name, payload=payload, content_type=content_type)

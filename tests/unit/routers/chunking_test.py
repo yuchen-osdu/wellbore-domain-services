@@ -9,6 +9,7 @@ import pandas.api.types as ptypes
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
+from starlette.testclient import TestClient
 
 from pandas.testing import assert_frame_equal
 from tests.unit.persistence.dask_blob_storage_test import generate_df
@@ -75,7 +76,7 @@ def _df_to_format(df, data_format):
         raise ValueError(f"Unknown content-type: '{data_format}'")
 
 
-def _create_record(client, entity_type):
+def _create_record(client: TestClient, entity_type):
     entity_def = Definitions[entity_type]
     create_url = entity_def['base_url']
     kind = entity_def['kind']
