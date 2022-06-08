@@ -31,7 +31,6 @@ variables:
   AWS_DEPLOY_TARGET: EKS
   AWS_EKS_DEPLOYMENT_NAME: os-wellbore-ddms
 
-
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
@@ -52,6 +51,7 @@ include:
     file: "cloud-providers/ibm-wellbore-git.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: "aws-update-eks-fix"
     file: "cloud-providers/aws-global.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
