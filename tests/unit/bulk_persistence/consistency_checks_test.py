@@ -7,7 +7,7 @@ from app.bulk_persistence.consistency_checks import DataConsistencyChecks
 
 
 
-def test_get_data_columns_name():
+def test_get_name_and_count_data_columns():
     computed = DataConsistencyChecks._get_name_and_count_data_columns(
         ["GR[1]", "GR[2]", "DEN[1324]", "VSHALE[1324]", "", "A[1324][456]"]
     )
