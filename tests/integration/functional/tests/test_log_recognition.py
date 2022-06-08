@@ -2,6 +2,7 @@ import pytest
 
 from wdms_client.request_builders import make_base_request_proto
 from wdms_client.request_runner import RequestRunner
+from .fixtures import with_wdms_env
 
 
 @pytest.mark.tag('smoke', 'log_recognition')
