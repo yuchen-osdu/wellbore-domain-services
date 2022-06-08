@@ -271,15 +271,15 @@ def diff_record_against_ref(kind: str, res_dict: dict):
     return diff_records(ref, res_dict)
 
 
-def make_base_request_proto(method: str, url: str, name=None, payload=None, content_type='application/json'):
+def make_base_request_proto(method: str, path: str, name=None, payload=None, content_type='application/json'):
     import json
     if payload is not None and not isinstance(payload, str) and content_type == 'application/json':
         payload = json.dumps(payload)
 
     return Request(
-        name=name or f"{method} - {url}",
+        name=name or f"{method} - {path}",
         method=method,
-        url=url,
+        url='{{base_url}}' + path,
         headers={
             'accept': 'application/json',
             'data-partition-id': '{{data_partition}}',
