@@ -77,7 +77,7 @@ def build_request_get_versions_of_osdu_welllog() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: List[str]=['Example CurveID']) -> RequestRunner:
+def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: dict = {'Example CurveID': 1}) -> RequestRunner:
     if b_use_fixed_id:
         id_field = '"id": "{{data_partition}}:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",'
     else:
@@ -369,7 +369,7 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: List[str]=['E
     "LogRemark": "example data for API integration tests","""
 
     inner_curves = ""
-    for c in curves:
+    for c, nb in curves:
         inner_curves = inner_curves + r'{"CurveID":' + f'"{c}",' + r"""            
             "DateStamp": "2020-02-13T09:13:15.550000+00:00",
             "CurveVersion": "Example CurveVersion",
@@ -386,6 +386,7 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: List[str]=['E
             "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
             "CurveDescription": "Sample curve for integration tests",
             "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:"
+            "NumberOfColumns":""" + f'"{nb}",' + r"""
           },"""
 
     if len(curves) > 0:
