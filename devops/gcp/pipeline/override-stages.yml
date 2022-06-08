@@ -133,15 +133,14 @@ osdu-gcp-anthos-test-python:
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking'
 
 # Disable maven job in gcp common gke pipeline
-# osdu-gcp-test:
-#   extends:
-#     - .osdu-gcp-variables
+osdu-gcp-test:
+  extends:
+    - .osdu-gcp-variables
 
 osdu-gcp-dev2-test:
   extends:
     - .osdu-gcp-dev2-variables
 
-# osdu-gcp-anthos-test:
-#   extends:
-#     - .osdu-gcp-anthos-variables
-#
+osdu-gcp-anthos-test:
+  extends:
+    - .osdu-gcp-anthos-variables
