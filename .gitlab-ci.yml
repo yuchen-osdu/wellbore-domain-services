@@ -45,7 +45,8 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/osdu-gcp-gke.yml"
+    ref: "GONRG-5061-refactor-comm-pipe"
+    file: "cloud-providers/osdu-gcp-global.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm-wellbore-git.yml"
