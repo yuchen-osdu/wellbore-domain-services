@@ -731,7 +731,8 @@ def get_cleaned_ref_and_res() -> dict:
         "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
         "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
         "CurveDescription": "Sample curve for integration tests",
-        "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:"
+        "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:",
+        "NumberOfColumns": 1
       }
     ],
     "ExtensionProperties": {}
