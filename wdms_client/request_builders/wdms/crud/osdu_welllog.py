@@ -369,7 +369,7 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: dict = {'Exam
     "LogRemark": "example data for API integration tests","""
 
     inner_curves = ""
-    for c, nb in curves:
+    for c, nb_c in curves.items():
         inner_curves = inner_curves + r'{"CurveID":' + f'"{c}",' + r"""            
             "DateStamp": "2020-02-13T09:13:15.550000+00:00",
             "CurveVersion": "Example CurveVersion",
@@ -385,8 +385,8 @@ def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: dict = {'Exam
             "LogCurveMainFamilyID": "namespace:reference-data--LogCurveMainFamily:SomeUniqueLogCurveMainFamilyID:",
             "LogCurveFamilyID": "namespace:reference-data--LogCurveFamily:SomeUniqueLogCurveFamilyID:",
             "CurveDescription": "Sample curve for integration tests",
-            "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:"
-            "NumberOfColumns":""" + f'"{nb}",' + r"""
+            "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:",
+            "NumberOfColumns":""" + f'{nb_c}' + r"""
           },"""
 
     if len(curves) > 0:

@@ -14,6 +14,7 @@
 
 import pytest
 
+from app.bulk_persistence import DataConsistencyChecks
 from wdms_client.request_builders.wdms.crud.osdu_wellboretrajectory import build_request_create_osdu_wellboretrajectory
 from wdms_client.request_builders.wdms.crud.osdu_welllog import build_request_create_osdu_welllog
 from .fixtures import with_wdms_env
@@ -35,6 +36,7 @@ def build_request_post_data(entity_type: str, record_id: str, payload) -> Reques
 def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
     col = ['MD', 'X']
     if entity_type == 'welllog':
+        col = DataConsistencyChecks._get_name_and_count_data_columns(col)
         result = build_request_create_osdu_welllog(False, col).call(with_wdms_env)
     elif entity_type == 'wellboretrajectory':
         result = build_request_create_osdu_wellboretrajectory(False, col).call(with_wdms_env)
