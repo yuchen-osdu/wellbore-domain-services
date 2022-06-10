@@ -51,7 +51,6 @@ include:
     file: "cloud-providers/ibm-wellbore-git.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "aws-update-eks-fix"
     file: "cloud-providers/aws-global.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
