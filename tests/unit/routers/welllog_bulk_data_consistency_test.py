@@ -221,7 +221,7 @@ inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns = [
         {"ReferenceCurveID": "MD",
          "Curves": [{"CurveID": "MD", "NumberOfColumns": 2}, {"CurveID": "GR", "NumberOfColumns": 1}]},
         {"columns": ["MD", "GR"], "data": [[0.0, 2222.1], [0.5, 2222.2], [1.0, 2222.3], [1.5, 2222.4], [2.0, 2222.5]]},
-        r"^Column\(s\) MD do\(es\) not match \'NumberOfColumns\' of the WellLog record\.$",
+        r"^The number of column\(s\) per CurveID: \{\'MD\'\: 2\} do\(es\) not match the \'NumberOfColumns\' found in the WellLog record \: \{\'MD\'\: 1\} .$",
     )
 ]
 

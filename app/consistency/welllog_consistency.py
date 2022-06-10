@@ -188,12 +188,13 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
                 f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any CurveID of the WellLog record."
             )
 
-        not_matching_nb_col = [curve.CurveID for curve in wl.data.Curves
+        not_matching_nb_col_per_name = {curve.CurveID: curve.NumberOfColumns for curve in wl.data.Curves
                                if curve.CurveID in nb_col_per_names
-                               and nb_col_per_names[curve.CurveID] is not curve.NumberOfColumns]
-        if any(not_matching_nb_col):
+                               and nb_col_per_names[curve.CurveID] is not curve.NumberOfColumns}
+        if any(not_matching_nb_col_per_name):
+            expected_nb_of_col_per_name = {curve_id: nb_col_per_names[curve_id] for curve_id in not_matching_nb_col_per_name}
             raise ColumnDoesNotMatchNumberOfColumnsException(
-                f"Column(s) {', '.join(not_matching_nb_col)} do(es) not match 'NumberOfColumns' of the WellLog record."
+                f"The number of column(s) per CurveID: {not_matching_nb_col_per_name} do(es) not match the 'NumberOfColumns' found in the WellLog record : { expected_nb_of_col_per_name} ."
             )
 
     @staticmethod
