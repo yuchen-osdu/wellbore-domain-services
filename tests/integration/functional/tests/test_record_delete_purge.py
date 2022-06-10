@@ -36,7 +36,7 @@ def build_request_post_data(entity_type: str, record_id: str, payload) -> Reques
 def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
     col = ['MD', 'X']
     if entity_type == 'welllog':
-        col = DataConsistencyChecks._get_name_and_count_data_columns(col)
+        col = DataConsistencyChecks._get_curve_name_and_column_count(col)
         result = build_request_create_osdu_welllog(False, col).call(with_wdms_env)
     elif entity_type == 'wellboretrajectory':
         result = build_request_create_osdu_wellboretrajectory(False, col).call(with_wdms_env)

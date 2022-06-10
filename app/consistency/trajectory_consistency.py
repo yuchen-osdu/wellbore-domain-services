@@ -137,7 +137,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         error_msg = "do(es) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record."
 
         curve_ids, _ = get_unique_attr_values(traj.data.AvailableTrajectoryStationProperties, "Name")
-        col_names = DataConsistencyChecks._get_name_and_count_data_columns(col_labels).keys()
+        col_names = DataConsistencyChecks._get_curve_name_and_column_count(col_labels).keys()
 
         not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
         if any(not_matching_col_name):

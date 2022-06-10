@@ -53,7 +53,7 @@ def build_base_url_without_dask(entity_type: str) -> str:
 @contextmanager
 def create_record(env, entity_type: str, curves: List[str]):
     if entity_type == "well_log":
-        curves = DataConsistencyChecks._get_name_and_count_data_columns(curves)
+        curves = DataConsistencyChecks._get_curve_name_and_column_count(curves)
         result = build_request_create_osdu_welllog(False, curves).call(env)
     elif entity_type == "wellbore_trajectory":
         result = build_request_create_osdu_wellboretrajectory(False, curves).call(env)

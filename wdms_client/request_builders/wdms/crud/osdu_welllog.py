@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import json
-from typing import List
+from typing import List, Dict
 from ....request_runner import RequestRunner, Request
 
 
@@ -77,7 +77,7 @@ def build_request_get_versions_of_osdu_welllog() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
-def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: dict = {'Example CurveID': 1}) -> RequestRunner:
+def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: Dict[str, int] = {'Example CurveID': 1}) -> RequestRunner:
     if b_use_fixed_id:
         id_field = '"id": "{{data_partition}}:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",'
     else:
