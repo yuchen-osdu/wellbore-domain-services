@@ -1,7 +1,7 @@
 variables:
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_VENDOR: gcp
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.osWellboreDdmsDataProjectId=$OSDU_GCP_PROJECT"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.projectId=$OSDU_GCP_PROJECT"
   OSDU_GCP_INT_TEST_TYPE: python
 
 osdu-gcp-containerize-gitlab:
@@ -14,11 +14,11 @@ osdu-gcp-containerize-gitlab:
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
-# should be deleted after release 0.15
+  # should be deleted after release 0.15
   before_script:
-  - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0.dev|g" requirements.txt
-  - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
-  - sed -i "s|osdu-core-lib-python-aws==1.0.1|# osdu-core-lib-python-aws==1.0.1|g" requirements.txt
+    - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0.dev|g" requirements.txt
+    - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
+    - sed -i "s|osdu-core-lib-python-aws==1.0.1|# osdu-core-lib-python-aws==1.0.1|g" requirements.txt
 
 osdu-gcp-containerize-gcr:
   variables:
@@ -132,7 +132,7 @@ osdu-gcp-anthos-test-python:
       --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking'
 
-# Disable maven job in gcp common gke pipeline
+# Disable maven job in gcp common gke pipelines
 osdu-gcp-test:
   extends:
     - .osdu-gcp-variables

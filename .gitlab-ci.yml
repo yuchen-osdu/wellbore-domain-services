@@ -1,5 +1,5 @@
 # Copyright 2021 Schlumberger
-# Copyright 2021 EPAM
+# Copyright 2022 EPAM
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -135,7 +135,6 @@ containerize:
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
-
 # Allow failure on private development deployments
 ibm-deploy-devpri:
   allow_failure: true

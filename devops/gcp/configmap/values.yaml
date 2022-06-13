@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 data:
-  osWellboreDdmsDataProjectId: ""
+  projectId: ""
 
 conf:
   configmap: "wellbore-config"
