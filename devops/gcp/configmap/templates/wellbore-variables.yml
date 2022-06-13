@@ -8,7 +8,7 @@ metadata:
 data:
   {{- if not .Values.conf.onPremEnabled }}
   CLOUD_PROVIDER: "gcp"
-  OS_WELLBORE_DDMS_DATA_PROJECT_ID: "{{ .Values.data.osWellboreDdmsDataProjectId }}"
+  OS_WELLBORE_DDMS_DATA_PROJECT_ID: "{{ .Values.data.projectId }}"
   {{- else }}
   KEYCLOAK_AUTH: "yes"
   BASE_BUCKET: "wellbore"
