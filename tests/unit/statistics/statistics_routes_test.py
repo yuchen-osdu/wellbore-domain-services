@@ -463,3 +463,18 @@ def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunk
 
     compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert compute_stats_response.status_code == 422
+
+
+def test_invalid_bulk_uri_cases(testing_app_local_chunking_no_consistency):
+
+    with mock.patch('app.bulk_persistence.bulk_uri.BulkURI.is_valid', return_value=False):
+        _, client = testing_app_local_chunking_no_consistency
+        record_id = _create_record(client, 'WellLog')
+
+        record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+        assert record_response.status_code == 200
+        version = record_response.json()['version']
+
+        compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+        assert compute_stats_response.status_code == 422
+        assert compute_stats_response.json() == {"detail": "Record contains an invalid bulk URI"}

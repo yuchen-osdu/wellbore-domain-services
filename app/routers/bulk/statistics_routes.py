@@ -237,7 +237,8 @@ async def compute_bulk_statistics(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI') from e
     if not bulk_uri.is_valid():
-        raise BulkRecordNotFound(record_id=record.id, bulk_id=None)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail='Record contains an invalid bulk URI')
 
     try:
         await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id, record.version)

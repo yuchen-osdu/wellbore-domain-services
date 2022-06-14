@@ -21,6 +21,7 @@ from .wdms import error_cases
 from .wdms import model_extensibility
 from .wdms import recursive_delete
 from .wdms import search_apis
+from ..request_runner import Request
 from deepdiff import DeepDiff
 
 request_path_dict = {
@@ -268,3 +269,23 @@ def diff_records(ref, res):
 def diff_record_against_ref(kind: str, res_dict: dict):
     ref = get_cleaned_ref_and_res(kind)
     return diff_records(ref, res_dict)
+
+
+def make_base_request_proto(method: str, path: str, name=None, payload=None, content_type='application/json'):
+    import json
+    if payload is not None and not isinstance(payload, str) and content_type == 'application/json':
+        payload = json.dumps(payload)
+
+    return Request(
+        name=name or f"{method} - {path}",
+        method=method,
+        url='{{base_url}}' + path,
+        headers={
+            'accept': 'application/json',
+            'data-partition-id': '{{data_partition}}',
+            'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
+            'Content-Type': content_type
+        },
+        payload=payload
+    )
