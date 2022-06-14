@@ -36,7 +36,7 @@ class ColumnDoesNotMatchCurveIdException(ConsistencyException):
 
 
 class TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(ConsistencyException):
-    """raised when column doesn't match number of columns"""
+    """raised when total of columns doesn't match NumberOfColumns field"""
 
 
 @with_trace('welllog_consistency')
