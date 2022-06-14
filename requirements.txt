@@ -318,7 +318,7 @@ pydantic==1.9.0
     #   fastapi
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
-pyjwt[crypto]==2.1.0
+pyjwt[crypto]==2.4.0
     # via
     #   adal
     #   msal
