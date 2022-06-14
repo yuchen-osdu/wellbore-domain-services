@@ -15,13 +15,13 @@ The following software have components provided under the terms of this license:
 - botocore (from https://github.com/boto/botocore)
 - coverage (from https://github.com/nedbat/coveragepy)
 - cryptography (from https://github.com/pyca/cryptography)
-- google-api-core (from https://github.com/GoogleCloudPlatform/google-cloud-python)
+- google-api-core (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-api-core)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
 - google-cloud-core (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-cloud-core)
 - google-cloud-monitoring (from https://github.com/GoogleCloudPlatform/google-cloud-python)
 - google-cloud-trace (from https://github.com/googleapis/googleapis)
-- googleapis-common-protos (from https://github.com/googleapis/googleapis)
+- googleapis-common-protos (from https://github.com/googleapis/googleapis, https://github.com/googleapis/python-api-common-protos)
 - grpcio (from https://grpc.io)
 - importlib-metadata
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
@@ -39,10 +39,11 @@ The following software have components provided under the terms of this license:
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/takluyver/pep517)
+- prometheus-fastapi-instrumentator (from https://github.com/trallnag/prometheus-fastapi-instrumentator)
 - pyarrow (from https://arrow.apache.org/)
 - pytest-asyncio (from https://github.com/pytest-dev/pytest-asyncio)
 - pytest-dependency (from https://github.com/RKrahl/pytest-dependency)
-- python-dateutil (from https://dateutil.readthedocs.org)
+- python-dateutil (from https://dateutil.readthedocs.org, https://github.com/dateutil/dateutil)
 - python-multipart (from http://github.com/andrew-d/python-multipart)
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
 - rfc3986 (from https://rfc3986.readthedocs.org)
@@ -50,9 +51,11 @@ The following software have components provided under the terms of this license:
 - s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio)
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
+- structlog (from http://www.structlog.org/)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toposort (from https://bitbucket.org/ericvsmith/toposort)
 - tornado (from http://www.tornadoweb.org/)
+- urllib3 (from https://urllib3.readthedocs.io/)
 - yarl (from https://github.com/aio-libs/yarl/)
 
 ========================================================================
@@ -60,6 +63,7 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- decorator (from https://github.com/micheles/decorator)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
@@ -67,6 +71,7 @@ The following software have components provided under the terms of this license:
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - ply (from http://www.dabeaz.com/ply/)
+- prometheus-client (from https://github.com/prometheus/client_python)
 - pyasn1 (from http://sourceforge.net/projects/pyasn1/)
 - pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
 - pycparser (from https://github.com/eliben/pycparser)
@@ -81,13 +86,17 @@ The following software have components provided under the terms of this license:
 - HeapDict (from http://stutzbachenterprises.com/)
 - Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/)
 - MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
-- adlfs (from https://github.com/hayesgb/adlfs/)
+- adlfs (from https://github.com/dask/adlfs/, https://github.com/hayesgb/adlfs/)
+- asgiref (from https://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
-- dask (from http://github.com/dask/dask/)
+- dask (from http://github.com/dask/dask/, https://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
+- distributed (from https://distributed.dask.org)
+- fsspec (from http://github.com/fsspec/filesystem_spec)
+- gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore)
@@ -112,16 +121,24 @@ The following software have components provided under the terms of this license:
 - pycparser (from https://github.com/eliben/pycparser)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
-- python-dateutil (from https://dateutil.readthedocs.org)
+- python-dateutil (from https://dateutil.readthedocs.org, https://github.com/dateutil/dateutil)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
-- s3fs (from http://github.com/dask/s3fs/)
+- s3fs (from http://github.com/dask/s3fs/, http://github.com/fsspec/s3fs/)
+- sniffio (from https://github.com/python-trio/sniffio)
 - starlette (from https://github.com/encode/starlette)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn, https://www.uvicorn.org/)
 - wrapt (from https://github.com/GrahamDumpleton/wrapt)
-- zict (from http://github.com/dask/zict/)
+- zict (from http://github.com/dask/zict/, http://zict.readthedocs.io/en/latest/)
+
+========================================================================
+BSL-1.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- pyarrow (from https://arrow.apache.org/)
 
 ========================================================================
 CC-BY-4.0
@@ -144,7 +161,16 @@ CC0-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- dask (from https://github.com/dask/dask/)
+- distributed (from https://distributed.dask.org)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
+
+========================================================================
+GPL-1.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from https://grpc.io)
 
 ========================================================================
 GPL-2.0-only
@@ -164,8 +190,6 @@ The following software have components provided under the terms of this license:
 ========================================================================
 GPL-3.0-only
 ========================================================================
-The following software have components provided under the terms of this license:
-
 - coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 - rfc3986 (from https://rfc3986.readthedocs.org)
@@ -175,7 +199,10 @@ ISC
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/)
+- click (from http://github.com/mitsuhiko/click)
 - grpcio (from https://grpc.io)
+- requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 
 ========================================================================
 Info-ZIP
@@ -187,6 +214,8 @@ The following software have components provided under the terms of this license:
 ========================================================================
 JSON
 ========================================================================
+The following software have components provided under the terms of this license:
+
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 
 ========================================================================
@@ -216,53 +245,69 @@ MIT
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- PyJWT (from http://github.com/jpadilla/pyjwt)
+- PyJWT (from http://github.com/jpadilla/pyjwt, https://github.com/jpadilla/pyjwt)
 - PyYAML (from http://pyyaml.org/wiki/PyYAML)
 - adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis)
 - anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/3.4.0/)
-- asgiref (from http://github.com/django/asgiref/)
+- asgiref (from http://github.com/django/asgiref/, https://github.com/django/asgiref/)
 - attrs (from https://attrs.readthedocs.io/, https://www.attrs.org/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
 - azure-core (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core)
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
-- azure-storage-blob (from https://github.com/Azure/azure-storage-python)
+- azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/identity/azure-identity)
+- azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
+- azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-certificates)
+- azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
+- azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
+- azure-storage-blob (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob, https://github.com/Azure/azure-storage-python)
 - backoff
 - botocore (from https://github.com/boto/botocore)
-- cachetools (from https://github.com/tkem/cachetools)
+- cachetools (from https://github.com/tkem/cachetools, https://github.com/tkem/cachetools/)
 - cffi
 - charset-normalizer (from https://github.com/ousret/charset_normalizer)
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
+- distributed (from https://distributed.dask.org)
 - fastapi (from https://github.com/tiangolo/fastapi)
 - grpcio (from https://grpc.io)
 - h11
+- hypothesis (from https://hypothesis.works)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema
 - mockito (from https://github.com/kaste/mockito-python)
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
+- msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
 - msrest (from https://github.com/Azure/msrest-for-python)
+- munch (from http://github.com/Infinidat/munch)
 - natsort (from https://github.com/SethMMorton/natsort)
 - numpy
 - ordered-set (from http://github.com/LuminosoInsight/ordered-set)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/takluyver/pep517)
 - pluggy
-- py (from http://pylib.readthedocs.org/)
+- py (from http://pylib.readthedocs.org/, https://py.readthedocs.io/)
 - pyarrow (from https://arrow.apache.org/)
+- pydantic (from https://github.com/samuelcolvin/pydantic)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
+- pytest-httpx (from https://colin-b.github.io/pytest_httpx/)
 - pytest-mock (from https://github.com/pytest-dev/pytest-mock/)
+- python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
+- python-ulid (from https://github.com/mdomke/python-ulid)
 - pytz (from http://pythonhosted.org/pytz)
-- six (from http://pypi.python.org/pypi/six/)
+- requests (from http://python-requests.org, https://requests.readthedocs.io)
+- six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio)
+- starlette (from https://github.com/encode/starlette)
+- structlog (from http://www.structlog.org/)
 - toml (from https://github.com/uiri/toml)
-- tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/)
+- tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/, https://pypi.org/project/tomli/2.0.1/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 
@@ -274,12 +319,20 @@ The following software have components provided under the terms of this license:
 - pyparsing (from http://pyparsing.wikispaces.com/)
 
 ========================================================================
+MPL-1.1
+========================================================================
+The following software have components provided under the terms of this license:
+
+- charset-normalizer (from https://github.com/ousret/charset_normalizer)
+
+========================================================================
 MPL-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- certifi (from http://certifi.io/)
+- certifi (from http://certifi.io/, https://github.com/certifi/python-certifi)
 - charset-normalizer (from https://github.com/ousret/charset_normalizer)
+- grpcio (from https://grpc.io)
 - hypothesis (from https://hypothesis.works)
 
 ========================================================================
@@ -326,7 +379,7 @@ The following software have components provided under the terms of this license:
 - pytz (from http://pythonhosted.org/pytz)
 - rsa (from https://stuvel.eu/rsa)
 - sniffio (from https://github.com/python-trio/sniffio)
-- typing-extensions (from https://github.com/python/typing)
+- typing-extensions (from https://github.com/python/typing, https://pypi.org/project/typing-extensions/4.2.0/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 
 ========================================================================
@@ -353,13 +406,13 @@ The following software have components provided under the terms of this license:
 ========================================================================
 WTFPL
 ========================================================================
+The following software have components provided under the terms of this license:
+
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 
 ========================================================================
 ZPL-2.1
 ========================================================================
-The following software have components provided under the terms of this license:
-
 - pytz (from http://pythonhosted.org/pytz)
 
 ========================================================================
@@ -369,6 +422,20 @@ The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
 - numpy
+
+========================================================================
+cc-pd
+========================================================================
+The following software have components provided under the terms of this license:
+
+- ply (from http://www.dabeaz.com/ply/)
+
+========================================================================
+mit-old-style
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from https://grpc.io)
 
 ========================================================================
 public-domain
