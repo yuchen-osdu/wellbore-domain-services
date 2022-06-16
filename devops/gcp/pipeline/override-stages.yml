@@ -1,7 +1,6 @@
 variables:
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_VENDOR: gcp
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.projectId=$OSDU_GCP_PROJECT"
   OSDU_GCP_INT_TEST_TYPE: python
 
 osdu-gcp-containerize-gitlab:
