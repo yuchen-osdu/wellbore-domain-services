@@ -29,7 +29,7 @@ class DataConsistencyChecks(ABC):
     @staticmethod
     def _get_curve_name_and_column_count(col_labels: Iterable[str]) -> dict:
         """
-        Get column names from bulk data column labels
+        Get column names and the number of column from bulk data column labels
         """
 
         def _get_col_name_from_col_label(col_label: str):
