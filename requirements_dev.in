@@ -23,6 +23,6 @@ munch
 jsonschema
 
 # Generates fake token for local integration tests runs
-pyjwt[crypto]
+pyjwt[crypto]>=2.4.0
 
 deepdiff
