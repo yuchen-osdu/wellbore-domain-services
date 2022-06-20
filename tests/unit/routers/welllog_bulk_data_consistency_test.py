@@ -264,6 +264,17 @@ inconsistent_test_params = [
 ]
 
 
+@pytest.mark.parametrize("wrong_log_curve_family", [{"LogCurveFamilyID": ""}, {"LogCurveFamilyID": "TEST"}])
+@pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns)
+def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_wrong_log_curve_family(dasked_test_app_client, welllog_data,
+                                                                                  bulk_data, err, wrong_log_curve_family):
+    welllog_data["Curves"][0].update(wrong_log_curve_family)
+    record["data"] = welllog_data
+    response = dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
+
+    assert response.status_code == 422
+
+
 @pytest.mark.parametrize("no_log_curve_family", [{"LogCurveFamilyID": None}, {}])
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns  )
 def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_no_log_curve_family(dasked_test_app_client, welllog_data,
