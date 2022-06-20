@@ -299,7 +299,7 @@ def test_get_data_with_column_filter(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
 
-    with create_record(with_wdms_env, entity_type, ['MD', 'X', 'Y', 'Z', '2D']) as record_id:
+    with create_record(with_wdms_env, entity_type, ['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]']) as record_id:
         size = 100
         data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
         data_to_send = serializer.dump(data)
