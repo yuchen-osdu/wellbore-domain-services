@@ -1,13 +1,6 @@
 variables:
   OSDU_GCP_SERVICE: wellbore
   OSDU_GCP_VENDOR: gcp
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.projectId=$OSDU_GCP_PROJECT"
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.projectId=$OSDU_GCP_PROJECT"
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: >
-    --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA
-    --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s
-  OSDU_GCP_HELM_CONFIG_SERVICE: wellbore-config
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE: wellbore-deploy
   OSDU_GCP_INT_TEST_TYPE: python
 
 osdu-gcp-containerize-gitlab:
