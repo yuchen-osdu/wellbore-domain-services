@@ -35,6 +35,10 @@ class ColumnDoesNotMatchCurveIdException(ConsistencyException):
     """raised when column doesn't match any CurveID"""
 
 
+class TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(ConsistencyException):
+    """raised when total of columns doesn't match NumberOfColumns field"""
+
+
 @with_trace('welllog_consistency')
 def check_welllog_consistency(wl: WellLog120):
     """Check wellLog metadata.
@@ -176,12 +180,21 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             raise ColumnDoesNotMatchCurveIdException(f"Column(s) do(es) not match any CurveID of the WellLog record.")
 
         curve_ids, _ = get_unique_attr_values(wl.data.Curves, "CurveID")
-        col_names = DataConsistencyChecks._get_data_columns_name(col_labels)
+        nb_col_per_names = DataConsistencyChecks._get_curve_name_and_column_count(col_labels)
 
-        not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
+        not_matching_col_name = [col_name for col_name in nb_col_per_names.keys() if col_name not in curve_ids]
         if any(not_matching_col_name):
             raise ColumnDoesNotMatchCurveIdException(
                 f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any CurveID of the WellLog record."
+            )
+
+        not_matching_nb_col_per_name = {curve.CurveID: curve.NumberOfColumns for curve in wl.data.Curves
+                               if curve.CurveID in nb_col_per_names
+                               and nb_col_per_names[curve.CurveID] is not curve.NumberOfColumns}
+        if any(not_matching_nb_col_per_name):
+            expected_nb_of_col_per_name = {curve_id: nb_col_per_names[curve_id] for curve_id in not_matching_nb_col_per_name}
+            raise TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(
+                f"The number of columns for curve(s): {expected_nb_of_col_per_name} in the bulk data do(es) not match the 'NumberOfColumns' property value in the WellLog record for CurveID: {not_matching_nb_col_per_name} ."
             )
 
     @staticmethod
@@ -204,5 +217,6 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     def _is_curve_reference_family_measured_depth(wl: WellLog120, data_partition: str):
         log_curve_family_id_expected = data_partition + ":reference-data--LogCurveFamily:Measured%20Depth:"
         return any(curve.LogCurveFamilyID == log_curve_family_id_expected for curve in wl.data.Curves if curve.CurveID == wl.data.ReferenceCurveID)
+
 
 

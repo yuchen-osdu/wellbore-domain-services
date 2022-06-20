@@ -22,6 +22,7 @@ import pandas as pd
 import pytest
 from typing import List
 
+from app.bulk_persistence import DataConsistencyChecks
 from ..generate_dataframe import generate_df
 
 from .fixtures import with_wdms_env
@@ -52,6 +53,7 @@ def build_base_url_without_dask(entity_type: str) -> str:
 @contextmanager
 def create_record(env, entity_type: str, curves: List[str]):
     if entity_type == "well_log":
+        curves = DataConsistencyChecks._get_curve_name_and_column_count(curves)
         result = build_request_create_osdu_welllog(False, curves).call(env)
     elif entity_type == "wellbore_trajectory":
         result = build_request_create_osdu_wellboretrajectory(False, curves).call(env)
@@ -297,7 +299,7 @@ def test_get_data_with_column_filter(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
 
-    with create_record(with_wdms_env, entity_type, ['MD', 'X', 'Y', 'Z', '2D']) as record_id:
+    with create_record(with_wdms_env, entity_type, ['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]']) as record_id:
         size = 100
         data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
         data_to_send = serializer.dump(data)
