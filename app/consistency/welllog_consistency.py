@@ -194,7 +194,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if any(not_matching_nb_col_per_name):
             expected_nb_of_col_per_name = {curve_id: nb_col_per_names[curve_id] for curve_id in not_matching_nb_col_per_name}
             raise TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(
-                f"The number of columns for curve(s): {expected_nb_of_col_per_name} in the bulk data do(es) not match the 'NumberOfColumns' property value in the WellLog record for CurveID:: {not_matching_nb_col_per_name} ."
+                f"The number of columns for curve(s): {expected_nb_of_col_per_name} in the bulk data do(es) not match the 'NumberOfColumns' property value in the WellLog record for CurveID: {not_matching_nb_col_per_name} ."
             )
 
     @staticmethod
