@@ -1,8 +1,10 @@
+# Introduction
+
 In this tutorial we will explain: 
 
-1. How to write bulk data using Wellbore DDMS chunking API's
-2. How to read and write a given version of a WellLog
-3. How to read bulk data with filtering options as columns, offset and limit
+- How to [write bulk data](#write-bulk-data---all-at-once) using Wellbore DDMS chunking API's
+- How to [read and write a given version](#welllog-record-versioning) of a WellLog
+- How to [read bulk data](#read-bulk-data) with filtering options as columns, offset and limit
 
 Here is the corresponding Jupyter notebook of this tutorial: [Wellbore-DDMS-Bulk-data-API.ipynb](/sites/default/files/solution/wellboreDMS/Wellbore-DDMS-Bulk-data-API.ipynb)
 
