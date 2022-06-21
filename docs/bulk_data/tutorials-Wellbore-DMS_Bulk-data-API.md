@@ -2,7 +2,7 @@
 
 In this tutorial we will explain: 
 
-- How to [write bulk data](#write-bulk-data---all-at-once) using Wellbore DDMS chunking API's
+- How to [write bulk data](#write-bulk-data---all-at-once) using [Wellbore DDMS chunking APIs](/solutions/osduwellboreddms/apis/wellbore-data-access-v3)
 - How to [read and write a given version](#welllog-record-versioning) of a WellLog
 - How to [read bulk data](#read-bulk-data) with filtering options as columns, offset and limit
 
