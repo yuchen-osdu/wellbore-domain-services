@@ -34,7 +34,7 @@ TOKEN = '' # Paste here the token without the bearer prefix
 
 ## Utility methods
 
-Below is a list of helper functions used in the different sample scripts of this tutorial.
+<details> <summary> Helper functions used in the different sample scripts of this tutorial. </summary>
 
 ```python
 from typing import List
@@ -194,6 +194,7 @@ def display_previous_and_current_well_log_data_versions(record_id):
         
     display(multi_table(tables))
 ```
+</details> 
 
 ## Settings
 
