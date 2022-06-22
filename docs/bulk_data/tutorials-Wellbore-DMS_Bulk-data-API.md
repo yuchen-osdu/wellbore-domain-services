@@ -1,8 +1,10 @@
+# Introduction
+
 In this tutorial we will explain: 
 
-1. How to write bulk data using Wellbore DDMS chunking API's
-2. How to read and write a given version of a WellLog
-3. How to read bulk data with filtering options as columns, offset and limit
+- How to [write bulk data](#write-bulk-data---all-at-once) using [Wellbore DDMS chunking APIs](/solutions/osduwellboreddms/apis/wellbore-data-access-v3)
+- How to [read and write a given version](#welllog-record-versioning) of a WellLog
+- How to [read bulk data](#read-bulk-data) with filtering options as columns, offset and limit
 
 Here is the corresponding Jupyter notebook of this tutorial: [Wellbore-DDMS-Bulk-data-API.ipynb](/sites/default/files/solution/wellboreDMS/Wellbore-DDMS-Bulk-data-API.ipynb)
 
@@ -32,7 +34,7 @@ TOKEN = '' # Paste here the token without the bearer prefix
 
 ## Utility methods
 
-Below is a list of helper functions used in the different sample scripts of this tutorial.
+<details> <summary> Helper functions used in the different sample scripts of this tutorial. </summary>
 
 ```python
 from typing import List
@@ -192,6 +194,7 @@ def display_previous_and_current_well_log_data_versions(record_id):
         
     display(multi_table(tables))
 ```
+</details> 
 
 ## Settings
 
@@ -250,7 +253,7 @@ record_id = response.json()["recordIds"][0]
 record_id
 ``` 
 
-# Write bulk data - all at once
+# Write bulk data - all at once<a name="write-bulk-data---all-at-once"></a>
 
 Each time that data are written to the WellLog, a new version is created to the Wellbore DDMS. This is true when writting the entire bulk data at once or even by chunks (cover in a next section of this tutorial).
 So when writting all bulk data at once, the payload is expected to contain the entire bulk data that replaces the previous bulk version by creating a new version. This new bulk version becomes the latest one and the current version that is returned by the GET WellLog bulk data API for the given record id.
@@ -3475,7 +3478,7 @@ display_operation(df_cols_md_x_y_z, [data_md_y, data_z, data_md_x], data_update)
     </tbody></table>
 </div>
 
-# WellLog record versioning
+# WellLog record versioning<a name="welllog-record-versioning"></a>
 
 Each time that the WellLog record metadata or its associated bulk data are updated a new version of the WellLog record is created.
 This rule makes that the first version for a given WellLog record has never a bulk data associated to it as demonstrated by the script below:
@@ -3882,7 +3885,7 @@ sessions_response.json()
       'state': 'committed',
       'meta': None}]
 
-# Read bulk data
+# Read bulk data<a name="read-bulk-data"></a>
 
 As for writing it is possible to specify the format to be returned when reading WellLog bulk data.
 This is done through the header passed to the GET http client request.
