@@ -4264,9 +4264,9 @@ create_df_from_response(response)
 
 # WellLog consistency rules<a name="welllog-consistency-rules"></a> 
 
-# WellLog entity : Meta only (record) consistency
+## WellLog entity : Meta only (record) consistency
 
-## Rules
+### Rules
 see [WellLog schema](https://community.opengroup.org/osdu/data/data-definitions/-/blob/v0.14.0/E-R/work-product-component/WellLog.1.2.0.md).
 
 - _rule 1_: Each `CurveID` listed in `data.Curves.CurveID` must be unique.
@@ -4311,11 +4311,11 @@ wellog record:
 
 </details>
 
-# WellLog entity : Meta data (record) & Bulk data consistency
+## WellLog entity : Meta data (record) & Bulk data consistency
 
 WellLog record can exist without bulk data​.
 
-## Rules
+### Rules
 
 When bulk is added\edited following checks to be done :​
 
@@ -4345,11 +4345,11 @@ using previous section well log record.
 - _rule 4_:  `DEPTH.NumberOfColumns` **matches** the `column` count in the bulk​ ==> **1**.   `CSHG.NumberOfColumns` **matches** the `column` count in the bulk​ ==> **4**, CSHG[0], CSHG[1], CSHG[2], CSHG[3].
 </details>
 
-# Additional rules when the reference is type **"Measured Depth"**.
+## Additional rules when the reference is type **"Measured Depth"**.
 
 The following rules are only applied if the reference is type **"Measured Depth"**.
 
-## Rules
+### Rules
 
 - _rule 5_:  The values associated to the `ReferenceCurveID` in the record are monotonic​.
 
@@ -4394,9 +4394,9 @@ bulk:
 # WellboreTrajectory  consistency rules<a name="trajectory-consistency-rules"></a> 
 
 
-# Wellbore trajectory entity : Meta only (record) consistency
+## Wellbore trajectory entity : Meta only (record) consistency
 
-## Rules
+### Rules
 see [Wellbore trajectory schema](https://community.opengroup.org/osdu/data/data-definitions/-/blob/v0.14.0/E-R/work-product-component/WellboreTrajectory.1.1.0.md)
 - _rule 1_: Each `Name` listed in `data.AvailableTrajectoryStationProperties.Name` must be unique.
 
@@ -4440,11 +4440,11 @@ Wellbore trajectory record:
 
 </details>
 
-# Wellbore trajectory entity : Meta data (record) & Bulk data consistency
+## Wellbore trajectory entity : Meta data (record) & Bulk data consistency
 
 Wellbore trajectory record can exist without bulk data.
 
-## Rules
+### Rules
 
 When bulk is added\edited following checks to be done :
 
@@ -4471,11 +4471,11 @@ here `BOREHOLE_AZIMUTH`, `BOREHOLE_DEVIATION` and `MD`.
 
 </details>
 
-# Additional rules in case of TrajectoryStationPropertyType:**MD**.
+## Additional rules in case of TrajectoryStationPropertyType:**MD**.
 
 The following rules are only applied for TrajectoryStationPropertyType:**MD**.
 
-## Rules
+### Rules
 
 - _rule 3_:  The values associated to the reference in the record must be monotonic.
 
