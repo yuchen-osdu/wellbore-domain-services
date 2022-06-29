@@ -5,8 +5,8 @@ In this tutorial we will explain:
 - How to [write bulk data](#write-bulk-data---all-at-once) using [Wellbore DDMS chunking APIs](/solutions/osduwellboreddms/apis/wellbore-data-access-v3)
 - How to [read and write a given version](#welllog-record-versioning) of a WellLog
 - How to [read bulk data](#read-bulk-data) with filtering options as columns, offset and limit
-- How is ensured meta (record) and bulk [data consistency for WellLogs](welllog-consistency-rules)
-- How is ensured meta (record) and bulk [data consistency for Wellbore Trajectories](trajectory-consistency-rules)
+- How is ensured meta (record) and bulk [data consistency for WellLogs](#welllog-consistency-rules)
+- How is ensured meta (record) and bulk [data consistency for Wellbore Trajectories](#trajectory-consistency-rules)
 
 Here is the corresponding Jupyter notebook of this tutorial: [Wellbore-DDMS-Bulk-data-API.ipynb](/sites/default/files/solution/wellboreDMS/Wellbore-DDMS-Bulk-data-API.ipynb)
 
