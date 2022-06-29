@@ -5,6 +5,7 @@ In this tutorial we will explain:
 - How to [write bulk data](#write-bulk-data---all-at-once) using [Wellbore DDMS chunking APIs](/solutions/osduwellboreddms/apis/wellbore-data-access-v3)
 - How to [read and write a given version](#welllog-record-versioning) of a WellLog
 - How to [read bulk data](#read-bulk-data) with filtering options as columns, offset and limit
+- How is ensured meta (record) and bulk [data consistency for WellLogs](welllog-consistency-rules)
 
 Here is the corresponding Jupyter notebook of this tutorial: [Wellbore-DDMS-Bulk-data-API.ipynb](/sites/default/files/solution/wellboreDMS/Wellbore-DDMS-Bulk-data-API.ipynb)
 
@@ -4257,3 +4258,133 @@ create_df_from_response(response)
   </tbody>
 </table>
 </div>
+
+
+
+# WellLog consistency rules<a name="welllog-consistency-rules"></a> 
+
+# WellLog entity : Meta only (record) consistency
+
+## Rules
+see [WellLog schema](https://community.opengroup.org/osdu/data/data-definitions/-/blob/v0.14.0/E-R/work-product-component/WellLog.1.2.0.md).
+
+- _rule 1_: Each `CurveID` listed in `data.Curves.CurveID` must be unique.
+
+- _rule 2_: Ensure `data.ReferenceCurveID` exists in `data.Curves.CurveID` list.  
+
+
+<details>
+<summary>Example</summary>
+
+wellog record:  
+````json
+{
+"id": "...",
+"data": {
+  "ReferenceCurveID": "MD",
+  "SamplingStart": 7627.0,
+  "SamplingStopt": 7627.6,
+  "Curves": [​
+      {​
+        "CurveID": "CSHG",​
+        "Mnemonic": "CSHG",​
+        "LogCurveFamilyID": "data-partition-id:reference-data--LogCurveFamily:Core%20Mercury%20Saturation:",​
+        "NumberOfColumns": 4
+      },​
+      {​
+        "CurveID": "MD",​
+        "CurveUnit": "data-partition-id:reference-data--UnitOfMeasure:ft:",​
+        "Mnemonic": "MD",​
+        "LogCurveFamilyID": "data-partition-id:reference-data--LogCurveFamily:Measured%20Depth:",​
+        "NumberOfColumns": 1​
+      }​
+  ],​
+       
+}
+````
+
+
+- _rule 1_: Each `Curves.CurveID` is unique, here `MD` and `CSHG`. 
+
+- _rule 2_: `ReferenceCurveID` is set to `MD` and `MD` exists `Curves.CurveID` list.  
+
+</details>
+
+# WellLog entity : Meta data (record) & Bulk data consistency
+
+WellLog record can exist without bulk data​.
+
+## Rules
+
+When bulk is added\edited following checks to be done :​
+
+- _rule 3_:  Ensure `Curves.CurveID` listed in the record **match** the `column names` in the bulk​.
+
+- _rule 4_:  For each curve, ensure that `NumberOfColumns` **matches** the `column` count in the bulk​ for this curve.
+
+<details>
+<summary>Example</summary>
+
+WellLog bulk data:  
+
+| DEPTH  | CSHG[0] | CSHG[1] | CSHG[2] | CSHG[3] |
+|--------|---------|---------|---------|---------|
+| **7627.0** | 0.573   | 0.573   | 0.573   | 0.573   |
+| 7627.1 | 0.531   | 0.531   | 0.531   | 0.531   |
+| 7627.2 | 0.653   | 0.653   | 0.653   | 0.653   |
+| 7627.3 | 0.788   | 0.788   | 0.788   | 0.788   |
+| 7627.4 | 0.034   | 0.034   | 0.034   | 0.034   |
+| 7627.5 | 0.035   | 0.035   | 0.035   | 0.035   |
+| **7627.6** | 0.607   | 0.607   | 0.607   | 0.607   |
+
+
+using previous section well log record.
+- _rule 3_:  `Curves.CurveID` list, `DEPTH` and `CSHG` matches the `column names` in the bulk​. Here `CSHG` is an array with 4 columns: CSHG[0], CSHG[1], CSHG[2], CSHG[3].
+
+- _rule 4_:  `DEPTH.NumberOfColumns` **matches** the `column` count in the bulk​ ==> **1**.   `CSHG.NumberOfColumns` **matches** the `column` count in the bulk​ ==> **4**, CSHG[0], CSHG[1], CSHG[2], CSHG[3].
+</details>
+
+# Additional rules when the reference is type **"Measured Depth"**.
+
+The following rules are only applied if the reference is type **"Measured Depth"**.
+
+## Rules
+
+- _rule 5_:  The values associated to the `ReferenceCurveID` in the record are monotonic​.
+
+- _rule 6_:  The top and bottom bulk values associated to the `ReferenceCurveID` should match values `data.SamplingStart` and `data.SamplingStop` in the record.
+
+
+<details>
+<summary>Example</summary>
+
+from previous record and bulk data: 
+
+record:
+````json
+{
+"id": "...",
+"data": {
+  "ReferenceCurveID": "MD",
+  "SamplingStart": 7627.0,
+  "SamplingStopt": 7627.6,
+````
+
+bulk:
+| DEPTH  | ...     |
+|--------|---------|
+| **7627.0** |  ...    |
+| 7627.1 |  ...    |
+| 7627.2 |  ...    |
+| 7627.3 |  ...    |
+| 7627.4 |  ...    |
+| 7627.5 |  ...    |
+| **7627.6** |  ...    |
+
+
+- _rule 5_:  The values associated to the `ReferenceCurveID`,`DEPTH`, are monotonic​: no duplicates, strictly increasing, no missing values.
+- 
+- _rule 6_:  `data.SamplingStart` matches bulk `DEPTH` top value ==> **7627.0**. `data.SamplingStop` matches bulk `DEPTH` bottom value ==> **7627.6**.
+
+</details>
+
