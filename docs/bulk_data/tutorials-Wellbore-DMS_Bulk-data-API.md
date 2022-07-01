@@ -5,6 +5,8 @@ In this tutorial we will explain:
 - How to [write bulk data](#write-bulk-data---all-at-once) using [Wellbore DDMS chunking APIs](/solutions/osduwellboreddms/apis/wellbore-data-access-v3)
 - How to [read and write a given version](#welllog-record-versioning) of a WellLog
 - How to [read bulk data](#read-bulk-data) with filtering options as columns, offset and limit
+- How is ensured meta (record) and bulk [data consistency for WellLogs](#welllog-consistency-rules)
+- How is ensured meta (record) and bulk [data consistency for Wellbore Trajectories](#trajectory-consistency-rules)
 
 Here is the corresponding Jupyter notebook of this tutorial: [Wellbore-DDMS-Bulk-data-API.ipynb](/sites/default/files/solution/wellboreDMS/Wellbore-DDMS-Bulk-data-API.ipynb)
 
@@ -4257,3 +4259,257 @@ create_df_from_response(response)
   </tbody>
 </table>
 </div>
+
+
+
+# WellLog consistency rules<a name="welllog-consistency-rules"></a> 
+
+## WellLog entity : Meta only (record) consistency
+
+### Rules
+see [WellLog schema](https://community.opengroup.org/osdu/data/data-definitions/-/blob/v0.14.0/E-R/work-product-component/WellLog.1.2.0.md).
+
+- _rule 1_: Each `CurveID` listed in `data.Curves.CurveID` must be unique.
+
+- _rule 2_: Ensure `data.ReferenceCurveID` exists in `data.Curves.CurveID` list.  
+
+
+<details>
+<summary>Example</summary>
+
+wellog record:  
+````json
+{
+"id": "...",
+"data": {
+  "ReferenceCurveID": "MD",
+  "SamplingStart": 7627.0,
+  "SamplingStopt": 7627.6,
+  "Curves": [​
+      {​
+        "CurveID": "CSHG",​
+        "Mnemonic": "CSHG",​
+        "LogCurveFamilyID": "data-partition-id:reference-data--LogCurveFamily:Core%20Mercury%20Saturation:",​
+        "NumberOfColumns": 4
+      },​
+      {​
+        "CurveID": "MD",​
+        "CurveUnit": "data-partition-id:reference-data--UnitOfMeasure:ft:",​
+        "Mnemonic": "MD",​
+        "LogCurveFamilyID": "data-partition-id:reference-data--LogCurveFamily:Measured%20Depth:",​
+        "NumberOfColumns": 1​
+      }​
+  ],​
+       
+}
+````
+
+
+- _rule 1_: Each `Curves.CurveID` is unique, here `MD` and `CSHG`. 
+
+- _rule 2_: `ReferenceCurveID` is set to `MD` and `MD` exists `Curves.CurveID` list.  
+
+</details>
+
+## WellLog entity : Meta data (record) & Bulk data consistency
+
+WellLog record can exist without bulk data​.
+
+### Rules
+
+When bulk is added\edited following checks to be done :​
+
+- _rule 3_:  Ensure `Curves.CurveID` listed in the record **match** the `column names` in the bulk​.
+
+- _rule 4_:  For each curve, ensure that `NumberOfColumns` **matches** the `column` count in the bulk​ for this curve.
+
+<details>
+<summary>Example</summary>
+
+WellLog bulk data:  
+
+| DEPTH  | CSHG[0] | CSHG[1] | CSHG[2] | CSHG[3] |
+|--------|---------|---------|---------|---------|
+| **7627.0** | 0.573   | 0.573   | 0.573   | 0.573   |
+| 7627.1 | 0.531   | 0.531   | 0.531   | 0.531   |
+| 7627.2 | 0.653   | 0.653   | 0.653   | 0.653   |
+| 7627.3 | 0.788   | 0.788   | 0.788   | 0.788   |
+| 7627.4 | 0.034   | 0.034   | 0.034   | 0.034   |
+| 7627.5 | 0.035   | 0.035   | 0.035   | 0.035   |
+| **7627.6** | 0.607   | 0.607   | 0.607   | 0.607   |
+
+
+using previous section well log record.
+- _rule 3_:  `Curves.CurveID` list, `DEPTH` and `CSHG` matches the `column names` in the bulk​. Here `CSHG` is an array with 4 columns: CSHG[0], CSHG[1], CSHG[2], CSHG[3].
+
+- _rule 4_:  `DEPTH.NumberOfColumns` **matches** the `column` count in the bulk​ ==> **1**.   `CSHG.NumberOfColumns` **matches** the `column` count in the bulk​ ==> **4**, CSHG[0], CSHG[1], CSHG[2], CSHG[3].
+</details>
+
+## Additional rules when the reference is type **"Measured Depth"**.
+
+The following rules are only applied if the reference is type **"Measured Depth"**.
+
+### Rules
+
+- _rule 5_:  The values associated to the `ReferenceCurveID` in the record are monotonic​.
+
+- _rule 6_:  The top and bottom bulk values associated to the `ReferenceCurveID` should match values `data.SamplingStart` and `data.SamplingStop` in the record.
+
+
+<details>
+<summary>Example</summary>
+
+from previous record and bulk data: 
+
+record:
+````json
+{
+"id": "...",
+"data": {
+  "ReferenceCurveID": "MD",
+  "SamplingStart": 7627.0,
+  "SamplingStopt": 7627.6,
+````
+
+bulk:
+| DEPTH  | ...     |
+|--------|---------|
+| **7627.0** |  ...    |
+| 7627.1 |  ...    |
+| 7627.2 |  ...    |
+| 7627.3 |  ...    |
+| 7627.4 |  ...    |
+| 7627.5 |  ...    |
+| **7627.6** |  ...    |
+
+
+- _rule 5_:  The values associated to the `ReferenceCurveID`,`DEPTH`, are monotonic​: no duplicates, strictly increasing, no missing values.
+- 
+- _rule 6_:  `data.SamplingStart` matches bulk `DEPTH` top value ==> **7627.0**. `data.SamplingStop` matches bulk `DEPTH` bottom value ==> **7627.6**.
+
+</details>
+
+
+
+# WellboreTrajectory  consistency rules<a name="trajectory-consistency-rules"></a> 
+
+
+## Wellbore trajectory entity : Meta only (record) consistency
+
+### Rules
+see [Wellbore trajectory schema](https://community.opengroup.org/osdu/data/data-definitions/-/blob/v0.14.0/E-R/work-product-component/WellboreTrajectory.1.1.0.md)
+- _rule 1_: Each `Name` listed in `data.AvailableTrajectoryStationProperties.Name` must be unique.
+
+
+<details>
+<summary>Example</summary>
+
+Wellbore trajectory record:  
+````json
+{
+  "id": "...",
+  "data": {
+    "Name": "Index",
+    "WellboreID": "data-partition-id:master-data--Wellbore:71612d776:",
+    "TopDepthMeasuredDepth": 0.0,
+    "AzimuthReferenceType": "data-partition-id:reference-data--AzimuthReferenceType:truenorth:",
+    "BaseDepthMeasuredDepth": 7628.0,
+    "AvailableTrajectoryStationProperties": [
+      {
+        "TrajectoryStationPropertyTypeID": "data-partition-id:reference-data--TrajectoryStationPropertyType:BOREHOLE_AZIMUTH:",
+        "StationPropertyUnitID": "data-partition-id:reference-data--UnitOfMeasure:dega:",
+        "Name": "BOREHOLE_AZIMUTH"
+      },
+      {
+        "TrajectoryStationPropertyTypeID": "data-partition-id:reference-data--TrajectoryStationPropertyType:BOREHOLE_DEVIATION:",
+        "StationPropertyUnitID": "qa-weu-des-prod-testing-eu:reference-data--UnitOfMeasure:dega:",
+        "Name": "BOREHOLE_DEVIATION"
+      },
+      {
+        "TrajectoryStationPropertyTypeID": "data-partition-id:reference-data--TrajectoryStationPropertyType:MD:",
+        "StationPropertyUnitID": "data-partition-id:reference-data--UnitOfMeasure:ft:",
+        "Name": "MD"
+      }
+    ]
+  }
+}
+````
+
+
+- _rule 1_: `AvailableTrajectoryStationProperties.Name` is unique, here `BOREHOLE_AZIMUTH`, `BOREHOLE_DEVIATION` and `MD`.
+
+</details>
+
+## Wellbore trajectory entity : Meta data (record) & Bulk data consistency
+
+Wellbore trajectory record can exist without bulk data.
+
+### Rules
+
+When bulk is added\edited following checks to be done :
+
+- _rule 2_:  Ensure `AvailableTrajectoryStationProperties.Name` listed in the record **match** the `column names` in the bulk.
+
+<details>
+<summary>Example</summary>
+
+Wellbore trajectory bulk data:  
+
+| MD  | BOREHOLE_AZIMUTH | BOREHOLE_DEVIATION |
+|--------|---------|---------|
+| **0.0**     | 360.573   | 0.573   |
+| 0.5         | 360.531   | 0.531   |
+| 1.0         | 360.653   | 0.653   |
+| ...         | ...   | ...   |
+| 7627.5      | 360.035   | 0.035   |
+| **7628.0**  | 360.607   | 0.607   |
+
+
+using previous section well log record.
+- _rule 2_:  `AvailableTrajectoryStationProperties.Name` listed in the record **match** the `column names` in the bulk, 
+here `BOREHOLE_AZIMUTH`, `BOREHOLE_DEVIATION` and `MD`.
+
+</details>
+
+## Additional rules in case of TrajectoryStationPropertyType:**MD**.
+
+The following rules are only applied for TrajectoryStationPropertyType:**MD**.
+
+### Rules
+
+- _rule 3_:  The values associated to the reference in the record must be monotonic.
+
+- _rule 4_:  The top and bottom bulk values associated to the reference should match values `data.TopDepthMeasuredDepth` and `data.BaseDepthMeasuredDepth` in the record.
+
+
+<details>
+<summary>Example</summary>
+
+from previous record and bulk data: 
+
+record:
+````json
+{
+  "id": "...",
+  "data": {
+    "WellboreID": "data-partition-id:master-data--Wellbore:71612d776:",
+    "TopDepthMeasuredDepth": 0.0,
+    "BaseDepthMeasuredDepth": 7628.0,
+````
+
+bulk:
+| MD  | ... |
+|--------|---------|
+| **0.0**     | ...   |
+| 0.5         | ...   |
+| ...         | ...   |
+| 7627.5      | ...   |
+| **7628.0**  | ...   |
+
+
+- _rule 3_:  The values of `MD` are monotonic: no duplicates, strictly increasing, no missing values.
+
+- _rule 4_:  `data.TopDepthMeasuredDepth` matches bulk `MD` top value ==> **0.0**. `data.BaseDepthMeasuredDepth`
+matches bulk `MD` bottom value ==> **7628.0**.
+
+</details>
