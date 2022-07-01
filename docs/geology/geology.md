@@ -4,6 +4,8 @@
 - [Introduction](#introduction) 
 - [Schemas](#schemas) 
 - [APIs](#apis)
+  + [Sample data](#sample-data)
+  + [Simple Create / Read session](#simple-create-read-session)
 
 
 ## Introduction<a name="introduction"></a>
@@ -22,13 +24,13 @@ The Wellbore DDMS Geology APIs support the OSDU [WellboreMarkerSet schema](https
 
 Those are generic Create Read Update Delete (CRUD) APIs to manage WellboreMarkerSet objects.
 
-### Sample data
+### Sample data<a name="sample-data"></a>
 
 <details> 
     <summary> 
-        Among the WellboreMarkerSet data fields are the **WellboreID** to which is is related, and a **Markers** array.
+        Among the WellboreMarkerSet data fields are the WellboreID to which is is related, and a Markers array.
     </summary>
-```json
+
   "data": {
     "Name": "string",
     "Description": "string",
@@ -102,10 +104,10 @@ Those are generic Create Read Update Delete (CRUD) APIs to manage WellboreMarker
     ],
     "ExtensionProperties": {}
   }
-```
+
 </details>
 
-### Simple Create / Read session
+### Simple Create / Read session<a name="simple-create-read-session"></a>
 
 
 ```python
@@ -115,7 +117,7 @@ import json
 
 
 ```python
-base_url = "https://evd.managed-osdu.cloud.slb-ds.com/api/os-wellbore-ddms"
+base_url="https://evd.managed-osdu.cloud.slb-ds.com/api/os-wellbore-ddms"
 token = '****'
 ```
 
@@ -244,14 +246,12 @@ headers = {
 
 response = requests.request("POST", url, headers=headers, data=payload)
 
-
-
 ```
 
 </details>
 
 <details><summary>Query results</summary>
-```json
+
 
 
 ```python
@@ -262,7 +262,7 @@ print(json.dumps(response.json(), indent=2))
     {
       "recordCount": 1,
       "recordIdVersions": [
-        "opendes:work-product-component--WellboreMarkerSet:00001234:1656682849504130"
+        "opendes:work-product-component--WellboreMarkerSet:00001234:1656685178752952"
       ],
       "recordIds": [
         "opendes:work-product-component--WellboreMarkerSet:00001234"
@@ -290,26 +290,21 @@ headers = {
 
 response = requests.request("GET", url, headers=headers, data=payload)
 
-
-
 ```
 
-```
 </details>
 
 <details><summary>Query results</summary>
-```json
 
 
 ```python
 print(json.dumps(response.json(), indent=2))
-
 ```
 
     {
       "id": "opendes:work-product-component--WellboreMarkerSet:00001234",
       "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
-      "version": 1656682849504130,
+      "version": 1656685178752952,
       "acl": {
         "owners": [
           "data.default.owners@opendes.enterprisedata.cloud.slb-ds.com"
@@ -332,7 +327,7 @@ print(json.dumps(response.json(), indent=2))
       },
       "createTime": "2021-12-16T15:20:59.752000+00:00",
       "createUser": "lyriarte@slb.com",
-      "modifyTime": "2022-07-01T13:40:52.863000+00:00",
+      "modifyTime": "2022-07-01T14:19:48.151000+00:00",
       "modifyUser": "lyriarte@slb.com",
       "meta": [],
       "data": {
@@ -413,7 +408,6 @@ print(json.dumps(response.json(), indent=2))
 
 </details>
 
-```
 </details>
 
 
