@@ -31,7 +31,6 @@ Those are generic Create Read Update Delete (CRUD) APIs to manage WellboreMarker
         Among the WellboreMarkerSet data fields are the WellboreID to which is is related, and a Markers array.
     </summary>
 
-```
   "data": {
     "Name": "string",
     "Description": "string",
@@ -53,34 +52,34 @@ Those are generic Create Read Update Delete (CRUD) APIs to manage WellboreMarker
     ],
     "LineageAssertions": [
       {
-        "ID": "opendes:osdu:string:00001234",
-        "LineageRelationshipType": "opendes:reference-data--LineageRelationshipType:string:"
+        "ID": "mydata:osdu:string:00001234",
+        "LineageRelationshipType": "mydata:reference-data--LineageRelationshipType:string:"
       }
     ],
     "Artefacts": [
       {
-        "RoleID": "opendes:reference-data--ArtefactRole:string:",
-        "ResourceKind": "opendes:osdu:string:00001234",
-        "ResourceID": "opendes:dataset--string:string:"
+        "RoleID": "mydata:reference-data--ArtefactRole:string:",
+        "ResourceKind": "mydata:osdu:string:00001234",
+        "ResourceID": "mydata:dataset--string:string:"
       }
     ],
     "IsExtendedLoad": true,
     "IsDiscoverable": true,
-    "ResourceHomeRegionID": "opendes:reference-data--OSDURegion:string:",
+    "ResourceHomeRegionID": "mydata:reference-data--OSDURegion:string:",
     "ResourceHostRegionIDs": [
-      "opendes:reference-data--OSDURegion:string:"
+      "mydata:reference-data--OSDURegion:string:"
     ],
-    "ResourceCurationStatus": "opendes:reference-data--ResourceCurationStatus:string:",
-    "ResourceLifecycleStatus": "opendes:reference-data--ResourceLifecycleStatus:string:",
-    "ResourceSecurityClassification": "opendes:reference-data--ResourceSecurityClassification:string:",
+    "ResourceCurationStatus": "mydata:reference-data--ResourceCurationStatus:string:",
+    "ResourceLifecycleStatus": "mydata:reference-data--ResourceLifecycleStatus:string:",
+    "ResourceSecurityClassification": "mydata:reference-data--ResourceSecurityClassification:string:",
     "Source": "string",
-    "ExistenceKind": "opendes:reference-data--ExistenceKind:string:",
-    "WellboreID": "opendes:master-data--Wellbore:00001234:",
+    "ExistenceKind": "mydata:reference-data--ExistenceKind:string:",
+    "WellboreID": "mydata:master-data--Wellbore:00001234:",
     "VerticalMeasurement": {},
     "AvailableMarkerProperties": [
       {
-        "MarkerPropertyTypeID": "opendes:reference-data--MarkerPropertyType:MissingThickness:",
-        "MarkerPropertyUnitID": "opendes:reference-data--UnitOfMeasure:ft:",
+        "MarkerPropertyTypeID": "mydata:reference-data--MarkerPropertyType:MissingThickness:",
+        "MarkerPropertyUnitID": "mydata:reference-data--UnitOfMeasure:ft:",
         "Name": "MissingThickness"
       }
     ],
@@ -92,8 +91,8 @@ Those are generic Create Read Update Delete (CRUD) APIs to manage WellboreMarker
         "MarkerDate": "2021-12-02T15:19:19.271000+00:00",
         "MarkerObservationNumber": 0.0,
         "MarkerInterpreter": "string",
-        "MarkerTypeID": "opendes:reference-data--MarkerType:string:",
-        "FeatureTypeID": "opendes:reference-data--FeatureType:string:",
+        "MarkerTypeID": "mydata:reference-data--MarkerType:string:",
+        "FeatureTypeID": "mydata:reference-data--FeatureType:string:",
         "FeatureName": "string",
         "PositiveVerticalDelta": 0.0,
         "NegativeVerticalDelta": 0.0,
@@ -105,7 +104,7 @@ Those are generic Create Read Update Delete (CRUD) APIs to manage WellboreMarker
     ],
     "ExtensionProperties": {}
   }
-```
+
 </details>
 
 ### Simple Create / Read session<a name="simple-create-read-session"></a>
@@ -118,8 +117,10 @@ import json
 
 
 ```python
-base_url="https://evd.managed-osdu.cloud.slb-ds.com/api/os-wellbore-ddms"
+base_url="https://www.example.com/api/os-wellbore-ddms"
 token = '****'
+datapartitionid = 'mydata'
+domain = 'example.com'
 ```
 
 <details> 
@@ -135,10 +136,10 @@ payload = json.dumps([
   {
     "acl": {
       "owners": [
-        "data.default.owners@opendes.enterprisedata.cloud.slb-ds.com"
+        f"data.default.owners@{datapartitionid}.{domain}"
       ],
       "viewers": [
-        "data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com"
+        f"data.default.viewers@{datapartitionid}.{domain}"
       ]
     },
     "ancestry": {
@@ -149,9 +150,9 @@ payload = json.dumps([
     "data": {
       "Artefacts": [
         {
-          "ResourceID": "opendes:dataset--string:string:",
-          "ResourceKind": "opendes:osdu:string:00001234",
-          "RoleID": "opendes:reference-data--ArtefactRole:string:"
+          "ResourceID": f"{datapartitionid}:dataset--string:string:",
+          "ResourceKind": f"{datapartitionid}:osdu:string:00001234",
+          "RoleID": f"{datapartitionid}:reference-data--ArtefactRole:string:"
         }
       ],
       "AuthorIDs": [
@@ -159,8 +160,8 @@ payload = json.dumps([
       ],
       "AvailableMarkerProperties": [
         {
-          "MarkerPropertyTypeID": "opendes:reference-data--MarkerPropertyType:MissingThickness:",
-          "MarkerPropertyUnitID": "opendes:reference-data--UnitOfMeasure:ft:",
+          "MarkerPropertyTypeID": f"{datapartitionid}:reference-data--MarkerPropertyType:MissingThickness:",
+          "MarkerPropertyUnitID": f"{datapartitionid}:reference-data--UnitOfMeasure:ft:",
           "Name": "MissingThickness"
         }
       ],
@@ -169,7 +170,7 @@ payload = json.dumps([
       ],
       "CreationDateTime": "2021-12-02T15:19:19.271Z",
       "Description": "string",
-      "ExistenceKind": "opendes:reference-data--ExistenceKind:string:",
+      "ExistenceKind": f"{datapartitionid}:reference-data--ExistenceKind:string:",
       "ExtensionProperties": {},
       "GeoContexts": [
         "string"
@@ -178,14 +179,14 @@ payload = json.dumps([
       "IsExtendedLoad": True,
       "LineageAssertions": [
         {
-          "ID": "opendes:osdu:string:00001234",
-          "LineageRelationshipType": "opendes:reference-data--LineageRelationshipType:string:"
+          "ID": f"{datapartitionid}:osdu:string:00001234",
+          "LineageRelationshipType": f"{datapartitionid}:reference-data--LineageRelationshipType:string:"
         }
       ],
       "Markers": [
         {
           "FeatureName": "string",
-          "FeatureTypeID": "opendes:reference-data--FeatureType:string:",
+          "FeatureTypeID": f"{datapartitionid}:reference-data--FeatureType:string:",
           "GeologicalAge": "string",
           "MarkerDate": "2021-12-02T15:19:19.271Z",
           "MarkerInterpreter": "string",
@@ -193,7 +194,7 @@ payload = json.dumps([
           "MarkerName": "string",
           "MarkerObservationNumber": 0,
           "MarkerSubSeaVerticalDepth": 0,
-          "MarkerTypeID": "opendes:reference-data--MarkerType:string:",
+          "MarkerTypeID": f"{datapartitionid}:reference-data--MarkerType:string:",
           "Missing": "string",
           "NegativeVerticalDelta": 0,
           "PositiveVerticalDelta": 0,
@@ -202,13 +203,13 @@ payload = json.dumps([
         }
       ],
       "Name": "string",
-      "ResourceCurationStatus": "opendes:reference-data--ResourceCurationStatus:string:",
-      "ResourceHomeRegionID": "opendes:reference-data--OSDURegion:string:",
+      "ResourceCurationStatus": f"{datapartitionid}:reference-data--ResourceCurationStatus:string:",
+      "ResourceHomeRegionID": f"{datapartitionid}:reference-data--OSDURegion:string:",
       "ResourceHostRegionIDs": [
-        "opendes:reference-data--OSDURegion:string:"
+        f"{datapartitionid}:reference-data--OSDURegion:string:"
       ],
-      "ResourceLifecycleStatus": "opendes:reference-data--ResourceLifecycleStatus:string:",
-      "ResourceSecurityClassification": "opendes:reference-data--ResourceSecurityClassification:string:",
+      "ResourceLifecycleStatus": f"{datapartitionid}:reference-data--ResourceLifecycleStatus:string:",
+      "ResourceSecurityClassification": f"{datapartitionid}:reference-data--ResourceSecurityClassification:string:",
       "Source": "string",
       "SpatialArea": {},
       "SpatialPoint": {},
@@ -217,13 +218,13 @@ payload = json.dumps([
         "string"
       ],
       "VerticalMeasurement": {},
-      "WellboreID": "opendes:master-data--Wellbore:00001234:"
+      "WellboreID": f"{datapartitionid}:master-data--Wellbore:00001234:"
     },
-    "id": "opendes:work-product-component--WellboreMarkerSet:00001234",
+    "id": f"{datapartitionid}:work-product-component--WellboreMarkerSet:00001234",
     "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
     "legal": {
       "legaltags": [
-        "opendes-default-legal"
+        f"{datapartitionid}-default-legal"
       ],
       "otherRelevantDataCountries": [
         "FR",
@@ -240,7 +241,7 @@ payload = json.dumps([
   }
 ])
 headers = {
-  'data-partition-id': 'opendes',
+  'data-partition-id': f'{datapartitionid}',
   'Content-Type': 'application/json',
   'Authorization': f'Bearer {token}'
 }
@@ -263,16 +264,14 @@ print(json.dumps(response.json(), indent=2))
     {
       "recordCount": 1,
       "recordIdVersions": [
-        "opendes:work-product-component--WellboreMarkerSet:00001234:1656685178752952"
+        "mydata:work-product-component--WellboreMarkerSet:00001234:1656929137041793"
       ],
       "recordIds": [
-        "opendes:work-product-component--WellboreMarkerSet:00001234"
+        "mydata:work-product-component--WellboreMarkerSet:00001234"
       ],
       "skippedRecordIds": []
     }
     
-
-</details>
 
 <details> 
     <summary> 
@@ -281,11 +280,11 @@ print(json.dumps(response.json(), indent=2))
 
 
 ```python
-url = f"{base_url}/ddms/v3/wellboremarkersets/opendes:work-product-component--WellboreMarkerSet:00001234"
+url = f"{base_url}/ddms/v3/wellboremarkersets/{datapartitionid}:work-product-component--WellboreMarkerSet:00001234"
 
 payload={}
 headers = {
-  'data-partition-id': 'opendes',
+  'data-partition-id': f'{datapartitionid}',
   'Authorization': f'Bearer {token}'
 }
 
@@ -303,20 +302,20 @@ print(json.dumps(response.json(), indent=2))
 ```
 
     {
-      "id": "opendes:work-product-component--WellboreMarkerSet:00001234",
+      "id": "mydata:work-product-component--WellboreMarkerSet:00001234",
       "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
-      "version": 1656685178752952,
+      "version": 1656929137041793,
       "acl": {
         "owners": [
-          "data.default.owners@opendes.enterprisedata.cloud.slb-ds.com"
+          "data.default.owners@mydata.example.com"
         ],
         "viewers": [
-          "data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com"
+          "data.default.viewers@mydata.example.com"
         ]
       },
       "legal": {
         "legaltags": [
-          "opendes-default-legal"
+          "mydata-default-legal"
         ],
         "otherRelevantDataCountries": [
           "FR",
@@ -327,9 +326,9 @@ print(json.dumps(response.json(), indent=2))
         "NameOfKey": "String value"
       },
       "createTime": "2021-12-16T15:20:59.752000+00:00",
-      "createUser": "lyriarte@slb.com",
-      "modifyTime": "2022-07-01T14:19:48.151000+00:00",
-      "modifyUser": "lyriarte@slb.com",
+      "createUser": "some-user@some-company-cloud.com",
+      "modifyTime": "2022-07-04T10:05:37.050000+00:00",
+      "modifyUser": "some-user@some-company-cloud.com",
       "meta": [],
       "data": {
         "Name": "string",
@@ -352,34 +351,34 @@ print(json.dumps(response.json(), indent=2))
         ],
         "LineageAssertions": [
           {
-            "ID": "opendes:osdu:string:00001234",
-            "LineageRelationshipType": "opendes:reference-data--LineageRelationshipType:string:"
+            "ID": "mydata:osdu:string:00001234",
+            "LineageRelationshipType": "mydata:reference-data--LineageRelationshipType:string:"
           }
         ],
         "Artefacts": [
           {
-            "RoleID": "opendes:reference-data--ArtefactRole:string:",
-            "ResourceKind": "opendes:osdu:string:00001234",
-            "ResourceID": "opendes:dataset--string:string:"
+            "RoleID": "mydata:reference-data--ArtefactRole:string:",
+            "ResourceKind": "mydata:osdu:string:00001234",
+            "ResourceID": "mydata:dataset--string:string:"
           }
         ],
         "IsExtendedLoad": true,
         "IsDiscoverable": true,
-        "ResourceHomeRegionID": "opendes:reference-data--OSDURegion:string:",
+        "ResourceHomeRegionID": "mydata:reference-data--OSDURegion:string:",
         "ResourceHostRegionIDs": [
-          "opendes:reference-data--OSDURegion:string:"
+          "mydata:reference-data--OSDURegion:string:"
         ],
-        "ResourceCurationStatus": "opendes:reference-data--ResourceCurationStatus:string:",
-        "ResourceLifecycleStatus": "opendes:reference-data--ResourceLifecycleStatus:string:",
-        "ResourceSecurityClassification": "opendes:reference-data--ResourceSecurityClassification:string:",
+        "ResourceCurationStatus": "mydata:reference-data--ResourceCurationStatus:string:",
+        "ResourceLifecycleStatus": "mydata:reference-data--ResourceLifecycleStatus:string:",
+        "ResourceSecurityClassification": "mydata:reference-data--ResourceSecurityClassification:string:",
         "Source": "string",
-        "ExistenceKind": "opendes:reference-data--ExistenceKind:string:",
-        "WellboreID": "opendes:master-data--Wellbore:00001234:",
+        "ExistenceKind": "mydata:reference-data--ExistenceKind:string:",
+        "WellboreID": "mydata:master-data--Wellbore:00001234:",
         "VerticalMeasurement": {},
         "AvailableMarkerProperties": [
           {
-            "MarkerPropertyTypeID": "opendes:reference-data--MarkerPropertyType:MissingThickness:",
-            "MarkerPropertyUnitID": "opendes:reference-data--UnitOfMeasure:ft:",
+            "MarkerPropertyTypeID": "mydata:reference-data--MarkerPropertyType:MissingThickness:",
+            "MarkerPropertyUnitID": "mydata:reference-data--UnitOfMeasure:ft:",
             "Name": "MissingThickness"
           }
         ],
@@ -391,8 +390,8 @@ print(json.dumps(response.json(), indent=2))
             "MarkerDate": "2021-12-02T15:19:19.271000+00:00",
             "MarkerObservationNumber": 0.0,
             "MarkerInterpreter": "string",
-            "MarkerTypeID": "opendes:reference-data--MarkerType:string:",
-            "FeatureTypeID": "opendes:reference-data--FeatureType:string:",
+            "MarkerTypeID": "mydata:reference-data--MarkerType:string:",
+            "FeatureTypeID": "mydata:reference-data--FeatureType:string:",
             "FeatureName": "string",
             "PositiveVerticalDelta": 0.0,
             "NegativeVerticalDelta": 0.0,
