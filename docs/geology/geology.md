@@ -28,7 +28,7 @@ Those are generic Create Read Update Delete (CRUD) APIs to manage WellboreMarker
 
 <details> 
     <summary> 
-        Among the WellboreMarkerSet data fields are the WellboreID to which is is related, and a Markers array.
+        Among the WellboreMarkerSet data fields are the WellboreID to which it is related, and a Markers array.
     </summary>
 
 ```
