@@ -25,5 +25,3 @@ export OPENAPI_FILTER_PREFIX='/ddms/v3'
 export OPENAPI_FILTER_TAGS='Wellbore,WellLog'
 python -m pytest ./tests/unit/spec/
 ```
-
-_**Latest synced version:**_ (Jun/09/2021)
