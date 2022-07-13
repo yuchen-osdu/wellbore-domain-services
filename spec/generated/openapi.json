@@ -90,18 +90,18 @@
       },
       "AbstractAnyCrsFeatureCollection100": {
         "additionalProperties": false,
-        "description": "The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the OperationsApplied can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
+        "description": "The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the AppliedOperations can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
         "properties": {
           "CoordinateReferenceSystemID": {
             "description": "The CRS reference into the CoordinateReferenceSystem catalog.",
-            "example": "namespace:reference-data--CoordinateReferenceSystem:BoundCRS.SLB.32021.15851:",
+            "example": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CoordinateReferenceSystem:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Coordinate Reference System ID",
             "type": "string"
           },
           "VerticalCoordinateReferenceSystemID": {
             "description": "The explicit VerticalCRS reference into the CoordinateReferenceSystem catalog. This property stays empty for 2D geometries. Absent or empty values for 3D geometries mean the context may be provided by a CompoundCRS in 'CoordinateReferenceSystemID' or implicitly EPSG:5714 MSL height",
-            "example": "namespace:reference-data--CoordinateReferenceSystem:VerticalCRS.EPSG.5773:",
+            "example": "namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CoordinateReferenceSystem:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Vertical Coordinate Reference System ID",
             "type": "string"
@@ -123,7 +123,7 @@
           },
           "persistableReferenceCrs": {
             "description": "The CRS reference as persistableReference string. If populated, the CoordinateReferenceSystemID takes precedence.",
-            "example": "{\"lateBoundCRS\":{\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.1833333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.4833333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",32021]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"type\":\"LBC\"},\"singleCT\":{\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\"ver\":\"PE_10_3_1\",\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"type\":\"ST\"},\"ver\":\"PE_10_3_1\",\"name\":\"NAD27 * OGP-Usa Conus / North Dakota South [32021,15851]\",\"authCode\":{\"auth\":\"SLB\",\"code\":\"32021079\"},\"type\":\"EBC\"}",
+            "example": "{\"authCode\":{\"auth\":\"OSDU\",\"code\":\"32021079\"},\"lateBoundCRS\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.18333333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.48333333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.66666666666666],UNIT[\\\"Foot_US\\\",0.3048006096012192],AUTHORITY[\\\"EPSG\\\",32021]]\"},\"name\":\"NAD27 * OGP-Usa Conus / North Dakota CS27 South zone [32021,15851]\",\"singleCT\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"type\":\"ST\",\"ver\":\"PE_10_9_1\",\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],OPERATIONACCURACY[5.0],AUTHORITY[\\\"EPSG\\\",15851]]\"},\"type\":\"EBC\",\"ver\":\"PE_10_9_1\"}",
             "title": "CRS Reference",
             "type": "string"
           },
@@ -135,7 +135,7 @@
           },
           "persistableReferenceVerticalCrs": {
             "description": "The VerticalCRS reference as persistableReference string. If populated, the VerticalCoordinateReferenceSystemID takes precedence. The property is null or empty for 2D geometries. For 3D geometries and absent or null persistableReferenceVerticalCrs the vertical CRS is either provided via persistableReferenceCrs's CompoundCRS or it is implicitly defined as EPSG:5714 MSL height.",
-            "example": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5773\"},\"type\":\"LBC\",\"ver\":\"PE_10_3_1\",\"name\":\"EGM96_Geoid\",\"wkt\":\"VERTCS[\\\"EGM96_Geoid\\\",VDATUM[\\\"EGM96_Geoid\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5773]]\"}",
+            "example": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5714\"},\"name\":\"MSL_Height\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"VERTCS[\\\"MSL_Height\\\",VDATUM[\\\"Mean_Sea_Level\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5714]]\"}",
             "title": "Vertical CRS Reference",
             "type": "string"
           },
@@ -149,6 +149,118 @@
           "features"
         ],
         "title": "AbstractAnyCrsFeatureCollection100",
+        "type": "object"
+      },
+      "AbstractAnyCrsFeatureCollection110": {
+        "additionalProperties": false,
+        "description": "The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the AppliedOperations can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
+        "properties": {
+          "CoordinateReferenceSystemID": {
+            "description": "The CRS reference into the CoordinateReferenceSystem catalog.",
+            "example": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CoordinateReferenceSystem:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Coordinate Reference System ID",
+            "type": "string"
+          },
+          "VerticalCoordinateReferenceSystemID": {
+            "description": "The explicit VerticalCRS reference into the CoordinateReferenceSystem catalog. This property stays empty for 2D geometries. Absent or empty values for 3D geometries mean the context may be provided by a CompoundCRS in 'CoordinateReferenceSystemID' or implicitly EPSG:5714 MSL height",
+            "example": "namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CoordinateReferenceSystem:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Vertical Coordinate Reference System ID",
+            "type": "string"
+          },
+          "VerticalUnitID": {
+            "description": "The explicit vertical unit ID, referring to a reference-data--UnitOfMeasure record; this is only required for features containing 3-dimensional coordinates and undefined vertical CoordinateReferenceSystems; if a VerticalCoordinateReferenceSystemID is populated, the VerticalUnitID is given by the VerticalCoordinateReferenceSystemID's data.CoordinateSystem.VerticalAxisUnitID. The VerticalUnitID definition overrides any self-contained definition in persistableReferenceUnitZ.",
+            "example": "namespace:reference-data--UnitOfMeasure:m:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Vertical Unit ID",
+            "type": "string"
+          },
+          "bbox": {
+            "items": {
+              "type": "number"
+            },
+            "minItems": 4,
+            "title": "Bbox",
+            "type": "array"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/Feature"
+            },
+            "title": "Features",
+            "type": "array"
+          },
+          "persistableReferenceCrs": {
+            "description": "The CRS reference as persistableReference string. If populated, the CoordinateReferenceSystemID takes precedence.",
+            "example": "{\"authCode\":{\"auth\":\"OSDU\",\"code\":\"32021079\"},\"lateBoundCRS\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.18333333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.48333333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.66666666666666],UNIT[\\\"Foot_US\\\",0.3048006096012192],AUTHORITY[\\\"EPSG\\\",32021]]\"},\"name\":\"NAD27 * OGP-Usa Conus / North Dakota CS27 South zone [32021,15851]\",\"singleCT\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"type\":\"ST\",\"ver\":\"PE_10_9_1\",\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],OPERATIONACCURACY[5.0],AUTHORITY[\\\"EPSG\\\",15851]]\"},\"type\":\"EBC\",\"ver\":\"PE_10_9_1\"}",
+            "title": "CRS Reference",
+            "type": "string"
+          },
+          "persistableReferenceUnitZ": {
+            "description": "The unit of measure for the Z-axis (only for 3-dimensional coordinates, where the CRS does not describe the vertical unit). Note that the direction is upwards positive, i.e. Z means height.",
+            "example": "{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+            "title": "Z-Unit Reference",
+            "type": "string"
+          },
+          "persistableReferenceVerticalCrs": {
+            "description": "The VerticalCRS reference as persistableReference string. If populated, the VerticalCoordinateReferenceSystemID takes precedence. The property is null or empty for 2D geometries. For 3D geometries and absent or null persistableReferenceVerticalCrs the vertical CRS is either provided via persistableReferenceCrs's CompoundCRS or it is implicitly defined as EPSG:5714 MSL height.",
+            "example": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5714\"},\"name\":\"MSL_Height\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"VERTCS[\\\"MSL_Height\\\",VDATUM[\\\"Mean_Sea_Level\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5714]]\"}",
+            "title": "Vertical CRS Reference",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/app__model__osdu_model__Type"
+          }
+        },
+        "required": [
+          "type",
+          "persistableReferenceCrs",
+          "features"
+        ],
+        "title": "AbstractAnyCrsFeatureCollection110",
+        "type": "object"
+      },
+      "AbstractContact100": {
+        "additionalProperties": false,
+        "description": "An object with properties that describe a specific person or other point-of-contact (like an email distribution list) that is relevant in this context (like a given data set or business project). The contact specified may be either internal or external to the organisation (something denoted via the Organisation object that is referenced). Note that some properties contain personally identifiable information, so it might not be appropriate to populate all properties in all scenarios.",
+        "properties": {
+          "Comment": {
+            "description": "Additional information about the contact",
+            "title": "Comment",
+            "type": "string"
+          },
+          "EmailAddress": {
+            "description": "Contact email address. Property may be left empty where it is inappropriate to provide personally identifiable information.",
+            "example": "support@company.com",
+            "title": "Email Address",
+            "type": "string"
+          },
+          "Name": {
+            "description": "Name of the individual contact. Property may be left empty where it is inappropriate to provide personally identifiable information.",
+            "title": "Name",
+            "type": "string"
+          },
+          "OrganisationID": {
+            "description": "Reference to the company the contact is associated with.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Organisation ID",
+            "type": "string"
+          },
+          "PhoneNumber": {
+            "description": "Contact phone number. Property may be left empty where it is inappropriate to provide personally identifiable information.",
+            "example": "1-555-281-5555",
+            "title": "Phone Number",
+            "type": "string"
+          },
+          "RoleTypeID": {
+            "description": "The identifier of a reference value for the role of the contact within the associated organisation, such as Account owner, Sales Representative, Technical Support, Project Manager, Party Chief, Client Representative, Senior Observer.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ContactRoleType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Role Type ID",
+            "type": "string"
+          }
+        },
+        "title": "AbstractContact100",
         "type": "object"
       },
       "AbstractFacilityEvent100": {
@@ -272,7 +384,7 @@
             "type": "string"
           },
           "FacilityStateTypeID": {
-            "description": "The facility life cycle state from planning to abandonment.",
+            "description": "Life Cycle [Facility State Type] is a set of major phases that are significant to regulators and/or business stakeholders. Life Cycle may apply to a well or its components [or other facility].",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-FacilityStateType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Facilitystatetypeid",
             "type": "string"
@@ -343,8 +455,14 @@
             "title": "Verticalmeasurementunitofmeasureid",
             "type": "string"
           },
+          "VerticalReferenceEntityID": {
+            "description": "This relationship identifies the entity (aka record) in which the VerticalReferenceID is found; It could be a different OSDU entity or a self-reference. For example, a Wellbore VerticalMeasurement may reference a member of a VerticalMeasurements[] array in its parent Well record. Alternatively, VerticalReferenceEntityID may be populated with the ID of its own Wellbore record to make explicit that VerticalReferenceID is intended to be found in this record, not another.",
+            "pattern": "^[\\w\\-\\.]+:(master-data\\-\\-Wellbore|master-data\\-\\-Well|master-data\\-\\-Rig):[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Verticalreferenceentityid",
+            "type": "string"
+          },
           "VerticalReferenceID": {
-            "description": "The reference point from which the relative vertical measurement is made. This is only populated if the measurement has no VerticalCRSID specified. The value entered must be the VerticalMeasurementID for another vertical measurement array element in this resource or its parent facility, and as a chain of measurements, they must resolve ultimately to a Vertical CRS. It is expected that a VerticalCRSID or a VerticalReferenceID is provided in a given vertical measurement array object, but not both.",
+            "description": "The reference point from which the relative vertical measurement is made. This is only populated if the measurement has no VerticalCRSID specified. The value entered must match the VerticalMeasurementID for another vertical measurement array element in Wellbore or Well or in a related parent facility. The relationship should be  declared explicitly in VerticalReferenceEntityID. Any chain of measurements must ultimately resolve to a Vertical CRS. It is expected that a VerticalCRSID or a VerticalReferenceID is provided in a given vertical measurement array object, but not both.",
             "title": "Verticalreferenceid",
             "type": "string"
           },
@@ -388,12 +506,17 @@
         "title": "AbstractFeatureCollection100",
         "type": "object"
       },
+      "AbstractGeoContext100": {
+        "additionalProperties": false,
+        "description": "A geographic context to an entity. It can be either a reference to a GeoPoliticalEntity, Basin, Field, Play or Prospect.",
+        "title": "AbstractGeoContext100"
+      },
       "AbstractLegalParentList100": {
         "additionalProperties": false,
-        "description": "The links to data, which constitute the inputs.",
+        "description": "The links to data, which constitute the inputs, from which this record instance is derived.",
         "properties": {
           "parents": {
-            "description": "An array of none, one or many entity references in the data ecosystem, which identify the source of data in the legal sense. In contract to other relationships, the source record version is required. Example: the 'parents' will be queried when e.g. the subscription of source data services is terminated; access to the derivatives is also terminated.",
+            "description": "An array of none, one or many entity references of 'direct parents' in the data platform, which mark the current record as a derivative. In contrast to other relationships, the source record version is required. During record creation or update the ancestry.parents[] relationships are used to collect the legal tags from the sources and aggregate them in the legal.legaltags[] array. As a consequence, should e.g., one or more of the legal tags of the source data expire, the access to the derivatives is also terminated. For details, see ComplianceService tutorial, 'Creating derivative Records'.",
             "example": [],
             "items": {
               "$ref": "#/components/schemas/Parent"
@@ -441,7 +564,7 @@
       },
       "AbstractSpatialLocation100": {
         "additionalProperties": false,
-        "description": "The spatial location information such as coordinates, CRS information (left empty when not appropriate).",
+        "description": "A polygon boundary that reflects the locale of the content of the work product component (location of the subject matter).",
         "properties": {
           "AppliedOperations": {
             "description": "The audit trail of operations applied to the coordinates from the original state to the current state. The list may contain operations applied prior to ingestion as well as the operations applied to produce the Wgs84Coordinates. The text elements refer to ESRI style CRS and Transformation names, which may have to be translated to EPSG standard names.",
@@ -461,7 +584,7 @@
                 "$ref": "#/components/schemas/AbstractAnyCrsFeatureCollection100"
               }
             ],
-            "description": "The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the OperationsApplied can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
+            "description": "The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the AppliedOperations can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
             "title": "As Ingested Coordinates"
           },
           "CoordinateQualityCheckDateTime": {
@@ -526,6 +649,166 @@
         "title": "AbstractSpatialLocation100",
         "type": "object"
       },
+      "AbstractSpatialLocation110": {
+        "additionalProperties": false,
+        "description": "The spatial location information such as coordinates, CRS information (left empty when not appropriate).",
+        "properties": {
+          "AppliedOperations": {
+            "description": "The audit trail of operations applied to the coordinates from the original state to the current state. The list may contain operations applied prior to ingestion as well as the operations applied to produce the Wgs84Coordinates. The text elements refer to ESRI style CRS and Transformation names, which may have to be translated to EPSG standard names.",
+            "example": [
+              "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+              "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "title": "Operations Applied",
+            "type": "array"
+          },
+          "AsIngestedCoordinates": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractAnyCrsFeatureCollection110"
+              }
+            ],
+            "description": "The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the AppliedOperations can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
+            "title": "As Ingested Coordinates"
+          },
+          "CoordinateQualityCheckDateTime": {
+            "description": "The date of the Quality Check.",
+            "format": "date-time",
+            "title": "Coordinatequalitycheckdatetime",
+            "type": "string"
+          },
+          "CoordinateQualityCheckPerformedBy": {
+            "description": "The user who performed the Quality Check.",
+            "title": "Coordinatequalitycheckperformedby",
+            "type": "string"
+          },
+          "CoordinateQualityCheckRemarks": {
+            "description": "Freetext remarks on Quality Check.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Coordinatequalitycheckremarks",
+            "type": "array"
+          },
+          "QualitativeSpatialAccuracyTypeID": {
+            "description": "A qualitative description of the quality of a spatial location, e.g. unverifiable, not verified, basic validation.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-QualitativeSpatialAccuracyType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Qualitativespatialaccuracytypeid",
+            "type": "string"
+          },
+          "QuantitativeAccuracyBandID": {
+            "description": "An approximate quantitative assessment of the quality of a location (accurate to > 500 m (i.e. not very accurate)), to < 1 m, etc.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-QuantitativeAccuracyBand:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Quantitativeaccuracybandid",
+            "type": "string"
+          },
+          "SpatialGeometryTypeID": {
+            "description": "Indicates the expected look of the SpatialParameterType, e.g. Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon. The value constrains the type of geometries in the GeoJSON Wgs84Coordinates and AsIngestedCoordinates.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-SpatialGeometryType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Spatialgeometrytypeid",
+            "type": "string"
+          },
+          "SpatialLocationCoordinatesDate": {
+            "description": "Date when coordinates were measured or retrieved.",
+            "format": "date-time",
+            "title": "Spatiallocationcoordinatesdate",
+            "type": "string"
+          },
+          "SpatialParameterTypeID": {
+            "description": "A type of spatial representation of an object, often general (e.g. an Outline, which could be applied to Field, Reservoir, Facility, etc.) or sometimes specific (e.g. Onshore Outline, State Offshore Outline, Federal Offshore Outline, 3 spatial representations that may be used by Countries).",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-SpatialParameterType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Spatialparametertypeid",
+            "type": "string"
+          },
+          "Wgs84Coordinates": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractFeatureCollection100"
+              }
+            ],
+            "description": "The normalized coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon) based on WGS 84 (EPSG:4326 for 2-dimensional coordinates, EPSG:4326 + EPSG:5714 (MSL) for 3-dimensional coordinates). This derived coordinate representation is intended for global discoverability only. The schema of this substructure is identical to the GeoJSON FeatureCollection https://geojson.org/schema/FeatureCollection.json. The coordinate sequence follows GeoJSON standard, i.e. longitude, latitude {, height}",
+            "title": "WGS 84 Coordinates"
+          }
+        },
+        "title": "AbstractSpatialLocation110",
+        "type": "object"
+      },
+      "AbstractTechnicalAssurance100": {
+        "description": "Describes a record's overall suitability for general business consumption based on level of trust.",
+        "properties": {
+          "AcceptableUsage": {
+            "description": "List of workflows and/or personas that the technical assurance value is valid for (e.g., This data is trusted for Seismic Processing)",
+            "example": [
+              {
+                "WorkflowPersona": "namespace:reference-data--WorkflowPersonaType:SeismicProcessor:",
+                "WorkflowUsage": "namespace:reference-data--WorkflowUsageType:SeismicProcessing:"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AcceptableUsageItem"
+            },
+            "title": "Acceptable Usage",
+            "type": "array"
+          },
+          "Comment": {
+            "description": "Any additional context to support the determination of technical assurance",
+            "example": "This is free form text from reviewer, e.g. restrictions on use",
+            "title": "Comment",
+            "type": "string"
+          },
+          "EffectiveDate": {
+            "description": "Date when the technical assurance determination for this record has taken place",
+            "example": "2020-02-13",
+            "format": "date",
+            "title": "Effective Date",
+            "type": "string"
+          },
+          "Reviewers": {
+            "description": "The individuals, or roles, that reviewed and determined the technical assurance value",
+            "example": [
+              {
+                "Name": "Example Name",
+                "OrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+                "RoleTypeID": "namespace:reference-data--ContactRoleType:AccountOwner:"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AbstractContact100"
+            },
+            "title": "Reviewers",
+            "type": "array"
+          },
+          "TechnicalAssuranceTypeID": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "example": "namespace:reference-data--TechnicalAssuranceType:Trusted:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance Type ID",
+            "type": "string"
+          },
+          "UnacceptableUsage": {
+            "description": "List of workflows and/or personas that the technical assurance value is not valid for (e.g., This data is not trusted for seismic interpretation)",
+            "example": [
+              {
+                "WorkflowPersona": "namespace:reference-data--WorkflowPersonaType:SeismicInterpreter:",
+                "WorkflowUsage": "namespace:reference-data--WorkflowUsageType:SeismicInterpretation:"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/UnacceptableUsageItem"
+            },
+            "title": "Unacceptable Usage",
+            "type": "array"
+          }
+        },
+        "required": [
+          "TechnicalAssuranceTypeID"
+        ],
+        "title": "AbstractTechnicalAssurance100",
+        "type": "object"
+      },
       "AbstractWellboreDrillingReason100": {
         "additionalProperties": false,
         "description": "Purpose for drilling a wellbore, which often is an indication of the level of risk.",
@@ -552,6 +835,28 @@
         "title": "AbstractWellboreDrillingReason100",
         "type": "object"
       },
+      "AcceptableUsageItem": {
+        "additionalProperties": false,
+        "description": "Describes the workflows and/or personas that the technical assurance value is valid for (e.g., This data has a technical assurance property of \"trusted\" and it is suitable for Seismic Interpretation).",
+        "properties": {
+          "WorkflowPersona": {
+            "description": "Name of the role or personas that the record is technical assurance value is valid for.",
+            "example": "namespace:reference-data--WorkflowPersonaType:SeismicProcessor:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WorkflowPersonaType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Workflow Persona",
+            "type": "string"
+          },
+          "WorkflowUsage": {
+            "description": "Name of the business activities, processes, and/or workflows that the record is technical assurance value is valid for.",
+            "example": "namespace:reference-data--WorkflowUsageType:SeismicProcessing:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WorkflowUsageType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Workflow Usage",
+            "type": "string"
+          }
+        },
+        "title": "AcceptableUsageItem",
+        "type": "object"
+      },
       "AggregationResponse": {
         "properties": {
           "count": {
@@ -568,7 +873,7 @@
       },
       "Artefact": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly",
         "properties": {
           "ResourceID": {
             "description": "The SRN which identifies this OSDU Artefact resource.",
@@ -2738,6 +3043,32 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HistoricalInterest": {
+        "additionalProperties": false,
+        "description": "A 'well interest' at some time period as defined by effective and termination date.",
+        "properties": {
+          "EffectiveDateTime": {
+            "description": "The date and time at which the well interest type becomes effective.",
+            "format": "date",
+            "title": "Effective Date Time",
+            "type": "string"
+          },
+          "InterestTypeID": {
+            "description": "Business Interest [Well Interest Type] describes whether a company currently considers a well or its data to be a real or planned asset, and if so, the nature of and motivation for that company's interest.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellInterestType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Interest Type ID",
+            "type": "string"
+          },
+          "TerminationDateTime": {
+            "description": "The date and time at which the well interest type is no longer in effect.",
+            "format": "date",
+            "title": "Termination Date Time",
+            "type": "string"
+          }
+        },
+        "title": "HistoricalInterest",
+        "type": "object"
+      },
       "JSONOrient": {
         "description": "An enumeration.",
         "enum": [
@@ -2826,9 +3157,9 @@
         "title": "MainFamilyCatalogItem",
         "type": "object"
       },
-      "Marker110": {
+      "Marker120": {
         "additionalProperties": false,
-        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "description": "The array of marker meta data in this set.",
         "properties": {
           "FeatureName": {
             "description": "Name of the feature the marker is characterizing",
@@ -2846,10 +3177,21 @@
             "title": "Geologicalage",
             "type": "string"
           },
+          "InterpretationID": {
+            "description": "The optional relationship to a HorizonInterpretation, GeobodyBoundaryInterpretation or FaultInterpretation.",
+            "pattern": "^[\\w\\-\\.]+:(work-product-component\\-\\-HorizonInterpretation|work-product-component\\-\\-FaultInterpretation|work-product-component\\-\\-GeobodyBoundaryInterpretation):[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Interpretation ID",
+            "type": "string"
+          },
           "MarkerDate": {
             "description": "Timestamp of the date and time when the when the Marker was interpreted.",
             "format": "date-time",
             "title": "Markerdate",
+            "type": "string"
+          },
+          "MarkerID": {
+            "description": "A unique identifier of the marker in the list of data.Markers[], ideally a UUID. If unpopulated, the string-converted element index number is used. The first index is \"0\".",
+            "title": "Marker ID",
             "type": "string"
           },
           "MarkerInterpreter": {
@@ -2908,7 +3250,7 @@
             "type": "number"
           }
         },
-        "title": "Marker110",
+        "title": "Marker120",
         "type": "object"
       },
       "MetaItem": {
@@ -3700,6 +4042,28 @@
         ],
         "title": "Type_8"
       },
+      "UnacceptableUsageItem": {
+        "additionalProperties": false,
+        "description": "Describes the workflows and/or personas that the technical assurance value is not valid for (e.g., This data has a technical assurance property of \"trusted\", but it is not suitable for Seismic Interpretation).",
+        "properties": {
+          "WorkflowPersona": {
+            "description": "Name of the role or personas that the record is technical assurance value is not valid for.",
+            "example": "namespace:reference-data--WorkflowPersonaType:SeismicInterpreter:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WorkflowPersonaType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Workflow Persona",
+            "type": "string"
+          },
+          "WorkflowUsage": {
+            "description": "Name of the business activities, processes, and/or workflows that the record is technical assurance value is not valid for.",
+            "example": "namespace:reference-data--WorkflowUsageType:SeismicInterpretation:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WorkflowUsageType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Workflow Usage",
+            "type": "string"
+          }
+        },
+        "title": "UnacceptableUsageItem",
+        "type": "object"
+      },
       "UpdateSessionState": {
         "properties": {
           "state": {
@@ -3806,7 +4170,7 @@
         "title": "VersionDetailsResponse",
         "type": "object"
       },
-      "VerticalMeasurement": {
+      "VerticalMeasurementWell110": {
         "additionalProperties": false,
         "description": "A location along a wellbore, _usually_ associated with some aspect of the drilling of the wellbore, but not with any intersecting _subsurface_ natural surfaces.",
         "properties": {
@@ -3814,6 +4178,12 @@
             "description": "The date and time at which a vertical measurement instance becomes effective.",
             "format": "date-time",
             "title": "Effectivedatetime",
+            "type": "string"
+          },
+          "RigID": {
+            "description": "The relationship to the rig, which was used while this vertical measurement was in active use.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Rig:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Rig ID",
             "type": "string"
           },
           "TerminationDateTime": {
@@ -3867,8 +4237,14 @@
             "title": "Verticalmeasurementunitofmeasureid",
             "type": "string"
           },
+          "VerticalReferenceEntityID": {
+            "description": "This relationship identifies the entity (aka record) in which the VerticalReferenceID is found; It could be a different OSDU entity or a self-reference. For example, a Wellbore VerticalMeasurement may reference a member of a VerticalMeasurements[] array in its parent Well record. Alternatively, VerticalReferenceEntityID may be populated with the ID of its own Wellbore record to make explicit that VerticalReferenceID is intended to be found in this record, not another.",
+            "pattern": "^[\\w\\-\\.]+:(master-data\\-\\-Wellbore|master-data\\-\\-Well|master-data\\-\\-Rig):[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Verticalreferenceentityid",
+            "type": "string"
+          },
           "VerticalReferenceID": {
-            "description": "The reference point from which the relative vertical measurement is made. This is only populated if the measurement has no VerticalCRSID specified. The value entered must be the VerticalMeasurementID for another vertical measurement array element in this resource or its parent facility, and as a chain of measurements, they must resolve ultimately to a Vertical CRS. It is expected that a VerticalCRSID or a VerticalReferenceID is provided in a given vertical measurement array object, but not both.",
+            "description": "The reference point from which the relative vertical measurement is made. This is only populated if the measurement has no VerticalCRSID specified. The value entered must match the VerticalMeasurementID for another vertical measurement array element in Wellbore or Well or in a related parent facility. The relationship should be  declared explicitly in VerticalReferenceEntityID. Any chain of measurements must ultimately resolve to a Vertical CRS. It is expected that a VerticalCRSID or a VerticalReferenceID is provided in a given vertical measurement array object, but not both.",
             "title": "Verticalreferenceid",
             "type": "string"
           },
@@ -3879,7 +4255,95 @@
             "type": "string"
           }
         },
-        "title": "VerticalMeasurement",
+        "title": "VerticalMeasurementWell110",
+        "type": "object"
+      },
+      "VerticalMeasurementWellbore110": {
+        "additionalProperties": false,
+        "description": "A location along a wellbore, _usually_ associated with some aspect of the drilling of the wellbore, but not with any intersecting _subsurface_ natural surfaces.",
+        "properties": {
+          "EffectiveDateTime": {
+            "description": "The date and time at which a vertical measurement instance becomes effective.",
+            "format": "date-time",
+            "title": "Effectivedatetime",
+            "type": "string"
+          },
+          "RigID": {
+            "description": "The relationship to the rig, which was used while this vertical measurement was in active use.",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Rig:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Rig ID",
+            "type": "string"
+          },
+          "TerminationDateTime": {
+            "description": "The date and time at which a vertical measurement instance is no longer in effect.",
+            "format": "date-time",
+            "title": "Terminationdatetime",
+            "type": "string"
+          },
+          "VerticalCRSID": {
+            "description": "A vertical coordinate reference system defines the origin for height or depth values. It is expected that either VerticalCRSID or VerticalReferenceID reference is provided in a given vertical measurement array object, but not both.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-CoordinateReferenceSystem:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Verticalcrsid",
+            "type": "string"
+          },
+          "VerticalMeasurement": {
+            "description": "The value of the elevation or depth. Depth is positive downwards from a vertical reference or geodetic datum along a path, which can be vertical; elevation is positive upwards from a geodetic datum along a vertical path. Either can be negative.",
+            "title": "Verticalmeasurement",
+            "type": "number"
+          },
+          "VerticalMeasurementDescription": {
+            "description": "Text which describes a vertical measurement in detail.",
+            "title": "Verticalmeasurementdescription",
+            "type": "string"
+          },
+          "VerticalMeasurementID": {
+            "description": "The ID for a distinct vertical measurement within the Wellbore VerticalMeasurements array so that it may be referenced by other vertical measurements if necessary.",
+            "title": "Verticalmeasurementid",
+            "type": "string"
+          },
+          "VerticalMeasurementPathID": {
+            "description": "Specifies Measured Depth, True Vertical Depth, or Elevation.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-VerticalMeasurementPath:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Verticalmeasurementpathid",
+            "type": "string"
+          },
+          "VerticalMeasurementSourceID": {
+            "description": "Specifies Driller vs Logger.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-VerticalMeasurementSource:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Verticalmeasurementsourceid",
+            "type": "string"
+          },
+          "VerticalMeasurementTypeID": {
+            "description": "Specifies the type of vertical measurement (TD, Plugback, Kickoff, Drill Floor, Rotary Table...).",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-VerticalMeasurementType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Verticalmeasurementtypeid",
+            "type": "string"
+          },
+          "VerticalMeasurementUnitOfMeasureID": {
+            "description": "The unit of measure for the vertical measurement. If a unit of measure and a vertical CRS are provided, the unit of measure provided is taken over the unit of measure from the CRS.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Verticalmeasurementunitofmeasureid",
+            "type": "string"
+          },
+          "VerticalReferenceEntityID": {
+            "description": "This relationship identifies the entity (aka record) in which the VerticalReferenceID is found; It could be a different OSDU entity or a self-reference. For example, a Wellbore VerticalMeasurement may reference a member of a VerticalMeasurements[] array in its parent Well record. Alternatively, VerticalReferenceEntityID may be populated with the ID of its own Wellbore record to make explicit that VerticalReferenceID is intended to be found in this record, not another.",
+            "pattern": "^[\\w\\-\\.]+:(master-data\\-\\-Wellbore|master-data\\-\\-Well|master-data\\-\\-Rig):[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Verticalreferenceentityid",
+            "type": "string"
+          },
+          "VerticalReferenceID": {
+            "description": "The reference point from which the relative vertical measurement is made. This is only populated if the measurement has no VerticalCRSID specified. The value entered must match the VerticalMeasurementID for another vertical measurement array element in Wellbore or Well or in a related parent facility. The relationship should be  declared explicitly in VerticalReferenceEntityID. Any chain of measurements must ultimately resolve to a Vertical CRS. It is expected that a VerticalCRSID or a VerticalReferenceID is provided in a given vertical measurement array object, but not both.",
+            "title": "Verticalreferenceid",
+            "type": "string"
+          },
+          "WellboreTVDTrajectoryID": {
+            "description": "Specifies what directional survey or wellpath was used to calculate the TVD.",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Wellboretvdtrajectoryid",
+            "type": "string"
+          }
+        },
+        "title": "VerticalMeasurementWellbore110",
         "type": "object"
       },
       "Viewer": {
@@ -3889,7 +4353,7 @@
         "title": "Viewer",
         "type": "string"
       },
-      "Well": {
+      "Well110": {
         "additionalProperties": false,
         "description": "The origin of a set of wellbores.",
         "properties": {
@@ -3908,7 +4372,7 @@
                 "$ref": "#/components/schemas/AbstractLegalParentList100"
               }
             ],
-            "description": "The links to data, which constitute the inputs.",
+            "description": "The links to data, which constitute the inputs, from which this record instance is derived.",
             "title": "Ancestry"
           },
           "createTime": {
@@ -3925,7 +4389,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellData"
+            "$ref": "#/components/schemas/WellData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -3936,7 +4400,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:master-data--Well:1.0.0",
+            "example": "osdu:wks:master-data--Well:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -3992,13 +4456,25 @@
           "acl",
           "legal"
         ],
-        "title": "Well",
+        "title": "Well110",
         "type": "object"
       },
-      "WellBoreData": {
+      "WellBoreData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
+          "BusinessIntentionID": {
+            "description": "Business Intention [Well Business Intention] is the general purpose for which resources are approved for drilling a new well or subsequent wellbore(s).",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellBusinessIntention:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Businessintentionid",
+            "type": "string"
+          },
+          "ConditionID": {
+            "description": "Condition [Well Condition] is the operational state of a wellbore component relative to the Role [Well Role].",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellCondition:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Conditionid",
+            "type": "string"
+          },
           "CurrentOperatorID": {
             "description": "The current operator organization ID; the organization ID may also be found in the FacilityOperatorOrganisationID of the FacilityOperator array providing the actual dates.",
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
@@ -4049,8 +4525,8 @@
             "type": "array"
           },
           "FacilityID": {
-            "description": "A system-specified unique identifier of a Facility.",
-            "title": "Facilityid",
+            "description": "Native identifier from a Master Data Management System or other trusted source external to OSDU - stored here in order to allow for multi-system connection and synchronization. If used, the \"Source\" property should identify that source system.",
+            "title": "External Facility Identifier",
             "type": "string"
           },
           "FacilityName": {
@@ -4059,7 +4535,7 @@
             "type": "string"
           },
           "FacilityNameAliases": {
-            "description": "Alternative names, including historical, by which this facility is/has been known.",
+            "description": "DEPRECATED: please use data.NameAliases. Alternative names, including historical, by which this facility is/has been known.",
             "items": {
               "$ref": "#/components/schemas/AbstractAliasNames100"
             },
@@ -4096,25 +4572,47 @@
             "title": "Facilitytypeid",
             "type": "string"
           },
+          "FluidDirectionID": {
+            "description": "Fluid Direction [Well Fluid Direction] is the flow direction of the wellhead stream. The facet value can change over the life of the wellbore.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellFluidDirection:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Fluiddirectionid",
+            "type": "string"
+          },
           "GeoContexts": {
             "description": "List of geographic entities which provide context to the master data. This may include multiple types or multiple values of the same type.",
-            "items": {},
+            "items": {
+              "$ref": "#/components/schemas/AbstractGeoContext100"
+            },
             "title": "Geocontexts",
             "type": "array"
           },
           "GeographicBottomHoleLocation": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+                "$ref": "#/components/schemas/AbstractSpatialLocation110"
               }
             ],
             "description": "The bottom hole location of the wellbore denoted by a specified geographic horizontal coordinate reference system (Horizontal CRS), such as WGS84, NAD27, or ED50. If both GeographicBottomHoleLocation and ProjectedBottomHoleLocation properties are populated on this wellbore, they must identify the same point, just in different CRSs.",
             "title": "Geographicbottomholelocation"
           },
+          "HistoricalInterests": {
+            "description": "The list of past and present interests associated with the time period they were/are valid",
+            "items": {
+              "$ref": "#/components/schemas/HistoricalInterest"
+            },
+            "title": "Historicalinterests",
+            "type": "array"
+          },
           "InitialOperatorID": {
             "description": "A initial operator organization ID; the organization ID may also be found in the FacilityOperatorOrganisationID of the FacilityOperator array providing the actual dates.",
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Initial Operator ID",
+            "type": "string"
+          },
+          "InterestTypeID": {
+            "description": "Business Interest [Well Interest Type] describes whether a company currently considers a wellbore entity or its data to be a real or planned asset, and if so, the nature of and motivation for that company's interest.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellInterestType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Interesttypeid",
             "type": "string"
           },
           "KickOffWellbore": {
@@ -4137,16 +4635,28 @@
             "title": "Operatingenvironmentid",
             "type": "string"
           },
+          "OutcomeID": {
+            "description": "Outcome [Well Drilling Outcome] is the result of attempting to accomplish the Business Intention [Well Business Intention].",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellBusinessIntentionOutcome:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Outcomeid",
+            "type": "string"
+          },
           "PrimaryMaterialID": {
-            "description": "The primary material injected/produced from the wellbore.",
+            "description": "DEPRECATED: Please use PrimaryProductTypeID instead, which refers to the narrower WellProductType. The primary material injected/produced from the wellbore.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-MaterialType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Primarymaterialid",
+            "type": "string"
+          },
+          "PrimaryProductTypeID": {
+            "description": "Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Primary Product Significance identifies the Product Type that is most significant.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellProductType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Primaryproducttypeid",
             "type": "string"
           },
           "ProjectedBottomHoleLocation": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+                "$ref": "#/components/schemas/AbstractSpatialLocation110"
               }
             ],
             "description": "The bottom hole location of the wellbore denoted by a projected horizontal coordinate reference system (Horizontal CRS), such a UTM zone. 'Projected' in this property does not mean 'planned' or 'projected-to-bit'. If both GeographicBottomHoleLocation and ProjectedBottomHoleLocation properties are populated on this wellbore, they must identify the same point, just in different CRSs.",
@@ -4184,10 +4694,28 @@
             "title": "Resource Security Classification",
             "type": "string"
           },
+          "RoleID": {
+            "description": "Role [Well Role] is the current purpose, whether planned or actual. If there are multiple Roles among a wellbore's components, the well may be assigned the facet value with the highest significance. The value of Role may change over the Life Cycle.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellRole:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Roleid",
+            "type": "string"
+          },
+          "SecondaryProductTypeID": {
+            "description": "Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Secondary Product Significance identifies the Product Type that is the second most significant.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellProductType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Secondaryproducttypeid",
+            "type": "string"
+          },
           "SequenceNumber": {
             "description": "A number that indicates the order in which wellbores were drilled.",
             "title": "Sequencenumber",
             "type": "integer"
+          },
+          "ShowProductTypeID": {
+            "description": "Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Show Product Significance identifies a Product Type present in non-commercial quantity.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellProductType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Showproducttypeid",
+            "type": "string"
           },
           "Source": {
             "description": "The entity that produced the record, or from which it is received; could be an organization, agency, system, internal team, or individual. For informational purposes only, the list of sources is not governed.",
@@ -4197,11 +4725,17 @@
           "SpatialLocation": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+                "$ref": "#/components/schemas/AbstractSpatialLocation110"
               }
             ],
             "description": "The spatial location information such as coordinates, CRS information (left empty when not appropriate).",
             "title": "Spatiallocation"
+          },
+          "StatusSummaryID": {
+            "description": "Identifies the status of a wellbore component in a way that may combine and-or summarize concepts found in other status facets. For example, a Wellbore Status Summary of Gas Injector Shut-in, which contains commonly desired business information, combines concepts from Product Type, Fluid Direction, and Condition.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellStatusSummary:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Statussummaryid",
+            "type": "string"
           },
           "TargetFormation": {
             "description": "The Formation of interest for which the Wellbore is drilled to interact with. The Wellbore may terminate in a lower formation if the requirement is to drill through the entirety of the target formation, therefore this is not necessarily the Formation at TD.",
@@ -4210,9 +4744,22 @@
             "type": "string"
           },
           "TechnicalAssuranceID": {
-            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "description": "DEPRECATED: Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Technical Assurance ID",
+            "type": "string"
+          },
+          "TechnicalAssuranceTypeID": {
+            "description": "Describes a master-data record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "example": "namespace:reference-data--TechnicalAssuranceType:Certified:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance Type ID",
+            "type": "string"
+          },
+          "TertiaryProductTypeID": {
+            "description": "Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Tertiary Product Significance identifies the Product Type that is the third most significant.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellProductType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Tertiaryproducttypeid",
             "type": "string"
           },
           "TrajectoryTypeID": {
@@ -4229,24 +4776,62 @@
           "VerticalMeasurements": {
             "description": "List of all depths and elevations pertaining to the wellbore, like, plug back measured depth, total measured depth, KB elevation",
             "items": {
-              "$ref": "#/components/schemas/VerticalMeasurement"
+              "$ref": "#/components/schemas/VerticalMeasurementWellbore110"
             },
             "title": "Verticalmeasurements",
             "type": "array"
+          },
+          "WasBusinessInterestFinancialNonOperated": {
+            "description": "Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been FinancialNonOperated in the past.",
+            "title": "Wasbusinessinterestfinancialnonoperated",
+            "type": "boolean"
+          },
+          "WasBusinessInterestFinancialOperated": {
+            "description": "Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been FinancialOperated in the past.",
+            "title": "Wasbusinessinterestfinancialoperated",
+            "type": "boolean"
+          },
+          "WasBusinessInterestObligatory": {
+            "description": "Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been Obligatory in the past.",
+            "title": "Wasbusinessinterestobligatory",
+            "type": "boolean"
+          },
+          "WasBusinessInterestTechnical": {
+            "description": "Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been Technical in the past.",
+            "title": "Wasbusinessinteresttechnical",
+            "type": "boolean"
           },
           "WellID": {
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Wellid",
             "type": "string"
+          },
+          "WellboreTrajectoryTypeID": {
+            "description": "Profile Type [Wellbore Trajectory Type] is the general geometry of the wellbore relative to the vertical plane. The specific criteria for Profile Type may vary by operator or regulator. The facet value may change if conditions encountered during drilling are not what was planned or permitted.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellboreTrajectoryType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Wellboretrajectorytypeid",
+            "type": "string"
           }
         },
-        "title": "WellBoreData",
+        "title": "WellBoreData110",
         "type": "object"
       },
-      "WellData": {
+      "WellData110": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
+          "BusinessIntentionID": {
+            "description": "Business Intention [Well Business Intention] is the general purpose for which resources are approved for drilling a new well or subsequent wellbore(s).",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellBusinessIntention:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Business Intention ID",
+            "type": "string"
+          },
+          "ConditionID": {
+            "description": "Condition [Well Condition] is the operational state of a well component relative to the Role [Well Role].",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellCondition:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "ConditionID",
+            "type": "string"
+          },
           "CurrentOperatorID": {
             "description": "The current operator organization ID; the organization ID may also be found in the FacilityOperatorOrganisationID of the FacilityOperator array providing the actual dates.",
             "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
@@ -4289,8 +4874,8 @@
             "type": "array"
           },
           "FacilityID": {
-            "description": "A system-specified unique identifier of a Facility.",
-            "title": "Facilityid",
+            "description": "Native identifier from a Master Data Management System or other trusted source external to OSDU - stored here in order to allow for multi-system connection and synchronization. If used, the \"Source\" property should identify that source system.",
+            "title": "External Facility Identifier",
             "type": "string"
           },
           "FacilityName": {
@@ -4299,7 +4884,7 @@
             "type": "string"
           },
           "FacilityNameAliases": {
-            "description": "Alternative names, including historical, by which this facility is/has been known.",
+            "description": "DEPRECATED: please use data.NameAliases. Alternative names, including historical, by which this facility is/has been known.",
             "items": {
               "$ref": "#/components/schemas/AbstractAliasNames100"
             },
@@ -4338,8 +4923,18 @@
           },
           "GeoContexts": {
             "description": "List of geographic entities which provide context to the master data. This may include multiple types or multiple values of the same type.",
-            "items": {},
+            "items": {
+              "$ref": "#/components/schemas/AbstractGeoContext100"
+            },
             "title": "Geocontexts",
+            "type": "array"
+          },
+          "HistoricalInterests": {
+            "description": "The list of past and present interests associated with the time period they were/are valid",
+            "items": {
+              "$ref": "#/components/schemas/HistoricalInterest"
+            },
+            "title": "Historical Interests",
             "type": "array"
           },
           "InitialOperatorID": {
@@ -4349,7 +4944,7 @@
             "type": "string"
           },
           "InterestTypeID": {
-            "description": "Pre-defined reasons for interest in the well or information about the well.",
+            "description": "Business Interest [Well Interest Type] describes whether a company currently considers a well or its data to be a real or planned asset, and if so, the nature of and motivation for that company's interest.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellInterestType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Interesttypeid",
             "type": "string"
@@ -4366,6 +4961,12 @@
             "description": "Identifies the Facility's general location as being onshore vs. offshore.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-OperatingEnvironment:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Operatingenvironmentid",
+            "type": "string"
+          },
+          "OutcomeID": {
+            "description": "Outcome [Well Drilling Outcome] is the result of attempting to accomplish the Business Intention [Well Business Intention].",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellBusinessIntentionOutcome:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "OutcomeID",
             "type": "string"
           },
           "ResourceCurationStatus": {
@@ -4400,6 +5001,12 @@
             "title": "Resource Security Classification",
             "type": "string"
           },
+          "RoleID": {
+            "description": "Role [Well Role] is the current purpose, whether planned or actual. If there are multiple Roles among a well's components, the well may be assigned the facet value with the highest significance. The value of Role may change over the Life Cycle.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellRole:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Role ID",
+            "type": "string"
+          },
           "Source": {
             "description": "The entity that produced the record, or from which it is received; could be an organization, agency, system, internal team, or individual. For informational purposes only, the list of sources is not governed.",
             "title": "Data Source",
@@ -4408,16 +5015,29 @@
           "SpatialLocation": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+                "$ref": "#/components/schemas/AbstractSpatialLocation110"
               }
             ],
             "description": "The spatial location information such as coordinates, CRS information (left empty when not appropriate).",
             "title": "Spatiallocation"
           },
+          "StatusSummaryID": {
+            "description": "Identifies the status of a well component in a way that may combine and-or summarize concepts found in other status facets. For example, a Well Status Summary of Gas Injector Shut-in, which contains commonly desired business information, combines concepts from Product Type, Fluid Direction, and Condition.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellStatusSummary:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "StatusSummaryID",
+            "type": "string"
+          },
           "TechnicalAssuranceID": {
-            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "description": "DEPRECATED: Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Technical Assurance ID",
+            "type": "string"
+          },
+          "TechnicalAssuranceTypeID": {
+            "description": "Describes a master-data record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "example": "namespace:reference-data--TechnicalAssuranceType:Certified:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance Type ID",
             "type": "string"
           },
           "VersionCreationReason": {
@@ -4428,13 +5048,33 @@
           "VerticalMeasurements": {
             "description": "List of all depths and elevations pertaining to the well, like, water depth, mud line elevation, etc.",
             "items": {
-              "$ref": "#/components/schemas/VerticalMeasurement"
+              "$ref": "#/components/schemas/VerticalMeasurementWell110"
             },
             "title": "Verticalmeasurements",
             "type": "array"
+          },
+          "WasBusinessInterestFinancialNonOperated": {
+            "description": "Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been FinancialNonOperated in the past.",
+            "title": "BusinessInterestFinancialNonOperatedFormerly",
+            "type": "boolean"
+          },
+          "WasBusinessInterestFinancialOperated": {
+            "description": "Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been FinancialOperated in the past.",
+            "title": "BusinessInterestFinancialOperatedFormerly",
+            "type": "boolean"
+          },
+          "WasBusinessInterestObligatory": {
+            "description": "Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been Obligatory in the past.",
+            "title": "BusinessInterestObligatoryFormerly",
+            "type": "boolean"
+          },
+          "WasBusinessInterestTechnical": {
+            "description": "Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been Technical in the past.",
+            "title": "BusinessInterestTechnicalFormerly",
+            "type": "boolean"
           }
         },
-        "title": "WellData",
+        "title": "WellData110",
         "type": "object"
       },
       "WellLocationType": {
@@ -4574,7 +5214,7 @@
             "items": {
               "type": "string"
             },
-            "title": "Authorids",
+            "title": "Author IDs",
             "type": "array"
           },
           "BottomMeasuredDepth": {
@@ -4618,6 +5258,7 @@
             "type": "array"
           },
           "Datasets": {
+            "description": "The record id, which identifies this OSDU File or dataset resource.",
             "items": {
               "$ref": "#/components/schemas/Dataset"
             },
@@ -4652,7 +5293,9 @@
           },
           "GeoContexts": {
             "description": "List of geographic entities which provide context to the WPC.  This may include multiple types or multiple values of the same type.",
-            "items": {},
+            "items": {
+              "$ref": "#/components/schemas/AbstractGeoContext100"
+            },
             "title": "Geocontexts",
             "type": "array"
           },
@@ -4678,7 +5321,7 @@
             "type": "boolean"
           },
           "LineageAssertions": {
-            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the Data.Artefacts[] array.",
+            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the data.Artefacts[] array.",
             "items": {
               "$ref": "#/components/schemas/LineageAssertion"
             },
@@ -4855,10 +5498,18 @@
             "type": "array"
           },
           "TechnicalAssuranceID": {
-            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "description": "DEPRECATED: Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Technical Assurance ID",
             "type": "string"
+          },
+          "TechnicalAssurances": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "items": {
+              "$ref": "#/components/schemas/AbstractTechnicalAssurance100"
+            },
+            "title": "Technical Assurances",
+            "type": "array"
           },
           "ToolStringDescription": {
             "description": "Tool String Description - a long concatenation of the tools used for logging services such as GammaRay+NeutronPorosity",
@@ -4973,7 +5624,7 @@
         ],
         "title": "WellType"
       },
-      "Wellbore": {
+      "Wellbore110": {
         "additionalProperties": false,
         "description": "A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.",
         "properties": {
@@ -4992,7 +5643,7 @@
                 "$ref": "#/components/schemas/AbstractLegalParentList100"
               }
             ],
-            "description": "The links to data, which constitute the inputs.",
+            "description": "The links to data, which constitute the inputs, from which this record instance is derived.",
             "title": "Ancestry"
           },
           "createTime": {
@@ -5009,7 +5660,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellBoreData"
+            "$ref": "#/components/schemas/WellBoreData110"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5020,7 +5671,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:master-data--Wellbore:1.0.0",
+            "example": "osdu:wks:master-data--Wellbore:1.1.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5076,10 +5727,10 @@
           "acl",
           "legal"
         ],
-        "title": "Wellbore",
+        "title": "Wellbore110",
         "type": "object"
       },
-      "WellboreMarkerSet110": {
+      "WellboreMarkerSet120": {
         "additionalProperties": false,
         "description": "Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.",
         "properties": {
@@ -5098,7 +5749,7 @@
                 "$ref": "#/components/schemas/AbstractLegalParentList100"
               }
             ],
-            "description": "The links to data, which constitute the inputs.",
+            "description": "The links to data, which constitute the inputs, from which this record instance is derived.",
             "title": "Ancestry"
           },
           "createTime": {
@@ -5115,7 +5766,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellboreMarkerSetData110"
+            "$ref": "#/components/schemas/WellboreMarkerSetData120"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5126,7 +5777,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
+            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.2.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5182,10 +5833,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellboreMarkerSet110",
+        "title": "WellboreMarkerSet120",
         "type": "object"
       },
-      "WellboreMarkerSetData110": {
+      "WellboreMarkerSetData120": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -5202,7 +5853,7 @@
             "items": {
               "type": "string"
             },
-            "title": "Authorids",
+            "title": "Author IDs",
             "type": "array"
           },
           "AvailableMarkerProperties": {
@@ -5228,6 +5879,7 @@
             "type": "string"
           },
           "Datasets": {
+            "description": "The record id, which identifies this OSDU File or dataset resource.",
             "items": {
               "$ref": "#/components/schemas/Dataset"
             },
@@ -5251,7 +5903,9 @@
           },
           "GeoContexts": {
             "description": "List of geographic entities which provide context to the WPC.  This may include multiple types or multiple values of the same type.",
-            "items": {},
+            "items": {
+              "$ref": "#/components/schemas/AbstractGeoContext100"
+            },
             "title": "Geocontexts",
             "type": "array"
           },
@@ -5266,7 +5920,7 @@
             "type": "boolean"
           },
           "LineageAssertions": {
-            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the Data.Artefacts[] array.",
+            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the data.Artefacts[] array.",
             "items": {
               "$ref": "#/components/schemas/LineageAssertion"
             },
@@ -5274,9 +5928,9 @@
             "type": "array"
           },
           "Markers": {
-            "description": "The array of marker meta data in this set.",
+            "description": "The array of marker meta data in this set. Markers are externally identified by data.Markers[].MarkerID, ideally a UUID. Older versions of the WellboreMarkerSet schema do not have this identifier. In this case, the string-converted array index is used as MarkerID. The the first index is \"0\".",
             "items": {
-              "$ref": "#/components/schemas/Marker110"
+              "$ref": "#/components/schemas/Marker120"
             },
             "title": "Markers",
             "type": "array"
@@ -5341,6 +5995,18 @@
             "description": "A centroid point that reflects the locale of the content of the work product component (location of the subject matter).",
             "title": "Spatialpoint"
           },
+          "StratigraphicColumnID": {
+            "description": "The optional reference to a stratigraphic column (referring to multiple StratigraphicColumnRankInterpretation) providing the stratigraphic framework for the WellboreMarkerSet. It demonstrates the intent to describe complex, potentially overlapping stratigraphic intervals. Only one of the properties StratigraphicColumnID or StratigraphicColumnRankInterpretationID should be populated.",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-StratigraphicColumn:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Stratigraphic Column ID",
+            "type": "string"
+          },
+          "StratigraphicColumnRankInterpretationID": {
+            "description": "The optional reference to a StratigraphicColumnRankInterpretation. It expresses the intent of a stratigraphic framework with non-overlapping intervals. Only one of the properties StratigraphicColumnID or StratigraphicColumnRankInterpretationID should be populated.",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-StratigraphicColumnRankInterpretation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Stratigraphic Column Rank ID",
+            "type": "string"
+          },
           "SubmitterName": {
             "description": "Name of the person that first submitted the work product component to OSDU.",
             "title": "Submittername",
@@ -5355,10 +6021,18 @@
             "type": "array"
           },
           "TechnicalAssuranceID": {
-            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "description": "DEPRECATED: Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Technical Assurance ID",
             "type": "string"
+          },
+          "TechnicalAssurances": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "items": {
+              "$ref": "#/components/schemas/AbstractTechnicalAssurance100"
+            },
+            "title": "Technical Assurances",
+            "type": "array"
           },
           "VerticalMeasurement": {
             "allOf": [
@@ -5376,7 +6050,7 @@
             "type": "string"
           }
         },
-        "title": "WellboreMarkerSetData110",
+        "title": "WellboreMarkerSetData120",
         "type": "object"
       },
       "WellborePurpose": {
@@ -5580,7 +6254,7 @@
             "items": {
               "type": "string"
             },
-            "title": "Authorids",
+            "title": "Author IDs",
             "type": "array"
           },
           "AvailableTrajectoryStationProperties": {
@@ -5629,6 +6303,7 @@
             "type": "string"
           },
           "Datasets": {
+            "description": "The record id, which identifies this OSDU File or dataset resource.",
             "items": {
               "$ref": "#/components/schemas/Dataset"
             },
@@ -5657,7 +6332,9 @@
           },
           "GeoContexts": {
             "description": "List of geographic entities which provide context to the WPC.  This may include multiple types or multiple values of the same type.",
-            "items": {},
+            "items": {
+              "$ref": "#/components/schemas/AbstractGeoContext100"
+            },
             "title": "Geocontexts",
             "type": "array"
           },
@@ -5679,7 +6356,7 @@
             "type": "boolean"
           },
           "LineageAssertions": {
-            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the Data.Artefacts[] array.",
+            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the data.Artefacts[] array.",
             "items": {
               "$ref": "#/components/schemas/LineageAssertion"
             },
@@ -5794,10 +6471,18 @@
             "type": "array"
           },
           "TechnicalAssuranceID": {
-            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "description": "DEPRECATED: Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Technical Assurance ID",
             "type": "string"
+          },
+          "TechnicalAssurances": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "items": {
+              "$ref": "#/components/schemas/AbstractTechnicalAssurance100"
+            },
+            "title": "Technical Assurances",
+            "type": "array"
           },
           "TieMeasuredDepth": {
             "description": "Tie-point depth measured along the wellbore from the measurement reference datum to the survey station - where tie point is the place on the originating survey where the current survey intersect it.",
@@ -16955,9 +17640,9 @@
                 "data": {
                   "Artefacts": [
                     {
-                      "ResourceID": "namespace:dataset--AnyDataset:SomeUniqueAnyDatasetID:",
-                      "ResourceKind": "namespace:source_name:group_type--IndividualType:0.0.0",
-                      "RoleID": "namespace:reference-data--ArtefactRole:AdaptedContent:"
+                      "ResourceID": "{{datapartitionid}}:dataset--AnyDataset:SomeUniqueAnyDatasetID:",
+                      "ResourceKind": "{{datapartitionid}}:source_name:group_type--IndividualType:0.0.0",
+                      "RoleID": "{{datapartitionid}}:reference-data--ArtefactRole:AdaptedContent:"
                     }
                   ],
                   "AuthorIDs": [
@@ -16975,37 +17660,39 @@
                   ],
                   "CreationDateTime": "2020-02-13T09:13:15.55Z",
                   "Datasets": [
-                    "namespace:dataset--AnyDataset:SomeUniqueAnyDatasetID:"
+                    "{{datapartitionid}}:dataset--AnyDataset:SomeUniqueAnyDatasetID:"
                   ],
                   "Description": "Example Description",
-                  "ExistenceKind": "namespace:reference-data--ExistenceKind:Prototype:",
+                  "ExistenceKind": "{{datapartitionid}}:reference-data--ExistenceKind:Prototype:",
                   "ExtensionProperties": {},
                   "GeoContexts": [
                     {
-                      "BasinID": "namespace:master-data--Basin:SomeUniqueBasinID:",
-                      "GeoTypeID": "namespace:reference-data--BasinType:ArcWrenchOceanContinent:"
+                      "BasinID": "{{datapartitionid}}:master-data--Basin:SomeUniqueBasinID:",
+                      "GeoTypeID": "{{datapartitionid}}:reference-data--BasinType:ArcWrenchOceanContinent:"
                     }
                   ],
                   "IsDiscoverable": true,
                   "IsExtendedLoad": true,
                   "LineageAssertions": [
                     {
-                      "ID": "namespace:any-group-type--AnyIndividualType:SomeUniqueAnyIndividualTypeID:",
-                      "LineageRelationshipType": "namespace:reference-data--LineageRelationshipType:Direct:"
+                      "ID": "{{datapartitionid}}:any-group-type--AnyIndividualType:SomeUniqueAnyIndividualTypeID:",
+                      "LineageRelationshipType": "{{datapartitionid}}:reference-data--LineageRelationshipType:Direct:"
                     }
                   ],
                   "Markers": [
                     {
                       "FeatureName": "Example FeatureName",
-                      "FeatureTypeID": "namespace:reference-data--FeatureType:Base:",
+                      "FeatureTypeID": "{{datapartitionid}}:reference-data--FeatureType:Base:",
                       "GeologicalAge": "Example GeologicalAge",
+                      "InterpretationID": "{{datapartitionid}}:work-product-component--GeobodyBoundaryInterpretation:GeobodyBoundaryInterpretation-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
                       "MarkerDate": "2020-02-13T09:13:15.55Z",
+                      "MarkerID": "Example Marker ID",
                       "MarkerInterpreter": "Example MarkerInterpreter",
                       "MarkerMeasuredDepth": 12345.6,
                       "MarkerName": "Example MarkerName",
                       "MarkerObservationNumber": 12345.6,
                       "MarkerSubSeaVerticalDepth": 12345.6,
-                      "MarkerTypeID": "namespace:reference-data--MarkerType:BioStratigraphy:",
+                      "MarkerTypeID": "{{datapartitionid}}:reference-data--MarkerType:BioStratigraphy:",
                       "Missing": "Example Missing",
                       "NegativeVerticalDelta": 12345.6,
                       "PositiveVerticalDelta": 12345.6,
@@ -17014,13 +17701,13 @@
                     }
                   ],
                   "Name": "Example Name",
-                  "ResourceCurationStatus": "namespace:reference-data--ResourceCurationStatus:CREATED:",
-                  "ResourceHomeRegionID": "namespace:reference-data--OSDURegion:AWSEastUSA:",
+                  "ResourceCurationStatus": "{{datapartitionid}}:reference-data--ResourceCurationStatus:CREATED:",
+                  "ResourceHomeRegionID": "{{datapartitionid}}:reference-data--OSDURegion:AWSEastUSA:",
                   "ResourceHostRegionIDs": [
-                    "namespace:reference-data--OSDURegion:AWSEastUSA:"
+                    "{{datapartitionid}}:reference-data--OSDURegion:AWSEastUSA:"
                   ],
-                  "ResourceLifecycleStatus": "namespace:reference-data--ResourceLifecycleStatus:LOADING:",
-                  "ResourceSecurityClassification": "namespace:reference-data--ResourceSecurityClassification:RESTRICTED:",
+                  "ResourceLifecycleStatus": "{{datapartitionid}}:reference-data--ResourceLifecycleStatus:LOADING:",
+                  "ResourceSecurityClassification": "{{datapartitionid}}:reference-data--ResourceSecurityClassification:RESTRICTED:",
                   "Source": "Example Data Source",
                   "SpatialArea": {
                     "AppliedOperations": [
@@ -17028,8 +17715,8 @@
                       "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
                     ],
                     "AsIngestedCoordinates": {
-                      "CoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
-                      "VerticalCoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
+                      "CoordinateReferenceSystemID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+                      "VerticalCoordinateReferenceSystemID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
                       "bbox": [
                         12345.6,
                         12345.6,
@@ -17071,11 +17758,11 @@
                     "CoordinateQualityCheckRemarks": [
                       "Example CoordinateQualityCheckRemarks"
                     ],
-                    "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Confirmed:",
-                    "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
-                    "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:",
+                    "QualitativeSpatialAccuracyTypeID": "{{datapartitionid}}:reference-data--QualitativeSpatialAccuracyType:Confirmed:",
+                    "QuantitativeAccuracyBandID": "{{datapartitionid}}:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
+                    "SpatialGeometryTypeID": "{{datapartitionid}}:reference-data--SpatialGeometryType:Point:",
                     "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
-                    "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+                    "SpatialParameterTypeID": "{{datapartitionid}}:reference-data--SpatialParameterType:Outline:",
                     "Wgs84Coordinates": {
                       "bbox": [
                         12345.6,
@@ -17117,8 +17804,8 @@
                       "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
                     ],
                     "AsIngestedCoordinates": {
-                      "CoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
-                      "VerticalCoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
+                      "CoordinateReferenceSystemID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+                      "VerticalCoordinateReferenceSystemID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
                       "bbox": [
                         12345.6,
                         12345.6,
@@ -17160,11 +17847,11 @@
                     "CoordinateQualityCheckRemarks": [
                       "Example CoordinateQualityCheckRemarks"
                     ],
-                    "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Confirmed:",
-                    "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
-                    "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:",
+                    "QualitativeSpatialAccuracyTypeID": "{{datapartitionid}}:reference-data--QualitativeSpatialAccuracyType:Confirmed:",
+                    "QuantitativeAccuracyBandID": "{{datapartitionid}}:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
+                    "SpatialGeometryTypeID": "{{datapartitionid}}:reference-data--SpatialGeometryType:Point:",
                     "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
-                    "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+                    "SpatialParameterTypeID": "{{datapartitionid}}:reference-data--SpatialParameterType:Outline:",
                     "Wgs84Coordinates": {
                       "bbox": [
                         12345.6,
@@ -17200,28 +17887,56 @@
                       "type": "FeatureCollection"
                     }
                   },
+                  "StratigraphicColumnID": "{{datapartitionid}}:work-product-component--StratigraphicColumn:StratigraphicColumn-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+                  "StratigraphicColumnRankInterpretationID": "{{datapartitionid}}:work-product-component--StratigraphicColumnRankInterpretation:StratigraphicColumnRankInterpretation-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
                   "SubmitterName": "Example SubmitterName",
                   "Tags": [
                     "Example Tags"
                   ],
-                  "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Certified:",
+                  "TechnicalAssuranceID": "{{datapartitionid}}:reference-data--TechnicalAssuranceType:Certified:",
+                  "TechnicalAssurances": [
+                    {
+                      "AcceptableUsage": [
+                        {
+                          "WorkflowPersona": "{{datapartitionid}}:reference-data--WorkflowPersonaType:SeismicProcessor:",
+                          "WorkflowUsage": "{{datapartitionid}}:reference-data--WorkflowUsageType:SeismicProcessing:"
+                        }
+                      ],
+                      "Comment": "This is free form text from reviewer, e.g. restrictions on use",
+                      "EffectiveDate": "2020-02-13",
+                      "Reviewers": [
+                        {
+                          "Name": "Example Name",
+                          "OrganisationID": "{{datapartitionid}}:master-data--Organisation:SomeUniqueOrganisationID:",
+                          "RoleTypeID": "{{datapartitionid}}:reference-data--ContactRoleType:AccountOwner:"
+                        }
+                      ],
+                      "TechnicalAssuranceTypeID": "{{datapartitionid}}:reference-data--TechnicalAssuranceType:Trusted:",
+                      "UnacceptableUsage": [
+                        {
+                          "WorkflowPersona": "{{datapartitionid}}:reference-data--WorkflowPersonaType:SeismicInterpreter:",
+                          "WorkflowUsage": "{{datapartitionid}}:reference-data--WorkflowUsageType:SeismicInterpretation:"
+                        }
+                      ]
+                    }
+                  ],
                   "VerticalMeasurement": {
                     "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
                     "TerminationDateTime": "2020-02-13T09:13:15.55Z",
-                    "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+                    "VerticalCRSID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
                     "VerticalMeasurement": 12345.6,
                     "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
-                    "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MD:",
-                    "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
-                    "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:PBD:",
-                    "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+                    "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
+                    "VerticalMeasurementSourceID": "{{datapartitionid}}:reference-data--VerticalMeasurementSource:DRL:",
+                    "VerticalMeasurementTypeID": "{{datapartitionid}}:reference-data--VerticalMeasurementType:PBD:",
+                    "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                     "VerticalReferenceID": "Example VerticalReferenceID",
-                    "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:"
+                    "WellboreTVDTrajectoryID": "{{datapartitionid}}:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:"
                   },
-                  "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:"
+                  "WellboreID": "{{datapartitionid}}:master-data--Wellbore:SomeUniqueWellboreID:"
                 },
-                "id": "namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c",
-                "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
+                "id": "{{datapartitionid}}:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c",
+                "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.2.0",
                 "legal": {
                   "legaltags": [
                     "{{legaltags}}"
@@ -17243,7 +17958,7 @@
                       "Markers[].PositiveVerticalDelta",
                       "Markers[].NegativeVerticalDelta"
                     ],
-                    "unitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:"
+                    "unitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:"
                   },
                   {
                     "kind": "Unit",
@@ -17253,7 +17968,7 @@
                       "Markers[].SurfaceDipAngle",
                       "Markers[].SurfaceDipAzimuth"
                     ],
-                    "unitOfMeasureID": "namespace:reference-data--UnitOfMeasure:rad:"
+                    "unitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:rad:"
                   }
                 ],
                 "modifyTime": "2020-12-16T11:52:24.477Z",
@@ -17264,7 +17979,7 @@
               },
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet110"
+                  "$ref": "#/components/schemas/WellboreMarkerSet120"
                 },
                 "title": "Wellboremarkersets",
                 "type": "array"
@@ -17397,7 +18112,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet110"
+                  "$ref": "#/components/schemas/WellboreMarkerSet120"
                 }
               }
             },
@@ -17534,7 +18249,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet110"
+                  "$ref": "#/components/schemas/WellboreMarkerSet120"
                 }
               }
             },
@@ -17597,6 +18312,7 @@
                     ]
                   },
                   "data": {
+                    "ConditionID": "{{datapartitionid}}:reference-data--WellCondition:Active:",
                     "ExtensionProperties": {},
                     "FacilityName": "{{wellboreName}}",
                     "FacilityNameAliases": [
@@ -17610,12 +18326,25 @@
                         "FacilityOperatorID": "Francois Vinyes"
                       }
                     ],
+                    "FluidDirectionID": "{{datapartitionid}}:reference-data--WellFluidDirection:DualFlow:",
                     "GeoContexts": [
                       {
                         "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:",
                         "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:"
                       }
                     ],
+                    "HistoricalInterests": [
+                      {
+                        "EffectiveDateTime": "2020-02-13",
+                        "InterestTypeID": "{{datapartitionid}}:reference-data--WellInterestType:Yes:",
+                        "TerminationDateTime": "2020-02-13"
+                      }
+                    ],
+                    "InterestTypeID": "{{datapartitionid}}:reference-data--WellInterestType:Yes:",
+                    "OutcomeID": "{{datapartitionid}}:reference-data--WellBusinessIntentionOutcome:Achieved:",
+                    "PrimaryProductTypeID": "{{datapartitionid}}:reference-data--WellProductType:Gas:",
+                    "SecondaryProductTypeID": "{{datapartitionid}}:reference-data--WellProductType:Gas:",
+                    "ShowProductTypeID": "{{datapartitionid}}:reference-data--WellProductType:Gas:",
                     "SpatialLocation": {
                       "Wgs84Coordinates": {
                         "features": [
@@ -17664,10 +18393,35 @@
                         "type": "FeatureCollection"
                       }
                     },
-                    "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:"
+                    "StatusSummaryID": "{{datapartitionid}}:reference-data--WellStatusSummary:Planning:",
+                    "TertiaryProductTypeID": "{{datapartitionid}}:reference-data--WellProductType:Gas:",
+                    "VerticalMeasurements": [
+                      {
+                        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                        "RigID": "{{datapartitionid}}:master-data--Rig:SomeUniqueRigID:",
+                        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+                        "VerticalCRSID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+                        "VerticalMeasurement": 12345.6,
+                        "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
+                        "VerticalMeasurementID": "Example VerticalMeasurementID",
+                        "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
+                        "VerticalMeasurementSourceID": "{{datapartitionid}}:reference-data--VerticalMeasurementSource:DRL:",
+                        "VerticalMeasurementTypeID": "{{datapartitionid}}:reference-data--VerticalMeasurementType:PBD:",
+                        "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+                        "VerticalReferenceEntityID": "{{datapartitionid}}:master-data--Rig:SomeUniqueRigID:",
+                        "VerticalReferenceID": "Example VerticalReferenceID",
+                        "WellboreTVDTrajectoryID": "{{datapartitionid}}:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:"
+                      }
+                    ],
+                    "WasBusinessInterestFinancialNonOperated": true,
+                    "WasBusinessInterestFinancialOperated": true,
+                    "WasBusinessInterestObligatory": true,
+                    "WasBusinessInterestTechnical": true,
+                    "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:",
+                    "WellboreTrajectoryTypeID": "{{datapartitionid}}:reference-data--WellboreTrajectoryType:Vertical:"
                   },
                   "id": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
-                  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
+                  "kind": "osdu:wks:master-data--Wellbore:1.1.0",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
@@ -17694,7 +18448,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/Wellbore"
+                  "$ref": "#/components/schemas/Wellbore110"
                 },
                 "title": "Wellbores",
                 "type": "array"
@@ -17827,7 +18581,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Wellbore"
+                  "$ref": "#/components/schemas/Wellbore110"
                 }
               }
             },
@@ -17964,7 +18718,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Wellbore"
+                  "$ref": "#/components/schemas/Wellbore110"
                 }
               }
             },
@@ -20882,6 +21636,8 @@
                     ]
                   },
                   "data": {
+                    "BusinessIntentionID": "{{datapartitionid}}:reference-data--WellBusinessIntention:Appraise:",
+                    "ConditionID": "{{datapartitionid}}:reference-data--WellCondition:Active:",
                     "ExtensionProperties": {},
                     "FacilityName": "{{wellName}}",
                     "FacilityNameAliases": [
@@ -20889,10 +21645,42 @@
                         "AliasName": "20-000-00000-00",
                         "AliasNameTypeID": "{{datapartitionid}}:reference-data--AliasNameType:UniqueIdentifier:"
                       }
-                    ]
+                    ],
+                    "HistoricalInterests": [
+                      {
+                        "EffectiveDateTime": "2020-02-13",
+                        "InterestTypeID": "{{datapartitionid}}:reference-data--WellInterestType:Yes:",
+                        "TerminationDateTime": "2020-02-13"
+                      }
+                    ],
+                    "OutcomeID": "{{datapartitionid}}:reference-data--WellBusinessIntentionOutcome:Achieved:",
+                    "RoleID": "{{datapartitionid}}:reference-data--WellRole:Inject.MultipleProducts:",
+                    "StatusSummaryID": "{{datapartitionid}}:reference-data--WellStatusSummary:Planning:",
+                    "VerticalMeasurements": [
+                      {
+                        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                        "RigID": "{{datapartitionid}}:master-data--Rig:SomeUniqueRigID:",
+                        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+                        "VerticalCRSID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+                        "VerticalMeasurement": 12345.6,
+                        "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
+                        "VerticalMeasurementID": "Example VerticalMeasurementID",
+                        "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
+                        "VerticalMeasurementSourceID": "{{datapartitionid}}:reference-data--VerticalMeasurementSource:DRL:",
+                        "VerticalMeasurementTypeID": "{{datapartitionid}}:reference-data--VerticalMeasurementType:PBD:",
+                        "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+                        "VerticalReferenceEntityID": "{{datapartitionid}}:master-data--Rig:SomeUniqueRigID:",
+                        "VerticalReferenceID": "Example VerticalReferenceID",
+                        "WellboreTVDTrajectoryID": "{{datapartitionid}}:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:"
+                      }
+                    ],
+                    "WasBusinessInterestFinancialNonOperated": true,
+                    "WasBusinessInterestFinancialOperated": true,
+                    "WasBusinessInterestObligatory": true,
+                    "WasBusinessInterestTechnical": true
                   },
                   "id": "{{datapartitionid}}:master-data--Well:{{wellId}}",
-                  "kind": "osdu:wks:master-data--Well:1.0.0",
+                  "kind": "osdu:wks:master-data--Well:1.1.0",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
@@ -20907,7 +21695,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/Well"
+                  "$ref": "#/components/schemas/Well110"
                 },
                 "title": "Wells",
                 "type": "array"
@@ -21040,7 +21828,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Well"
+                  "$ref": "#/components/schemas/Well110"
                 }
               }
             },
@@ -21177,7 +21965,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Well"
+                  "$ref": "#/components/schemas/Well110"
                 }
               }
             },

@@ -17,22 +17,64 @@ import json
 import os
 from typing import Type
 from pydantic import BaseModel, ValidationError
-from app.model.osdu_model import Wellbore, Well, WellLog, WellboreTrajectory, WellboreMarkerSet, \
-    WellLog110, WellboreTrajectory110, WellboreMarkerSet110, \
-    WellLog120
-
+from app.model.osdu_model import (
+    Wellbore,
+    Well,
+    WellLog,
+    WellboreTrajectory,
+    WellboreMarkerSet,
+    WellLog110,
+    WellboreTrajectory110,
+    WellboreMarkerSet110,
+    WellLog120,
+    Wellbore110, Well110, WellboreMarkerSet120,
+)
 
 test_parameters = [
     (Wellbore, "Wellbore_unit.json", None),
+    (
+        Wellbore,
+        "Wellbore110_unit.json",
+        ValidationError,
+    ),  # Wellbore 100 must not accept to load Wellbore 110
+    (
+        Wellbore110,
+        "Wellbore_unit.json",
+        None,
+    ),  # Wellbore 100 must accept to load Wellbore 110
+    (
+        Wellbore110,
+        "Wellbore110_unit.json",
+        None,
+    ),  # Wellbore 100 must accept to load Wellbore 110
     (Well, "Well_unit.json", None),
+    (Well, "Well110_unit.json", ValidationError),  # Well 100 must not accept to load Wellbore 110
+    (Well110, "Well_unit.json", None),  # Well 110 must accept to load Wellbore 110
+    (Well110, "Well110_unit.json", None),
     (WellLog, "WellLog_unit.json", None),
-    (WellLog, "WellLog110_unit.json", ValidationError), #WellLog 100 must not accept to load WellLog 110
-    (WellLog, "WellLog120_unit.json", ValidationError), #WellLog 100 must not accept to load WellLog 120
-    (WellLog110, "WellLog_unit.json", None), #WellLog 110 accepts to load WellLog 100
+    (
+        WellLog,
+        "WellLog110_unit.json",
+        ValidationError,
+    ),  # WellLog 100 must not accept to load WellLog 110
+    (
+        WellLog,
+        "WellLog120_unit.json",
+        ValidationError,
+    ),  # WellLog 100 must not accept to load WellLog 120
+    (WellLog110, "WellLog_unit.json", None),  # WellLog 110 accepts to load WellLog 100
     (WellLog110, "WellLog110_unit.json", None),
-    (WellLog110, "WellLog120_unit.json", ValidationError), #WellLog 110 must not accept to load WellLog 120
-    (WellLog120, "WellLog_unit.json", None), #WellLog 120 accepts to load WellLog 100
-    (WellLog120, "WellLog110_unit.json", None), #WellLog 120 accepts to load WellLog 110
+    (
+        WellLog110,
+        "WellLog120_unit.json",
+        ValidationError,
+    ),  # WellLog 110 must not accept to load WellLog 120
+    (WellLog120, "WellLog_unit.json", None),  # WellLog 120 accepts to load WellLog 100
+    (
+        WellLog120,
+        "WellLog110_unit.json",
+        None,
+    ),  # WellLog 120 accepts to load WellLog 110
     (WellLog120, "WellLog120_unit.json", None),
     (WellboreTrajectory, "WellboreTrajectory_unit.json", None),
     (WellboreTrajectory, "WellboreTrajectory_unit.json", None),
@@ -40,7 +82,12 @@ test_parameters = [
     (WellboreTrajectory110, "WellboreTrajectory_unit.json", None),
     (WellboreTrajectory110, "WellboreTrajectory110_unit.json", None),
     (WellboreMarkerSet, "WellboreMarkerSet_unit.json", None),
+    (WellboreMarkerSet, "WellboreMarkerSet120_unit.json", ValidationError),
     (WellboreMarkerSet110, "WellboreMarkerSet110_unit.json", None),
+    (WellboreMarkerSet110, "WellboreMarkerSet120_unit.json", ValidationError),
+    (WellboreMarkerSet120, "WellboreMarkerSet_unit.json", None),
+    (WellboreMarkerSet120, "WellboreMarkerSet110_unit.json", None),
+    (WellboreMarkerSet120, "WellboreMarkerSet120_unit.json", None),
 ]
 
 

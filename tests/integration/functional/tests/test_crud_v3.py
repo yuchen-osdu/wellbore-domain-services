@@ -19,7 +19,8 @@ from wdms_client.request_builders.wdms.delete_records import build_request_delet
 from .fixtures import with_wdms_env
 from wdms_client.request_builders import build_request, diff_record_against_ref
 
-kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog', 'osdu_wellboretrajectory', 'osdu_wellboremarkerset']
+kind_list = ['osdu_wellbore', 'osdu_well', 'osdu_welllog', 'osdu_wellboretrajectory',
+             'osdu_wellboremarkerset']
 
 # parametrize of kind + dependency on the create_record
 param_kind_depend_on_create = [

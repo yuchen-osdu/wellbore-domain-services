@@ -20,7 +20,7 @@ from app.model.osdu_record_id import split_record_id_version, WellboreId
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import from_record, to_record
-from app.model.osdu_model import Wellbore
+from app.model.osdu_model import Wellbore110 as Wellbore
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
@@ -37,33 +37,35 @@ router = APIRouter(route_class=TracingRoute)
     response_model=Wellbore,
     response_model_exclude_unset=True,
     summary="Get the Wellbore using osdu schema",
-    description="""Get the Wellbore object using its **id**.{}""".format(REQUIRED_ROLES_READ),
+    description="""Get the Wellbore object using its **id**.{}""".format(
+        REQUIRED_ROLES_READ
+    ),
     operation_id="get_wellbore_osdu",
-    responses={
-        status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}
-    },
+    responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
 )
-async def get_wellbore_osdu(wellboreid: WellboreId, ctx: Context = Depends(get_ctx)) -> Wellbore:
+async def get_wellbore_osdu(
+    wellboreid: WellboreId, ctx: Context = Depends(get_ctx)
+) -> Wellbore:
     # Note: version is dropped here
     record_id, _ = split_record_id_version(wellboreid)
     storage_client = await get_storage_record_service(ctx)
-    well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
+    well_record = await storage_client.get_record(
+        id=record_id, data_partition_id=ctx.partition_id
+    )
     return from_record(Wellbore, well_record)
 
 
 @router.delete(
     "/wellbores/{wellboreid}",
     summary="Delete the wellbore. The API performs a logical deletion of the given record. "
-            "No recursive delete for OSDU kinds",
+    "No recursive delete for OSDU kinds",
     description="{}".format(REQUIRED_ROLES_WRITE),
     operation_id="del_osdu_wellbore",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"},
-        status.HTTP_204_NO_CONTENT: {
-            "description": "Record deleted successfully"
-        },
+        status.HTTP_204_NO_CONTENT: {"description": "Record deleted successfully"},
     },
 )
 async def del_osdu_wellbore(wellboreid: WellboreId, ctx: Context = Depends(get_ctx)):
@@ -79,9 +81,7 @@ async def del_osdu_wellbore(wellboreid: WellboreId, ctx: Context = Depends(get_c
     summary="Get all versions of the Wellbore",
     description="{}".format(REQUIRED_ROLES_READ),
     operation_id="get_osdu_wellbore_versions",
-    responses={
-        status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}
-    },
+    responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
 )
 async def get_osdu_wellbore_versions(
     wellboreid: WellboreId, request: Request, ctx: Context = Depends(get_ctx)
@@ -98,15 +98,18 @@ async def get_osdu_wellbore_versions(
     "/wellbores/{wellboreid}/versions/{version}",
     response_model=Wellbore,
     summary="Get the given version of the Wellbore using OSDU wellbore schema",
-    description=""""Get the Wellbore object using its **id**. {}""".format(REQUIRED_ROLES_READ),
+    description=""""Get the Wellbore object using its **id**. {}""".format(
+        REQUIRED_ROLES_READ
+    ),
     operation_id="get_osdu_wellbore_version",
-    responses={
-        status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}
-    },
+    responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
     response_model_exclude_unset=True,
 )
 async def get_osdu_wellbore_version(
-    wellboreid: WellboreId, version: int, request: Request, ctx: Context = Depends(get_ctx)
+    wellboreid: WellboreId,
+    version: int,
+    request: Request,
+    ctx: Context = Depends(get_ctx),
 ) -> Wellbore:
     storage_client = await get_storage_record_service(ctx)
     wellbore_record = await storage_client.get_record_version(
@@ -129,7 +132,9 @@ async def get_osdu_wellbore_version(
     },
 )
 async def post_wellbore_osdu(
-    wellbores: List[Wellbore] = Body(..., example=load_schema_example("wellbore_v3.json")),
+    wellbores: List[Wellbore] = Body(
+        ..., example=load_schema_example("wellbore_v3_110.json")
+    ),
     ctx: Context = Depends(get_ctx),
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(wellbores)

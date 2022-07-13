@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
@@ -31,6 +31,32 @@ class Tags(BaseModel):
         extra = Extra.allow
 
     __root__: str
+
+
+class HistoricalInterest(DDMSBaseModel):
+    """
+    A 'well interest' at some time period as defined by effective and termination date.
+    """
+
+    InterestTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellInterestType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="Business Interest [Well Interest Type] describes whether a company currently considers a well or its data to be a real or planned asset, and if so, the nature of and motivation for that company's interest.",
+        title='Interest Type ID',
+    )
+    EffectiveDateTime: Optional[date] = Field(
+        None,
+        description='The date and time at which the well interest type becomes effective.',
+        title='Effective Date Time',
+    )
+    TerminationDateTime: Optional[date] = Field(
+        None,
+        description='The date and time at which the well interest type is no longer in effect.',
+        title='Termination Date Time',
+    )
 
 
 class AvailableMarkerProperty(DDMSBaseModel):
@@ -247,7 +273,7 @@ class Feature(DDMSBaseModel):
 
 class AbstractAnyCrsFeatureCollection100(DDMSBaseModel):
     """
-    The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the OperationsApplied can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.
+    The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the AppliedOperations can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.
     """
 
     type: Type
@@ -258,7 +284,7 @@ class AbstractAnyCrsFeatureCollection100(DDMSBaseModel):
     ] = Field(
         None,
         description='The CRS reference into the CoordinateReferenceSystem catalog.',
-        example='namespace:reference-data--CoordinateReferenceSystem:BoundCRS.SLB.32021.15851:',
+        example='namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:',
         title='Coordinate Reference System ID',
     )
     VerticalCoordinateReferenceSystemID: Optional[
@@ -268,19 +294,75 @@ class AbstractAnyCrsFeatureCollection100(DDMSBaseModel):
     ] = Field(
         None,
         description="The explicit VerticalCRS reference into the CoordinateReferenceSystem catalog. This property stays empty for 2D geometries. Absent or empty values for 3D geometries mean the context may be provided by a CompoundCRS in 'CoordinateReferenceSystemID' or implicitly EPSG:5714 MSL height",
-        example='namespace:reference-data--CoordinateReferenceSystem:VerticalCRS.EPSG.5773:',
+        example='namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:',
         title='Vertical Coordinate Reference System ID',
     )
     persistableReferenceCrs: str = Field(
         ...,
         description='The CRS reference as persistableReference string. If populated, the CoordinateReferenceSystemID takes precedence.',
-        example='{"lateBoundCRS":{"wkt":"PROJCS[\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\",GEOGCS[\\"GCS_North_American_1927\\",DATUM[\\"D_North_American_1927\\",SPHEROID[\\"Clarke_1866\\",6378206.4,294.9786982]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],PROJECTION[\\"Lambert_Conformal_Conic\\"],PARAMETER[\\"False_Easting\\",2000000.0],PARAMETER[\\"False_Northing\\",0.0],PARAMETER[\\"Central_Meridian\\",-100.5],PARAMETER[\\"Standard_Parallel_1\\",46.1833333333333],PARAMETER[\\"Standard_Parallel_2\\",47.4833333333333],PARAMETER[\\"Latitude_Of_Origin\\",45.6666666666667],UNIT[\\"Foot_US\\",0.304800609601219],AUTHORITY[\\"EPSG\\",32021]]","ver":"PE_10_3_1","name":"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302","authCode":{"auth":"EPSG","code":"32021"},"type":"LBC"},"singleCT":{"wkt":"GEOGTRAN[\\"NAD_1927_To_WGS_1984_79_CONUS\\",GEOGCS[\\"GCS_North_American_1927\\",DATUM[\\"D_North_American_1927\\",SPHEROID[\\"Clarke_1866\\",6378206.4,294.9786982]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],GEOGCS[\\"GCS_WGS_1984\\",DATUM[\\"D_WGS_1984\\",SPHEROID[\\"WGS_1984\\",6378137.0,298.257223563]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],METHOD[\\"NADCON\\"],PARAMETER[\\"Dataset_conus\\",0.0],AUTHORITY[\\"EPSG\\",15851]]","ver":"PE_10_3_1","name":"NAD_1927_To_WGS_1984_79_CONUS","authCode":{"auth":"EPSG","code":"15851"},"type":"ST"},"ver":"PE_10_3_1","name":"NAD27 * OGP-Usa Conus / North Dakota South [32021,15851]","authCode":{"auth":"SLB","code":"32021079"},"type":"EBC"}',
+        example='{"authCode":{"auth":"OSDU","code":"32021079"},"lateBoundCRS":{"authCode":{"auth":"EPSG","code":"32021"},"name":"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302","type":"LBC","ver":"PE_10_9_1","wkt":"PROJCS[\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\",GEOGCS[\\"GCS_North_American_1927\\",DATUM[\\"D_North_American_1927\\",SPHEROID[\\"Clarke_1866\\",6378206.4,294.9786982]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],PROJECTION[\\"Lambert_Conformal_Conic\\"],PARAMETER[\\"False_Easting\\",2000000.0],PARAMETER[\\"False_Northing\\",0.0],PARAMETER[\\"Central_Meridian\\",-100.5],PARAMETER[\\"Standard_Parallel_1\\",46.18333333333333],PARAMETER[\\"Standard_Parallel_2\\",47.48333333333333],PARAMETER[\\"Latitude_Of_Origin\\",45.66666666666666],UNIT[\\"Foot_US\\",0.3048006096012192],AUTHORITY[\\"EPSG\\",32021]]"},"name":"NAD27 * OGP-Usa Conus / North Dakota CS27 South zone [32021,15851]","singleCT":{"authCode":{"auth":"EPSG","code":"15851"},"name":"NAD_1927_To_WGS_1984_79_CONUS","type":"ST","ver":"PE_10_9_1","wkt":"GEOGTRAN[\\"NAD_1927_To_WGS_1984_79_CONUS\\",GEOGCS[\\"GCS_North_American_1927\\",DATUM[\\"D_North_American_1927\\",SPHEROID[\\"Clarke_1866\\",6378206.4,294.9786982]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],GEOGCS[\\"GCS_WGS_1984\\",DATUM[\\"D_WGS_1984\\",SPHEROID[\\"WGS_1984\\",6378137.0,298.257223563]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],METHOD[\\"NADCON\\"],PARAMETER[\\"Dataset_conus\\",0.0],OPERATIONACCURACY[5.0],AUTHORITY[\\"EPSG\\",15851]]"},"type":"EBC","ver":"PE_10_9_1"}',
         title='CRS Reference',
     )
     persistableReferenceVerticalCrs: Optional[str] = Field(
         None,
         description="The VerticalCRS reference as persistableReference string. If populated, the VerticalCoordinateReferenceSystemID takes precedence. The property is null or empty for 2D geometries. For 3D geometries and absent or null persistableReferenceVerticalCrs the vertical CRS is either provided via persistableReferenceCrs's CompoundCRS or it is implicitly defined as EPSG:5714 MSL height.",
-        example='{"authCode":{"auth":"EPSG","code":"5773"},"type":"LBC","ver":"PE_10_3_1","name":"EGM96_Geoid","wkt":"VERTCS[\\"EGM96_Geoid\\",VDATUM[\\"EGM96_Geoid\\"],PARAMETER[\\"Vertical_Shift\\",0.0],PARAMETER[\\"Direction\\",1.0],UNIT[\\"Meter\\",1.0],AUTHORITY[\\"EPSG\\",5773]]"}',
+        example='{"authCode":{"auth":"EPSG","code":"5714"},"name":"MSL_Height","type":"LBC","ver":"PE_10_9_1","wkt":"VERTCS[\\"MSL_Height\\",VDATUM[\\"Mean_Sea_Level\\"],PARAMETER[\\"Vertical_Shift\\",0.0],PARAMETER[\\"Direction\\",1.0],UNIT[\\"Meter\\",1.0],AUTHORITY[\\"EPSG\\",5714]]"}',
+        title='Vertical CRS Reference',
+    )
+    persistableReferenceUnitZ: Optional[str] = Field(
+        None,
+        description='The unit of measure for the Z-axis (only for 3-dimensional coordinates, where the CRS does not describe the vertical unit). Note that the direction is upwards positive, i.e. Z means height.',
+        example='{"scaleOffset":{"scale":1.0,"offset":0.0},"symbol":"m","baseMeasurement":{"ancestry":"Length","type":"UM"},"type":"USO"}',
+        title='Z-Unit Reference',
+    )
+    features: List[Feature]
+    bbox: Optional[List[float]] = Field(None, min_items=4)
+
+
+class AbstractAnyCrsFeatureCollection110(DDMSBaseModel):
+    """
+    The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the AppliedOperations can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.
+    """
+
+    type: Type
+    CoordinateReferenceSystemID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CoordinateReferenceSystem:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The CRS reference into the CoordinateReferenceSystem catalog.',
+        example='namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:',
+        title='Coordinate Reference System ID',
+    )
+    VerticalCoordinateReferenceSystemID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CoordinateReferenceSystem:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="The explicit VerticalCRS reference into the CoordinateReferenceSystem catalog. This property stays empty for 2D geometries. Absent or empty values for 3D geometries mean the context may be provided by a CompoundCRS in 'CoordinateReferenceSystemID' or implicitly EPSG:5714 MSL height",
+        example='namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:',
+        title='Vertical Coordinate Reference System ID',
+    )
+    VerticalUnitID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitOfMeasure:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description="The explicit vertical unit ID, referring to a reference-data--UnitOfMeasure record; this is only required for features containing 3-dimensional coordinates and undefined vertical CoordinateReferenceSystems; if a VerticalCoordinateReferenceSystemID is populated, the VerticalUnitID is given by the VerticalCoordinateReferenceSystemID's data.CoordinateSystem.VerticalAxisUnitID. The VerticalUnitID definition overrides any self-contained definition in persistableReferenceUnitZ.",
+        example='namespace:reference-data--UnitOfMeasure:m:',
+        title='Vertical Unit ID',
+    )
+    persistableReferenceCrs: str = Field(
+        ...,
+        description='The CRS reference as persistableReference string. If populated, the CoordinateReferenceSystemID takes precedence.',
+        example='{"authCode":{"auth":"OSDU","code":"32021079"},"lateBoundCRS":{"authCode":{"auth":"EPSG","code":"32021"},"name":"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302","type":"LBC","ver":"PE_10_9_1","wkt":"PROJCS[\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\",GEOGCS[\\"GCS_North_American_1927\\",DATUM[\\"D_North_American_1927\\",SPHEROID[\\"Clarke_1866\\",6378206.4,294.9786982]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],PROJECTION[\\"Lambert_Conformal_Conic\\"],PARAMETER[\\"False_Easting\\",2000000.0],PARAMETER[\\"False_Northing\\",0.0],PARAMETER[\\"Central_Meridian\\",-100.5],PARAMETER[\\"Standard_Parallel_1\\",46.18333333333333],PARAMETER[\\"Standard_Parallel_2\\",47.48333333333333],PARAMETER[\\"Latitude_Of_Origin\\",45.66666666666666],UNIT[\\"Foot_US\\",0.3048006096012192],AUTHORITY[\\"EPSG\\",32021]]"},"name":"NAD27 * OGP-Usa Conus / North Dakota CS27 South zone [32021,15851]","singleCT":{"authCode":{"auth":"EPSG","code":"15851"},"name":"NAD_1927_To_WGS_1984_79_CONUS","type":"ST","ver":"PE_10_9_1","wkt":"GEOGTRAN[\\"NAD_1927_To_WGS_1984_79_CONUS\\",GEOGCS[\\"GCS_North_American_1927\\",DATUM[\\"D_North_American_1927\\",SPHEROID[\\"Clarke_1866\\",6378206.4,294.9786982]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],GEOGCS[\\"GCS_WGS_1984\\",DATUM[\\"D_WGS_1984\\",SPHEROID[\\"WGS_1984\\",6378137.0,298.257223563]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]],METHOD[\\"NADCON\\"],PARAMETER[\\"Dataset_conus\\",0.0],OPERATIONACCURACY[5.0],AUTHORITY[\\"EPSG\\",15851]]"},"type":"EBC","ver":"PE_10_9_1"}',
+        title='CRS Reference',
+    )
+    persistableReferenceVerticalCrs: Optional[str] = Field(
+        None,
+        description="The VerticalCRS reference as persistableReference string. If populated, the VerticalCoordinateReferenceSystemID takes precedence. The property is null or empty for 2D geometries. For 3D geometries and absent or null persistableReferenceVerticalCrs the vertical CRS is either provided via persistableReferenceCrs's CompoundCRS or it is implicitly defined as EPSG:5714 MSL height.",
+        example='{"authCode":{"auth":"EPSG","code":"5714"},"name":"MSL_Height","type":"LBC","ver":"PE_10_9_1","wkt":"VERTCS[\\"MSL_Height\\",VDATUM[\\"Mean_Sea_Level\\"],PARAMETER[\\"Vertical_Shift\\",0.0],PARAMETER[\\"Direction\\",1.0],UNIT[\\"Meter\\",1.0],AUTHORITY[\\"EPSG\\",5714]]"}',
         title='Vertical CRS Reference',
     )
     persistableReferenceUnitZ: Optional[str] = Field(
@@ -361,8 +443,51 @@ class AbstractCommonResources100(DDMSBaseModel):
         )
     ] = Field(
         None,
-        description='Describes a record\'s overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single "preferred" or "definitive" record by comparison with other records.',
+        description='DEPRECATED: Describes a record\'s overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single "preferred" or "definitive" record by comparison with other records.',
         title='Technical Assurance ID',
+    )
+
+
+class AbstractContact100(DDMSBaseModel):
+    """
+    An object with properties that describe a specific person or other point-of-contact (like an email distribution list) that is relevant in this context (like a given data set or business project). The contact specified may be either internal or external to the organisation (something denoted via the Organisation object that is referenced). Note that some properties contain personally identifiable information, so it might not be appropriate to populate all properties in all scenarios.
+    """
+
+    EmailAddress: Optional[str] = Field(
+        None,
+        description='Contact email address. Property may be left empty where it is inappropriate to provide personally identifiable information.',
+        example='support@company.com',
+        title='Email Address',
+    )
+    PhoneNumber: Optional[str] = Field(
+        None,
+        description='Contact phone number. Property may be left empty where it is inappropriate to provide personally identifiable information.',
+        example='1-555-281-5555',
+        title='Phone Number',
+    )
+    RoleTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-ContactRoleType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The identifier of a reference value for the role of the contact within the associated organisation, such as Account owner, Sales Representative, Technical Support, Project Manager, Party Chief, Client Representative, Senior Observer.',
+        title='Role Type ID',
+    )
+    Comment: Optional[str] = Field(
+        None, description='Additional information about the contact', title='Comment'
+    )
+    OrganisationID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Reference to the company the contact is associated with.',
+        title='Organisation ID',
+    )
+    Name: Optional[str] = Field(
+        None,
+        description='Name of the individual contact. Property may be left empty where it is inappropriate to provide personally identifiable information.',
+        title='Name',
     )
 
 
@@ -469,7 +594,8 @@ class AbstractFacilityState100(DDMSBaseModel):
             regex=r'^[\w\-\.]+:reference-data\-\-FacilityStateType:[\w\-\.\:\%]+:[0-9]*$'
         )
     ] = Field(
-        None, description='The facility life cycle state from planning to abandonment.'
+        None,
+        description='Life Cycle [Facility State Type] is a set of major phases that are significant to regulators and/or business stakeholders. Life Cycle may apply to a well or its components [or other facility].',
     )
 
 
@@ -534,7 +660,15 @@ class AbstractFacilityVerticalMeasurement100(DDMSBaseModel):
     )
     VerticalReferenceID: Optional[str] = Field(
         None,
-        description='The reference point from which the relative vertical measurement is made. This is only populated if the measurement has no VerticalCRSID specified. The value entered must be the VerticalMeasurementID for another vertical measurement array element in this resource or its parent facility, and as a chain of measurements, they must resolve ultimately to a Vertical CRS. It is expected that a VerticalCRSID or a VerticalReferenceID is provided in a given vertical measurement array object, but not both.',
+        description='The reference point from which the relative vertical measurement is made. This is only populated if the measurement has no VerticalCRSID specified. The value entered must match the VerticalMeasurementID for another vertical measurement array element in Wellbore or Well or in a related parent facility. The relationship should be  declared explicitly in VerticalReferenceEntityID. Any chain of measurements must ultimately resolve to a Vertical CRS. It is expected that a VerticalCRSID or a VerticalReferenceID is provided in a given vertical measurement array object, but not both.',
+    )
+    VerticalReferenceEntityID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:(master-data\-\-Wellbore|master-data\-\-Well|master-data\-\-Rig):[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='This relationship identifies the entity (aka record) in which the VerticalReferenceID is found; It could be a different OSDU entity or a self-reference. For example, a Wellbore VerticalMeasurement may reference a member of a VerticalMeasurements[] array in its parent Well record. Alternatively, VerticalReferenceEntityID may be populated with the ID of its own Wellbore record to make explicit that VerticalReferenceID is intended to be found in this record, not another.',
     )
     VerticalMeasurementDescription: Optional[str] = Field(
         None, description='Text which describes a vertical measurement in detail.'
@@ -690,7 +824,7 @@ class AbstractGeoFieldContext100(DDMSBaseModel):
     FieldID: Optional[
         constr(regex=r'^[\w\-\.]+:master-data\-\-Field:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(None, description='Reference to Field.')
-    GeoTypeID: Optional[Any] = Field(
+    GeoTypeID: Optional[str] = Field(
         None, description="The fixed type 'Field' for this AbstractGeoFieldContext."
     )
 
@@ -753,12 +887,12 @@ class Parent(DDMSBaseModel):
 
 class AbstractLegalParentList100(DDMSBaseModel):
     """
-    The links to data, which constitute the inputs.
+    The links to data, which constitute the inputs, from which this record instance is derived.
     """
 
     parents: Optional[List[Parent]] = Field(
         None,
-        description="An array of none, one or many entity references in the data ecosystem, which identify the source of data in the legal sense. In contract to other relationships, the source record version is required. Example: the 'parents' will be queried when e.g. the subscription of source data services is terminated; access to the derivatives is also terminated.",
+        description="An array of none, one or many entity references of 'direct parents' in the data platform, which mark the current record as a derivative. In contrast to other relationships, the source record version is required. During record creation or update the ancestry.parents[] relationships are used to collect the legal tags from the sources and aggregate them in the legal.legaltags[] array. As a consequence, should e.g., one or more of the legal tags of the source data expire, the access to the derivatives is also terminated. For details, see ComplianceService tutorial, 'Creating derivative Records'.",
         example=[],
         title='Parents',
     )
@@ -792,7 +926,7 @@ class AbstractLegalTags100(DDMSBaseModel):
 
 class AbstractSpatialLocation100(DDMSBaseModel):
     """
-    The spatial location information such as coordinates, CRS information (left empty when not appropriate).
+    A polygon boundary that reflects the locale of the content of the work product component (location of the subject matter).
     """
 
     SpatialLocationCoordinatesDate: Optional[datetime] = Field(
@@ -825,7 +959,7 @@ class AbstractSpatialLocation100(DDMSBaseModel):
     )
     AsIngestedCoordinates: Optional[AbstractAnyCrsFeatureCollection100] = Field(
         None,
-        description="The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the OperationsApplied can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
+        description="The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the AppliedOperations can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
         title='As Ingested Coordinates',
     )
     Wgs84Coordinates: Optional[AbstractFeatureCollection100] = Field(
@@ -860,6 +994,121 @@ class AbstractSpatialLocation100(DDMSBaseModel):
     )
 
 
+class AcceptableUsageItem(DDMSBaseModel):
+    """
+    Describes the workflows and/or personas that the technical assurance value is valid for (e.g., This data has a technical assurance property of "trusted" and it is suitable for Seismic Interpretation).
+    """
+
+    WorkflowUsage: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WorkflowUsageType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Name of the business activities, processes, and/or workflows that the record is technical assurance value is valid for.',
+        example='namespace:reference-data--WorkflowUsageType:SeismicProcessing:',
+        title='Workflow Usage',
+    )
+    WorkflowPersona: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WorkflowPersonaType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Name of the role or personas that the record is technical assurance value is valid for.',
+        example='namespace:reference-data--WorkflowPersonaType:SeismicProcessor:',
+        title='Workflow Persona',
+    )
+
+
+class UnacceptableUsageItem(DDMSBaseModel):
+    """
+    Describes the workflows and/or personas that the technical assurance value is not valid for (e.g., This data has a technical assurance property of "trusted", but it is not suitable for Seismic Interpretation).
+    """
+
+    WorkflowUsage: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WorkflowUsageType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Name of the business activities, processes, and/or workflows that the record is technical assurance value is not valid for.',
+        example='namespace:reference-data--WorkflowUsageType:SeismicInterpretation:',
+        title='Workflow Usage',
+    )
+    WorkflowPersona: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WorkflowPersonaType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Name of the role or personas that the record is technical assurance value is not valid for.',
+        example='namespace:reference-data--WorkflowPersonaType:SeismicInterpreter:',
+        title='Workflow Persona',
+    )
+
+
+class AbstractTechnicalAssurance100(BaseModel):
+    """
+    Describes a record's overall suitability for general business consumption based on level of trust.
+    """
+
+    TechnicalAssuranceTypeID: constr(
+        regex=r'^[\w\-\.]+:reference-data\-\-TechnicalAssuranceType:[\w\-\.\:\%]+:[0-9]*$'
+    ) = Field(
+        ...,
+        description='Describes a record\'s overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single "preferred" or "definitive" record by comparison with other records.',
+        example='namespace:reference-data--TechnicalAssuranceType:Trusted:',
+        title='Technical Assurance Type ID',
+    )
+    Reviewers: Optional[List[AbstractContact100]] = Field(
+        None,
+        description='The individuals, or roles, that reviewed and determined the technical assurance value',
+        example=[
+            {
+                'RoleTypeID': 'namespace:reference-data--ContactRoleType:AccountOwner:',
+                'OrganisationID': 'namespace:master-data--Organisation:SomeUniqueOrganisationID:',
+                'Name': 'Example Name',
+            }
+        ],
+        title='Reviewers',
+    )
+    AcceptableUsage: Optional[List[AcceptableUsageItem]] = Field(
+        None,
+        description='List of workflows and/or personas that the technical assurance value is valid for (e.g., This data is trusted for Seismic Processing)',
+        example=[
+            {
+                'WorkflowUsage': 'namespace:reference-data--WorkflowUsageType:SeismicProcessing:',
+                'WorkflowPersona': 'namespace:reference-data--WorkflowPersonaType:SeismicProcessor:',
+            }
+        ],
+        title='Acceptable Usage',
+    )
+    UnacceptableUsage: Optional[List[UnacceptableUsageItem]] = Field(
+        None,
+        description='List of workflows and/or personas that the technical assurance value is not valid for (e.g., This data is not trusted for seismic interpretation)',
+        example=[
+            {
+                'WorkflowUsage': 'namespace:reference-data--WorkflowUsageType:SeismicInterpretation:',
+                'WorkflowPersona': 'namespace:reference-data--WorkflowPersonaType:SeismicInterpreter:',
+            }
+        ],
+        title='Unacceptable Usage',
+    )
+    EffectiveDate: Optional[date] = Field(
+        None,
+        description='Date when the technical assurance determination for this record has taken place',
+        example='2020-02-13',
+        title='Effective Date',
+    )
+    Comment: Optional[str] = Field(
+        None,
+        description='Any additional context to support the determination of technical assurance',
+        example='This is free form text from reviewer, e.g. restrictions on use',
+        title='Comment',
+    )
+
+
 class Dataset(DDMSBaseModel):
     __root__: constr(
         regex=r'^[\w\-\.]+:dataset\-\-[\w\-\.]+:[\w\-\.\:\%]+:[0-9]*$'
@@ -867,6 +1116,10 @@ class Dataset(DDMSBaseModel):
 
 
 class Artefact(DDMSBaseModel):
+    """
+    An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly
+    """
+
     RoleID: Optional[
         constr(regex=r'^[\w\-\.]+:reference-data\-\-ArtefactRole:[\w\-\.\:\%]+:[0-9]*$')
     ] = Field(None, description="The SRN of this artefact's role.")
@@ -903,8 +1156,14 @@ class AbstractWellboreDrillingReason100(DDMSBaseModel):
 
 
 class AbstractFacility100(DDMSBaseModel):
+    """
+    The schema fragment included by facilities. A facility is a grouping of equipment that is located within a specific geographic boundary or site and that is used in the context of energy-related activities such as exploration, extraction, generation, storage, processing, disposal, supply, or transfer. Clarifications: (1) A facility may be surface or subsurface located. (2) Usually facility equipment is commonly owned or operated. (3) Industry definitions may vary and differ from this one. This schema fragment is included by Well, Wellbore, Rig, as well as Tank Batteries, Compression Stations, Storage Facilities, Wind Farms, Wind Turbines, Mining Facilities, etc., once these types are included in to the OSDU.
+    """
+
     FacilityID: Optional[str] = Field(
-        None, description='A system-specified unique identifier of a Facility.'
+        None,
+        description='Native identifier from a Master Data Management System or other trusted source external to OSDU - stored here in order to allow for multi-system connection and synchronization. If used, the "Source" property should identify that source system.',
+        title='External Facility Identifier',
     )
     FacilityTypeID: Optional[
         constr(regex=r'^[\w\-\.]+:reference-data\-\-FacilityType:[\w\-\.\:\%]+:[0-9]*$')
@@ -943,7 +1202,7 @@ class AbstractFacility100(DDMSBaseModel):
     FacilityName: Optional[str] = Field(None, description='Name of the Facility.')
     FacilityNameAliases: Optional[List[AbstractAliasNames100]] = Field(
         None,
-        description='Alternative names, including historical, by which this facility is/has been known.',
+        description='DEPRECATED: please use data.NameAliases. Alternative names, including historical, by which this facility is/has been known.',
     )
     FacilityStates: Optional[List[AbstractFacilityState100]] = Field(
         None,
@@ -988,12 +1247,43 @@ class VerticalMeasurement(AbstractFacilityVerticalMeasurement100):
     )
 
 
+class VerticalMeasurementWellbore110(AbstractFacilityVerticalMeasurement100):
+    VerticalMeasurementID: Optional[str] = Field(
+        None,
+        description='The ID for a distinct vertical measurement within the Wellbore VerticalMeasurements array so that it may be referenced by other vertical measurements if necessary.',
+    )
+    RigID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Rig:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The relationship to the rig, which was used while this vertical measurement was in active use.',
+        title='Rig ID',
+    )
+
+
+class VerticalMeasurementWell110(AbstractFacilityVerticalMeasurement100):
+    VerticalMeasurementID: Optional[str] = Field(
+        None,
+        description='The ID for a distinct vertical measurement within the Wellbore VerticalMeasurements array so that it may be referenced by other vertical measurements if necessary.',
+    )
+    RigID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Rig:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The relationship to the rig, which was used while this vertical measurement was in active use.',
+        title='Rig ID',
+    )
+
+
 class AbstractWPCGroupType100(DDMSBaseModel):
     """
     Generic reference object containing the universal group-type properties of a Work Product Component for inclusion in data type specific Work Product Component objects
     """
 
-    Datasets: Optional[List[Dataset]] = None
+    Datasets: Optional[List[Dataset]] = Field(
+        None,
+        description='The record id, which identifies this OSDU File or dataset resource.',
+    )
     Artefacts: Optional[List[Artefact]] = Field(
         None,
         description='An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly',
@@ -1005,6 +1295,11 @@ class AbstractWPCGroupType100(DDMSBaseModel):
     IsDiscoverable: Optional[bool] = Field(
         None,
         description='A flag that indicates if the work product component is searchable, which means covered in the search index.',
+    )
+    TechnicalAssurances: Optional[List[AbstractTechnicalAssurance100]] = Field(
+        None,
+        description='Describes a record\'s overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single "preferred" or "definitive" record by comparison with other records.',
+        title='Technical Assurances',
     )
 
 
@@ -1051,7 +1346,7 @@ class AbstractWorkProductComponent100(DDMSBaseModel):
         None,
         description='A polygon boundary that reflects the locale of the content of the work product component (location of the subject matter).',
     )
-    GeoContexts: Optional[List[Any]] = Field(
+    GeoContexts: Optional[List[AbstractGeoContext100]] = Field(
         None,
         description='List of geographic entities which provide context to the WPC.  This may include multiple types or multiple values of the same type.',
     )
@@ -1066,10 +1361,11 @@ class AbstractWorkProductComponent100(DDMSBaseModel):
     AuthorIDs: Optional[List[str]] = Field(
         None,
         description="Array of Authors' names of the work product component.  Could be a person or company entity.",
+        title='Author IDs',
     )
     LineageAssertions: Optional[List[LineageAssertion]] = Field(
         None,
-        description='Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the Data.Artefacts[] array.',
+        description='Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the data.Artefacts[] array.',
     )
 
 
@@ -1326,6 +1622,211 @@ class Curve120(DDMSBaseModel):
     )
 
 
+class AbstractGeoContext100(DDMSBaseModel):
+    __root__: Any = Field(
+        ...,
+        description='A geographic context to an entity. It can be either a reference to a GeoPoliticalEntity, Basin, Field, Play or Prospect.',
+    )
+
+
+class AbstractSpatialLocation110(DDMSBaseModel):
+    """
+    The spatial location information such as coordinates, CRS information (left empty when not appropriate).
+    """
+
+    SpatialLocationCoordinatesDate: Optional[datetime] = Field(
+        None, description='Date when coordinates were measured or retrieved.'
+    )
+    QuantitativeAccuracyBandID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-QuantitativeAccuracyBand:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='An approximate quantitative assessment of the quality of a location (accurate to > 500 m (i.e. not very accurate)), to < 1 m, etc.',
+    )
+    QualitativeSpatialAccuracyTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-QualitativeSpatialAccuracyType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='A qualitative description of the quality of a spatial location, e.g. unverifiable, not verified, basic validation.',
+    )
+    CoordinateQualityCheckPerformedBy: Optional[str] = Field(
+        None, description='The user who performed the Quality Check.'
+    )
+    CoordinateQualityCheckDateTime: Optional[datetime] = Field(
+        None, description='The date of the Quality Check.'
+    )
+    CoordinateQualityCheckRemarks: Optional[List[str]] = Field(
+        None, description='Freetext remarks on Quality Check.'
+    )
+    AsIngestedCoordinates: Optional[AbstractAnyCrsFeatureCollection110] = Field(
+        None,
+        description="The original or 'as ingested' coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon). The name 'AsIngestedCoordinates' was chosen to contrast it to 'OriginalCoordinates', which carries the uncertainty whether any coordinate operations took place before ingestion. In cases where the original CRS is different from the as-ingested CRS, the AppliedOperations can also contain the list of operations applied to the coordinate prior to ingestion. The data structure is similar to GeoJSON FeatureCollection, however in a CRS context explicitly defined within the AbstractAnyCrsFeatureCollection. The coordinate sequence follows GeoJSON standard, i.e. 'eastward/longitude', 'northward/latitude' {, 'upward/height' unless overridden by an explicit direction in the AsIngestedCoordinates.VerticalCoordinateReferenceSystemID}.",
+        title='As Ingested Coordinates',
+    )
+    Wgs84Coordinates: Optional[AbstractFeatureCollection100] = Field(
+        None,
+        description='The normalized coordinates (Point, MultiPoint, LineString, MultiLineString, Polygon or MultiPolygon) based on WGS 84 (EPSG:4326 for 2-dimensional coordinates, EPSG:4326 + EPSG:5714 (MSL) for 3-dimensional coordinates). This derived coordinate representation is intended for global discoverability only. The schema of this substructure is identical to the GeoJSON FeatureCollection https://geojson.org/schema/FeatureCollection.json. The coordinate sequence follows GeoJSON standard, i.e. longitude, latitude {, height}',
+        title='WGS 84 Coordinates',
+    )
+    AppliedOperations: Optional[List[str]] = Field(
+        None,
+        description='The audit trail of operations applied to the coordinates from the original state to the current state. The list may contain operations applied prior to ingestion as well as the operations applied to produce the Wgs84Coordinates. The text elements refer to ESRI style CRS and Transformation names, which may have to be translated to EPSG standard names.',
+        example=[
+            'conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted',
+            'transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed',
+        ],
+        title='Operations Applied',
+    )
+    SpatialParameterTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-SpatialParameterType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='A type of spatial representation of an object, often general (e.g. an Outline, which could be applied to Field, Reservoir, Facility, etc.) or sometimes specific (e.g. Onshore Outline, State Offshore Outline, Federal Offshore Outline, 3 spatial representations that may be used by Countries).',
+    )
+    SpatialGeometryTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-SpatialGeometryType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Indicates the expected look of the SpatialParameterType, e.g. Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon. The value constrains the type of geometries in the GeoJSON Wgs84Coordinates and AsIngestedCoordinates.',
+    )
+
+
+class AbstractMaster110(DDMSBaseModel):
+    """
+    Properties shared with all master-data schema instances.
+    """
+
+    NameAliases: Optional[List[AbstractAliasNames100]] = Field(
+        None,
+        description='Alternative names, including historical, by which this master data is/has been known (it should include all the identifiers).',
+    )
+    GeoContexts: Optional[List[AbstractGeoContext100]] = Field(
+        None,
+        description='List of geographic entities which provide context to the master data. This may include multiple types or multiple values of the same type.',
+    )
+    SpatialLocation: Optional[AbstractSpatialLocation110] = Field(
+        None,
+        description='The spatial location information such as coordinates, CRS information (left empty when not appropriate).',
+    )
+    VersionCreationReason: Optional[str] = Field(
+        None,
+        description='This describes the reason that caused the creation of a new version of this master data.',
+    )
+    TechnicalAssuranceTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-TechnicalAssuranceType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Describes a master-data record\'s overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single "preferred" or "definitive" record by comparison with other records.',
+        example='namespace:reference-data--TechnicalAssuranceType:Certified:',
+        title='Technical Assurance Type ID',
+    )
+
+
+class WellData110(AbstractCommonResources100, AbstractMaster110, AbstractFacility100):
+    DefaultVerticalMeasurementID: Optional[str] = Field(
+        None,
+        description='The default datum reference point, or zero depth point, used to determine other points vertically in a well.  References an entry in the VerticalMeasurements array.',
+    )
+    DefaultVerticalCRSID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CoordinateReferenceSystem:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The default vertical coordinate reference system used in the vertical measurements for a well or wellbore if absent from input vertical measurements and there is no other recourse for obtaining a valid CRS.',
+    )
+    VerticalMeasurements: Optional[List[VerticalMeasurementWell110]] = Field(
+        None,
+        description='List of all depths and elevations pertaining to the well, like, water depth, mud line elevation, etc.',
+    )
+    InterestTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellInterestType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="Business Interest [Well Interest Type] describes whether a company currently considers a well or its data to be a real or planned asset, and if so, the nature of and motivation for that company's interest.",
+    )
+    BusinessIntentionID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellBusinessIntention:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Business Intention [Well Business Intention] is the general purpose for which resources are approved for drilling a new well or subsequent wellbore(s).',
+        title='Business Intention ID',
+    )
+    RoleID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-WellRole:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description="Role [Well Role] is the current purpose, whether planned or actual. If there are multiple Roles among a well's components, the well may be assigned the facet value with the highest significance. The value of Role may change over the Life Cycle.",
+        title='Role ID',
+    )
+    HistoricalInterests: Optional[List[HistoricalInterest]] = Field(
+        None,
+        description='The list of past and present interests associated with the time period they were/are valid',
+        title='Historical Interests',
+    )
+    WasBusinessInterestFinancialOperated: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been FinancialOperated in the past.',
+        title='BusinessInterestFinancialOperatedFormerly',
+    )
+    WasBusinessInterestFinancialNonOperated: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been FinancialNonOperated in the past.',
+        title='BusinessInterestFinancialNonOperatedFormerly',
+    )
+    WasBusinessInterestObligatory: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been Obligatory in the past.',
+        title='BusinessInterestObligatoryFormerly',
+    )
+    WasBusinessInterestTechnical: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been Technical in the past.',
+        title='BusinessInterestTechnicalFormerly',
+    )
+    ConditionID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-WellCondition:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Condition [Well Condition] is the operational state of a well component relative to the Role [Well Role].',
+        title='ConditionID',
+    )
+    OutcomeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellBusinessIntentionOutcome:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Outcome [Well Drilling Outcome] is the result of attempting to accomplish the Business Intention [Well Business Intention].',
+        title='OutcomeID',
+    )
+    StatusSummaryID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellStatusSummary:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Identifies the status of a well component in a way that may combine and-or summarize concepts found in other status facets. For example, a Well Status Summary of Gas Injector Shut-in, which contains commonly desired business information, combines concepts from Product Type, Fluid Direction, and Condition.',
+        title='StatusSummaryID',
+    )
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
+
 class WellData(AbstractCommonResources100, AbstractMaster100, AbstractFacility100):
     DefaultVerticalMeasurementID: Optional[str] = Field(
         None,
@@ -1352,6 +1853,82 @@ class WellData(AbstractCommonResources100, AbstractMaster100, AbstractFacility10
         description='Pre-defined reasons for interest in the well or information about the well.',
     )
     ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
+class Well110(DDMSBaseModel):
+    """
+    The origin of a set of wellbores.
+    """
+
+    id: Optional[constr(regex=r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:master-data--Well:6c60ceb0-3521-57b7-9bd8-e1d7c9f66230',
+        title='Entity ID',
+    )
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:master-data--Well:1.1.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs, from which this record instance is derived.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellData110] = None
 
 
 class Well(DDMSBaseModel):
@@ -2737,6 +3314,77 @@ class Marker110(DDMSBaseModel):
     GeologicalAge: Optional[str] = Field(None, description='Associated geological age')
 
 
+class Marker120(DDMSBaseModel):
+    """
+    The array of marker meta data in this set.
+    """
+
+    MarkerName: Optional[str] = Field(None, description='Name of the Marker')
+    MarkerID: Optional[str] = Field(
+        None,
+        description='A unique identifier of the marker in the list of data.Markers[], ideally a UUID. If unpopulated, the string-converted element index number is used. The first index is "0".',
+        title='Marker ID',
+    )
+    InterpretationID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:(work-product-component\-\-HorizonInterpretation|work-product-component\-\-FaultInterpretation|work-product-component\-\-GeobodyBoundaryInterpretation):[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The optional relationship to a HorizonInterpretation, GeobodyBoundaryInterpretation or FaultInterpretation.',
+        title='Interpretation ID',
+    )
+    MarkerMeasuredDepth: Optional[float] = Field(
+        None, description='The depth at which the Marker was noted.'
+    )
+    MarkerSubSeaVerticalDepth: Optional[float] = Field(
+        None,
+        description="The Marker's TVD converted to a Sub-Sea Vertical depth, i.e., below Mean Sea Level. Note that TVD values above MSL are negative. This is the same as true vertical depth referenced to the vertical CRS MSL depth.",
+    )
+    MarkerDate: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the date and time when the when the Marker was interpreted.',
+    )
+    MarkerObservationNumber: Optional[float] = Field(
+        None,
+        description='Any observation number that distinguishes a Marker observation from others with same Marker name, date.',
+    )
+    MarkerInterpreter: Optional[str] = Field(
+        None,
+        description='The name of the Marker interpreter (could be a person or vendor).',
+    )
+    MarkerTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-MarkerType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Marker Type Reference Type. Possible values - Biostratigraphy, Lithostratigraphy, seismic, depth of well, sequence, flow unit',
+    )
+    FeatureTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-FeatureType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Feature Type Reference Type. Possible values - Base, top, fault, salt, reef, sea floor',
+    )
+    FeatureName: Optional[str] = Field(
+        None, description='Name of the feature the marker is characterizing'
+    )
+    PositiveVerticalDelta: Optional[float] = Field(
+        None,
+        description='The distance vertically above the Marker position that marks the limit of the high confidence range for the Marker pick.',
+    )
+    NegativeVerticalDelta: Optional[float] = Field(
+        None,
+        description='The distance vertically below the Marker position that marks the limit of the high confidence range for the Marker pick.',
+    )
+    SurfaceDipAngle: Optional[float] = Field(
+        None, description='Dip angle for the Wellbore Marker.'
+    )
+    SurfaceDipAzimuth: Optional[float] = Field(
+        None, description='Dip azimuth for the Wellbore Marker.'
+    )
+    Missing: Optional[str] = None
+    GeologicalAge: Optional[str] = Field(None, description='Associated geological age')
+
 
 class WellboreMarkerSetData(
     AbstractCommonResources100,
@@ -2778,6 +3426,52 @@ class WellboreMarkerSetData110(
     )
     Markers: Optional[List[Marker110]] = Field(
         None, description='The array of marker meta data in this set.', title='Markers'
+    )
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
+class WellboreMarkerSetData120(
+    AbstractCommonResources100, AbstractWPCGroupType100, AbstractWorkProductComponent100
+):
+    WellboreID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The Wellbore ID, to which the markers in this set belong.',
+        title='Wellbore ID',
+    )
+    VerticalMeasurement: Optional[AbstractFacilityVerticalMeasurement100] = Field(
+        None,
+        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all marker measured depths of the Wellbore Marker Set Markers array.',
+        title='Vertical Measurement',
+    )
+    AvailableMarkerProperties: Optional[List[AvailableMarkerProperty]] = Field(
+        None,
+        description='The array of MarkerProperty definitions describing the available properties for this instance of WellboreMarkerSet.',
+        title='Available Marker Properties',
+    )
+    Markers: Optional[List[Marker120]] = Field(
+        None,
+        description='The array of marker meta data in this set. Markers are externally identified by data.Markers[].MarkerID, ideally a UUID. Older versions of the WellboreMarkerSet schema do not have this identifier. In this case, the string-converted array index is used as MarkerID. The the first index is "0".',
+        title='Markers',
+    )
+    StratigraphicColumnID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-StratigraphicColumn:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The optional reference to a stratigraphic column (referring to multiple StratigraphicColumnRankInterpretation) providing the stratigraphic framework for the WellboreMarkerSet. It demonstrates the intent to describe complex, potentially overlapping stratigraphic intervals. Only one of the properties StratigraphicColumnID or StratigraphicColumnRankInterpretationID should be populated.',
+        title='Stratigraphic Column ID',
+    )
+    StratigraphicColumnRankInterpretationID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-StratigraphicColumnRankInterpretation:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The optional reference to a StratigraphicColumnRankInterpretation. It expresses the intent of a stratigraphic framework with non-overlapping intervals. Only one of the properties StratigraphicColumnID or StratigraphicColumnRankInterpretationID should be populated.',
+        title='Stratigraphic Column Rank ID',
     )
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
@@ -2936,3 +3630,339 @@ class WellboreMarkerSet110(DDMSBaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellboreMarkerSetData110] = None
+
+
+class WellboreMarkerSet120(DDMSBaseModel):
+    """
+    Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.
+    """
+
+    id: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$'
+        )
+    ] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c',
+        title='Entity ID',
+    )
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:work-product-component--WellboreMarkerSet:1.2.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs, from which this record instance is derived.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellboreMarkerSetData120] = None
+
+
+class WellBoreData110(AbstractCommonResources100, AbstractMaster110, AbstractFacility100):
+    WellID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+:[0-9]*$')
+    ] = None
+    SequenceNumber: Optional[int] = Field(
+        None,
+        description='A number that indicates the order in which wellbores were drilled.',
+    )
+    VerticalMeasurements: Optional[List[VerticalMeasurementWellbore110]] = Field(
+        None,
+        description='List of all depths and elevations pertaining to the wellbore, like, plug back measured depth, total measured depth, KB elevation',
+    )
+    DrillingReasons: Optional[List[AbstractWellboreDrillingReason100]] = Field(
+        None, description='The history of drilling reasons of the wellbore.'
+    )
+    KickOffWellbore: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='This is a pointer to the parent wellbore. The wellbore that starts from top has no parent.',
+    )
+    TrajectoryTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellboreTrajectoryType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Describes the predominant shapes the wellbore path can follow if deviated from vertical. Sample Values: Horizontal, Vertical, Directional.',
+    )
+    DefinitiveTrajectoryID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='SRN of Wellbore Trajectory which is considered the authoritative or preferred version.',
+    )
+    TargetFormation: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-GeologicalFormation:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The Formation of interest for which the Wellbore is drilled to interact with. The Wellbore may terminate in a lower formation if the requirement is to drill through the entirety of the target formation, therefore this is not necessarily the Formation at TD.',
+    )
+    PrimaryMaterialID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-MaterialType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='DEPRECATED: Please use PrimaryProductTypeID instead, which refers to the narrower WellProductType. The primary material injected/produced from the wellbore.',
+    )
+    DefaultVerticalMeasurementID: Optional[str] = Field(
+        None,
+        description='The default datum reference point, or zero depth point, used to determine other points vertically in a wellbore.  References an entry in the Vertical Measurements array of this wellbore.',
+    )
+    ProjectedBottomHoleLocation: Optional[AbstractSpatialLocation110] = Field(
+        None,
+        description="The bottom hole location of the wellbore denoted by a projected horizontal coordinate reference system (Horizontal CRS), such a UTM zone. 'Projected' in this property does not mean 'planned' or 'projected-to-bit'. If both GeographicBottomHoleLocation and ProjectedBottomHoleLocation properties are populated on this wellbore, they must identify the same point, just in different CRSs.",
+    )
+    GeographicBottomHoleLocation: Optional[AbstractSpatialLocation110] = Field(
+        None,
+        description='The bottom hole location of the wellbore denoted by a specified geographic horizontal coordinate reference system (Horizontal CRS), such as WGS84, NAD27, or ED50. If both GeographicBottomHoleLocation and ProjectedBottomHoleLocation properties are populated on this wellbore, they must identify the same point, just in different CRSs.',
+    )
+    BusinessIntentionID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellBusinessIntention:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Business Intention [Well Business Intention] is the general purpose for which resources are approved for drilling a new well or subsequent wellbore(s).',
+    )
+    RoleID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-WellRole:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description="Role [Well Role] is the current purpose, whether planned or actual. If there are multiple Roles among a wellbore's components, the well may be assigned the facet value with the highest significance. The value of Role may change over the Life Cycle.",
+    )
+    InterestTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellInterestType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="Business Interest [Well Interest Type] describes whether a company currently considers a wellbore entity or its data to be a real or planned asset, and if so, the nature of and motivation for that company's interest.",
+    )
+    HistoricalInterests: Optional[List[HistoricalInterest]] = Field(
+        None,
+        description='The list of past and present interests associated with the time period they were/are valid',
+    )
+    WasBusinessInterestFinancialOperated: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been FinancialOperated in the past.',
+    )
+    WasBusinessInterestFinancialNonOperated: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been FinancialNonOperated in the past.',
+    )
+    WasBusinessInterestObligatory: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been Obligatory in the past.',
+    )
+    WasBusinessInterestTechnical: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been Technical in the past.',
+    )
+    WellboreTrajectoryTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellboreTrajectoryType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Profile Type [Wellbore Trajectory Type] is the general geometry of the wellbore relative to the vertical plane. The specific criteria for Profile Type may vary by operator or regulator. The facet value may change if conditions encountered during drilling are not what was planned or permitted.',
+    )
+    PrimaryProductTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellProductType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Primary Product Significance identifies the Product Type that is most significant.',
+    )
+    SecondaryProductTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellProductType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Secondary Product Significance identifies the Product Type that is the second most significant.',
+    )
+    TertiaryProductTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellProductType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Tertiary Product Significance identifies the Product Type that is the third most significant.',
+    )
+    ShowProductTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellProductType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Show Product Significance identifies a Product Type present in non-commercial quantity.',
+    )
+    ConditionID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-WellCondition:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Condition [Well Condition] is the operational state of a wellbore component relative to the Role [Well Role].',
+    )
+    FluidDirectionID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellFluidDirection:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Fluid Direction [Well Fluid Direction] is the flow direction of the wellhead stream. The facet value can change over the life of the wellbore.',
+    )
+    OutcomeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellBusinessIntentionOutcome:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Outcome [Well Drilling Outcome] is the result of attempting to accomplish the Business Intention [Well Business Intention].',
+    )
+    StatusSummaryID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellStatusSummary:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Identifies the status of a wellbore component in a way that may combine and-or summarize concepts found in other status facets. For example, a Wellbore Status Summary of Gas Injector Shut-in, which contains commonly desired business information, combines concepts from Product Type, Fluid Direction, and Condition.',
+    )
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
+class Wellbore110(DDMSBaseModel):
+    """
+    A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.
+    """
+
+    id: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')
+    ] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9',
+        title='Entity ID',
+    )
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:master-data--Wellbore:1.1.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs, from which this record instance is derived.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellBoreData110] = None
