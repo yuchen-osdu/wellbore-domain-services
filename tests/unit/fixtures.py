@@ -241,7 +241,6 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         async def injection_coro(
                 *args, **kwargs
         ):
-            print(f"configure {return_value} in app_injector")
             return return_value
         return injection_coro
 
