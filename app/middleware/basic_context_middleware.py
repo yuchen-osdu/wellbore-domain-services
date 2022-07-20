@@ -50,6 +50,7 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
         correlation_id = request.headers.get(conf.CORRELATION_ID_HEADER_NAME, str(uuid.uuid4()))
         request_id = request.headers.get(conf.REQUEST_ID_HEADER_NAME, str(uuid.uuid4()))
         anonymous_user = User(email='anonymous', authenticated=False)
+        x_collaboration = request.headers.get(conf.X_COLLABORATION_HEADER_NAME, None)
 
         clear_logger_contextvars()
         logger_utils.add_fields(correlation_id=correlation_id,
@@ -67,6 +68,7 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
                       api_key=api_key,
                       user=anonymous_user,
                       x_user_id=x_user_id,
+                      x_collaboration=x_collaboration,
                       app_injector=self._app_injector)
         ctx.set_current()
 

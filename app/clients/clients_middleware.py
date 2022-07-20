@@ -76,6 +76,8 @@ async def client_middleware(request, call_next):
             request.headers[conf.APP_KEY_HEADER_NAME] = ctx.app_key
         if ctx.x_user_id:
             request.headers[conf.X_USER_ID_HEADER_NAME] = ctx.x_user_id
+        if ctx.x_collaboration:
+            request.headers[conf.X_COLLABORATION_HEADER_NAME] = ctx.x_collaboration
 
         response = None
         try:
