@@ -15,52 +15,67 @@
 import pytest
 from pytest_httpx import HTTPXMock
 from app.clients import make_storage_record_client, make_search_client
-from app.context import Context, get_or_create_ctx
+from app.context import Context
 
 from tests.unit.test_utils import ctx_fixture
 
-@pytest.mark.asyncio
-async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_config, ctx_fixture: Context, httpx_mock: HTTPXMock):
-    expected_correlation_id = 'some-correlation-id'
 
-    ctx = ctx_fixture.with_correlation_id(expected_correlation_id).with_auth("foobar")
-    Context.set_current(ctx)
+@pytest.fixture
+def headers_data():
+    return [
+        # context attribute name, header name, value
+        ("x_collaboration", "x-collaboration", "some_collaboration_space"),
+        ("correlation_id", "correlation-id", "some-correlation-id"),
+        ("x_user_id", "x-user-id", "some-user-id"),
+    ]
 
+
+@pytest.fixture
+def context(ctx_fixture, nope_logger_fixture, headers_data):
     # safety: make sure no methods on tracer have been called yet
-    assert ctx.tracer.method_calls == []
+    assert ctx_fixture.tracer.method_calls == []
+    return ctx_fixture.set_current_with_value(
+        auth="foobar",
+        **{v[0]: v[2] for v in headers_data}
+    )
 
+
+@pytest.fixture
+def expected_headers(headers_data):
+    return {v[1]: v[2] for v in headers_data}
+
+
+@pytest.mark.asyncio
+async def test_fwd_headers_to_outgoing_request_to_storage(local_dev_config,
+                                                          context: Context, expected_headers,
+                                                          httpx_mock: HTTPXMock):
     async with make_storage_record_client(host=local_dev_config.service_host_search.value,
                                           timeout=local_dev_config.de_client_config_timeout.value) as storage_client:
-        httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
+        httpx_mock.add_response(match_headers=expected_headers)
         # force to use endpoint which does not return a response to skip model validation
         response = await storage_client.delete_record(id="123", data_partition_id="test")
         assert response is not None
 
     # make sure correlation-id is traced when doing a request to storage
-    ctx.tracer.add_attribute_to_current_span.assert_any_call(
+    context.tracer.add_attribute_to_current_span.assert_any_call(
         attribute_key='correlation-id',
-        attribute_value=expected_correlation_id
+        attribute_value=expected_headers['correlation-id']
     )
 
+
 @pytest.mark.asyncio
-async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config, ctx_fixture: Context, httpx_mock: HTTPXMock):
-    expected_correlation_id = 'some-correlation-id'
-
-    ctx = ctx_fixture.with_correlation_id(expected_correlation_id).with_auth("foobar")
-    Context.set_current(ctx)
-
-    # safety: make sure no methods on tracer have been called yet
-    assert ctx.tracer.method_calls == []
-
+async def test_fwd_headers_to_outgoing_request_to_search(local_dev_config,
+                                                         context: Context, expected_headers,
+                                                         httpx_mock: HTTPXMock):
     async with make_search_client(host=local_dev_config.service_host_search.value,
                                   timeout=local_dev_config.de_client_config_timeout.value) as search_client:
-        httpx_mock.add_response(match_headers={'correlation-id': expected_correlation_id})
+        httpx_mock.add_response(match_headers=expected_headers)
         # force to use endpoint which does not return a response to skip model validation
         response = await search_client.delete_index(kind="kind", data_partition_id="test")
         assert response is not None
     
     # make sure correlation-id is traced when doing a request to search
-    ctx.tracer.add_attribute_to_current_span.assert_any_call(
+    context.tracer.add_attribute_to_current_span.assert_any_call(
         attribute_key='correlation-id',
-        attribute_value=expected_correlation_id
+        attribute_value=expected_headers['correlation-id']
     )

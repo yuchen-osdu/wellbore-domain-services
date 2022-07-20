@@ -36,7 +36,8 @@ class Context:
         '_user',
         '_app_injector',
         '_attr_dict',
-        '_x_user_id'
+        '_x_user_id',
+        '_x_collaboration'
     ]
 
     def __init__(self,
@@ -51,6 +52,7 @@ class Context:
                  user: Optional[User] = None,
                  app_injector: Optional[AppInjector] = None,
                  x_user_id: Optional[str] = None,
+                 x_collaboration: Optional[str] = None,
                  **keys):
 
         self._tracer = tracer
@@ -64,6 +66,7 @@ class Context:
         self._user = user
         self._app_injector = app_injector
         self._x_user_id = x_user_id
+        self._x_collaboration = x_collaboration
 
         # pass
         self._attr_dict = keys or {}
@@ -88,7 +91,7 @@ class Context:
     @classmethod
     def set_current_with_value(cls, tracer=None, correlation_id=None, request_id=None, auth=None,
                                partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                               dev_mode=None, x_user_id=None,
+                               dev_mode=None, x_user_id=None, x_collaboration=None,
                                **keys) -> 'Context':
         """
         clone the current context with the given values, set the new ctx as current and returns it
@@ -107,6 +110,7 @@ class Context:
                                      app_injector=app_injector,
                                      dev_mode=dev_mode,
                                      x_user_id=x_user_id,
+                                     x_collaboration=x_collaboration,
                                      **keys)
         new_ctx.set_current()
         return new_ctx
@@ -139,6 +143,7 @@ class Context:
             user=self._user,
             app_injector=self._app_injector,
             x_user_id=self._x_user_id,
+            x_collaboration=self._x_collaboration,
             **self._attr_dict)
 
     def with_correlation_id(self, correlation_id):
@@ -188,7 +193,7 @@ class Context:
 
     def with_value(self, tracer=None, correlation_id=None, request_id=None, auth=None,
                    partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                   dev_mode=None, x_user_id=None, **keys) -> 'Context':
+                   dev_mode=None, x_user_id=None, x_collaboration=None, **keys) -> 'Context':
         """ Clone context, adding all keys in future logs """
         cloned = self.__class__(
             tracer=tracer or self._tracer,
@@ -202,6 +207,7 @@ class Context:
             user=user or self._user,
             app_injector=app_injector or self._app_injector,
             x_user_id=x_user_id or self._x_user_id,
+            x_collaboration=x_collaboration or self._x_collaboration,
             **self._attr_dict)
 
         if keys is not None:
@@ -252,6 +258,10 @@ class Context:
     def x_user_id(self) -> Optional[str]:
         return self._x_user_id
 
+    @property
+    def x_collaboration(self) -> Optional[str]:
+        return self._x_collaboration
+
     def __dict__(self):
         return {
             "tracer": self.tracer,
@@ -262,6 +272,7 @@ class Context:
             "app_key": self.app_key,
             "api_key": self.api_key,
             "x_user_id": self.x_user_id,
+            "x_collaboration": self.x_collaboration,
         }
 
     def __repr__(self):

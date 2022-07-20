@@ -22,7 +22,7 @@ import time
 def get_context():
     return Context(logger='logger', correlation_id='correlation_id', request_id='request_id',
                    dev_mode=True, auth='auth', partition_id='partition_id',
-                   app_key='app_key', api_key='api_key', custom1='c1', custom2='c2')
+                   app_key='app_key', api_key='api_key', custom1='c1', custom2='c2', x_collaboration="c_space")
 
 
 @pytest.fixture
@@ -31,7 +31,7 @@ def context_base():
 
 
 def test_context_repr(context_base):
-    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "partition_id", "app_key": "app_key", "api_key": "api_key", "x_user_id": null}'
+    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "partition_id", "app_key": "app_key", "api_key": "api_key", "x_user_id": null, "x_collaboration": "c_space"}'
 
     assert str(context_base) == expected
     assert repr(context_base) == expected
@@ -46,6 +46,7 @@ def test_context_basic(context_base):
     assert context_base.partition_id == 'partition_id'
     assert context_base.app_key == 'app_key'
     assert context_base.api_key == 'api_key'
+    assert context_base.x_collaboration == "c_space"
 
     assert context_base['custom1'] == 'c1'
     assert context_base.get('custom1') == 'c1'
@@ -69,6 +70,7 @@ def test_context_clone(context_base):
     assert new_context.partition_id == context_base.partition_id
     assert new_context.app_key == context_base.app_key
     assert new_context.api_key == context_base.api_key
+    assert new_context.x_collaboration == context_base.x_collaboration
 
     assert new_context['custom1'] == 'new_c1'
     assert new_context['custom2'] == context_base['custom2']
