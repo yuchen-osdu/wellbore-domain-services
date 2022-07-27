@@ -21,7 +21,7 @@ async def test_should_start_and_leave_cleared_context(local_dev_config):
 
     properties_to_check = [
         'tracer', 'correlation_id', 'request_id', 'dev_mode', 'auth', 'partition_id',
-        'app_key', 'api_key', 'user', 'app_injector', 'x_user_id']
+        'app_key', 'api_key', 'user', 'app_injector', 'x_user_id', 'x_collaboration']
 
     # GIVEN set current with values and request with no headers
     Context(**{v: v for v in properties_to_check}).set_current()
@@ -78,3 +78,25 @@ async def test_should_leave_cleared_context_in_case_of_exception(local_dev_confi
     # and THEN context values should be back to none
     after_ctx = Context.current()
     assert all((after_ctx[p] is None for p in properties_to_check))
+
+
+def test_context_populated_from_request_headers(app_initialized_with_testclient):
+    _, client = app_initialized_with_testclient
+
+    from unittest import mock
+
+    def assert_context_populated(*args, **kwargs):
+        ctx = Context.current()
+        assert ctx.correlation_id == "my_correlation_id"
+        assert ctx.partition_id == "my_data_partition"
+        assert ctx.x_collaboration == "my_collaboration_space"
+        assert ctx.request_id == "my_request_id"
+
+    #  hijack AboutResponse to spy context content
+    with mock.patch("app.routers.about.AboutResponse", mock.Mock(construct=assert_context_populated)):
+        client.get("/about", headers={
+            'data-partition-id': 'my_data_partition',
+            'correlation-id': 'my_correlation_id',
+            'x-collaboration': 'my_collaboration_space',
+            'request-id': 'my_request_id',
+        })

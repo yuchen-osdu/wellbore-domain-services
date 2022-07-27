@@ -21,7 +21,7 @@ from odes_storage.models import (
     List,
     RecordVersions,
 )
-from app.model.osdu_model import Well
+from app.model.osdu_model import Well110 as Well
 from app.model.osdu_record_id import split_record_id_version, WellId
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
@@ -125,7 +125,7 @@ async def get_osdu_well_version(
     },
 )
 async def post_well_osdu(
-    wells: List[Well] = Body(..., example= load_schema_example("well_v3.json")), ctx: Context = Depends(get_ctx)
+    wells: List[Well] = Body(..., example= load_schema_example("well_v3_110.json")), ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(wells)
     storage_client = await get_storage_record_service(ctx)

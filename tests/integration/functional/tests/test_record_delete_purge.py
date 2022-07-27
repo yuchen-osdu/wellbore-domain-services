@@ -33,16 +33,16 @@ def build_request_post_data(entity_type: str, record_id: str, payload) -> Reques
 
 
 def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
-    col = ['MD', 'X']
+    col_and_nb_col = {'MD': 1, 'X': 1}
     if entity_type == 'welllog':
-        result = build_request_create_osdu_welllog(False, col).call(with_wdms_env)
+        result = build_request_create_osdu_welllog(False, col_and_nb_col).call(with_wdms_env)
     elif entity_type == 'wellboretrajectory':
-        result = build_request_create_osdu_wellboretrajectory(False, col).call(with_wdms_env)
+        result = build_request_create_osdu_wellboretrajectory(False, col_and_nb_col.keys()).call(with_wdms_env)
 
     result.assert_ok()
     resobj = result.get_response_obj()
 
-    data = generate_df(col, range(8))
+    data = generate_df(col_and_nb_col.keys(), range(8))
     data_to_send = serializer.dump(data)
     headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 

@@ -271,6 +271,7 @@ def build_request_create_osdu_wellbore() -> RequestRunner:
       {
         "VerticalMeasurementID": "Example VerticalMeasurementID",
         "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+        "RigID": "1U:master-data--Rig:p:7",
         "VerticalMeasurement": 12345.6,
         "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
         "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
@@ -474,7 +475,27 @@ def build_request_create_osdu_wellbore() -> RequestRunner:
       "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
       "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:"
     },
-    "ExtensionProperties": {}
+      "HistoricalInterests": [
+        {
+          "InterestTypeID": "namespace:reference-data--WellInterestType:Yes:",
+          "EffectiveDateTime": "2020-02-13",
+          "TerminationDateTime": "2020-02-13"
+        }
+      ],
+      "WasBusinessInterestFinancialOperated": true,
+      "WasBusinessInterestFinancialNonOperated": true,
+      "WasBusinessInterestObligatory": true,
+      "WasBusinessInterestTechnical": true,
+      "WellboreTrajectoryTypeID": "namespace:reference-data--WellboreTrajectoryType:Vertical:",
+      "PrimaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+      "SecondaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+      "TertiaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+      "ShowProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+      "ConditionID": "namespace:reference-data--WellCondition:Active:",
+      "FluidDirectionID": "namespace:reference-data--WellFluidDirection:DualFlow:",
+      "OutcomeID": "namespace:reference-data--WellBusinessIntentionOutcome:Achieved:",
+      "StatusSummaryID": "namespace:reference-data--WellStatusSummary:Planning:",
+      "ExtensionProperties": {}
   }
 }
 ]""",
@@ -625,6 +646,7 @@ def get_cleaned_ref_and_res() -> dict:
                 {
                     "VerticalMeasurementID": "Example VerticalMeasurementID",
                     "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+                    "RigID": "1U:master-data--Rig:p:7",
                     "VerticalMeasurement": 12345.6,
                     "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
                     "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
@@ -756,12 +778,33 @@ def get_cleaned_ref_and_res() -> dict:
                 "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
                 "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:",
             },
+            "HistoricalInterests": [
+                {
+                    "InterestTypeID": "namespace:reference-data--WellInterestType:Yes:",
+                    "EffectiveDateTime": "2020-02-13",
+                    "TerminationDateTime": "2020-02-13"
+                }
+            ],
+            "WasBusinessInterestFinancialOperated": True,
+            "WasBusinessInterestFinancialNonOperated": True,
+            "WasBusinessInterestObligatory": True,
+            "WasBusinessInterestTechnical": True,
+            "WellboreTrajectoryTypeID": "namespace:reference-data--WellboreTrajectoryType:Vertical:",
+            "PrimaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+            "SecondaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+            "TertiaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+            "ShowProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+            "ConditionID": "namespace:reference-data--WellCondition:Active:",
+            "FluidDirectionID": "namespace:reference-data--WellFluidDirection:DualFlow:",
+            "OutcomeID": "namespace:reference-data--WellBusinessIntentionOutcome:Achieved:",
+            "StatusSummaryID": "namespace:reference-data--WellStatusSummary:Planning:",
+
             "ExtensionProperties": {},
         },
     }
 
     # Add mandatory fields
-    ref["kind"] = "{{authorityKind}}:wks:master-data--Wellbore:1.0.0"
+    ref["kind"] = "{{authorityKind}}:wks:master-data--Wellbore:1.2.0"
     ref["acl"] = {
         "owners": ["{{acl_owner}}"],
         "viewers": ["{{acl_viewer}}"],

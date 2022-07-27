@@ -269,20 +269,39 @@ def build_request_create_osdu_well() -> RequestRunner:
     "VerticalMeasurements": [
       {
         "VerticalMeasurementID": "Example VerticalMeasurementID",
+        "RigID": "namespace:master-data--Rig:SomeUniqueRigID:",
         "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
         "VerticalMeasurement": 12345.6,
         "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
-        "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
-        "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
-        "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+        "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:PBD:",
+        "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MD:",
+        "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
         "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
         "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
-        "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+        "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
         "VerticalReferenceID": "Example VerticalReferenceID",
+        "VerticalReferenceEntityID": "namespace:master-data--Rig:SomeUniqueRigID:",
         "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
       }
     ],
     "InterestTypeID": "namespace:reference-data--WellInterestType:Operated:",
+    "BusinessIntentionID": "namespace:reference-data--WellBusinessIntention:Appraise:",
+    "RoleID": "namespace:reference-data--WellRole:Inject.MultipleProducts:",
+    "HistoricalInterests": [
+      {
+        "InterestTypeID": "namespace:reference-data--WellInterestType:Yes:",
+        "EffectiveDateTime": "2020-02-13",
+        "TerminationDateTime": "2020-02-13"
+      }
+    ],
+    "WasBusinessInterestFinancialOperated": true,
+    "WasBusinessInterestFinancialNonOperated": true,
+    "WasBusinessInterestObligatory": true,
+    "WasBusinessInterestTechnical": true,
+    "ConditionID": "namespace:reference-data--WellCondition:Active:",
+    "OutcomeID": "namespace:reference-data--WellBusinessIntentionOutcome:Achieved:",
+    "StatusSummaryID": "namespace:reference-data--WellStatusSummary:Planning:",
+   
     "ExtensionProperties": {}
   }
 }
@@ -470,27 +489,45 @@ def get_cleaned_ref_and_res() -> dict:
         "DefaultVerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
         "VerticalMeasurements": [
           {
-            "VerticalMeasurementID": "Example VerticalMeasurementID",
-            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
-            "VerticalMeasurement": 12345.6,
-            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
-            "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
-            "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
-            "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
-            "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
-            "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
-            "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
-            "VerticalReferenceID": "Example VerticalReferenceID",
-            "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+          "VerticalMeasurementID": "Example VerticalMeasurementID",
+          "RigID": "namespace:master-data--Rig:SomeUniqueRigID:",
+          "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+          "VerticalMeasurement": 12345.6,
+          "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
+          "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:PBD:",
+          "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MD:",
+          "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
+          "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+          "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+          "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+          "VerticalReferenceID": "Example VerticalReferenceID",
+          "VerticalReferenceEntityID": "namespace:master-data--Rig:SomeUniqueRigID:",
+          "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
           }
         ],
         "InterestTypeID": "namespace:reference-data--WellInterestType:Operated:",
+        "BusinessIntentionID": "namespace:reference-data--WellBusinessIntention:Appraise:",
+        "RoleID": "namespace:reference-data--WellRole:Inject.MultipleProducts:",
+        "HistoricalInterests": [
+          {
+            "InterestTypeID": "namespace:reference-data--WellInterestType:Yes:",
+            "EffectiveDateTime": "2020-02-13",
+            "TerminationDateTime": "2020-02-13"
+          }
+        ],
+        "WasBusinessInterestFinancialOperated": True,
+        "WasBusinessInterestFinancialNonOperated": True,
+        "WasBusinessInterestObligatory": True,
+        "WasBusinessInterestTechnical": True,
+        "ConditionID": "namespace:reference-data--WellCondition:Active:",
+        "OutcomeID": "namespace:reference-data--WellBusinessIntentionOutcome:Achieved:",
+        "StatusSummaryID": "namespace:reference-data--WellStatusSummary:Planning:",
         "ExtensionProperties": {}
       }
     }
 
     # Add mandatory fields
-    ref["kind"] = "{{authorityKind}}:wks:master-data--Well:1.0.0"
+    ref["kind"] = "{{authorityKind}}:wks:master-data--Well:1.1.0"
     ref["acl"] = {
         "owners": ["{{acl_owner}}"],
         "viewers": ["{{acl_viewer}}"],

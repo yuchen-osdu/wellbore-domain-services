@@ -1,5 +1,6 @@
 import asyncio
 
+import pytest
 from fastapi import Depends
 from unittest.mock import AsyncMock
 
@@ -7,7 +8,8 @@ from app.clients.search_service_client import get_search_service
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import Context, get_ctx
 
-from app.model.osdu_model import Well, Wellbore, WellboreMarkerSet110, WellboreTrajectory110, WellLog110, WellLog120
+from app.model.osdu_model import Well, Well110, Wellbore, Wellbore110, WellboreMarkerSet110, WellboreMarkerSet120, \
+    WellboreTrajectory110, WellLog110, WellLog120
 
 
 def test_local_dev_config(local_dev_config):
@@ -51,30 +53,34 @@ def test_mock_storage_client_holding_well_v2_record_data(
         )
 
 
+@pytest.mark.parametrize("well_record_data_fixture", ["well_v3_record_list", "well_v3_110_record_list"])
 def test_mock_storage_client_holding_well_v3_record_data(
-    mock_storage_client_holding_data, well_v3_record_list
+    mock_storage_client_holding_data, well_record_data_fixture, request
 ):
-    """Test the mock_storage_client_holding_data behavior, along with the well_v2_record data itself"""
-    storage_client = mock_storage_client_holding_data(well_v3_record_list)
+    well_record_data = request.getfixturevalue(well_record_data_fixture)
+    """Test the mock_storage_client_holding_data behavior, along with the well_v3_record data itself"""
+    storage_client = mock_storage_client_holding_data(well_record_data)
 
     # grab current eventloop if we already have one, otherwise creates it
     loop = asyncio.get_event_loop()
 
-    w3ids = [w3.id for w3 in well_v3_record_list]
+    w3ids = [w3.id for w3 in well_record_data]
     for w3id in w3ids:
         assert (
             loop.run_until_complete(
                 storage_client.get_record(w3id, "fake_data_partition_id")
             )
-            == [w for w in well_v3_record_list if w.id == w3id][0]
+            == [w for w in well_record_data if w.id == w3id][0]
         )
 
 
+@pytest.mark.parametrize("well_record_data_fixture", ["well_v3_record_list", "well_v3_110_record_list"])
 def test_mock_storage_client_holding_well_v3_record_with_version_data(
-    mock_storage_client_holding_data, well_v3_record_list
+    mock_storage_client_holding_data, well_record_data_fixture, request
 ):
-    """Test the mock_storage_client_holding_data behavior, along with the well_v2_record data itself"""
-    single_record_v0 = well_v3_record_list[0]
+    well_record_data = request.getfixturevalue(well_record_data_fixture)
+    """Test the mock_storage_client_holding_data behavior, along with the well_v3_record data itself"""
+    single_record_v0 = well_record_data[0]
     record_id = single_record_v0.id
     single_record_v1 = single_record_v0.copy(deep=True)
     single_record_v0.version = 0
@@ -131,30 +137,34 @@ def test_mock_storage_client_holding_wellbore_v2_record_data(
         )
 
 
+@pytest.mark.parametrize("wellbore_record_data_fixture", ["wellbore_v3_record_list", "wellbore_v3_110_record_list"])
 def test_mock_storage_client_holding_wellbore_v3_record_data(
-    mock_storage_client_holding_data, wellbore_v3_record_list
+    mock_storage_client_holding_data, wellbore_record_data_fixture, request
 ):
+    wellbore_record_data = request.getfixturevalue(wellbore_record_data_fixture)
     """Test the mock_storage_client_holding_data behavior, along with the well_v2_record data itself"""
-    storage_client = mock_storage_client_holding_data(wellbore_v3_record_list)
+    storage_client = mock_storage_client_holding_data(wellbore_record_data)
 
     # grab current eventloop if we already have one, otherwise creates it
     loop = asyncio.get_event_loop()
 
-    w3ids = [w3.id for w3 in wellbore_v3_record_list]
+    w3ids = [w3.id for w3 in wellbore_record_data]
     for w3id in w3ids:
         assert (
             loop.run_until_complete(
                 storage_client.get_record(w3id, "fake_data_partition_id")
             )
-            == [w for w in wellbore_v3_record_list if w.id == w3id][0]
+            == [w for w in wellbore_record_data if w.id == w3id][0]
         )
 
 
+@pytest.mark.parametrize("well_record_data_fixture", ["well_v3_record_list", "well_v3_110_record_list"])
 def test_app_configurable_with_and_without_data_partition(
-    app_configurable_with_testclient, mock_storage_client_holding_data, well_v3_record_list
+    app_configurable_with_testclient, mock_storage_client_holding_data, well_record_data_fixture, request
 ):
+    well_record_data = request.getfixturevalue(well_record_data_fixture)
     """Test the app configuration"""
-    storage_client = mock_storage_client_holding_data(well_v3_record_list)
+    storage_client = mock_storage_client_holding_data(well_record_data)
     app, client = app_configurable_with_testclient(
         storage_client_mock=storage_client,
         fake_data_partition_id=False,
@@ -166,7 +176,7 @@ def test_app_configurable_with_and_without_data_partition(
     response = client.get("/version")
     assert response
     # partition needed for any data retrieval
-    assert client.post(f"/wells/{well_v3_record_list[0].id}").status_code == 404
+    assert client.post(f"/wells/{well_record_data[0].id}").status_code == 404
     assert client.get(f"/wellbores/123").status_code == 404
     assert client.get(f"/logsets/123").status_code == 404
     assert client.get(f"/trajectories/123").status_code == 404
@@ -182,7 +192,7 @@ def test_app_configurable_with_and_without_data_partition(
     # no partition needed but authentication ok
     assert client.get("/version").status_code == 200
     # partition needed for any data retrieval
-    assert client.get(f"/wells/{well_v3_record_list[0].id}").status_code == 404
+    assert client.get(f"/wells/{well_record_data[0].id}").status_code == 404
     assert client.get(f"/wellbores/123").status_code == 404
     assert client.get(f"/logsets/123").status_code == 404
     assert client.get(f"/trajectories/123").status_code == 404
@@ -264,10 +274,22 @@ def test_well100_v3_list(well100_v3_list):
         Well.validate(inst)
 
 
+def test_well110_v3_list(well110_v3_list):
+    assert len(well110_v3_list) > 0
+    for inst in well110_v3_list:
+        Well110.validate(inst)
+
+
 def test_wellbore100_v3_list(wellbore100_v3_list):
     assert len(wellbore100_v3_list) > 0
     for inst in wellbore100_v3_list:
         Wellbore.validate(inst)
+
+
+def test_wellbore110_v3_list(wellbore110_v3_list):
+    assert len(wellbore110_v3_list) > 0
+    for inst in wellbore110_v3_list:
+        Wellbore110.validate(inst)
 
 
 def test_welllog110_v3_list(welllog110_v3_list):
@@ -286,6 +308,12 @@ def test_marker110_v3_list(marker110_v3_list):
     assert len(marker110_v3_list) > 0
     for inst in marker110_v3_list:
         WellboreMarkerSet110.validate(inst)
+
+
+def test_marker120_v3_list(marker120_v3_list):
+    assert len(marker120_v3_list) > 0
+    for inst in marker120_v3_list:
+        WellboreMarkerSet120.validate(inst)
 
 
 def test_trajectory110_v3_list(trajectory110_v3_list):

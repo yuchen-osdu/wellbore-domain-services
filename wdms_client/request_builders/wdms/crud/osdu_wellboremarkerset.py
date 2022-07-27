@@ -136,18 +136,45 @@ def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestR
       ],
       "IsExtendedLoad": true,
       "IsDiscoverable": true,
+      "TechnicalAssurances": [
+        {
+          "TechnicalAssuranceTypeID": "namespace:reference-data--TechnicalAssuranceType:Trusted:",
+          "Reviewers": [
+            {
+              "RoleTypeID": "namespace:reference-data--ContactRoleType:AccountOwner:",
+              "OrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+              "Name": "Example Name"
+            }
+          ],
+          "AcceptableUsage": [
+            {
+              "WorkflowUsage": "namespace:reference-data--WorkflowUsageType:SeismicProcessing:",
+              "WorkflowPersona": "namespace:reference-data--WorkflowPersonaType:SeismicProcessor:"
+            }
+          ],
+          "UnacceptableUsage": [
+            {
+              "WorkflowUsage": "namespace:reference-data--WorkflowUsageType:SeismicInterpretation:",
+              "WorkflowPersona": "namespace:reference-data--WorkflowPersonaType:SeismicInterpreter:"
+            }
+          ],
+          "EffectiveDate": "2020-02-13",
+          "Comment": "This is free form text from reviewer, e.g. restrictions on use"
+        }
+      ],
+      
       "Name": "Example Name",
       "Description": "Example Description",
-      "CreationDateTime": "2020-02-13T09:13:15.55Z",
+      "CreationDateTime": "2020-02-13T09:13:15.550000+00:00",
       "Tags": [
         "Example Tags"
       ],
       "SpatialPoint": {
-        "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
+        "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.550000+00:00",
         "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
         "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Confirmed:",
         "CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
-        "CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55Z",
+        "CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.550000+00:00",
         "CoordinateQualityCheckRemarks": [
           "Example CoordinateQualityCheckRemarks"
         ],
@@ -232,7 +259,7 @@ def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestR
         "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:"
       },
       "SpatialArea": {
-        "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
+        "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.550000+00:00",
         "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
         "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Confirmed:",
         "CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
@@ -341,9 +368,9 @@ def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestR
       ],
       "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
       "VerticalMeasurement": {
-        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+        "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
         "VerticalMeasurement": 12345.6,
-        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+        "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
         "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:PBD:",
         "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MD:",
         "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
@@ -363,8 +390,11 @@ def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestR
       "Markers": [
         {
           "MarkerName": "Example MarkerName",
+          "MarkerID": "Example Marker ID",
+          "InterpretationID": "namespace:work-product-component--GeobodyBoundaryInterpretation:GeobodyBoundaryInterpretation-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
           "MarkerMeasuredDepth": 12345.6,
-          "MarkerDate": "2020-02-13T09:13:15.55Z",
+          "MarkerSubSeaVerticalDepth": 12345.6,
+          "MarkerDate": "2020-02-13T09:13:15.550000+00:00",
           "MarkerObservationNumber": 12345.6,
           "MarkerInterpreter": "Example MarkerInterpreter",
           "MarkerTypeID": "namespace:reference-data--MarkerType:BioStratigraphy:",
@@ -378,6 +408,8 @@ def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestR
           "GeologicalAge": "Example GeologicalAge"
         }
       ],
+      "StratigraphicColumnID": "namespace:work-product-component--StratigraphicColumn:StratigraphicColumn-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+      "StratigraphicColumnRankInterpretationID": "namespace:work-product-component--StratigraphicColumnRankInterpretation:StratigraphicColumnRankInterpretation-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
       "ExtensionProperties": {}
     }
 }
@@ -388,7 +420,7 @@ def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestR
 
 def get_cleaned_ref_and_res() -> dict:
     ref = {
-        "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
+        "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.2.0",
         "acl": {
             "owners": [
                 "someone@company.com"
@@ -447,7 +479,34 @@ def get_cleaned_ref_and_res() -> dict:
           ],
           "IsExtendedLoad": True,
           "IsDiscoverable": True,
-          "Name": "Example Name",
+            "TechnicalAssurances": [
+                {
+                    "TechnicalAssuranceTypeID": "namespace:reference-data--TechnicalAssuranceType:Trusted:",
+                    "Reviewers": [
+                        {
+                            "RoleTypeID": "namespace:reference-data--ContactRoleType:AccountOwner:",
+                            "OrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+                            "Name": "Example Name"
+                        }
+                    ],
+                    "AcceptableUsage": [
+                        {
+                            "WorkflowUsage": "namespace:reference-data--WorkflowUsageType:SeismicProcessing:",
+                            "WorkflowPersona": "namespace:reference-data--WorkflowPersonaType:SeismicProcessor:"
+                        }
+                    ],
+                    "UnacceptableUsage": [
+                        {
+                            "WorkflowUsage": "namespace:reference-data--WorkflowUsageType:SeismicInterpretation:",
+                            "WorkflowPersona": "namespace:reference-data--WorkflowPersonaType:SeismicInterpreter:"
+                        }
+                    ],
+                    "EffectiveDate": "2020-02-13",
+                    "Comment": "This is free form text from reviewer, e.g. restrictions on use"
+                }
+            ],
+
+            "Name": "Example Name",
           "Description": "Example Description",
           "CreationDateTime": "2020-02-13T09:13:15.550000+00:00",
           "Tags": [
@@ -673,23 +732,28 @@ def get_cleaned_ref_and_res() -> dict:
           ],
           "Markers": [
             {
-              "MarkerName": "Example MarkerName",
-              "MarkerMeasuredDepth": 12345.6,
-              "MarkerDate": "2020-02-13T09:13:15.550000+00:00",
-              "MarkerObservationNumber": 12345.6,
-              "MarkerInterpreter": "Example MarkerInterpreter",
-              "MarkerTypeID": "namespace:reference-data--MarkerType:BioStratigraphy:",
-              "FeatureTypeID": "namespace:reference-data--FeatureType:Base:",
-              "FeatureName": "Example FeatureName",
-              "PositiveVerticalDelta": 12345.6,
-              "NegativeVerticalDelta": 12345.6,
-              "SurfaceDipAngle": 12345.6,
-              "SurfaceDipAzimuth": 12345.6,
-              "Missing": "Example Missing",
-              "GeologicalAge": "Example GeologicalAge"
+                "MarkerName": "Example MarkerName",
+                "MarkerID": "Example Marker ID",
+                "InterpretationID": "namespace:work-product-component--GeobodyBoundaryInterpretation:GeobodyBoundaryInterpretation-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+                "MarkerMeasuredDepth": 12345.6,
+                "MarkerSubSeaVerticalDepth": 12345.6,
+                "MarkerDate": "2020-02-13T09:13:15.550000+00:00",
+                "MarkerObservationNumber": 12345.6,
+                "MarkerInterpreter": "Example MarkerInterpreter",
+                "MarkerTypeID": "namespace:reference-data--MarkerType:BioStratigraphy:",
+                "FeatureTypeID": "namespace:reference-data--FeatureType:Base:",
+                "FeatureName": "Example FeatureName",
+                "PositiveVerticalDelta": 12345.6,
+                "NegativeVerticalDelta": 12345.6,
+                "SurfaceDipAngle": 12345.6,
+                "SurfaceDipAzimuth": 12345.6,
+                "Missing": "Example Missing",
+                "GeologicalAge": "Example GeologicalAge"
             }
           ],
-          "ExtensionProperties": {}
+            "StratigraphicColumnID": "namespace:work-product-component--StratigraphicColumn:StratigraphicColumn-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+            "StratigraphicColumnRankInterpretationID": "namespace:work-product-component--StratigraphicColumnRankInterpretation:StratigraphicColumnRankInterpretation-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+            "ExtensionProperties": {}
         }
 
     }
@@ -699,7 +763,7 @@ def get_cleaned_ref_and_res() -> dict:
     del ref["modifyUser"]
     del ref["modifyTime"]
     # Add mandatory fields
-    ref["kind"] = "opendes:wks:master-data--WellboreMarkerSet:1.0.0"
+    ref["kind"] = "opendes:wks:master-data--WellboreMarkerSet:1.2.0"
     ref["acl"] = {
         "owners": ["data.default.owners@opendes.p4d.cloud.slb-ds.com"],
         "viewers": ["data.default.viewers@opendes.p4d.cloud.slb-ds.com"],

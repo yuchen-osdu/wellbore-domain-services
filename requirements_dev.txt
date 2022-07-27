@@ -116,7 +116,7 @@ pycparser==2.20
     # via
     #   -c requirements.txt
     #   cffi
-pyjwt[crypto]==2.1.0
+pyjwt[crypto]==2.4.0
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in

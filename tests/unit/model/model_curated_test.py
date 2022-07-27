@@ -964,7 +964,6 @@ st.register_type_strategy(
     ),
 )
 
-
 @given(well_instance=st.from_type(model.well))
 @settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture]
@@ -977,11 +976,10 @@ def test_well_record_round_trip(well_instance, setup_well_examples):
 # module fixture to dynamically add hypothesis examples from model_examples data fixture
 @pytest.fixture
 def setup_well_examples(
-    well_v3_record_list, well_v2_record_list, well_wks_record, well_wks_mini_record
+    well_v2_record_list, well_wks_record, well_wks_mini_record
 ):
     for w in (
-        [from_record(model.well, w3) for w3 in well_v3_record_list]
-        + [from_record(model.well, w2) for w2 in well_v2_record_list]
+        [from_record(model.well, w2) for w2 in well_v2_record_list]
         + [
             from_record(model.well, well_wks_record),
             from_record(model.well, well_wks_mini_record),

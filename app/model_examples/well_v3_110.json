@@ -1,0 +1,65 @@
+[{
+        "acl": {
+            "viewers": [
+                "data.default.viewers@{{datapartitionid}}.{{domain}}"
+            ],
+            "owners": [
+                "data.default.owners@{{datapartitionid}}.{{domain}}"
+            ]
+        },
+        "data": {
+            "FacilityName": "{{wellName}}",
+            "FacilityNameAliases": [{
+                    "AliasName": "20-000-00000-00",
+                    "AliasNameTypeID": "{{datapartitionid}}:reference-data--AliasNameType:UniqueIdentifier:"
+                }
+            ],
+            "VerticalMeasurements": [{
+                    "VerticalMeasurementID": "Example VerticalMeasurementID",
+                    "RigID": "{{datapartitionid}}:master-data--Rig:SomeUniqueRigID:",
+                    "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                    "VerticalMeasurement": 12345.6,
+                    "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+                    "VerticalMeasurementTypeID": "{{datapartitionid}}:reference-data--VerticalMeasurementType:PBD:",
+                    "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
+                    "VerticalMeasurementSourceID": "{{datapartitionid}}:reference-data--VerticalMeasurementSource:DRL:",
+                    "WellboreTVDTrajectoryID": "{{datapartitionid}}:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+                    "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
+                    "VerticalCRSID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+                    "VerticalReferenceID": "Example VerticalReferenceID",
+                    "VerticalReferenceEntityID": "{{datapartitionid}}:master-data--Rig:SomeUniqueRigID:",
+                    "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+                }
+            ],
+            "BusinessIntentionID": "{{datapartitionid}}:reference-data--WellBusinessIntention:Appraise:",
+            "RoleID": "{{datapartitionid}}:reference-data--WellRole:Inject.MultipleProducts:",
+            "HistoricalInterests": [{
+                    "InterestTypeID": "{{datapartitionid}}:reference-data--WellInterestType:Yes:",
+                    "EffectiveDateTime": "2020-02-13",
+                    "TerminationDateTime": "2020-02-13"
+                }
+            ],
+            "WasBusinessInterestFinancialOperated": true,
+            "WasBusinessInterestFinancialNonOperated": true,
+            "WasBusinessInterestObligatory": true,
+            "WasBusinessInterestTechnical": true,
+            "ConditionID": "{{datapartitionid}}:reference-data--WellCondition:Active:",
+            "OutcomeID": "{{datapartitionid}}:reference-data--WellBusinessIntentionOutcome:Achieved:",
+            "StatusSummaryID": "{{datapartitionid}}:reference-data--WellStatusSummary:Planning:",
+
+            "ExtensionProperties": {}
+        },
+        "id": "{{datapartitionid}}:master-data--Well:{{wellId}}",
+        "kind": "osdu:wks:master-data--Well:1.1.0",
+        "legal": {
+            "legaltags": [
+                "{{legaltags}}"
+            ],
+            "otherRelevantDataCountries": [
+                "FR",
+                "US"
+            ],
+            "status": "compliant"
+        }
+    }
+]

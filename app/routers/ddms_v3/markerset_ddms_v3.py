@@ -23,7 +23,7 @@ from starlette.requests import Request
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import to_record, from_record
 from app.model.osdu_record_id import split_record_id_version, WellboreMarkerSetId
-from app.model.osdu_model import WellboreMarkerSet110 as WellboreMarkerSet
+from app.model.osdu_model import WellboreMarkerSet120 as WellboreMarkerSet
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
@@ -137,7 +137,7 @@ async def get_osdu_wellboreMarkerset_version(
     },
 )
 async def post_wellboreMarkerset_osdu(
-        wellboremarkersets: List[WellboreMarkerSet] = Body(..., example= load_schema_example("marker_v3.json")),
+        wellboremarkersets: List[WellboreMarkerSet] = Body(..., example= load_schema_example("marker_v3_120.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
     DMSV3RouterUtils.validate_record_against_kinds_schema(wellboremarkersets)

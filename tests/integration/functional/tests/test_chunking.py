@@ -162,9 +162,9 @@ WELLLOG_URL_PREFIX = 'alpha/ddms/v3/welllogs'
 @pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type, col) as record_id:
-        data = generate_df(col, range(8))
+    col_and_nb_col = {'MD': 1, 'X': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
+        data = generate_df(col_and_nb_col.keys(), range(8))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -180,9 +180,9 @@ def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_with_session_commit(with_wdms_env, entity_type, serializer):
 
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type, col) as record_id:
-        expected = generate_df(col, range(8))
+    col_and_nb_col = {'MD': 1, 'X': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
+        expected = generate_df(col_and_nb_col.keys(), range(8))
 
         # create session
         session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
@@ -213,9 +213,9 @@ def test_send_multiple_chunks_with_session_commit(with_wdms_env, shuffle):
     # well log on parquet
     entity_type = "well_log"
     serializer = ParquetSerializer()
-    col = ['MD', 'X', 'Y', 'Z']
-    with create_record(with_wdms_env, entity_type, col) as record_id:
-        data = generate_df(col, range(1000))
+    col_and_nb_col = {'MD': 1, 'X': 1, 'Y': 1, 'Z': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
+        data = generate_df(col_and_nb_col.keys(), range(1000))
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
         # create session
@@ -257,10 +257,10 @@ def test_get_data_with_offset_filter(with_wdms_env):
     # well log on parquet
     entity_type = "well_log"
     serializer = ParquetSerializer()
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type,col) as record_id:
+    col_and_nb_col = {'MD': 1, 'X': 1}
+    with create_record(with_wdms_env, entity_type,col_and_nb_col) as record_id:
         size = 100
-        data = generate_df(col, range(size))
+        data = generate_df(col_and_nb_col.keys(), range(size))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -296,8 +296,8 @@ def test_get_data_with_column_filter(with_wdms_env):
     # well log on parquet
     entity_type = "well_log"
     serializer = ParquetSerializer()
-
-    with create_record(with_wdms_env, entity_type, ['MD', 'X', 'Y', 'Z', '2D']) as record_id:
+    col_and_nb_col = {'MD': 1, 'X': 1, 'Y': 1, 'Z': 1, '2D': 3}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
         size = 100
         data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
         data_to_send = serializer.dump(data)
@@ -332,10 +332,10 @@ def test_get_data_with_limit_filter(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
 
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type, col) as record_id:
+    col_and_nb_col = {'MD': 1, 'X': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
         size = 100
-        data = generate_df(col, range(size))
+        data = generate_df(col_and_nb_col.keys(), range(size))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -368,10 +368,10 @@ def test_get_data_with_limit_filter(with_wdms_env):
 @pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
     serializer = ParquetSerializer()
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type, ['MD', 'X']) as record_id:
+    col_and_nb_col = {'MD': 1, 'X': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
         size = 100
-        data = generate_df(['MD', 'X'], range(size))
+        data = generate_df(col_and_nb_col.keys(), range(size))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -396,12 +396,12 @@ def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
 @pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type, col) as record_id:
+    col_and_nb_col = {'MD': 1, 'X': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
         # create session
         sessions = [{
             'id': create_session(with_wdms_env, entity_type, record_id, True),
-            'df': generate_df(col, range(8))
+            'df': generate_df(col_and_nb_col.keys(), range(8))
         } for _i in range(5)]  # mode overwrite
 
         for session in sessions:
@@ -434,10 +434,10 @@ def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, enti
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
 
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type, ['MD', 'X']) as record_id:
+    col_and_nb_col = {'MD': 1, 'X': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
         # post data
-        data = generate_df(col, range(10))
+        data = generate_df(col_and_nb_col.keys(), range(10))
         data_to_send = serializer.dump(data)
         build_request_post_data(entity_type, record_id, data_to_send).call(
             with_wdms_env, headers={'Content-Type': serializer.mime_type}).assert_ok()
@@ -445,7 +445,7 @@ def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_
         # create session
         sessions = [{
             'id': create_session(with_wdms_env, entity_type, record_id, False),
-            'df': generate_df(['MD', 'X'], range(10, 20))
+            'df': generate_df(col_and_nb_col.keys(), range(10, 20))
         } for _i in range(5)]  # mode overwrite
 
         for session in sessions:
@@ -542,8 +542,9 @@ def test_data_without_dask_update_session(with_wdms_env, entity_type, serializer
 @pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_arrayd_without_session(with_wdms_env, entity_type, serializer):
-    with create_record(with_wdms_env, entity_type, ['MD', 'array_10_A']) as record_id:
-        data = generate_df(['MD', 'array_10_A'], range(8))
+    col_and_nb_col = {'MD': 1, 'array_10_A': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
+        data = generate_df(col_and_nb_col.keys(), range(8))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 
@@ -557,10 +558,10 @@ def test_send_arrayd_without_session(with_wdms_env, entity_type, serializer):
 @pytest.mark.parametrize('entity_type', ["well_log"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer()])
 def test_describe(with_wdms_env, entity_type, serializer):
-    columns = ['BOB', 'MD']
-    with create_record(with_wdms_env, entity_type, columns) as record_id:
+    col_and_nb_col = {'BOB': 1, 'MD': 1}
+    with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
         number_of_rows = 8
-        data = generate_df(columns, range(number_of_rows))
+        data = generate_df(col_and_nb_col.keys(), range(number_of_rows))
         data_to_send = serializer.dump(data)
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
 

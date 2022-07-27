@@ -1,5 +1,12 @@
 # Log statistics
 
+
+- [Introduction](#introduction)
+- [Methodology](#methodology)
+
+
+## Introduction <a name="introduction"></a>
+
 [API specification](/solutions/wellboreddms/apis/osdu-wellbore-service#/Log/get_log_data_statistics_ddms_v2_logs__logid__statistics_get)
 
 **Goal:** Provide statistical information for Bulk log data
@@ -22,7 +29,8 @@ The method calculate the following statistics:
 
 -   Percentiles : 25%, 50% , 75%
 
-**Methodology:**
+
+## Methodology <a name="methodology"></a>
 
 To calculate the statistics, the service use the method `describe` from the "Pandas" library.
 

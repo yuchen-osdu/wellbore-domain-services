@@ -21,9 +21,8 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 import odes_storage.models as model
 
-import app.modules.log_recognition.routers.family_processor_manager as fp_manager
+from . import family_processor_manager as fp_manager
 from app.clients.storage_service_client import get_storage_record_service
-from app.conf import Config
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 from app.helper.traces import with_trace
@@ -33,6 +32,7 @@ from app.helper.traces import TracingRoute
 router = APIRouter(route_class=TracingRoute)
 router.prefix = '/log-recognition'
 router.tags = ['log-recognition']
+CUSTOM_CATALOG_LIFETIME = 300  # in seconds
 
 
 class CatalogItem(BaseModel):
@@ -96,7 +96,7 @@ class CatalogRecord(BaseModel):
         }
 
 
-family_processor_manager = fp_manager.FamilyProcessorManager(Config.custom_catalog_timeout.value)
+family_processor_manager = fp_manager.FamilyProcessorManager(CUSTOM_CATALOG_LIFETIME)
 
 
 class GuessRequest(BaseModel):

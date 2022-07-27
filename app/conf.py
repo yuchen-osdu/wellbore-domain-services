@@ -179,7 +179,7 @@ class ConfigurationContainer:
     modules: EnvVar = EnvVar(
         key='MODULES',
         description="""Comma separated list of module names to load.""",
-        default="log_recognition.routers.log_recognition") # Add modules to the list once they are refactored, so that they are included
+        default="")
 
     min_worker_memory: EnvVar = EnvVar(
         key='MIN_WORKER_MEMORY',
@@ -412,3 +412,4 @@ REQUEST_ID_HEADER_NAME = 'Request-ID'
 PARTITION_ID_HEADER_NAME = 'data-partition-id'
 MODULES_PATH_PREFIX = 'app.modules'
 X_USER_ID_HEADER_NAME = 'x-user-id'
+X_COLLABORATION_HEADER_NAME = 'x-collaboration'
