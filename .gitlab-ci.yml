@@ -18,7 +18,7 @@ variables:
   IGNORE_PYTHON_SETUP: "wdms_client/request_builders/wdms/recursive_delete/ wdms_client/request_builders/wdms/search_apis/"
 
   AZURE_SERVICE: wellbore-ddms
-  AZURE_DOCKER_SUBDIR: build/Dockerfile
+  AZURE_DOCKER_SUBDIR: devops/azure/Dockerfile
   AZURE_TEST_SUBDIR: tests/integration
   AZURE_TEST_TYPE: python
 
