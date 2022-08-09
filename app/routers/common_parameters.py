@@ -1,4 +1,4 @@
-from fastapi import Query, Request, HTTPException
+from fastapi import Query, Request, HTTPException, status
 from pandas import DataFrame
 
 from app.bulk_persistence import MimeType, MimeTypes
@@ -80,3 +80,15 @@ REQUIRED_ROLES_READ = """
 """
 
 REQUIRED_ROLES_WRITE = "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>"
+
+response_201 = {status.HTTP_201_CREATED: {"description": "toto"}}
+response_202 = {status.HTTP_202_ACCEPTED: {"description": "toto2"}}
+response_204 = {status.HTTP_204_NO_CONTENT: {"description": "Record deleted successfully"}}
+response_204_multiple = {status.HTTP_204_NO_CONTENT: {"description": "Records deleted successfully"}}
+response_400 = {status.HTTP_400_BAD_REQUEST: {"description": "Bad request"}}
+response_401 = {status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"}}
+response_403 = {status.HTTP_403_FORBIDDEN: {"description": "Forbidden"}}
+response_404 = {status.HTTP_404_NOT_FOUND: {"description": "Record not found"}}
+response_404_description = "{} not found"
+# response_422 = {status.HTTP_422_UNPROCESSABLE_ENTITY: {"description": "Unprocessable entity"}}
+response_500 = {status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Internal server error"}}

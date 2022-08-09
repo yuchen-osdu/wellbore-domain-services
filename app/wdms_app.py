@@ -32,6 +32,8 @@ from app.injector.main_injector import MainInjector
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id
 from app.routers import probes, about, sessions
+from app.routers.common_parameters import response_201, response_202, response_404, response_500, response_401, \
+    response_403
 from app.routers.ddms_v2 import (
     ddms_v2,
     wellbore_ddms_v2,
@@ -213,6 +215,7 @@ for v3_api, tag, entity_type in ddms_v3_routes_groups_with_bulk:
     wdms_app.include_router(v3_api.router,
                             prefix=DDMS_V3_PATH,
                             tags=[tag],
+                            responses={**response_401, **response_403, **response_500},
                             dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
 
 wdms_app.include_router(search_v3.router, prefix=DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies)
