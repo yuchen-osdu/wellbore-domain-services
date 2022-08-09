@@ -9538,6 +9538,9 @@
               }
             },
             "description": "Successful Response"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "summary": "Get About",
@@ -9667,6 +9670,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -9679,6 +9688,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -9744,6 +9756,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -9756,6 +9774,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -9811,6 +9832,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -9820,6 +9850,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -9880,6 +9913,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -9889,6 +9931,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -9950,6 +9995,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -9959,6 +10013,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10028,6 +10085,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10037,6 +10103,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10119,6 +10188,15 @@
           "400": {
             "description": "Record not found"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10128,6 +10206,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10271,6 +10352,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -10283,6 +10370,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10351,6 +10441,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10360,6 +10456,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10426,6 +10525,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10435,6 +10540,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10519,6 +10627,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10528,6 +10642,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10580,6 +10697,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10589,6 +10712,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10650,6 +10776,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10659,6 +10791,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10720,6 +10855,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10729,6 +10870,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10790,6 +10934,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10799,6 +10949,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10860,6 +11013,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10869,6 +11028,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10930,6 +11092,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -10939,6 +11107,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -10991,6 +11162,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11000,6 +11177,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11088,6 +11268,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11097,6 +11283,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11176,6 +11365,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11185,6 +11380,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11238,6 +11436,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11247,6 +11451,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11308,6 +11515,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11317,6 +11530,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11378,6 +11594,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11387,6 +11609,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11440,6 +11665,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11449,6 +11680,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11507,6 +11741,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11516,6 +11756,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11583,6 +11826,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11592,6 +11841,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11659,6 +11911,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11668,6 +11926,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11735,6 +11996,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11744,6 +12011,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11811,6 +12081,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11820,6 +12096,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11887,6 +12166,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11896,6 +12181,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -11954,6 +12242,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -11963,6 +12257,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12057,6 +12354,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12066,6 +12369,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12151,6 +12457,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12160,6 +12472,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12213,6 +12528,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12222,6 +12543,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12289,6 +12613,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12298,6 +12628,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12365,6 +12698,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12374,6 +12713,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12427,6 +12769,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12436,6 +12784,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12536,6 +12887,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12545,6 +12902,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12602,6 +12962,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "DipSet not found"
           },
@@ -12614,6 +12980,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12664,6 +13033,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "DipSet not found"
           },
@@ -12676,6 +13051,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12752,6 +13130,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "DipSet not found"
           },
@@ -12764,6 +13148,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12834,6 +13221,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12843,6 +13236,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -12913,6 +13309,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -12922,6 +13324,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13007,6 +13412,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -13016,6 +13427,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13081,6 +13495,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "DipSet or index not found"
           },
@@ -13093,6 +13513,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13152,6 +13575,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "DipSet or index not found"
           },
@@ -13164,6 +13593,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13237,6 +13669,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "DipSet not found"
           },
@@ -13249,6 +13687,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13301,6 +13742,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "DipSet not found"
           },
@@ -13313,6 +13760,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13374,6 +13824,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "DipSet not found"
           },
@@ -13386,6 +13842,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13526,6 +13985,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -13535,6 +14000,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13580,6 +14048,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
@@ -13592,6 +14066,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13642,6 +14119,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
@@ -13654,6 +14137,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13733,6 +14219,12 @@
             },
             "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
@@ -13745,6 +14237,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -13977,6 +14472,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
@@ -13989,6 +14490,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14096,11 +14600,20 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
           "422": {
             "description": "log is not compatible with decimation"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14168,6 +14681,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -14177,6 +14696,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14268,6 +14790,12 @@
           "400": {
             "description": "invalid request"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
@@ -14280,6 +14808,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14332,6 +14863,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
@@ -14344,6 +14881,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14405,6 +14945,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
@@ -14417,6 +14963,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14505,6 +15054,12 @@
             },
             "description": "Get log bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 3 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"Ref\",\"col_100X\",\"col_200X\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1001,2001],[0.5,1002,2002],[1.0,1003,2003],[1.5,1004,2004],[2.0,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"Ref\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"col_100X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"col_200X\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "log not found"
           },
@@ -14517,6 +15072,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14644,6 +15202,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -14653,6 +15217,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14710,6 +15277,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "LogSet not found"
           },
@@ -14722,6 +15295,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14772,6 +15348,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "LogSet not found"
           },
@@ -14784,6 +15366,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14836,6 +15421,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "LogSet not found"
           },
@@ -14848,6 +15439,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -14909,6 +15503,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "LogSet not found"
           },
@@ -14921,6 +15521,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15032,6 +15635,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -15041,6 +15650,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15086,6 +15698,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Marker not found"
           },
@@ -15098,6 +15716,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15148,6 +15769,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "marker not found"
           },
@@ -15160,6 +15787,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15212,6 +15842,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "marker not found"
           },
@@ -15224,6 +15860,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15285,6 +15924,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "marker not found"
           },
@@ -15297,6 +15942,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15435,6 +16083,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -15444,6 +16098,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15489,6 +16146,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Trajectory not found"
           },
@@ -15501,6 +16164,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15551,6 +16217,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Trajectory not found"
           },
@@ -15563,6 +16235,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15650,6 +16325,12 @@
           },
           "400": {
             "description": "unknown channels"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "404": {
             "description": "trajectory not found"
@@ -15847,6 +16528,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "trajectory not found"
           },
@@ -15859,6 +16546,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15911,6 +16601,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Trajectory not found"
           },
@@ -15923,6 +16619,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -15984,6 +16683,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Trajectory not found"
           },
@@ -15996,6 +16701,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16087,6 +16795,12 @@
             },
             "description": "Get trajectory bulk data in format in the given _orient_ value.\nIt uses [Pandas.Dataframe json format](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n Here're examples for data with 5 rows and 4 columns with different _orient_: \n* split:  <br/>`{\"columns\":[\"MD\",\"TVD\",\"X\",\"Y\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,0.0,1001,2001],[0.5,0.5,1002,2002],[1.0,0.75,1003,2003],[1.5,1.0,1004,2004],[2.0,1.5,1005,2005]]}`<br/>&nbsp;\n* columns:  <br/>`{\"MD\":{\"0\":0.0,\"1\":0.5,\"2\":1.0,\"3\":1.5,\"4\":2.0},\"TVD\":{\"0\":0.0,\"1\":0.5,\"2\":0.75,\"3\":1.0,\"4\":1.5},\"X\":{\"0\":1001,\"1\":1002,\"2\":1003,\"3\":1004,\"4\":1005},\"Y\":{\"0\":2001,\"1\":2002,\"2\":2003,\"3\":2004,\"4\":2005}}`<br/>&nbsp;"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "trajectory not found"
           },
@@ -16099,6 +16813,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16299,6 +17016,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -16308,6 +17031,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16365,6 +17091,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore not found"
           },
@@ -16377,6 +17109,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16427,6 +17162,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore not found"
           },
@@ -16439,6 +17180,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16491,6 +17235,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore not found"
           },
@@ -16503,6 +17253,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16564,6 +17317,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore not found"
           },
@@ -16576,6 +17335,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16664,6 +17426,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -16673,6 +17441,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16730,6 +17501,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Well not found"
           },
@@ -16742,6 +17519,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16792,6 +17572,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Well not found"
           },
@@ -16804,6 +17590,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16856,6 +17645,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Well not found"
           },
@@ -16868,6 +17663,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -16929,6 +17727,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Well not found"
           },
@@ -16941,6 +17745,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17008,6 +17815,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -17017,6 +17830,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17075,6 +17891,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -17084,6 +17906,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17151,6 +17976,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -17160,6 +17991,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17227,6 +18061,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -17236,6 +18076,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17302,6 +18145,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -17311,6 +18160,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17369,6 +18221,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -17378,6 +18236,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17444,6 +18305,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -17453,6 +18320,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17519,6 +18389,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -17528,6 +18404,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -17577,6 +18456,12 @@
           "204": {
             "description": "Records deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "record/s not found"
           },
@@ -17589,6 +18474,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18002,6 +18890,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -18011,6 +18905,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18056,6 +18953,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellboreMarkerSet not found"
           },
@@ -18068,6 +18971,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18118,6 +19024,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore Marker Set not found"
           },
@@ -18130,6 +19042,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18182,6 +19097,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellboreMarkerSet not found"
           },
@@ -18194,6 +19115,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18255,6 +19179,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellboreMarkerSet not found"
           },
@@ -18267,6 +19197,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18471,6 +19404,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -18480,6 +19419,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18525,6 +19467,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore not found"
           },
@@ -18537,6 +19485,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18587,6 +19538,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore not found"
           },
@@ -18599,6 +19556,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18651,6 +19611,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore not found"
           },
@@ -18663,6 +19629,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -18724,6 +19693,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore not found"
           },
@@ -18736,6 +19711,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19112,6 +20090,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -19121,6 +20105,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19254,6 +20241,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -19266,6 +20259,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19330,6 +20326,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -19342,6 +20344,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19396,6 +20401,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -19405,6 +20419,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19464,6 +20481,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -19473,6 +20499,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19533,6 +20562,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -19542,6 +20580,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19610,6 +20651,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -19619,6 +20669,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19700,6 +20753,15 @@
           "400": {
             "description": "Record not found"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -19709,6 +20771,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19851,6 +20916,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -19863,6 +20934,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19918,6 +20992,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellboreTrajectory not found"
           },
@@ -19930,6 +21010,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -19980,6 +21063,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Wellbore Trajectory not found"
           },
@@ -19992,6 +21081,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20044,6 +21136,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellboreTrajectory not found"
           },
@@ -20056,6 +21154,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20117,6 +21218,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellboreTrajectory not found"
           },
@@ -20129,6 +21236,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20278,6 +21388,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -20287,6 +21403,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20420,6 +21539,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -20432,6 +21557,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20496,6 +21624,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -20508,6 +21642,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20571,6 +21708,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -20616,6 +21759,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20670,6 +21816,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -20679,6 +21834,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20738,6 +21896,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -20747,6 +21914,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20807,6 +21977,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -20816,6 +21995,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20884,6 +22066,15 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -20893,6 +22084,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -20974,6 +22168,15 @@
           "400": {
             "description": "Record not found"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -20983,6 +22186,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21125,6 +22331,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
           },
@@ -21137,6 +22349,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21209,6 +22424,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -21254,6 +22475,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21310,6 +22534,12 @@
             },
             "description": "Statistics computation started"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Statistics or record not found"
           },
@@ -21325,6 +22555,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21380,6 +22613,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellLog not found"
           },
@@ -21392,6 +22631,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21442,6 +22684,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellLog not found"
           },
@@ -21454,6 +22702,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21506,6 +22757,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellLog not found"
           },
@@ -21518,6 +22775,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21579,6 +22839,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "WellLog not found"
           },
@@ -21591,6 +22857,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21718,6 +22987,12 @@
           "400": {
             "description": "Missing mandatory parameter or unknown parameter"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -21727,6 +23002,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21772,6 +23050,12 @@
           "204": {
             "description": "Record deleted successfully"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Well not found"
           },
@@ -21784,6 +23068,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21834,6 +23121,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Well not found"
           },
@@ -21846,6 +23139,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21898,6 +23194,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Well not found"
           },
@@ -21910,6 +23212,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -21971,6 +23276,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Well not found"
           },
@@ -21983,6 +23294,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -22035,6 +23349,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Family not found"
           },
@@ -22047,6 +23367,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -22099,6 +23422,12 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "422": {
             "content": {
               "application/json": {
@@ -22108,6 +23437,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -22134,6 +23466,15 @@
               }
             },
             "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [

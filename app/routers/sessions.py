@@ -6,6 +6,7 @@ from uuid import UUID
 
 from starlette.requests import Request
 
+from app.routers.common_parameters import response_404
 from app.tenant import resolve_tenant
 from app.clients import StorageRecordServiceClient
 from app.bulk_persistence import (Session,
@@ -120,6 +121,7 @@ async def get_session_dependencies():
                 "\n\nSession has an expiry time."
                 " If the session is not completed before, it's automatically dropped. "
                 "The session duration is specified in the request but cannot exceeds 24 hours.",
+    responses={**response_404},
     response_model=Session
 )
 async def create_session(record_id: str,
@@ -162,6 +164,7 @@ async def create_session(record_id: str,
 @router.get(
     "/{record_id}/sessions/{session_id}",
     summary='get session.',
+    responses={**response_404},
     response_model=Session
 )
 async def get_session(record_id: str,
@@ -179,6 +182,7 @@ async def get_session(record_id: str,
 @router.delete(
     "/{record_id}/sessions/{session_id}",
     summary='TEMPORARY: delete session.', status_code=204, response_class=Response,
+    responses={**response_404},
     include_in_schema=False
 )
 async def delete_session(record_id: str,
@@ -191,6 +195,7 @@ async def delete_session(record_id: str,
 @router.get(
     "/{record_id}/sessions",
     summary='list session of the given record.',
+    responses={**response_404},
     response_model=List[Session]
 )
 async def list_session(record_id: str,
