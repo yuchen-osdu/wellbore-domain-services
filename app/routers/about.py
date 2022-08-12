@@ -19,6 +19,7 @@ from app.conf import Config
 from typing import Dict
 from app.auth.auth import require_opendes_authorized_user
 from app.helper.traces import TracingRoute
+from app.routers.common_parameters import response_401, response_403
 
 router = APIRouter(route_class=TracingRoute)
 
@@ -47,7 +48,8 @@ class VersionDetailsResponse(BaseModel):
     details: Dict[str, str] = None
 
 
-@router.get("/version", response_model=VersionDetailsResponse, include_in_schema=True)
+@router.get("/version", response_model=VersionDetailsResponse, include_in_schema=True,
+            responses={**response_401, **response_403})
 async def get_version(user=Depends(require_opendes_authorized_user, use_cache=False)):
     # very basic parsing for now
     key_val_list = [key_val.split('=', 1) for key_val in Config.build_details.value.split(';') if '=' in key_val]

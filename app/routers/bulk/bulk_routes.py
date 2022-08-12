@@ -33,7 +33,7 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_WRITE,
                                            json_orient_parameter,
                                            read_bulk_accept_type,
-                                           write_bulk_content_type)
+                                           write_bulk_content_type, response_404)
 
 from app.routers.record_utils import fetch_record, fetch_record_dependency, fetch_latest_version_record_dependency
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
@@ -152,7 +152,10 @@ async def post_data(record_id: str,
     + REQUIRED_ROLES_WRITE,
     operation_id=OPERATION_IDS["chunk_data"],
     response_model=DataframeBasicDescribe,
-    responses={400: {"description": "Record not found"}}
+    responses={
+        400: {"description": "Record not found"},
+        **response_404
+    }
 )
 async def post_chunk_data(record_id: str,
                           session_id: UUID,
@@ -322,6 +325,7 @@ async def get_data(
 @router.patch(
     "/{record_id}/sessions/{session_id}",
     summary='Update a session, either commit or abandon.',
+    responses={**response_404},
     response_model=CommitSessionResponse
 )
 async def complete_session(
