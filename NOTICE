@@ -19,8 +19,8 @@ The following software have components provided under the terms of this license:
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
 - google-cloud-core (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-cloud-core)
-- google-cloud-monitoring (from https://github.com/GoogleCloudPlatform/google-cloud-python)
-- google-cloud-trace (from https://github.com/googleapis/googleapis)
+- google-cloud-monitoring (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-monitoring)
+- google-cloud-trace (from https://github.com/googleapis/googleapis, https://github.com/googleapis/python-trace)
 - googleapis-common-protos (from https://github.com/googleapis/googleapis, https://github.com/googleapis/python-api-common-protos)
 - grpcio (from https://grpc.io)
 - importlib-metadata
@@ -261,7 +261,7 @@ The following software have components provided under the terms of this license:
 - azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
 - azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-certificates)
 - azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
-- azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
+- azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-secrets, https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
 - azure-storage-blob (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob, https://github.com/Azure/azure-storage-python)
 - backoff
 - botocore (from https://github.com/boto/botocore)

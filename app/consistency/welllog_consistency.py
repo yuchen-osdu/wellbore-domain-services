@@ -190,7 +190,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         not_matching_nb_col_per_name = {curve.CurveID: curve.NumberOfColumns for curve in wl.data.Curves
                                if curve.CurveID in nb_col_per_names
-                               and nb_col_per_names[curve.CurveID] is not curve.NumberOfColumns}
+                               and nb_col_per_names[curve.CurveID] != curve.NumberOfColumns}
         if any(not_matching_nb_col_per_name):
             expected_nb_of_col_per_name = {curve_id: nb_col_per_names[curve_id] for curve_id in not_matching_nb_col_per_name}
             raise TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(

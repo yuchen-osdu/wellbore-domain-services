@@ -1,4 +1,4 @@
-from fastapi import Query, Request, HTTPException
+from fastapi import Query, Request, HTTPException, status
 from pandas import DataFrame
 
 from app.bulk_persistence import MimeType, MimeTypes
@@ -80,3 +80,8 @@ REQUIRED_ROLES_READ = """
 """
 
 REQUIRED_ROLES_WRITE = "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>"
+
+response_401 = {status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"}}
+response_403 = {status.HTTP_403_FORBIDDEN: {"description": "Forbidden"}}
+response_404 = {status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
+response_500 = {status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Internal server error"}}

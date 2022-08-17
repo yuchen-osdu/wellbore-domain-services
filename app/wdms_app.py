@@ -32,6 +32,7 @@ from app.injector.main_injector import MainInjector
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id
 from app.routers import probes, about, sessions
+from app.routers.common_parameters import response_500, response_401, response_403
 from app.routers.ddms_v2 import (
     ddms_v2,
     wellbore_ddms_v2,
@@ -184,11 +185,13 @@ basic_dependencies = [
 ]
 
 wdms_app.include_router(probes.router)
-wdms_app.include_router(about.router, tags=["Wellbore DDMS"])
+wdms_app.include_router(about.router, tags=["Wellbore DDMS"], responses={**response_500})
 
 # hidden from swagger but maintained for backward compatibility with /ddms/v2 APIs
-wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
-wdms_app.include_router(ddms_v2.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False)
+wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False,
+                        responses={**response_500})
+wdms_app.include_router(ddms_v2.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False,
+                        responses={**response_401, **response_403, **response_500})
 
 
 ddms_v3_routes_groups_without_bulk = [
@@ -206,6 +209,7 @@ for v3_api, tag, entity_type in ddms_v3_routes_groups_without_bulk:
     wdms_app.include_router(v3_api.router,
                             prefix=DDMS_V3_PATH,
                             tags=[tag],
+                            responses={**response_401, **response_403, **response_500},
                             dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
 
 v3_bulk_dependencies = [*basic_dependencies, Depends(set_v3_input_dataframe_check), Depends(set_osdu_bulk_id_access)]
@@ -213,15 +217,19 @@ for v3_api, tag, entity_type in ddms_v3_routes_groups_with_bulk:
     wdms_app.include_router(v3_api.router,
                             prefix=DDMS_V3_PATH,
                             tags=[tag],
+                            responses={**response_401, **response_403, **response_500},
                             dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
 
-wdms_app.include_router(search_v3.router, prefix=DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies)
+wdms_app.include_router(search_v3.router, prefix=DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies,
+                        responses={**response_401, **response_403, **response_500})
 
 wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH,
                         tags=['ALPHA feature: search v3'],
-                        dependencies=basic_dependencies)
+                        dependencies=basic_dependencies,
+                        responses={**response_401, **response_403, **response_500})
 
-wdms_app.include_router(delete_v3.router, prefix=DDMS_V3_PATH, tags=["Delete records V3"], dependencies=basic_dependencies)
+wdms_app.include_router(delete_v3.router, prefix=DDMS_V3_PATH, tags=["Delete records V3"],
+                        dependencies=basic_dependencies, responses={**response_401, **response_403, **response_500})
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
 
@@ -238,6 +246,7 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
             *basic_dependencies,
             Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))
         ],
+        responses={**response_401, **response_403, **response_500},
         include_in_schema=is_visible)
 
     # POST v3/welllogs/{record_id}/data
@@ -255,6 +264,7 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
             Depends(set_welllog_data_consistency_check),
             Depends(set_statistics_computation_enabled)
         ],
+        responses={**response_401, **response_403, **response_500},
         include_in_schema=is_visible)
 
     # POST and GET v3/wellboretrajectories/session   (EXCLUDE  PATCH commit/abandon)
@@ -266,6 +276,7 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
             *basic_dependencies,
             Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3")),
         ],
+        responses={**response_401, **response_403, **response_500},
         include_in_schema=is_visible)
 
     # POST v3/wellboretrajectories/{record_id}/data
@@ -282,6 +293,7 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
             Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3")),
             Depends(set_trajectory_data_consistency_check)
         ],
+        responses={**response_401, **response_403, **response_500},
         include_in_schema=is_visible)
 
 # Statistics endpoints
@@ -296,6 +308,7 @@ wdms_app.include_router(
         Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
         Depends(set_osdu_bulk_id_access)
     ],
+    responses={**response_401, **response_403, **response_500},
     include_in_schema=True)
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -305,7 +318,8 @@ wdms_app.include_router(
 # ---------------------------------------------------------------------------------------------------------------------
 wdms_app.include_router(log_recognition.router,
                         dependencies=[Depends(require_data_partition_id, use_cache=False),
-                                      Depends(require_opendes_authorized_user, use_cache=False)])
+                                      Depends(require_opendes_authorized_user, use_cache=False)],
+                        responses={**response_401, **response_403, **response_500},)
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -315,11 +329,11 @@ wdms_app.include_router(log_recognition.router,
 # ---------------------------------------------------------------------------------------------------------------------
 
 wdms_app.include_router(search.router, deprecated=True, prefix='/ddms', tags=["search"],
-                        dependencies=basic_dependencies)
+                        dependencies=basic_dependencies, responses={**response_401, **response_403, **response_500})
 wdms_app.include_router(fast_search.router, deprecated=True, prefix='/ddms', tags=["fast-search"],
-                        dependencies=basic_dependencies)
+                        dependencies=basic_dependencies, responses={**response_401, **response_403, **response_500})
 wdms_app.include_router(fast_search_v3.router, deprecated=True, prefix=DDMS_V3_PATH, tags=["fast-search v3"],
-                        dependencies=basic_dependencies)
+                        dependencies=basic_dependencies, responses={**response_401, **response_403, **response_500})
 
 ddms_v2_routes_groups = [
     (well_ddms_v2, "Well", Entity.WELL),
@@ -336,6 +350,7 @@ for v2_api, tag, entity_type in ddms_v2_routes_groups:
                             deprecated=True,
                             prefix=DDMS_V2_PATH,
                             tags=[tag],
+                            responses={**response_401, **response_403, **response_500},
                             dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V2"))])
 
 # log bulk v2 APIs
@@ -344,12 +359,14 @@ wdms_app.include_router(
     deprecated=True,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=["DEPRECATED"],
+    responses={**response_401, **response_403, **response_500},
     dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
 wdms_app.include_router(
     bulk_routes.router,
     deprecated=True,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=["DEPRECATED"],
+    responses={**response_401, **response_403, **response_500},
     dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access), Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
 
 

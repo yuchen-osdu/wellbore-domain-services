@@ -31,13 +31,12 @@ class DataConsistencyChecks(ABC):
         """
         Get column names and the number of column from bulk data column labels
         """
-
-        def _get_col_name_from_col_label(col_label: str):
-            match = DataConsistencyChecks._col_label_pattern.match(col_label)
-            if not match:
-                return col_label
-            return match["name"]
-
-        res = (_get_col_name_from_col_label(col) for col in col_labels if col)
-        col_names = [r for r in res if r != ""]
-        return {col_name: col_names.count(col_name) for col_name in col_names}
+        array_col = {}
+        for c in col_labels:
+            m_sel = DataConsistencyChecks._col_label_pattern.match(c)
+            if m_sel:
+                name = m_sel['name']
+                array_col[name] = array_col.setdefault(name, 0) + 1
+            elif c:
+                array_col[c] = 1
+        return array_col
