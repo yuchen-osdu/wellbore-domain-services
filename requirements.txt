@@ -89,6 +89,7 @@ cachetools==4.2.2
     #   osdu-core-lib-python-azure
 certifi==2021.5.30
     # via
+    #   httpcore
     #   httpx
     #   msrest
     #   requests
@@ -181,9 +182,9 @@ heapdict==1.0.1
     # via zict
 hiredis==2.0.0
     # via aioredis
-httpcore==0.13.6
+httpcore==0.15.0
     # via httpx
-httpx==0.18.2
+httpx==0.23.0
     # via
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage

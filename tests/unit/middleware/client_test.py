@@ -1,6 +1,6 @@
 import httpx
 import pytest
-from pytest_httpx import HTTPXMock, to_response
+from pytest_httpx import HTTPXMock
 
 from app.clients import make_storage_record_client, make_search_client
 
@@ -68,8 +68,8 @@ def test_outgoing_tracing_headers_with_incoming_headers(local_dev_config, app_co
         assert outgoing_context.span_id
         assert outgoing_context.trace_options.enabled
 
-        return to_response(
-            json={"url": str(request.url)},
+        return httpx.Response(
+            status_code=200, json={"url": str(request.url)},
         )
 
     httpx_mock.add_callback(custom_response)
@@ -95,8 +95,8 @@ def test_outgoing_tracing_headers_without_headers(local_dev_config, app_configur
         assert outgoing_context.span_id, "check span id exists"
         assert outgoing_context.trace_options.enabled
 
-        return to_response(
-            json={"url": str(request.url)},
+        return httpx.Response(
+            status_code=200, json={"url": str(request.url)},
         )
 
     httpx_mock.add_callback(custom_response)
