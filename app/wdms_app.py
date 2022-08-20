@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import sys
-from os import getpid
 import asyncio
-from time import sleep
 
 from fastapi import FastAPI, Depends, Request
 from fastapi.openapi.utils import get_openapi
@@ -23,55 +22,63 @@ from app import __version__, __build_number__, __app_name__
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config, check_environment
 from app.errors.exception_handlers import add_exception_handlers, create_custom_http_exception_handler
+from app.utils import get_http_client_session, OpenApiHandler
+
+# ---------- import tracing, logging, metrics ----------------------------------
+from app.helper import traces, logger, metric
 from app.helper.traces import TracingRoute
+
+# ---------- import model ----------------------------------
 from app.model.entity_utils import Entity
 
-from app.helper import traces, logger, metric
+# ---------- import DI ----------------------------------
 from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
+
+# ---------- import middlewares ----------------------------------
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id
+
+# ---------- import Core services clients ----------------------------------
+from app.clients import StorageRecordServiceClient, SearchServiceClient
+
+# ---------- import Bulk persistence ----------------------------------
+from app.bulk_persistence import DaskClient, BulkPersistenceConfig, set_config_getter
+
+# ---------- import Routers ----------------------------------
 from app.routers import probes, about, sessions
+from app.routers.dependency import FetchRecordDependency, FetchRecordPartialDependency
 from app.routers.common_parameters import response_500, response_401, response_403
-from app.routers.ddms_v2 import (
-    ddms_v2,
-    wellbore_ddms_v2,
-    logset_ddms_v2,
-    marker_ddms_v2,
-    log_ddms_v2,
-    well_ddms_v2
-)
-from app.routers.ddms_v3 import (
-    wellbore_ddms_v3,
-    well_ddms_v3,
-    welllog_ddms_v3,
-    wellbore_trajectory_ddms_v3,
-    markerset_ddms_v3,
-    delete_v3)
+from app.routers.ddms_v2 import (ddms_v2,
+                                 wellbore_ddms_v2,
+                                 logset_ddms_v2,
+                                 marker_ddms_v2,
+                                 log_ddms_v2,
+                                 well_ddms_v2)
+
+from app.routers.ddms_v3 import (wellbore_ddms_v3,
+                                 well_ddms_v3,
+                                 welllog_ddms_v3,
+                                 wellbore_trajectory_ddms_v3,
+                                 markerset_ddms_v3,
+                                 delete_v3)
+
 from app.routers.bulk import bulk_routes, statistics_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.log_recognition import log_recognition
 from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_alpha
-from app.clients import StorageRecordServiceClient, SearchServiceClient
-from app.pool_executor import run_in_pool_executor
-from app.utils import (
-    get_http_client_session,
-    OpenApiHandler,
-    POOL_EXECUTOR_MAX_WORKER)
-from app.bulk_persistence import DaskClient, BulkPersistenceConfig, set_config_getter
-from app.routers.bulk.utils import (
-    update_operation_ids,
-    set_v3_input_dataframe_check,
-    set_legacy_input_dataframe_check,
-    set_welllog_data_consistency_check,
-    set_trajectory_data_consistency_check
-)
+
+
+from app.routers.bulk.utils import (update_operation_ids,
+                                    set_v3_input_dataframe_check,
+                                    set_legacy_input_dataframe_check,
+                                    set_welllog_data_consistency_check,
+                                    set_trajectory_data_consistency_check)
+from app.routers.record_utils import fetch_record_dependency, fetch_record_partial_with_wdms_extension
+
 from app.routers.bulk.statistics_routes_dependencies import set_statistics_computation_enabled
-from app.routers.bulk.bulk_uri_dependencies import (
-    set_osdu_bulk_id_access,
-    set_log_bulk_id_access
-)
+from app.routers.bulk.bulk_uri_dependencies import set_osdu_bulk_id_access, set_log_bulk_id_access
 
 
 # The sub application which contains all the routers
@@ -82,7 +89,6 @@ wdms_app = FastAPI(title=__app_name__,
 wdms_app.router.route_class = TracingRoute
 
 app_injector = AppInjector()
-
 
 
 def custom_openapi(*args, **kwargs):
@@ -110,12 +116,6 @@ def hide_router_modules(modules):
     for mod in modules:
         for rte in mod.router.routes:
             rte.include_in_schema = False
-
-
-def executor_startup_task():
-    """ This is a dummy task used to startup executors"""
-    print(f"process {getpid()} started")
-    sleep(0.2)  # to keep executor "busy"
 
 
 def make_entity_type_dependency(entity_type: Entity, version: str):
@@ -151,12 +151,6 @@ async def startup_event():
     # so we need to wait instead of just fire a task
     asyncio.create_task(DaskClient.create(bulk_config))
     create_custom_http_exception_handler(wdms_app, logger)
-    # init executor pool
-    logger.get_logger().info("Startup process pool executor")
-
-    # force to adjust process count now instead of on first demand
-    for _ in range(POOL_EXECUTOR_MAX_WORKER):
-        asyncio.create_task(run_in_pool_executor(executor_startup_task))
 
     metric.init_metric(wdms_app)
 
@@ -244,6 +238,8 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         tags=bulk_tags if bulk_tags else ["WellLog"],
         dependencies=[
             *basic_dependencies,
+            Depends(set_v3_input_dataframe_check),
+            Depends(set_osdu_bulk_id_access),
             Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))
         ],
         responses={**response_401, **response_403, **response_500},
@@ -262,7 +258,9 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
             *v3_bulk_dependencies,
             Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
             Depends(set_welllog_data_consistency_check),
-            Depends(set_statistics_computation_enabled)
+            Depends(set_statistics_computation_enabled),
+            Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
+            Depends(FetchRecordPartialDependency.with_value(fetch_record_partial_with_wdms_extension))
         ],
         responses={**response_401, **response_403, **response_500},
         include_in_schema=is_visible)
@@ -291,7 +289,9 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         dependencies=[
             *v3_bulk_dependencies,
             Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3")),
-            Depends(set_trajectory_data_consistency_check)
+            Depends(set_trajectory_data_consistency_check),
+            Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
+            Depends(FetchRecordPartialDependency.with_value(fetch_record_partial_with_wdms_extension))
         ],
         responses={**response_401, **response_403, **response_500},
         include_in_schema=is_visible)
@@ -361,13 +361,21 @@ wdms_app.include_router(
     tags=["DEPRECATED"],
     responses={**response_401, **response_403, **response_500},
     dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
+
 wdms_app.include_router(
     bulk_routes.router,
     deprecated=True,
     prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
     tags=["DEPRECATED"],
     responses={**response_401, **response_403, **response_500},
-    dependencies=[*basic_dependencies, Depends(set_legacy_input_dataframe_check), Depends(set_log_bulk_id_access), Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
+    dependencies=[*basic_dependencies,
+                  Depends(set_legacy_input_dataframe_check),
+                  Depends(set_log_bulk_id_access),
+                  Depends(make_entity_type_dependency(Entity.LOG, "V2")),
+                  Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
+                  # As V2 is deprecated, simply fetch the whole record in all cases
+                  Depends(FetchRecordPartialDependency.with_value(fetch_record_dependency))
+                  ])
 
 
 # ---------------------------------------------------------------------------------------------------------------------

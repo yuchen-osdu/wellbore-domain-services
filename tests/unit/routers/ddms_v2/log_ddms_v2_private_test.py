@@ -138,7 +138,7 @@ async def test_fetch_record(with_test_setup):
                                                  record_id="132")
 
             assert computed_record == expected_record
-            moc_get_record.assert_called_with(id="132", data_partition_id=data_partition_id)
+            moc_get_record.assert_called_with(id="132", data_partition_id=data_partition_id, attribute=None)
             moc_get_record_version.assert_not_called()
 
 
@@ -154,7 +154,8 @@ async def test_fetch_record_version(with_test_setup):
                                                  record_id="132", version="1")
 
             assert computed_record == expected_record
-            moc_get_record_version.assert_called_with(id="132", data_partition_id=data_partition_id, version="1")
+            moc_get_record_version.assert_called_with(id="132", data_partition_id=data_partition_id, version="1",
+                                                      attribute=None)
             moc_get_record.assert_not_called()
 
 
@@ -194,7 +195,7 @@ async def test_write_log_data(with_test_setup, mock_persistence):
                 dataframe=data)
 
             assert computed_response == expected_response
-            get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id)
+            get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id, attribute=None)
             create_or_update_records_moc.assert_called_once_with(record=[expected_record],
                                                                  data_partition_id=data_partition_id)
             assert_frame_equal(mock_persistence.dataframe, data)
@@ -221,7 +222,7 @@ async def test_write_log_data_with_bulk_path(with_test_setup, mock_persistence):
                 dataframe=data)
 
             assert computed_response == expected_response
-            get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id)
+            get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id, attribute=None)
             create_or_update_records_moc.assert_called_once_with(record=[expected_record],
                                                                  data_partition_id=data_partition_id)
             assert_frame_equal(mock_persistence.dataframe, data)
@@ -245,7 +246,7 @@ async def test_get_log_data(with_test_setup, mock_persistence):
             orient="columns",
             bulk_id_path=None)
 
-        get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id)
+        get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id, attribute=None)
 
         assert computed_response.status_code == 200
         assert computed_response.body == b'{"col_1":{"0":3,"1":2,"2":1,"3":0},"col_2":{"0":"a","1":"b","2":"c","3":"d"}}'
@@ -271,7 +272,7 @@ async def test_get_log_data_with_bulk_path(with_test_setup, mock_persistence):
             orient="columns",
             bulk_id_path="data.custom_bulkid")
 
-        get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id)
+        get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id, attribute=None)
 
         assert computed_response.status_code == 200
         assert computed_response.body == b'{"col_1":{"0":3,"1":2,"2":1,"3":0},"col_2":{"0":"a","1":"b","2":"c","3":"d"}}'

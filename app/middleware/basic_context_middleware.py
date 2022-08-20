@@ -43,6 +43,8 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
                 "Content-Security-Policy"] = "default-src 'self'; script-src 'self' *.jsdelivr.net 'unsafe-inline'; style-src 'self' *.jsdelivr.net; img-src 'self' *.tiangolo.com data:;"
 
     async def dispatch(self, request, call_next):
+        request.state.dependencies = dict()
+
         api_key = request.headers.get('x-api-key', None)
         app_key = request.headers.get(conf.APP_KEY_HEADER_NAME, None)
         partition_id = request.headers.get('data-partition-id', None)
