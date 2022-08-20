@@ -238,8 +238,6 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         tags=bulk_tags if bulk_tags else ["WellLog"],
         dependencies=[
             *basic_dependencies,
-            Depends(set_v3_input_dataframe_check),
-            Depends(set_osdu_bulk_id_access),
             Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))
         ],
         responses={**response_401, **response_403, **response_500},
