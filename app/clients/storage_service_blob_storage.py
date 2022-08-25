@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import hashlib
+import json
 import uuid
 from asyncio import gather, iscoroutinefunction
 from typing import List
@@ -125,6 +126,7 @@ class StorageRecordServiceBlobStorage:
                                  id: str,
                                  version: int,
                                  data_partition_id: str = None,
+                                 attribute: List[str] = None,
                                  appkey: str = None,
                                  token: str = None) -> Record:
         await self._check_auth(appkey, token)
@@ -135,6 +137,30 @@ class StorageRecordServiceBlobStorage:
             bin_data = await self._storage.download(
                 Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
                 object_name)
+
+            # naive but working support of attribute
+            if attribute is not None:
+                # parse it into dict
+                record_dict = json.loads(bin_data)
+                full_data_dict = record_dict.pop("data", {})
+                restricted_data_dict = {}
+
+                for attribute_path in attribute:
+                    path_token = attribute_path.split('.') if attribute_path else ['']
+                    if not path_token[0] == 'data':
+                        raise KeyError("attribute should be in form 'data.{field_path}'")
+
+                    current_node = full_data_dict
+                    for tk in path_token[1:]:
+                        current_node = current_node.get(tk, None)
+                        if current_node is None:
+                            break
+                    if current_node is not None:
+                        restricted_data_dict['.'.join(path_token[1:])] = current_node
+
+                record_dict["data"] = restricted_data_dict
+                return Record(**record_dict)
+
             return Record.parse_raw(bin_data)
         except (FileNotFoundError, ResourceNotFoundException):
             raise UnexpectedResponse(
@@ -162,7 +188,7 @@ class StorageRecordServiceBlobStorage:
                          appkey: str = None,
                          token: str = None) -> Record:
         # return the latest
-        return await self.get_record_version(id, None, data_partition_id, appkey, token)
+        return await self.get_record_version(id, None, data_partition_id, attribute, appkey, token)
 
     async def delete_record(self,
                             id: str,
