@@ -42,7 +42,7 @@ from ..dataframe_serializer import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
-from .bulk_catalog import (BulkCatalog, ChunkGroup,
+from .bulk_catalog import (BulkCatalog, BulkCatalogOrigin, ChunkGroup,
                            load_bulk_catalog,
                            save_bulk_catalog)
 from ..mime_types import MimeType
@@ -278,16 +278,16 @@ class DaskBulkStorage:
     @capture_timings('_build_catalog_from_path')
     @with_trace('_build_catalog_from_path')
     async def _build_catalog_from_path(self, path: str, record_id: str) -> BulkCatalog:
-        """Build a catalog on the fly for folder that don't have a catalog (legacy bulk bolder)
+        """Build a catalog on the fly for folder that don't have a catalog (legacy bulk bolder or post with session)
         The method will list all parquet file from the specified folder and build the catalog
         from file metadata. There is an optimization if we detect a folder created by dask.
         Args:
             path (str): Folder that contains parquet files
-            record_id (str): recod id from which the catalog belong.
+            record_id (str): record id from which the catalog belong.
         Raises:
             FileNotFoundError: If path does not exist
         Returns:
-            BulkCatalog: the builded catalog
+            BulkCatalog: the built catalog
         """
         path, _ = pathBuilder.remove_protocol(path)
         files = self._fs.ls(path)  # raises if path doesn't exists
@@ -300,7 +300,7 @@ class DaskBulkStorage:
 
         schemas = (d.read_pandas().schema for d in datasets)
 
-        catalog = BulkCatalog(record_id)
+        catalog = BulkCatalog(record_id, BulkCatalogOrigin.generated_from_bulk())
         catalog.nb_rows = max(get_num_rows(d) for d in datasets)
 
         for file, schema in zip(files, schemas):

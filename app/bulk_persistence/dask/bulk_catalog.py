@@ -42,6 +42,27 @@ ColumnLabel = str
 ColumnDType = str
 
 
+class BulkCatalogOrigin:
+    def __init__(self):
+        self._origin_type = 0  # internal, 0 = unknown, 1 = generated from bulk, 2 loaded from file
+
+    @classmethod
+    def from_file(cls):
+        inst = cls()
+        inst._origin_type = 2
+        return inst
+
+    @classmethod
+    def generated_from_bulk(cls):
+        inst = cls()
+        inst._origin_type = 1
+        return inst
+
+    @property
+    def was_generated(self) -> bool:
+        return self._origin_type == 1
+
+
 class BulkCatalog:
     """Represent a bulk catalog
     Example:
@@ -64,11 +85,12 @@ class BulkCatalog:
         }
     """
 
-    def __init__(self, record_id: str) -> None:
+    def __init__(self, record_id: str, origin: Optional[BulkCatalogOrigin] = None) -> None:
         self.record_id: str = record_id  # TODO remove
         self.nb_rows: int = 0
         self.index_path: Optional[str] = None
         self.columns: List[ChunkGroup] = []
+        self.origin = origin or BulkCatalogOrigin()  # not persisted
 
     @property
     def all_columns_count(self) -> int:
@@ -207,5 +229,8 @@ async def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalo
         # TODO use the async blob_storage instead of ffspec + thread
         with filesystem.open(meta_path) as json_file:
             data = await asyncio.get_running_loop().run_in_executor(None, json.load, json_file)
-            return BulkCatalog.from_dict(data)
+            catalog = BulkCatalog.from_dict(data)
+            catalog.origin = BulkCatalogOrigin.from_file()
+            return catalog
+
     return None
