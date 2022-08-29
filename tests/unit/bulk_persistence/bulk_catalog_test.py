@@ -21,7 +21,7 @@ def test_empty_catalog():
     d = catalog.as_dict()
     assert d["recordId"] == "id"
     assert d["nbRows"] == 0
-    assert d["indexPath"] == None
+    assert d["indexPath"] is None
 
 
 def test_add_multiple_chunk_group_same_schemas():
@@ -55,7 +55,8 @@ def test_change_chunk_info():
     assert column_path[1].labels == set('A')
     assert column_path[1].paths == ['path3']
 
-    catalog.all_columns_dtypes['A'] = 'Float32'
+    assert catalog.all_columns_dtypes['A'] == 'Float32'
+    assert catalog.all_columns == {'A', 'B'}
 
 
 def test_get_paths_for_columns_all_columns():
@@ -69,3 +70,4 @@ def test_get_paths_for_columns_all_columns():
     all_columns = {col for col_paths in column_path for col in col_paths.labels }
     excepted_columns = {'A', 'B', 'C', 'D'}
     assert all_columns == excepted_columns
+    assert catalog.all_columns == all_columns
