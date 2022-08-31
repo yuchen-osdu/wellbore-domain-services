@@ -15,10 +15,11 @@ from uuid import UUID
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from natsort import natsorted
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
-from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe, BulkCatalog
+from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe, BulkCatalog, DataframeDescribe
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
@@ -255,6 +256,26 @@ async def get_data_version(
             # or 'load_index' will need it
             # TODO seems get columns/stat is not always needed - see df_render
             bulk_catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_id)
+
+            # if describe without filters, the catalog is enough to answer:
+            if data_param.describe and not bulk_filters.has_filter():
+                nb_rows = bulk_catalog.nb_rows
+                if data_param.offset:
+                    nb_rows = max(0, nb_rows-data_param.offset)
+                if data_param.limit:
+                    nb_rows = min(nb_rows, data_param.limit)
+
+                all_columns = bulk_catalog.all_columns
+                if data_param.curves:
+                    columns = DataFrameRender.get_matching_columns(data_param.get_curves_list(), all_columns)
+                else:
+                    columns = natsorted(all_columns)
+
+                return DataframeDescribe(
+                    numberOfRows=nb_rows,
+                    columns=columns
+                )
+
             df, filters, columns = await _process_request_v1(record_id,
                                                              bulk_id,
                                                              data_param,
