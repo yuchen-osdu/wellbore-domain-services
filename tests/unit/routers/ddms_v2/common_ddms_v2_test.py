@@ -175,6 +175,15 @@ def client(nope_logger_fixture):
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
 
+def assert_called_once_with_partial(mock_inst, **expected_kwargs):
+    """ because mock.assert_called_with strictly match all parameters including the one with default value """
+
+    mock_inst.assert_called_once()
+    _, call_kwargs = mock_inst.call_args_list[0]
+    for k, v in expected_kwargs.items():
+        assert call_kwargs[k] == v
+
+
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_get_record_success(client, base_url, record_obj):
     record_id = record_obj.id
@@ -186,7 +195,7 @@ def test_get_record_success(client, base_url, record_obj):
         assert response.status_code == status.HTTP_200_OK
 
         # then assert storage is called with the proper id and data_partition
-        moc.assert_called_with(id=record_id, data_partition_id='testing_partition')
+        assert_called_once_with_partial(moc, id=record_id, data_partition_id='testing_partition')
 
         # assert it validates the input object schema
         record_obj.validate(response.json())
@@ -380,13 +389,15 @@ def test_get_record_at_version_successful(client, base_url, record_obj):
         assert response.status_code == status.HTTP_200_OK
 
         # then assert storage is called with the proper id and data_partition
-        moc_get_record_version.assert_called_with(id=record_id,
-                                                  version=record_obj.version,
-                                                  data_partition_id='testing_partition')
+        assert_called_once_with_partial(moc_get_record_version,
+                                        id=record_id,
+                                        version=record_obj.version,
+                                        data_partition_id='testing_partition')
 
         # assert it validates the input object schema
         response_obj = record_obj.validate(response.json())
         assert response_obj.version == record_obj.version
+
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_get_record_at_version_successful_without_default_values(client, base_url, record_obj):
@@ -402,6 +413,7 @@ def test_get_record_at_version_successful_without_default_values(client, base_ur
 
         # assert we retrieve only the input fields
         assert(response.json() == record_obj.dict(exclude_unset=True))
+
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_get_record_at_version_errors(client, base_url, record_obj):

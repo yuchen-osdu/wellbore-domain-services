@@ -25,6 +25,12 @@ from pydantic import BaseModel, Extra, Field, constr
 from .model_curated import DDMSBaseModel
 from .osdu_record_id import WellId, WellboreId, WellboreTrajectoryId, WellboreMarkerSetId, WellLogId
 
+ExtensionProperties_field = "ExtensionProperties"
+ExtensionProperties_WDMS_field = "wdms"
+
+RecordId = str  # type alias for record id
+RecordVersion = int  # type alias for record version
+
 
 class Tags(BaseModel):
     class Config:

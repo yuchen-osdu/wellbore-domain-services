@@ -186,7 +186,7 @@ tests_parameters_restricted_well = [
             "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
             "data": {}
         },
-        Well(
+        Record(
             id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
             kind="namespace:osdu:master-data--Well:1.0.0",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},

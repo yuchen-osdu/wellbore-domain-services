@@ -141,8 +141,9 @@ def format_routes(app, prefix, tags):
                 if any(tag in tags for tag in route.tags):
                     # add route to the spec
                     route.include_in_schema = True
-                    # strip prefix from the formatted route path
-                    route.path_format = route.path.removeprefix(prefix)
+            if route.include_in_schema:
+                # strip prefix from the formatted route path
+                route.path_format = route.path[len(prefix):]
 
 
 def side_effect_raise(*args, **kwargs):

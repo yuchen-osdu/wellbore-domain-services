@@ -15,7 +15,6 @@ from uuid import UUID
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from odes_storage.models import Record
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
@@ -35,7 +34,9 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            read_bulk_accept_type,
                                            write_bulk_content_type, response_404)
 
-from app.routers.record_utils import fetch_record, fetch_record_dependency, fetch_latest_version_record_dependency
+from ..record_utils import fetch_record
+from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
+
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
@@ -46,13 +47,13 @@ from app.routers.bulk.statistics_routes_dependencies import is_statistics_comput
 
 # imports for session manipulation
 from app.bulk_persistence import (
-    Session,
     SessionException,
     SessionState,
     SessionUpdateMode,
     SessionInternal,
     CommitSessionResponse
 )
+
 from app.routers.sessions import (
     UpdateSessionState,
     UpdateSessionStateValue,
@@ -102,12 +103,13 @@ async def post_data(record_id: str,
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-                    record: Record = Depends(fetch_latest_version_record_dependency),
+                    get_record: GetRecordFunction = Depends(FetchRecordDependency()),
                     stats_computation_enabled: bool = Depends(is_statistics_computation_enabled),
                     ):
     """
     Handle a post data outside a session. The given bulk will fully replace any existing one
     """
+    record = await get_record(record_id, None)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
     # process and store the data
@@ -164,8 +166,9 @@ async def post_chunk_data(record_id: str,
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
-                          record: Record = Depends(fetch_latest_version_record_dependency)
+                          get_record: GetRecordFunction = Depends(FetchRecordDependency())
                           ) -> DataframeBasicDescribe:
+    record = await get_record(record_id, None)
     if hasattr(request.state, 'version') and request.state.version != "V2":
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
@@ -223,8 +226,9 @@ async def get_data_version(
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-    record: Record = Depends(fetch_record_dependency)
+    get_record: GetRecordFunction = Depends(FetchRecordPartialDependency())
 ):
+    record = await get_record(record_id, version)
     if hasattr(request.state, 'version') and request.state.version != "V2":
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
@@ -317,9 +321,17 @@ async def get_data(
     orient: JSONOrient = Depends(json_orient_parameter),
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
-    record: Record = Depends(fetch_latest_version_record_dependency)
+    get_record: GetRecordFunction = Depends(FetchRecordPartialDependency())
 ):
-    return await get_data_version(record_id, None, request, ctrl_p, accept_type, orient, ctx, bulk_uri_access, record)
+    return await get_data_version(record_id,
+                                  None,
+                                  request,
+                                  ctrl_p,
+                                  accept_type,
+                                  orient,
+                                  ctx,
+                                  bulk_uri_access,
+                                  get_record)
 
 
 @router.patch(
