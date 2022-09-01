@@ -110,6 +110,38 @@ class BulkCatalog:
         """
         return len(self.all_columns)
 
+    def is_columns_slide_only(self, columns_to_check: Optional[Set[str]] = None) -> bool:
+        """
+        return True if the bulk is only cut by columns, i.e. there's one and only one chunk to read to get full column
+        """
+        column_label_set: Set[str] = set()
+        previous_size = 0
+        if columns_to_check is None:
+            for chunk_group in self._columns:
+                if len(chunk_group.paths) > 1:
+                    return False
+                column_label_set.update(chunk_group.labels)
+                if previous_size + len(chunk_group.labels) > len(column_label_set):
+                    return False
+                previous_size = len(column_label_set)
+            return True
+
+        # case case few columns only
+        for chunk_group in self._columns:
+            intersect = chunk_group.labels.intersection(columns_to_check)
+            if not intersect:
+                continue
+
+            if len(chunk_group.paths) > 1:
+                return False
+
+            if not column_label_set.isdisjoint(intersect):
+                # it's mean there's already on chunk for one element in intersect
+                return False
+            column_label_set.update(intersect)
+
+        return True
+
     @property
     def all_columns_dtypes(self) -> Dict[ColumnLabel, ColumnDType]:
         """Returns all columns with their dtype
@@ -133,6 +165,10 @@ class BulkCatalog:
         if self._columns_labels is None:
             self._columns_labels = set(chain.from_iterable((col_group.labels for col_group in self._columns)))
         return self._columns_labels
+
+    @property
+    def chunk_count(self) -> int:
+        return len(set(chain.from_iterable((col_group.paths for col_group in self._columns))))
 
     def add_chunk(self, chunk_group: ChunkGroup) -> None:
         """Add ChunkGroup to the catalog."""
@@ -198,6 +234,9 @@ class BulkCatalog:
                     paths=[join(base_path, f) for f in col_group.paths])
                 )
         return grouped_files
+
+    def filter_group_for_columns(self, labels: Set[str]) -> List[ChunkGroup]:
+        return [col_group for col_group in self._columns if not col_group.labels.isdisjoint(labels)]
 
     def as_dict(self) -> dict:
         """Returns the dict representation of the catalog"""

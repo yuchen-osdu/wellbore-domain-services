@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from uuid import UUID
-
+from typing import Set, List
+import asyncio
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from natsort import natsorted
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
-from app.tenant import resolve_tenant
 from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe, BulkCatalog, DataframeDescribe
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
@@ -265,6 +264,66 @@ async def get_data_version(
                     limit=data_param.limit,
                     column_selection=data_param.get_curves_list() if data_param.curves else None)
 
+
+            if False and not data_param.offset and not data_param.limit and not bulk_filters.has_filter() and accept_type.type == MimeTypes.PARQUET:
+                # for now short if no filtering at all and parquet
+                columns_to_load = bulk_catalog.all_columns
+
+                from app.bulk_persistence.dask import storage_path_builder
+                base_record_path = storage_path_builder.record_path('', record_id)
+                if data_param.curves:
+                    columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), columns_to_load)
+
+                # estimate size
+                nb_rows = bulk_catalog.nb_rows
+                if len(columns_to_load) > 5_000:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"too many values requested ({len(columns_to_load)} in total), reduce number of curves, max is 5000")
+
+                total_values = nb_rows * len(columns_to_load)
+                if total_values > 5_000_000:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"too many values requested ({total_values} in total), reduce number of curves")
+
+                if bulk_catalog.origin.was_generated:
+                    if bulk_catalog.chunk_count == 1:
+                        # only one chunk
+                        return _single_chunk_strategy(data_param, data_param.curves)
+                    else:
+                        # previous storage mechanism with Dask partitions, no shortcut possible for now
+                        # fallback into regular read data
+                        pass
+
+                else:
+                    if bulk_catalog.chunk_count == 1:
+                        # only one chunk
+                        return _single_chunk_strategy(data_param, data_param.curves)
+                    else:
+                        if bulk_catalog.is_columns_slide_only(columns_to_load if data_param.curves else None):
+                            # chunks involved are perfectly column-slided - 1 column = one chunk only
+
+                            # fire task to read the index
+                            read_index_task = asyncio.create_task(_read_index())
+
+                            # figures the number of chunks involved, only one path, so provides
+                            chunk_groups = bulk_catalog.filter_group_for_columns(columns_to_load)
+                            if all((len(chunk_group.paths) == 1 for chunk_group in chunk_groups)):
+                                raise RuntimeError("unique chunk path expected")  # extra check is_columns_slide_only
+
+                            dfs = await asyncio.gather(*[
+                                _get_dfx("base_path" + chunk_group.paths[0], columns_to_load) for chunk_group in chunk_groups
+                            ])
+                            index_df = await read_index_task
+
+                            # concat df
+                            return await _serialize_df_to_parquet(pd.concat(dfs, ignore_index=True))
+
+                        else:
+                            # chunk are not perfectly column slided => fallback to regular read
+                            pass
+
             df, filters, columns = await _process_request_v1(record_id,
                                                              bulk_id,
                                                              data_param,
@@ -282,6 +341,71 @@ async def get_data_version(
         ex.raise_as_http()
 
 
+async def _serialize_df_to_parquet(*args, **kwargs) -> 'pd.dataframe':
+    pass
+
+
+async def _get_dfx(*args, **kwargs) -> 'pd.dataframe':
+    pass
+
+
+async def _read_index(*args, **kwargs) -> 'pd.dataframe':
+    pass
+
+
+async def _single_chunk_strategy(ctx, tenant, parquet_path, requested_columns=None):
+    # only one chunk
+    if requested_columns:
+        return _forward_parquet_with_filter()
+    else:
+        # easy fast track, just forward it
+        return _forward_parquet()
+
+
+@with_trace('_forward_parquet')
+async def _forward_parquet(ctx, tenant, parquet_path):
+    from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+    from fastapi import Response
+    storage = await ctx.app_injector.get(BlobStorageBase)
+    content = await storage.download(tenant, parquet_path)
+
+    # simply forward content as-it
+    return Response(content, media_type=MimeTypes.PARQUET.type)
+
+
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+
+@with_trace('_forward_parquet_with_filter')
+async def _forward_parquet_with_filter(ctx, tenant,
+                                       parquet_path: str,
+                                       parquet_nb_rows: int,
+                                       parquet_columns: Set[str],
+                                       requested_columns: List[str],
+                                       direct_arrow=False):
+
+    # for now we basically download all then filter
+    from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+    from fastapi import Response
+    from io import BytesIO
+    storage = await ctx.app_injector.get(BlobStorageBase)
+    content: bytes = await storage.download(tenant, parquet_path)
+
+    # WARNING synchronous - filter columns at read
+    if direct_arrow:
+        data = pa.BufferReader(content)
+        table = pq.read_table(data, use_pandas_metadata=True, columns=requested_columns)
+        out_buffer = BytesIO()
+        pq.write_table(table, out_buffer)
+        content = out_buffer.getvalue()
+    else:
+        df = pd.read_parquet(BytesIO(content), columns=requested_columns)
+        content = df.to_parquet(None, index=True, engine='pyarrow')
+
+    return Response(content, media_type=MimeTypes.PARQUET.type)
+
+
 @with_trace('_process_request_v1')
 async def _process_request_v1(record_id: str,
                               bulk_id: str,
@@ -296,7 +420,7 @@ async def _process_request_v1(record_id: str,
         columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), existing_col)
         columns = set(columns_to_load)
 
-    if not data_param.describe: # don't limit columns when describe parameter is True
+    if not data_param.describe:  # don't limit columns when describe parameter is True
         # if curves parameter is None, it means that we are going to load all existing columns
         nb_cols_to_return = len(columns_to_load) if columns_to_load else len(existing_col)
         if nb_cols_to_return > MAX_COLUMNS_RETURN:
