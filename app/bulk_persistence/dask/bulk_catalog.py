@@ -30,6 +30,7 @@ from ..model_chunking import DataframeDescribe
 from ..capture_timings import capture_timings
 from ..dataframe_columns import ColumnSelection, select_columns
 from .storage_path_builder import join, remove_protocol
+from .storage_path_builder import join, remove_protocol, record_bulk_path
 from .utils import worker_capture_timing_handlers
 
 
@@ -279,4 +280,20 @@ async def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalo
             catalog.origin = BulkCatalogOrigin.from_file()
             return catalog
 
+    return None
+
+
+async def async_load_bulk_catalog_with_blob_storage(ctx, tenant, record_id: str, bulk_id: str) -> Optional[BulkCatalog]:
+    from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+    from osdu.core.api.storage.exceptions import ResourceNotFoundException
+    from io import BytesIO
+    """load a bulk catalog from a json file in the given folder path"""
+    folder_path = record_bulk_path('', record_id, bulk_id)  # because base_directory already inside tenant
+    remote_path = join(folder_path, CATALOG_FILE_NAME)
+
+    storage = await ctx.app_injector.get(BlobStorageBase)
+    with suppress(ResourceNotFoundException):
+        content = await storage.download(tenant, remote_path)
+        data = json.load(BytesIO(content))
+        return BulkCatalog.from_dict(data)
     return None
