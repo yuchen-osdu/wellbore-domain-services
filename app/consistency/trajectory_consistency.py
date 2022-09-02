@@ -120,7 +120,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
             return
 
         try:
-            ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[reference_name])
+            ref_ddf, _ = await dask_blob_storage.load_bulk_and_catalog(record.id, bulk_id, columns=[reference_name])
         except BulkRecordNotFound:
             return
 

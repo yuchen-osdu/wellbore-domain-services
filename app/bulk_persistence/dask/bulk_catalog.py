@@ -21,6 +21,7 @@ import json
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, NamedTuple, Optional, Set
+from itertools import chain
 
 from app.helper.traces import with_trace
 from ..capture_timings import capture_timings
@@ -36,8 +37,30 @@ class ChunkGroup:
     paths: List[str]
     dtypes: List[str]
 
+
 ColumnLabel = str
 ColumnDType = str
+
+
+class BulkCatalogOrigin:
+    def __init__(self):
+        self._origin_type = 0  # internal, 0 = unknown, 1 = generated from bulk, 2 loaded from file
+
+    @classmethod
+    def from_file(cls):
+        inst = cls()
+        inst._origin_type = 2
+        return inst
+
+    @classmethod
+    def generated_from_bulk(cls):
+        inst = cls()
+        inst._origin_type = 1
+        return inst
+
+    @property
+    def was_generated(self) -> bool:
+        return self._origin_type == 1
 
 
 class BulkCatalog:
@@ -62,18 +85,19 @@ class BulkCatalog:
         }
     """
 
-    def __init__(self, record_id: str) -> None:
+    def __init__(self, record_id: str, origin: Optional[BulkCatalogOrigin] = None) -> None:
         self.record_id: str = record_id  # TODO remove
         self.nb_rows: int = 0
         self.index_path: Optional[str] = None
         self.columns: List[ChunkGroup] = []
+        self.origin = origin or BulkCatalogOrigin()  # not persisted
 
     @property
     def all_columns_count(self) -> int:
         """
         Return number of columns contained in bulk data
         """
-        return len(self.all_columns_dtypes)
+        return len(self.all_columns)
 
     @property
     def all_columns_dtypes(self) -> Dict[ColumnLabel, ColumnDType]:
@@ -85,6 +109,10 @@ class BulkCatalog:
         for col_group in self.columns:
             res.update({cn: dt for cn, dt in zip(col_group.labels, col_group.dtypes)})
         return res
+
+    @property
+    def all_columns(self) -> Set[str]:
+        return set(chain.from_iterable((col_group.labels for col_group in self.columns)))
 
     def add_chunk(self, chunk_group: ChunkGroup) -> None:
         """Add ChunkGroup to the catalog."""
@@ -186,6 +214,7 @@ async def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) 
     with filesystem.open(meta_path, 'w') as outfile:
         _func = functools.partial(json.dumps, catalog.as_dict(), indent=0)
         data = await asyncio.get_running_loop().run_in_executor(None, _func)
+        # TODO use the async blob_storage instead of ffspec, this call is blocking
         outfile.write(data)
 
 
@@ -197,7 +226,11 @@ async def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalo
     folder_path, _ = remove_protocol(folder_path)
     meta_path = join(folder_path, CATALOG_FILE_NAME)
     with suppress(FileNotFoundError):
+        # TODO use the async blob_storage instead of ffspec + thread
         with filesystem.open(meta_path) as json_file:
             data = await asyncio.get_running_loop().run_in_executor(None, json.load, json_file)
-            return BulkCatalog.from_dict(data)
+            catalog = BulkCatalog.from_dict(data)
+            catalog.origin = BulkCatalogOrigin.from_file()
+            return catalog
+
     return None

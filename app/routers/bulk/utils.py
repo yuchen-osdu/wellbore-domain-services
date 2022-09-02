@@ -11,11 +11,11 @@ import dask.dataframe as dd
 import pandas as pd
 from pyarrow.lib import ArrowInvalid
 
-from app.bulk_persistence import DaskBulkStorage, DataframeSerializerAsync, \
-    MimeTypes, MimeType, JSONOrient, trace_dataframe_attributes, capture_timings, \
-    auto_cast_columns_to_string, columns_type_must_be_string, \
-    no_validation, DataFrameValidationFunc, \
-    FilterError, internal_bulk_exceptions, BulkCurvesNotFound
+from app.bulk_persistence import (DaskBulkStorage, DataframeSerializerAsync, MimeTypes, MimeType, JSONOrient,
+                                  trace_dataframe_attributes, capture_timings, auto_cast_columns_to_string,
+                                  columns_type_must_be_string, no_validation, DataFrameValidationFunc,
+                                  FilterError, internal_bulk_exceptions, BulkCurvesNotFound)
+
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import get_ctx, Context
 from app.utils import OpenApiHandler
@@ -24,7 +24,6 @@ from app.bulk_persistence import BulkReadFilterOperator, BulkReadFilters, GetDat
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 
 from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks, TrajectoryDataConsistencyChecks
-
 
 
 def update_operation_ids(wdms_app):
@@ -132,10 +131,6 @@ class DataFrameRender:
             return df
         driver = await with_dask_blob_storage()
         return await driver.client.compute(df)
-
-    @staticmethod
-    async def load_index(record_id: str, bulk_id: str, dask_blob_storage: DaskBulkStorage):
-        return await dask_blob_storage._future_load_index(record_id, bulk_id)
 
     @staticmethod
     async def get_size(df):
@@ -334,11 +329,11 @@ class DataFrameRender:
     async def df_render(df, params: GetDataParams,
                         render_type: Optional[MimeType] = None,
                         orient: Optional[JSONOrient] = None,
-                        stat=None):
+                        columns: Optional[Iterable[str]] = None):
         if params.describe:
             nb_rows = await DataFrameRender.get_size(df)
-            if params.curves is None and stat:
-                columns = natsorted(list(stat['schema']))
+            if params.curves is None and columns:
+                columns = natsorted(list(columns))
             else:
                 columns = list(df.columns)
 

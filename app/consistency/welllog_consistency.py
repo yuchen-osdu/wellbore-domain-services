@@ -151,7 +151,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             return
 
         try:
-            ref_ddf = await dask_blob_storage.load_bulk(record.id, bulk_id, columns=[wl.data.ReferenceCurveID])
+            ref_ddf, _ = await dask_blob_storage.load_bulk_and_catalog(record.id, bulk_id, columns=[wl.data.ReferenceCurveID])
         except BulkRecordNotFound:
             return
 
