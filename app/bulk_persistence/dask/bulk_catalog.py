@@ -240,7 +240,7 @@ class BulkCatalog:
         catalog = cls(record_id=catalog_as_dict["recordId"])
         catalog.nb_rows = catalog_as_dict["nbRows"]
         catalog.index_path = catalog_as_dict["indexPath"]
-        catalog.columns = [
+        catalog._columns = [
             ChunkGroup(set(c["labels"]), c["paths"], c["dtypes"])
             for c in catalog_as_dict["columns"]
         ]
