@@ -23,8 +23,12 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 from itertools import chain
 
+from natsort import natsorted
+
 from app.helper.traces import with_trace
+from ..model_chunking import DataframeDescribe
 from ..capture_timings import capture_timings
+from ..dataframe_columns import ColumnSelection, select_columns
 from .storage_path_builder import join, remove_protocol
 from .utils import worker_capture_timing_handlers
 
@@ -86,11 +90,19 @@ class BulkCatalog:
     """
 
     def __init__(self, record_id: str, origin: Optional[BulkCatalogOrigin] = None) -> None:
-        self.record_id: str = record_id  # TODO remove
+        self._record_id: str = record_id  # TODO remove
         self.nb_rows: int = 0
         self.index_path: Optional[str] = None
-        self.columns: List[ChunkGroup] = []
+        self._columns: List[ChunkGroup] = []
         self.origin = origin or BulkCatalogOrigin()  # not persisted
+
+        # cached attributes, to be cleaned as soon as _columns change
+        self._columns_labels: Optional[Set[str]] = None
+        self._columns_dtypes = None
+
+    @property
+    def record_id(self) -> str:
+        return self._record_id
 
     @property
     def all_columns_count(self) -> int:
@@ -105,36 +117,49 @@ class BulkCatalog:
         Returns:
             Dict[str, str]:  a dict { column label : column dtype }
         """
+        if self._columns_dtypes is not None:
+            return self._columns_dtypes
         res = {}
-        for col_group in self.columns:
+        for col_group in self._columns:
             res.update({cn: dt for cn, dt in zip(col_group.labels, col_group.dtypes)})
+        self._columns_dtypes = res
         return res
+
+    def _clean_column_cache(self):
+        self._columns_labels = None
+        self._columns_dtypes = None
 
     @property
     def all_columns(self) -> Set[str]:
-        return set(chain.from_iterable((col_group.labels for col_group in self.columns)))
+        if self._columns_labels is None:
+            self._columns_labels = set(chain.from_iterable((col_group.labels for col_group in self._columns)))
+        return self._columns_labels
 
     def add_chunk(self, chunk_group: ChunkGroup) -> None:
         """Add ChunkGroup to the catalog."""
         if len(chunk_group.labels) == 0:
             return
+
+        self._clean_column_cache()
         keys = frozenset(chunk_group.labels)
-        chunk_group_with_same_schema = next((x for x in self.columns if len(
+        chunk_group_with_same_schema = next((x for x in self._columns if len(
             keys) == len(x.labels) and all(l in keys for l in x.labels)), None)
         if chunk_group_with_same_schema:
             chunk_group_with_same_schema.paths.extend(chunk_group.paths)
         else:
-            self.columns.append(chunk_group)
+            self._columns.append(chunk_group)
 
     def remove_columns_info(self, labels: Iterable[str]) -> None:
         """Removes columns information
         Args:
             labels (Iterable[str]): columns labels to remove
         """
+
+        self._clean_column_cache()
         clean_needed = False
         labels_set = frozenset(labels)
 
-        for col_group in self.columns:
+        for col_group in self._columns:
             remaining_columns = {col: dt for col, dt in zip(
                 col_group.labels, col_group.dtypes) if col not in labels_set}
             if len(remaining_columns) != len(col_group.labels):
@@ -142,7 +167,7 @@ class BulkCatalog:
                 col_group.dtypes = list(remaining_columns.values())
                 clean_needed = clean_needed or len(col_group.labels) == 0
         if clean_needed:
-            self.columns = [c for c in self.columns if c.labels]
+            self._columns = [c for c in self._columns if c.labels]
 
     def change_columns_info(self, chunk_group: ChunkGroup) -> None:
         """Replace column information with the given one
@@ -166,7 +191,7 @@ class BulkCatalog:
         """
         grouped_files = []
 
-        for col_group in self.columns:
+        for col_group in self._columns:
             matching_columns = col_group.labels.intersection(labels) if labels else col_group.labels
             if matching_columns:
                 grouped_files.append(self.ColumnsPaths(
@@ -185,8 +210,29 @@ class BulkCatalog:
                 'labels': list(c.labels),
                 'paths': c.paths,
                 'dtypes': c.dtypes
-            } for c in self.columns],
+            } for c in self._columns],
         }
+
+    def describe(self, *,
+                 offset: Optional[int] = None,
+                 limit: Optional[int] = None,
+                 column_selection: Optional[ColumnSelection] = None) -> DataframeDescribe:
+        nb_rows = self.nb_rows
+        if offset:
+            nb_rows = max(0, nb_rows - offset)
+        if limit:
+            nb_rows = min(nb_rows, limit)
+
+        all_columns = self.all_columns
+        if column_selection:
+            columns, _ = select_columns(column_selection, all_columns)
+        else:
+            columns = natsorted(all_columns)
+
+        return DataframeDescribe(
+            numberOfRows=nb_rows,
+            columns=columns
+        )
 
     @classmethod
     def from_dict(cls, catalog_as_dict: dict) -> "BulkCatalog":
