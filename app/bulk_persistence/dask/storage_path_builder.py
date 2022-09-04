@@ -61,7 +61,7 @@ def record_path(
     (path where all data relateed to an entity are saved"""
     encoded_id = hash_record_id(record_id)
     base_path = build_base_path(base_directory, protocol)
-    return join(base_path, encoded_id)
+    return join(base_path, encoded_id) if base_path else encoded_id
 
 
 def record_bulk_path(
