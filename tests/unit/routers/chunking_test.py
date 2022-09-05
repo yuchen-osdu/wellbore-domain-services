@@ -11,7 +11,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from pandas.testing import assert_frame_equal
-from tests.unit.persistence.dask_blob_storage_test import generate_df
+from tests.unit.generate_data import generate_df
 from app.bulk_persistence import MAX_COLUMNS_WRITE_CHUNK, MAX_COLUMNS_RETURN
 
 Definitions = {
