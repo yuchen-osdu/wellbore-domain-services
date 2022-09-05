@@ -22,18 +22,34 @@ from contextlib import contextmanager
 
 from opencensus.trace.span_context import SpanContext
 from odes_storage.models import Record, StorageAcl, Legal
+from osdu.core.api.storage.tenant import Tenant
 from starlette.routing import Mount, Router, Route
 
 from app.model.model_utils import record_to_dict
 from app.context import get_or_create_ctx
+
 
 @pytest.fixture()
 def ctx_fixture():
     """ Create context with a fake tracer in it """
     mock_mock = mock.MagicMock()
     mock_mock.span_context = SpanContext(trace_id="trace-id", span_id="span_id")
-    ctx = get_or_create_ctx().set_current_with_value(tracer=mock_mock, logger=mock.NonCallableMock(spec_set=logging.Logger))
-    yield ctx
+
+    from app.injector.app_injector import AppInjector
+
+    ctx = get_or_create_ctx()
+    fake_tenant = Tenant(data_partition_id=ctx.partition_id or 'test_partition',
+                         project_id='test_project',
+                         credentials='',
+                         bucket_name='test_bucket')
+    ctx = ctx.set_current_with_value(
+        tracer=mock_mock,
+        logger=mock.NonCallableMock(spec_set=logging.Logger),
+        app_injector=ctx.app_injector or AppInjector(),
+        partition_id=ctx.partition_id or 'test_partition',
+        tenant=ctx.tenant or fake_tenant
+    )
+    return ctx
 
 
 def create_mock_class(cls_to_mock):

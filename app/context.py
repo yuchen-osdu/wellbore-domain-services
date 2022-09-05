@@ -16,6 +16,8 @@ import contextvars
 from typing import Optional
 import json
 
+from osdu.core.api.storage.tenant import Tenant
+
 from app.model.user import User
 from app.injector.app_injector import AppInjector
 
@@ -36,6 +38,7 @@ class Context:
         '_user',
         '_app_injector',
         '_attr_dict',
+        '_tenant',
         '_x_user_id',
         '_x_collaboration'
     ]
@@ -51,6 +54,7 @@ class Context:
                  api_key: Optional[str] = None,
                  user: Optional[User] = None,
                  app_injector: Optional[AppInjector] = None,
+                 tenant: Optional[Tenant] = None,
                  x_user_id: Optional[str] = None,
                  x_collaboration: Optional[str] = None,
                  **keys):
@@ -65,6 +69,7 @@ class Context:
         self._api_key = api_key
         self._user = user
         self._app_injector = app_injector
+        self._tenant = tenant
         self._x_user_id = x_user_id
         self._x_collaboration = x_collaboration
 
@@ -91,7 +96,7 @@ class Context:
     @classmethod
     def set_current_with_value(cls, tracer=None, correlation_id=None, request_id=None, auth=None,
                                partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                               dev_mode=None, x_user_id=None, x_collaboration=None,
+                               dev_mode=None, tenant=None, x_user_id=None, x_collaboration=None,
                                **keys) -> 'Context':
         """
         clone the current context with the given values, set the new ctx as current and returns it
@@ -109,6 +114,7 @@ class Context:
                                      user=user,
                                      app_injector=app_injector,
                                      dev_mode=dev_mode,
+                                     tenant=tenant,
                                      x_user_id=x_user_id,
                                      x_collaboration=x_collaboration,
                                      **keys)
@@ -142,6 +148,7 @@ class Context:
             api_key=self._api_key,
             user=self._user,
             app_injector=self._app_injector,
+            tenant=self._tenant,
             x_user_id=self._x_user_id,
             x_collaboration=self._x_collaboration,
             **self._attr_dict)
@@ -193,7 +200,7 @@ class Context:
 
     def with_value(self, tracer=None, correlation_id=None, request_id=None, auth=None,
                    partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                   dev_mode=None, x_user_id=None, x_collaboration=None, **keys) -> 'Context':
+                   dev_mode=None, tenant=None, x_user_id=None, x_collaboration=None, **keys) -> 'Context':
         """ Clone context, adding all keys in future logs """
         cloned = self.__class__(
             tracer=tracer or self._tracer,
@@ -206,6 +213,7 @@ class Context:
             api_key=api_key or self._api_key,
             user=user or self._user,
             app_injector=app_injector or self._app_injector,
+            tenant=tenant or self._tenant,
             x_user_id=x_user_id or self._x_user_id,
             x_collaboration=x_collaboration or self._x_collaboration,
             **self._attr_dict)
@@ -253,6 +261,10 @@ class Context:
     @property
     def app_injector(self) -> Optional[AppInjector]:
         return self._app_injector
+
+    @property
+    def tenant(self) -> Optional[Tenant]:
+        return self._tenant
 
     @property
     def x_user_id(self) -> Optional[str]:

@@ -59,15 +59,14 @@ def test_about_contains_build_n_version(client, path_prefix):
 
 
 @pytest.mark.parametrize("path_prefix", PathPrefixParams)
-@pytest.mark.parametrize("cloud_provider", ['Azure', 'gcp', 'unknown', 'aws', None])
-def test_about_with_cloud_provider(client, cloud_provider, path_prefix):
+def test_about_with_cloud_provider(client, path_prefix):
 
-    Config.cloud_provider.value = cloud_provider
+    Config.cloud_provider.value = 'my_cloud_provider'
 
     response = client.get(build_url(path_prefix, "/about"))
     assert response.status_code == 200
     json_response = response.json()
-    assert json_response['cloudEnvironment'] == cloud_provider
+    assert json_response['cloudEnvironment'] == 'my_cloud_provider'
 
 
 @pytest.mark.parametrize("path_prefix", PathPrefixParams)
