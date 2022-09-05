@@ -30,9 +30,8 @@ from .search import (
     query_type,
     SearchQuery,
     get_ctx,
-    query_type_returned_fields,
-    basic_query_request,
-    basic_query_request_with_cursor)
+    query_type_returned_fields
+    )
 
 router = APIRouter(route_class=TracingRoute)
 
