@@ -3,8 +3,7 @@ import functools
 from typing import List, Callable, Iterable, Iterator
 import itertools
 from datetime import datetime, timedelta
-from os.path import join
-import numpy as np
+from app.bulk_persistence.dask.storage_path_builder import join
 import pandas as pd
 
 from app.bulk_persistence.bulk_persistence_config import MAX_COLUMNS_RETURN
