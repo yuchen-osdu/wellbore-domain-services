@@ -89,9 +89,13 @@ async def local_dask_client_initialized(dask_client):
 @pytest.fixture
 async def bulk_stats_fixture(local_dask_client_initialized, tmp_path, nope_logger_fixture,
                              ctx_fixture, local_bulk_persistence_config) -> (BulkStatistics, DaskBulkStorage):
-
+    from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
     local_dask = await make_local_dask_bulk_storage(str(tmp_path), local_bulk_persistence_config)
-
+    async def _make_local_blob_storage():
+        return LocalFSBlobStorage(directory=tmp_path)
+    injector = ctx_fixture.app_injector
+    from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+    injector.register(BlobStorageBase, _make_local_blob_storage)
     bulk_stats = BulkStatistics(dask_blob_storage=local_dask)
     bulk_stats._paging_size_per_batch = 500_000
     bulk_stats._max_cols_per_batch = 100

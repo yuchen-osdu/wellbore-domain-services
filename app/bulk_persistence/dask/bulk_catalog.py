@@ -15,23 +15,21 @@
 This module groups function related to bulk catalog.
 A catalog contains metadata of the chunks
 """
-import asyncio
-import functools
 import json
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, NamedTuple, Optional, Set
 from itertools import chain
+from io import BytesIO, StringIO
 
 from natsort import natsorted
 
-from app.helper.traces import with_trace
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from osdu.core.api.storage.exceptions import ResourceNotFoundException
+
 from ..model_chunking import DataframeDescribe
-from ..capture_timings import capture_timings
 from ..dataframe_columns import ColumnSelection, select_columns
-from .storage_path_builder import join, remove_protocol
-from .storage_path_builder import join, remove_protocol, record_bulk_path
-from .utils import worker_capture_timing_handlers
+from .storage_path_builder import join, record_bulk_path
 
 
 @dataclass
@@ -251,49 +249,44 @@ class BulkCatalog:
 CATALOG_FILE_NAME = 'bulk_catalog.json'
 
 
-@capture_timings('save_bulk_catalog', handlers=worker_capture_timing_handlers)
-@with_trace('save_bulk_catalog')
-async def save_bulk_catalog(filesystem, folder_path: str, catalog: BulkCatalog) -> None:
-    """save a bulk catalog to a json file in the given folder path"""
-
-    folder_path, _ = remove_protocol(folder_path)
-    meta_path = join(folder_path, CATALOG_FILE_NAME)
-    with filesystem.open(meta_path, 'w') as outfile:
-        _func = functools.partial(json.dumps, catalog.as_dict(), indent=0)
-        data = await asyncio.get_running_loop().run_in_executor(None, _func)
-        # TODO use the async blob_storage instead of ffspec, this call is blocking
-        outfile.write(data)
-
-
-@capture_timings('load_bulk_catalog', handlers=worker_capture_timing_handlers)
-@with_trace('load_bulk_catalog')
-async def load_bulk_catalog(filesystem, folder_path: str) -> Optional[BulkCatalog]:
-    """load a bulk catalog from a json file in the given folder path"""
-
-    folder_path, _ = remove_protocol(folder_path)
-    meta_path = join(folder_path, CATALOG_FILE_NAME)
-    with suppress(FileNotFoundError):
-        # TODO use the async blob_storage instead of ffspec + thread
-        with filesystem.open(meta_path) as json_file:
-            data = await asyncio.get_running_loop().run_in_executor(None, json.load, json_file)
-            catalog = BulkCatalog.from_dict(data)
-            catalog.origin = BulkCatalogOrigin.from_file()
-            return catalog
-
-    return None
-
-
-async def async_load_bulk_catalog_with_blob_storage(ctx, tenant, record_id: str, bulk_id: str) -> Optional[BulkCatalog]:
-    from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-    from osdu.core.api.storage.exceptions import ResourceNotFoundException
-    from io import BytesIO
-    """load a bulk catalog from a json file in the given folder path"""
+def _get_persistence_path(record_id: str, bulk_id: str) -> str:
     folder_path = record_bulk_path('', record_id, bulk_id)  # because base_directory already inside tenant
-    remote_path = join(folder_path, CATALOG_FILE_NAME)
+    return join(folder_path, CATALOG_FILE_NAME)
 
-    storage = await ctx.app_injector.get(BlobStorageBase)
+
+async def async_load_bulk_catalog_with_blob_storage(record_id: str,
+                                                    bulk_id: str,
+                                                    tenant=None,
+                                                    storage: Optional[BlobStorageBase] = None
+                                                    ) -> Optional[BulkCatalog]:
+    # TODO it would be better to not get the tenant and BlobStorage from context at all,
+    #  currently done this way at first to ease migrating
+    from app.context import get_ctx
+    ctx = get_ctx()
+    tenant = tenant or ctx.tenant
+    storage = storage or await ctx.app_injector.get(BlobStorageBase)
+
+    storage_full_name = _get_persistence_path(record_id, bulk_id)
     with suppress(ResourceNotFoundException):
-        content = await storage.download(tenant, remote_path)
+        content = await storage.download(tenant, storage_full_name)
         data = json.load(BytesIO(content))
         return BulkCatalog.from_dict(data)
     return None
+
+
+async def async_save_bulk_catalog_with_blob_storage(record_id: str,
+                                                    bulk_id: str,
+                                                    catalog: BulkCatalog,
+                                                    tenant=None,
+                                                    storage: Optional[BlobStorageBase] = None
+                                                    ) -> None:
+    # TODO it would be better to not get the tenant and BlobStorage from context at all,
+    #  currently done this way at first to ease migrating
+    from app.context import get_ctx
+    ctx = get_ctx()
+    tenant = tenant or ctx.tenant
+    storage = storage or await ctx.app_injector.get(BlobStorageBase)
+
+    storage_full_name = _get_persistence_path(record_id, bulk_id)
+    content = StringIO(json.dumps(catalog.as_dict(), indent=0))
+    await storage.upload(tenant, storage_full_name, content)
