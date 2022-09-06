@@ -17,7 +17,7 @@ from .bulk_filter import BulkReadFilters, BulkReadFilterOperator
 from .model_chunking import GetDataParams, DataframeBasicDescribe, DataframeDescribe
 from .dask.bulk_catalog import BulkCatalog, async_load_bulk_catalog_with_blob_storage, async_save_bulk_catalog_with_blob_storage
 from .dask.dask_bulk_storage import DaskBulkStorage
-from .dask.dask_bulk_storage_local import make_local_dask_bulk_storage
+from .dask.dask_bulk_storage_local import make_local_dask_bulk_storage, make_local_dask_storage_parameters
 from .dask.storage_path_builder import hash_record_id
 from .dask.traces import trace_dataframe_attributes, submit_with_trace, trace_attributes_root_span
 from .dataframe_persistence import create_and_store_dataframe, get_dataframe, download_bulk

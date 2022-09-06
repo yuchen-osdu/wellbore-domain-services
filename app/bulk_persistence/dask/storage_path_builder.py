@@ -103,7 +103,7 @@ def record_relative_path(base_directory: str, record_id: str, path: str) -> str:
 
 
 def full_path(
-    base_directory: str, record_id: str, rel_path: str, protocol: Optional[str] = None
+    base_directory: str, record_id: str, relative_path: str, protocol: Optional[str] = None
 ) -> str:
     """Returns the full path of a record from a relative path"""
-    return join(record_path(base_directory, record_id, protocol), rel_path)
+    return join(record_path(base_directory, record_id, protocol), relative_path)

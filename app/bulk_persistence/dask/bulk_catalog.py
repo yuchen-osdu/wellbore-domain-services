@@ -18,7 +18,7 @@ A catalog contains metadata of the chunks
 import json
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, NamedTuple, Optional, Set
+from typing import Dict, Iterable, Iterator, List, NamedTuple, Optional, Set
 from itertools import chain
 from io import BytesIO, StringIO
 
@@ -89,7 +89,7 @@ class BulkCatalog:
     """
 
     def __init__(self, record_id: str, origin: Optional[BulkCatalogOrigin] = None) -> None:
-        self._record_id: str = record_id  # TODO remove
+        self._record_id: str = record_id
         self.nb_rows: int = 0
         self.index_path: Optional[str] = None
         self._columns: List[ChunkGroup] = []
@@ -168,7 +168,13 @@ class BulkCatalog:
 
     @property
     def chunk_count(self) -> int:
-        return len(set(chain.from_iterable((col_group.paths for col_group in self._columns))))
+        # TODO by design, a path should not appears twice but nothing prevent to construct a catalog with the same
+        #  chunk path more than once, so let's use a set container for now
+        return len(set(self.get_chunk_paths()))
+
+    def get_chunk_paths(self) -> Iterator[str]:
+        """ iterator over all paths """
+        return chain.from_iterable((col_group.paths for col_group in self._columns))
 
     def add_chunk(self, chunk_group: ChunkGroup) -> None:
         """Add ChunkGroup to the catalog."""

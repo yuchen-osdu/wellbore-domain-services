@@ -2,16 +2,20 @@ import pytest
 
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.bulk_persistence import make_local_dask_bulk_storage
+from app.bulk_persistence import make_local_dask_bulk_storage, make_local_dask_storage_parameters
 from app.bulk_persistence import SessionsStorage
 
 
 async def create_bulk_mocks(local_blob_path: str, local_storage_path: str, bulk_config):
-    local_blob_storage = LocalFSBlobStorage(directory=local_blob_path)
-    local_storage_service = StorageRecordServiceBlobStorage(local_blob_storage, 'myProject', 'myContainer')
-    session_storage = SessionsStorage(local_blob_storage)
-    dask_storage_mock = await make_local_dask_bulk_storage(base_directory=local_storage_path, bulk_config=bulk_config)
+    from tests.unit.blob_storage_fsspec import BlobStorageFsspec
+    dask_storage_mock = await make_local_dask_bulk_storage(base_directory=local_blob_path, bulk_config=bulk_config)
 
+    local_dask_parameters = make_local_dask_storage_parameters(local_blob_path)
+    local_blob_storage = BlobStorageFsspec(local_blob_path, local_dask_parameters.protocol, **local_dask_parameters.storage_options)
+
+    local_storage_service = StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=local_storage_path),
+                                                            'myProject', 'myContainer')
+    session_storage = SessionsStorage(local_blob_storage)
     return {
         "storage_client_mock": local_storage_service,
         "dask_bulk_storage_mock": dask_storage_mock,
