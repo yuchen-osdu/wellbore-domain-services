@@ -291,7 +291,7 @@ The following software have components provided under the terms of this license:
 - pluggy
 - py (from http://pylib.readthedocs.org/, https://py.readthedocs.io/)
 - pyarrow (from https://arrow.apache.org/)
-- pydantic (from https://github.com/samuelcolvin/pydantic)
+- pydantic (from https://github.com/pydantic/pydantic, https://github.com/samuelcolvin/pydantic)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
