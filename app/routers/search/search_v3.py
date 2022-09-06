@@ -30,9 +30,8 @@ from .search import (
     query_type,
     SearchQuery,
     get_ctx,
-    query_type_returned_fields,
-    basic_query_request,
-    basic_query_request_with_cursor)
+    query_type_returned_fields
+    )
 
 router = APIRouter(route_class=TracingRoute)
 
@@ -195,15 +194,6 @@ async def query_request(query_type: str, kind: str, ctx: Context,
 
     cursor_query = SimpleCursorQueryRequest(**query_as_dict)
     return await query_request_with_cursor(query_type, kind, ctx, cursor_query)
-
-
-@router.post('/query/wellbores', summary='Query with cursor, get wellbores',
-             description=f"""Get all Wellbores object.  <p>The wellbore kind is {OSDU_WELLBORE_KIND}
-        returns all records directly based on existing schemas</p>{REQUIRED_ROLES_READ}""",
-             response_model=CursorQueryResponse,
-             deprecated=True)
-async def query_wellbores(body: SearchQueryRequest = DEFAULT_SEARCHQUERYREQUEST, ctx: Context = Depends(get_ctx)):
-    return await query_request(query_type, OSDU_WELLBORE_KIND, ctx, body)
 
 
 @router.post('/query/wellbores/{wellboreId}/welllogs', summary='Query with cursor, search WellLogs by wellbore ID',
