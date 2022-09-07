@@ -67,7 +67,7 @@ from app.routers.bulk import bulk_routes, statistics_routes
 from app.routers.trajectory import trajectory_ddms_v2
 from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
 from app.routers.log_recognition import log_recognition
-from app.routers.search import search, fast_search, search_v3, fast_search_v3, search_v3_alpha
+from app.routers.search import search_v3, search_v3_alpha
 
 
 from app.routers.bulk.utils import (update_operation_ids,
@@ -325,13 +325,6 @@ wdms_app.include_router(log_recognition.router,
 # ---------------------------------------- Deprecated API set ---------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
-
-wdms_app.include_router(search.router, deprecated=True, prefix='/ddms', tags=["search"],
-                        dependencies=basic_dependencies, responses={**response_401, **response_403, **response_500})
-wdms_app.include_router(fast_search.router, deprecated=True, prefix='/ddms', tags=["fast-search"],
-                        dependencies=basic_dependencies, responses={**response_401, **response_403, **response_500})
-wdms_app.include_router(fast_search_v3.router, deprecated=True, prefix=DDMS_V3_PATH, tags=["fast-search v3"],
-                        dependencies=basic_dependencies, responses={**response_401, **response_403, **response_500})
 
 ddms_v2_routes_groups = [
     (well_ddms_v2, "Well", Entity.WELL),

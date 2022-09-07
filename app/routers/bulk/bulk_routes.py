@@ -15,10 +15,11 @@ from uuid import UUID
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from natsort import natsorted
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
-from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe
+from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe, BulkCatalog, DataframeDescribe
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
@@ -237,7 +238,7 @@ async def get_data_version(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI') from e
 
-    stat = None
+    columns = None
     try:
         if not bulk_uri.is_valid():
             raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
@@ -245,18 +246,49 @@ async def get_data_version(
         bulk_filters = BulkReadFilters(data_param.get_bulk_filters())
 
         dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+
         future_index = None
         if bulk_uri.is_bulk_storage_V0():
             df = await get_dataframe(ctx, bulk_id)
             auto_cast_columns_to_string(df)
         else:
+            # in any case we need the catalog in any code path, because either 'read_stat' (to get the columns)
+            # or 'load_index' will need it
+            # TODO seems get columns/stat is not always needed - see df_render
+            bulk_catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_id)
+
+            # if describe without filters, the catalog is enough to answer:
+            if data_param.describe and not bulk_filters.has_filter():
+                nb_rows = bulk_catalog.nb_rows
+                if data_param.offset:
+                    nb_rows = max(0, nb_rows-data_param.offset)
+                if data_param.limit:
+                    nb_rows = min(nb_rows, data_param.limit)
+
+                all_columns = bulk_catalog.all_columns
+                if data_param.curves:
+                    columns = DataFrameRender.get_matching_columns(data_param.get_curves_list(), all_columns)
+                else:
+                    columns = natsorted(all_columns)
+
+                return DataframeDescribe(
+                    numberOfRows=nb_rows,
+                    columns=columns
+                )
+
+            df, filters, columns = await _process_request_v1(record_id,
+                                                             bulk_id,
+                                                             data_param,
+                                                             bulk_filters,
+                                                             bulk_catalog,
+                                                             dask_blob_storage)
+
             if data_param.offset or data_param.limit:
-                future_index = await DataFrameRender.load_index(record_id, bulk_id, dask_blob_storage)
-            df, filters, stat = await _process_request_v1(record_id, bulk_id, data_param, bulk_filters, dask_blob_storage)
+                future_index = await dask_blob_storage.load_index(record_id, bulk_id, bulk_catalog)
 
         df = await DataFrameRender.process_params(df, data_param, bulk_filters, dask_blob_storage, future_index)
 
-        return await DataFrameRender.df_render(df, data_param, accept_type, orient=orient, stat=stat)
+        return await DataFrameRender.df_render(df, data_param, accept_type, orient=orient, columns=columns)
     except BulkError as ex:
         ex.raise_as_http()
 
@@ -266,13 +298,14 @@ async def _process_request_v1(record_id: str,
                               bulk_id: str,
                               data_param: GetDataParams,
                               filters: BulkReadFilters,
+                              bulk_catalog: BulkCatalog,
                               dask_blob_storage: DaskBulkStorage):
     columns_to_load = None
-    stat = await dask_blob_storage.read_stat(record_id, bulk_id)
-    existing_col = set(stat['schema'])
+    columns = bulk_catalog.all_columns
+    existing_col = columns
     if data_param.curves:
         columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), existing_col)
-        stat['schema'] = {k: stat['schema'][k] for k in columns_to_load}
+        columns = set(columns_to_load)
 
     if not data_param.describe: # don't limit columns when describe parameter is True
         # if curves parameter is None, it means that we are going to load all existing columns
@@ -290,12 +323,12 @@ async def _process_request_v1(record_id: str,
 
     if columns_to_load is None and data_param.describe:
         # optimization: create a fake dataset when describe on all columns
-        index = await dask_blob_storage.load_index(record_id, bulk_id)
+        index = await dask_blob_storage.load_index(record_id, bulk_id, bulk_catalog)
         df = pd.DataFrame(index=index)
     else:
         # loading the dataframe with filter on columns is faster than filtering columns on df
-        df = await dask_blob_storage.load_bulk(record_id, bulk_id, columns=columns_to_load)
-    return df, filters, stat
+        df = await dask_blob_storage.load_bulk(record_id, bulk_id, bulk_catalog, columns=columns_to_load)
+    return df, filters, columns
 
 
 @router.get(

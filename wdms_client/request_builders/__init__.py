@@ -201,26 +201,6 @@ request_path_dict = {
         search_apis.setup.build_request_seach_tests_setup_create_markers,
     "search_apis.setup.seach_tests_setup_start":
         search_apis.setup.build_request_seach_tests_setup_start,
-    "search_apis.search.search_logs_by_logset_id":
-        search_apis.search.build_request_search_logs_by_logset_id,
-    "search_apis.search.search_markers_by_wellbore_id":
-        search_apis.search.build_request_search_markers_by_wellbore_id,
-    "search_apis.search.search_wellbores_by_geo_polygon":
-        search_apis.search.build_request_search_wellbores_by_geo_polygon,
-    "search_apis.search.search_logs_by_wellbore_id":
-        search_apis.search.build_request_search_logs_by_wellbore_id,
-    "search_apis.search.search_logset_by_wellbores_attribute":
-        search_apis.search.build_request_search_logset_by_wellbores_attribute,
-    "search_apis.search.search_logs_by_wellbores_attribute":
-        search_apis.search.build_request_search_logs_by_wellbores_attribute,
-    "search_apis.search.search_wellbores_by_bounding_box":
-        search_apis.search.build_request_search_wellbores_by_bounding_box,
-    "search_apis.search.search_wellbores_by_distance":
-        search_apis.search.build_request_search_wellbores_by_distance,
-    "search_apis.search.search_logs_by_logsets_attribute":
-        search_apis.search.build_request_search_logs_by_logsets_attribute,
-    "search_apis.search.search_logset_by_wellbore_id":
-        search_apis.search.build_request_search_logset_by_wellbore_id,
     "about":
         about.build_request_about,
     "version":

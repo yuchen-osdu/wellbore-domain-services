@@ -1,6 +1,5 @@
 import io
 import math
-import platform
 import uuid
 
 import numpy as np
@@ -68,9 +67,9 @@ def _create_df_from_response(response):
 
 
 def _df_to_format(df, data_format):
-    if data_format == 'parquet':
+    if 'parquet' in data_format:
         return df.to_parquet(engine="pyarrow")
-    elif data_format == 'json':
+    elif 'json' in data_format:
         return df.to_json(orient='split', date_format='iso')
     else:
         raise ValueError(f"Unknown content-type: '{data_format}'")
@@ -319,9 +318,9 @@ def test_overwrite_data_by_chunk_append(dasked_test_app_without_consistency_clie
 
 
 def _send_chunk(client, url, chunk_df, data_format):
-    if data_format == 'json':
+    if 'json' in data_format:
         headers = {'Content-Type': 'application/json'}
-    elif data_format == 'parquet':
+    elif 'parquet' in data_format:
         headers = {'content-type': 'application/x-parquet'}
     else:
         raise ValueError(f"Unknown content-type: '{data_format}'")
@@ -1050,13 +1049,20 @@ def test_get_bulk_data_with_filters_curves_offset(dasked_test_app_without_consis
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-@pytest.mark.parametrize("filter, limit, curves, expected", [(['A:gt:5'], 5, ['A,B'], [5, 5, 4, 0]),
-                                                             (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
-                                                             (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
-                                                             (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0])
-                                                             ])
-def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app_without_consistency_client, entity_type,
-                                                           filter, limit, expected, dataframe_for_filters, curves):
+@pytest.mark.parametrize("filter, limit, curves, expected", [
+    (['A:gt:5'], 5, ['A,B'], [5, 5, 4, 0]),
+    (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
+    (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
+    (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0]),
+
+    # without filter
+    ([], 7, ['B,D'], [7, 7, 6, 0]),
+    ([], 7, [], [7, 7, 6, 0])
+])
+def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app_without_consistency_client,
+                                                           dataframe_for_filters,
+                                                           entity_type,
+                                                           filter, limit, curves, expected):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     headers = {'content-type': 'application/x-parquet'}
@@ -1067,11 +1073,13 @@ def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app_witho
 
     header_get_data = {'Accept': 'application/parquet'}
     for i in range(0, math.ceil(20 / limit)):
+        expected_columns = curves[0].split(',') if curves else list(dataframe_for_filters.columns)
+
         response_get_data = client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
                                        params={'filter': filter, 'curves': curves, 'offset': i * limit, 'limit': limit,
                                                'describe': True})
         assert response_get_data.json()['numberOfRows'] == expected[i]
-        assert response_get_data.json()['columns'] == curves[0].split(',')
+        assert response_get_data.json()['columns'] == expected_columns
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
