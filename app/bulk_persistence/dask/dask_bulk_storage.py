@@ -437,6 +437,7 @@ class DaskBulkStorage:
         df2 = self._read_parquet(files, columns=cols_to_merge)
         merged_df = self._submit_with_trace(do_merge, df1, df2)
 
+        # TODO we should no longer use Dask to save
         merged_df_path = pathBuilder.join(commit_path, f'{uuid.uuid4()}.parquet')
         await self._save_with_dask(merged_df_path, merged_df)
 

@@ -11,6 +11,8 @@ async def create_bulk_mocks(local_blob_path: str, local_storage_path: str, bulk_
     dask_storage_mock = await make_local_dask_bulk_storage(base_directory=local_blob_path, bulk_config=bulk_config)
 
     local_dask_parameters = make_local_dask_storage_parameters(local_blob_path)
+
+    # using blob storage over ffspec to make the read/write compatible with what Dask
     local_blob_storage = BlobStorageFsspec(local_blob_path, local_dask_parameters.protocol, **local_dask_parameters.storage_options)
 
     local_storage_service = StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=local_storage_path),

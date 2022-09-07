@@ -1,5 +1,6 @@
+import io
 from typing import Any, Optional, List
-from os.path import join
+from os.path import join, normpath
 import fsspec
 from osdu.core.api.storage.blob import Blob
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -12,7 +13,8 @@ from osdu.core.api.storage.exceptions import (
 
 class BlobStorageFsspec(BlobStorageBase):
     """
-    BlobStorageBase over ffspec abstraction
+    BlobStorageBase over ffspec abstraction, allowing read/write between component that use ffspec like Dask and
+    other component directly base on BlobStorageBase
     WARNING the tenant won't be used, expected to be take into account inside the fs provided
     """
 
@@ -25,10 +27,15 @@ class BlobStorageFsspec(BlobStorageBase):
     def __init__(self, base_directory: Optional[str], protocol: Optional[str], **storage_options):
         self._base_directory = base_directory
         self._fs: fsspec.AbstractFileSystem = fsspec.filesystem(protocol or 'file', **storage_options)
+        self._protocol = protocol
 
     def _build_path(self, tenant, object_name: str):
         if self._base_directory:
-            return join(self._base_directory, object_name)
+            object_name = join(self._base_directory, object_name)
+        if self._protocol == 'file':
+            object_name = normpath(object_name)
+            # don't replace volume - there's might be smarter way to do it ...
+            object_name = object_name[:3] + object_name[3:].replace(':', '_')
         return object_name
 
     @with_blobstorage_exception(ExceptionMapping)
@@ -61,6 +68,21 @@ class BlobStorageFsspec(BlobStorageBase):
                            max_result: Optional[int] = None, timeout: int = 10, **kwargs) -> List[str]:
         raise RuntimeError("not implemented: list_objects")
 
+    @staticmethod
+    def _preprocess_data(data: Any) -> bytes:  # -> bytes
+        if isinstance(data, io.BufferedIOBase):
+            return data.read()
+        if isinstance(data, bytes):
+            return data
+        if isinstance(data, str):
+            return data.encode()
+        if isinstance(data, io.TextIOBase):
+            return data.read().encode()
+        if isinstance(data, io.IOBase):
+            return data.read()
+
+        raise TypeError(f'unsupported upload type: "{type(data)}"')
+
     @with_blobstorage_exception(ExceptionMapping)
     async def upload(self, tenant, object_name: str, file_data: Any,
                      *,
@@ -71,8 +93,10 @@ class BlobStorageFsspec(BlobStorageBase):
                      timeout: int = 30, **kwargs) -> Blob:
 
         full_path = self._build_path(tenant, object_name)
+        data = self._preprocess_data(file_data)
+
         with self._fs.open(full_path, "wb") as file:
-            file.write(file_data)
+            file.write(data)
 
         return Blob(identifier=object_name,
                     name=object_name,

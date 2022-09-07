@@ -13,9 +13,11 @@
 # limitations under the License.
 from contextlib import suppress
 from uuid import UUID
-from typing import Set, List, Optional
+from typing import Optional
 import asyncio
+
 import pandas as pd
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
@@ -341,13 +343,21 @@ async def _get_data_fast_track(ctx,
     # case of single chunk
     if bulk_catalog.chunk_count == 1:  # only one chunk
         for chunk_path in bulk_catalog.get_chunk_paths():
+            if not bulk_catalog.is_single_file_chunk(chunk_path):
+                # multi partition file chunk saved by Dask
+                raise GetDataFastTrackCaseNotSupportedException()
+
             print("FAST TRACK !!!!!!")
             # return directly as there's one chunk
-            return await _single_chunk_strategy(storage, ctx.tenant, chunk_path, curves_selection)
+            return await _single_chunk_strategy(storage,
+                                                ctx.tenant,
+                                                storage_path_builder.join(base_chunk_path, chunk_path),
+                                                curves_selection)
 
     # cases not supported
     if bulk_catalog.origin.was_generated:
         # previous storage mechanism with Dask partitions, no shortcut possible for now
+        # or data without session, but because there's no way to differentiate then ...
         raise GetDataFastTrackCaseNotSupportedException()
 
     # cases where involved chunks are not perfectly column-slided - 1 column = one chunk only
@@ -360,8 +370,13 @@ async def _get_data_fast_track(ctx,
 
     # figures out the number of chunks involved, only one path, so provides
     chunk_groups = bulk_catalog.filter_group_for_columns(columns_to_load)
-    if all((len(chunk_group.paths) == 1 for chunk_group in chunk_groups)):
+
+    if any((len(chunk_group.paths) > 1 for chunk_group in chunk_groups)):
         raise RuntimeError("unique chunk path expected")  # extra check is_columns_slide_only
+
+    if any((not bulk_catalog.is_single_file_chunk(chunk_group.paths[0]) for chunk_group in chunk_groups)):
+        # at least one chunk is a multi partition file saved by Dask
+        raise GetDataFastTrackCaseNotSupportedException()
 
     # since there's one chunk per column, at most it will fire 50+1 tasks
     dfs = await asyncio.gather(
@@ -380,12 +395,20 @@ async def _get_data_fast_track(ctx,
     )
 
     # concat df
-    final_df = pd.concat(dfs, ignore_index=True)
+    final_df = pd.concat(dfs, axis=1)
     return _build_response_parquet_df(final_df)
 
 
-def _build_response_parquet_df(df: pd.DataFrame):
-    content = df.to_parquet
+def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
+    # column ordering similar to utils.process_params
+    if requested_columns:
+        df = df[requested_columns]  # columns are ordered as the user requested
+    else:
+        from natsort import natsorted
+        df = df[natsorted(df.columns)]  # columns are ordered by natural sort
+
+    df.index.name = None  # TODO see 'df_render'
+    content = df.to_parquet(None, index=True, engine='pyarrow')
     return Response(content, media_type=MimeTypes.PARQUET.type)
 
 
