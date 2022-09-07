@@ -27,9 +27,10 @@ from natsort import natsorted
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
+from .session_file_meta import is_chunk_filename
 from ..model_chunking import DataframeDescribe
 from ..dataframe_columns import ColumnSelection, select_columns
-from .storage_path_builder import join, record_bulk_path
+from .storage_path_builder import join, record_bulk_path, basename
 
 
 @dataclass
@@ -175,6 +176,16 @@ class BulkCatalog:
     def get_chunk_paths(self) -> Iterator[str]:
         """ iterator over all paths """
         return chain.from_iterable((col_group.paths for col_group in self._columns))
+
+    @staticmethod
+    def is_single_file_chunk(chunk_path) -> bool:
+        """ differentiate a single chunk from a multi partition dataframe saved by Dask. returns True if chunk is a
+        lonely parquet file"""
+        # so far the simplest and fastest (loose) way is to check if the file_name match a chunk file name generated
+        # from session_file_meta. Luckily the only way chunk is generated using Dask is when conflict resolution
+        # happen and the name format is different (just a uuid)
+        # Another way would be to check is the path point to a file (raw chunk) or a folder (Dask multi partition)
+        return is_chunk_filename(basename(chunk_path))
 
     def add_chunk(self, chunk_group: ChunkGroup) -> None:
         """Add ChunkGroup to the catalog."""
