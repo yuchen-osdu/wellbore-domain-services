@@ -344,5 +344,7 @@ async def async_save_bulk_catalog_with_blob_storage(record_id: str,
     storage = storage or await ctx.app_injector.get(BlobStorageBase)
 
     storage_full_name = _get_persistence_path(record_id, bulk_id)
-    content = StringIO(json.dumps(catalog.as_dict(), indent=0))
+
+    # TODO it might be possible to directly dump as bytes by passing the encoding
+    content = BytesIO(json.dumps(catalog.as_dict(), indent=0).encode())
     await storage.upload(tenant, storage_full_name, content)
