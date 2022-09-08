@@ -265,11 +265,12 @@ async def get_data_version(
             bulk_catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_id)
 
             # if describe without filters, the catalog is enough to answer:
+            column_selection = data_param.get_curves_list() if data_param.curves else None
             if data_param.describe and not bulk_filters.has_filter():
                 return bulk_catalog.describe(
                     offset=data_param.offset,
                     limit=data_param.limit,
-                    column_selection=data_param.get_curves_list() if data_param.curves else None)
+                    column_selection=column_selection)
 
             if not bulk_filters.has_filter():
                 # try fast track, if no supported, continue with the regular read process
@@ -279,7 +280,8 @@ async def get_data_version(
                         bulk_catalog,
                         accept_type,
                         data_param.offset,
-                        data_param.limit)
+                        data_param.limit,
+                        column_selection)
 
             df, filters, columns = await _process_request_v1(record_id,
                                                              bulk_id,
