@@ -79,7 +79,7 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
                                   DataConsistencyChecks,
                                   BulkStatistics)
 
-from ...bulk_persistence.dataframe_columns import ColumnSelection, select_columns
+from app.bulk_persistence.dataframe_columns import ColumnSelection, select_columns, sort_dataframe_column
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -417,8 +417,7 @@ def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
     if requested_columns:
         df = df[requested_columns]  # columns are ordered as the user requested
     else:
-        from natsort import natsorted
-        df = df[natsorted(df.columns)]  # columns are ordered by natural sort
+        df = sort_dataframe_column(df)  # columns are ordered by natural sort
 
     df.index.name = None  # TODO see 'df_render'
     content = df.to_parquet(None, index=True, engine='pyarrow')
