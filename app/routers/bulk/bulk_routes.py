@@ -307,6 +307,7 @@ class GetDataFastTrackCaseNotSupportedException(Exception):
     pass
 
 
+@capture_timings('_build_describe_response')
 def _build_describe_response(describe):
     """ for performance reason in case of many columns """
     columns = str(describe.columns).replace("'", '"')
@@ -407,7 +408,7 @@ async def _get_data_fast_track(ctx,
                 _load_dataframe_from_storage(
                     storage, ctx.tenant,
                     storage_path_builder.join(base_chunk_path, chunk_group.paths[0]),
-                    columns_to_load.intersection(chunk_group.labels)
+                    chunk_group.labels.intersection(columns_to_load)
                 ) for chunk_group in chunk_groups
             ]
         )

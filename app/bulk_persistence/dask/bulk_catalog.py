@@ -281,7 +281,8 @@ class BulkCatalog:
         if column_selection:
             columns, _ = select_columns(column_selection, all_columns)
         else:
-            columns = sort_column_labels(self.all_columns)
+            with timeit(f"sort {len(self.all_columns)} columns using natsorted"):
+                columns = sort_column_labels(self.all_columns)
 
         # use construct to prevent validation of pydantic
         return DataframeDescribe.construct(
