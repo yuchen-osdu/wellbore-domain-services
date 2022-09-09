@@ -309,7 +309,7 @@ def _build_describe_response(describe):
     """ for performance reason in case of many columns """
     columns = str(describe.columns).replace("'", '"')
     json_string = f"{'{'}\"numberOfRows\":{describe.numberOfRows}, \"columns\":{columns}{'}'}"
-    Response(
+    return Response(
         content=json_string,
         media_type=MimeTypes.JSON.type
     )
@@ -365,7 +365,7 @@ async def _get_data_fast_track(ctx,
             return await _single_chunk_strategy(storage,
                                                 ctx.tenant,
                                                 storage_path_builder.join(base_chunk_path, chunk_path),
-                                                curves_selection)
+                                                columns_to_load)
 
     # cases not supported
     if bulk_catalog.origin.was_generated:

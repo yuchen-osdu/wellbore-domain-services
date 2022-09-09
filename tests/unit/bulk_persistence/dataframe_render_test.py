@@ -126,7 +126,7 @@ async def test_df_render_describe():
 
     assert type(response) is DataframeDescribe
     assert response.columns == columns
-    assert response.row_count == 100
+    assert response.numberOfRows == 100
 
 
 class RequestMock:
