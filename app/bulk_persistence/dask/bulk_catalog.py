@@ -26,6 +26,7 @@ from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from .session_file_meta import is_chunk_filename
+from ..capture_timings import timeit, capture_timings
 from ..model_chunking import DataframeDescribe
 from ..dataframe_columns import ColumnSelection, select_columns, sort_column_labels
 from .storage_path_builder import join, record_bulk_path, basename
@@ -309,6 +310,7 @@ def _get_persistence_path(record_id: str, bulk_id: str) -> str:
     return join(folder_path, CATALOG_FILE_NAME)
 
 
+@capture_timings("async_load_bulk_catalog_with_blob_storage")
 async def async_load_bulk_catalog_with_blob_storage(record_id: str,
                                                     bulk_id: str,
                                                     tenant=None,
@@ -323,12 +325,16 @@ async def async_load_bulk_catalog_with_blob_storage(record_id: str,
 
     storage_full_name = _get_persistence_path(record_id, bulk_id)
     with suppress(ResourceNotFoundException):
-        content = await storage.download(tenant, storage_full_name)
-        data = json.load(BytesIO(content))
-        return BulkCatalog.from_dict(data)
+        with timeit("async download bulk_catalog"):
+            content = await storage.download(tenant, storage_full_name)
+
+        with timeit(f"parse download bulk_catalog of size {len(content)}"):
+            data = json.load(BytesIO(content))
+            return BulkCatalog.from_dict(data)
     return None
 
 
+@capture_timings("async_save_bulk_catalog_with_blob_storage")
 async def async_save_bulk_catalog_with_blob_storage(record_id: str,
                                                     bulk_id: str,
                                                     catalog: BulkCatalog,
@@ -345,5 +351,8 @@ async def async_save_bulk_catalog_with_blob_storage(record_id: str,
     storage_full_name = _get_persistence_path(record_id, bulk_id)
 
     # TODO it might be possible to directly dump as bytes by passing the encoding
-    content = BytesIO(json.dumps(catalog.as_dict(), indent=0).encode())
-    await storage.upload(tenant, storage_full_name, content)
+    with timeit("json dumps bulk_catalog"):
+        json_bytes = json.dumps(catalog.as_dict(), indent=0).encode()
+
+    with timeit(f"upload bulk_catalog of size {len(json_bytes)}"):
+        await storage.upload(tenant, storage_full_name, BytesIO(json_bytes))

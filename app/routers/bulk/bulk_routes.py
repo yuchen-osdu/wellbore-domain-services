@@ -57,7 +57,8 @@ from app.bulk_persistence import (
     SessionState,
     SessionUpdateMode,
     SessionInternal,
-    CommitSessionResponse
+    CommitSessionResponse,
+    capture_timings
 )
 
 from app.routers.sessions import (
@@ -80,6 +81,7 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
                                   BulkStatistics)
 
 from app.bulk_persistence.dataframe_columns import ColumnSelection, select_columns, sort_dataframe_column
+from ...bulk_persistence.capture_timings import timeit
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -316,6 +318,7 @@ def _build_describe_response(describe):
 
 
 @with_trace('_get_data_fast_track')
+@capture_timings('_get_data_fast_track')
 async def _get_data_fast_track(ctx,
                                bulk_catalog: BulkCatalog,
                                accept_type: MimeType,
@@ -382,7 +385,8 @@ async def _get_data_fast_track(ctx,
     print("FAST TRACK !!!!!!")
 
     # figures out the number of chunks involved, only one path, so provides
-    chunk_groups = bulk_catalog.filter_group_for_columns(columns_to_load)
+    with timeit("bulk_catalog.filter_group_for_columns"):
+        chunk_groups = bulk_catalog.filter_group_for_columns(columns_to_load)
 
     if any((len(chunk_group.paths) > 1 for chunk_group in chunk_groups)):
         raise RuntimeError("unique chunk path expected")  # extra check is_columns_slide_only
@@ -392,39 +396,45 @@ async def _get_data_fast_track(ctx,
         raise GetDataFastTrackCaseNotSupportedException()
 
     # since there's one chunk per column, at most it will fire 50+1 tasks
-    dfs = await asyncio.gather(
-        # TODO for later, if the index is constructed with actual reference value
-        # index dataframe
-        _read_index(storage, ctx.tenant, bulk_catalog),
+    with timeit(f"load {len(chunk_groups)} chunk dataframes and index dataframe"):
+        dfs = await asyncio.gather(
+            # TODO for later, if the index is constructed with actual reference value
+            # index dataframe
+            _read_index(storage, ctx.tenant, bulk_catalog),
 
-        # chunks
-        *[
-            _load_dataframe_from_storage(
-                storage, ctx.tenant,
-                storage_path_builder.join(base_chunk_path, chunk_group.paths[0]),
-                columns_to_load.intersection(chunk_group.labels)
-            ) for chunk_group in chunk_groups
-        ]
-    )
+            # chunks
+            *[
+                _load_dataframe_from_storage(
+                    storage, ctx.tenant,
+                    storage_path_builder.join(base_chunk_path, chunk_group.paths[0]),
+                    columns_to_load.intersection(chunk_group.labels)
+                ) for chunk_group in chunk_groups
+            ]
+        )
 
     # concat df
-    final_df = pd.concat(dfs, axis=1)
+    with timeit(f"load {len(dfs)} dataframes"):
+        final_df = pd.concat(dfs, axis=1)
     return _build_response_parquet_df(final_df)
 
 
+@capture_timings('_build_response_parquet_df')
 def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
     # column ordering similar to utils.process_params
     if requested_columns:
         df = df[requested_columns]  # columns are ordered as the user requested
     else:
-        df = sort_dataframe_column(df)  # columns are ordered by natural sort
+        with timeit("sort_dataframe_columns"):
+            df = sort_dataframe_column(df)  # columns are ordered by natural sort
 
     df.index.name = None  # TODO see 'df_render'
-    content = df.to_parquet(None, index=True, engine='pyarrow')
+    with timeit(f"to parquet dataframe of shape {df.shape}"):
+        content = df.to_parquet(None, index=True, engine='pyarrow')
     return Response(content, media_type=MimeTypes.PARQUET.type)
 
 
 @with_trace('_load_dataframe_from_storage')
+@capture_timings('_load_dataframe_from_storage')
 async def _load_dataframe_from_storage(storage: BlobStorageBase, tenant, obj_path: str, columns=None) -> pd.DataFrame:
     from io import BytesIO
     content = await storage.download(tenant, obj_path)
@@ -432,6 +442,7 @@ async def _load_dataframe_from_storage(storage: BlobStorageBase, tenant, obj_pat
 
 
 @with_trace('_read_index')
+@capture_timings('_read_index')
 async def _read_index(storage: BlobStorageBase, tenant, bulk_catalog: BulkCatalog) -> pd.DataFrame:
     index_path = storage_path_builder.full_path('', bulk_catalog.record_id, bulk_catalog.index_path)
     return await _load_dataframe_from_storage(storage, tenant, index_path)
@@ -448,6 +459,7 @@ async def _single_chunk_strategy(storage: BlobStorageBase, tenant, parquet_path,
 
 
 @with_trace('_forward_parquet')
+@capture_timings('_forward_parquet')
 async def _forward_parquet(storage: BlobStorageBase, tenant, parquet_path):
     content = await storage.download(tenant, parquet_path)
 

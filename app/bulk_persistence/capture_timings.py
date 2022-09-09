@@ -1,10 +1,12 @@
 
-from logging import Logger, INFO
+from logging import INFO
 from functools import wraps
 import asyncio
 from time import perf_counter, process_time
 
 from app.helper.logger import get_logger
+
+from contextlib import contextmanager
 
 
 def make_log_captured_timing_handler(level=INFO):
@@ -53,3 +55,15 @@ def capture_timings(tag, handlers=default_capture_timing_handlers):
         return sync_inner
 
     return decorate
+
+
+@contextmanager
+def timeit(tag: str, level=INFO):
+    start_perf = perf_counter()
+    start_process = process_time()
+
+    yield
+
+    perf_elapsed = perf_counter() - start_perf
+    process_elapsed = process_time() - start_process
+    get_logger().log(level, f"Timing of {tag}, wall={perf_elapsed:.5f}s, cpu={process_elapsed:.5f}s")
