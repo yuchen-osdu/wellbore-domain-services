@@ -122,3 +122,27 @@ def test_is_columns_slide_only_handle_many_columns():
     assert catalog.is_columns_slide_only({f'C{i}[{j}]' for j in range(10, 70) for i in (3, 5, 100, 244)})
     assert not catalog.is_columns_slide_only({'C2[50]'})
 
+
+def test_is_describe_handle_many_columns():
+    # mainly to track time of the test
+    # as it could be a bottleneck for big array
+    from datetime import datetime
+
+    catalog = BulkCatalog("id")
+    # generate 200 000 columns
+    for i in range(25):
+        catalog.add_chunk(ChunkGroup({f'C{i}[{j}]' for j in range(8000)}, [f'path{i}'], []))
+
+    ts = datetime.now()
+    r = catalog.describe()
+    # assert len(r.columns) == 200_000
+    print("describe took", (datetime.now() - ts).total_seconds())
+
+    ts = datetime.now()
+    s = r.json()
+    print("json from pydantic took", (datetime.now() - ts).total_seconds())
+
+    ts = datetime.now()
+    columns = str(r.columns).replace("'", '"')
+    s = f"{'{'}\"numberOfRows\":{r.numberOfRows}, \"columns\":{columns}{'}'}"
+    print("json from manual", (datetime.now() - ts).total_seconds())

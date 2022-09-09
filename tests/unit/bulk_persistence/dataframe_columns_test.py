@@ -1,6 +1,11 @@
 import pytest
 
-from app.bulk_persistence.dataframe_columns import group_curve_columns, match_full_slice_pattern, get_array_columns
+from app.bulk_persistence.dataframe_columns import (
+    group_curve_columns,
+    match_full_slice_pattern,
+    get_array_columns,
+    sort_column_labels
+)
 
 
 @pytest.mark.parametrize("column_labels, include_non_array, expected", [
@@ -66,3 +71,9 @@ def test_group_curve_columns_handle_one_million_columns():
 ])
 def test_match_full_slice_pattern(column_label, expected):
     assert match_full_slice_pattern(column_label) == expected
+
+
+def test_sort_column_label():
+    assert sort_column_labels(
+        ['A', 'C[10]', 'C[20]', 'C[1]', 'Z', 'C[2]']
+    ) == ['A', 'C[1]', 'C[2]', 'C[10]', 'C[20]', 'Z']

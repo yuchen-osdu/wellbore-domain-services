@@ -20,16 +20,14 @@ from contextlib import suppress
 from dataclasses import dataclass
 from typing import Dict, Iterable, Iterator, List, NamedTuple, Optional, Set
 from itertools import chain
-from io import BytesIO, StringIO
-
-from natsort import natsorted
+from io import BytesIO
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
 from .session_file_meta import is_chunk_filename
 from ..model_chunking import DataframeDescribe
-from ..dataframe_columns import ColumnSelection, select_columns
+from ..dataframe_columns import ColumnSelection, select_columns, sort_column_labels
 from .storage_path_builder import join, record_bulk_path, basename
 
 
@@ -282,9 +280,10 @@ class BulkCatalog:
         if column_selection:
             columns, _ = select_columns(column_selection, all_columns)
         else:
-            columns = natsorted(all_columns)
+            columns = sort_column_labels(self.all_columns)
 
-        return DataframeDescribe(
+        # use construct to prevent validation of pydantic
+        return DataframeDescribe.construct(
             numberOfRows=nb_rows,
             columns=columns
         )

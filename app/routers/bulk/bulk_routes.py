@@ -267,10 +267,11 @@ async def get_data_version(
             # if describe without filters, the catalog is enough to answer:
             column_selection = data_param.get_curves_list() if data_param.curves else None
             if data_param.describe and not bulk_filters.has_filter():
-                return bulk_catalog.describe(
+                descr = bulk_catalog.describe(
                     offset=data_param.offset,
                     limit=data_param.limit,
                     column_selection=column_selection)
+                return _build_describe_response(descr)
 
             if not bulk_filters.has_filter():
                 # try fast track, if no supported, continue with the regular read process
@@ -302,6 +303,16 @@ async def get_data_version(
 
 class GetDataFastTrackCaseNotSupportedException(Exception):
     pass
+
+
+def _build_describe_response(describe):
+    """ for performance reason in case of many columns """
+    columns = str(describe.columns).replace("'", '"')
+    json_string = f"{'{'}\"numberOfRows\":{describe.numberOfRows}, \"columns\":{columns}{'}'}"
+    Response(
+        content=json_string,
+        media_type=MimeTypes.JSON.type
+    )
 
 
 @with_trace('_get_data_fast_track')

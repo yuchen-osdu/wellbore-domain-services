@@ -3,6 +3,7 @@ from contextlib import suppress
 from typing import Iterable, Dict, List, Tuple, Optional, Set
 
 from natsort import natsorted
+import pandas as pd
 
 re_column_array = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
 
@@ -128,7 +129,29 @@ def select_columns(column_selection: ColumnSelection, columns: Set[str]) -> Tupl
         if not columns.issuperset(matching_columns):
             curves_non_existent.extend(set(matching_columns).difference(columns))
         else:
-            # TODO natsorted could be a bottleneck for big array (> 100 000)
-            selected.update({column: 1 for column in natsorted(matching_columns)})
+            # TODO what is the point to sort here?
+            #  could be a bottleneck for big array (> 100 000)
+            selected.update({column: 1 for column in sort_column_labels(matching_columns)})
 
     return list(selected.keys()), curves_non_existent
+
+
+def sort_column_labels(column_labels: Iterable[str]) -> List[str]:
+    """ natural sort """
+    # TODO natsorted, could be a bottleneck for big array (> 100 000)
+    #  must find better approach than brtual sort all, because many columns comes from array which are
+    #  Curve[0] ... Curve[N], so it should to be handle this in a smarter way
+
+    # TODO it also might be faster in real cases to first group columns into curves and then sort each sub groups
+    # curve_groups = group_curve_columns(column_labels)
+    # sorted_curves = natsorted(curve_groups.keys())
+    # return list(
+    #     chain.from_iterable(
+    #         (natsorted(curve_groups[curve]) for curve in sorted_curves)
+    #     )
+    # )
+    return natsorted(column_labels)
+
+
+def sort_dataframe_column(df: pd.DataFrame) -> pd.DataFrame:
+    return df[sort_column_labels(df.columns)]

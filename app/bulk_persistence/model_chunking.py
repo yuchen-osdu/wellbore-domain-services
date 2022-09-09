@@ -105,5 +105,5 @@ class DataframeBasicDescribe(BaseModel):
 
 
 class DataframeDescribe(BaseModel):
-    row_count: int = Field(alias="numberOfRows")
-    columns: List[str] = Field(alias="columns", description="list of columns")
+    numberOfRows: int = Field(description="total number of rows")
+    columns: List[str] = Field(description="list of columns")
