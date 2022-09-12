@@ -335,7 +335,7 @@ async def _get_data_fast_track(ctx,
     MAX_COLUMNS_COUNT = 5_000  # restrict to max 5 000 columns
     MAX_TOTAL_VALUES_COUNT_FILTERED = 5_000_000  # restrict to max 5M values at once (~50MB)
     MAX_TOTAL_VALUES_COUNT_UNFILTERED = 20_000_000   # restrict to max 20M values at once (~200MB)
-    if offset or limit or accept_type != MimeTypes.PARQUET:
+    if accept_type != MimeTypes.PARQUET: # offset or limit or
         # cases not supported yet
         raise GetDataFastTrackCaseNotSupportedException()
 
@@ -421,6 +421,8 @@ async def _get_data_fast_track(ctx,
 
             # chunks
             *[
+                # not putting offset, limit here as because each chunk may not covert the full bulk index
+                # by the way it might be possible to do something before concat
                 _load_dataframe_from_storage(
                     storage, ctx.tenant,
                     storage_path_builder.join(base_chunk_path, chunk_group.paths[0]),
@@ -430,8 +432,9 @@ async def _get_data_fast_track(ctx,
         )
 
     # concat df
-    with timeit(f"load {len(dfs)} dataframes"):
+    with timeit(f"concat and potentially cut {len(dfs)} dataframes"):
         final_df = pd.concat(dfs, axis=1)
+        final_df = _split_dataframe_iloc(final_df, offset, limit)
     return await _build_response_parquet_df(final_df)
 
 
@@ -458,6 +461,16 @@ async def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
     return Response(content, media_type=MimeTypes.PARQUET.type)
 
 
+def _split_dataframe_iloc(df: pd.DataFrame, offset: Optional[int] = None, limit: Optional[int] = None):
+    if offset and limit:
+        df = df[offset:offset+limit]
+    elif offset:
+        df = df[offset:]
+    elif limit:
+        df = df[:limit]
+    return df
+
+
 @with_trace('_load_dataframe_from_storage')
 @capture_timings('_load_dataframe_from_storage')
 async def _load_dataframe_from_storage(storage: BlobStorageBase, tenant, obj_path: str,
@@ -467,13 +480,7 @@ async def _load_dataframe_from_storage(storage: BlobStorageBase, tenant, obj_pat
     from io import BytesIO
     content = await storage.download(tenant, obj_path)
     df = pd.read_parquet(BytesIO(content), columns=columns)
-    if offset and limit:
-        df = df[offset:offset+limit]
-    elif offset:
-        df = df[offset:]
-    elif limit:
-        df = df[:limit]
-    return df
+    return _split_dataframe_iloc(df, offset, limit)
 
 
 @with_trace('_read_index')
