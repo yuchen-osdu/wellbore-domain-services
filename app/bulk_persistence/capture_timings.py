@@ -4,6 +4,7 @@ from functools import wraps
 import asyncio
 from time import perf_counter, process_time
 
+from app.context import get_ctx
 from app.helper.logger import get_logger
 
 from contextlib import contextmanager
@@ -11,7 +12,11 @@ from contextlib import contextmanager
 
 def make_log_captured_timing_handler(level=INFO):
     def log_captured_timing(tag, wall, cpu):
-        get_logger().log(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
+        ctx = get_ctx(error_not_exist=False)
+        get_logger().log(
+            level,
+            f"[cid {ctx.correlation_id if ctx is not None else '-'}] Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
+        )
 
     return log_captured_timing
 
@@ -64,6 +69,10 @@ def timeit(tag: str, level=INFO):
 
     yield
 
-    perf_elapsed = perf_counter() - start_perf
-    process_elapsed = process_time() - start_process
-    get_logger().log(level, f"Timing of {tag}, wall={perf_elapsed:.5f}s, cpu={process_elapsed:.5f}s")
+    wall = perf_counter() - start_perf
+    cpu = process_time() - start_process
+    ctx = get_ctx(error_not_exist=False)
+    get_logger().log(
+        level,
+        f"[cid {ctx.correlation_id if ctx is not None else '-'}] Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
+    )

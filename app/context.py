@@ -291,8 +291,13 @@ class Context:
         return json.dumps(self.__dict__())
 
 
-def get_ctx() -> Context:
-    return Context.current()
+def get_ctx(error_not_exist=True) -> Optional[Context]:
+    try:
+        return Context.current()
+    except LookupError:
+        if error_not_exist:
+            raise
+    return None
 
 
 def get_or_create_ctx() -> Context:
@@ -306,4 +311,3 @@ def get_or_create_ctx() -> Context:
         ctx = Context()
         ctx.set_current()
     return ctx
-
