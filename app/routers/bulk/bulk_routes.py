@@ -333,8 +333,8 @@ async def _get_data_fast_track(ctx,
                                limit: Optional[int] = None,
                                curves_selection: Optional[ColumnSelection] = None) -> Response:
     MAX_COLUMNS_COUNT = 5_000  # restrict to max 5 000 columns
-    MAX_TOTAL_VALUES_COUNT = 5_000_000  # restrict to max 5M values at once (~50MB)
-
+    MAX_TOTAL_VALUES_COUNT_FILTERED = 5_000_000  # restrict to max 5M values at once (~50MB)
+    MAX_TOTAL_VALUES_COUNT_UNFILTERED = 20_000_000   # restrict to max 20M values at once (~200MB)
     if offset or limit or accept_type != MimeTypes.PARQUET:
         # cases not supported yet
         raise GetDataFastTrackCaseNotSupportedException()
@@ -347,18 +347,28 @@ async def _get_data_fast_track(ctx,
         if curves_non_existent:
             raise BulkCurvesNotFound(curves=curves_non_existent)
 
-    nb_rows = bulk_catalog.nb_rows
     if len(columns_to_load) > MAX_COLUMNS_COUNT:
         raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"too many values requested ({len(columns_to_load)} in total), "
                        f"reduce number of curves, max is {MAX_COLUMNS_COUNT}")
 
-    total_values = nb_rows * len(columns_to_load)
-    if total_values > MAX_TOTAL_VALUES_COUNT:
+    filtered_row_count = bulk_catalog.nb_rows  #
+    if offset:
+        filtered_row_count = max(0, filtered_row_count - offset)
+    if limit:
+        if limit >= filtered_row_count:
+            limit = None  # so further algo could run like there's no limit
+        else:
+            filtered_row_count = limit
+
+    total_values_unfiltered = bulk_catalog.nb_rows * len(columns_to_load)
+    total_values_filtered = filtered_row_count * len(columns_to_load)
+
+    if total_values_filtered > MAX_TOTAL_VALUES_COUNT_FILTERED or total_values_unfiltered > MAX_TOTAL_VALUES_COUNT_UNFILTERED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"too many values requested ({total_values} in total), reduce number of curves.")
+            detail=f"too many values requested ({total_values_filtered} filtered, {total_values_unfiltered} unfiltered).")
 
     storage = await ctx.app_injector.get(BlobStorageBase)
     base_chunk_path = storage_path_builder.record_path('', bulk_catalog.record_id)
@@ -375,7 +385,7 @@ async def _get_data_fast_track(ctx,
             return await _single_chunk_strategy(storage,
                                                 ctx.tenant,
                                                 storage_path_builder.join(base_chunk_path, chunk_path),
-                                                columns_to_load)
+                                                columns_to_load, offset, limit)
 
     # cases not supported
     if bulk_catalog.origin.was_generated:
@@ -442,18 +452,28 @@ async def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
 
     with timeit(f"to parquet dataframe of shape {df.shape}, direct {direct}"):
         if direct:
-            content = DataframeSerializerSync.to_parquet(df)
+            content = DataframeSerializerSync().to_parquet(df)
         else:
-            content = await DataframeSerializerAsync.to_parquet(df)
+            content = await DataframeSerializerAsync().to_parquet(df)
     return Response(content, media_type=MimeTypes.PARQUET.type)
 
 
 @with_trace('_load_dataframe_from_storage')
 @capture_timings('_load_dataframe_from_storage')
-async def _load_dataframe_from_storage(storage: BlobStorageBase, tenant, obj_path: str, columns=None) -> pd.DataFrame:
+async def _load_dataframe_from_storage(storage: BlobStorageBase, tenant, obj_path: str,
+                                       columns=None,
+                                       offset: Optional[int] = None,
+                                       limit: Optional[int] = None) -> pd.DataFrame:
     from io import BytesIO
     content = await storage.download(tenant, obj_path)
-    return pd.read_parquet(BytesIO(content), columns=columns)
+    df = pd.read_parquet(BytesIO(content), columns=columns)
+    if offset and limit:
+        df = df[offset:offset+limit]
+    elif offset:
+        df = df[offset:]
+    elif limit:
+        df = df[:limit]
+    return df
 
 
 @with_trace('_read_index')
@@ -463,9 +483,12 @@ async def _read_index(storage: BlobStorageBase, tenant, bulk_catalog: BulkCatalo
     return await _load_dataframe_from_storage(storage, tenant, index_path)
 
 
-async def _single_chunk_strategy(storage: BlobStorageBase, tenant, parquet_path, requested_columns=None):
+async def _single_chunk_strategy(storage: BlobStorageBase, tenant, parquet_path,
+                                 requested_columns=None,
+                                 offset: Optional[int] = None,
+                                 limit: Optional[int] = None):
     # only one chunk
-    if requested_columns:
+    if requested_columns or offset or limit:
         df = await _load_dataframe_from_storage(storage, tenant, parquet_path, requested_columns)
         return await _build_response_parquet_df(df)
     else:
