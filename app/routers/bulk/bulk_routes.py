@@ -22,7 +22,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
-from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe, BulkCatalog, BulkCurvesNotFound
+from app.bulk_persistence import (BulkReadFilters,
+                                  GetDataParams,
+                                  DataframeBasicDescribe,
+                                  BulkCatalog,
+                                  BulkCurvesNotFound,
+                                  DataframeSerializerSync,
+                                  DataframeSerializerAsync)
 from app.bulk_persistence.dask import storage_path_builder
 
 from app.model.osdu_record_id import split_record_id_version
@@ -416,11 +422,11 @@ async def _get_data_fast_track(ctx,
     # concat df
     with timeit(f"load {len(dfs)} dataframes"):
         final_df = pd.concat(dfs, axis=1)
-    return _build_response_parquet_df(final_df)
+    return await _build_response_parquet_df(final_df)
 
 
 @capture_timings('_build_response_parquet_df')
-def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
+async def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
     # column ordering similar to utils.process_params
     if requested_columns:
         df = df[requested_columns]  # columns are ordered as the user requested
@@ -429,8 +435,16 @@ def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
             df = sort_dataframe_column(df)  # columns are ordered by natural sort
 
     df.index.name = None  # TODO see 'df_render'
-    with timeit(f"to parquet dataframe of shape {df.shape}"):
-        content = df.to_parquet(None, index=True, engine='pyarrow')
+    row_count, col_count = df.shape
+
+    # decide to compute in main or in executor, based on column count and total values
+    direct = col_count < 500 and (row_count * col_count) < 1_000_000
+
+    with timeit(f"to parquet dataframe of shape {df.shape}, direct {direct}"):
+        if direct:
+            content = DataframeSerializerSync.to_parquet(df)
+        else:
+            content = await DataframeSerializerAsync.to_parquet(df)
     return Response(content, media_type=MimeTypes.PARQUET.type)
 
 
@@ -453,7 +467,7 @@ async def _single_chunk_strategy(storage: BlobStorageBase, tenant, parquet_path,
     # only one chunk
     if requested_columns:
         df = await _load_dataframe_from_storage(storage, tenant, parquet_path, requested_columns)
-        return _build_response_parquet_df(df)
+        return await _build_response_parquet_df(df)
     else:
         # easy fast track, just forward it
         return await _forward_parquet(storage, tenant, parquet_path)
@@ -468,26 +482,9 @@ async def _forward_parquet(storage: BlobStorageBase, tenant, parquet_path):
     return Response(content, media_type=MimeTypes.PARQUET.type)
 
 
-# import pyarrow as pa
-# import pyarrow.parquet as pq
+# TODO see if work directly with arrow table worth it, it could save arrow table <-> pandas dataframe conversions
+#  see pyarrow.concat_tables, write_table, ...
 #
-#
-# @with_trace('_forward_parquet_with_filter')
-# async def _forward_parquet_with_filter(ctx, tenant,
-#                                        parquet_path: str,
-#                                        parquet_nb_rows: int,
-#                                        parquet_columns: Set[str],
-#                                        requested_columns: List[str],
-#                                        direct_arrow=False):
-#
-#     # for now we basically download all then filter
-#     from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-#     from fastapi import Response
-#     from io import BytesIO
-#     storage = await ctx.app_injector.get(BlobStorageBase)
-#     content: bytes = await storage.download(tenant, parquet_path)
-#
-#     # WARNING synchronous - filter columns at read
 #     if direct_arrow:
 #         data = pa.BufferReader(content)
 #         table = pq.read_table(data, use_pandas_metadata=True, columns=requested_columns)
