@@ -33,7 +33,11 @@ phases:
       - wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472.zip
       - unzip -q ./sonar-scanner-cli-4.6.2.2472.zip
       - pip install safety
-  
+      # Install git secrets
+      - git clone https://github.com/awslabs/git-secrets.git
+      - cd git-secrets && make install && cd ..
+      - git secrets --install && git secrets --register-aws
+
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR..."
@@ -61,6 +65,9 @@ phases:
 
       - pip install -r ./requirements.txt
       - pip install -r ./requirements_dev.txt
+
+      - GIT_SECRETS_SCAN_RESULT=$(git secrets --scan 2> ${OUTPUT_DIR}/git_secrets.out.txt && echo OK || echo FAILED)
+      - if [ "$GIT_SECRETS_SCAN_RESULT" = "FAILED" ]; then echo "Secrets detected!" && exit 1; fi
 
       # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
       - |
