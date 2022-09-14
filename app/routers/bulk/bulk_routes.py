@@ -259,22 +259,10 @@ async def get_data_version(
 
             # if describe without filters, the catalog is enough to answer:
             if data_param.describe and not bulk_filters.has_filter():
-                nb_rows = bulk_catalog.nb_rows
-                if data_param.offset:
-                    nb_rows = max(0, nb_rows-data_param.offset)
-                if data_param.limit:
-                    nb_rows = min(nb_rows, data_param.limit)
-
-                all_columns = bulk_catalog.all_columns
-                if data_param.curves:
-                    columns = DataFrameRender.get_matching_columns(data_param.get_curves_list(), all_columns)
-                else:
-                    columns = natsorted(all_columns)
-
-                return DataframeDescribe(
-                    numberOfRows=nb_rows,
-                    columns=columns
-                )
+                return bulk_catalog.describe(
+                    offset=data_param.offset,
+                    limit=data_param.limit,
+                    column_selection=data_param.get_curves_list() if data_param.curves else None)
 
             df, filters, columns = await _process_request_v1(record_id,
                                                              bulk_id,

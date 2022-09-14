@@ -1,5 +1,4 @@
 from typing import List, Set, Optional, Iterable
-import re
 import ast
 from natsort import natsorted
 from contextlib import suppress
@@ -11,16 +10,17 @@ import dask.dataframe as dd
 import pandas as pd
 from pyarrow.lib import ArrowInvalid
 
-from app.bulk_persistence import (DaskBulkStorage, DataframeSerializerAsync, MimeTypes, MimeType, JSONOrient,
-                                  trace_dataframe_attributes, capture_timings, auto_cast_columns_to_string,
-                                  columns_type_must_be_string, no_validation, DataFrameValidationFunc,
-                                  FilterError, internal_bulk_exceptions, BulkCurvesNotFound)
-
+from app.bulk_persistence import DaskBulkStorage, DataframeSerializerAsync, \
+    MimeTypes, MimeType, JSONOrient, trace_dataframe_attributes, capture_timings, \
+    auto_cast_columns_to_string, columns_type_must_be_string, \
+    no_validation, DataFrameValidationFunc, \
+    FilterError, internal_bulk_exceptions, BulkCurvesNotFound
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import get_ctx, Context
 from app.utils import OpenApiHandler
 from app.helper.traces import with_trace
 from app.bulk_persistence import BulkReadFilterOperator, BulkReadFilters, GetDataParams, DataframeDescribe
+from app.bulk_persistence.dataframe_columns import get_array_columns, match_full_slice_pattern, select_columns
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 
 from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks, TrajectoryDataConsistencyChecks
@@ -180,67 +180,14 @@ class DataFrameRender:
                                                               df, limit, offset, index)
         return df
 
-    re_array = re.compile(r'^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$')
-
-    @staticmethod
-    def _get_array_columns(all_columns=Iterable[str]) -> dict:
-        """
-        for a list of column detect and group array once. For instance given: A, B, C[0], C[1], D[0], D[1], D[2]
-        will return {
-            C: C[0], C[1]
-            D: D[0], D[1], D[2]
-        }
-        """
-        # TODO this info might be computed at catalog creation and then provided
-
-        array_col = {}
-        for c in all_columns:
-            m_sel = DataFrameRender.re_array.match(c)
-            if m_sel:
-                array_col.setdefault(m_sel['name'], []).append(c)
-        return array_col
-
     @staticmethod
     @with_trace('get_matching_column')
     def get_matching_columns(selection: List[str], cols: Set[str]) -> List[str]:
-        selected = {}
-        curves_non_existent = []
-        curves_array = None
-
-        for sel in selection:
-            if sel in cols:
-                selected[sel] = 1
-                continue
-
-            if curves_array is None:
-                curves_array = DataFrameRender._get_array_columns(cols)
-
-            matching_columns = [sel]
-            selection_slice = DataFrameRender.re_array.match(sel)
-            if selection_slice:
-                # means sel is a form CURVE_NAME[VALUE or SLICE],
-                curve_name = selection_slice['name']
-                slice_start, slice_stop = selection_slice['start'], selection_slice['stop']
-                if slice_start and slice_stop:  # full slice expression provided
-                    with suppress(ValueError):  # suppress int conversion exceptions
-                        # TODO we may want to support floating point values ?
-                        matching_columns = cols.intersection(
-                            (f'{curve_name}[{i}]'
-                             for i in range(int(slice_start), int(slice_stop) + 1))
-                        )
-            if sel in curves_array:  # no slicing + known as array => add all of them
-                matching_columns = curves_array[sel]
-
-            if not cols.issuperset(matching_columns):
-                curves_non_existent.extend(set(matching_columns).difference(cols))
-            else:
-                # TODO natsorted could be a bottleneck for big array (> 100 000)
-                selected.update({column: 1 for column in natsorted(matching_columns)})
-
+        matching_columns, curves_non_existent = select_columns(selection, cols)
         if curves_non_existent:
             raise BulkCurvesNotFound(curves=curves_non_existent)
 
-        return list(selected.keys())
+        return matching_columns
 
     @staticmethod
     @with_trace('apply_filter')
@@ -365,5 +312,3 @@ async def set_bulk_field_and_send_record(ctx: Context, bulk_id, record, bulk_uri
     return await storage_client.create_or_update_records(
         record=[record], data_partition_id=ctx.partition_id
     )
-
-
