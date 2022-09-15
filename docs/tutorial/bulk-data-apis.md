@@ -220,7 +220,7 @@ client = httpx.Client(verify=False,
 
 # Create a new WellLog. Here is a fake body just to illustrate the API use
 record = {
-    "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
+    "kind": "osdu:wks:work-product-component--WellLog:1.2.0",
     "acl": {
         "viewers": [f"data.default.viewers@{data_partition_id}.{acl_domain}"],
         "owners": [f"data.default.owners@{data_partition_id}.{acl_domain}"]
@@ -229,14 +229,17 @@ record = {
         "legaltags": [f"{legal_tag}"],
         "otherRelevantDataCountries": ["US"],
     },
-    "data": {""
+    "data": {
+        "ReferenceCurveID": "MD",
         "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
         "Curves": [
             {
                 "CurveID": "MD",
+                "NumberOfColumns": 1
             },
             {
                 "CurveID": "X",
+                "NumberOfColumns": 1
             }
         ]
     },
