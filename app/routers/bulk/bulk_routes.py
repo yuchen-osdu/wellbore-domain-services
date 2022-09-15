@@ -463,11 +463,11 @@ async def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
 
 def _split_dataframe_iloc(df: pd.DataFrame, offset: Optional[int] = None, limit: Optional[int] = None):
     if offset and limit:
-        df = df[offset:offset+limit]
+        df = df.iloc[offset:offset+limit]
     elif offset:
-        df = df[offset:]
+        df = df.iloc[offset:]
     elif limit:
-        df = df[:limit]
+        df = df.iloc[:limit]
     return df
 
 
