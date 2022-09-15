@@ -231,8 +231,8 @@ record = {
     },
     "data": {
         "ReferenceCurveID": "MD",
-        "SamplingStart": -27.0,
-        "SamplingStop": 986.0,
+        "SamplingStart": -20.0,
+        "SamplingStop": 804.0,
         "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
         "Curves": [
             {
@@ -299,28 +299,28 @@ generated_dataframe
   <tbody>
     <tr>
       <th>0</th>
-      <td>986</td>
-      <td>712</td>
+      <td>265</td>
+      <td>845</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>311</td>
-      <td>348</td>
+      <td>92</td>
+      <td>246</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>-27</td>
-      <td>339</td>
+      <td>804</td>
+      <td>268</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>230</td>
-      <td>191</td>
+      <td>645</td>
+      <td>877</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>162</td>
-      <td>740</td>
+      <td>-20</td>
+      <td>-28</td>
     </tr>
   </tbody>
 </table>
