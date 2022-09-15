@@ -27,6 +27,7 @@ from starlette.routing import Mount, Router, Route
 
 from app.model.model_utils import record_to_dict
 from app.context import get_or_create_ctx
+from app.injector.app_injector import AppInjector
 
 
 @pytest.fixture()
@@ -34,8 +35,6 @@ def ctx_fixture():
     """ Create context with a fake tracer in it """
     mock_mock = mock.MagicMock()
     mock_mock.span_context = SpanContext(trace_id="trace-id", span_id="span_id")
-
-    from app.injector.app_injector import AppInjector
 
     ctx = get_or_create_ctx()
     fake_tenant = Tenant(data_partition_id=ctx.partition_id or 'test_partition',
