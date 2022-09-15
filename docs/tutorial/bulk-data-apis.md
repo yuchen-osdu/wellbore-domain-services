@@ -231,6 +231,8 @@ record = {
     },
     "data": {
         "ReferenceCurveID": "MD",
+        "SamplingStart": -27.0,
+        "SamplingStop": 986.0,
         "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
         "Curves": [
             {
