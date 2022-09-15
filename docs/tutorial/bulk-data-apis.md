@@ -249,6 +249,8 @@ record = {
 }
 ```
 
+**Note**: The `ReferenceCurveID`, `SamplingStart` and `SamplingStop` data attributes are here to enforce consistency with the record's bulk data - see following section to [write bulk data](#write-bulk-data---all-at-once). Consistency rules are explained in the [WellLog consistency rules](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/WellLog-consistency-rules) section of the public [Wellbore DDMS wiki](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/home).
+
 ## Create a WellLog record
 
 The script below is creating a WellLog record that is used in this tutorial to demonstrate how to write WellLog bulk data to the Wellbore DDMS.
