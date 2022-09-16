@@ -88,7 +88,7 @@ The following software have components provided under the terms of this license:
 - MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
 - adlfs (from https://github.com/dask/adlfs/, https://github.com/hayesgb/adlfs/)
 - asgiref (from https://github.com/django/asgiref/)
-- click (from http://github.com/mitsuhiko/click)
+- click (from http://github.com/mitsuhiko/click, https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - colorama (from https://github.com/tartley/colorama)
 - cryptography (from https://github.com/pyca/cryptography)
@@ -101,7 +101,7 @@ The following software have components provided under the terms of this license:
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore)
 - httpx (from https://github.com/encode/httpx)
-- idna (from https://github.com/kjd/idna)
+- idna (from https://github.com/kjd/idna, https://pypi.org/project/idna/3.4/)
 - isodate (from http://cheeseshop.python.org/pypi/isodate)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
@@ -200,7 +200,7 @@ ISC
 The following software have components provided under the terms of this license:
 
 - Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/)
-- click (from http://github.com/mitsuhiko/click)
+- click (from http://github.com/mitsuhiko/click, https://palletsprojects.com/p/click/)
 - grpcio (from https://grpc.io)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 
@@ -259,8 +259,8 @@ The following software have components provided under the terms of this license:
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
 - azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity, https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/identity/azure-identity)
 - azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
-- azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-certificates)
-- azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
+- azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-certificates, https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-certificates)
+- azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-keys, https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-keys)
 - azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-secrets, https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/keyvault/azure-keyvault-secrets)
 - azure-storage-blob (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob, https://github.com/Azure/azure-storage-python)
 - backoff

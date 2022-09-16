@@ -220,7 +220,7 @@ client = httpx.Client(verify=False,
 
 # Create a new WellLog. Here is a fake body just to illustrate the API use
 record = {
-    "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
+    "kind": "osdu:wks:work-product-component--WellLog:1.2.0",
     "acl": {
         "viewers": [f"data.default.viewers@{data_partition_id}.{acl_domain}"],
         "owners": [f"data.default.owners@{data_partition_id}.{acl_domain}"]
@@ -229,20 +229,27 @@ record = {
         "legaltags": [f"{legal_tag}"],
         "otherRelevantDataCountries": ["US"],
     },
-    "data": {""
+    "data": {
+        "ReferenceCurveID": "MD",
+        "SamplingStart": -20.0,
+        "SamplingStop": 804.0,
         "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
         "Curves": [
             {
                 "CurveID": "MD",
+                "NumberOfColumns": 1
             },
             {
                 "CurveID": "X",
+                "NumberOfColumns": 1
             }
         ]
     },
     "version" : 0
 }
 ```
+
+**Note**: The `ReferenceCurveID`, `SamplingStart` and `SamplingStop` data attributes are here to enforce consistency with the record's bulk data - see following section to [write bulk data](#write-bulk-data---all-at-once). Consistency rules are explained in the [WellLog consistency rules](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/WellLog-consistency-rules) section of the public [Wellbore DDMS wiki](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/home).
 
 ## Create a WellLog record
 
@@ -294,28 +301,28 @@ generated_dataframe
   <tbody>
     <tr>
       <th>0</th>
-      <td>986</td>
-      <td>712</td>
+      <td>265</td>
+      <td>845</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>311</td>
-      <td>348</td>
+      <td>92</td>
+      <td>246</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>-27</td>
-      <td>339</td>
+      <td>804</td>
+      <td>268</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>230</td>
-      <td>191</td>
+      <td>645</td>
+      <td>877</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>162</td>
-      <td>740</td>
+      <td>-20</td>
+      <td>-28</td>
     </tr>
   </tbody>
 </table>

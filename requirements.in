@@ -22,7 +22,7 @@ opencensus-ext-logging
 
 # for chunking feature
 dask[distributed]==2022.2.0
-fsspec
+fsspec==2021.7.0
 python-ulid
 s3fs
 aiobotocore[boto3]
