@@ -92,7 +92,7 @@ azure_containerize:
     - docker push ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
   only:
     variables:
-      - $AZURE == 'true'
+      - $AZURE == '1'
 
 azure_deploy:
   image: danielscholl/azure-build-image
@@ -118,7 +118,7 @@ azure_deploy:
     - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
   only:
     variables:
-      - $AZURE == 'true'
+      - $AZURE == '1'
   except:
     variables:
       - $AZURE_SKIP_DEPLOY == 'true'
@@ -144,7 +144,7 @@ azure_test_py:
     - pytest ./functional --environment="./generated/postman_environment.json" --insecure --timeout-request=15000 --filter-tag=!search --reruns 3 --reruns-delay 1
   only:
     variables:
-      - $AZURE == 'true' && $AZURE_SKIP_DEPLOY != 'true' && $AZURE_TEST_TYPE == 'python'
+      - $AZURE == '1' && $AZURE_SKIP_DEPLOY != 'true' && $AZURE_TEST_TYPE == 'python'
   except:
     variables:
       - $AZURE_SKIP_TEST == 'true'
