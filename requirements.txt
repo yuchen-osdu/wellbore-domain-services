@@ -9,7 +9,7 @@
 
 adal==1.2.7
     # via azure-datalake-store
-adlfs==0.7.7
+adlfs==2021.9.1
     # via osdu-core-lib-python-azure
 aiobotocore[boto3]==1.4.1
     # via
@@ -45,7 +45,7 @@ azure-common==1.1.27
     #   azure-keyvault-certificates
     #   azure-keyvault-keys
     #   azure-keyvault-secrets
-azure-core==1.16.0
+azure-core==1.25.1
     # via
     #   adlfs
     #   azure-identity
@@ -55,19 +55,19 @@ azure-core==1.16.0
     #   azure-storage-blob
 azure-datalake-store==0.0.52
     # via adlfs
-azure-identity==1.6.0
+azure-identity==1.10.0
     # via
     #   adlfs
     #   osdu-core-lib-python-azure
-azure-keyvault==4.1.0
+azure-keyvault==4.2.0
     # via osdu-core-lib-python-azure
-azure-keyvault-certificates==4.3.0
+azure-keyvault-certificates==4.5.1
     # via azure-keyvault
-azure-keyvault-keys==4.4.0
+azure-keyvault-keys==4.6.1
     # via azure-keyvault
-azure-keyvault-secrets==4.3.0
+azure-keyvault-secrets==4.5.1
     # via azure-keyvault
-azure-storage-blob==12.8.1
+azure-storage-blob==12.13.1
     # via
     #   adlfs
     #   osdu-core-lib-python-azure
@@ -376,7 +376,9 @@ six==1.16.0
     # via
     #   azure-core
     #   azure-identity
+    #   azure-keyvault-certificates
     #   azure-keyvault-keys
+    #   azure-keyvault-secrets
     #   google-api-core
     #   google-auth
     #   google-cloud-core
@@ -409,9 +411,10 @@ toposort==1.6
     # via osdu-api
 tornado==6.1
     # via distributed
-typing-extensions==3.10.0.0
+typing-extensions==4.3.0
     # via
     #   aiohttp
+    #   azure-core
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   pydantic
