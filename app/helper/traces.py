@@ -74,7 +74,7 @@ def _create_gcp_exporter():
     return StackdriverExporter(transport=AsyncTransport)
 
 
-def create_exporter(*, service_name, config):
+def create_exporter(*, service_name: str, config):
     """
     Create exporters to sent tracing to different tracing platforms e.g. Stackdriver (Google) or Azure
     c.f. documentation https://opencensus.io/exporters/supported-exporters/python/
@@ -108,7 +108,7 @@ class CombinedExporter(base_exporter.Exporter):
     """
         The Opencensus lib allow to have only 1 exporter, so this class is used to combine multiple exporters
     """
-    def __init__(self, exporters=None, service_name="undefined"):
+    def __init__(self, exporters=None, service_name: str = "undefined"):
         if exporters is None:
             exporters = []
         self.exporters = exporters
