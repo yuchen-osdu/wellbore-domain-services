@@ -33,6 +33,7 @@ def openapi_json(app_configurable_with_testclient):
     app, client = app_configurable_with_testclient()
 
     # Initialize route filters for documentation
+    keep_prefix = os.environ.get('OPENAPI_KEEP_PREFIX')
     prefix = os.environ.get('OPENAPI_FILTER_PREFIX')
     tags = os.environ.get('OPENAPI_FILTER_TAGS')
     # Filter and reformat routes only if a prefix is provided
@@ -40,7 +41,7 @@ def openapi_json(app_configurable_with_testclient):
         # Make a tags list from the comma separated env var if needed
         if tags:
             tags = tags.split(',')
-        format_routes(app, prefix, tags)
+        format_routes(app, prefix, tags, not keep_prefix)
 
     # get the openapi spec
     response = client.get("/openapi.json")

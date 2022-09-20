@@ -142,7 +142,7 @@ def basic_record(kind: str = None):
 
 
 # Format selected routes for spec generation
-def format_routes(app, prefix, tags):
+def format_routes(app, prefix, tags, strip_prefix=True):
     for route in app.routes:
         # non selected routes are hidden
         route.include_in_schema = False
@@ -156,7 +156,7 @@ def format_routes(app, prefix, tags):
                 if any(tag in tags for tag in route.tags):
                     # add route to the spec
                     route.include_in_schema = True
-            if route.include_in_schema:
+            if strip_prefix and route.include_in_schema:
                 # strip prefix from the formatted route path
                 route.path_format = route.path[len(prefix):]
 
