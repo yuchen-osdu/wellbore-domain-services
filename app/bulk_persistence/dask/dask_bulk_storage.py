@@ -42,9 +42,7 @@ from ..dataframe_serializer import DataframeSerializerSync
 from . import storage_path_builder as pathBuilder
 from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
-from .bulk_catalog import (BulkCatalog, BulkCatalogOrigin, ChunkGroup,
-                           load_bulk_catalog,
-                           save_bulk_catalog)
+from .bulk_catalog import BulkCatalog, BulkCatalogOrigin, ChunkGroup, async_save_bulk_catalog_with_blob_storage, async_load_bulk_catalog_with_blob_storage
 from ..mime_types import MimeType
 from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
 from . import dask_worker_write_bulk as bulk_writer
@@ -286,13 +284,13 @@ class DaskBulkStorage:
     @capture_timings('get_bulk_catalog')
     @with_trace('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
-        bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
-        catalog = await load_bulk_catalog(self._fs, bulk_path)
+        catalog = await async_load_bulk_catalog_with_blob_storage(record_id, bulk_id)
         if catalog:
             return catalog
 
         # For legacy bulk OR data without session, construct a catalog on the fly
         try:
+            bulk_path = pathBuilder.record_bulk_path(self.base_directory, record_id, bulk_id)
             return await self._build_catalog_from_path(bulk_path, record_id)
         except FileNotFoundError as error:
             raise BulkRecordNotFound(record_id, bulk_id) from error
@@ -505,7 +503,7 @@ class DaskBulkStorage:
             self._fill_catalog_columns_info(catalog, chunk_metas, bulk_id)
         )
 
-        await save_bulk_catalog(self._fs, commit_path, catalog)
+        await async_save_bulk_catalog_with_blob_storage(session.recordId, bulk_id, catalog)
         trace_attributes_root_span({
             'catalog-row-count': catalog.nb_rows,
             'catalog-col-count': catalog.all_columns_count
