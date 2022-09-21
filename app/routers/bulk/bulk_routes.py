@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from natsort import natsorted
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
-
+from app.tenant import resolve_tenant
 from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe, BulkCatalog, DataframeDescribe
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
@@ -73,6 +73,7 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
                                   BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
                                   DataConsistencyChecks,
                                   BulkStatistics)
+from ...bulk_persistence.dask.bulk_catalog import async_load_bulk_catalog_with_blob_storage
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 

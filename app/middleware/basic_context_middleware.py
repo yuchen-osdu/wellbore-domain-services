@@ -25,6 +25,7 @@ from app.injector.app_injector import AppInjector
 from app.model.user import User
 from app.context import Context
 from app.helper.logger import get_logger
+from app.tenant import resolve_tenant
 
 
 class CreateBasicContextMiddleware(BaseHTTPMiddleware):
@@ -48,6 +49,7 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
         api_key = request.headers.get('x-api-key', None)
         app_key = request.headers.get(conf.APP_KEY_HEADER_NAME, None)
         partition_id = request.headers.get('data-partition-id', None)
+        tenant = await resolve_tenant(partition_id)
         x_user_id = request.headers.get(conf.X_USER_ID_HEADER_NAME, None)
         correlation_id = request.headers.get(conf.CORRELATION_ID_HEADER_NAME, str(uuid.uuid4()))
         request_id = request.headers.get(conf.REQUEST_ID_HEADER_NAME, str(uuid.uuid4()))
@@ -69,6 +71,7 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
                       app_key=app_key,
                       api_key=api_key,
                       user=anonymous_user,
+                      tenant=tenant,
                       x_user_id=x_user_id,
                       x_collaboration=x_collaboration,
                       app_injector=self._app_injector)

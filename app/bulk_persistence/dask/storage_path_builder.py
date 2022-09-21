@@ -17,9 +17,16 @@ Utility functions that gathers method to build path for bulk storage
 """
 
 import hashlib
-from os.path import join, relpath
+from os.path import relpath
+from os.path import join as os_path_join
 from typing import Optional, Tuple
 from uuid import UUID
+
+
+def join(path, *paths) -> str:
+    # enforce usage of '/' as it remains compatible with all known usage so far: Windows 10+ or Linux fs, ffspec,
+    # real blob storage and blob storage emulator (e.g. Azurite)
+    return os_path_join(path, *paths).replace('\\', '/')
 
 
 def hash_record_id(record_id: str) -> str:
@@ -61,7 +68,7 @@ def record_path(
     (path where all data relateed to an entity are saved"""
     encoded_id = hash_record_id(record_id)
     base_path = build_base_path(base_directory, protocol)
-    return join(base_path, encoded_id)
+    return join(base_path, encoded_id) if base_path else encoded_id
 
 
 def record_bulk_path(
