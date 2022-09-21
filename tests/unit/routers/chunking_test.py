@@ -344,16 +344,24 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
     return created_dfs
 
 
+@pytest.fixture
+def guard_enable_fast_track_config(local_dev_config):
+    before_value = local_dev_config.enable_read_fast_track.value
+    yield local_dev_config
+    local_dev_config.enable_read_fast_track.value = before_value
+
+
+enable_fast_track_params = [pytest.param(True, id="fast_track_enabled"), pytest.param(False, id="fast_track_disabled")]
+
+
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
-@pytest.mark.parametrize("accept_content", [
-    'application/x-parquet',
-    'application/json',
-])
-def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_client, entity_type, data_format,
-                                           accept_content):
+@pytest.mark.parametrize("enable_fast_track", enable_fast_track_params)
+def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_client, guard_enable_fast_track_config,
+                                           entity_type, data_format,
+                                           enable_fast_track):
     """ Create session, append chunking with consecutive index, validate session """
-
+    guard_enable_fast_track_config.enable_read_fast_track.value = enable_fast_track
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -365,7 +373,7 @@ def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_c
                                 (['Y'], range(5, 20)),
                                 (['Z'], range(5, 20))])
 
-    data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
+    data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
     assert data_response.status_code == 200
     with_new_col = _create_df_from_response(data_response)
     # with_new_col = pd.DataFrame.from_dict(data_response.json())
@@ -571,8 +579,11 @@ def test_session_unknown_record(dasked_test_app_without_consistency_client, enti
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
+@pytest.mark.parametrize("enable_fast_track", enable_fast_track_params)
 def test_creates_two_sessions_one_record_with_chunks_different_format(dasked_test_app_without_consistency_client,
-                                                                      entity_type):
+                                                                      guard_enable_fast_track_config,
+                                                                      entity_type, enable_fast_track):
+    guard_enable_fast_track_config.enable_read_fast_track.value = enable_fast_track
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -587,7 +598,11 @@ def test_creates_two_sessions_one_record_with_chunks_different_format(dasked_tes
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_creates_two_sessions_two_record_with_chunks(dasked_test_app_without_consistency_client, entity_type):
+@pytest.mark.parametrize("enable_fast_track", enable_fast_track_params)
+def test_creates_two_sessions_two_record_with_chunks(dasked_test_app_without_consistency_client,
+                                                     guard_enable_fast_track_config,
+                                                     entity_type, enable_fast_track):
+    guard_enable_fast_track_config.enable_read_fast_track.value = enable_fast_track
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     another_record_id = _create_record(client, entity_type)
@@ -1126,7 +1141,6 @@ def test_none_in_index_error(dasked_test_app_without_consistency_client, entity_
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-@pytest.mark.skip("TO BE REVIEWED, column limit increased to 5000 in some cases")
 def test_read_too_many_columns(dasked_test_app_without_consistency_client, entity_type, local_bulk_persistence_config):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from .bulk_uri import BulkURI
-from .bulk_filter import BulkReadFilters, BulkReadFilterOperator
+from .bulk_filter import BulkReadFilters, BulkFilter, BulkReadFilterOperator
 from .model_chunking import GetDataParams, DataframeBasicDescribe, DataframeDescribe
 from .dask.bulk_catalog import BulkCatalog, async_load_bulk_catalog_with_blob_storage, async_save_bulk_catalog_with_blob_storage
 from .dask.dask_bulk_storage import DaskBulkStorage
