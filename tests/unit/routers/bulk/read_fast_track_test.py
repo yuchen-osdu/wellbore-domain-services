@@ -6,7 +6,7 @@ import pandas as pd
 from fastapi import HTTPException
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from app.bulk_persistence import BulkCatalog, MimeTypes, BulkReadFilters, BulkFilter, BulkReadFilterOperator
+from app.bulk_persistence import BulkCatalog, MimeTypes, MimeType, JSONOrient, BulkReadFilters, BulkFilter, BulkReadFilterOperator
 from app.bulk_persistence.dask import storage_path_builder
 from app.bulk_persistence.dask.bulk_catalog import BulkCatalogOrigin, ChunkGroup
 from app.bulk_persistence.dask.session_file_meta import generate_chunk_filename
@@ -18,6 +18,31 @@ from pandas.testing import assert_frame_equal
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 from tests.unit.blob_storage_fsspec import BlobStorageFsspec
+
+format_params = [
+    pytest.param(MimeTypes.PARQUET, None, id="parquet"),
+    pytest.param(MimeTypes.JSON, JSONOrient.split, id="json")
+]
+
+
+def assert_dataframe_from_content(expected_df, content, accept_type, orient):
+    if accept_type == MimeTypes.PARQUET:
+        actual_df = pd.read_parquet(BytesIO(content))
+    else:
+        actual_df = pd.read_json(BytesIO(content), orient=orient.value)
+    assert_frame_equal(expected_df, actual_df, check_dtype=accept_type == MimeTypes.PARQUET)
+    # check_dtype to False as json may lose strict type
+
+
+async def assert_fast_track(*, ctx, catalog, accept_type, orient,
+                            expected_df,
+                            offset=None, limit=None, columns=None):
+    # WHEN read full bulk
+    response = await ft.read_data_fast_track(ctx, catalog, accept_type, orient, BulkReadFilters([]),
+                                             offset=offset, limit=limit, curves_selection=columns)
+
+    # THEN
+    assert_dataframe_from_content(expected_df, response.body, accept_type, orient)
 
 
 @pytest.mark.asyncio
@@ -54,27 +79,26 @@ def test_split_dataframe_iloc(nope_logger_fixture):
 
 
 @pytest.mark.asyncio
-async def test_build_response_parquet_df(nope_logger_fixture):
+@pytest.mark.parametrize(["accept_type", "orient"], format_params)
+async def test_build_response_df(nope_logger_fixture, accept_type: MimeType, orient):
     df = generate_df(['B', 'C', 'A'], index=range(6))
 
-    result = await ft._build_response_parquet_df(df, requested_columns=['A', 'C'])
-    assert result.media_type == "application/x-parquet"
-    actual_df = pd.read_parquet(BytesIO(result.body))
-    assert_frame_equal(df[['A', 'C']], actual_df)  # column same order as requested
+    result = await ft._build_response_from_df(df, accept_type, orient, requested_columns=['A', 'C'])
+    assert accept_type.match(result.media_type)
+    assert_dataframe_from_content(df[['A', 'C']], result.body, accept_type, orient)
 
-    result = await ft._build_response_parquet_df(df)
-    assert result.media_type == "application/x-parquet"
-    actual_df = pd.read_parquet(BytesIO(result.body))
-    assert_frame_equal(df[['A', 'B', 'C']], actual_df)  # column in natural order
+    result = await ft._build_response_from_df(df, accept_type, orient)
+    assert accept_type.match(result.media_type)
+    assert_dataframe_from_content(df[['A', 'B', 'C']], result.body, accept_type, orient)  # column in natural order
 
 
 @pytest.mark.asyncio
-async def test_build_response_parquet_big_df(nope_logger_fixture):
+@pytest.mark.parametrize(["accept_type", "orient"], format_params)
+async def test_build_response_big_df(nope_logger_fixture, accept_type: MimeType, orient):
     df = generate_df(['B', 'C', 'A'], index=range(350_000))
-    result = await ft._build_response_parquet_df(df)
-    assert result.media_type == "application/x-parquet"
-    actual_df = pd.read_parquet(BytesIO(result.body))
-    assert_frame_equal(df[['A', 'B', 'C']], actual_df)  # column in natural order
+    result = await ft._build_response_from_df(df, accept_type, orient)
+    assert accept_type.match(result.media_type)
+    assert_dataframe_from_content(df[['A', 'B', 'C']], result.body, accept_type, orient)
 
 
 @pytest.mark.asyncio
@@ -119,12 +143,12 @@ async def test_unsupported_cases_raise(nope_logger_fixture):
     supported_format = MimeTypes.PARQUET
 
     # only PARQUET
-    with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
-        await ft.read_data_fast_track(Mock(), BulkCatalog(''), MimeTypes.JSON, supported_filters)
+    # with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
+    #     await ft.read_data_fast_track(Mock(), BulkCatalog(''), MimeTypes.JSON, supported_filters)
 
     # no filters
     with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
-        await ft.read_data_fast_track(Mock(), BulkCatalog(''), supported_format,
+        await ft.read_data_fast_track(Mock(), BulkCatalog(''), supported_format, None,
                                       BulkReadFilters([BulkFilter('MD', BulkReadFilterOperator.Greater, '10')]))
 
     # single file but save by multi partitions Dask, like conflict resolution on commit session
@@ -139,34 +163,34 @@ async def test_unsupported_cases_raise(nope_logger_fixture):
         chunk_group = ChunkGroup(labels={"A"}, paths=relative_paths, dtypes=["int"])
         catalog.change_columns_info(chunk_group)
         assert catalog.chunk_count == 1
-        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, supported_filters)
+        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
     # multi files, previous Dask storage (no catalog)
     with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
         catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
         catalog.add_chunk(ChunkGroup({'A', 'B'}, ["path1", "path2"], ["Int32"]))
         assert catalog.chunk_count > 1
-        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, supported_filters)
+        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
     # chunks are not vertically slided - 1
     with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
         catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
         catalog.add_chunk(ChunkGroup({'A'}, ['path1', 'paths2'], ["Int32"]))
-        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, supported_filters)
+        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
     # chunks are not vertically slided - 2
     with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
         catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
         catalog.add_chunk(ChunkGroup({'A'}, ['path1'], ["Int32"]))
         catalog.add_chunk(ChunkGroup({'A', 'B'}, ['paths2'], ["Int32"]))
-        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, supported_filters)
+        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
 
 @pytest.mark.asyncio
 async def test_request_too_many_column_raise(nope_logger_fixture):
     catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
     catalog.add_chunk(ChunkGroup({f'C[{i}]' for i in range(5001)}, ["path1"], []))
-    args = [AsyncMock(), catalog, MimeTypes.PARQUET, BulkReadFilters([])]
+    args = [AsyncMock(), catalog, MimeTypes.PARQUET, None, BulkReadFilters([])]
 
     # read all
     with pytest.raises(HTTPException) as ex_info:
@@ -190,7 +214,7 @@ async def test_request_too_many_values_raise(nope_logger_fixture):
     catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
     catalog.add_chunk(ChunkGroup({f'C[{i}]' for i in range(100)}, ["path1"], []))
     catalog.nb_rows = 1_000_000
-    args = [AsyncMock(), catalog, MimeTypes.PARQUET, BulkReadFilters([])]
+    args = [AsyncMock(), catalog, MimeTypes.PARQUET, None, BulkReadFilters([])]
 
     # request 6M
     with pytest.raises(HTTPException) as ex_info:
@@ -230,38 +254,32 @@ async def store_chunks(storage: BlobStorageBase, tenant, chunks) -> BulkCatalog:
     return catalog
 
 
-async def assert_fast_track(ctx, catalog, expected_df, offset=None, limit=None, columns=None):
-    # WHEN read full bulk
-    response = await ft.read_data_fast_track(ctx, catalog, MimeTypes.PARQUET, BulkReadFilters([]),
-                                             offset=offset, limit=limit, curves_selection=columns)
-
-    # THEN
-    actual_df = pd.read_parquet(BytesIO(response.body))
-    assert_frame_equal(expected_df, actual_df)
-
-
 @pytest.mark.asyncio
-async def test_single_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock):
+@pytest.mark.parametrize(["accept_type", "orient"], format_params)
+async def test_single_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     # GIVEN single chunk stored
-    reference_df = generate_df(['B', 'C', 'A'], index=range(6))
+    reference_df = generate_df(['A', 'B', 'C'], index=range(6))
     catalog = await store_chunks(bulk_storage_mock, ctx_fixture.tenant, [reference_df])
     catalog.nb_rows = len(reference_df.index)
+    common_kwargs = {"ctx": ctx_fixture, "catalog": catalog, "accept_type": accept_type, "orient": orient}
 
     # WHEN read full bulk
-    await assert_fast_track(ctx_fixture, catalog, reference_df)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df, columns=['A', 'B', 'C'])
 
     # WHEN read all columns, ensure column order
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['C', 'B', 'A']], columns=['C', 'B', 'A'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['B', 'A']], columns=['B', 'A'])
 
     # WHEN read one column
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['A']], columns=['A'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']], columns=['A'])
 
     # WHEN read few columns, offset, limit
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['A']].iloc[1:3], columns=['A'], offset=1, limit=2)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']].iloc[1:3], columns=['A'], offset=1, limit=2)
 
 
 @pytest.mark.asyncio
-async def test_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock):
+@pytest.mark.parametrize(["accept_type", "orient"], format_params)
+async def test_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     # GIVEN df split into 2 chunks
     reference_df = generate_df(['A', 'B', 'C', 'D', 'E'], index=range(6))
     catalog = await store_chunks(bulk_storage_mock, ctx_fixture.tenant, [
@@ -270,27 +288,31 @@ async def test_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_m
     ])
 
     catalog.nb_rows = len(reference_df.index)
+    common_kwargs = {"ctx": ctx_fixture, "catalog": catalog, "accept_type": accept_type, "orient": orient}
 
     # WHEN reads in first chunk
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['C', 'B', 'A']], columns=['C', 'B', 'A'])
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['A']], columns=['A'])
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['A']].iloc[1:3], columns=['A'], offset=1, limit=2)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['C', 'B', 'A']], columns=['C', 'B', 'A'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']], columns=['A'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']].iloc[1:3],
+                            columns=['A'], offset=1, limit=2)
 
     # WHEN reads in second chunk
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['E', 'D']], columns=['E', 'D'])
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['E']], columns=['E'])
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['D']].iloc[1:3], columns=['D'], offset=1, limit=2)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'D']], columns=['E', 'D'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['E']], columns=['E'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['D']].iloc[1:3],
+                            columns=['D'], offset=1, limit=2)
 
     # WHEN reads in both chunks
-    await assert_fast_track(ctx_fixture, catalog, reference_df)
-    await assert_fast_track(ctx_fixture, catalog, reference_df, columns=list(reference_df.columns))
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['E', 'A']], columns=['E', 'A'])
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['E', 'A']].iloc[1:3],
+    await assert_fast_track(**common_kwargs, expected_df=reference_df)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df, columns=list(reference_df.columns))
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']], columns=['E', 'A'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']].iloc[1:3],
                             columns=['E', 'A'], offset=1, limit=2)
 
 
 @pytest.mark.asyncio
-async def test_shifted_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock):
+@pytest.mark.parametrize(["accept_type", "orient"], format_params)
+async def test_shifted_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     md_df = generate_df(['MD'], index=range(10))
     switched_gr_df = generate_df(['GR'], index=range(4, 10))
     switched_den_df = generate_df(['DEN'], index=range(6))
@@ -313,17 +335,21 @@ async def test_shifted_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_s
                                    index_df.to_parquet(None, index=True))
 
     catalog.nb_rows = len(reference_df.index)
+    common_kwargs = {"ctx": ctx_fixture, "catalog": catalog, "accept_type": accept_type, "orient": orient}
 
     # without offset/limit
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['MD']], columns=['MD'])
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['GR']], columns=['GR'])
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['DEN']], columns=['DEN'])
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['MD', 'DEN']], columns=['MD', 'DEN'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['MD']], columns=['MD'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['GR']], columns=['GR'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['DEN']], columns=['DEN'])
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['MD', 'DEN']], columns=['MD', 'DEN'])
 
     # with offset/limit
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['GR']].iloc[2:6], columns=['GR'], offset=2, limit=4)
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['DEN']].iloc[5:8], columns=['DEN'], offset=5, limit=3)
-    await assert_fast_track(ctx_fixture, catalog, reference_df[['MD', 'GR']].iloc[5:], columns=['MD', 'GR'], offset=5)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['GR']].iloc[2:6],
+                            columns=['GR'], offset=2, limit=4)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['DEN']].iloc[5:8],
+                            columns=['DEN'], offset=5, limit=3)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['MD', 'GR']].iloc[5:],
+                            columns=['MD', 'GR'], offset=5)
 
 
 call_count = 0

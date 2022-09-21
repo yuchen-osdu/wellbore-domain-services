@@ -10,10 +10,9 @@ from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
-from app.conf import Config
 
 from app.bulk_persistence import (BulkCatalog,
-                                  MimeType, MimeTypes,
+                                  MimeType, MimeTypes, JSONOrient,
                                   BulkCurvesNotFound,
                                   BulkReadFilters,
                                   DataframeSerializerSync, DataframeSerializerAsync)
@@ -42,6 +41,7 @@ LOAD_DATAFRAME_SEMAPHORE = asyncio.Semaphore(100)  # semaphore to not overwhelm 
 async def read_data_fast_track(ctx,
                                bulk_catalog: BulkCatalog,
                                accept_type: MimeType,
+                               orient: Optional[JSONOrient],
                                bulk_filters: BulkReadFilters,
                                offset: Optional[int] = None,
                                limit: Optional[int] = None,
@@ -56,6 +56,7 @@ async def read_data_fast_track(ctx,
          :param ctx: context
          :param bulk_catalog: bulk catalog
          :param accept_type: out mime format
+         :param orient: out mime format
          :param bulk_filters: out mime format
          :param offset: offset
          :param limit: limit
@@ -63,7 +64,7 @@ async def read_data_fast_track(ctx,
          :return: Response
     """
     # ---------- first check if fast track can be applied -----------------------------
-    if bulk_filters.has_filter() or accept_type != MimeTypes.PARQUET:
+    if bulk_filters.has_filter():
         # cases not supported yet
         raise ReadFastTrackCaseNotSupportedException()
 
@@ -120,10 +121,12 @@ async def read_data_fast_track(ctx,
                 raise ReadFastTrackCaseNotSupportedException()
 
             # return directly as there's one chunk
-            return await _single_chunk_strategy(storage, ctx.tenant,
-                                                storage_path_builder.join(base_chunk_path, chunk_path),
-                                                None if curves_selection is None else columns_to_load,
-                                                offset, limit)
+            return await _build_response_from_single_chunk(
+                storage, ctx.tenant,
+                storage_path_builder.join(base_chunk_path, chunk_path),
+                accept_type, orient,
+                None if curves_selection is None else columns_to_load,
+                offset, limit)
 
     # more cases not supported
     if bulk_catalog.origin.was_generated:
@@ -149,8 +152,6 @@ async def read_data_fast_track(ctx,
         # at least one chunk is a multi partition file saved by Dask
         raise ReadFastTrackCaseNotSupportedException()
 
-    # since there's one chunk per column, at most it will fire 50+1 tasks
-    # TODO use constant_gather/asyncio semaphore to control the total concurrent load dataframe in the service
     with timeit(f"load {len(chunk_groups)} chunk dataframes and index dataframe"):
         dfs = await asyncio.gather(
             # index dataframe
@@ -173,25 +174,15 @@ async def read_data_fast_track(ctx,
         final_df = pd.concat(dfs, axis=1)
         final_df = _split_dataframe_iloc(final_df, offset, limit)
 
-    # build the final response by serializing the dataframe into parquet format
-    return await _build_response_parquet_df(
+    # build the final response by serializing the dataframe into requested format
+    return await _build_response_from_df(
         final_df,
+        accept_type, orient,
         requested_columns=None if curves_selection is None else columns_to_load
     )
 
 
-@capture_timings('_build_response_parquet_df')
-async def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
-    """ serialize the dataframe into parquet and construct the http response """
-
-    # column ordering similar to utils.process_params
-    if requested_columns:
-        df = df[requested_columns]  # columns are ordered as the user requested
-    else:
-        with timeit("sort_dataframe_columns"):
-            df = sort_dataframe_column(df)  # columns are ordered by natural sort
-
-    df.index.name = None  # TODO see 'df_render'
+async def _build_response_to_parquet(df: pd.DataFrame) -> Response:
     row_count, col_count = df.shape
 
     # decide to compute in main or in executor, based on column count and total values
@@ -203,6 +194,44 @@ async def _build_response_parquet_df(df: pd.DataFrame, requested_columns=None):
         else:
             content = await DataframeSerializerAsync().to_parquet(df)
     return Response(content, media_type=MimeTypes.PARQUET.type)
+
+
+async def _build_response_to_json(df: pd.DataFrame, orient: JSONOrient) -> Response:
+    row_count, col_count = df.shape
+
+    # decide to compute in main or in executor, based on column count and total values
+    direct = col_count < 500 and (row_count * col_count) < 1_000_000
+
+    with timeit(f"to json dataframe of shape {df.shape}, direct {direct}"):
+        if direct:
+            content = DataframeSerializerSync().to_json(df, orient)
+        else:
+            content = await DataframeSerializerAsync().to_json(df, orient)
+    return Response(content, media_type=MimeTypes.JSON.type)
+
+
+@capture_timings('_build_response_from_df')
+async def _build_response_from_df(df: pd.DataFrame,
+                                  accept_type: MimeType,
+                                  orient: Optional[JSONOrient],
+                                  requested_columns=None) -> Response:
+    """ serialize the dataframe into parquet and construct the http response """
+
+    # column ordering similar to utils.process_params
+    if requested_columns:
+        df = df[requested_columns]  # columns are ordered as the user requested
+    else:
+        with timeit("sort_dataframe_columns"):
+            df = sort_dataframe_column(df)  # columns are ordered by natural sort
+
+    df.index.name = None  # similar to 'df_render'
+    if accept_type == MimeTypes.PARQUET:
+        return await _build_response_to_parquet(df)
+
+    if accept_type == MimeTypes.JSON:
+        return await _build_response_to_json(df, orient)
+
+    raise RuntimeError(f"unsupported format {accept_type}")
 
 
 def _split_dataframe_iloc(df: pd.DataFrame, offset: Optional[int] = None, limit: Optional[int] = None) -> pd.DataFrame:
@@ -224,6 +253,7 @@ async def _load_dataframe_from_storage(storage: BlobStorageBase,
                                        columns=None,
                                        offset: Optional[int] = None,
                                        limit: Optional[int] = None) -> pd.DataFrame:
+    # limit the concurrency to not overwhelm the service
     async with LOAD_DATAFRAME_SEMAPHORE:
         content = await storage.download(tenant, obj_path)
         df = pd.read_parquet(BytesIO(content), columns=columns)
@@ -241,22 +271,26 @@ async def _read_index(storage: BlobStorageBase, tenant, bulk_catalog: BulkCatalo
     return await _load_dataframe_from_storage(storage, tenant, index_path)
 
 
-async def _single_chunk_strategy(storage: BlobStorageBase, tenant, parquet_path,
-                                 requested_columns=None,
-                                 offset: Optional[int] = None,
-                                 limit: Optional[int] = None):
+async def _build_response_from_single_chunk(storage: BlobStorageBase,
+                                            tenant,
+                                            blob_path,
+                                            accept_type: MimeType,
+                                            orient: Optional[JSONOrient],
+                                            requested_columns=None,
+                                            offset: Optional[int] = None,
+                                            limit: Optional[int] = None) -> Response:
     # only one chunk
-    if requested_columns or offset or limit:
-        df = await _load_dataframe_from_storage(storage, tenant, parquet_path, requested_columns, offset, limit)
-        return await _build_response_parquet_df(df, requested_columns=requested_columns)
+    if requested_columns or offset or limit or accept_type == MimeTypes.JSON:
+        df = await _load_dataframe_from_storage(storage, tenant, blob_path, requested_columns, offset, limit)
+        return await _build_response_from_df(df, accept_type, orient, requested_columns=requested_columns)
     else:
         # easy fast track, just forward it
-        return await _forward_parquet(storage, tenant, parquet_path)
+        return await _forward_parquet(storage, tenant, blob_path)
 
 
 @with_trace('_forward_parquet')
 @capture_timings('_forward_parquet')
-async def _forward_parquet(storage: BlobStorageBase, tenant, parquet_path):
+async def _forward_parquet(storage: BlobStorageBase, tenant, parquet_path) -> Response:
     content = await storage.download(tenant, parquet_path)
 
     # simply forward content as-it
