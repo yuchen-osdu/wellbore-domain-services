@@ -1,27 +1,24 @@
 
 from logging import INFO
-from functools import wraps
+from functools import wraps, partial
 import asyncio
 from time import perf_counter, process_time
 
-from app.context import get_ctx
+from app.context import get_or_create_ctx
 from app.helper.logger import get_logger
 
 from contextlib import contextmanager
 
 
-def make_log_captured_timing_handler(level=INFO):
-    def log_captured_timing(tag, wall, cpu):
-        ctx = get_ctx(error_not_exist=False)
-        get_logger().log(
-            level,
-            f"[cid {ctx.correlation_id if ctx is not None else '-'}] Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
-        )
-
-    return log_captured_timing
+def log_timings(tag, wall, cpu, level=INFO):
+    ctx = get_or_create_ctx()
+    get_logger().log(
+        level,
+        f"[cid {ctx.correlation_id if ctx is not None else '-'}] Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
+    )
 
 
-default_capture_timing_handlers = [make_log_captured_timing_handler(INFO)]
+default_capture_timing_handlers = [partial(log_timings, level=INFO)]
 
 
 def capture_timings(tag, handlers=default_capture_timing_handlers):
@@ -64,6 +61,12 @@ def capture_timings(tag, handlers=default_capture_timing_handlers):
 
 @contextmanager
 def timeit(tag: str, level=INFO):
+    """
+    log timings of a block. Must used with context manager:
+
+    with timeit("operation label"):
+        ...
+    """
     start_perf = perf_counter()
     start_process = process_time()
 
@@ -71,8 +74,4 @@ def timeit(tag: str, level=INFO):
 
     wall = perf_counter() - start_perf
     cpu = process_time() - start_process
-    ctx = get_ctx(error_not_exist=False)
-    get_logger().log(
-        level,
-        f"[cid {ctx.correlation_id if ctx is not None else '-'}] Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
-    )
+    log_timings(tag, wall, cpu, level)
