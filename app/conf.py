@@ -186,6 +186,12 @@ class ConfigurationContainer:
         description='Min amount of memory for one worker',
         default="512Mi")
 
+    enable_read_fast_track: EnvVar = EnvVar(
+        key='READ_FAST_TRACK_ENABLE',
+        description='enable read fast track preview',
+        default='false',
+        factory=lambda x: x.lower() == 'true' or x == '1')
+
     dask_data_ipc: EnvVar = EnvVar(
         key='DASK_DATA_IPC',
         description='Specify data IPC type between main process and dask workers',
