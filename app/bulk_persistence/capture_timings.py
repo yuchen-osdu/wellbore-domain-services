@@ -14,7 +14,7 @@ def log_timings(tag, wall, cpu, level=INFO):
     ctx = get_or_create_ctx()
     get_logger().log(
         level,
-        f"[cid {ctx.correlation_id if ctx is not None else '-'}] Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
+        f"[cid {ctx.correlation_id or '-'}] Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
     )
 
 
