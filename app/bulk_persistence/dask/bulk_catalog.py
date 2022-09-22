@@ -126,7 +126,7 @@ class BulkCatalog:
                 previous_size = len(column_label_set)
             return True
 
-        # case case few columns only
+        # case few columns only
         for chunk_group in self._columns:
             intersect = chunk_group.labels.intersection(columns_to_check)
             if not intersect:
