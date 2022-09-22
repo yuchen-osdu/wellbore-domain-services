@@ -132,6 +132,15 @@ def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency)
         assert valid_record_with_bulk_response.content \
                == b'{"errorType":"COMPUTATION_NOT_COMPLETE","message":"Statistics computation not finished yet"}'
 
+def _trigger_computation_on_record(client, record_id, record_version):
+    """ Trigger computation of bulk statistics for given record id at given record_version or last version if None """
+
+    if not record_version:
+        record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+        assert record_response.status_code == 200
+        record_version = record_response.json()['version']
+
+    return client.post(f"/ddms/v3/welllogs/{record_id}/versions/{record_version}/data/statistics")
 
 def test_double_compute_stats(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
@@ -144,9 +153,12 @@ def test_double_compute_stats(testing_app_local_chunking_no_consistency):
     assert record_response.status_code == 200
     version = record_response.json()['version']
 
+    computation_response = _trigger_computation_on_record(client, record_id, record_version=version)
+    assert computation_response.status_code == 200
+
     fetch_stats_for_3s(client, record_id)
 
-    compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+    compute_stats_response = _trigger_computation_on_record(client, record_id, record_version=version)
     assert compute_stats_response.status_code == 409
     assert compute_stats_response.json()['detail'] == "Statistics computation already complete"
 
@@ -157,6 +169,9 @@ def test_get_stats(testing_app_local_chunking_no_consistency):
     columns = ['int-A', 'int-A-with-nan', 'float-B', 'float-B-with-nan', 'date-C', 'date-C-with-nan']
     record_id = _create_record(client, 'WellLog')
     post_record_data(client, record_id, 'WellLog', columns, range(1000))
+
+    computation_response = _trigger_computation_on_record(client, record_id, record_version=None)
+    assert computation_response.status_code == 200
 
     fetch_stats_for_3s(client, record_id)
 
@@ -199,6 +214,9 @@ def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_con
     _create_chunks(client, 'WellLog',
                    record_id=record_id,
                    cols_ranges=[(['int-A', 'string-B', 'bool-C', 'string-D'], range(20))])
+
+    computation_response = _trigger_computation_on_record(client, record_id, record_version=None)
+    assert computation_response.status_code == 200
     fetch_stats_for_3s(client, record_id)
 
     # not computable curves + unknown curves requested => 404
@@ -223,6 +241,9 @@ def test_get_stats_after_post_data(testing_app_local_chunking_no_consistency):
     record_id = _create_record(client, 'WellLog')
     post_record_data(client, record_id, 'WellLog', ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
 
+    computation_response = _trigger_computation_on_record(client, record_id, record_version=None)
+    assert computation_response.status_code == 200
+
     response = fetch_stats_for_3s(client, record_id)
     assert response.status_code == 200
 
@@ -240,11 +261,13 @@ def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
     elif mode == 'all_at_once':
         post_record_data(client, record_id, 'WellLog', ['MD', 'X'], range(20))
 
-    fetch_stats_for_3s(client, record_id)
-
     record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
     assert record_response.status_code == 200
     version = record_response.json()['version']
+
+    computation_response = _trigger_computation_on_record(client, record_id, version)
+    assert computation_response.status_code == 200
+    fetch_stats_for_3s(client, record_id)
 
     get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
     assert get_stats_response.status_code == 200
@@ -272,6 +295,8 @@ def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_c
 
         valid_record_id = _create_record(client, 'WellLog')
         post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
+        computation_response = _trigger_computation_on_record(client, valid_record_id, record_version=None)
+        assert computation_response.status_code == 200
 
         response = fetch_stats_for_3s(client, valid_record_id)
         assert response.status_code == 200
@@ -318,6 +343,9 @@ def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consis
 
         record_id = _create_record(client, 'WellLog')
         post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
+        computation_response = _trigger_computation_on_record(client, record_id, record_version=None)
+        assert computation_response.status_code == 200
+
         get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
         assert get_stats_response.status_code == 200
         assert get_stats_response.json()['computationStatus'] == BulkStatisticsStatus.Error
@@ -351,6 +379,9 @@ def test_trigger_computations_after_duration(testing_app_local_chunking_no_consi
             record_id = _create_record(client, 'WellLog')
             post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
 
+            with pytest.raises(RuntimeError):
+                _trigger_computation_on_record(client, record_id, record_version=None)
+
         # so stats data are not available
         get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
         assert get_stats_response.status_code == 404
@@ -362,8 +393,7 @@ def test_trigger_computations_after_duration(testing_app_local_chunking_no_consi
 
         # Try to trigger computation several times, but `_duration_before_recompute` is not past yet => 409
         for i in range(4):
-            compute_stats_response = client.post(
-                f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+            compute_stats_response = _trigger_computation_on_record(client, record_id, version)
             assert compute_stats_response.status_code == 409
 
             get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
@@ -373,7 +403,7 @@ def test_trigger_computations_after_duration(testing_app_local_chunking_no_consi
 
         # update on the fly the value of expected duration before re-computation, to simulate time is up
         computations_parameter.return_value = timedelta(milliseconds=1)
-        compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+        compute_stats_response = _trigger_computation_on_record(client, record_id, version)
         assert compute_stats_response.status_code == 200
 
 
@@ -383,6 +413,9 @@ def test_get_stats_array(testing_app_local_chunking_no_consistency):
     record_id = _create_record(client, 'WellLog')
     array_cols = [f'ARRAY[{i}]' for i in range(10)]
     _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
+
+    compute_stats_response = _trigger_computation_on_record(client, record_id, record_version=None)
+    assert compute_stats_response.status_code == 200
 
     response = fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
     assert response.status_code == 200
@@ -402,6 +435,8 @@ def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_
             record_id = _create_record(client, 'WellLog')
             columns = [f'ARRAY[{i}]' for i in range(100)]
             post_record_data(client, record_id, 'WellLog', columns, range(100))
+            compute_stats_response = _trigger_computation_on_record(client, record_id, record_version=None)
+            assert compute_stats_response.status_code == 200
 
             get_stats_response = fetch_stats_for_3s(client, record_id)
             df_result_df = create_df_from_dict(get_stats_response)
@@ -413,8 +448,8 @@ def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_
 
             # remove check to trigger again the computation
             recompute_check_mock.return_value = True
-            compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
-            assert compute_stats_response.status_code == 200
+            recompute_stats_response = _trigger_computation_on_record(client, record_id, record_version=version)
+            assert recompute_stats_response.status_code == 200
 
         response = fetch_stats_for_3s(client, record_id)
         assert response.status_code == 200
