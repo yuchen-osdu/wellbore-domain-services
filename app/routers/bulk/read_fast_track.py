@@ -4,10 +4,11 @@ from io import BytesIO
 
 import pandas as pd
 
-from fastapi import HTTPException, status, Response
+from fastapi import Response
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
+from app.bulk_persistence.dask.errors import TooManyValuesRequested
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
 
@@ -15,7 +16,7 @@ from app.bulk_persistence import (BulkCatalog,
                                   MimeType, MimeTypes, JSONOrient,
                                   BulkCurvesNotFound,
                                   BulkReadFilters,
-                                  DataframeSerializerSync, DataframeSerializerAsync)
+                                  DataframeSerializerSync, DataframeSerializerAsync, TooManyColumnsRequested)
 from app.bulk_persistence.capture_timings import capture_timings, timeit
 from app.bulk_persistence.dask import storage_path_builder
 from app.bulk_persistence.dataframe_columns import ColumnSelection, select_columns, sort_dataframe_column
@@ -31,8 +32,8 @@ class ReadFastTrackCaseNotSupportedException(Exception):
 
 
 MAX_COLUMNS_COUNT = 3_000  # restrict to max 3 000 columns
-MAX_TOTAL_VALUES_COUNT_FILTERED = 5_000_000  # restrict to max 5M values at once (~50MB)
-MAX_TOTAL_VALUES_COUNT_UNFILTERED = 20_000_000  # restrict to max 20M values at once (~200MB)
+MAX_TOTAL_VALUES_COUNT_FILTERED = 5_000_000  # restrict to max 5M values at once (~50MB in parquet)
+MAX_TOTAL_VALUES_COUNT_UNFILTERED = 20_000_000  # restrict to max 20M values at once (~200MB in parquet)
 LOAD_DATAFRAME_SEMAPHORE = asyncio.Semaphore(100)  # semaphore to not overwhelm the service
 
 
@@ -79,16 +80,12 @@ async def read_data_fast_track(ctx,
 
     # validate the column count requested
     if len(columns_to_load) > MAX_COLUMNS_COUNT:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"too columns requested ({len(columns_to_load)} in total), max is {MAX_COLUMNS_COUNT}")
+        raise TooManyColumnsRequested(len(columns_to_load), MAX_COLUMNS_COUNT)
 
     # validate the values count before any filtering
     total_values_unfiltered = bulk_catalog.nb_rows * len(columns_to_load)
     if total_values_unfiltered > MAX_TOTAL_VALUES_COUNT_UNFILTERED:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"request too big ({total_values_unfiltered} values involved).")
+        raise TooManyValuesRequested(total_values_unfiltered, MAX_TOTAL_VALUES_COUNT_UNFILTERED)
 
     # validate the values after filtering
     filtered_row_count = bulk_catalog.nb_rows
@@ -102,16 +99,14 @@ async def read_data_fast_track(ctx,
     total_values_filtered = filtered_row_count * len(columns_to_load)
 
     if total_values_filtered > MAX_TOTAL_VALUES_COUNT_FILTERED:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"too many values requested ({total_values_filtered}, max is {MAX_TOTAL_VALUES_COUNT_FILTERED}).")
+        raise TooManyValuesRequested(total_values_filtered, MAX_TOTAL_VALUES_COUNT_FILTERED)
 
     # ---------- first check if fast track can be applied -----------------------------
     storage = await ctx.app_injector.get(BlobStorageBase)
     base_chunk_path = storage_path_builder.record_path('', bulk_catalog.record_id)
 
     # ---------- case of single chunk -----------------------------
-    # TODO try to use direct forward in case requested columns == single chunks all columns
+    # TODO try to use direct forward in case requested columns == single chunk all columns
 
     if bulk_catalog.chunk_count == 1:  # only one chunk
         for chunk_path in bulk_catalog.get_chunk_paths():
@@ -141,32 +136,32 @@ async def read_data_fast_track(ctx,
     # ---------- case of several chunks -----------------------------
     # for now should be perfectly column-slided - 1 column inside one chunk only
 
-    # figures out the number of chunks involved, only one path, so provides
+    # figures out the number of chunks involved, only one path each
     with timeit("bulk_catalog.filter_group_for_columns"):
         chunk_groups = bulk_catalog.filter_group_for_columns(columns_to_load)
 
-    if any((len(chunk_group.paths) > 1 for chunk_group in chunk_groups)):
+    if any(len(chunk_group.paths) > 1 for chunk_group in chunk_groups):
         raise RuntimeError("unique chunk path expected")  # extra check is_columns_slide_only
 
-    if any((not bulk_catalog.is_single_file_chunk(chunk_group.paths[0]) for chunk_group in chunk_groups)):
+    if any(not bulk_catalog.is_single_file_chunk(chunk_group.paths[0]) for chunk_group in chunk_groups):
         # at least one chunk is a multi partition file saved by Dask
         raise ReadFastTrackCaseNotSupportedException()
 
-    with timeit(f"load {len(chunk_groups)} chunk dataframes and index dataframe"):
-        dfs = await asyncio.gather(
-            # index dataframe
-            _read_index(storage, ctx.tenant, bulk_catalog),
+    # not putting offset, limit here because each chunk may not cover the full bulk index
+    # by the way it might be possible to do something before concat
+    load_chunk_df_coros = [
+        _load_dataframe_from_storage(
+            storage, ctx.tenant,
+            storage_path_builder.join(base_chunk_path, chunk_group.paths[0]),
+            chunk_group.labels.intersection(columns_to_load)
+        ) for chunk_group in chunk_groups
+    ]
+    load_index_df_coro = _read_index(storage, ctx.tenant, bulk_catalog)
 
-            # chunks
-            *[
-                # not putting offset, limit here because each chunk may not cover the full bulk index
-                # by the way it might be possible to do something before concat
-                _load_dataframe_from_storage(
-                    storage, ctx.tenant,
-                    storage_path_builder.join(base_chunk_path, chunk_group.paths[0]),
-                    chunk_group.labels.intersection(columns_to_load)
-                ) for chunk_group in chunk_groups
-            ]
+    with timeit(f"load {len(chunk_groups)} chunk dataframes and index dataframes"):
+        dfs = await asyncio.gather(
+            load_index_df_coro,  # index dataframe
+            *load_chunk_df_coros  # chunks
         )
 
     # concat df + select rows if needed
@@ -295,18 +290,3 @@ async def _forward_parquet(storage: BlobStorageBase, tenant, parquet_path) -> Re
 
     # simply forward content as-it
     return Response(content, media_type=MimeTypes.PARQUET.type)
-
-# TODO see if work directly with arrow table worth it, it could save arrow table <-> pandas dataframe conversions
-#  see pyarrow.concat_tables, write_table, ...
-#
-#     if direct_arrow:
-#         data = pa.BufferReader(content)
-#         table = pq.read_table(data, use_pandas_metadata=True, columns=requested_columns)
-#         out_buffer = BytesIO()
-#         pq.write_table(table, out_buffer)
-#         content = out_buffer.getvalue()
-#     else:
-#         df = pd.read_parquet(BytesIO(content), columns=requested_columns)
-#         content = df.to_parquet(None, index=True, engine='pyarrow')
-#
-#     return Response(content, media_type=MimeTypes.PARQUET.type)

@@ -94,10 +94,20 @@ class TooManyColumnsRequested(BulkError):
 
     def __init__(self, nb_requested_cols, max_allowed):
         ex_message = (
-            f"Too many columns: requested '{nb_requested_cols}',"
+            f"Too many columns requested: '{nb_requested_cols}',"
+            f" maximum allowed: '{max_allowed}'")
+        super().__init__(ex_message)
+
+
+class TooManyValuesRequested(BulkError):
+    http_status = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, nb_requested, max_allowed):
+        ex_message = (
+            f"Too many values requested: '{nb_requested}',"
             f" maximum allowed '{max_allowed}'")
         super().__init__(ex_message)
-            
+
 
 def internal_bulk_exceptions(target):
     """

@@ -6,9 +6,11 @@ import pandas as pd
 from fastapi import HTTPException
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from app.bulk_persistence import BulkCatalog, MimeTypes, MimeType, JSONOrient, BulkReadFilters, BulkFilter, BulkReadFilterOperator
+from app.bulk_persistence import BulkCatalog, MimeTypes, MimeType, JSONOrient, BulkReadFilters, BulkFilter, \
+    BulkReadFilterOperator, TooManyColumnsRequested
 from app.bulk_persistence.dask import storage_path_builder
 from app.bulk_persistence.dask.bulk_catalog import BulkCatalogOrigin, ChunkGroup
+from app.bulk_persistence.dask.errors import TooManyValuesRequested
 from app.bulk_persistence.dask.session_file_meta import generate_chunk_filename
 from app.routers.bulk import read_fast_track as ft
 
@@ -193,20 +195,17 @@ async def test_request_too_many_column_raise(nope_logger_fixture):
     args = [AsyncMock(), catalog, MimeTypes.PARQUET, None, BulkReadFilters([])]
 
     # read all
-    with pytest.raises(HTTPException) as ex_info:
+    with pytest.raises(TooManyColumnsRequested) as ex_info:
         await ft.read_data_fast_track(*args, curves_selection=None)
-    assert ex_info.value.status_code == 400
 
     # read 3000+ columns
     curve_selection = [f'C[{i}]' for i in range(1000, 4001)]
-    with pytest.raises(HTTPException) as ex_info:
+    with pytest.raises(TooManyColumnsRequested):
         await ft.read_data_fast_track(*args, curves_selection=curve_selection)
-    assert ex_info.value.status_code == 400
 
     # read 3000+ columns even with limit
-    with pytest.raises(HTTPException) as ex_info:
+    with pytest.raises(TooManyColumnsRequested):
         await ft.read_data_fast_track(*args, curves_selection=curve_selection, offset=10, limit=1)
-    assert ex_info.value.status_code == 400
 
 
 @pytest.mark.asyncio
@@ -217,14 +216,12 @@ async def test_request_too_many_values_raise(nope_logger_fixture):
     args = [AsyncMock(), catalog, MimeTypes.PARQUET, None, BulkReadFilters([])]
 
     # request 6M
-    with pytest.raises(HTTPException) as ex_info:
+    with pytest.raises(TooManyValuesRequested) as ex_info:
         await ft.read_data_fast_track(*args, curves_selection=[f'C[{i}]' for i in range(6)])
-    assert ex_info.value.status_code == 400
 
     # request 4M but need to work on a 100M dataframe
-    with pytest.raises(HTTPException) as ex_info:
+    with pytest.raises(TooManyValuesRequested) as ex_info:
         await ft.read_data_fast_track(*args, limit=40_000)
-    assert ex_info.value.status_code == 400
 
 
 @pytest.fixture
