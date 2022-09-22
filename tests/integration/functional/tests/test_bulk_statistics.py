@@ -90,7 +90,15 @@ def test_get_bulk_statistic_basic_workflow(with_wdms_env, well_log_with_data):
             expected_stats[curve]['nonAbsentValuesCount' if k == 'count' else k] = str(v)
 
     # WHEN call to trigger to statistic computation
-    # THEN should returns 409 as computation already triggered
+    # THEN first time should return 200
+    response = RequestRunner(
+        make_basic_wdms_request_proto('POST',
+                                      f'/ddms/v3/welllogs/{welllog_id}/versions/{welllog_version}/data/statistics')
+    ).call(with_wdms_env, assert_status=200)
+    response.assert_ok()
+
+    # WHEN call to trigger to statistic computation
+    # THEN should return 409 as computation already triggered
     response = RequestRunner(
         make_basic_wdms_request_proto('POST',
                                       f'/ddms/v3/welllogs/{welllog_id}/versions/{welllog_version}/data/statistics')
