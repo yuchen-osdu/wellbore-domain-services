@@ -4,17 +4,15 @@ from functools import wraps, partial
 import asyncio
 from time import perf_counter, process_time
 
-from app.context import get_or_create_ctx
 from app.helper.logger import get_logger
 
 from contextlib import contextmanager
 
 
 def log_timings(tag, wall, cpu, level=INFO):
-    ctx = get_or_create_ctx()
     get_logger().log(
         level,
-        f"[cid {ctx.correlation_id or '-'}] Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
+        f"Timings of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
     )
 
 
