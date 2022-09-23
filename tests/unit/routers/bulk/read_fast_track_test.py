@@ -3,7 +3,6 @@ import uuid
 from io import BytesIO
 
 import pandas as pd
-from fastapi import HTTPException
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from app.bulk_persistence import BulkCatalog, MimeTypes, MimeType, JSONOrient, BulkReadFilters, BulkFilter, \
@@ -12,7 +11,7 @@ from app.bulk_persistence.dask import storage_path_builder
 from app.bulk_persistence.dask.bulk_catalog import BulkCatalogOrigin, ChunkGroup
 from app.bulk_persistence.dask.errors import TooManyValuesRequested
 from app.bulk_persistence.dask.session_file_meta import generate_chunk_filename
-from app.routers.bulk import read_fast_track as ft
+from app.routers.bulk import read_fast_track
 
 import pytest
 from unittest.mock import AsyncMock, Mock
@@ -40,8 +39,8 @@ async def assert_fast_track(*, ctx, catalog, accept_type, orient,
                             expected_df,
                             offset=None, limit=None, columns=None):
     # WHEN read full bulk
-    response = await ft.read_data_fast_track(ctx, catalog, accept_type, orient, BulkReadFilters([]),
-                                             offset=offset, limit=limit, curves_selection=columns)
+    response = await read_fast_track.read_data_fast_track(ctx, catalog, accept_type, orient, BulkReadFilters([]),
+                                                          offset=offset, limit=limit, curves_selection=columns)
 
     # THEN
     assert_dataframe_from_content(expected_df, response.body, accept_type, orient)
@@ -52,7 +51,7 @@ async def test_forward_parquet(nope_logger_fixture):
     storage_mock = Mock()
     storage_mock.download = AsyncMock(return_value=b'fake data')
 
-    result = await ft._forward_parquet(storage_mock, Mock(), Mock())
+    result = await read_fast_track._forward_parquet(storage_mock, Mock(), Mock())
 
     assert result.media_type == "application/x-parquet"
     assert result.body == b'fake data'
@@ -61,20 +60,20 @@ async def test_forward_parquet(nope_logger_fixture):
 def test_split_dataframe_iloc(nope_logger_fixture):
     df = generate_df(['A'], index=range(10))
 
-    assert_frame_equal(df, ft._split_dataframe_iloc(df))
+    assert_frame_equal(df, read_fast_track._split_dataframe_iloc(df))
 
-    actual_df = ft._split_dataframe_iloc(df, offset=2)
+    actual_df = read_fast_track._split_dataframe_iloc(df, offset=2)
     assert_frame_equal(df.iloc[2:], actual_df)
     # just double check
     assert actual_df.shape == (8, 1)
     assert actual_df.index[0] == 2
 
-    actual_df = ft._split_dataframe_iloc(df, limit=5)
+    actual_df = read_fast_track._split_dataframe_iloc(df, limit=5)
     assert_frame_equal(df.iloc[:5], actual_df)
     assert actual_df.shape == (5, 1)
     assert actual_df.index[0] == 0
 
-    actual_df = ft._split_dataframe_iloc(df, offset=2, limit=5)
+    actual_df = read_fast_track._split_dataframe_iloc(df, offset=2, limit=5)
     assert_frame_equal(df.iloc[2:7], actual_df)
     assert actual_df.shape == (5, 1)
     assert actual_df.index[0] == 2
@@ -85,11 +84,11 @@ def test_split_dataframe_iloc(nope_logger_fixture):
 async def test_build_response_df(nope_logger_fixture, accept_type: MimeType, orient):
     df = generate_df(['B', 'C', 'A'], index=range(6))
 
-    result = await ft._build_response_from_df(df, accept_type, orient, requested_columns=['A', 'C'])
+    result = await read_fast_track._build_response_from_df(df, accept_type, orient, requested_columns=['A', 'C'])
     assert accept_type.match(result.media_type)
     assert_dataframe_from_content(df[['A', 'C']], result.body, accept_type, orient)
 
-    result = await ft._build_response_from_df(df, accept_type, orient)
+    result = await read_fast_track._build_response_from_df(df, accept_type, orient)
     assert accept_type.match(result.media_type)
     assert_dataframe_from_content(df[['A', 'B', 'C']], result.body, accept_type, orient)  # column in natural order
 
@@ -98,7 +97,7 @@ async def test_build_response_df(nope_logger_fixture, accept_type: MimeType, ori
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_build_response_big_df(nope_logger_fixture, accept_type: MimeType, orient):
     df = generate_df(['B', 'C', 'A'], index=range(350_000))
-    result = await ft._build_response_from_df(df, accept_type, orient)
+    result = await read_fast_track._build_response_from_df(df, accept_type, orient)
     assert accept_type.match(result.media_type)
     assert_dataframe_from_content(df[['A', 'B', 'C']], result.body, accept_type, orient)
 
@@ -109,32 +108,34 @@ async def test_load_dataframe_from_storage(nope_logger_fixture):
 
     storage_mock = Mock()
     storage_mock.download = AsyncMock(return_value=df.to_parquet(index=True))
-    actual_df = await ft._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock")
+    actual_df = await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock")
     assert_frame_equal(df, actual_df)
 
     assert_frame_equal(
         df[['A', 'B']],
-        await ft._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", columns=['A', 'B'])
+        await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock",
+                                                           columns=['A', 'B'])
     )
 
     assert_frame_equal(
         df.iloc[4:],
-        await ft._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", offset=4)
+        await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", offset=4)
     )
 
     assert_frame_equal(
         df.iloc[:3],
-        await ft._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", limit=3)
+        await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", limit=3)
     )
 
     assert_frame_equal(
         df.iloc[1: 4],
-        await ft._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", offset=1, limit=3)
+        await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", offset=1,
+                                                           limit=3)
     )
 
     assert_frame_equal(
         df[['A', 'B']].iloc[1: 4],
-        await ft._load_dataframe_from_storage(
+        await read_fast_track._load_dataframe_from_storage(
             storage_mock, tenant=Mock(), obj_path="mock", columns=['A', 'B'], offset=1, limit=3)
     )
 
@@ -144,17 +145,14 @@ async def test_unsupported_cases_raise(nope_logger_fixture):
     supported_filters = BulkReadFilters([])
     supported_format = MimeTypes.PARQUET
 
-    # only PARQUET
-    # with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
-    #     await ft.read_data_fast_track(Mock(), BulkCatalog(''), MimeTypes.JSON, supported_filters)
-
     # no filters
-    with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
-        await ft.read_data_fast_track(Mock(), BulkCatalog(''), supported_format, None,
-                                      BulkReadFilters([BulkFilter('MD', BulkReadFilterOperator.Greater, '10')]))
+    with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
+        await read_fast_track.read_data_fast_track(Mock(), BulkCatalog(''), supported_format, None,
+                                                   BulkReadFilters(
+                                                       [BulkFilter('MD', BulkReadFilterOperator.Greater, '10')]))
 
     # single file but save by multi partitions Dask, like conflict resolution on commit session
-    with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
+    with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
         # TODO there's might be more rigorous way, but for now just redo what is done
         #  DaskBulkStorage._resolve_conflict_catalog
         catalog = BulkCatalog('', origin=BulkCatalogOrigin.from_file())
@@ -165,27 +163,27 @@ async def test_unsupported_cases_raise(nope_logger_fixture):
         chunk_group = ChunkGroup(labels={"A"}, paths=relative_paths, dtypes=["int"])
         catalog.change_columns_info(chunk_group)
         assert catalog.chunk_count == 1
-        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
+        await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
     # multi files, previous Dask storage (no catalog)
-    with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
+    with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
         catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
         catalog.add_chunk(ChunkGroup({'A', 'B'}, ["path1", "path2"], ["Int32"]))
         assert catalog.chunk_count > 1
-        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
+        await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
     # chunks are not vertically slided - 1
-    with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
+    with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
         catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
         catalog.add_chunk(ChunkGroup({'A'}, ['path1', 'paths2'], ["Int32"]))
-        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
+        await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
     # chunks are not vertically slided - 2
-    with pytest.raises(ft.ReadFastTrackCaseNotSupportedException):
+    with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
         catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
         catalog.add_chunk(ChunkGroup({'A'}, ['path1'], ["Int32"]))
         catalog.add_chunk(ChunkGroup({'A', 'B'}, ['paths2'], ["Int32"]))
-        await ft.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
+        await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
 
 @pytest.mark.asyncio
@@ -196,16 +194,16 @@ async def test_request_too_many_column_raise(nope_logger_fixture):
 
     # read all
     with pytest.raises(TooManyColumnsRequested) as ex_info:
-        await ft.read_data_fast_track(*args, curves_selection=None)
+        await read_fast_track.read_data_fast_track(*args, curves_selection=None)
 
     # read 3000+ columns
     curve_selection = [f'C[{i}]' for i in range(1000, 4001)]
     with pytest.raises(TooManyColumnsRequested):
-        await ft.read_data_fast_track(*args, curves_selection=curve_selection)
+        await read_fast_track.read_data_fast_track(*args, curves_selection=curve_selection)
 
     # read 3000+ columns even with limit
     with pytest.raises(TooManyColumnsRequested):
-        await ft.read_data_fast_track(*args, curves_selection=curve_selection, offset=10, limit=1)
+        await read_fast_track.read_data_fast_track(*args, curves_selection=curve_selection, offset=10, limit=1)
 
 
 @pytest.mark.asyncio
@@ -217,11 +215,11 @@ async def test_request_too_many_values_raise(nope_logger_fixture):
 
     # request 6M
     with pytest.raises(TooManyValuesRequested) as ex_info:
-        await ft.read_data_fast_track(*args, curves_selection=[f'C[{i}]' for i in range(6)])
+        await read_fast_track.read_data_fast_track(*args, curves_selection=[f'C[{i}]' for i in range(6)])
 
     # request 4M but need to work on a 100M dataframe
     with pytest.raises(TooManyValuesRequested) as ex_info:
-        await ft.read_data_fast_track(*args, limit=40_000)
+        await read_fast_track.read_data_fast_track(*args, limit=40_000)
 
 
 @pytest.fixture
@@ -271,7 +269,8 @@ async def test_single_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_
     await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']], columns=['A'])
 
     # WHEN read few columns, offset, limit
-    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']].iloc[1:3], columns=['A'], offset=1, limit=2)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']].iloc[1:3], columns=['A'], offset=1,
+                            limit=2)
 
 
 @pytest.mark.asyncio
@@ -368,7 +367,8 @@ async def test_load_dataframe_concurrency_is_limited(nope_logger_fixture, ctx_fi
     storage_mock = Mock()
     storage_mock.download = download_mock
 
-    tasks = [asyncio.create_task(ft._load_dataframe_from_storage(storage_mock, Mock(), "")) for _ in range(250)]
+    tasks = [asyncio.create_task(read_fast_track._load_dataframe_from_storage(storage_mock, Mock(), "")) for _ in
+             range(250)]
     await asyncio.sleep(1)
 
     # only 100 download should been started
