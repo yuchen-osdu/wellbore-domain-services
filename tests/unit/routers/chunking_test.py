@@ -832,7 +832,7 @@ def test_parquet_maintain_float_type(dasked_test_app_without_consistency_client,
     get_response = client.get(f'{chunking_url}/{record_id}/data')
     assert get_response.status_code == 200
     res_df = _create_df_from_response(get_response)
-    assert_dataframe_equal(df, res_df)
+    pd.testing.assert_frame_equal(df, res_df)
 
     # With session
     session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
@@ -854,14 +854,14 @@ def test_parquet_maintain_float_type(dasked_test_app_without_consistency_client,
     get_response = client.get(f'{chunking_url}/{record_id}/data')
     assert get_response.status_code == 200
     res_df = _create_df_from_response(get_response)
-    assert_dataframe_equal(df, res_df)
+    pd.testing.assert_frame_equal(df, res_df)
 
     # with curve selection
     for curve in ('float_32', 'float_64'):
         get_response = client.get(f'{chunking_url}/{record_id}/data', params={'curves': curve})
         assert get_response.status_code == 200
         res_df = _create_df_from_response(get_response)
-        assert_dataframe_equal(df[[curve]], res_df)
+        pd.testing.assert_frame_equal(df[[curve]], res_df)
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
