@@ -165,6 +165,14 @@ async def test_unsupported_cases_raise(nope_logger_fixture):
         assert catalog.chunk_count == 1
         await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
+    # same as before but multi chunks
+    with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
+        catalog = BulkCatalog('', origin=BulkCatalogOrigin.from_file())
+        catalog.add_chunk(ChunkGroup({'A'}, ['path1'], ["Int32"]))
+        catalog.add_chunk(ChunkGroup({'A', 'B'}, [f'{uuid.uuid4()}.parquet'], ["Int32"]))
+        await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters,
+                                                   curves_selection=['B'])
+
     # multi files, previous Dask storage (no catalog)
     with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
         catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
@@ -174,13 +182,13 @@ async def test_unsupported_cases_raise(nope_logger_fixture):
 
     # chunks are not vertically slided - 1
     with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
-        catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
+        catalog = BulkCatalog('', origin=BulkCatalogOrigin.from_file())
         catalog.add_chunk(ChunkGroup({'A'}, ['path1', 'paths2'], ["Int32"]))
         await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
     # chunks are not vertically slided - 2
     with pytest.raises(read_fast_track.ReadFastTrackCaseNotSupportedException):
-        catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
+        catalog = BulkCatalog('', origin=BulkCatalogOrigin.from_file())
         catalog.add_chunk(ChunkGroup({'A'}, ['path1'], ["Int32"]))
         catalog.add_chunk(ChunkGroup({'A', 'B'}, ['paths2'], ["Int32"]))
         await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
