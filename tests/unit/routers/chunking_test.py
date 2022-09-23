@@ -1172,7 +1172,8 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
     get_all_cols_response = client.get(f'{chunking_url}/{record_id}/data',
                                        headers={'Accept': 'application/parquet'})
     assert get_all_cols_response.status_code == 400
-    assert "Too many columns: requested" in get_all_cols_response.json().get('detail', str())
+    details = get_all_cols_response.json().get('detail', str())
+    assert "Too many columns requested:" in details
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
@@ -1183,7 +1184,7 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
                               headers={'Accept': 'application/parquet'},
                               params={'curves': f'var[0:{MAX_COLUMNS_RETURN + 1}]'})
     assert get_response.status_code == 400
-    assert "Too many columns: requested" in get_response.json().get('detail', str())
+    assert "Too many columns requested:" in get_response.json().get('detail', str())
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
