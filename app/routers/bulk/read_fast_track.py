@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Set
 import asyncio
 from io import BytesIO
 
@@ -64,42 +64,7 @@ async def read_data_fast_track(ctx,
          :param curves_selection: curves_selection, note: slice notation must be resolved before
          :return: Response
     """
-    # ---------- first check if fast track can be applied -----------------------------
-    if bulk_filters.has_filter():
-        # cases not supported yet
-        raise ReadFastTrackCaseNotSupportedException()
-
-    # for now short if no filtering at all and parquet
-    columns_to_load = bulk_catalog.all_columns
-
-    # get the actual column to fetch from the given curve selection
-    if curves_selection is not None:
-        columns_to_load, curves_non_existent = select_columns(curves_selection, columns_to_load)
-        if curves_non_existent:
-            raise BulkCurvesNotFound(curves=curves_non_existent)
-
-    # validate the column count requested
-    if len(columns_to_load) > MAX_COLUMNS_COUNT:
-        raise TooManyColumnsRequested(len(columns_to_load), MAX_COLUMNS_COUNT)
-
-    # validate the values count before any filtering
-    total_values_unfiltered = bulk_catalog.nb_rows * len(columns_to_load)
-    if total_values_unfiltered > MAX_TOTAL_VALUES_COUNT_UNFILTERED:
-        raise TooManyValuesRequested(total_values_unfiltered, MAX_TOTAL_VALUES_COUNT_UNFILTERED)
-
-    # validate the values after filtering
-    filtered_row_count = bulk_catalog.nb_rows
-    if offset:
-        filtered_row_count = max(0, filtered_row_count - offset)
-    if limit:
-        if limit >= filtered_row_count:
-            limit = None  # so further algo could run like there's no limit
-        else:
-            filtered_row_count = limit
-    total_values_filtered = filtered_row_count * len(columns_to_load)
-
-    if total_values_filtered > MAX_TOTAL_VALUES_COUNT_FILTERED:
-        raise TooManyValuesRequested(total_values_filtered, MAX_TOTAL_VALUES_COUNT_FILTERED)
+    columns_to_load = _validate_parameters(bulk_catalog, bulk_filters, offset, limit, curves_selection)
 
     # ---------- first check if fast track can be applied -----------------------------
     storage = await ctx.app_injector.get(BlobStorageBase)
@@ -175,6 +140,59 @@ async def read_data_fast_track(ctx,
         accept_type, orient,
         requested_columns=None if curves_selection is None else columns_to_load
     )
+
+
+def _validate_parameters(bulk_catalog: BulkCatalog,
+                         bulk_filters: BulkReadFilters,
+                         offset: Optional[int],
+                         limit: Optional[int],
+                         curves_selection: Optional[ColumnSelection]) -> Set[str]:
+    """
+    validate case for fast track. It will throw ReadFastTrackCaseNotSupportedException if not supported given the
+     parameters provided.
+     It will throw either BulkCurvesNotFound, TooManyColumnsRequested or TooManyValuesRequested respectively if the
+     curves selection doesn't match a column, if too many columns requested or involves too many values.
+    Returns the columns to load as a Set
+    """
+
+    # ---------- first check if fast track can be applied -----------------------------
+    if bulk_filters.has_filter():
+        # cases not supported yet
+        raise ReadFastTrackCaseNotSupportedException()
+
+    # for now short if no filtering at all and parquet
+    columns_to_load = bulk_catalog.all_columns
+
+    # get the actual column to fetch from the given curve selection
+    if curves_selection is not None:
+        columns_to_load, curves_non_existent = select_columns(curves_selection, columns_to_load)
+        if curves_non_existent:
+            raise BulkCurvesNotFound(curves=curves_non_existent)
+
+    # validate the column count requested
+    if len(columns_to_load) > MAX_COLUMNS_COUNT:
+        raise TooManyColumnsRequested(len(columns_to_load), MAX_COLUMNS_COUNT)
+
+    # validate the values count before any filtering
+    total_values_unfiltered = bulk_catalog.nb_rows * len(columns_to_load)
+    if total_values_unfiltered > MAX_TOTAL_VALUES_COUNT_UNFILTERED:
+        raise TooManyValuesRequested(total_values_unfiltered, MAX_TOTAL_VALUES_COUNT_UNFILTERED)
+
+    # validate the values after filtering
+    filtered_row_count = bulk_catalog.nb_rows
+    if offset:
+        filtered_row_count = max(0, filtered_row_count - offset)
+    if limit:
+        if limit >= filtered_row_count:
+            limit = None  # so further algo could run like there's no limit
+        else:
+            filtered_row_count = limit
+    total_values_filtered = filtered_row_count * len(columns_to_load)
+
+    if total_values_filtered > MAX_TOTAL_VALUES_COUNT_FILTERED:
+        raise TooManyValuesRequested(total_values_filtered, MAX_TOTAL_VALUES_COUNT_FILTERED)
+
+    return columns_to_load
 
 
 async def _build_response_to_parquet(df: pd.DataFrame) -> Response:
