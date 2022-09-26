@@ -91,6 +91,7 @@ async def read_data_fast_track(ctx,
             return await _build_response_from_single_chunk(
                 storage, ctx.tenant,
                 storage_path_builder.join(base_chunk_path, chunk_path),
+                bulk_catalog.all_columns_count,
                 accept_type, orient,
                 None if curves_selection is None else columns_to_load,
                 offset, limit)
@@ -125,6 +126,7 @@ async def read_data_fast_track(ctx,
         _load_dataframe_from_storage(
             storage, ctx.tenant,
             storage_path_builder.join(base_chunk_path, chunk_group.paths[0]),
+            len(chunk_group.labels),
             chunk_group.labels.intersection(columns_to_load)
         ) for chunk_group in chunk_groups
     ]
@@ -273,14 +275,20 @@ def _split_dataframe_iloc(df: pd.DataFrame, offset: Optional[int] = None, limit:
 async def _load_dataframe_from_storage(storage: BlobStorageBase,
                                        tenant,
                                        obj_path: str,
-                                       columns=None,
+                                       total_columns_count: int,
+                                       columns_to_load=None,
                                        offset: Optional[int] = None,
                                        limit: Optional[int] = None) -> pd.DataFrame:
     # limit the concurrency to not overwhelm the service
     async with LOAD_DATAFRAME_SEMAPHORE:
         content = await storage.download(tenant, obj_path)
-        df = pd.read_parquet(BytesIO(content), columns=columns)
-        return _split_dataframe_iloc(df, offset, limit)
+        column_count = len(columns_to_load) if columns_to_load else total_columns_count
+        if column_count < MAX_COLUMNS_DIRECT_PARQUET:
+            df = DataframeSerializerSync.read_parquet(content, columns=columns_to_load)
+            return _split_dataframe_iloc(df, offset, limit)
+
+    df = await DataframeSerializerAsync().read_parquet(content, columns=columns_to_load)
+    return _split_dataframe_iloc(df, offset, limit)
 
 
 @with_trace('_read_index')
@@ -291,12 +299,13 @@ async def _read_index(storage: BlobStorageBase, tenant, bulk_catalog: BulkCatalo
         return pd.DataFrame()
 
     index_path = storage_path_builder.full_path('', bulk_catalog.record_id, bulk_catalog.index_path)
-    return await _load_dataframe_from_storage(storage, tenant, index_path)
+    return await _load_dataframe_from_storage(storage, tenant, index_path, 1)
 
 
 async def _build_response_from_single_chunk(storage: BlobStorageBase,
                                             tenant,
                                             blob_path,
+                                            total_columns_count: int,
                                             accept_type: MimeType,
                                             orient: Optional[JSONOrient],
                                             requested_columns=None,
@@ -304,7 +313,8 @@ async def _build_response_from_single_chunk(storage: BlobStorageBase,
                                             limit: Optional[int] = None) -> Response:
     # only one chunk
     if requested_columns or offset or limit or accept_type == MimeTypes.JSON:
-        df = await _load_dataframe_from_storage(storage, tenant, blob_path, requested_columns, offset, limit)
+        df = await _load_dataframe_from_storage(storage, tenant, blob_path,
+                                                total_columns_count, requested_columns, offset, limit)
         return await _build_response_from_df(df, accept_type, orient, requested_columns=requested_columns)
     else:
         # easy fast track, just forward it

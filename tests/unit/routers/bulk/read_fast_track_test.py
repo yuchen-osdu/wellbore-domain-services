@@ -108,36 +108,48 @@ async def test_load_dataframe_from_storage(nope_logger_fixture):
 
     storage_mock = Mock()
     storage_mock.download = AsyncMock(return_value=df.to_parquet(index=True))
-    actual_df = await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock")
+    cmn_kwargs = {"storage": storage_mock, "tenant": Mock(), "obj_path": "mock", "total_columns_count": 3}
+    actual_df = await read_fast_track._load_dataframe_from_storage(**cmn_kwargs)
     assert_frame_equal(df, actual_df)
 
     assert_frame_equal(
         df[['A', 'B']],
-        await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock",
-                                                           columns=['A', 'B'])
+        await read_fast_track._load_dataframe_from_storage(**cmn_kwargs, columns_to_load=['A', 'B'])
     )
 
     assert_frame_equal(
         df.iloc[4:],
-        await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", offset=4)
+        await read_fast_track._load_dataframe_from_storage(**cmn_kwargs, offset=4)
     )
 
     assert_frame_equal(
         df.iloc[:3],
-        await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", limit=3)
+        await read_fast_track._load_dataframe_from_storage(**cmn_kwargs, limit=3)
     )
 
     assert_frame_equal(
         df.iloc[1: 4],
-        await read_fast_track._load_dataframe_from_storage(storage_mock, tenant=Mock(), obj_path="mock", offset=1,
-                                                           limit=3)
+        await read_fast_track._load_dataframe_from_storage(**cmn_kwargs, offset=1, limit=3)
     )
 
     assert_frame_equal(
         df[['A', 'B']].iloc[1: 4],
-        await read_fast_track._load_dataframe_from_storage(
-            storage_mock, tenant=Mock(), obj_path="mock", columns=['A', 'B'], offset=1, limit=3)
+        await read_fast_track._load_dataframe_from_storage(**cmn_kwargs, columns_to_load=['A', 'B'], offset=1, limit=3)
     )
+
+
+@pytest.mark.asyncio
+async def test_load_dataframe_from_storage_many_columns(nope_logger_fixture):
+    cols = [f'c{i}' for i in range(read_fast_track.MAX_COLUMNS_DIRECT_PARQUET + 10)]
+    df = generate_df([f'c{i}' for i in range(read_fast_track.MAX_COLUMNS_DIRECT_PARQUET + 10)], index=range(10))
+    storage_mock = Mock()
+    storage_mock.download = AsyncMock(return_value=df.to_parquet(index=True))
+    actual_df = await read_fast_track._load_dataframe_from_storage(storage_mock, Mock(), "mock", len(cols))
+    assert_frame_equal(df, actual_df)
+
+    cols_requested = cols[2:]
+    actual_df = await read_fast_track._load_dataframe_from_storage(storage_mock, Mock(), "mock", len(cols), cols_requested)
+    assert_frame_equal(df[cols_requested], actual_df)
 
 
 @pytest.mark.asyncio
@@ -291,6 +303,21 @@ async def test_single_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
+async def test_single_chunk_case_many_columns(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
+    cols = [f'c{i}' for i in range(510)]
+    reference_df = generate_df(cols, index=range(6))
+    catalog = await store_chunks(bulk_storage_mock, ctx_fixture.tenant, [reference_df])
+    catalog.nb_rows = len(reference_df.index)
+    common_kwargs = {"ctx": ctx_fixture, "catalog": catalog, "accept_type": accept_type, "orient": orient}
+
+    # WHEN read full bulk
+    await assert_fast_track(**common_kwargs, expected_df=reference_df)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df, columns=cols)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[cols[2:]], columns=cols[2:])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     # GIVEN df split into 2 chunks
     reference_df = generate_df(['A', 'B', 'C', 'D', 'E'], index=range(6))
@@ -328,6 +355,24 @@ async def test_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_m
     await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']], columns=['E', 'A'], limit=1_000)
     await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']].iloc[1:], columns=['E', 'A'],
                             offset=1, limit=1_000)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(["accept_type", "orient"], format_params)
+async def test_multi_chunk_case_many_columns(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
+    cols = [f'c{i}' for i in range(600)]
+    reference_df = generate_df(cols, index=range(6))
+    catalog = await store_chunks(bulk_storage_mock, ctx_fixture.tenant, [
+        reference_df[cols[:300]],
+        reference_df[cols[300:]]
+    ])
+    catalog.nb_rows = len(reference_df.index)
+    common_kwargs = {"ctx": ctx_fixture, "catalog": catalog, "accept_type": accept_type, "orient": orient}
+
+    # WHEN read full bulk
+    await assert_fast_track(**common_kwargs, expected_df=reference_df)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df, columns=cols)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[cols[2:]], columns=cols[2:])
 
 
 @pytest.mark.asyncio
@@ -391,7 +436,7 @@ async def test_load_dataframe_concurrency_is_limited(nope_logger_fixture, ctx_fi
     storage_mock = Mock()
     storage_mock.download = download_mock
 
-    tasks = [asyncio.create_task(read_fast_track._load_dataframe_from_storage(storage_mock, Mock(), "")) for _ in
+    tasks = [asyncio.create_task(read_fast_track._load_dataframe_from_storage(storage_mock, Mock(), "", 1)) for _ in
              range(250)]
     await asyncio.sleep(1)
 

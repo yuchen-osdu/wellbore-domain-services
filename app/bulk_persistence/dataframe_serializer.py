@@ -80,16 +80,17 @@ class DataframeSerializerSync:
         return df.to_parquet(path_or_buf, index=True, engine='pyarrow', storage_options=storage_options)
 
     @classmethod
-    def read_parquet(cls, data) -> pd.DataFrame:
+    def read_parquet(cls, data, columns=None) -> pd.DataFrame:
         """
         :param data: bytes, path object or file-like object
+        :param columns : list, default=None If not None, only these columns will be read from the file.
         :return: dataframe
         """
         if isinstance(data, bytes):
             data = BytesIO(data)
 
         # will raise if contains multiple dataframe
-        return pd.read_parquet(data)
+        return pd.read_parquet(data, columns=columns)
 
     @classmethod
     def read_json(cls, data, orient: Union[str, JSONOrient]) -> pd.DataFrame:
@@ -175,10 +176,10 @@ class DataframeSerializerAsync:
         func = partial(DataframeSerializerSync.to_json, df, orient, *args, **kwargs)
         return await asyncio.get_event_loop().run_in_executor(self.executor, func)
 
-    @with_trace("Parquet bulk deserialization")
-    async def read_parquet(self, data) -> pd.DataFrame:
+    # @with_trace("Parquet bulk deserialization")
+    async def read_parquet(self, data, columns=None) -> pd.DataFrame:
         return await asyncio.get_event_loop().run_in_executor(
-            self.executor, DataframeSerializerSync.read_parquet, data
+            self.executor, DataframeSerializerSync.read_parquet, data, columns
         )
 
     @with_trace("Parquet JSON deserialization")
