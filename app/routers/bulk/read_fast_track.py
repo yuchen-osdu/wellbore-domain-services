@@ -187,6 +187,9 @@ def _validate_parameters(bulk_catalog: BulkCatalog,
 
     # validate the values after filtering
     filtered_row_count = bulk_catalog.nb_rows
+    if offset is not None and offset < 0:
+        offset = None
+
     if offset:
         filtered_row_count = max(0, filtered_row_count - offset)
     if limit:

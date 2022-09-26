@@ -280,6 +280,14 @@ async def test_single_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_
     await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']].iloc[1:3], columns=['A'], offset=1,
                             limit=2)
 
+    # WHEN offset is negative
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']], columns=['A'], offset=-1)
+
+    # WHEN limit exceed row count
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']], columns=['A'], limit=1_000)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['A']].iloc[1:], columns=['A'], offset=1,
+                            limit=1_000)
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
@@ -312,6 +320,14 @@ async def test_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_m
     await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']], columns=['E', 'A'])
     await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']].iloc[1:3],
                             columns=['E', 'A'], offset=1, limit=2)
+
+    # WHEN offset is negative
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']], columns=['E', 'A'], offset=-1)
+
+    # WHEN limit exceed row count
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']], columns=['E', 'A'], limit=1_000)
+    await assert_fast_track(**common_kwargs, expected_df=reference_df[['E', 'A']].iloc[1:], columns=['E', 'A'],
+                            offset=1, limit=1_000)
 
 
 @pytest.mark.asyncio
