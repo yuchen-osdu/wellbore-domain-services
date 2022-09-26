@@ -1,4 +1,4 @@
-from typing import Optional, Set
+from typing import Optional, Set, Tuple
 import asyncio
 from io import BytesIO
 
@@ -71,7 +71,7 @@ async def read_data_fast_track(ctx,
          :param curves_selection: curves_selection, note: slice notation must be resolved before
          :return: Response
     """
-    columns_to_load = _validate_parameters(bulk_catalog, bulk_filters, offset, limit, curves_selection)
+    columns_to_load, offset, limit = _validate_parameters(bulk_catalog, bulk_filters, offset, limit, curves_selection)
 
     # ---------- first check if fast track can be applied -----------------------------
     storage = await ctx.app_injector.get(BlobStorageBase)
@@ -153,7 +153,7 @@ def _validate_parameters(bulk_catalog: BulkCatalog,
                          bulk_filters: BulkReadFilters,
                          offset: Optional[int],
                          limit: Optional[int],
-                         curves_selection: Optional[ColumnSelection]) -> Set[str]:
+                         curves_selection: Optional[ColumnSelection]) -> Tuple[Set[str], Optional[int], Optional[int]]:
     """
     validate case for fast track. It will throw ReadFastTrackCaseNotSupportedException if not supported given the
      parameters provided.
@@ -199,7 +199,7 @@ def _validate_parameters(bulk_catalog: BulkCatalog,
     if total_values_filtered > MAX_TOTAL_VALUES_COUNT_FILTERED:
         raise TooManyValuesRequested(total_values_filtered, MAX_TOTAL_VALUES_COUNT_FILTERED)
 
-    return columns_to_load
+    return columns_to_load, offset, limit
 
 
 async def _build_response_to_parquet(df: pd.DataFrame) -> Response:
