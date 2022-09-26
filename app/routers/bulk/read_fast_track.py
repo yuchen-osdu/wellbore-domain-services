@@ -36,6 +36,13 @@ MAX_TOTAL_VALUES_COUNT_FILTERED = 5_000_000  # restrict to max 5M values at once
 MAX_TOTAL_VALUES_COUNT_UNFILTERED = 20_000_000  # restrict to max 20M values at once (~200MB in parquet)
 LOAD_DATAFRAME_SEMAPHORE = asyncio.Semaphore(100)  # semaphore to not overwhelm the service
 
+# thresholds for which dataframe is serialized in parquet in a thread
+MAX_COLUMNS_DIRECT_PARQUET = 200
+MAX_VALUES_DIRECT_PARQUET = 1_000_000
+
+# threshold or which dataframe is serialized in json in a thread
+MAX_VALUES_DIRECT_JSON = 500_000
+
 
 @with_trace('get_data_fast_track')
 @capture_timings('get_data_fast_track')
@@ -199,7 +206,7 @@ async def _build_response_to_parquet(df: pd.DataFrame) -> Response:
     row_count, col_count = df.shape
 
     # decide to compute in main or in executor, based on column count and total values
-    direct = col_count < 500 and (row_count * col_count) < 1_000_000
+    direct = col_count < MAX_COLUMNS_DIRECT_PARQUET and (row_count * col_count) < MAX_VALUES_DIRECT_PARQUET
 
     with timeit(f"to parquet dataframe of shape {df.shape}, direct {direct}"):
         if direct:
@@ -212,8 +219,8 @@ async def _build_response_to_parquet(df: pd.DataFrame) -> Response:
 async def _build_response_to_json(df: pd.DataFrame, orient: JSONOrient) -> Response:
     row_count, col_count = df.shape
 
-    # decide to compute in main or in executor, based on column count and total values
-    direct = col_count < 500 and (row_count * col_count) < 1_000_000
+    # decide to compute in main or in executor, only total values (to_json is invariant regarding column count)
+    direct = (row_count * col_count) < MAX_VALUES_DIRECT_JSON
 
     with timeit(f"to json dataframe of shape {df.shape}, direct {direct}"):
         if direct:
