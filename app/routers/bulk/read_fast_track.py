@@ -285,9 +285,8 @@ async def _load_dataframe_from_storage(storage: BlobStorageBase,
         column_count = len(columns_to_load) if columns_to_load else total_columns_count
         if column_count < MAX_COLUMNS_DIRECT_PARQUET:
             df = DataframeSerializerSync.read_parquet(content, columns=columns_to_load)
-            return _split_dataframe_iloc(df, offset, limit)
-
-    df = await DataframeSerializerAsync().read_parquet(content, columns=columns_to_load)
+        else:
+            df = await DataframeSerializerAsync().read_parquet(content, columns=columns_to_load)
     return _split_dataframe_iloc(df, offset, limit)
 
 
