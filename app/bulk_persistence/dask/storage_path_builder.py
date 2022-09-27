@@ -18,7 +18,7 @@ Utility functions that gathers method to build path for bulk storage
 
 import hashlib
 from os.path import relpath
-from os.path import join as os_path_join
+from os.path import join as os_path_join, basename as os_path_basename
 from typing import Optional, Tuple
 from uuid import UUID
 
@@ -27,6 +27,10 @@ def join(path, *paths) -> str:
     # enforce usage of '/' as it remains compatible with all known usage so far: Windows 10+ or Linux fs, ffspec,
     # real blob storage and blob storage emulator (e.g. Azurite)
     return os_path_join(path, *paths).replace('\\', '/')
+
+
+def basename(path) -> str:
+    return os_path_basename(path)
 
 
 def hash_record_id(record_id: str) -> str:
@@ -103,7 +107,7 @@ def record_relative_path(base_directory: str, record_id: str, path: str) -> str:
 
 
 def full_path(
-    base_directory: str, record_id: str, rel_path: str, protocol: Optional[str] = None
+    base_directory: str, record_id: str, relative_path: str, protocol: Optional[str] = None
 ) -> str:
     """Returns the full path of a record from a relative path"""
-    return join(record_path(base_directory, record_id, protocol), rel_path)
+    return join(record_path(base_directory, record_id, protocol), relative_path)

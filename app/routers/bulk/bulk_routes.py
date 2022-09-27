@@ -11,15 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from contextlib import suppress
 from uuid import UUID
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from natsort import natsorted
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
-from app.tenant import resolve_tenant
-from app.bulk_persistence import BulkReadFilters, GetDataParams, DataframeBasicDescribe, BulkCatalog, DataframeDescribe
+from app.conf import Config
+from app.bulk_persistence import (BulkReadFilters,
+                                  GetDataParams,
+                                  DataframeBasicDescribe,
+                                  BulkCatalog)
+
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
@@ -34,6 +39,7 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            json_orient_parameter,
                                            read_bulk_accept_type,
                                            write_bulk_content_type, response_404)
+from .read_fast_track import read_data_fast_track, ReadFastTrackCaseNotSupportedException
 
 from ..record_utils import fetch_record
 from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
@@ -52,7 +58,8 @@ from app.bulk_persistence import (
     SessionState,
     SessionUpdateMode,
     SessionInternal,
-    CommitSessionResponse
+    CommitSessionResponse,
+    capture_timings
 )
 
 from app.routers.sessions import (
@@ -73,7 +80,7 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
                                   BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
                                   DataConsistencyChecks,
                                   BulkStatistics)
-from ...bulk_persistence.dask.bulk_catalog import async_load_bulk_catalog_with_blob_storage
+
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -259,11 +266,23 @@ async def get_data_version(
             bulk_catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_id)
 
             # if describe without filters, the catalog is enough to answer:
+            column_selection = data_param.get_curves_list() if data_param.curves else None
             if data_param.describe and not bulk_filters.has_filter():
-                return bulk_catalog.describe(
+                descr = bulk_catalog.describe(
                     offset=data_param.offset,
                     limit=data_param.limit,
-                    column_selection=data_param.get_curves_list() if data_param.curves else None)
+                    column_selection=column_selection)
+                return _build_describe_response(descr)
+
+            # if fast track enabled, try it
+            if Config.enable_read_fast_track.value:
+                with suppress(ReadFastTrackCaseNotSupportedException):
+                    return await read_data_fast_track(ctx, bulk_catalog,
+                                                      accept_type, orient,
+                                                      bulk_filters,
+                                                      data_param.offset,
+                                                      data_param.limit,
+                                                      column_selection)
 
             df, filters, columns = await _process_request_v1(record_id,
                                                              bulk_id,
@@ -282,6 +301,17 @@ async def get_data_version(
         ex.raise_as_http()
 
 
+@capture_timings('_build_describe_response')
+def _build_describe_response(describe):
+    """ for performance reason in case of many columns """
+    columns = str(describe.columns).replace("'", '"')
+    json_string = f"{'{'}\"numberOfRows\":{describe.numberOfRows}, \"columns\":{columns}{'}'}"
+    return Response(
+        content=json_string,
+        media_type=MimeTypes.JSON.type
+    )
+
+
 @with_trace('_process_request_v1')
 async def _process_request_v1(record_id: str,
                               bulk_id: str,
@@ -296,7 +326,7 @@ async def _process_request_v1(record_id: str,
         columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), existing_col)
         columns = set(columns_to_load)
 
-    if not data_param.describe: # don't limit columns when describe parameter is True
+    if not data_param.describe:  # don't limit columns when describe parameter is True
         # if curves parameter is None, it means that we are going to load all existing columns
         nb_cols_to_return = len(columns_to_load) if columns_to_load else len(existing_col)
         if nb_cols_to_return > MAX_COLUMNS_RETURN:
