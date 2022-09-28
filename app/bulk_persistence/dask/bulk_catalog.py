@@ -18,18 +18,18 @@ A catalog contains metadata of the chunks
 import json
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, NamedTuple, Optional, Set
+from typing import Dict, Iterable, Iterator, List, NamedTuple, Optional, Set
 from itertools import chain
-from io import BytesIO, StringIO
-
-from natsort import natsorted
+from io import BytesIO
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
+from .session_file_meta import is_chunk_filename
+from ..capture_timings import timeit, capture_timings
 from ..model_chunking import DataframeDescribe
-from ..dataframe_columns import ColumnSelection, select_columns
-from .storage_path_builder import join, record_bulk_path
+from ..dataframe_columns import ColumnSelection, select_columns, sort_column_labels
+from .storage_path_builder import join, record_bulk_path, basename
 
 
 @dataclass
@@ -89,7 +89,7 @@ class BulkCatalog:
     """
 
     def __init__(self, record_id: str, origin: Optional[BulkCatalogOrigin] = None) -> None:
-        self._record_id: str = record_id  # TODO remove
+        self._record_id: str = record_id
         self.nb_rows: int = 0
         self.index_path: Optional[str] = None
         self._columns: List[ChunkGroup] = []
@@ -109,6 +109,38 @@ class BulkCatalog:
         Return number of columns contained in bulk data
         """
         return len(self.all_columns)
+
+    def is_columns_slide_only(self, columns_to_check: Optional[Set[str]] = None) -> bool:
+        """
+        return True if the bulk is only cut by columns, i.e. there's one and only one chunk to read to get full column
+        """
+        column_label_set: Set[str] = set()
+        previous_size = 0
+        if columns_to_check is None:
+            for chunk_group in self._columns:
+                if len(chunk_group.paths) > 1:
+                    return False
+                column_label_set.update(chunk_group.labels)
+                if previous_size + len(chunk_group.labels) > len(column_label_set):
+                    return False
+                previous_size = len(column_label_set)
+            return True
+
+        # case few columns only
+        for chunk_group in self._columns:
+            intersect = chunk_group.labels.intersection(columns_to_check)
+            if not intersect:
+                continue
+
+            if len(chunk_group.paths) > 1:
+                return False
+
+            if not column_label_set.isdisjoint(intersect):
+                # it's mean there's already on chunk for one element in intersect
+                return False
+            column_label_set.update(intersect)
+
+        return True
 
     @property
     def all_columns_dtypes(self) -> Dict[ColumnLabel, ColumnDType]:
@@ -133,6 +165,26 @@ class BulkCatalog:
         if self._columns_labels is None:
             self._columns_labels = set(chain.from_iterable((col_group.labels for col_group in self._columns)))
         return self._columns_labels
+
+    @property
+    def chunk_count(self) -> int:
+        # TODO by design, a path should not appears twice but nothing prevent to construct a catalog with the same
+        #  chunk path more than once, so let's use a set container for now
+        return len(set(self.get_chunk_paths()))
+
+    def get_chunk_paths(self) -> Iterator[str]:
+        """ iterator over all paths """
+        return chain.from_iterable((col_group.paths for col_group in self._columns))
+
+    @staticmethod
+    def is_single_file_chunk(chunk_path) -> bool:
+        """ differentiate a single chunk from a multi partition dataframe saved by Dask. returns True if chunk is a
+        lonely parquet file"""
+        # so far the simplest and fastest (loose) way is to check if the file_name match a chunk file name generated
+        # from session_file_meta. Luckily the only way chunk is generated using Dask is when conflict resolution
+        # happen and the name format is different (just a uuid)
+        # Another way would be to check is the path point to a file (raw chunk) or a folder (Dask multi partition)
+        return is_chunk_filename(basename(chunk_path))
 
     def add_chunk(self, chunk_group: ChunkGroup) -> None:
         """Add ChunkGroup to the catalog."""
@@ -199,6 +251,9 @@ class BulkCatalog:
                 )
         return grouped_files
 
+    def filter_group_for_columns(self, labels: Set[str]) -> List[ChunkGroup]:
+        return [col_group for col_group in self._columns if not col_group.labels.isdisjoint(labels)]
+
     def as_dict(self) -> dict:
         """Returns the dict representation of the catalog"""
         return {
@@ -226,9 +281,11 @@ class BulkCatalog:
         if column_selection:
             columns, _ = select_columns(column_selection, all_columns)
         else:
-            columns = natsorted(all_columns)
+            with timeit(f"sort {len(self.all_columns)} columns using natsorted"):
+                columns = sort_column_labels(self.all_columns)
 
-        return DataframeDescribe(
+        # use construct to prevent validation of pydantic
+        return DataframeDescribe.construct(
             numberOfRows=nb_rows,
             columns=columns
         )
@@ -254,6 +311,7 @@ def _get_persistence_path(record_id: str, bulk_id: str) -> str:
     return join(folder_path, CATALOG_FILE_NAME)
 
 
+@capture_timings("async_load_bulk_catalog_with_blob_storage")
 async def async_load_bulk_catalog_with_blob_storage(record_id: str,
                                                     bulk_id: str,
                                                     tenant=None,
@@ -268,12 +326,16 @@ async def async_load_bulk_catalog_with_blob_storage(record_id: str,
 
     storage_full_name = _get_persistence_path(record_id, bulk_id)
     with suppress(ResourceNotFoundException):
-        content = await storage.download(tenant, storage_full_name)
-        data = json.load(BytesIO(content))
-        return BulkCatalog.from_dict(data)
+        with timeit("async download bulk_catalog"):
+            content = await storage.download(tenant, storage_full_name)
+
+        with timeit(f"parse download bulk_catalog of size {len(content)}"):
+            data = json.load(BytesIO(content))
+            return BulkCatalog.from_dict(data)
     return None
 
 
+@capture_timings("async_save_bulk_catalog_with_blob_storage")
 async def async_save_bulk_catalog_with_blob_storage(record_id: str,
                                                     bulk_id: str,
                                                     catalog: BulkCatalog,
@@ -288,5 +350,10 @@ async def async_save_bulk_catalog_with_blob_storage(record_id: str,
     storage = storage or await ctx.app_injector.get(BlobStorageBase)
 
     storage_full_name = _get_persistence_path(record_id, bulk_id)
-    content = StringIO(json.dumps(catalog.as_dict(), indent=0))
-    await storage.upload(tenant, storage_full_name, content)
+
+    # TODO it might be possible to directly dump as bytes by passing the encoding
+    with timeit("json dumps bulk_catalog"):
+        json_bytes = json.dumps(catalog.as_dict(), indent=0).encode()
+
+    with timeit(f"upload bulk_catalog of size {len(json_bytes)}"):
+        await storage.upload(tenant, storage_full_name, BytesIO(json_bytes))

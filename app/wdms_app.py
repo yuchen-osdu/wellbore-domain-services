@@ -76,8 +76,6 @@ from app.routers.bulk.utils import (update_operation_ids,
                                     set_welllog_data_consistency_check,
                                     set_trajectory_data_consistency_check)
 from app.routers.record_utils import fetch_record_dependency, fetch_record_partial_with_wdms_extension
-
-from app.routers.bulk.statistics_routes_dependencies import set_statistics_computation_enabled
 from app.routers.bulk.bulk_uri_dependencies import set_osdu_bulk_id_access, set_log_bulk_id_access
 
 
@@ -256,7 +254,6 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
             *v3_bulk_dependencies,
             Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3")),
             Depends(set_welllog_data_consistency_check),
-            Depends(set_statistics_computation_enabled),
             Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
             Depends(FetchRecordPartialDependency.with_value(fetch_record_partial_with_wdms_extension))
         ],

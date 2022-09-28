@@ -39,6 +39,13 @@ class Tags(BaseModel):
     __root__: str
 
 
+class AbstractGeoContext100(DDMSBaseModel):
+    __root__: Any = Field(
+        ...,
+        description='A geographic context to an entity. It can be either a reference to a GeoPoliticalEntity, Basin, Field, Play or Prospect.',
+    )
+
+
 class HistoricalInterest(DDMSBaseModel):
     """
     A 'well interest' at some time period as defined by effective and termination date.
@@ -1625,13 +1632,6 @@ class Curve120(DDMSBaseModel):
         description='Mnemonic-level curve description is used during parsing or reading and ingesting LAS or DLIS files, to explain the type of measurement being looked at, specifically for that moment. Curve description is specific to that single (log) mnemonic and for the entire log (acquisition run) interval. In essence, curve description defines the internal factors such as what the "curve" or measurement ideally is representing, how is it calculated, what are the assumptions and the "constants".',
         example='CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant',
         title='Curve Description',
-    )
-
-
-class AbstractGeoContext100(DDMSBaseModel):
-    __root__: Any = Field(
-        ...,
-        description='A geographic context to an entity. It can be either a reference to a GeoPoliticalEntity, Basin, Field, Play or Prospect.',
     )
 
 

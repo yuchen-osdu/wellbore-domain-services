@@ -16,8 +16,12 @@ from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 from .. import DaskBulkStorage
 
 
+def make_local_dask_storage_parameters(base_directory: str):
+    return DaskStorageParameters(protocol='file',
+                                 base_directory=base_directory,
+                                 storage_options={'auto_mkdir': True})
+
+
 async def make_local_dask_bulk_storage(base_directory: str, bulk_config) -> DaskBulkStorage:
-    params = DaskStorageParameters(protocol='file',
-                                   base_directory=base_directory,
-                                   storage_options={'auto_mkdir': True})
+    params = make_local_dask_storage_parameters(base_directory)
     return await DaskBulkStorage.create(params, bulk_config)
