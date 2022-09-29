@@ -64,6 +64,7 @@ trajectory_data = {
         ("/ddms/v3/wells", "master-data--Well:1.1.0", {}),
         ("/ddms/v3/wellbores", "master-data--Wellbore:1.0.0", {}),
         ("/ddms/v3/wellbores", "master-data--Wellbore:1.1.0", {}),
+        ("/ddms/v3/wellbores", "master-data--Wellbore:1.1.1", {}),
         ("/ddms/v3/welllogs", "work-product-component--WellLog:1.0.0", {}),
         ("/ddms/v3/welllogs", "work-product-component--WellLog:1.1.0", {}),
         ("/ddms/v3/welllogs", "work-product-component--WellLog:1.0.0", {"TopMeasuredDepth": "10"}),
@@ -72,6 +73,7 @@ trajectory_data = {
 
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.0.0", {}),
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.2.0", {}),
+        ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.2.1", {}),
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.1.0", {   "AvailableMarkerProperties": [
                     {
                         "MarkerPropertyTypeID": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
