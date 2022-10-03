@@ -19,6 +19,7 @@ import time
 from contextlib import suppress
 from operator import attrgetter
 from typing import Dict, Generator, List
+from re import compile
 from distributed.worker import get_client
 
 import pandas as pd
@@ -127,6 +128,17 @@ def generate_chunk_filename(dataframe: pd.DataFrame) -> str:
     shape = hashlib.sha1(shape_str.encode()).hexdigest()
     cur_time = round(time.time() * 1000)
     return f'{first_idx}_{last_idx}_{cur_time}.{shape}'
+
+
+CHUNK_FILENAME_REGEX = compile(r"^[\d]+_[\d]+_[\d]+(\.).+$")
+
+
+def is_chunk_filename(filename) -> bool:
+    """
+    >>> is_chunk_filename(generate_chunk_filename(pd.DataFrame({'A': range(10), 'B': range(10)}, index=range(10))))
+    True
+    """
+    return CHUNK_FILENAME_REGEX.match(filename) is not None
 
 
 def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:

@@ -1,20 +1,22 @@
 
-from logging import Logger, INFO
-from functools import wraps
+from logging import INFO
+from functools import wraps, partial
 import asyncio
 from time import perf_counter, process_time
 
 from app.helper.logger import get_logger
 
-
-def make_log_captured_timing_handler(level=INFO):
-    def log_captured_timing(tag, wall, cpu):
-        get_logger().log(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
-
-    return log_captured_timing
+from contextlib import contextmanager
 
 
-default_capture_timing_handlers = [make_log_captured_timing_handler(INFO)]
+def log_timings(tag, wall, cpu, level=INFO):
+    get_logger().log(
+        level,
+        f"Timings of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
+    )
+
+
+default_capture_timing_handlers = [partial(log_timings, level=INFO)]
 
 
 def capture_timings(tag, handlers=default_capture_timing_handlers):
@@ -53,3 +55,21 @@ def capture_timings(tag, handlers=default_capture_timing_handlers):
         return sync_inner
 
     return decorate
+
+
+@contextmanager
+def timeit(tag: str, level=INFO):
+    """
+    log timings of a block. Must used with context manager:
+
+    with timeit("operation label"):
+        ...
+    """
+    start_perf = perf_counter()
+    start_process = process_time()
+
+    yield
+
+    wall = perf_counter() - start_perf
+    cpu = process_time() - start_process
+    log_timings(tag, wall, cpu, level)

@@ -126,7 +126,7 @@ The following software have components provided under the terms of this license:
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 - s3fs (from http://github.com/dask/s3fs/, http://github.com/fsspec/s3fs/)
 - sniffio (from https://github.com/python-trio/sniffio)
-- starlette (from https://github.com/encode/starlette)
+- starlette (from https://github.com/encode/starlette, https://pypi.org/project/starlette/0.21.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/, https://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.18.3/, https://www.uvicorn.org/)
@@ -235,10 +235,15 @@ The following software have components provided under the terms of this license:
 ========================================================================
 LGPL-3.0-only
 ========================================================================
+- chardet (from https://github.com/chardet/chardet)
+- pycparser (from https://github.com/eliben/pycparser)
+
+========================================================================
+LGPL-3.0-or-later
+========================================================================
 The following software have components provided under the terms of this license:
 
 - chardet (from https://github.com/chardet/chardet)
-- pycparser (from https://github.com/eliben/pycparser)
 
 ========================================================================
 MIT
@@ -304,7 +309,7 @@ The following software have components provided under the terms of this license:
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio)
-- starlette (from https://github.com/encode/starlette)
+- starlette (from https://github.com/encode/starlette, https://pypi.org/project/starlette/0.21.0/)
 - structlog (from http://www.structlog.org/, https://pypi.org/project/structlog/22.1.0/)
 - toml (from https://github.com/uiri/toml)
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/, https://pypi.org/project/tomli/2.0.1/)
@@ -436,6 +441,13 @@ mit-old-style
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
+
+========================================================================
+proprietary-license
+========================================================================
+The following software have components provided under the terms of this license:
+
+- chardet (from https://github.com/chardet/chardet)
 
 ========================================================================
 public-domain

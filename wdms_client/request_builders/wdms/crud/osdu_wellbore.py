@@ -486,7 +486,7 @@ def build_request_create_osdu_wellbore() -> RequestRunner:
       "WasBusinessInterestFinancialNonOperated": true,
       "WasBusinessInterestObligatory": true,
       "WasBusinessInterestTechnical": true,
-      "WellboreTrajectoryTypeID": "namespace:reference-data--WellboreTrajectoryType:Vertical:",
+      "TrajectoryTypeID": "namespace:reference-data--WellboreTrajectoryType:Vertical:",
       "PrimaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
       "SecondaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
       "TertiaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
@@ -789,7 +789,7 @@ def get_cleaned_ref_and_res() -> dict:
             "WasBusinessInterestFinancialNonOperated": True,
             "WasBusinessInterestObligatory": True,
             "WasBusinessInterestTechnical": True,
-            "WellboreTrajectoryTypeID": "namespace:reference-data--WellboreTrajectoryType:Vertical:",
+            "TrajectoryTypeID": "namespace:reference-data--WellboreTrajectoryType:Vertical:",
             "PrimaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
             "SecondaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
             "TertiaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
@@ -804,7 +804,7 @@ def get_cleaned_ref_and_res() -> dict:
     }
 
     # Add mandatory fields
-    ref["kind"] = "{{authorityKind}}:wks:master-data--Wellbore:1.2.0"
+    ref["kind"] = "{{authorityKind}}:wks:master-data--Wellbore:1.1.1"
     ref["acl"] = {
         "owners": ["{{acl_owner}}"],
         "viewers": ["{{acl_viewer}}"],

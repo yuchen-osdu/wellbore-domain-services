@@ -137,6 +137,19 @@ def test_post_data_merge_extension_properties(dasked_test_app_without_consistenc
     assert get_response.json()["data"]["ExtensionProperties"] == expected
 
 
+def assert_dataframe_equal(left_df, right_df):
+    assert left_df.index.dtype == right_df.index.dtype
+    assert left_df.shape == right_df.shape
+    pd.testing.assert_frame_equal(left_df, right_df,
+                                  check_dtype=False,
+                                  check_column_type=False,
+                                  check_datetimelike_compat=True,
+
+                                  # because internal of index name that may be different but its internal mechanism only
+                                  check_names=False
+                                  )
+
+
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("content_type_header,create_func", [
     ('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
@@ -183,23 +196,11 @@ def test_send_all_data_once(dasked_test_app_without_consistency_client,
     if content_type_header.endswith('json'):
         initial_data_df = pd.read_json(data_to_send, orient='split')
 
-    assert initial_data_df.index.dtype == result_df.index.dtype
-    assert initial_data_df.shape == result_df.shape
-    pd.testing.assert_frame_equal(initial_data_df, result_df,
-                                  check_dtype=False,
-                                  check_column_type=False,
-                                  check_datetimelike_compat=True,
-                                  )
+    assert_dataframe_equal(initial_data_df, result_df)
 
 
 @pytest.mark.parametrize("entity_type",
                          [entity for entity in EntityTypeParams if Definitions[entity]['api_version'] == "v2"])
-@pytest.mark.parametrize("content_type_header,create_func", [
-    ('application/json', lambda df: df.to_json(orient='split', date_format='iso')),
-])
-@pytest.mark.parametrize("accept_content", [
-    'application/json',
-])
 @pytest.mark.parametrize("columns", [
     ['MD', 'X'],
     ['float_MD', 'float_X'],
@@ -209,18 +210,15 @@ def test_send_all_data_once(dasked_test_app_without_consistency_client,
 ])
 def test_send_all_data_once_post_data_v2_get_data_v3(dasked_test_app_without_consistency_client,
                                                      entity_type,
-                                                     columns,
-                                                     content_type_header,
-                                                     create_func,
-                                                     accept_content):
+                                                     columns):
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
     base_url = Definitions[entity_type]['base_url']
 
     initial_data_df = generate_df(columns, range(5, 13))
-    data_to_send = create_func(initial_data_df)
-    headers = {'content-type': content_type_header}
+    data_to_send = initial_data_df.to_json(orient='split', date_format='iso')
+    headers = {'content-type': 'application/json'}
 
     get_response_no_data = client.get(f'{chunking_url}/{record_id}/data', headers=headers)
     assert get_response_no_data.status_code == 404
@@ -228,20 +226,13 @@ def test_send_all_data_once_post_data_v2_get_data_v3(dasked_test_app_without_con
     write_response = client.post(f'{base_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
 
-    get_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
+    get_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': 'application/json'})
     assert get_response.status_code == 200
     result_df = _create_df_from_response(get_response)
 
-    if content_type_header.endswith('json'):
-        initial_data_df = pd.read_json(data_to_send, orient='split')
+    initial_data_df = pd.read_json(data_to_send, orient='split')
 
-    assert initial_data_df.index.dtype == result_df.index.dtype
-    assert initial_data_df.shape == result_df.shape
-    pd.testing.assert_frame_equal(initial_data_df, result_df,
-                                  check_dtype=False,
-                                  check_column_type=False,
-                                  check_datetimelike_compat=True,
-                                  )
+    assert_dataframe_equal(initial_data_df, result_df)
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
@@ -353,16 +344,24 @@ def _create_chunks(client, entity_type, cols_ranges, record_id, session_mode='up
     return created_dfs
 
 
+@pytest.fixture
+def guard_enable_fast_track_config(local_dev_config):
+    before_value = local_dev_config.enable_read_fast_track.value
+    yield local_dev_config
+    local_dev_config.enable_read_fast_track.value = before_value
+
+
+enable_fast_track_params = [pytest.param(True, id="fast_track_enabled"), pytest.param(False, id="fast_track_disabled")]
+
+
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
-@pytest.mark.parametrize("accept_content", [
-    'application/x-parquet',
-    'application/json',
-])
-def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_client, entity_type, data_format,
-                                           accept_content):
+@pytest.mark.parametrize("enable_fast_track", enable_fast_track_params)
+def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_client, guard_enable_fast_track_config,
+                                           entity_type, data_format,
+                                           enable_fast_track):
     """ Create session, append chunking with consecutive index, validate session """
-
+    guard_enable_fast_track_config.enable_read_fast_track.value = enable_fast_track
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -374,7 +373,7 @@ def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consistency_c
                                 (['Y'], range(5, 20)),
                                 (['Z'], range(5, 20))])
 
-    data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
+    data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': 'application/x-parquet'})
     assert data_response.status_code == 200
     with_new_col = _create_df_from_response(data_response)
     # with_new_col = pd.DataFrame.from_dict(data_response.json())
@@ -580,8 +579,11 @@ def test_session_unknown_record(dasked_test_app_without_consistency_client, enti
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
+@pytest.mark.parametrize("enable_fast_track", enable_fast_track_params)
 def test_creates_two_sessions_one_record_with_chunks_different_format(dasked_test_app_without_consistency_client,
-                                                                      entity_type):
+                                                                      guard_enable_fast_track_config,
+                                                                      entity_type, enable_fast_track):
+    guard_enable_fast_track_config.enable_read_fast_track.value = enable_fast_track
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
@@ -596,7 +598,11 @@ def test_creates_two_sessions_one_record_with_chunks_different_format(dasked_tes
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
-def test_creates_two_sessions_two_record_with_chunks(dasked_test_app_without_consistency_client, entity_type):
+@pytest.mark.parametrize("enable_fast_track", enable_fast_track_params)
+def test_creates_two_sessions_two_record_with_chunks(dasked_test_app_without_consistency_client,
+                                                     guard_enable_fast_track_config,
+                                                     entity_type, enable_fast_track):
+    guard_enable_fast_track_config.enable_read_fast_track.value = enable_fast_track
     client = dasked_test_app_without_consistency_client
     record_id = _create_record(client, entity_type)
     another_record_id = _create_record(client, entity_type)
@@ -742,8 +748,9 @@ def test_nat_sort_columns(dasked_test_app_without_consistency_client, data_forma
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
+    # split in two chunks
     _create_chunks(client, entity_type, record_id=record_id, data_format=data_format,
-                   cols_ranges=[(columns_name, range(20))])
+                   cols_ranges=[(columns_name[:10], range(20)), (columns_name[10:], range(20))])
 
     data_response = client.get(f'{chunking_url}/{record_id}/data', headers={'accept': accept_content})
     assert data_response.status_code == 200
@@ -1165,7 +1172,8 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
     get_all_cols_response = client.get(f'{chunking_url}/{record_id}/data',
                                        headers={'Accept': 'application/parquet'})
     assert get_all_cols_response.status_code == 400
-    assert "Too many columns: requested" in get_all_cols_response.json().get('detail', str())
+    details = get_all_cols_response.json().get('detail', str())
+    assert "Too many columns requested:" in details
 
     get_response = client.get(f'{chunking_url}/{record_id}/data',
                               headers={'Accept': 'application/parquet'},
@@ -1176,7 +1184,7 @@ def test_read_too_many_columns(dasked_test_app_without_consistency_client, entit
                               headers={'Accept': 'application/parquet'},
                               params={'curves': f'var[0:{MAX_COLUMNS_RETURN + 1}]'})
     assert get_response.status_code == 400
-    assert "Too many columns: requested" in get_response.json().get('detail', str())
+    assert "Too many columns requested:" in get_response.json().get('detail', str())
 
 
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
