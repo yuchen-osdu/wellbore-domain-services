@@ -651,7 +651,7 @@
       },
       "AbstractSpatialLocation110": {
         "additionalProperties": false,
-        "description": "The spatial location information such as coordinates, CRS information (left empty when not appropriate).",
+        "description": "A polygon boundary that reflects the locale of the content of the work product component (location of the subject matter).",
         "properties": {
           "AppliedOperations": {
             "description": "The audit trail of operations applied to the coordinates from the original state to the current state. The list may contain operations applied prior to ingestion as well as the operations applied to produce the Wgs84Coordinates. The text elements refer to ESRI style CRS and Transformation names, which may have to be translated to EPSG standard names.",
@@ -3054,7 +3054,7 @@
         "title": "MainFamilyCatalogItem",
         "type": "object"
       },
-      "Marker120": {
+      "Marker121": {
         "additionalProperties": false,
         "description": "The array of marker meta data in this set.",
         "properties": {
@@ -3123,6 +3123,7 @@
             "type": "string"
           },
           "Missing": {
+            "description": "The geologic reason why a portion of material (typically a rock formation) is missing from the real world material/rock being measured, compared to what was expected based on offset wells. Examples: fault, unconformity, fold. This property corresponds to marker property type reference-data--MarkerPropertyType:MissingReason.",
             "title": "Missing",
             "type": "string"
           },
@@ -3147,7 +3148,7 @@
             "type": "number"
           }
         },
-        "title": "Marker120",
+        "title": "Marker121",
         "type": "object"
       },
       "MetaItem": {
@@ -4236,7 +4237,7 @@
         "title": "Well110",
         "type": "object"
       },
-      "WellBoreData110": {
+      "WellBoreData111": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4540,7 +4541,7 @@
             "type": "string"
           },
           "TrajectoryTypeID": {
-            "description": "Describes the predominant shapes the wellbore path can follow if deviated from vertical. Sample Values: Horizontal, Vertical, Directional.",
+            "description": "Profile Type [Wellbore Trajectory Type] is the general geometry of the wellbore relative to the vertical plane. The specific criteria for Profile Type may vary by operator or regulator. The facet value may change if conditions encountered during drilling are not what was planned or permitted.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellboreTrajectoryType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Trajectorytypeid",
             "type": "string"
@@ -4584,13 +4585,13 @@
             "type": "string"
           },
           "WellboreTrajectoryTypeID": {
-            "description": "Profile Type [Wellbore Trajectory Type] is the general geometry of the wellbore relative to the vertical plane. The specific criteria for Profile Type may vary by operator or regulator. The facet value may change if conditions encountered during drilling are not what was planned or permitted.",
+            "description": "DEPRECATED: Added accidentally in version 1.1.0. Please use the original TrajectoryTypeID instead. Profile Type [Wellbore Trajectory Type] is the general geometry of the wellbore relative to the vertical plane. The specific criteria for Profile Type may vary by operator or regulator. The facet value may change if conditions encountered during drilling are not what was planned or permitted.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellboreTrajectoryType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Wellboretrajectorytypeid",
             "type": "string"
           }
         },
-        "title": "WellBoreData110",
+        "title": "WellBoreData111",
         "type": "object"
       },
       "WellData110": {
@@ -5401,7 +5402,7 @@
         ],
         "title": "WellType"
       },
-      "Wellbore110": {
+      "Wellbore111": {
         "additionalProperties": false,
         "description": "A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.",
         "properties": {
@@ -5437,7 +5438,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellBoreData110"
+            "$ref": "#/components/schemas/WellBoreData111"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5448,7 +5449,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:master-data--Wellbore:1.1.0",
+            "example": "osdu:wks:master-data--Wellbore:1.1.1",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5504,10 +5505,10 @@
           "acl",
           "legal"
         ],
-        "title": "Wellbore110",
+        "title": "Wellbore111",
         "type": "object"
       },
-      "WellboreMarkerSet120": {
+      "WellboreMarkerSet121": {
         "additionalProperties": false,
         "description": "Wellbore Markers identify the depth in a wellbore, measured below a reference elevation, at which a person or an automated process identifies a noteworthy observation, which is usually a change in the rock that intersects that wellbore. Formation Marker data includes attributes/properties that put these depths in context. Formation Markers are sometimes known as picks or formation tops.",
         "properties": {
@@ -5543,7 +5544,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellboreMarkerSetData120"
+            "$ref": "#/components/schemas/WellboreMarkerSetData121"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5554,7 +5555,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.2.0",
+            "example": "osdu:wks:work-product-component--WellboreMarkerSet:1.2.1",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5610,10 +5611,10 @@
           "acl",
           "legal"
         ],
-        "title": "WellboreMarkerSet120",
+        "title": "WellboreMarkerSet121",
         "type": "object"
       },
-      "WellboreMarkerSetData120": {
+      "WellboreMarkerSetData121": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -5707,7 +5708,7 @@
           "Markers": {
             "description": "The array of marker meta data in this set. Markers are externally identified by data.Markers[].MarkerID, ideally a UUID. Older versions of the WellboreMarkerSet schema do not have this identifier. In this case, the string-converted array index is used as MarkerID. The the first index is \"0\".",
             "items": {
-              "$ref": "#/components/schemas/Marker120"
+              "$ref": "#/components/schemas/Marker121"
             },
             "title": "Markers",
             "type": "array"
@@ -5757,7 +5758,7 @@
           "SpatialArea": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+                "$ref": "#/components/schemas/AbstractSpatialLocation110"
               }
             ],
             "description": "A polygon boundary that reflects the locale of the content of the work product component (location of the subject matter).",
@@ -5766,7 +5767,7 @@
           "SpatialPoint": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+                "$ref": "#/components/schemas/AbstractSpatialLocation110"
               }
             ],
             "description": "A centroid point that reflects the locale of the content of the work product component (location of the subject matter).",
@@ -5827,7 +5828,7 @@
             "type": "string"
           }
         },
-        "title": "WellboreMarkerSetData120",
+        "title": "WellboreMarkerSetData121",
         "type": "object"
       },
       "WellborePurpose": {
@@ -15922,6 +15923,7 @@
                     "AsIngestedCoordinates": {
                       "CoordinateReferenceSystemID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
                       "VerticalCoordinateReferenceSystemID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
+                      "VerticalUnitID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                       "bbox": [
                         12345.6,
                         12345.6,
@@ -16052,7 +16054,7 @@
                   "WellboreID": "{{datapartitionid}}:master-data--Wellbore:SomeUniqueWellboreID:"
                 },
                 "id": "{{datapartitionid}}:work-product-component--WellboreMarkerSet:d5303b79-7904-5bfe-9c44-9a3ff41b6d6c",
-                "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.2.0",
+                "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.2.1",
                 "legal": {
                   "legaltags": [
                     "{{legaltags}}"
@@ -16095,7 +16097,7 @@
               },
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet120"
+                  "$ref": "#/components/schemas/WellboreMarkerSet121"
                 },
                 "title": "Wellboremarkersets",
                 "type": "array"
@@ -16246,7 +16248,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet120"
+                  "$ref": "#/components/schemas/WellboreMarkerSet121"
                 }
               }
             },
@@ -16401,7 +16403,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WellboreMarkerSet120"
+                  "$ref": "#/components/schemas/WellboreMarkerSet121"
                 }
               }
             },
@@ -16556,6 +16558,7 @@
                     },
                     "StatusSummaryID": "{{datapartitionid}}:reference-data--WellStatusSummary:Planning:",
                     "TertiaryProductTypeID": "{{datapartitionid}}:reference-data--WellProductType:Gas:",
+                    "TrajectoryTypeID": "{{datapartitionid}}:reference-data--WellboreTrajectoryType:Vertical:",
                     "VerticalMeasurements": [
                       {
                         "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
@@ -16578,11 +16581,10 @@
                     "WasBusinessInterestFinancialOperated": true,
                     "WasBusinessInterestObligatory": true,
                     "WasBusinessInterestTechnical": true,
-                    "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:",
-                    "WellboreTrajectoryTypeID": "{{datapartitionid}}:reference-data--WellboreTrajectoryType:Vertical:"
+                    "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:"
                   },
                   "id": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
-                  "kind": "osdu:wks:master-data--Wellbore:1.1.0",
+                  "kind": "osdu:wks:master-data--Wellbore:1.1.1",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
@@ -16609,7 +16611,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/Wellbore110"
+                  "$ref": "#/components/schemas/Wellbore111"
                 },
                 "title": "Wellbores",
                 "type": "array"
@@ -16760,7 +16762,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Wellbore110"
+                  "$ref": "#/components/schemas/Wellbore111"
                 }
               }
             },
@@ -16915,7 +16917,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Wellbore110"
+                  "$ref": "#/components/schemas/Wellbore111"
                 }
               }
             },

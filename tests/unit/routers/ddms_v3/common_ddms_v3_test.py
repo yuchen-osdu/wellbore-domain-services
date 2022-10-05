@@ -122,8 +122,10 @@ def records_with_version(records):
     ("wells", "well110_v3_list"),
     ("wellbores", "wellbore100_v3_list"),
     ("wellbores", "wellbore110_v3_list"),
+    ("wellbores", "wellbore111_v3_list"),
     ("wellboremarkersets", "marker110_v3_list"),
     ("wellboremarkersets", "marker120_v3_list"),
+    ("wellboremarkersets", "marker121_v3_list"),
     ("wellboretrajectories", "trajectory110_v3_list"),
     ("welllogs", "welllog120_v3_list")
 ])
