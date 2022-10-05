@@ -443,6 +443,13 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 
 ========================================================================
+mit-old-style-no-advert
+========================================================================
+The following software have components provided under the terms of this license:
+
+- pytz (from http://pythonhosted.org/pytz)
+
+========================================================================
 proprietary-license
 ========================================================================
 The following software have components provided under the terms of this license:
