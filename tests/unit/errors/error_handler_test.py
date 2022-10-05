@@ -127,8 +127,8 @@ def test_validation_error_exception(client):
 
 
 @patch.object(StorageRecordServiceClientMock,
-                   'delete_record',
-                   side_effect=KeyError("Error"))
+              'delete_record',
+              AsyncMock(side_effect=KeyError("Error")))
 def test_unhandled_exception(client):
         with pytest.raises(KeyError):
             client.delete("/ddms/v2/logsets/123456")
