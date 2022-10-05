@@ -266,7 +266,7 @@ osdu-core-lib-python-anthos==1.0.0
     # via -r requirements.in
 osdu-core-lib-python-aws==1.0.1
     # via -r requirements.in
-osdu-core-lib-python-azure==3.0.1
+osdu-core-lib-python-azure==3.0.2.dev1433978
     # via -r requirements.in
 osdu-core-lib-python-gcp==2.0.0
     # via -r requirements.in
