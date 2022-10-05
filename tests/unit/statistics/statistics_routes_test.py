@@ -306,7 +306,7 @@ def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_c
 
 def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consistency):
     # Simulate the creation of a WellLog before Statistics features is available
-    with patch.object(BulkStatistics, 'compute_bulk_statistics', AsyncMock()) as bob:
+    with patch.object(BulkStatistics, 'compute_bulk_statistics') as bob:
         _, client = testing_app_local_chunking_no_consistency
 
         record_id = _create_record(client, 'WellLog')
