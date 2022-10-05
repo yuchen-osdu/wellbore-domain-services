@@ -1,6 +1,10 @@
 import pytest
+from unittest.mock import AsyncMock, patch
+
 from fastapi import Header, status
 from fastapi.testclient import TestClient
+
+from odes_storage.models import CreateUpdateRecordsResponse
 
 from app.auth.auth import require_opendes_authorized_user
 from app.clients import SearchServiceClient, StorageRecordServiceClient
@@ -8,10 +12,10 @@ from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.context import Context
 from app.wdms_app import app_injector, wdms_app
-from tests.unit.test_utils import create_mock_class
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-SearchServiceClientMock = create_mock_class(SearchServiceClient)
+
+StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
+SearchServiceClientMock = AsyncMock(spec=SearchServiceClient)
 
 
 @pytest.fixture
@@ -24,10 +28,10 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock()
+        return StorageRecordServiceClientMock
 
     async def build_mock_search():
-        return SearchServiceClientMock()
+        return SearchServiceClientMock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(SearchServiceClient, build_mock_search)
@@ -84,6 +88,8 @@ trajectory_data = {
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.1.0", trajectory_data),
     ],
 )
+@patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+              AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
 def test_check_supported_kind(client, api, record_type, data):
     response = client.post(
         url=api,

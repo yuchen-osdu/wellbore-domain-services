@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pytest
-from unittest import mock
+from unittest.mock import AsyncMock, patch
 from odes_search.models import CursorQueryResponse
 
 from starlette.exceptions import HTTPException as starletteHTTPException
@@ -24,10 +24,10 @@ from app.clients import StorageRecordServiceClient
 from app.routers.ddms_v2.storage_helper import StorageHelper
 from app.model.entity_utils import Entity, get_kind, format_kind
 from app.context import Context
-from tests.unit.test_utils import create_mock_class, make_record
-from tests.unit.test_utils import ctx_fixture
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
+from tests.unit.test_utils import ctx_fixture, make_record
+
+StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
 
 
 @pytest.fixture(params=['authority_data_partition', 'authority_slb'])
@@ -54,11 +54,11 @@ def well_record(authority, entity_source):
 
 @pytest.fixture
 def with_patched_get_record(well_record):
-    """ patch storage storage to return well_record of get_record call """
-    with mock.patch.object(
-            StorageRecordServiceClientMock, 'get_record',
-            return_value=well_record
-    ):
+    """ patch storage to return well_record of get_record call """
+    with patch.object(
+            StorageRecordServiceClientMock,
+            'get_record',
+            return_value=well_record):
         yield
 
 
@@ -86,28 +86,24 @@ async def test_delete_recursive_only_delete_entity_provided(ctx_fixture,
         ]
     }
     expect_delete_ids.append(well_record.id)
-    mocked_query_response = CursorQueryResponse(**mocked_query_response_dict)
 
-    with mock.patch(
-            'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
-            return_value=mocked_query_response
-    ):
-        with mock.patch.object(
-                StorageRecordServiceClientMock, 'delete_record',
-                wraps=StorageRecordServiceClientMock.delete_record) as moc_storage_delete_record:
-            # when
-            await StorageHelper.delete_recursively(
-                ctx_fixture,
-                well_record.id, 'well',
-                [Entity.LOGSET, Entity.MARKER],
-                data_partition,
-                None,
-                StorageRecordServiceClientMock
-            )
+    with patch('app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
+               return_value=CursorQueryResponse(**mocked_query_response_dict)),\
+         patch.object(StorageRecordServiceClientMock, 'delete_record') as moc_storage_delete_record:
+        # when
+        await StorageHelper.delete_recursively(
+            ctx_fixture,
+            well_record.id,
+            'well',
+            [Entity.LOGSET, Entity.MARKER],
+            data_partition,
+            None,
+            StorageRecordServiceClientMock
+        )
 
-            # then
-            actual_deleted_id = set([call.kwargs['id'] for call in moc_storage_delete_record.call_args_list])
-            assert set(expect_delete_ids) == actual_deleted_id
+        # then
+        actual_deleted_id = set([call.kwargs['id'] for call in moc_storage_delete_record.call_args_list])
+        assert set(expect_delete_ids) == actual_deleted_id
 
 
 @pytest.mark.asyncio
@@ -123,31 +119,31 @@ async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
     sub_ids = [f'id:{i}' for i in range(10)]
     sub_kind = get_kind(authority, entity_source, Entity.LOGSET)
     expect_delete_ids = sub_ids + [well_record.id]
-    with mock.patch(
+    with patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
             return_value=CursorQueryResponse(**{
                 'results': [
                     {'id': rid, 'kind': sub_kind} for rid in sub_ids
                 ]
-            })
-    ):
-        with mock.patch.object(
-                StorageRecordServiceClientMock, 'delete_record',
-                wraps=StorageRecordServiceClientMock.delete_record,
-                side_effect=RuntimeError('simulate error')) as moc_storage_delete_record:
-            with pytest.raises(RuntimeError):  # expect to raise
-                await StorageHelper.delete_recursively(
-                    ctx_fixture,
-                    well_record.id, 'well',
-                    [Entity.LOGSET],
-                    data_partition,
-                    None,
-                    StorageRecordServiceClientMock
-                )
+            })),\
+          patch.object(
+              StorageRecordServiceClientMock,
+              'delete_record',
+              side_effect=RuntimeError('simulate error')) as moc_storage_delete_record:
 
-            # but still expected to call delete on each
-            assert moc_storage_delete_record.call_count == 1
-            assert moc_storage_delete_record.call_args_list[0].kwargs['id'] == well_record.id
+        with pytest.raises(RuntimeError):  # expect to raise
+            await StorageHelper.delete_recursively(
+                ctx_fixture,
+                well_record.id, 'well',
+                [Entity.LOGSET],
+                data_partition,
+                None,
+                StorageRecordServiceClientMock
+            )
+
+        # but still expected to call delete on each
+        assert moc_storage_delete_record.call_count == 1
+        assert moc_storage_delete_record.call_args_list[0].kwargs['id'] == well_record.id
 
 
 @pytest.mark.asyncio
@@ -164,7 +160,7 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
     sub_ids = [f'id:{i}' for i in range(10)]
     sub_kind = get_kind(authority, entity_source, Entity.LOGSET)
     expect_delete_ids = sub_ids + [well_record.id]
-    with mock.patch(
+    with patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
             return_value=CursorQueryResponse(**{
                 'results': [
@@ -178,9 +174,8 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
             if kwargs['id'] != well_record.id:
                 raise RuntimeError('simulate error')
 
-        with mock.patch.object(
+        with patch.object(
                 StorageRecordServiceClientMock, 'delete_record',
-                wraps=StorageRecordServiceClientMock.delete_record,
                 side_effect=delete_success_only_well) as moc_storage_delete_record:
             with pytest.raises(fastApiHTTPException) as exp_info:  # expect to raise
                 await StorageHelper.delete_recursively(
@@ -218,7 +213,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
     sub_ids = [f'id:{i}' for i in range(10)]
     sub_kind = get_kind(authority, entity_source, Entity.LOGSET)
     expect_delete_ids = sub_ids + [well_record.id]
-    with mock.patch(
+    with patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
             return_value=CursorQueryResponse(**{
                 'results': [
@@ -230,9 +225,8 @@ async def test_delete_should_keep_delete_homogenous_failure(
             if kwargs['id'] != well_record.id:
                 raise starletteHTTPException(status_code=403, detail="Forbidden")
 
-        with mock.patch.object(
+        with patch.object(
                 StorageRecordServiceClientMock, 'delete_record',
-                wraps=StorageRecordServiceClientMock.delete_record,
                 side_effect=delete_success_only_well) as moc_storage_delete_record:
             with pytest.raises(fastApiHTTPException) as exp_info:  # expect to raise
                 await StorageHelper.delete_recursively(
@@ -270,7 +264,7 @@ async def test_delete_404_of_sub_delete_is_valid(ctx_fixture,
                                                  well_record,
                                                  with_patched_get_record,
                                                  exception):
-    with mock.patch(
+    with patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
             return_value=CursorQueryResponse(**{
                 'results': [
@@ -284,9 +278,8 @@ async def test_delete_404_of_sub_delete_is_valid(ctx_fixture,
             if kwargs['id'] != well_record.id:
                 raise exception
 
-        with mock.patch.object(
+        with patch.object(
                 StorageRecordServiceClientMock, 'delete_record',
-                wraps=StorageRecordServiceClientMock.delete_record,
                 side_effect=delete_success_only_well):
             # no exception raised
             await StorageHelper.delete_recursively(
@@ -310,7 +303,7 @@ async def test_delete_failure_get_record(ctx_fixture,
                                          entity_source,
                                          well_record,
                                          exception):
-    with StorageRecordServiceClientMock.set_throw('get_record', exception):
+    with patch.object(StorageRecordServiceClientMock, 'get_record', side_effect=exception):
         with pytest.raises(exception.__class__):
             await StorageHelper.delete_recursively(
                 ctx_fixture,

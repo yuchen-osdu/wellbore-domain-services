@@ -1,4 +1,6 @@
 import pytest
+from unittest.mock import AsyncMock, patch
+
 from fastapi import Header, status
 from fastapi.testclient import TestClient
 
@@ -8,11 +10,12 @@ from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.context import Context
 from app.wdms_app import app_injector, wdms_app
-from tests.unit.test_utils import create_mock_class
+
+from odes_storage.models import CreateUpdateRecordsResponse
 
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-SearchServiceClientMock = create_mock_class(SearchServiceClient)
+StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
+SearchServiceClientMock = AsyncMock(spec=SearchServiceClient)
 
 
 @pytest.fixture
@@ -25,10 +28,10 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock()
+        return StorageRecordServiceClientMock
 
     async def build_mock_search():
-        return SearchServiceClientMock()
+        return SearchServiceClientMock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(SearchServiceClient, build_mock_search)
@@ -107,6 +110,8 @@ acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
         None,
     ],
 )
+@patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+              AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
 def test_post_v3_consistent_trajectory(client, available_trajectory_station_properties):
     response = client.post(
         url="/ddms/v3/wellboretrajectories",
@@ -127,7 +132,6 @@ def test_post_v3_consistent_trajectory(client, available_trajectory_station_prop
         headers={"content-type": "application/json"},
     )
     assert response.status_code == status.HTTP_200_OK
-
 
 
 @pytest.mark.parametrize(

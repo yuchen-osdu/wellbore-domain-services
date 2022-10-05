@@ -43,7 +43,7 @@ from app.bulk_persistence.bulk_storage_version import BulkStorageVersion_V1, Bul
 from app.bulk_persistence.bulk_id import new_bulk_id
 from app.context import Context
 from app.wdms_app import wdms_app, app_injector
-from app.clients import *
+from app.clients import StorageRecordServiceClient
 from tests.unit.test_utils import make_record
 
 # Initialize traces exporter in app, like it is in app's startup decorator

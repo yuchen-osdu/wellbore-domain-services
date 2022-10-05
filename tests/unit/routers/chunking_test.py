@@ -8,11 +8,16 @@ import pandas.api.types as ptypes
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
+from unittest import mock
+
 from starlette.testclient import TestClient
 
 from pandas.testing import assert_frame_equal
 from tests.unit.generate_data import generate_df
+
 from app.bulk_persistence import MAX_COLUMNS_WRITE_CHUNK, MAX_COLUMNS_RETURN
+from app.bulk_persistence.dask.traces import TracingMode
+from app.bulk_persistence import SessionsStorage, SessionState, SessionUpdateMode
 
 Definitions = {
     'WellLog': {
@@ -1277,11 +1282,6 @@ def test_session_update_previous_storage_version(dasked_test_app_without_consist
     assert list(df['X'].values) == [10, 11, 20, 21]
 
 
-from unittest import mock
-from app.bulk_persistence.dask.traces import TracingMode
-from app.bulk_persistence import SessionsStorage, SessionState, SessionUpdateMode
-
-
 def assert_mock_chunk(tracing_mock, chunk_df):
     tracing_mock.assert_called_with({"df rows count": chunk_df.shape[0], "df columns count": chunk_df.shape[1],
                                      'df index start': str(chunk_df.index[0]), 'df index end': str(chunk_df.index[-1]),
@@ -1295,8 +1295,7 @@ def test_bulk_tracing(dasked_test_app_without_consistency_client, entity_type):
     record_id = _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    with mock.patch('app.bulk_persistence.dask.traces._add_trace_attributes',
-                    return_value=mock.MagicMock()) as mock_mock:
+    with mock.patch('app.bulk_persistence.dask.traces._add_trace_attributes') as mock_mock:
         session_response = client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
         assert session_response.status_code == 200
         session_id = session_response.json()['id']

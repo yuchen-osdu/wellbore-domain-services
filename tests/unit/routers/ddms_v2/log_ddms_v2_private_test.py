@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from unittest import mock
+from unittest.mock import AsyncMock, patch
 import pytest
 import uuid
 
@@ -34,9 +34,11 @@ from app.middleware import require_data_partition_id
 from app.wdms_app import wdms_app, app_injector
 from app.context import Context
 from app.routers.record_utils import fetch_record, update_records
-from tests.unit.test_utils import create_mock_class, ctx_fixture
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record
+
+from tests.unit.test_utils import ctx_fixture
+
 
 data_partition_id = 'test_partition'
 
@@ -63,7 +65,7 @@ log_payload = {
 }
 
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
+StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
 
 
 @pytest.fixture
@@ -76,7 +78,7 @@ def with_test_setup(ctx_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock()
+        return StorageRecordServiceClientMock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
 
@@ -129,42 +131,44 @@ wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 @pytest.mark.asyncio
 async def test_fetch_record(with_test_setup):
     expected_record = Record.parse_obj(log_payload)
-    moc_get_record = mock.AsyncMock(return_value=expected_record)
-    moc_get_record_version = mock.AsyncMock(return_value=expected_record)
-    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', moc_get_record):
-        with mock.patch.object(StorageRecordServiceClientMock, 'get_record_version', moc_get_record_version):
 
-            computed_record = await fetch_record(ctx=Context.set_current_with_value(partition_id=data_partition_id),
-                                                 record_id="132")
+    with patch.object(StorageRecordServiceClientMock, 'get_record',
+                      return_value=expected_record) as moc_get_record,\
+        patch.object(StorageRecordServiceClientMock, 'get_record_version',
+                         return_value=expected_record) as moc_get_record_version:
 
-            assert computed_record == expected_record
-            moc_get_record.assert_called_with(id="132", data_partition_id=data_partition_id, attribute=None)
-            moc_get_record_version.assert_not_called()
+        computed_record = await fetch_record(ctx=Context.set_current_with_value(partition_id=data_partition_id),
+                                             record_id="132")
+
+        assert computed_record == expected_record
+        moc_get_record.assert_called_with(id="132", data_partition_id=data_partition_id, attribute=None)
+        moc_get_record_version.assert_not_called()
 
 
 @pytest.mark.asyncio
 async def test_fetch_record_version(with_test_setup):
     expected_record = Record.parse_obj(log_payload)
-    moc_get_record = mock.AsyncMock(return_value=expected_record)
-    moc_get_record_version = mock.AsyncMock(return_value=expected_record)
-    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', moc_get_record):
-        with mock.patch.object(StorageRecordServiceClientMock, 'get_record_version', moc_get_record_version):
 
-            computed_record = await fetch_record(ctx=Context.set_current_with_value(partition_id=data_partition_id),
-                                                 record_id="132", version="1")
+    with patch.object(StorageRecordServiceClientMock, 'get_record',
+                      return_value=expected_record) as moc_get_record,\
+         patch.object(StorageRecordServiceClientMock, 'get_record_version',
+                      return_value=expected_record) as moc_get_record_version:
 
-            assert computed_record == expected_record
-            moc_get_record_version.assert_called_with(id="132", data_partition_id=data_partition_id, version="1",
-                                                      attribute=None)
-            moc_get_record.assert_not_called()
+        computed_record = await fetch_record(ctx=Context.set_current_with_value(partition_id=data_partition_id),
+                                             record_id="132", version="1")
+
+        assert computed_record == expected_record
+        moc_get_record_version.assert_called_with(id="132", data_partition_id=data_partition_id, version="1",
+                                                  attribute=None)
+        moc_get_record.assert_not_called()
 
 
 @pytest.mark.asyncio
 async def test_update_records(with_test_setup):
     expected_response = CreateUpdateRecordsResponse(record_count=2, record_ids=["1", "2"], skipped_record_ids=["1"])
-    moc = mock.AsyncMock(return_value=expected_response)
 
-    with mock.patch.object(StorageRecordServiceClientMock, 'create_or_update_records', moc):
+    with patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+                      return_value=expected_response) as moc:
         record = Record.parse_obj(log_payload)
         computed_response = await update_records(ctx=Context.set_current_with_value(partition_id=data_partition_id),
                                                  records=[record])
@@ -176,29 +180,27 @@ async def test_update_records(with_test_setup):
 @pytest.mark.asyncio
 async def test_write_log_data(with_test_setup, mock_persistence):
     expected_response = CreateUpdateRecordsResponse(record_count=2, record_ids=["1", "2"], skipped_record_ids=["1"])
-
     expected_record = Record.parse_obj(log_payload)
-    get_record_moc = mock.AsyncMock(return_value=expected_record)
-    create_or_update_records_moc = mock.AsyncMock(return_value=expected_response)
 
     data = pd.DataFrame.from_dict({'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']})
 
-    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', get_record_moc):
-        with mock.patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
-                               create_or_update_records_moc):
+    with patch.object(StorageRecordServiceClientMock, 'get_record',
+                      return_value=expected_record) as get_record_moc,\
+         patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+                      return_value=expected_response) as create_or_update_records_moc:
 
-            computed_response = await _write_log_data(
-                ctx=Context.set_current_with_value(partition_id=data_partition_id),
-                persistence=mock_persistence,
-                logid="1234",
-                bulk_path=None,
-                dataframe=data)
+        computed_response = await _write_log_data(
+            ctx=Context.set_current_with_value(partition_id=data_partition_id),
+            persistence=mock_persistence,
+            logid="1234",
+            bulk_path=None,
+            dataframe=data)
 
-            assert computed_response == expected_response
-            get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id, attribute=None)
-            create_or_update_records_moc.assert_called_once_with(record=[expected_record],
-                                                                 data_partition_id=data_partition_id)
-            assert_frame_equal(mock_persistence.dataframe, data)
+        assert computed_response == expected_response
+        get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id, attribute=None)
+        create_or_update_records_moc.assert_called_once_with(record=[expected_record],
+                                                             data_partition_id=data_partition_id)
+        assert_frame_equal(mock_persistence.dataframe, data)
 
 
 @pytest.mark.asyncio
@@ -207,25 +209,25 @@ async def test_write_log_data_with_bulk_path(with_test_setup, mock_persistence):
 
     expected_record = Record.parse_obj(log_payload)
     expected_record.data["custom_bulkid"] = "default"
-    get_record_moc = mock.AsyncMock(return_value=expected_record)
-    create_or_update_records_moc = mock.AsyncMock(return_value=expected_response)
 
     data = pd.DataFrame.from_dict({'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']})
 
-    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', get_record_moc):
-        with mock.patch.object(StorageRecordServiceClientMock, 'create_or_update_records', create_or_update_records_moc):
-            computed_response = await _write_log_data(
-                ctx=Context.set_current_with_value(partition_id=data_partition_id),
-                persistence=mock_persistence,
-                logid="1234",
-                bulk_path="data.custom_bulkid",
-                dataframe=data)
+    with patch.object(StorageRecordServiceClientMock, 'get_record',
+                      return_value=expected_record) as get_record_moc,\
+         patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+                      return_value=expected_response) as create_or_update_records_moc:
+        computed_response = await _write_log_data(
+            ctx=Context.set_current_with_value(partition_id=data_partition_id),
+            persistence=mock_persistence,
+            logid="1234",
+            bulk_path="data.custom_bulkid",
+            dataframe=data)
 
-            assert computed_response == expected_response
-            get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id, attribute=None)
-            create_or_update_records_moc.assert_called_once_with(record=[expected_record],
-                                                                 data_partition_id=data_partition_id)
-            assert_frame_equal(mock_persistence.dataframe, data)
+        assert computed_response == expected_response
+        get_record_moc.assert_called_once_with(id="1234", data_partition_id=data_partition_id, attribute=None)
+        create_or_update_records_moc.assert_called_once_with(record=[expected_record],
+                                                             data_partition_id=data_partition_id)
+        assert_frame_equal(mock_persistence.dataframe, data)
 
 
 @pytest.mark.asyncio
@@ -233,10 +235,10 @@ async def test_get_log_data(with_test_setup, mock_persistence):
     expected_record = Record.parse_obj(log_payload)
     expected_data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
 
-    get_record_moc = mock.AsyncMock(return_value=expected_record)
     mock_persistence.dataframe = pd.DataFrame.from_dict(expected_data)
 
-    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', get_record_moc):
+    with patch.object(StorageRecordServiceClientMock, 'get_record',
+                      return_value=expected_record) as get_record_moc:
 
         computed_response = await _get_log_data(
             ctx=Context.set_current_with_value(partition_id=data_partition_id),
@@ -259,10 +261,10 @@ async def test_get_log_data_with_bulk_path(with_test_setup, mock_persistence):
     expected_record.data["custom_bulkid"] = "424242"
     expected_data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
 
-    get_record_moc = mock.AsyncMock(return_value=expected_record)
     mock_persistence.dataframe = pd.DataFrame.from_dict(expected_data)
 
-    with mock.patch.object(StorageRecordServiceClientMock, 'get_record', get_record_moc):
+    with patch.object(StorageRecordServiceClientMock, 'get_record',
+                      return_value=expected_record) as get_record_moc:
 
         computed_response = await _get_log_data(
             ctx=Context.set_current_with_value(partition_id=data_partition_id),

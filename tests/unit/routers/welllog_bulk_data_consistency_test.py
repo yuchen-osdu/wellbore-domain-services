@@ -1,10 +1,5 @@
 import pytest
-from app.clients import SearchServiceClient, StorageRecordServiceClient
-from tests.unit.test_utils import create_mock_class
 import re
-
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-SearchServiceClientMock = create_mock_class(SearchServiceClient)
 
 
 @pytest.fixture
