@@ -33,8 +33,8 @@ from app.routers.delete import delete_bulk_data
 from app.context import Context
 from app.wdms_app import wdms_app, app_injector
 
-StorageRecordServiceClientMock = AsyncMock()
-BlobStorageMock = AsyncMock()
+StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
+BlobStorageMock = AsyncMock(spec=BlobStorageBase)
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def client_delete(logger_fixture):
         return BlobStorageMock
 
     async def build_mock_dask_bulk_storage():
-        return AsyncMock()
+        return AsyncMock(spec=DaskBulkStorage)
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(BlobStorageBase, build_mock_blob_storage)

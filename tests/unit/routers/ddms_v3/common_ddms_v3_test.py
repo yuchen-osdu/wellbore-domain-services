@@ -34,7 +34,7 @@ from tests.unit.fixtures_pkg.testing_app_chunking import create_bulk_mocks
 Contains unified common tests for the different kind. Mainly CRUD test cases
 """
 
-StorageRecordServiceClientMock = AsyncMock(StorageRecordServiceClient)
+StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
 
 
 @pytest.fixture
