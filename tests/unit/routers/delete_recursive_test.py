@@ -117,7 +117,6 @@ async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
 
     sub_ids = [f'id:{i}' for i in range(10)]
     sub_kind = get_kind(authority, entity_source, Entity.LOGSET)
-    sub_ids + [well_record.id]
     with patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
             return_value=CursorQueryResponse(**{
