@@ -146,12 +146,10 @@ def test_partition_client_raise_api_exception(client):
 
 
 @pytest.fixture()
-def create_exception_handler():
-    log = MagicMock()
-    logger._LOGGER = log
+def create_exception_handler(nope_logger_fixture):
     create_custom_http_exception_handler(wdms_app, logger)
     client = TestClient(wdms_app)
-    yield client, log
+    yield client, nope_logger_fixture
 
 
 @pytest.mark.parametrize("status_code, msg, called", [(400, "bad request", False),
