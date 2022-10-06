@@ -14,21 +14,24 @@
 import json
 import os
 import uuid
-import pytest
 from unittest.mock import AsyncMock, patch
 
 from fastapi import status
+from odes_storage import UnexpectedResponse
+from odes_storage.models import (
+    CreateUpdateRecordsResponse,
+    Record,
+    RecordVersions,
+)
 import pandas as pd
+import pytest
 from starlette.responses import Response
 
-from odes_storage import UnexpectedResponse
-from odes_storage.models import CreateUpdateRecordsResponse, Record, RecordVersions
-
-from app.wdms_app import DDMS_V3_PATH
 from app.clients import StorageRecordServiceClient
 from app.model.osdu_model import Wellbore
-from tests.unit.fixtures_pkg.testing_app_chunking import create_bulk_mocks
+from app.wdms_app import DDMS_V3_PATH
 
+from tests.unit.fixtures_pkg.testing_app_chunking import create_bulk_mocks
 
 """
 Contains unified common tests for the different kind. Mainly CRUD test cases

@@ -13,22 +13,19 @@
 # limitations under the License.
 
 
-import pytest
-
 from fastapi import Header, status
 from fastapi.testclient import TestClient
-
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
+import pytest
 
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
-from app.middleware import require_data_partition_id
-
-from app.context import Context
-from app.wdms_app import wdms_app, app_injector
 from app.clients import StorageRecordServiceClient
+from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
+from app.context import Context
+from app.helper import traces
+from app.middleware import require_data_partition_id
+from app.wdms_app import app_injector, wdms_app
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')

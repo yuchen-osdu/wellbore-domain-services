@@ -1,3 +1,4 @@
+import logging
 # Copyright 2021 Schlumberger
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
-
-import pytest
 from unittest import mock
-from unittest.mock import patch
-import asyncio
-import logging
-from contextlib import contextmanager
 
+from odes_storage.models import Legal, Record, StorageAcl
 from opencensus.trace.span_context import SpanContext
-from odes_storage.models import Record, StorageAcl, Legal
 from osdu.core.api.storage.tenant import Tenant
-from starlette.routing import Mount, Router, Route
+import pytest
+from starlette.routing import Mount, Route, Router
 
-from app.model.model_utils import record_to_dict
 from app.context import get_or_create_ctx
 from app.injector.app_injector import AppInjector
+from app.model.model_utils import record_to_dict
 
 
 @pytest.fixture()

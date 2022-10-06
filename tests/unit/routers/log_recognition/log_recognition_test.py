@@ -14,17 +14,18 @@
 
 import time
 from unittest import mock
-import pytest
 
 from fastapi import status
 from odes_storage import models as m
 from odes_storage.exceptions import UnexpectedResponse
 from odes_storage.models import CreateUpdateRecordsResponse
+import pytest
+from tests.unit.middleware.traces_middleware_test import ExporterInTest
 
 from app.clients import StorageRecordServiceClient
-from app.routers.log_recognition.family_processor_manager import FamilyProcessorManager
-
-from tests.unit.middleware.traces_middleware_test import ExporterInTest
+from app.routers.log_recognition.family_processor_manager import (
+    FamilyProcessorManager,
+)
 
 
 @pytest.fixture

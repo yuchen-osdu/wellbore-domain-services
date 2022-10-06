@@ -12,20 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 from unittest.mock import AsyncMock, patch
-from odes_search.models import CursorQueryResponse
 
-from starlette.exceptions import HTTPException as starletteHTTPException
 from fastapi import HTTPException as fastApiHTTPException, status
 from odes_search.exceptions import UnexpectedResponse as clientHTTPException
+from odes_search.models import CursorQueryResponse
+import pytest
+from starlette.exceptions import HTTPException as starletteHTTPException
+from tests.unit.test_utils import make_record
 
 from app.clients import StorageRecordServiceClient
+from app.model.entity_utils import Entity, format_kind, get_kind
 from app.routers.ddms_v2.storage_helper import StorageHelper
-from app.model.entity_utils import Entity, get_kind, format_kind
-from app.context import Context
 
-from tests.unit.test_utils import ctx_fixture, make_record
 
 storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
 
@@ -118,7 +117,7 @@ async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
 
     sub_ids = [f'id:{i}' for i in range(10)]
     sub_kind = get_kind(authority, entity_source, Entity.LOGSET)
-    expect_delete_ids = sub_ids + [well_record.id]
+    sub_ids + [well_record.id]
     with patch(
             'app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
             return_value=CursorQueryResponse(**{

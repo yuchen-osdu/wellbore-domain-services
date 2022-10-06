@@ -1,23 +1,27 @@
 import asyncio
 from datetime import datetime, timedelta
 from typing import List
+from unittest.mock import Mock, PropertyMock, patch
 
 import numpy as np
-import pandas as pd
-
-from unittest.mock import patch, AsyncMock, Mock, PropertyMock
-import pytest
 from natsort import natsorted
+import osdu.core.api.storage.exceptions as osdu_storage_exception
+import pandas as pd
+import pytest
 from starlette.testclient import TestClient
+from tests.unit.generate_data import generate_df
+from tests.unit.routers.chunking_test import (
+    Definitions,
+    _create_chunks,
+    _create_record,
+)
 
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
-import osdu.core.api.storage.exceptions as osdu_storage_exception
-
-from app.bulk_persistence.statistics.models import StatisticsComputationMeta, BulkStatisticsStatus, \
-    InternalStatisticsComputationMeta
-from tests.unit.generate_data import generate_df
-from tests.unit.routers.chunking_test import _create_chunks, _create_record, _create_df_from_response, Definitions, \
-    EntityTypeParams
+from app.bulk_persistence.statistics.models import (
+    BulkStatisticsStatus,
+    InternalStatisticsComputationMeta,
+    StatisticsComputationMeta,
+)
 
 
 def post_record_data(client: TestClient, record_id: str, entity_type: str, columns: List[str], range_index: range):

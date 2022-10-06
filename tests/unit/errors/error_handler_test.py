@@ -11,32 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import json
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from fastapi import Header, HTTPException
 
+
+from fastapi import Header, HTTPException, status
 from fastapi.testclient import TestClient
-import starlette.status as status
-
-from app.errors.exception_handlers import create_custom_http_exception_handler
-from app.middleware import require_data_partition_id
-from app.context import Context
-from app.wdms_app import wdms_app, app_injector
-from app.clients import StorageRecordServiceClient
-
-from app.helper import traces, logger
-from app.auth.auth import require_opendes_authorized_user
-from app.injector.app_injector import WithLifeTime
-
 from odes_storage.exceptions import (
-    UnexpectedResponse as OSDUStorageUnexpectedResponse,
+    ResponseHandlingException as OSDUStorageResponseHandlingException,
     ResponseValidationError as OSDUStorageResponseValidationError,
-    ResponseHandlingException as OSDUStorageResponseHandlingException
+    UnexpectedResponse as OSDUStorageUnexpectedResponse,
 )
+from osdu_az.exceptions.data_access_error import (
+    DataAccessError as OSDUPartitionError,
+)
+import pytest
 
-from osdu_az.exceptions.data_access_error import DataAccessError as OSDUPartitionError
+from app.auth.auth import require_opendes_authorized_user
+from app.clients import StorageRecordServiceClient
+from app.context import Context
+from app.errors.exception_handlers import create_custom_http_exception_handler
+from app.helper import logger, traces
+from app.injector.app_injector import WithLifeTime
+from app.middleware import require_data_partition_id
+from app.wdms_app import app_injector, wdms_app
+
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
@@ -122,7 +121,7 @@ def test_storage_client_raise_response_validation_error(client):
 
 def test_validation_error_exception(client):
     response = client.post("/ddms/v2/logsets", data={'test': 'test'})
-    json_res = response.json()
+    response.json()
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 

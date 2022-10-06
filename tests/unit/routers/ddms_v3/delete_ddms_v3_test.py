@@ -12,26 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+from fastapi import Header, HTTPException, status
 from fastapi.testclient import TestClient
-
-from fastapi import Header, status, HTTPException
-
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from odes_storage.models import RecordVersions
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+import pytest
 
-
+from app.auth.auth import require_opendes_authorized_user
 from app.bulk_persistence import DaskBulkStorage
 from app.clients import StorageRecordServiceClient
-
+from app.context import Context
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.auth.auth import require_opendes_authorized_user
 from app.routers.delete import delete_bulk_data
-from app.context import Context
-from app.wdms_app import wdms_app, app_injector
+from app.wdms_app import app_injector, wdms_app
+
 
 storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
 blob_storage_mock = AsyncMock(spec=BlobStorageBase)

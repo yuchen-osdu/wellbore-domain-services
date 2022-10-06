@@ -13,31 +13,27 @@
 # limitations under the License.
 
 import os
-from unittest.mock import AsyncMock, patch
-import pytest
 import uuid
-
-import pandas as pd
-from pandas.util.testing import assert_frame_equal
+from unittest.mock import AsyncMock, patch
 
 from fastapi import Header
-
-from app.routers.ddms_v2.log_ddms_v2 import (_write_log_data,
-                                             get_persistence,
-                                             _get_log_data)
-
-from app.clients.storage_service_client import StorageRecordServiceClient
-
-from app.helper import traces
-from app.auth.auth import require_opendes_authorized_user
-from app.middleware import require_data_partition_id
-from app.wdms_app import wdms_app, app_injector
-from app.context import Context
-from app.routers.record_utils import fetch_record, update_records
-
 from odes_storage.models import CreateUpdateRecordsResponse, Record
+import pandas as pd
+from pandas.util.testing import assert_frame_equal
+import pytest
 
-from tests.unit.test_utils import ctx_fixture
+from app.auth.auth import require_opendes_authorized_user
+from app.clients.storage_service_client import StorageRecordServiceClient
+from app.context import Context
+from app.helper import traces
+from app.middleware import require_data_partition_id
+from app.routers.ddms_v2.log_ddms_v2 import (
+    _get_log_data,
+    _write_log_data,
+    get_persistence,
+)
+from app.routers.record_utils import fetch_record, update_records
+from app.wdms_app import app_injector, wdms_app
 
 
 data_partition_id = 'test_partition'

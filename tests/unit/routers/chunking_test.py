@@ -1,23 +1,25 @@
 import io
 import math
 import uuid
+from unittest import mock
 
 import numpy as np
 import pandas as pd
 import pandas.api.types as ptypes
+from pandas.testing import assert_frame_equal
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from unittest import mock
-
 from starlette.testclient import TestClient
-
-from pandas.testing import assert_frame_equal
 from tests.unit.generate_data import generate_df
 
-from app.bulk_persistence import MAX_COLUMNS_WRITE_CHUNK, MAX_COLUMNS_RETURN
+from app.bulk_persistence import (
+    MAX_COLUMNS_RETURN,
+    MAX_COLUMNS_WRITE_CHUNK,
+    SessionState,
+    SessionUpdateMode,
+)
 from app.bulk_persistence.dask.traces import TracingMode
-from app.bulk_persistence import SessionsStorage, SessionState, SessionUpdateMode
 
 Definitions = {
     'WellLog': {

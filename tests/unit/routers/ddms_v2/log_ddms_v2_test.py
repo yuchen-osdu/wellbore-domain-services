@@ -17,33 +17,36 @@ tests specific to logset APIs. Common tests implemented in common_ddms_v2_test
 """
 
 import asyncio
-import json
-
 from io import BytesIO
 
+from fastapi import Header, HTTPException
+from fastapi.testclient import TestClient
 import numpy as np
+from odes_storage.models import CreateUpdateRecordsResponse, Record
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from fastapi import HTTPException, Header
-from fastapi.testclient import TestClient
 import pytest
 
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
-from odes_storage.models import Record, CreateUpdateRecordsResponse
-
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
+from app.bulk_persistence import BulkURI, MimeTypes
+from app.bulk_persistence.bulk_id import new_bulk_id
+from app.bulk_persistence.bulk_storage_version import (
+    BulkStorageVersion_V0,
+    BulkStorageVersion_V1,
+)
+from app.clients import StorageRecordServiceClient
+from app.clients.storage_service_blob_storage import (
+    StorageRecordServiceBlobStorage,
+)
+from app.context import Context
+from app.helper import traces
 from app.middleware import require_data_partition_id
 from app.model.log_bulk import LogBulkHelper
-from app.bulk_persistence import MimeTypes, BulkURI
-from app.bulk_persistence.bulk_storage_version import BulkStorageVersion_V1, BulkStorageVersion_V0
-from app.bulk_persistence.bulk_id import new_bulk_id
-from app.context import Context
-from app.wdms_app import wdms_app, app_injector
-from app.clients import StorageRecordServiceClient
+from app.wdms_app import app_injector, wdms_app
+
 from tests.unit.test_utils import make_record
 
 # Initialize traces exporter in app, like it is in app's startup decorator
@@ -184,7 +187,7 @@ def test_logs_write_then_read_data(client, test_data, nan_conversion):
     response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
-    data = response.content
+    response.content
     f = BytesIO(response.content)
     f.seek(0)
     actual_df = pd.read_json(f, orient=log_data_orient).replace("NaN", np.NaN)
