@@ -14,8 +14,8 @@ from app.middleware import require_data_partition_id
 from app.context import Context
 from app.wdms_app import app_injector, wdms_app
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
-SearchServiceClientMock = AsyncMock(spec=SearchServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+search_service_client_mock = AsyncMock(spec=SearchServiceClient)
 
 
 @pytest.fixture
@@ -28,10 +28,10 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock
+        return storage_record_service_client_mock
 
     async def build_mock_search():
-        return SearchServiceClientMock
+        return search_service_client_mock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(SearchServiceClient, build_mock_search)
@@ -66,7 +66,7 @@ PARAMS = [
 @pytest.mark.parametrize("base_url", URL_PARAM)
 @pytest.mark.parametrize("search_response, expected", PARAMS)
 def test_query_results_without_none(client, base_url, search_response, expected):
-    with patch.object(SearchServiceClientMock, 'query_with_cursor',
+    with patch.object(search_service_client_mock, 'query_with_cursor',
                       return_value=CursorQueryResponse(results=[search_response])):
         # when
         response = client.post(f'{base_url}', headers={'data-partition-id': 'testing_partition', 'names': 'dd'},

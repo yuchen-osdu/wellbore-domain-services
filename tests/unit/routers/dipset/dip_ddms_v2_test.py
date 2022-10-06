@@ -17,8 +17,8 @@ from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
 
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
-SearchServiceClientMock = AsyncMock(spec=SearchServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+search_service_client_mock = AsyncMock(spec=SearchServiceClient)
 
 tests_parameters = [
     ('/ddms/v2/dipsets', dipset(id="opendes:doc:00000000000000000000000000000000000", data={})),
@@ -35,10 +35,10 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock
+        return storage_record_service_client_mock
 
     async def build_mock_search():
-        return SearchServiceClientMock
+        return search_service_client_mock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(SearchServiceClient, build_mock_search)
@@ -63,7 +63,7 @@ def test_get_record_not_found_case_dipset(client, base_url, record_obj):
     record_id = record_obj.id
     exception = UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND, reason_phrase="not found", content=b'', headers=Header('test'))
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record', side_effect=exception):
+    with patch.object(storage_record_service_client_mock, 'get_record', side_effect=exception):
         # when
         response = client.get(f'{base_url}/{record_id}/dips', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -74,7 +74,7 @@ def test_get_dip_empty_query_case(client, base_url, record_obj):
     record_id = record_obj.id
     expected_response = Record(id=record_id, kind='xx', acl={'viewers': [], 'owners': []}, legal={}, data={})
 
-    with patch.object(StorageRecordServiceClientMock, "get_record", return_value=expected_response),\
+    with patch.object(storage_record_service_client_mock, "get_record", return_value=expected_response),\
             patch("app.bulk_persistence.dataframe_persistence.get_dataframe", pd.DataFrame()):
         # when
         response = client.get(f'{base_url}/{record_id}/dips/query',

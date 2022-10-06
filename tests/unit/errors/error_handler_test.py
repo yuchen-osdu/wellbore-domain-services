@@ -41,7 +41,7 @@ from osdu_az.exceptions.data_access_error import DataAccessError as OSDUPartitio
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock
+        return storage_record_service_client_mock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage, WithLifeTime.Singleton())
 
@@ -84,7 +84,7 @@ def test_storage_client_raise_api_exception(client):
         headers=header,
         reason_phrase="An unexpected response")
 
-    with patch.object(StorageRecordServiceClientMock, 'delete_record', side_effect=exception):
+    with patch.object(storage_record_service_client_mock, 'delete_record', side_effect=exception):
         # when
         response = client.delete("/ddms/v2/logsets/123456")
         json_res = response.json()
@@ -96,7 +96,7 @@ def test_storage_client_raise_api_exception(client):
 def test_storage_client_raise_response_handling_exception(client):
     exception = OSDUStorageResponseHandlingException(KeyError("Exception"))
 
-    with patch.object(StorageRecordServiceClientMock, 'delete_record', side_effect=exception):
+    with patch.object(storage_record_service_client_mock, 'delete_record', side_effect=exception):
         response = client.delete("/ddms/v2/logsets/123456")
         json_res = response.json()
 
@@ -111,7 +111,7 @@ def test_storage_client_raise_response_validation_error(client):
         status_code=403,
         content="Cannot divide by zero")
 
-    with patch.object(StorageRecordServiceClientMock, "delete_record", side_effect=exception):
+    with patch.object(storage_record_service_client_mock, "delete_record", side_effect=exception):
         response = client.delete("/ddms/v2/logsets/123456")
         json_res = response.json()
 
@@ -126,7 +126,7 @@ def test_validation_error_exception(client):
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-@patch.object(StorageRecordServiceClientMock,
+@patch.object(storage_record_service_client_mock,
               'delete_record',
               AsyncMock(side_effect=KeyError("Error")))
 def test_unhandled_exception(client):
@@ -139,7 +139,7 @@ def test_partition_client_raise_api_exception(client):
         status_code=status.HTTP_404_NOT_FOUND,
         message='Failed to retrieve partition. Not found.')
 
-    with patch.object(StorageRecordServiceClientMock, "get_record", side_effect=exception):
+    with patch.object(storage_record_service_client_mock, "get_record", side_effect=exception):
         response = client.get("/ddms/v2/logs/123456/data")
         json_res = response.json()
 

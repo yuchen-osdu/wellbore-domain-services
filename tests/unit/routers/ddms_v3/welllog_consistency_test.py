@@ -14,8 +14,8 @@ from app.context import Context
 from app.wdms_app import app_injector, wdms_app
 
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
-SearchServiceClientMock = AsyncMock(spec=SearchServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+search_service_client_mock = AsyncMock(spec=SearchServiceClient)
 
 
 @pytest.fixture
@@ -28,10 +28,10 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock
+        return storage_record_service_client_mock
 
     async def build_mock_search():
-        return SearchServiceClientMock
+        return search_service_client_mock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(SearchServiceClient, build_mock_search)
@@ -73,7 +73,7 @@ acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
         ],
     ],
 )
-@patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+@patch.object(storage_record_service_client_mock, 'create_or_update_records',
               AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
 def test_post_v3_consistent_welllog(client, data):
     response = client.post(

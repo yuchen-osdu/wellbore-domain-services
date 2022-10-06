@@ -27,7 +27,7 @@ from app.context import Context
 
 from tests.unit.test_utils import ctx_fixture, make_record
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
 
 
 @pytest.fixture(params=['authority_data_partition', 'authority_slb'])
@@ -56,7 +56,7 @@ def well_record(authority, entity_source):
 def with_patched_get_record(well_record):
     """ patch storage to return well_record of get_record call """
     with patch.object(
-            StorageRecordServiceClientMock,
+            storage_record_service_client_mock,
             'get_record',
             return_value=well_record):
         yield
@@ -89,7 +89,7 @@ async def test_delete_recursive_only_delete_entity_provided(ctx_fixture,
 
     with patch('app.routers.search.search_wrapper.SearchWrapper.query_cursorless',
                return_value=CursorQueryResponse(**mocked_query_response_dict)),\
-         patch.object(StorageRecordServiceClientMock, 'delete_record') as moc_storage_delete_record:
+         patch.object(storage_record_service_client_mock, 'delete_record') as moc_storage_delete_record:
         # when
         await StorageHelper.delete_recursively(
             ctx_fixture,
@@ -98,7 +98,7 @@ async def test_delete_recursive_only_delete_entity_provided(ctx_fixture,
             [Entity.LOGSET, Entity.MARKER],
             data_partition,
             None,
-            StorageRecordServiceClientMock
+            storage_record_service_client_mock
         )
 
         # then
@@ -127,7 +127,7 @@ async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
                 ]
             })),\
           patch.object(
-              StorageRecordServiceClientMock,
+              storage_record_service_client_mock,
               'delete_record',
               side_effect=RuntimeError('simulate error')) as moc_storage_delete_record:
 
@@ -138,7 +138,7 @@ async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
                 [Entity.LOGSET],
                 data_partition,
                 None,
-                StorageRecordServiceClientMock
+                storage_record_service_client_mock
             )
 
         # but still expected to call delete on each
@@ -175,7 +175,7 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
                 raise RuntimeError('simulate error')
 
         with patch.object(
-                StorageRecordServiceClientMock, 'delete_record',
+                storage_record_service_client_mock, 'delete_record',
                 side_effect=delete_success_only_well) as moc_storage_delete_record:
             with pytest.raises(fastApiHTTPException) as exp_info:  # expect to raise
                 await StorageHelper.delete_recursively(
@@ -184,7 +184,7 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
                     [Entity.LOGSET],
                     data_partition,
                     None,
-                    StorageRecordServiceClientMock
+                    storage_record_service_client_mock
                 )
 
             # the status status is 500
@@ -226,7 +226,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
                 raise starletteHTTPException(status_code=403, detail="Forbidden")
 
         with patch.object(
-                StorageRecordServiceClientMock, 'delete_record',
+                storage_record_service_client_mock, 'delete_record',
                 side_effect=delete_success_only_well) as moc_storage_delete_record:
             with pytest.raises(fastApiHTTPException) as exp_info:  # expect to raise
                 await StorageHelper.delete_recursively(
@@ -235,7 +235,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
                     [Entity.LOGSET],
                     data_partition,
                     None,
-                    StorageRecordServiceClientMock
+                    storage_record_service_client_mock
                 )
 
             # the status status is kept
@@ -279,7 +279,7 @@ async def test_delete_404_of_sub_delete_is_valid(ctx_fixture,
                 raise exception
 
         with patch.object(
-                StorageRecordServiceClientMock, 'delete_record',
+                storage_record_service_client_mock, 'delete_record',
                 side_effect=delete_success_only_well):
             # no exception raised
             await StorageHelper.delete_recursively(
@@ -288,7 +288,7 @@ async def test_delete_404_of_sub_delete_is_valid(ctx_fixture,
                 [Entity.LOGSET],
                 data_partition,
                 None,
-                StorageRecordServiceClientMock)
+                storage_record_service_client_mock)
 
 
 @pytest.mark.asyncio
@@ -303,9 +303,9 @@ async def test_delete_failure_get_record(ctx_fixture,
                                          entity_source,
                                          well_record,
                                          exception):
-    with patch.object(StorageRecordServiceClientMock, 'get_record', side_effect=exception):
+    with patch.object(storage_record_service_client_mock, 'get_record', side_effect=exception):
         with pytest.raises(exception.__class__):
             await StorageHelper.delete_recursively(
                 ctx_fixture,
                 well_record.id, 'well', [],
-                data_partition, None, StorageRecordServiceClientMock)
+                data_partition, None, storage_record_service_client_mock)

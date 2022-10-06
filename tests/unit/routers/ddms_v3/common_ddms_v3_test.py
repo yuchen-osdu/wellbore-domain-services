@@ -34,7 +34,7 @@ from tests.unit.fixtures_pkg.testing_app_chunking import create_bulk_mocks
 Contains unified common tests for the different kind. Mainly CRUD test cases
 """
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
 
 
 @pytest.fixture
@@ -42,7 +42,7 @@ async def dasked_test_app_with_mocked_core_service(app_configurable_with_testcli
     super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
                                           local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")),
                                           bulk_config=local_bulk_persistence_config)
-    super_mocks['storage_client_mock'] = StorageRecordServiceClientMock
+    super_mocks['storage_client_mock'] = storage_record_service_client_mock
 
     _, client = app_configurable_with_testclient(
         fake_opendes_authorized_user=True,
@@ -60,7 +60,7 @@ def test_post_records_successful(dasked_test_app_with_mocked_core_service):
     )
 
     with patch.object(
-            StorageRecordServiceClientMock,
+            storage_record_service_client_mock,
             "create_or_update_records",
             return_value=expected_response,
     ):
@@ -218,12 +218,12 @@ def test_restricted_record_id(
     version_obj = RecordVersions(recordId=record_id_to_test, versions=[version])
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
 
-    with patch.object(StorageRecordServiceClientMock, "get_record", return_value=record_obj_to_test), \
-         patch.object(StorageRecordServiceClientMock, "get_record_version", return_value=record_obj_to_test), \
-         patch.object(StorageRecordServiceClientMock, "get_all_record_versions", return_value=version_obj), \
-         patch.object(StorageRecordServiceClientMock, "create_or_update_records", return_value=create_update_records_obj), \
+    with patch.object(storage_record_service_client_mock, "get_record", return_value=record_obj_to_test), \
+         patch.object(storage_record_service_client_mock, "get_record_version", return_value=record_obj_to_test), \
+         patch.object(storage_record_service_client_mock, "get_all_record_versions", return_value=version_obj), \
+         patch.object(storage_record_service_client_mock, "create_or_update_records", return_value=create_update_records_obj), \
          patch("app.routers.bulk.bulk_routes.set_bulk_field_and_send_record", return_value=create_update_records_obj), \
-         patch.object(StorageRecordServiceClientMock, "delete_record", return_value=Response()):
+         patch.object(storage_record_service_client_mock, "delete_record", return_value=Response()):
         response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
 
         validation_test_restricted_record_id(record_id, record_id_to_test, response,
@@ -271,7 +271,7 @@ def test_restricted_record_id(
                     },
                 },
             )
-            with patch.object(StorageRecordServiceClientMock, "get_record", return_value=moc_record):
+            with patch.object(storage_record_service_client_mock, "get_record", return_value=moc_record):
                 data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
                 headers = {"content-type": "application/json"}
 
@@ -422,8 +422,8 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                             * Bulk URI + NO record_id :                             400 Err
                             * Bulk URI + record_id + NO old_record :                400 Err
     '''
-    with patch.object(StorageRecordServiceClientMock, "get_record", moc_get_record_not_found_error), \
-         patch.object(StorageRecordServiceClientMock, "create_or_update_records", moc_create_or_update_records):
+    with patch.object(storage_record_service_client_mock, "get_record", moc_get_record_not_found_error), \
+         patch.object(storage_record_service_client_mock, "create_or_update_records", moc_create_or_update_records):
         response_details = {"code": status.HTTP_200_OK, "message": None}
 
         # NO Bulk URI and NO record_id
@@ -466,7 +466,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                     * Bulk URI + record_id + old_record + old_bulk_uri + NO matching Bulk URI:          400 Err
                     * Bulk URI + record_id + old_record + old_bulk_uri + matching Bulk URI:             200 update
         '''
-        with patch.object(StorageRecordServiceClientMock, "get_record",
+        with patch.object(storage_record_service_client_mock, "get_record",
                           return_value=moc_old_version_record_with_bulk_uri):
             # NO Bulk URI, record_id, old_record and old_bulk_uri
             response_details = {"code": status.HTTP_400_BAD_REQUEST,
@@ -501,7 +501,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                     If record has NO Bulk URI:
                         * NO Bulk URI + record_id + old_record + NO old_bulk_uri:           200 update
             '''
-            with patch.object(StorageRecordServiceClientMock, "get_record",
+            with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_without_bulk_uri_field):
                 # Bulk URI, record_id, old_record and NO old_bulk_uri
                 response_details = {"code": status.HTTP_400_BAD_REQUEST,
@@ -569,31 +569,31 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                     * data["ExtensionProperties"]["wdms"] with bulkURI field to None
                     
             '''
-            with patch.object(StorageRecordServiceClientMock, "get_record",
+            with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_without_ExtensionProperties_field):
                 _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
 
-            with patch.object(StorageRecordServiceClientMock, "get_record",
+            with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_without_wdms_field):
                 _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
 
-            with patch.object(StorageRecordServiceClientMock, "get_record",
+            with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_with_ExtensionProperties_field_to_none):
                 _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
 
-            with patch.object(StorageRecordServiceClientMock, "get_record",
+            with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_with_wdms_field_to_none):
                 _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
 
-            with patch.object(StorageRecordServiceClientMock, "get_record",
+            with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_with_bulk_uri_field_to_none):
                 _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,

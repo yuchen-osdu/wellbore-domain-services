@@ -33,8 +33,8 @@ from app.routers.delete import delete_bulk_data
 from app.context import Context
 from app.wdms_app import wdms_app, app_injector
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
-BlobStorageMock = AsyncMock(spec=BlobStorageBase)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+blob_storage_mock = AsyncMock(spec=BlobStorageBase)
 
 
 @pytest.fixture
@@ -54,10 +54,10 @@ def client_delete(logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock
+        return storage_record_service_client_mock
 
     async def build_mock_blob_storage():
-        return BlobStorageMock
+        return blob_storage_mock
 
     async def build_mock_dask_bulk_storage():
         return AsyncMock(spec=DaskBulkStorage)
@@ -104,13 +104,13 @@ v3_entities = ["welllogs", "wellboretrajectories"]
 def test_delete_purge_record(client_delete, logger_fixture, url_base_path, record_id):
     record_versions = RecordVersions(record_id=record_id, versions=versions)
 
-    with patch.object(StorageRecordServiceClientMock, "delete_record",
+    with patch.object(storage_record_service_client_mock, "delete_record",
                       side_effect=status.HTTP_404_NOT_FOUND), \
-         patch.object(StorageRecordServiceClientMock, "get_all_record_versions",
+         patch.object(storage_record_service_client_mock, "get_all_record_versions",
                       return_value=record_versions), \
-         patch.object(BlobStorageMock, "list_objects",
+         patch.object(blob_storage_mock, "list_objects",
                       return_value=list_objects), \
-         patch.object(BlobStorageMock, "delete",
+         patch.object(blob_storage_mock, "delete",
                       side_effect=HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                                 detail="Error 404 not found")), \
          patch.object(delete_bulk_data, "_get_bulk_uri_from_version",

@@ -137,8 +137,8 @@ tests_parameters_for_recursive = [
 ]
 
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
-SearchServiceClientMock = AsyncMock(spec=SearchServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+search_service_client_mock = AsyncMock(spec=SearchServiceClient)
 
 @pytest.fixture
 def client(nope_logger_fixture):
@@ -150,10 +150,10 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock
+        return storage_record_service_client_mock
 
     async def build_mock_search():
-        return SearchServiceClientMock
+        return search_service_client_mock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(SearchServiceClient, build_mock_search)
@@ -187,7 +187,7 @@ def assert_called_once_with_partial(mock_inst, **expected_kwargs):
 def test_get_record_success(client, base_url, record_obj):
     record_id = record_obj.id
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record', return_value=record_obj) as moc:
+    with patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj) as moc:
         # when
         response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_200_OK
@@ -203,7 +203,7 @@ def test_get_record_success(client, base_url, record_obj):
 def test_get_record_422(client, base_url, record_obj):
     record_id = record_obj.id
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record', return_value=record_obj) as moc:
+    with patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj) as moc:
         # when
         response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -215,7 +215,7 @@ def test_get_record_422(client, base_url, record_obj):
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_get_record_without_default_values(client, base_url, record_obj):
     record_id = record_obj.id
-    with patch.object(StorageRecordServiceClientMock, 'get_record', return_value=record_obj):
+    with patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj):
         # when
         response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_200_OK
@@ -229,7 +229,7 @@ def test_get_record_not_found_case(client, base_url, record_obj):
     record_id = record_obj.id
     exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not found')
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record', side_effect=exception):
+    with patch.object(storage_record_service_client_mock, 'get_record', side_effect=exception):
         # when
         response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -240,7 +240,7 @@ def test_get_record_not_found_case(client, base_url, record_obj):
 def test_delete_record_successful(client, base_url, record_obj):
     record_id = record_obj.id
 
-    with patch.object(StorageRecordServiceClientMock, 'delete_record') as moc:
+    with patch.object(storage_record_service_client_mock, 'delete_record') as moc:
         response = client.delete(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
@@ -252,8 +252,8 @@ def test_delete_record_successful(client, base_url, record_obj):
 def test_delete_recursive_record_with_recursive_not_in_query_successful(client, base_url, record_obj):
     record_id = record_obj.id
 
-    with patch.object(StorageRecordServiceClientMock, 'delete_record') as mock_storage,\
-            patch.object(SearchServiceClientMock, 'query_with_cursor') as mock_search:
+    with patch.object(storage_record_service_client_mock, 'delete_record') as mock_storage,\
+            patch.object(search_service_client_mock, 'query_with_cursor') as mock_search:
         # when
         response = client.delete(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         # then
@@ -265,8 +265,8 @@ def test_delete_recursive_record_with_recursive_not_in_query_successful(client, 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_delete_recursive_record_with_recursive_false_successful(client, base_url, record_obj):
     record_id = record_obj.id
-    with patch.object(StorageRecordServiceClientMock, 'delete_record') as mock_storage,\
-            patch.object(SearchServiceClientMock, 'query_with_cursor') as mock_search:
+    with patch.object(storage_record_service_client_mock, 'delete_record') as mock_storage,\
+            patch.object(search_service_client_mock, 'query_with_cursor') as mock_search:
         # when
         response = client.delete(f'{base_url}/{record_id}',
                                  headers={'data-partition-id': 'testing_partition'},
@@ -294,8 +294,8 @@ def test_delete_recursive_record_with_recursive_true_successful_delete_multiple_
                                                                {'id': 'id:two',
                                                                 'kind': 'data-partition:wks:log:1.0.5'}]})
     with patch('app.routers.search.search_wrapper.SearchWrapper.query_cursorless', return_value=mocked_query_response),\
-            patch.object(StorageRecordServiceClientMock, 'get_record', return_value=record_obj),\
-            patch.object(StorageRecordServiceClientMock, 'delete_record') as moc_storage_delete_record:
+            patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj),\
+            patch.object(storage_record_service_client_mock, 'delete_record') as moc_storage_delete_record:
         client.delete(f'{base_url}/{record_id}',
                       headers={'data-partition-id': 'testing_partition'},
                       params={'recursive': True})
@@ -334,11 +334,11 @@ def test_get_record_versions_successful(client, base_url, record_obj):
     # and I would like to avoid mocking if not needed for instance in v2 test
     patcher = None
     if "v3" in base_url:
-        patcher = patch.object(StorageRecordServiceClientMock, 'get_record', return_value=record_obj)
+        patcher = patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj)
         patcher.start()
 
     try:
-        with patch.object(StorageRecordServiceClientMock, 'get_all_record_versions', return_value=expect_response) as moc:
+        with patch.object(storage_record_service_client_mock, 'get_all_record_versions', return_value=expect_response) as moc:
             # when
             response = client.get(f'{base_url}/{record_id}/versions', headers={'data-partition-id': 'testing_partition'})
 
@@ -359,11 +359,11 @@ def test_get_record_versions_errors(client, base_url, record_obj):
     # and I would like to avoid mocking if not needed for instance in v2 test
     patcher = None
     if "v3" in base_url:
-        patcher = patch.object(StorageRecordServiceClientMock, 'get_record', return_value=record_obj)
+        patcher = patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj)
         patcher.start()
 
     try:
-        with patch.object(StorageRecordServiceClientMock, 'get_all_record_versions', side_effect=exception):
+        with patch.object(storage_record_service_client_mock, 'get_all_record_versions', side_effect=exception):
             # when
             response = client.get(f'{base_url}/{record_obj.id}/versions',
                                   headers={'data-partition-id': 'testing_partition'})
@@ -379,7 +379,7 @@ def test_get_record_at_version_successful(client, base_url, record_obj):
     record_id = record_obj.id
     record_obj.version = 1337
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record_version', return_value=record_obj) as moc:
+    with patch.object(storage_record_service_client_mock, 'get_record_version', return_value=record_obj) as moc:
         # when
         response = client.get(f'{base_url}/{record_id}/versions/{record_obj.version}',
                               headers={'data-partition-id': 'testing_partition'})
@@ -401,7 +401,7 @@ def test_get_record_at_version_successful_without_default_values(client, base_ur
     record_id = record_obj.id
     record_obj.version = 1337
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record_version', return_value=record_obj):
+    with patch.object(storage_record_service_client_mock, 'get_record_version', return_value=record_obj):
         # when
         response = client.get(f'{base_url}/{record_id}/versions/{record_obj.version}',
                               headers={'data-partition-id': 'testing_partition'})
@@ -415,7 +415,7 @@ def test_get_record_at_version_successful_without_default_values(client, base_ur
 def test_get_record_at_version_errors(client, base_url, record_obj):
     exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not found')
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record_version', side_effect=exception):
+    with patch.object(storage_record_service_client_mock, 'get_record_version', side_effect=exception):
         # when
         response = client.get(f'{base_url}/{record_obj.id}/versions/1337',
                               headers={'data-partition-id': 'testing_partition'})
@@ -431,10 +431,10 @@ def test_post_records_successful(client, base_url, record_obj):
     record_dict_list = [
         make_record(True, **(record_obj.dict(exclude_unset=True))) for _ in expected_response.record_ids
     ]
-    with patch.object(StorageRecordServiceClientMock, "get_record",
+    with patch.object(storage_record_service_client_mock, "get_record",
                       side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
                                                      reason_phrase="", content=None, headers=None)), \
-         patch.object(StorageRecordServiceClientMock, 'create_or_update_records', return_value=expected_response):
+         patch.object(storage_record_service_client_mock, 'create_or_update_records', return_value=expected_response):
         # when
         response = client.post(base_url, data=json.dumps(record_dict_list), headers={'content-type': 'application/json'})
 

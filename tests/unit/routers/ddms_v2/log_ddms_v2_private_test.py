@@ -65,7 +65,7 @@ log_payload = {
 }
 
 
-StorageRecordServiceClientMock = AsyncMock(spec=StorageRecordServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def with_test_setup(ctx_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock
+        return storage_record_service_client_mock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
 
@@ -132,9 +132,9 @@ wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 async def test_fetch_record(with_test_setup):
     expected_record = Record.parse_obj(log_payload)
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record',
+    with patch.object(storage_record_service_client_mock, 'get_record',
                       return_value=expected_record) as moc_get_record,\
-        patch.object(StorageRecordServiceClientMock, 'get_record_version',
+        patch.object(storage_record_service_client_mock, 'get_record_version',
                          return_value=expected_record) as moc_get_record_version:
 
         computed_record = await fetch_record(ctx=Context.set_current_with_value(partition_id=data_partition_id),
@@ -149,9 +149,9 @@ async def test_fetch_record(with_test_setup):
 async def test_fetch_record_version(with_test_setup):
     expected_record = Record.parse_obj(log_payload)
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record',
+    with patch.object(storage_record_service_client_mock, 'get_record',
                       return_value=expected_record) as moc_get_record,\
-         patch.object(StorageRecordServiceClientMock, 'get_record_version',
+         patch.object(storage_record_service_client_mock, 'get_record_version',
                       return_value=expected_record) as moc_get_record_version:
 
         computed_record = await fetch_record(ctx=Context.set_current_with_value(partition_id=data_partition_id),
@@ -167,7 +167,7 @@ async def test_fetch_record_version(with_test_setup):
 async def test_update_records(with_test_setup):
     expected_response = CreateUpdateRecordsResponse(record_count=2, record_ids=["1", "2"], skipped_record_ids=["1"])
 
-    with patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+    with patch.object(storage_record_service_client_mock, 'create_or_update_records',
                       return_value=expected_response) as moc:
         record = Record.parse_obj(log_payload)
         computed_response = await update_records(ctx=Context.set_current_with_value(partition_id=data_partition_id),
@@ -184,9 +184,9 @@ async def test_write_log_data(with_test_setup, mock_persistence):
 
     data = pd.DataFrame.from_dict({'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']})
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record',
+    with patch.object(storage_record_service_client_mock, 'get_record',
                       return_value=expected_record) as get_record_moc,\
-         patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+         patch.object(storage_record_service_client_mock, 'create_or_update_records',
                       return_value=expected_response) as create_or_update_records_moc:
 
         computed_response = await _write_log_data(
@@ -212,9 +212,9 @@ async def test_write_log_data_with_bulk_path(with_test_setup, mock_persistence):
 
     data = pd.DataFrame.from_dict({'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']})
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record',
+    with patch.object(storage_record_service_client_mock, 'get_record',
                       return_value=expected_record) as get_record_moc,\
-         patch.object(StorageRecordServiceClientMock, 'create_or_update_records',
+         patch.object(storage_record_service_client_mock, 'create_or_update_records',
                       return_value=expected_response) as create_or_update_records_moc:
         computed_response = await _write_log_data(
             ctx=Context.set_current_with_value(partition_id=data_partition_id),
@@ -237,7 +237,7 @@ async def test_get_log_data(with_test_setup, mock_persistence):
 
     mock_persistence.dataframe = pd.DataFrame.from_dict(expected_data)
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record',
+    with patch.object(storage_record_service_client_mock, 'get_record',
                       return_value=expected_record) as get_record_moc:
 
         computed_response = await _get_log_data(
@@ -263,7 +263,7 @@ async def test_get_log_data_with_bulk_path(with_test_setup, mock_persistence):
 
     mock_persistence.dataframe = pd.DataFrame.from_dict(expected_data)
 
-    with patch.object(StorageRecordServiceClientMock, 'get_record',
+    with patch.object(storage_record_service_client_mock, 'get_record',
                       return_value=expected_record) as get_record_moc:
 
         computed_response = await _get_log_data(
