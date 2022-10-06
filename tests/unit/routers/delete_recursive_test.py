@@ -19,12 +19,13 @@ from odes_search.exceptions import UnexpectedResponse as clientHTTPException
 from odes_search.models import CursorQueryResponse
 import pytest
 from starlette.exceptions import HTTPException as starletteHTTPException
-from tests.unit.test_utils import make_record
+
 
 from app.clients import StorageRecordServiceClient
 from app.model.entity_utils import Entity, format_kind, get_kind
 from app.routers.ddms_v2.storage_helper import StorageHelper
 
+from tests.unit.test_utils import make_record, ctx_fixture
 
 storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
 

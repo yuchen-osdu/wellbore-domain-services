@@ -35,6 +35,7 @@ from app.routers.ddms_v2.log_ddms_v2 import (
 from app.routers.record_utils import fetch_record, update_records
 from app.wdms_app import app_injector, wdms_app
 
+from tests.unit.test_utils import make_record, ctx_fixture
 
 data_partition_id = 'test_partition'
 
