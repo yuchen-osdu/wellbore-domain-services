@@ -187,7 +187,6 @@ def test_logs_write_then_read_data(client, test_data, nan_conversion):
     response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
-    response.content
     f = BytesIO(response.content)
     f.seek(0)
     actual_df = pd.read_json(f, orient=log_data_orient).replace("NaN", np.NaN)
