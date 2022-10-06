@@ -121,7 +121,6 @@ def test_storage_client_raise_response_validation_error(client):
 
 def test_validation_error_exception(client):
     response = client.post("/ddms/v2/logsets", data={'test': 'test'})
-    response.json()
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
@@ -129,8 +128,8 @@ def test_validation_error_exception(client):
               'delete_record',
               AsyncMock(side_effect=KeyError("Error")))
 def test_unhandled_exception(client):
-        with pytest.raises(KeyError):
-            client.delete("/ddms/v2/logsets/123456")
+    with pytest.raises(KeyError):
+        client.delete("/ddms/v2/logsets/123456")
 
 
 def test_partition_client_raise_api_exception(client):
