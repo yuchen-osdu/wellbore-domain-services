@@ -14,16 +14,18 @@
 
 import time
 from unittest import mock
-import pytest
 
 from fastapi import status
 from odes_storage import models as m
 from odes_storage.exceptions import UnexpectedResponse
 from odes_storage.models import CreateUpdateRecordsResponse
-
-from app.routers.log_recognition.family_processor_manager import FamilyProcessorManager
-
+import pytest
 from tests.unit.middleware.traces_middleware_test import ExporterInTest
+
+from app.clients import StorageRecordServiceClient
+from app.routers.log_recognition.family_processor_manager import (
+    FamilyProcessorManager,
+)
 
 
 @pytest.fixture
@@ -31,7 +33,7 @@ def log_recognition_testing_setup(app_configurable_with_testclient):
     """ fixture yields tuple: TestClient, storage_client_mock, family processor """
     fp_manager = FamilyProcessorManager(1337)  # want a fresh and independent instance for each test
     with mock.patch('app.routers.log_recognition.log_recognition.family_processor_manager', fp_manager):
-        mock_storage = mock.AsyncMock()
+        mock_storage = mock.AsyncMock(spec=StorageRecordServiceClient)
         _, client = app_configurable_with_testclient(
                 storage_client_mock=mock_storage,
                 trace_exporter=ExporterInTest(),

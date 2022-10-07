@@ -12,36 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from unittest import mock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+from fastapi import Header, HTTPException, status
 from fastapi.testclient import TestClient
-
-from fastapi import Header, status, HTTPException
-from opencensus.trace import base_exporter
-
+from odes_storage.models import RecordVersions
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+import pytest
 
+from app.auth.auth import require_opendes_authorized_user
 from app.bulk_persistence import DaskBulkStorage
 from app.clients import StorageRecordServiceClient
-from odes_storage.models import RecordVersions
-
+from app.context import Context
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.auth.auth import require_opendes_authorized_user
 from app.routers.delete import delete_bulk_data
-from app.context import Context
-from app.wdms_app import wdms_app, app_injector
-from tests.unit.test_utils import create_mock_class
+from app.wdms_app import app_injector, wdms_app
 
-StorageRecordServiceClientMock = mock.AsyncMock()
-BlobStorageMock = mock.AsyncMock()
+
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+blob_storage_mock = AsyncMock(spec=BlobStorageBase)
 
 
 @pytest.fixture
 def logger_fixture():
     from app.helper import logger
-    logger._LOGGER = mock.MagicMock()
+    logger._LOGGER = MagicMock()
     yield logger._LOGGER
 
 
@@ -55,13 +51,13 @@ def client_delete(logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock
+        return storage_record_service_client_mock
 
     async def build_mock_blob_storage():
-        return BlobStorageMock
+        return blob_storage_mock
 
     async def build_mock_dask_bulk_storage():
-        return mock.AsyncMock()
+        return AsyncMock(spec=DaskBulkStorage)
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(BlobStorageBase, build_mock_blob_storage)
@@ -103,24 +99,20 @@ v3_entities = ["welllogs", "wellboretrajectories"]
     ("/ddms/v3/wellboretrajectories", "opendes:work-product-component--WellboreTrajectory:00001234")
 ])
 def test_delete_purge_record(client_delete, logger_fixture, url_base_path, record_id):
-    record_versions = RecordVersions(record_id=record_id,
-                                     versions=versions)
-    mock_storage_service_delete_record = mock.AsyncMock(return_value=status.HTTP_204_NO_CONTENT,
-                                                        side_effect=status.HTTP_404_NOT_FOUND)
-    mock_blob_storage = mock.AsyncMock(return_value=status.HTTP_204_NO_CONTENT,
-                                       side_effect=HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                                                 detail="Error 404 not found"))
+    record_versions = RecordVersions(record_id=record_id, versions=versions)
 
-    mock_storage_list_objects = mock.AsyncMock(return_value=list_objects)
-    mock_get_bulk_uri_from_version = mock.AsyncMock(side_effect=record_bulk_uris)
-    mock_storage_service_get_all_record_versions = mock.AsyncMock(return_value=record_versions)
+    with patch.object(storage_record_service_client_mock, "delete_record",
+                      side_effect=status.HTTP_404_NOT_FOUND), \
+         patch.object(storage_record_service_client_mock, "get_all_record_versions",
+                      return_value=record_versions), \
+         patch.object(blob_storage_mock, "list_objects",
+                      return_value=list_objects), \
+         patch.object(blob_storage_mock, "delete",
+                      side_effect=HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                                detail="Error 404 not found")), \
+         patch.object(delete_bulk_data, "_get_bulk_uri_from_version",
+                      side_effect=record_bulk_uris):
 
-    with mock.patch.object(StorageRecordServiceClientMock, "delete_record", mock_storage_service_delete_record), \
-         mock.patch.object(StorageRecordServiceClientMock, "get_all_record_versions",
-                           mock_storage_service_get_all_record_versions), \
-         mock.patch.object(BlobStorageMock, "list_objects", mock_storage_list_objects), \
-         mock.patch.object(BlobStorageMock, "delete", mock_blob_storage), \
-         mock.patch.object(delete_bulk_data, "_get_bulk_uri_from_version", mock_get_bulk_uri_from_version):
         response = client_delete.delete(
             f"{url_base_path}/{record_id}?purge=true",
             headers={"data-partition-id": "testing_partition"},

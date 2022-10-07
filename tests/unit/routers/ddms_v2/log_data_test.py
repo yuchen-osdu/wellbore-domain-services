@@ -12,29 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 
-from tests.unit.test_utils import create_mock_class
-
-from fastapi import HTTPException, Header
+from fastapi import Header, status
 from fastapi.testclient import TestClient
-import pytest
-
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
+import pytest
 
-
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.helper import traces
 from app.auth.auth import require_opendes_authorized_user
-from app.middleware import require_data_partition_id
-
+from app.clients import StorageRecordServiceClient
+from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 from app.context import Context
-from app.wdms_app import wdms_app, app_injector
-from app.clients import *
-
-from fastapi import status
-
+from app.helper import traces
+from app.middleware import require_data_partition_id
+from app.wdms_app import app_injector, wdms_app
 
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
@@ -66,8 +57,6 @@ headers = {"data-partition-id": data_partition_id}
 
 prev_data = {"columns": ["col_100X"], "data": [[0], [1], [2]], 'index': [0, 1, 2]}
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-
 
 @pytest.fixture
 def client(tmp_path):
@@ -97,7 +86,7 @@ def client(tmp_path):
 
 
 @pytest.fixture
-def client_with_log(client):
+def client_with_log(client, nope_logger_fixture):
     # Create or update a log record
     response = client.post("/ddms/v2/logs", json=[log_payload], headers=headers)
     assert response.status_code in range(200, 209), "Create or update log failed"

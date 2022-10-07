@@ -1,17 +1,19 @@
-import pytest
+from unittest.mock import AsyncMock, patch
+
 from fastapi import Header, status
 from fastapi.testclient import TestClient
+from odes_storage.models import CreateUpdateRecordsResponse
+import pytest
 
 from app.auth.auth import require_opendes_authorized_user
 from app.clients import SearchServiceClient, StorageRecordServiceClient
+from app.context import Context
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.context import Context
 from app.wdms_app import app_injector, wdms_app
-from tests.unit.test_utils import create_mock_class
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-SearchServiceClientMock = create_mock_class(SearchServiceClient)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+search_service_client_mock = AsyncMock(spec=SearchServiceClient)
 
 
 @pytest.fixture
@@ -24,10 +26,10 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock()
+        return storage_record_service_client_mock
 
     async def build_mock_search():
-        return SearchServiceClientMock()
+        return search_service_client_mock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(SearchServiceClient, build_mock_search)
@@ -69,6 +71,8 @@ acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
         ],
     ],
 )
+@patch.object(storage_record_service_client_mock, 'create_or_update_records',
+              AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
 def test_post_v3_consistent_welllog(client, data):
     response = client.post(
         url="/ddms/v3/welllogs",
