@@ -39,6 +39,7 @@
   },
   "id": "9nlnBplxN:master-data--Well:g657DSIO",
   "data": {
+    "TechnicalAssuranceTypeID": "h17:reference-data--TechnicalAssuranceType:QpX6Xh:8",
     "VerticalMeasurements": [
       {
         "EffectiveDateTime": "1988-05-25T18:40:53.191Z",
