@@ -1,24 +1,27 @@
 import asyncio
 from datetime import datetime, timedelta
 from typing import List
+from unittest.mock import Mock, PropertyMock, patch
 
 import numpy as np
-import pandas as pd
-
-from unittest import mock
-from unittest.mock import PropertyMock
-import pytest
 from natsort import natsorted
+import osdu.core.api.storage.exceptions as osdu_storage_exception
+import pandas as pd
+import pytest
 from starlette.testclient import TestClient
+from tests.unit.generate_data import generate_df
+from tests.unit.routers.chunking_test import (
+    Definitions,
+    _create_chunks,
+    _create_record,
+)
 
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
-import osdu.core.api.storage.exceptions as osdu_storage_exception
-
-from app.bulk_persistence.statistics.models import StatisticsComputationMeta, BulkStatisticsStatus, \
-    InternalStatisticsComputationMeta
-from tests.unit.generate_data import generate_df
-from tests.unit.routers.chunking_test import _create_chunks, _create_record, _create_df_from_response, Definitions, \
-    EntityTypeParams
+from app.bulk_persistence.statistics.models import (
+    BulkStatisticsStatus,
+    InternalStatisticsComputationMeta,
+    StatisticsComputationMeta,
+)
 
 
 def post_record_data(client: TestClient, record_id: str, entity_type: str, columns: List[str], range_index: range):
@@ -100,7 +103,7 @@ def test_invalid_cases(testing_app_local_chunking_no_consistency):
 
 
 def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
-    with mock.patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
+    with patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
         bob.side_effect = osdu_storage_exception.ResourceNotFoundException()
 
         _, client = testing_app_local_chunking_no_consistency
@@ -114,7 +117,7 @@ def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
 
 
 def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency):
-    with mock.patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
+    with patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
         _, client = testing_app_local_chunking_no_consistency
         valid_record_id = _create_record(client, 'WellLog')
 
@@ -289,7 +292,7 @@ def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_c
 
     tasks = [asyncio.get_event_loop().create_task(_compute_stats_on_bulk_batch(i)) for i in range(5)]
 
-    with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
+    with patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
         _, client = testing_app_local_chunking_no_consistency
         bob.return_value = tasks
 
@@ -307,7 +310,7 @@ def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_c
 
 def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consistency):
     # Simulate the creation of a WellLog before Statistics features is available
-    with mock.patch.object(BulkStatistics, 'compute_bulk_statistics', return_value=mock.AsyncMock()) as bob:
+    with patch.object(BulkStatistics, 'compute_bulk_statistics') as bob:
         _, client = testing_app_local_chunking_no_consistency
 
         record_id = _create_record(client, 'WellLog')
@@ -337,7 +340,7 @@ def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consis
 
     computation_retry_attempts = BulkStatistics._max_computation_retry_count
 
-    with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
+    with patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
         _, client = testing_app_local_chunking_no_consistency
         bob.return_value = [task]
 
@@ -368,13 +371,13 @@ def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consis
 
 
 def test_trigger_computations_after_duration(testing_app_local_chunking_no_consistency):
-    with mock.patch.object(BulkStatistics, '_duration_before_recompute', new_callable=PropertyMock) \
+    with patch.object(BulkStatistics, '_duration_before_recompute', new_callable=PropertyMock) \
             as computations_parameter:
         computations_parameter.return_value = timedelta(minutes=1)
         _, client = testing_app_local_chunking_no_consistency
 
         # simulate something went wrong when posting new data
-        with mock.patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as mock_trigger_computation:
+        with patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as mock_trigger_computation:
             mock_trigger_computation.side_effect = RuntimeError("test_trigger_computations_after_duration")
             record_id = _create_record(client, 'WellLog')
             post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
@@ -425,11 +428,11 @@ def test_get_stats_array(testing_app_local_chunking_no_consistency):
 
 def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_no_consistency):
 
-    with mock.patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
+    with patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
             as computations_parameter:
         computations_parameter.return_value = 10
 
-        with mock.patch.object(BulkStatistics, '_check_recomputation_allowed') as recompute_check_mock:
+        with patch.object(BulkStatistics, '_check_recomputation_allowed') as recompute_check_mock:
             _, client = testing_app_local_chunking_no_consistency
 
             record_id = _create_record(client, 'WellLog')
@@ -466,7 +469,7 @@ def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_
 def test_stats_available_welllog_only_on_bulk_creation(testing_app_local_chunking_no_consistency, mode, entity_type):
     _, client = testing_app_local_chunking_no_consistency
 
-    with mock.patch.object(BulkStatistics, 'compute_bulk_statistics') as compute_stats_triggered_mock:
+    with patch.object(BulkStatistics, 'compute_bulk_statistics') as compute_stats_triggered_mock:
         # ensure BulkStatistics::compute_bulk_statistics() is not called which means that the dependency
         # `stats_computation_enabled: bool = Depends(statistics_computation_enabled)` work correctly.
 
@@ -502,7 +505,7 @@ def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunk
 
 def test_invalid_bulk_uri_cases(testing_app_local_chunking_no_consistency):
 
-    with mock.patch('app.bulk_persistence.bulk_uri.BulkURI.is_valid', return_value=False):
+    with patch('app.bulk_persistence.bulk_uri.BulkURI.is_valid', Mock(return_value=False)):
         _, client = testing_app_local_chunking_no_consistency
         record_id = _create_record(client, 'WellLog')
 

@@ -1,23 +1,20 @@
-import pytest
-from unittest import mock
-from fastapi import Header
+from unittest.mock import AsyncMock, patch
 
+from fastapi import Header
 from fastapi.testclient import TestClient
 from odes_search.models import CursorQueryResponse
+import pytest
 from starlette import status
 
 from app.auth.auth import require_opendes_authorized_user
-from app.clients import StorageRecordServiceClient, SearchServiceClient
+from app.clients import SearchServiceClient, StorageRecordServiceClient
+from app.context import Context
 from app.helper import traces
 from app.middleware import require_data_partition_id
-from app.routers.search.search_wrapper import SearchWrapper
-from app.context import Context
 from app.wdms_app import app_injector, wdms_app
-from tests.unit.test_utils import create_mock_class
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-SearchServiceClientMock = create_mock_class(SearchServiceClient)
-SearchWrapperMock = create_mock_class(SearchWrapper)
+storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+search_service_client_mock = AsyncMock(spec=SearchServiceClient)
 
 
 @pytest.fixture
@@ -30,10 +27,10 @@ def client(nope_logger_fixture):
         Context.set_current_with_value(partition_id=data_partition_id)
 
     async def build_mock_storage():
-        return StorageRecordServiceClientMock()
+        return storage_record_service_client_mock
 
     async def build_mock_search():
-        return SearchServiceClientMock()
+        return search_service_client_mock
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(SearchServiceClient, build_mock_search)
@@ -68,8 +65,8 @@ PARAMS = [
 @pytest.mark.parametrize("base_url", URL_PARAM)
 @pytest.mark.parametrize("search_response, expected", PARAMS)
 def test_query_results_without_none(client, base_url, search_response, expected):
-    moc = mock.AsyncMock(return_value=CursorQueryResponse(results=[search_response]))
-    with mock.patch.object(SearchServiceClientMock, 'query_with_cursor', moc):
+    with patch.object(search_service_client_mock, 'query_with_cursor',
+                      return_value=CursorQueryResponse(results=[search_response])):
         # when
         response = client.post(f'{base_url}', headers={'data-partition-id': 'testing_partition', 'names': 'dd'},
                                json={'query': 'query'})

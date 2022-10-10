@@ -46,7 +46,7 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
     async def identity(anything, **kwargs):
         return anything
 
-    dask_client_mock = AsyncMock()
+    dask_client_mock = AsyncMock(spec=Client)
     dask_client_mock.scatter = AsyncMock(side_effect=identity)
 
     ipc_obj = DaskNativeDataIPC(dask_client=dask_client_mock)
