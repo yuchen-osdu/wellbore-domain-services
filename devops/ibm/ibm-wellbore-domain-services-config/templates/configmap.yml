@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.conf.configmap }}"
+data:
+  CLOUD_PROVIDER: ibm
+  LOG_LEVEL: "{{ .Values.data.logLevel }}"
+  LOG_PREFIX: "{{ .Values.data.logPrefix }}"
+  ENVIRONMENT_NAME: "{{ .Values.data.deployEnv }}"
+
+  JAVA_APP_JAR: "{{ .Values.data.javaAppJar }}"
+  server.servlet.context-path: "{{ .Values.data.contextPath }}"
+  server.port: "{{ .Values.data.serverPort }}"
+  spring.main.allow-bean-definition-overriding: "{{ .Values.data.beanDefOverriding }}"
+  ACCEPT_HTTP: "{{ .Values.data.acceptHttp }}"
+    
+  cache.expiration: "{{ .Values.data.cacheExpiration }}"
+  cache.maxSize: "{{ .Values.data.cahceMaxSize }}"
+  ibm.health-check-uri: "{{ .Values.data.healthCheckUri }}"
+  logging.level.org.opengroup.osdu: "{{ .Values.data.loggingLevelOsdu }}"
+  logging.level.org.springframework.web: "{{ .Values.data.loggingLevelSpring }}"
+
+  #API
+  SERVICE_HOST_PARTITION: "http://{{ .Release.Name }}-ibm-partition-deploy:8080/api/partition"
+  AUTHORIZE_API: "http://{{ .Release.Name }}-ibm-entitlement-deploy:8080/api/entitlements/v2"
+  SERVICE_HOST_STORAGE: "http://{{ .Release.Name }}-ibm-storage-deploy:8080/api/storage"
+  SERVICE_HOST_SEARCH: "http://{{ .Release.Name }}-ibm-search-deploy:8080/api/search"
+  SERVICE_HOST_ENTITLEMENTS: "http://{{ .Release.Name }}-ibm-entitlement-deploy:8080/api/entitlements"
+
+  #db
+  ibm.db.url: "http://{{ .Release.Name }}-couchdb:5984"
+  ibm.db.user: "{{ .Values.data.dbUser }}"
+  ibm.db.password: "{{ .Values.data.dbPassw }}"
+  ibm.env.prefix: "{{ .Values.data.envPrefix }}"
+  ibm.env.prefix_project: "{{ .Values.data.envPrefixProject }}"
+
+  #tenant validation
+  partition.keycloak.url: "{{ .Values.data.pKCEndPointHost }}"
+  partition.keycloak.client_id: "{{ .Values.data.pKCClientId }}"
+  partition.keycloak.client_secret: "{{ .Values.data.pKCClientSecret }}"
+  partition.keycloak.grant_type: "{{ .Values.data.pKCGrantType }}"
+  partition.keycloak.user: "{{ .Values.data.pKCUser }}"
+  partition.keycloak.password: "{{ .Values.data.pKCPassword }}"
+  partition.keycloak.realm: "{{ .Values.data.pKCRealm }}"
+  partition.keycloak.accept_http: "{{ .Values.data.pKAcceptHttp }}"
+  tenantCache.exp.time.in.second: "{{ .Values.data.tenantCacheExpiryInSec }}"
+
+  #AMQ
+  amqphub.amqp10jms.password: "{{ .Values.data.amqpPassword }}"
+  amqphub.amqp10jms.username: "{{ .Values.data.amqpUserName }}"
+  amqphub.amqp10jms.remote-url: "{{ .Values.data.amqpURL }}"
+  
+  #minio
+  ibm.cos.endpoint_url: "http://{{ .Release.Name }}-minio:9000"
+  
+  #accesskey and secretkey of minio - refer deployment yaml
+  ibm.cos.access_key: "{{ .Values.data.accessKey }}"
+  ibm.cos.secret_key: "{{ .Values.data.secretKey }}"
+  IBM_COS_REGION: us-east-1
+
+  #policy
+  POLICY_API: "http://{{ .Release.Name }}-ibm-policy-deploy:8080/api/policy/v1"
+  service.policy.enabled: "{{ .Values.data.policyEnabled }}"
+
+  # IBM Specific values
+  OS_WELLBORE_DDMS_DATA_PROJECT_ID: "{{ .Values.data.projectId }}"
+
+  # Environment Variables
+  APP_MODULE: "{{ .Values.data.appModule }}"
+
+  # extra variables supplied by Manish 09-14-22 - JAG
+  BUCKET: "{{ .Values.data.Bucket }}"
+  COS_ACCESS_KEY: "{{ .Values.data.cosAccessKey }}"
+  COS_REGION: "{{ .Values.data.cosRegion }}"
+  COS_SECRET_KEY: "{{ .Values.data.cosSecret }}"
+  COS_URL: "http://{{ .Release.Name }}-minio:9000"

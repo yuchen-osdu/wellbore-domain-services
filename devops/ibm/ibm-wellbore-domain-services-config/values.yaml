@@ -1,0 +1,55 @@
+data:
+  # common
+  cloudProvider: "ibm"
+  logLevel: "INFO"
+  logPrefix: wellbore-ddms
+  javaAppJar: "/deployments/*-spring-boot.jar"
+  serverPort: 8080
+  contextPath: "/api/wellbore-domain-services/v3"
+  beanDefOverriding: true
+  acceptHttp: true
+  cacheExpiration: 9000
+  cacheMaxSize: 2000
+  healthCheckUri: "/api/wellbore-domain-services/v1/_ah/liveness_check,/api/wellbore-domain-services/v1/_ah/readiness_check,/api/wellbore-domain-services/v1/info,/api/wellbore-domain-services/v1/api-docs"
+  projectId: "IBM data tenant ID"
+  appModule: "main.py"
+
+  # API
+  partitionAPI: http://tbd:8080/api/partition/v3
+  deployEnv: CLOUD
+
+  # DB
+  dbURL: http://tbd:5984
+  dbUser: admin
+  dbPassw: tbd
+
+  # ENV
+  envPrefix: ibm-iks
+  envPrefixProject: ibm-ibm-build
+
+  # KEYCLOAK
+  keycloakEndPointHost: tbd
+  keycloakRealm: OSDU
+  keycloakUserEmail: admin-sa@ibm.com
+  kCUser: osdu-bvt
+  
+  # tenant-validation
+  pKCClientId: partition-service
+  pKCClientSecret: tbd
+  pKCGrantType: password
+  pKCPassword: changeit
+  pKCRealm: OSDU
+  pKCEndPointHost: tbd
+  pKCUser: partition-service-admin
+  pKAcceptHttp: true
+  tenantCacheExpiryInSec: 10000
+
+  # Extra variables 9-14
+  Bucket: logstore-osdu-aws
+  cosAccessKey: tbd
+  cosRegion: us-east-1
+  cosSecret: tbd
+  cosURL: http://osdu-deploy-minio:9000
+  
+conf:
+  configmap: "wellbore-domain-services-config"

@@ -31,6 +31,9 @@ variables:
   AWS_DEPLOY_TARGET: TF
   AWS_EKS_DEPLOYMENT_NAME: os-wellbore-ddms
 
+  IBM_HELM_CONFIG_PATH: devops/ibm/ibm-wellbore-domain-services-config
+  IBM_HELM_DEPLOY_PATH: devops/ibm/ibm-wellbore-domain-services-deploy
+
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
