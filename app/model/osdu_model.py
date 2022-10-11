@@ -1321,6 +1321,17 @@ class AbstractMaster100(DDMSBaseModel):
         None,
         description='This describes the reason that caused the creation of a new version of this master data.',
     )
+    TechnicalAssuranceTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-TechnicalAssuranceType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Describes a master-data record\'s overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single "preferred" or "definitive" record by comparison with other records.',
+        example='namespace:reference-data--TechnicalAssuranceType:Certified:',
+        title='Technical Assurance Type ID',
+    )
+
 
 
 class VerticalMeasurement(AbstractFacilityVerticalMeasurement100):
