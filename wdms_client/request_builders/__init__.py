@@ -55,6 +55,18 @@ request_path_dict = {
         crud.osdu_wellbore.build_request_get_versions_of_osdu_wellbore,
     "crud.osdu_wellbore.create_osdu_wellbore":
         crud.osdu_wellbore.build_request_create_osdu_wellbore,
+
+    "crud.osdu_wellbore_100.delete_osdu_wellbore_100":
+        crud.osdu_wellbore.build_request_delete_osdu_wellbore_100,
+    "crud.osdu_wellbore_100.get_osdu_wellbore_100_specific_version":
+        crud.osdu_wellbore.build_request_get_osdu_wellbore_100_specific_version,
+    "crud.osdu_wellbore_100.get_osdu_wellbore_100":
+        crud.osdu_wellbore.build_request_get_osdu_wellbore_100,
+    "crud.osdu_wellbore_100.get_versions_of_osdu_wellbore_100":
+        crud.osdu_wellbore.build_request_get_versions_of_osdu_wellbore_100,
+    "crud.osdu_wellbore_100.create_osdu_wellbore_100":
+        crud.osdu_wellbore.build_request_create_osdu_wellbore_100,
+
     "crud.osdu_well.delete_osdu_well":
         crud.osdu_well.build_request_delete_osdu_well,
     "crud.osdu_well.get_osdu_well_specific_version":
@@ -65,6 +77,18 @@ request_path_dict = {
         crud.osdu_well.build_request_get_versions_of_osdu_well,
     "crud.osdu_well.create_osdu_well":
         crud.osdu_well.build_request_create_osdu_well,
+
+    "crud.osdu_well_100.delete_osdu_well_100":
+        crud.osdu_well.build_request_delete_osdu_well_100,
+    "crud.osdu_well_100.get_osdu_well_100_specific_version":
+        crud.osdu_well.build_request_get_osdu_well_100_specific_version,
+    "crud.osdu_well_100.get_osdu_well_100":
+        crud.osdu_well.build_request_get_osdu_well_100,
+    "crud.osdu_well_100.get_versions_of_osdu_well_100":
+        crud.osdu_well.build_request_get_versions_of_osdu_well_100,
+    "crud.osdu_well_100.create_osdu_well_100":
+        crud.osdu_well.build_request_create_osdu_well_100,
+
     "crud.osdu_welllog.delete_osdu_welllog":
         crud.osdu_welllog.build_request_delete_osdu_welllog,
     "crud.osdu_welllog.get_osdu_welllog_specific_version":
@@ -222,8 +246,12 @@ def build_request(path: Union[str, List[str]], sep: str = ".") -> "RequestRunner
 def get_cleaned_ref_and_res(kind: str) -> dict:
     if kind == "osdu_wellbore":
         return crud.osdu_wellbore.get_cleaned_ref_and_res()
+    if kind == "osdu_wellbore_100":
+        return crud.osdu_wellbore.get_cleaned_ref_and_res_100()
     if kind == "osdu_well":
         return crud.osdu_well.get_cleaned_ref_and_res()
+    if kind == "osdu_well_100":
+        return crud.osdu_well.get_cleaned_ref_and_res_100()
     if kind == "osdu_welllog":
         return crud.osdu_welllog.get_cleaned_ref_and_res()
     if kind == "osdu_wellboretrajectory":
