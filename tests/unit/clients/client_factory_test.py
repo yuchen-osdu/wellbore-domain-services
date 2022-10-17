@@ -91,7 +91,7 @@ def test_de_clients_backoff(exception_type, requested_retries_count):
     # assigned expected retries count to config, to be used by backoff decorator
     Config.de_client_backoff_max_tries.value = requested_retries_count
 
-    mocky_func = mock.MagicMock(autospec=True, side_effect=exception_type(f'{exception_type} has raised!'))
+    mocky_func = mock.MagicMock(side_effect=exception_type(f'{exception_type} has raised!'))
     mocky_func.__name__ = ''
 
     decorator_func = backoff_policy()
