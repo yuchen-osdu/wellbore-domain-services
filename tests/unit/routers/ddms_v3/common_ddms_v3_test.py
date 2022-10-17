@@ -396,9 +396,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
 
     # Mock init
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
-    moc_get_record_not_found_error = AsyncMock(
-        side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
-                                       reason_phrase="", content=None, headers=None))
+
     moc_old_version_record_with_bulk_uri = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {'wdms': {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}},
                                                 record_id, record_kind)
     moc_old_version_record_without_wdms_field = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {}},
@@ -414,7 +412,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
     moc_old_version_record_with_bulk_uri_field_to_none = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {'wdms':  {'bulkURI': None}}},
                                                 record_id, record_kind)
 
-    moc_create_or_update_records = AsyncMock(return_value=create_update_records_obj)
+
 
     '''
          With mock returning NO previous version record:
@@ -425,8 +423,13 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                             * Bulk URI + NO record_id :                             400 Err
                             * Bulk URI + record_id + NO old_record :                400 Err
     '''
-    with patch.object(storage_record_service_client_mock, "get_record", moc_get_record_not_found_error), \
-         patch.object(storage_record_service_client_mock, "create_or_update_records", moc_create_or_update_records):
+    with patch.object(storage_record_service_client_mock,
+                      "get_record",
+                      side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
+                                                     reason_phrase="", content=None, headers=None)), \
+            patch.object(storage_record_service_client_mock,
+                         "create_or_update_records",
+                         return_value=create_update_records_obj):
         response_details = {"code": status.HTTP_200_OK, "message": None}
 
         # NO Bulk URI and NO record_id
