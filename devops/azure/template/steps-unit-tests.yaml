@@ -45,6 +45,7 @@ steps:
 
       source venv/bin/activate
       python -m pip install --upgrade pip 2>&1
+      python -m pip install --upgrade pip setuptools wheel 2>&1
 
       pip --version
       pip install -r ./requirements.txt
