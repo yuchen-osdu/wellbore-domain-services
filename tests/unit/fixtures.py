@@ -85,7 +85,7 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
         )
 
         # Note: we want to be able to modify the mock to handle get_record and get_record_version specifically
-        mock = create_autospec(spec=template_client, instance=True)
+        mock = create_autospec(template_client, spec_set=True, instance=True)
 
         # override api_client to use an async mock (needed on shutdown when we call api_client.close())
         mock.api_client = AsyncMock(spec_set=template_client.api_client)
