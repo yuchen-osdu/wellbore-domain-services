@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import create_autospec, patch
 
 from fastapi import Header, status
 from fastapi.testclient import TestClient
@@ -15,8 +15,8 @@ from app.middleware import require_data_partition_id
 from app.model.model_curated import dipset
 from app.wdms_app import app_injector, wdms_app
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
-search_service_client_mock = AsyncMock(spec=SearchServiceClient)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
+search_service_client_mock = create_autospec(SearchServiceClient, spec_set=True, instance=True)
 
 tests_parameters = [
     ('/ddms/v2/dipsets', dipset(id="opendes:doc:00000000000000000000000000000000000", data={})),

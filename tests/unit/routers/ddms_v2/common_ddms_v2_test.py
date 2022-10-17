@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import json
-from unittest.mock import AsyncMock, patch
+from unittest.mock import create_autospec, patch
 
 
 from fastapi import Header, HTTPException, status
@@ -146,8 +146,8 @@ tests_parameters_for_recursive = [
 ]
 
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
-search_service_client_mock = AsyncMock(spec=SearchServiceClient)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
+search_service_client_mock = create_autospec(SearchServiceClient, spec_set=True, instance=True)
 
 @pytest.fixture
 def client(nope_logger_fixture):

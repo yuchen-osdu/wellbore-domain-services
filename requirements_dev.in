@@ -13,7 +13,6 @@ pyarrow
 hypothesis
 openapi-spec-validator
 
-mockito~=1.2
 requests # used by starlette.TestClient for testing
 cryptography
 

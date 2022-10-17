@@ -14,7 +14,7 @@
 
 import os
 import uuid
-from unittest.mock import AsyncMock, patch
+from unittest.mock import create_autospec, patch
 
 from fastapi import Header
 from odes_storage.models import CreateUpdateRecordsResponse, Record
@@ -62,7 +62,7 @@ log_payload = {
 }
 
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, create_autospec
 from unittest.mock import patch, mock_open
 from contextlib import suppress
 
@@ -46,7 +46,7 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
     async def identity(anything, **kwargs):
         return anything
 
-    dask_client_mock = AsyncMock(spec=Client)
+    dask_client_mock = create_autospec(Client, spec_set=True, instance=True)
     dask_client_mock.scatter = AsyncMock(side_effect=identity)
 
     ipc_obj = DaskNativeDataIPC(dask_client=dask_client_mock)

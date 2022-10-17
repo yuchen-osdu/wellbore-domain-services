@@ -505,7 +505,7 @@ def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunk
 
 def test_invalid_bulk_uri_cases(testing_app_local_chunking_no_consistency):
 
-    with patch('app.bulk_persistence.bulk_uri.BulkURI.is_valid', Mock(return_value=False)):
+    with patch('app.bulk_persistence.bulk_uri.BulkURI.is_valid', return_value=False):
         _, client = testing_app_local_chunking_no_consistency
         record_id = _create_record(client, 'WellLog')
 
