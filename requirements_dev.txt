@@ -77,8 +77,6 @@ jsonschema==3.2.0
     #   -r requirements_dev.in
     #   openapi-schema-validator
     #   openapi-spec-validator
-mockito==1.2.2
-    # via -r requirements_dev.in
 munch==2.5.0
     # via -r requirements_dev.in
 numpy==1.22.2
