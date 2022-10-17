@@ -14,7 +14,7 @@
 import json
 import os
 import uuid
-from unittest.mock import AsyncMock, patch
+from unittest.mock import create_autospec, patch
 
 from fastapi import status
 from odes_storage import UnexpectedResponse
@@ -37,7 +37,7 @@ from tests.unit.fixtures_pkg.testing_app_chunking import create_bulk_mocks
 Contains unified common tests for the different kind. Mainly CRUD test cases
 """
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
 
 
 @pytest.fixture

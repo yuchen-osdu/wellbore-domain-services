@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, create_autospec, patch
 
 
 from fastapi import Header, HTTPException, status
@@ -40,7 +40,7 @@ from app.wdms_app import app_injector, wdms_app
 # Initialize traces exporter in app, like it is in app's startup decorator
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
 
 
 @pytest.fixture

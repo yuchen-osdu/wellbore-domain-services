@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import create_autospec, MagicMock, patch
 
 from fastapi import Header, HTTPException, status
 from fastapi.testclient import TestClient
@@ -30,8 +30,8 @@ from app.routers.delete import delete_bulk_data
 from app.wdms_app import app_injector, wdms_app
 
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
-blob_storage_mock = AsyncMock(spec=BlobStorageBase)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
+blob_storage_mock = create_autospec(BlobStorageBase, spec_set=True, instance=True)
 
 
 @pytest.fixture
@@ -57,7 +57,7 @@ def client_delete(logger_fixture):
         return blob_storage_mock
 
     async def build_mock_dask_bulk_storage():
-        return AsyncMock(spec=DaskBulkStorage)
+        return create_autospec(DaskBulkStorage, spec_set=True, intance=True)
 
     app_injector.register(StorageRecordServiceClient, build_mock_storage)
     app_injector.register(BlobStorageBase, build_mock_blob_storage)
