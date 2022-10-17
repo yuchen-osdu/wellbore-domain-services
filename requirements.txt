@@ -295,7 +295,7 @@ prometheus-client==0.13.1
     # via prometheus-fastapi-instrumentator
 prometheus-fastapi-instrumentator==5.7.1
     # via -r requirements.in
-protobuf==3.17.3
+protobuf==3.20.2
     # via
     #   google-api-core
     #   googleapis-common-protos
@@ -386,7 +386,6 @@ six==1.16.0
     #   isodate
     #   jsonpath-ng
     #   jsonschema
-    #   protobuf
     #   python-dateutil
     #   python-multipart
 sniffio==1.2.0
