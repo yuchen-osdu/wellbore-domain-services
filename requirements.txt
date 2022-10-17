@@ -386,7 +386,6 @@ six==1.16.0
     #   isodate
     #   jsonpath-ng
     #   jsonschema
-    #   protobuf
     #   python-dateutil
     #   python-multipart
 sniffio==1.2.0
