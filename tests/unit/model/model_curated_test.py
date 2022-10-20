@@ -93,7 +93,7 @@ def everything_except(*excluded_types):
                         return instance_of
 
             else:
-                raise NotImplemented(
+                raise NotImplementedError(
                     f"isinstance_check_hint not implemented for {hint}"
                 )
 
