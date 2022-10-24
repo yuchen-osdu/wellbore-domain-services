@@ -15651,6 +15651,7 @@
     },
     "/ddms/v3/records/delete": {
       "post": {
+        "deprecated": true,
         "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
         "operationId": "post_del_multiple_osdu_records",
         "parameters": [
