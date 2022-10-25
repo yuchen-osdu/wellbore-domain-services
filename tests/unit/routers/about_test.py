@@ -58,6 +58,7 @@ def test_about_contains_build_n_version(client, path_prefix):
     assert response_json['version']
 
 
+@pytest.mark.skip("global app.conf.Config corruption")
 @pytest.mark.parametrize("path_prefix", PathPrefixParams)
 def test_about_with_cloud_provider(client, path_prefix):
 
@@ -75,6 +76,7 @@ def test_version_requires_authentication(client, path_prefix):
     assert response.status_code == 403
 
 
+@pytest.mark.skip("global app.conf.Config corruption")
 @pytest.mark.parametrize("path_prefix", PathPrefixParams)
 def test_version_properly_read_details(client_with_authenticated_user, path_prefix):
     # override value of build details

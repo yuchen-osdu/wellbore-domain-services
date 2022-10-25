@@ -60,6 +60,7 @@ from .fixtures_pkg import (
 @pytest.fixture(autouse=False)
 def top_fixture(monkeypatch):
     """
+    # WARNING: global app.conf.Config corruption
     Hooks mechanism from PyTest.
     This fixture will be called after `pytest_configure` and can use fixture such as monkeypatch
     """

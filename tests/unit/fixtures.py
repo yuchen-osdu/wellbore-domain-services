@@ -44,6 +44,10 @@ def local_bulk_persistence_config(local_dev_config):
 
 @pytest.fixture(scope="module")
 def local_dev_config(tmp_path_factory):
+    """
+        # WARNING: global app.conf.Config corruption
+    """
+
     config = ConfigurationContainer.with_load_all(environment_dict={
         # set config to a local dev config (assumption for running unit tests)
         "OS_WELLBORE_DDMS_DEV_MODE": "True",
@@ -62,8 +66,8 @@ def local_dev_config(tmp_path_factory):
         # returning the config for explicit use in tests.
         yield config
 
-    # mock.patch will restore original Config on exiting context, after fixture use.
-
+    # WARNING mock.patch will restore original Config after fixture use but original Config might be corrupted
+    # because write access to a Config instance modifies other config instances
 
 @pytest.fixture
 def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
