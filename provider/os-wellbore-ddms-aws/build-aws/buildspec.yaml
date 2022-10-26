@@ -34,6 +34,10 @@ phases:
       - unzip -q ./sonar-scanner-cli-4.6.2.2472.zip
       - pip install safety
       # Install git secrets
+      #TODO temporarily adding hotfix, due to https://github.com/awslabs/git-secrets/issues/220
+      - export SAY_LOCATION=`ln -s "$(which echo)" say`
+      - export PATH="$PATH:$SAY_LOCATION"
+
       - git clone https://github.com/awslabs/git-secrets.git
       - cd git-secrets && make install && cd ..
       - git secrets --install && git secrets --register-aws
