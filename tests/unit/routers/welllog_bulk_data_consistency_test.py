@@ -66,8 +66,26 @@ def generate_test_data():
         "columns": ["MD", "GR[0]", "GR[1]", "GR[2]"],
         "data": bulk_values
     }
+    def value_with_tolerance(v):
+        rel_tol = 9e-10
+        delta = abs(v) * rel_tol
+        return v + delta
 
-    curves_data = [{
+
+    nominal_case = {
+        "Curves": [
+            {"CurveID": "MD", "NumberOfColumns": 1, "LogCurveFamilyID": "osdu:reference-data--LogCurveFamily:Measured%20Depth:"},
+            {"CurveID": "GR", "NumberOfColumns": 3},
+        ],
+        "ReferenceCurveID": "MD",
+        "TopMeasuredDepth": value_with_tolerance(bulk_values[0][0]),
+        "SamplingStart": value_with_tolerance(bulk_values[0][0]),
+        "BottomMeasuredDepth": value_with_tolerance(bulk_values[-1][0]),
+        "BottomMeasuredDepth": value_with_tolerance(bulk_values[-1][0]),
+    }
+
+    other_cases = [
+        {
         "Curves": [
             {"CurveID": "MD", "NumberOfColumns": 1},
             {"CurveID": "GR", "NumberOfColumns": 3},
@@ -76,67 +94,33 @@ def generate_test_data():
             {"CurveID": "MD", "NumberOfColumns": 1, "LogCurveFamilyID": None},
             {"CurveID": "GR", "NumberOfColumns": 3},
         ]},
-        {"Curves": [
-            {"CurveID": "MD", "NumberOfColumns": 1, "LogCurveFamilyID": "osdu:reference-data--LogCurveFamily:Measured%20Depth:"},
-            {"CurveID": "GR", "NumberOfColumns": 3},
-        ]}
-    ]
-
-
-    def value_with_tolerance(v):
-        rel_tol = 9e-10
-        delta = abs(v) * rel_tol
-        return v + delta
-
-    reference_curve_data = [
-        {"ReferenceCurveID": "MD"},
         {"ReferenceCurveID": ""},
         {"ReferenceCurveID": None},
-        {}
-    ]
-    top_measured_depth_data = [
-        {"TopMeasuredDepth": value_with_tolerance(bulk_values[0][0])},
         {"TopMeasuredDepth": None},
-        {}
-    ]
-    sampling_start_data = [
-        {"SamplingStart": value_with_tolerance(bulk_values[0][0])},
         {"SamplingStart": None},
-        {}
-    ]
-    bottom_measured_depth_data = [
-        {"BottomMeasuredDepth": value_with_tolerance(bulk_values[-1][0])},
         {"BottomMeasuredDepth": None},
-        {}
-    ]
-    sampling_stop_data = [
-        {"SamplingStop": value_with_tolerance(bulk_values[-1][0])},
         {"SamplingStop": None},
-        {}
     ]
 
+    test_data = [
+        pytest.param(
+            {
+                **nominal_case
+            },
+            bulk_data
+        )
+    ]
 
-    test_data = []
-    for reference_curve in reference_curve_data:
-        for top_measured_depth in top_measured_depth_data:
-            for sampling_start in sampling_start_data:
-                for bottom_measured_depth in bottom_measured_depth_data:
-                    for sampling_stop in sampling_stop_data:
-                        for curves in curves_data:
-                            test_data.append(
-                                pytest.param(
-                                    {
-                                        **curves,
-                                        **reference_curve,
-                                        **top_measured_depth,
-                                        **sampling_start,
-                                        **bottom_measured_depth,
-                                        **sampling_stop
-                                    },
-                                    bulk_data
-                                )
-                            )
-
+    for other in other_cases:
+        dict_3 = dict(nominal_case , **other)
+        test_data.append(
+            pytest.param(
+                {
+                    **dict_3
+                },
+                bulk_data
+            )
+        )
     return test_data
 
 
