@@ -1,5 +1,5 @@
 import re
-
+import copy
 import pytest
 
 
@@ -264,8 +264,10 @@ inconsistent_test_params = [
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns)
 def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_wrong_log_curve_family(dasked_test_app_client, welllog_data,
                                                                                   bulk_data, err, wrong_log_curve_family):
-    welllog_data["Curves"][0].update(wrong_log_curve_family)
-    record["data"] = welllog_data
+    # because accessing to welllog_data modifies the value for next tests
+    my_welllog_data = copy.deepcopy(welllog_data)
+    my_welllog_data["Curves"][0].update(wrong_log_curve_family)
+    record["data"] = my_welllog_data
     response = dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
 
     assert response.status_code == 422
@@ -275,8 +277,10 @@ def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_wrong_log_curve_fa
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns  )
 def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_no_log_curve_family(dasked_test_app_client, welllog_data,
                                                                                   bulk_data, err, no_log_curve_family):
-    welllog_data["Curves"][0].update(no_log_curve_family)
-    record["data"] = welllog_data
+    # because accessing to welllog_data modifies the value for next tests
+    my_welllog_data = copy.deepcopy(welllog_data)
+    my_welllog_data["Curves"][0].update(no_log_curve_family)
+    record["data"] = my_welllog_data
     response = dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
 
     assert response.status_code == 200
@@ -303,8 +307,10 @@ def test_post_inconsistent_whole_bulk_without_log_curve_family(dasked_test_app_c
 @pytest.mark.parametrize("welllog_data, bulk_data, err",
                          inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns + inconsistent_test_params)
 def test_post_inconsistent_whole_bulk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
-    welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
-    wid = _create_record(dasked_test_app_client, welllog_data)
+    # because accessing to welllog_data modifies the value for next tests
+    my_welllog_data = copy.deepcopy(welllog_data)
+    my_welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
+    wid = _create_record(dasked_test_app_client, my_welllog_data)
     response = _post_data(dasked_test_app_client, wid, bulk_data)
 
     assert response.status_code == 400
@@ -317,8 +323,10 @@ def test_post_inconsistent_whole_bulk_with_log_curve_family(dasked_test_app_clie
 
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns + inconsistent_test_params)
 def test_post_inconsistent_chunk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
-    welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
-    wid = _create_record(dasked_test_app_client, welllog_data)
+    # because accessing to welllog_data modifies the value for next tests
+    my_welllog_data = copy.deepcopy(welllog_data)
+    my_welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
+    wid = _create_record(dasked_test_app_client, my_welllog_data)
     session_id = _create_session(dasked_test_app_client, wid)
 
     response = _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)

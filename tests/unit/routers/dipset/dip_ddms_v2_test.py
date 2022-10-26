@@ -1,22 +1,17 @@
 from unittest.mock import create_autospec, patch
 
 from fastapi import Header, status
-from fastapi.testclient import TestClient
 from odes_storage.exceptions import UnexpectedResponse
 from odes_storage.models import Record
 import pandas as pd
 import pytest
 
-from app.auth.auth import require_opendes_authorized_user
-from app.clients import SearchServiceClient, StorageRecordServiceClient
-from app.context import Context
-from app.helper import traces
-from app.middleware import require_data_partition_id
+
+from app.clients import  StorageRecordServiceClient
 from app.model.model_curated import dipset
-from app.wdms_app import app_injector, wdms_app
+
 
 storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
-search_service_client_mock = create_autospec(SearchServiceClient, spec_set=True, instance=True)
 
 tests_parameters = [
     ('/ddms/v2/dipsets', dipset(id="opendes:doc:00000000000000000000000000000000000", data={})),
@@ -24,37 +19,12 @@ tests_parameters = [
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
-    async def bypass_authorization():
-        # empty method
-        pass
+def client(app_configurable_with_testclient, nope_logger_fixture):
+    _, client = app_configurable_with_testclient(
+        storage_client_mock=storage_record_service_client_mock,
+    )
+    return client
 
-    async def set_default_partition(data_partition_id: str =Header('opendes')):
-        Context.set_current_with_value(partition_id=data_partition_id)
-
-    async def build_mock_storage():
-        return storage_record_service_client_mock
-
-    async def build_mock_search():
-        return search_service_client_mock
-
-    app_injector.register(StorageRecordServiceClient, build_mock_storage)
-    app_injector.register(SearchServiceClient, build_mock_search)
-
-    # override authentication dependency
-    previous_overrides = wdms_app.dependency_overrides
-
-    try:
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-
-        # Initialize traces exporter in app, like it is in app's startup decorator
-        wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
-
-        client = TestClient(wdms_app)
-        yield client
-    finally:
-        wdms_app.dependency_overrides = previous_overrides  # clean up
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_get_record_not_found_case_dipset(client, base_url, record_obj):
@@ -66,6 +36,7 @@ def test_get_record_not_found_case_dipset(client, base_url, record_obj):
         response = client.get(f'{base_url}/{record_id}/dips', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert 'not found' in response.text.lower()
+
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
 def test_get_dip_empty_query_case(client, base_url, record_obj):

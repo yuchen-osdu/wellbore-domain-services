@@ -27,9 +27,9 @@ wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 PathPrefixParams = [DDMS_V2_PATH, '']
 
 @pytest.fixture
-def client(ctx_fixture, nope_logger_fixture):
-    yield TestClient(wdms_app)
-    wdms_app.dependency_overrides = {}
+def client(ctx_fixture, nope_logger_fixture, app_configurable_with_testclient):
+    _, client = app_configurable_with_testclient(fake_opendes_authorized_user=False)
+    return client
 
 
 @pytest.fixture

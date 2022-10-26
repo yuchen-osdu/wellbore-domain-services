@@ -17,9 +17,11 @@ import pytest
 from app.model import entity_utils, schema_version
 from app.model.entity_utils import Entity, KindMetaData
 
+
 @pytest.fixture(params=['authority_data_partition', 'authority_slb'])
 def authority(request):
     return 'test_data_partition' if request.param == "authority_data_partition" else 'slb'
+
 
 def test_get_version():
     assert entity_utils.get_version(Entity.LOG) == schema_version.log_version

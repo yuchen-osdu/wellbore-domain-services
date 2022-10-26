@@ -36,7 +36,7 @@ from app.conf import Config
 from tests.unit.test_utils import ctx_fixture
 
 @pytest.mark.asyncio
-async def test_make_storage_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
+async def test_make_storage_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture, nope_logger_fixture):
     async with make_storage_record_client(host=local_dev_config.service_host_storage.value,
                                           timeout=local_dev_config.de_client_config_timeout.value) as client:
         assert isinstance(client, StorageRecordServiceClient)
@@ -54,7 +54,7 @@ async def test_make_storage_client(local_dev_config, httpx_mock: HTTPXMock, ctx_
 
 
 @pytest.mark.asyncio
-async def test_make_search_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
+async def test_make_search_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture, nope_logger_fixture):
     async with make_search_client(host=local_dev_config.service_host_search.value,
                                   timeout=local_dev_config.de_client_config_timeout.value) as client:
         assert isinstance(client, SearchServiceClient)

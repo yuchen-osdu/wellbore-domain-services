@@ -12,15 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
+import copy
 import os
-import uuid
+import pytest
 from unittest.mock import create_autospec, patch
+import uuid
+
 
 from fastapi import Header
-from odes_storage.models import CreateUpdateRecordsResponse, Record
+
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
-import pytest
+
+from odes_storage.models import CreateUpdateRecordsResponse, Record
+
+
+from app.injector.app_injector import WithLifeTime
 
 from app.auth.auth import require_opendes_authorized_user
 from app.clients.storage_service_client import StorageRecordServiceClient
@@ -67,6 +75,15 @@ storage_record_service_client_mock = create_autospec(StorageRecordServiceClient,
 
 @pytest.fixture
 def with_test_setup(ctx_fixture):
+    loop = asyncio.get_event_loop()
+    original_storage_client = None
+    try:
+        original_storage_client = loop.run_until_complete(app_injector.get(StorageRecordServiceClient))
+    except KeyError:
+        pass
+
+    previous_overrides = copy.copy(wdms_app.dependency_overrides)
+
     async def bypass_authorization():
         # empty method
         pass
@@ -77,18 +94,19 @@ def with_test_setup(ctx_fixture):
     async def build_mock_storage():
         return storage_record_service_client_mock
 
-    app_injector.register(StorageRecordServiceClient, build_mock_storage)
+    async def build_original_storage():
+        return original_storage_client
 
-    # override authentication dependency
-    previous_overrides = wdms_app.dependency_overrides
+    app_injector.register(StorageRecordServiceClient, build_mock_storage, WithLifeTime.Singleton())
+    wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
+    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
+    Context.set_current_with_value(app_injector=app_injector)
+    yield
 
-    try:
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-        Context.set_current_with_value(app_injector=app_injector)
-        yield
-    finally:
-        wdms_app.dependency_overrides = previous_overrides  # clean up
+    # reset app for reuse (we always cleanup without recreating the app - it would be too slow)
+    app_injector.register(StorageRecordServiceClient, build_original_storage, WithLifeTime.Singleton())
+
+    wdms_app.dependency_overrides = previous_overrides  # clean up
 
 
 @pytest.fixture
@@ -112,13 +130,12 @@ def mock_persistence():
     async def override_get_persistence():
         return mock
 
-    previous_overrides = wdms_app.dependency_overrides
+    previous_overrides = copy.copy(wdms_app.dependency_overrides)
 
-    try:
-        wdms_app.dependency_overrides[get_persistence] = override_get_persistence
-        yield mock
-    finally:
-        wdms_app.dependency_overrides = previous_overrides  # clean up
+    wdms_app.dependency_overrides[get_persistence] = override_get_persistence
+    yield mock
+
+    wdms_app.dependency_overrides = previous_overrides  # clean up
 
 
 # Initialize traces exporter in app, like it is in app's startup decorator
