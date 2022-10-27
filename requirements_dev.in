@@ -3,9 +3,11 @@ pip-tools>=6.4.0
 -c requirements.txt
 
 pytest
-pytest-asyncio
+pytest-asyncio # TODO remove it after migration to fastapi > 0.69
 pytest-cov
 pytest-httpx
+pytest-xdist
+pytest-randomly
 httpx
 numpy
 pandas
