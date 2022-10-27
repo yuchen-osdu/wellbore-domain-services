@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 from app.bulk_persistence.dask.bulk_catalog import BulkCatalog, ChunkGroup
 
 
@@ -123,6 +124,7 @@ def test_is_columns_slide_only_handle_many_columns():
     assert not catalog.is_columns_slide_only({'C2[50]'})
 
 
+@pytest.mark.slow
 def test_is_describe_handle_many_columns(nope_logger_fixture):
     # mainly to track time of the test
     # as it could be a bottleneck for big array

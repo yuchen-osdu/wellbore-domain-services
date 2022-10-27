@@ -45,6 +45,8 @@ def test_group_curve_columns_include_non_array_by_default():
     assert 'A' in group_curve_columns(['A', 'B[0]', 'B[1]'])
 
 
+@pytest.mark.slow
+@pytest.mark.perf
 def test_group_curve_columns_handle_one_million_columns():
     size = 1_000_000
 

@@ -87,6 +87,9 @@ class ConfigurationContainer:
         path_value = config['PATH']
 
     use env_var.printable_value instead of env_var.value when the goal is to log/display it.
+
+    # WARNING
+    # BUG: global app.conf.Config corruption,  write access to an instance modifies other instances
     """
 
     service_name: EnvVar = EnvVar(
@@ -376,6 +379,8 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             default='osdu-',
                             is_mandatory=True,
                             override=True)
+
+
 # Global config instance
 Config = ConfigurationContainer.with_load_all(contextual_loader=cloud_provider_additional_environment)
 

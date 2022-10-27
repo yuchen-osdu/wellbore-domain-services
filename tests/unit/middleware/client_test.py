@@ -5,15 +5,15 @@ from pytest_httpx import HTTPXMock
 from app.clients import make_storage_record_client, make_search_client
 
 from tests.unit.test_utils import ctx_fixture
-import app.conf as conf
+
 from app.helper import traces
-from app.auth.auth import require_opendes_authorized_user
-from app.middleware import require_data_partition_id
-from app.injector.main_injector import MainInjector
 
 
 @pytest.mark.asyncio
-async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
+async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_config,
+                                                                 httpx_mock: HTTPXMock,
+                                                                 ctx_fixture,
+                                                                 nope_logger_fixture):
     expected_correlation_id = 'some-correlation-id'
 
     async with make_storage_record_client(host=local_dev_config.service_host_storage.value,
@@ -28,7 +28,10 @@ async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_confi
 
 
 @pytest.mark.asyncio
-async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture):
+async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config,
+                                                                httpx_mock: HTTPXMock,
+                                                                ctx_fixture,
+                                                                nope_logger_fixture):
     expected_correlation_id = 'some-correlation-id'
 
     async with make_search_client(host=local_dev_config.service_host_search.value,

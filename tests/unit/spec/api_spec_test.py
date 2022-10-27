@@ -24,8 +24,27 @@ OPENAPI_PATH = 'spec/generated/openapi.json'
 import os
 import pytest
 import rapidjson as json
-from tests.unit.test_utils import format_routes
 from openapi_spec_validator import validate_spec
+
+
+# Format selected routes for spec generation
+def format_routes(app, prefix, tags, strip_prefix=True):
+    for route in app.routes:
+        # non selected routes are hidden
+        route.include_in_schema = False
+        # route path must start with prefix
+        if route.path.startswith(prefix):
+            # use all tags if no tag filter is provided
+            if not tags:
+                route.include_in_schema = True
+            # otherwise route must have one of the selected tags
+            elif hasattr(route,"tags"):
+                if any(tag in tags for tag in route.tags):
+                    # add route to the spec
+                    route.include_in_schema = True
+            if strip_prefix and route.include_in_schema:
+                # strip prefix from the formatted route path
+                route.path_format = route.path[len(prefix):]
 
 
 @pytest.fixture

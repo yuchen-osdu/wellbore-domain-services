@@ -60,6 +60,7 @@ from .fixtures_pkg import (
 @pytest.fixture(autouse=False)
 def top_fixture(monkeypatch):
     """
+    # WARNING: global app.conf.Config corruption
     Hooks mechanism from PyTest.
     This fixture will be called after `pytest_configure` and can use fixture such as monkeypatch
     """
@@ -125,19 +126,3 @@ def event_loop():
     yield loop
     # teardown
     loop.close()
-
-
-@pytest.fixture
-def init_fixtures(monkeypatch, tmp_path):
-    monkeypatch.setenv(name="USE_LOCALFS_BLOB_STORAGE_WITH_PATH", value=str(tmp_path))
-    conf.Config = conf.ConfigurationContainer.with_load_all()
-    yield
-
-
-async def do_nothing():
-    # empty method
-    pass
-
-
-async def set_default_partition(data_partition_id: str = Header("opendes")):
-    Context.set_current_with_value(partition_id=data_partition_id)

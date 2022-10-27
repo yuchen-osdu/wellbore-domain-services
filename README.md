@@ -348,16 +348,64 @@ docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DI
     ```
 
 
-### Run Unit Tests Locally
+### Run Unit Tests
 
 ```bash
 # Install test dependencies
 pip install -r requirements.txt -r requirements_dev.txt
 
-python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit
+# run tests
+python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml tests/unit
 ```
 
 Coverage reports can be viewed after the command is run. The HMTL reports are saved in the htmlcov directory.
+
+
+#### Control order of the tests
+
+To detect inter-test dependencies and ensure that each test can pass both in isolation and when run in a suite  **test items are randomly shuffled** 
+thanks to the dependencies of the [pytest-randomly](https://pypi.org/project/pytest-xdist/) plugin.
+
+The output will start with an extra line that tells you the random seed. For instance:
+```
+Using --randomly-seed=256596674
+```
+ 
+If  tests fail due to ordering, you can  repeat the last ordering:
+```
+--randomly-seed=last
+``` 
+or repeat a specific ordering:
+```
+--randomly-seed=1234
+```
+If necessary you can  make the tests run in order: 
+```
+-p no:randomly
+```
+
+### Control the tests to be run 
+
+
+
+#### Distribute tests across multiple CPUs
+
+Thanks to plugin [pytest-xdist](https://pypi.org/project/pytest-xdist/) in dependencies,  it is possible to run the tests in parallel which can reduce the execution time.
+to activate it add the following option:
+```
+-n auto -m "not serial"
+```
+
+With the option `-m "not serial` **Tests that do not support distribution can be marked with 'pytest.mark.serial' and will be ignored.**
+You can run them specifically in sequence in a second step by replacing the previous option with the following:
+```
+-n 0 -m "serial"
+```
+
+This is still experimental. It is possible that in some cases the tests fail or that there are warnings. For instance 
+when several tests that create a dask cluster run concurrently. Moreover, in the case of execution of subset of tests, 
+the speed gain can be lower than the overhead.
+
 
 ### Run Integration Tests locally
 

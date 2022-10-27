@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import json
 from unittest.mock import AsyncMock, create_autospec, patch
 
-
-from fastapi import Header, HTTPException, status
-from fastapi.testclient import TestClient
+from fastapi import  HTTPException, status
 from odes_storage.exceptions import (
     ResponseHandlingException as OSDUStorageResponseHandlingException,
     ResponseValidationError as OSDUStorageResponseValidationError,
@@ -27,40 +26,18 @@ from osdu_az.exceptions.data_access_error import (
 )
 import pytest
 
-from app.auth.auth import require_opendes_authorized_user
 from app.clients import StorageRecordServiceClient
-from app.context import Context
-from app.errors.exception_handlers import create_custom_http_exception_handler
-from app.helper import logger, traces
-from app.injector.app_injector import WithLifeTime
-from app.middleware import require_data_partition_id
-from app.wdms_app import app_injector, wdms_app
 
-
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
 storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
-    async def bypass_authorization():
-        pass
-
-    async def set_default_partition(data_partition_id: str = Header('opendes')):
-        Context.set_current_with_value(partition_id=data_partition_id)
-
-    async def build_mock_storage():
-        return storage_record_service_client_mock
-
-    app_injector.register(StorageRecordServiceClient, build_mock_storage, WithLifeTime.Singleton())
-
-    wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
-    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-    client = TestClient(wdms_app)
-    yield client
-    wdms_app.dependency_overrides = {}
+def client(app_configurable_with_testclient):
+    _, client = app_configurable_with_testclient(
+        storage_client_mock=storage_record_service_client_mock
+    )
+    return client
 
 
 header = {"Content-Type": "application/json, charset=utf-16"}
@@ -145,23 +122,14 @@ def test_partition_client_raise_api_exception(client):
         assert json_res['errors'][0] == 'Failed to retrieve partition. Not found.'
 
 
-@pytest.fixture()
-def create_exception_handler(nope_logger_fixture):
-    create_custom_http_exception_handler(wdms_app, logger)
-    client = TestClient(wdms_app)
-    yield client, nope_logger_fixture
-
-
 @pytest.mark.parametrize("status_code, msg, called", [(400, "bad request", False),
                                                     (404, "not found", False),
                                                     (500, "internal error", True),
                                                     (502, "bad gateway", True)])
-def test_500_exception_handler(create_exception_handler, status_code, msg, called):
-    client, log = create_exception_handler
-
+def test_500_exception_handler(client, nope_logger_fixture, status_code, msg, called):
     with patch("app.routers.about.AboutResponse.construct",
                side_effect=HTTPException(status_code=status_code, detail=msg)):
         response = client.get('about')
         assert response.status_code == status_code
         assert response.text == '{"detail":"' + msg + '"}'
-        assert log.exception.called == called
+        assert nope_logger_fixture.exception.called == called

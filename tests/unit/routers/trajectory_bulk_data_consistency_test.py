@@ -118,10 +118,7 @@ def generate_test_data():
 
     return test_data
 
-
-test_param = []
-
-#test_param = generate_test_data()
+test_param = generate_test_data()
 
 test_param.append(
     pytest.param(
