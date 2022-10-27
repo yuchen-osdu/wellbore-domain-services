@@ -33,6 +33,7 @@ async def test_dask_workers_not_enough_ram_available(dask_client, nope_logger_fi
     1, 3, 5
 ])
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_dask_workers_enough_ram_available(local_bulk_persistence_config,
                                                  expected_workers,
                                                  dask_client,

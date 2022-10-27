@@ -21,6 +21,8 @@ from app.bulk_persistence import (
 )
 from app.bulk_persistence.dask.traces import TracingMode
 
+pytestmark = pytest.mark.slow
+
 Definitions = {
     'WellLog': {
         'api_version': 'v3',
