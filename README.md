@@ -49,7 +49,7 @@ Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Un
 - Common parts and interfaces
   - osdu-core-lib-python
 
-- Implementation of blob storage on GCP
+- Implementation of blob storage on Google Cloud
   - osdu-core-lib-python-gcp
 
 - Implementation of blob storage and partition service on Azure
@@ -158,8 +158,8 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 
 ### Setting the Cloud Provider Environment Variables
 
-- The following environment variables are required when the cloud provider is set to GCP:
-  - OS_WELLBORE_DDMS_DATA_PROJECT_ID: GCP Data Tenant ID
+- The following environment variables are required when the cloud provider is set to Google Cloud:
+  - OS_WELLBORE_DDMS_DATA_PROJECT_ID: Google Cloud Data Tenant ID
   - OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS: path to the key file of the SA to access the data tenant
   - SERVICE_HOST_SEARCH: The Search Service host
   - SERVICE_HOST_STORAGE: The Storage Service host
