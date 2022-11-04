@@ -13,11 +13,8 @@ from app.bulk_persistence.dask.localcluster import (
 def test_get_dask_configuration_not_enough_memory(
     local_bulk_persistence_config, nope_logger_fixture
 ):
-    def mock_system_memory():
-        return 42
-
     with mock.patch(
-        "app.bulk_persistence.dask.localcluster.system_memory", mock_system_memory
+        "app.bulk_persistence.dask.localcluster.system_memory", return_value=42
     ):
         with pytest.raises(DaskException) as exc:
             get_dask_configuration(config=local_bulk_persistence_config, logger=nope_logger_fixture)
@@ -47,4 +44,4 @@ def test_get_dask_configuration_just_enough_memory(
         assert n_workers == min(memory_space_for_worker, nprocesses_nthreads()[0])
 
         # the memory limit per worker should be the total (minus leeway) divided by number of workers
-        assert worker_memory_limit == (mock_system_memory() - memory_leeway) / n_workers
+        assert worker_memory_limit == (mock_system_memory() - memory_leeway) // n_workers

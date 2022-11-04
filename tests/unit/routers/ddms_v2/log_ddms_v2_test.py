@@ -17,37 +17,33 @@ tests specific to logset APIs. Common tests implemented in common_ddms_v2_test
 """
 
 import asyncio
-import json
-
 from io import BytesIO
+import pytest
 
+from fastapi import HTTPException
 import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from fastapi import HTTPException, Header
-from fastapi.testclient import TestClient
-import pytest
 
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from odes_storage.models import CreateUpdateRecordsResponse, Record
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
-from odes_storage.models import Record, CreateUpdateRecordsResponse
 
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.helper import traces
-from app.auth.auth import require_opendes_authorized_user
-from app.middleware import require_data_partition_id
-from app.model.log_bulk import LogBulkHelper
-from app.bulk_persistence import MimeTypes, BulkURI
-from app.bulk_persistence.bulk_storage_version import BulkStorageVersion_V1, BulkStorageVersion_V0
+from app.bulk_persistence import BulkURI, MimeTypes
 from app.bulk_persistence.bulk_id import new_bulk_id
-from app.context import Context
-from app.wdms_app import wdms_app, app_injector
-from app.clients import *
-from tests.unit.test_utils import make_record
+from app.bulk_persistence.bulk_storage_version import (
+    BulkStorageVersion_V0,
+    BulkStorageVersion_V1,
+)
+from app.clients import StorageRecordServiceClient
+from app.clients.storage_service_blob_storage import (
+    StorageRecordServiceBlobStorage,
+)
 
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
+from app.model.log_bulk import LogBulkHelper
+from app.wdms_app import app_injector
+
+from tests.unit.test_utils import make_record
 
 
 class TestHelper:
@@ -102,29 +98,12 @@ class TestHelper:
 
 
 @pytest.fixture
-def client(nope_logger_fixture, tmp_path):
-    async def storage_service_builder(*args, **kwargs):
-        return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1')
-
-    async def blob_storage_builder(*args, **kwargs):
-        return LocalFSBlobStorage(directory=tmp_path)
-
-    async def set_default_partition(data_partition_id: str = Header('opendes')):
-        Context.set_current_with_value(partition_id=data_partition_id)
-
-    app_injector.register(BlobStorageBase, blob_storage_builder)
-    app_injector.register(StorageRecordServiceClient, storage_service_builder)
-
-    async def do_nothing():
-        # empty method
-        pass
-
-    wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-
-    yield TestClient(wdms_app)
-
-    wdms_app.dependency_overrides = {}  # clean up
+def client(app_configurable_with_testclient, nope_logger_fixture, tmp_path):
+    app, client = app_configurable_with_testclient(
+        storage_client_mock=StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1'),
+        blob_storage_base_mock=LocalFSBlobStorage(directory=tmp_path),
+    )
+    return client
 
 
 log_data = [
@@ -184,7 +163,6 @@ def test_logs_write_then_read_data(client, test_data, nan_conversion):
     response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
-    data = response.content
     f = BytesIO(response.content)
     f.seek(0)
     actual_df = pd.read_json(f, orient=log_data_orient).replace("NaN", np.NaN)

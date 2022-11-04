@@ -9,7 +9,7 @@ import httpx
 import odes_storage
 import pytest
 from unittest import mock
-from unittest.mock import AsyncMock, create_autospec
+from unittest.mock import AsyncMock, create_autospec, patch
 
 from fastapi.testclient import TestClient
 
@@ -44,6 +44,10 @@ def local_bulk_persistence_config(local_dev_config):
 
 @pytest.fixture(scope="module")
 def local_dev_config(tmp_path_factory):
+    """
+        # WARNING: global app.conf.Config corruption
+    """
+
     config = ConfigurationContainer.with_load_all(environment_dict={
         # set config to a local dev config (assumption for running unit tests)
         "OS_WELLBORE_DDMS_DEV_MODE": "True",
@@ -58,12 +62,12 @@ def local_dev_config(tmp_path_factory):
     }, contextual_loader=cloud_provider_additional_environment)
 
     # patching Config in app.conf module, so it is found by other modules
-    with mock.patch('app.conf.Config', config):
+    with patch('app.conf.Config', config):
         # returning the config for explicit use in tests.
         yield config
 
-    # mock.patch will restore original Config on exiting context, after fixture use.
-
+    # WARNING mock.patch will restore original Config after fixture use but original Config might be corrupted
+    # because write access to a Config instance modifies other config instances
 
 @pytest.fixture
 def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
@@ -85,10 +89,10 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
         )
 
         # Note: we want to be able to modify the mock to handle get_record and get_record_version specifically
-        mock = create_autospec(spec=template_client, instance=True)
+        mock_client = create_autospec(template_client, spec_set=True, instance=True)
 
         # override api_client to use an async mock (needed on shutdown when we call api_client.close())
-        mock.api_client = AsyncMock(spec_set=template_client.api_client)
+        mock_client.api_client = AsyncMock(spec_set=template_client.api_client)
 
         async def mocked_get_record(self,
                              id: str,
@@ -163,11 +167,11 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
             return odes_storage.models.RecordVersions(recordId=id, versions=versions or None)
 
         # override get_record method on the instance to return sample data
-        mock.get_record = types.MethodType(mocked_get_record, mock)
-        mock.get_record_version = types.MethodType(mocked_get_record_version, mock)
-        mock.get_all_record_versions = types.MethodType(mocked_get_all_record_versions, mock)
+        mock_client.get_record = types.MethodType(mocked_get_record, mock_client)
+        mock_client.get_record_version = types.MethodType(mocked_get_record_version, mock_client)
+        mock_client.get_all_record_versions = types.MethodType(mocked_get_all_record_versions, mock_client)
 
-        return mock
+        return mock_client
 
     return setup_data_for_mock
 
@@ -228,11 +232,13 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
     original_search_client = loop.run_until_complete(app_injector.get(SearchServiceClient))
 
     # setup safe defaults for tests
-    default_storage_mock = AsyncMock(spec=StorageRecordServiceClient)
+    # can't set spec_set because api_client is instance member and not a class member
+    default_storage_mock = create_autospec(StorageRecordServiceClient, instance=True)
     # override api_client to use an async mock (needed on shutdown when we call api_client.close())
     default_storage_mock.api_client = AsyncMock()
 
-    default_search_mock = AsyncMock(spec=SearchServiceClient)
+    # can't set spec_set because api_client is instance member and not a class member
+    default_search_mock = create_autospec(SearchServiceClient, instance=True)
     # override api_client to use an async mock (needed on shutdown when we call api_client.close())
     default_search_mock.api_client = AsyncMock()
 

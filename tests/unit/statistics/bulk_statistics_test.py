@@ -336,7 +336,8 @@ async def test_bulk_statistics_nan_columns(bulk_stats_fixture, cols_name_by_inde
 
 
 @pytest.mark.asyncio
-@pytest.mark.tag('statistics', 'perf')
+@pytest.mark.statistics
+@pytest.mark.perf
 @pytest.mark.skip("This test if skipped for unit testing, it should be run for performances instead")
 async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
     columns_count = 1_000

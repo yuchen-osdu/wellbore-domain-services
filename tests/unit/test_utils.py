@@ -1,3 +1,4 @@
+import logging
 # Copyright 2021 Schlumberger
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
-
-import pytest
 from unittest import mock
-from unittest.mock import patch
-import asyncio
-import logging
-from contextlib import contextmanager
 
+from odes_storage.models import Legal, Record, StorageAcl
 from opencensus.trace.span_context import SpanContext
-from odes_storage.models import Record, StorageAcl, Legal
 from osdu.core.api.storage.tenant import Tenant
-from starlette.routing import Mount, Router, Route
+import pytest
+from starlette.routing import Mount, Route, Router
 
-from app.model.model_utils import record_to_dict
 from app.context import get_or_create_ctx
 from app.injector.app_injector import AppInjector
+from app.model.model_utils import record_to_dict
 
 
 @pytest.fixture()
@@ -51,80 +47,6 @@ def ctx_fixture():
     return ctx
 
 
-def create_mock_class(cls_to_mock):
-    cls_name = cls_to_mock.__name__ + 'AutoMock'
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    @classmethod
-    async def _async_method(cls, *args, **kwargs):
-        # empty method
-        pass
-
-    @classmethod
-    async def _sync_method(cls, *args, **kwargs):
-        # empty method
-        pass
-
-    @classmethod
-    @contextmanager
-    def set_answer(cls, method_name, fn):
-        previous_fn = getattr(cls, method_name)
-
-        def _patch_sync(self_or_cls, *args, **kwargs):
-            return fn(*args, **kwargs)
-
-        async def _patch_async(self_or_cls, *args, **kwargs):
-            if asyncio.iscoroutinefunction(fn):
-                return await fn(*args, **kwargs)
-            return fn(*args, **kwargs)
-
-        if asyncio.iscoroutinefunction(previous_fn):
-            setattr(cls, method_name, _patch_async)
-        elif callable(previous_fn):
-            setattr(cls, method_name, _patch_sync)
-
-        try:
-            yield
-        finally:
-            setattr(cls, method_name, previous_fn)
-
-    @classmethod
-    def set_return_value(cls, method_name, return_value):
-        return cls.set_answer(method_name, lambda *args, **kwargs: return_value)
-
-    @classmethod
-    def set_throw(cls, method_name, exception):
-        def _do_throw(*args, **kwargs):
-            raise exception
-        return cls.set_answer(method_name, _do_throw)
-
-    m_dict = {
-        'set_return_value': set_return_value,
-        'set_answer': set_answer,
-        'set_throw': set_throw,
-        '__aenter__': __aenter__,
-        '__aexit__': __aexit__,
-    }
-    for name, _ in cls_to_mock.__dict__.items():
-        if name.startswith('_'):
-            continue
-
-        attr = getattr(cls_to_mock, name)
-
-        if asyncio.iscoroutinefunction(attr):
-            m_dict[name] = _async_method
-        elif callable(attr):
-            m_dict[name] = _sync_method
-
-    _new_class_ = type(cls_name, (object, ), m_dict)
-    return _new_class_
-
-
 def make_record(as_dict=False, **kwargs):
     kwargs.setdefault('kind', 'opendes:osdu:raw:2.0.0')
     kwargs.setdefault('acl', StorageAcl(
@@ -139,30 +61,6 @@ def make_record(as_dict=False, **kwargs):
 @pytest.fixture
 def basic_record(kind: str = None):
     return make_record() if kind is None else make_record(kind=kind)
-
-
-# Format selected routes for spec generation
-def format_routes(app, prefix, tags, strip_prefix=True):
-    for route in app.routes:
-        # non selected routes are hidden
-        route.include_in_schema = False
-        # route path must start with prefix
-        if route.path.startswith(prefix):
-            # use all tags if no tag filter is provided
-            if not tags:
-                route.include_in_schema = True
-            # otherwise route must have one of the selected tags
-            elif hasattr(route,"tags"):
-                if any(tag in tags for tag in route.tags):
-                    # add route to the spec
-                    route.include_in_schema = True
-            if strip_prefix and route.include_in_schema:
-                # strip prefix from the formatted route path
-                route.path_format = route.path[len(prefix):]
-
-
-def side_effect_raise(*args, **kwargs):
-    raise ValueError("side effect")
 
 
 def gen_all_routes_request(rtr: Router, prefix: Optional[str] = None):

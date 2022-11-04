@@ -1,10 +1,7 @@
 import pytest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, create_autospec
 from unittest.mock import patch, mock_open
 from contextlib import suppress
-
-from tests.unit.test_utils import side_effect_raise
-
 
 from dask.distributed import Client
 from app.bulk_persistence.dask.dask_data_ipc import DaskNoneDataIPC, DaskLocalFileDataIPC, DaskNativeDataIPC
@@ -46,7 +43,7 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
     async def identity(anything, **kwargs):
         return anything
 
-    dask_client_mock = AsyncMock()
+    dask_client_mock = create_autospec(Client, spec_set=True, instance=True)
     dask_client_mock.scatter = AsyncMock(side_effect=identity)
 
     ipc_obj = DaskNativeDataIPC(dask_client=dask_client_mock)
@@ -58,7 +55,8 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
 
 
 @pytest.mark.asyncio
-async def test_dask_native_ipc_basic_usage(dask_client, local_bulk_persistence_config):
+@pytest.mark.slow
+async def test_dask_native_ipc_basic_usage(dask_client, local_bulk_persistence_config, nope_logger_fixture):
 
     with dask_client(autoclose_asynccontext=True) as dask_client_asynccontext:
         async with dask_client_asynccontext() as client_starter:
@@ -146,7 +144,7 @@ async def test_file_data_ipc_write_clean_up_files(nope_logger_fixture):
                     raise ValueError('fake')
 
             # WHEN exception occurs during write
-            open_mock.return_value.write.side_effect = side_effect_raise
+            open_mock.return_value.write.side_effect = ValueError("side effect")
             with pytest.raises(ValueError):
                 async with DaskLocalFileDataIPC().set(b"42"):
                     pass

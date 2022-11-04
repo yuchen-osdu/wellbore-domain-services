@@ -33,6 +33,260 @@
   "version": 74987940,
   "modifyTime": "1999-05-15T07:24:31.641Z",
   "data": {
+    "TechnicalAssurances": [
+      {
+        "TechnicalAssuranceTypeID": "62:reference-data--TechnicalAssuranceType:Pd-Mt:XOeh:410438473",
+        "UnacceptableUsage": [
+          {
+            "WorkflowPersona": "aXELRQY:reference-data--WorkflowPersonaType:-RxU9wy154:7",
+            "WorkflowUsage": "7qgYo-:reference-data--WorkflowUsageType:JUzYEj:955"
+          },
+          {
+            "WorkflowUsage": "Fk:reference-data--WorkflowUsageType:w3RLaq:",
+            "WorkflowPersona": "k.jnxc:reference-data--WorkflowPersonaType:y%hqw0mmPJ:447"
+          }
+        ],
+        "EffectiveDate": "1959-01-29",
+        "AcceptableUsage": [
+          {
+            "WorkflowPersona": "QR3wm63pvc:reference-data--WorkflowPersonaType:3fw:1143865343",
+            "WorkflowUsage": "twEdmY:reference-data--WorkflowUsageType:Y2Z.tn:886280663"
+          }
+        ],
+        "Reviewers": [
+          {
+            "EmailAddress": "labore occaecat mollit",
+            "OrganisationID": "4.ErR0q2q:master-data--Organisation:::93640042",
+            "PhoneNumber": "adipisicing anim non",
+            "RoleTypeID": "aRy0qeFf2G:reference-data--ContactRoleType:DGJ:7624",
+            "Comment": "pariatur eu exercitation dolore",
+            "Name": "consequat qui labore"
+          },
+          {
+            "RoleTypeID": "oiGdCQsK:reference-data--ContactRoleType:3R-gqEyt3AT:58",
+            "PhoneNumber": "cupidatat cillum aute labore",
+            "OrganisationID": "iBDJcC4EyFS:master-data--Organisation:CBBZECI:0674194",
+            "Comment": "est ea deserunt amet",
+            "EmailAddress": "occaecat cupidatat non aute tempor",
+            "Name": "qui ex"
+          },
+          {
+            "PhoneNumber": "culpa ullamco incididunt quis ut",
+            "OrganisationID": "25gv5fSSL:master-data--Organisation::Dg:2",
+            "Name": "nostrud",
+            "EmailAddress": "elit",
+            "RoleTypeID": "967jla:reference-data--ContactRoleType:RzzF:75",
+            "Comment": "do esse laborum"
+          },
+          {
+            "Name": "id",
+            "RoleTypeID": "nyytA8H7F:reference-data--ContactRoleType:BHs%:1309285554",
+            "OrganisationID": "2pKFGIG:master-data--Organisation:Tah::1923580",
+            "EmailAddress": "tempor officia",
+            "Comment": "incididunt laboris dolore",
+            "PhoneNumber": "ipsum Lorem"
+          }
+        ],
+        "Comment": "in"
+      },
+      {
+        "TechnicalAssuranceTypeID": "lK:reference-data--TechnicalAssuranceType:FDDp9ioL:2",
+        "EffectiveDate": "1989-11-26",
+        "Comment": "ex Duis consequat quis nisi",
+        "AcceptableUsage": [
+          {
+            "WorkflowPersona": "Xmrnf3CX:reference-data--WorkflowPersonaType:ZVeN:16",
+            "WorkflowUsage": "b:reference-data--WorkflowUsageType:H_cYhQCG:742498"
+          },
+          {
+            "WorkflowPersona": "1gIZGg-t:reference-data--WorkflowPersonaType:n_Z1B-EF:0479",
+            "WorkflowUsage": "W5.iL-UyD0:reference-data--WorkflowUsageType:E:037728343"
+          }
+        ],
+        "UnacceptableUsage": [
+          {
+            "WorkflowPersona": "hK:reference-data--WorkflowPersonaType:u_a:65666493",
+            "WorkflowUsage": "Sv5s:reference-data--WorkflowUsageType:d:0327098816"
+          },
+          {
+            "WorkflowUsage": "lZMUf4:reference-data--WorkflowUsageType:d7zhV-f::04081",
+            "WorkflowPersona": "ih7zCrkAcM:reference-data--WorkflowPersonaType:%FMeP---i:642"
+          }
+        ],
+        "Reviewers": [
+          {
+            "RoleTypeID": "9Ofb_..:reference-data--ContactRoleType:-s:",
+            "Name": "ad minim esse exercitation velit",
+            "Comment": "amet",
+            "PhoneNumber": "nostrud ut magna minim Excepteur",
+            "OrganisationID": "XTJs:master-data--Organisation:9zq:",
+            "EmailAddress": "ut nostrud"
+          }
+        ]
+      },
+      {
+        "TechnicalAssuranceTypeID": "3DZl8jD:reference-data--TechnicalAssuranceType:SO:cKcAnQ:2",
+        "Comment": "nostrud eu ullamco",
+        "UnacceptableUsage": [
+          {
+            "WorkflowPersona": "WUNFX:reference-data--WorkflowPersonaType:ZYqqxycXX:7421",
+            "WorkflowUsage": "S.bnV:reference-data--WorkflowUsageType:AsOqRUqYtp:80210"
+          },
+          {
+            "WorkflowUsage": "tKyY:reference-data--WorkflowUsageType:WWN-v0s4:23450117",
+            "WorkflowPersona": "rZSI:reference-data--WorkflowPersonaType::pQG:75675639"
+          },
+          {
+            "WorkflowPersona": "Opm52s:reference-data--WorkflowPersonaType:s:GJ5:5205832",
+            "WorkflowUsage": "TS7L:reference-data--WorkflowUsageType:U72ZaRJ9koq:626640275"
+          }
+        ],
+        "AcceptableUsage": [
+          {
+            "WorkflowUsage": "wd_wO3l:reference-data--WorkflowUsageType:Dh6s:q:625334447",
+            "WorkflowPersona": "L8:reference-data--WorkflowPersonaType:LfFMnv:438969"
+          },
+          {
+            "WorkflowPersona": "i:reference-data--WorkflowPersonaType:LE0U4FckJ-:6211",
+            "WorkflowUsage": "wZHs-:reference-data--WorkflowUsageType:n.eEY:87491518"
+          },
+          {
+            "WorkflowUsage": "LuygDyC3:reference-data--WorkflowUsageType:2TaM:774134032",
+            "WorkflowPersona": "18sAyb5:reference-data--WorkflowPersonaType:xwSUh%Fp:6597134"
+          },
+          {
+            "WorkflowUsage": "mLXznWqWHK:reference-data--WorkflowUsageType:EGG_7tS2YF:337082",
+            "WorkflowPersona": "eiwpH1GYTD:reference-data--WorkflowPersonaType:cdR7:9975753"
+          }
+        ],
+        "Reviewers": [
+          {
+            "PhoneNumber": "officia",
+            "RoleTypeID": "UUW8:reference-data--ContactRoleType:MAQX.:690265492",
+            "OrganisationID": "ZO3I6bhF:master-data--Organisation:l_c:00",
+            "Comment": "laborum ipsum magna officia reprehenderit",
+            "EmailAddress": "Ut dolore cupidatat Duis mollit",
+            "Name": "consectetur ut ad ullamco"
+          },
+          {
+            "RoleTypeID": "xZlE6x:reference-data--ContactRoleType:6iXSHT:",
+            "EmailAddress": "ea nulla",
+            "Comment": "deserunt labore dolore",
+            "Name": "sit dolor",
+            "PhoneNumber": "proident officia Excepteur",
+            "OrganisationID": "rPm3l:master-data--Organisation:fMEeJbU5Y:31"
+          },
+          {
+            "Name": "aute mollit anim",
+            "PhoneNumber": "adipisicing tempor",
+            "EmailAddress": "aliqua voluptate",
+            "OrganisationID": "-MfkQwvD1m:master-data--Organisation:q:402",
+            "Comment": "ut tempor mollit esse in",
+            "RoleTypeID": "qaSG.:reference-data--ContactRoleType:d0:840955277"
+          }
+        ],
+        "EffectiveDate": "1995-06-26"
+      },
+      {
+        "TechnicalAssuranceTypeID": "56yZy_p:reference-data--TechnicalAssuranceType:9%_z:2",
+        "Comment": "ex cillum ut sunt",
+        "AcceptableUsage": [
+          {
+            "WorkflowUsage": "5:reference-data--WorkflowUsageType:HBJyG2BG:790512159",
+            "WorkflowPersona": "Jq:reference-data--WorkflowPersonaType:A%IV:05099336"
+          }
+        ],
+        "Reviewers": [
+          {
+            "Name": "laboris",
+            "RoleTypeID": "bo4zl:reference-data--ContactRoleType:sW2GC:9248562",
+            "OrganisationID": "Njz:master-data--Organisation:_lYpaqB4FOl:90",
+            "EmailAddress": "nisi",
+            "Comment": "cupidatat consectetur deserunt est",
+            "PhoneNumber": "occaecat mollit aute laborum"
+          },
+          {
+            "RoleTypeID": "MeEpQz0.ZJN:reference-data--ContactRoleType:0RA8sN:679149",
+            "Comment": "sed pariatur minim sit nulla",
+            "OrganisationID": "xd1FW3m7H7:master-data--Organisation:%%tjG.vLlky:4536108981",
+            "Name": "in",
+            "PhoneNumber": "dolor pariatur",
+            "EmailAddress": "in"
+          }
+        ],
+        "EffectiveDate": "1994-07-08",
+        "UnacceptableUsage": [
+          {
+            "WorkflowUsage": ".zG.J0yJmDp:reference-data--WorkflowUsageType:xdWb6b1M:6532462382",
+            "WorkflowPersona": "M:reference-data--WorkflowPersonaType:S%O:925"
+          },
+          {
+            "WorkflowUsage": "3:reference-data--WorkflowUsageType:g%eESFG:4251",
+            "WorkflowPersona": "R:reference-data--WorkflowPersonaType:fE:9512292"
+          },
+          {
+            "WorkflowUsage": "6TkON5SP:reference-data--WorkflowUsageType::Ww2H3:313256",
+            "WorkflowPersona": "6XJd69Hl-U:reference-data--WorkflowPersonaType:zLwPPz:905270255"
+          },
+          {
+            "WorkflowPersona": "b:reference-data--WorkflowPersonaType:AEhUcI4og6W:78623250",
+            "WorkflowUsage": "V4:reference-data--WorkflowUsageType:tUJaLuV2G:1"
+          },
+          {
+            "WorkflowPersona": "-4:reference-data--WorkflowPersonaType:rj%:G6e:0:4949590",
+            "WorkflowUsage": "gc.60.Ap-Rp:reference-data--WorkflowUsageType:Oe4c:0470136"
+          }
+        ]
+      },
+      {
+        "TechnicalAssuranceTypeID": "epqZqlQGK:reference-data--TechnicalAssuranceType:L2Y1TR:816",
+        "EffectiveDate": "1954-01-31",
+        "UnacceptableUsage": [
+          {
+            "WorkflowPersona": "uR.:reference-data--WorkflowPersonaType:GK:11746126",
+            "WorkflowUsage": "JPwT_0TtwG:reference-data--WorkflowUsageType:p:hsk8Qx8LI:612676647"
+          },
+          {
+            "WorkflowPersona": "bDbi3:reference-data--WorkflowPersonaType:x.Kwq79:",
+            "WorkflowUsage": "PH9:reference-data--WorkflowUsageType:.:6877758964"
+          },
+          {
+            "WorkflowPersona": "LvfLx58J3s:reference-data--WorkflowPersonaType:vy1CP%:503823",
+            "WorkflowUsage": "BwpfK:reference-data--WorkflowUsageType:lF:yGnVuBMT:9578059367"
+          }
+        ],
+        "Reviewers": [
+          {
+            "EmailAddress": "dolore quis sed mollit ipsum",
+            "Name": "veniam ullamco do id fugiat",
+            "RoleTypeID": "WuXe:reference-data--ContactRoleType:IKg7lUmI:57186",
+            "OrganisationID": "vWq:master-data--Organisation:O-:1684377278",
+            "Comment": "ad nisi id",
+            "PhoneNumber": "fugiat"
+          },
+          {
+            "Comment": "pariatur eiusmod amet magna proident",
+            "EmailAddress": "proident aliquip pariatur laboris nulla",
+            "PhoneNumber": "reprehenderit esse Lorem",
+            "OrganisationID": "9OjbXacuRhL:master-data--Organisation:u%lQSR:79",
+            "Name": "veniam est aute dolore proident",
+            "RoleTypeID": "bY:reference-data--ContactRoleType:v.tS:9"
+          }
+        ],
+        "AcceptableUsage": [
+          {
+            "WorkflowUsage": "vVd:reference-data--WorkflowUsageType:n4::4",
+            "WorkflowPersona": "4VMfVT:reference-data--WorkflowPersonaType:gBo_Vb:57746"
+          },
+          {
+            "WorkflowPersona": "Lsc_Bw94iO:reference-data--WorkflowPersonaType:lE7qQGd:832",
+            "WorkflowUsage": "9Mb20:reference-data--WorkflowUsageType:BAzZ2PQw::836"
+          }
+        ],
+        "Comment": "ex Duis et"
+      }
+    ],
+
     "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Ee8F:0440185630",
     "HoleTypeLogging": "OPENHOLE",
     "ToolStringDescription": "in aliqua",

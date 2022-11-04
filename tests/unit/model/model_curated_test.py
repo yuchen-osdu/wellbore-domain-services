@@ -1,7 +1,5 @@
-import fractions
 import typing
 from collections import deque
-from datetime import timedelta
 
 import pydantic
 from string import printable
@@ -13,7 +11,6 @@ from hypothesis import (
     settings,
     Verbosity,
     HealthCheck,
-    reproduce_failure,
 )
 from hypothesis import strategies as st
 from pydantic import ValidationError
@@ -23,7 +20,9 @@ import app.model.model_curated as model
 # need to import all data fixtures as we use them in decorators here
 from app.model.model_utils import from_record, to_record
 from ..data import *
-from ..data.model_examples import load_model_example_file_contents
+
+
+pytestmark = [pytest.mark.slow, pytest.mark.hypothesis, pytest.mark.serial]
 
 
 # typing utils
@@ -93,7 +92,7 @@ def everything_except(*excluded_types):
                         return instance_of
 
             else:
-                raise NotImplemented(
+                raise NotImplementedError(
                     f"isinstance_check_hint not implemented for {hint}"
                 )
 

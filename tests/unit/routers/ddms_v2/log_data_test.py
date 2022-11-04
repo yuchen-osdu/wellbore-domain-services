@@ -12,32 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-from tests.unit.test_utils import create_mock_class
-
-from fastapi import HTTPException, Header
-from fastapi.testclient import TestClient
-import pytest
-
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
-
-
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.helper import traces
-from app.auth.auth import require_opendes_authorized_user
-from app.middleware import require_data_partition_id
-
-from app.context import Context
-from app.wdms_app import wdms_app, app_injector
-from app.clients import *
 
 from fastapi import status
+from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
+import pytest
 
+from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
 
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
 data_partition_id = 'test_partition'
 
@@ -66,38 +47,19 @@ headers = {"data-partition-id": data_partition_id}
 
 prev_data = {"columns": ["col_100X"], "data": [[0], [1], [2]], 'index': [0, 1, 2]}
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
+
+@pytest.fixture
+def client(tmp_path, app_configurable_with_testclient):
+    _, client = app_configurable_with_testclient(
+        storage_client_mock=StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1'),
+        blob_storage_base_mock=LocalFSBlobStorage(directory=tmp_path)
+    )
+
+    return client
 
 
 @pytest.fixture
-def client(tmp_path):
-
-    async def storage_service_builder(*args, **kwargs):
-        return StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1')
-
-    async def blob_storage_builder(*args, **kwargs):
-        return LocalFSBlobStorage(directory=tmp_path)
-
-    async def set_default_partition(data_partition_id: str = Header('opendes')):
-        Context.set_current_with_value(partition_id=data_partition_id)
-
-    app_injector.register(BlobStorageBase, blob_storage_builder)
-    app_injector.register(StorageRecordServiceClient, storage_service_builder)
-
-    async def do_nothing():
-        # empty method
-        pass
-
-    wdms_app.dependency_overrides[require_opendes_authorized_user] = do_nothing
-    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-
-    yield TestClient(wdms_app)
-
-    wdms_app.dependency_overrides = {}  # clean up
-
-
-@pytest.fixture
-def client_with_log(client):
+def client_with_log(client, nope_logger_fixture):
     # Create or update a log record
     response = client.post("/ddms/v2/logs", json=[log_payload], headers=headers)
     assert response.status_code in range(200, 209), "Create or update log failed"

@@ -73,6 +73,7 @@
     ]
   },
   "data": {
+    "TechnicalAssuranceTypeID": "h17:reference-data--TechnicalAssuranceType:QpX6Xh:8",
     "TechnicalAssuranceID": "namespace:reference-data--TechnicalAssuranceType:Ee8F:0440185630",
     "DefinitiveTrajectoryID": "V8I4K6yfJ:work-product-component--WellboreTrajectory:d9:6",
     "DrillingReasons": [

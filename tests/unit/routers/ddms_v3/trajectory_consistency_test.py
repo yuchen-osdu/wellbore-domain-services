@@ -1,52 +1,22 @@
+from unittest.mock import AsyncMock, create_autospec, patch
+
+from fastapi import status
+from odes_storage.models import CreateUpdateRecordsResponse
 import pytest
-from fastapi import Header, status
-from fastapi.testclient import TestClient
 
-from app.auth.auth import require_opendes_authorized_user
-from app.clients import SearchServiceClient, StorageRecordServiceClient
-from app.helper import traces
-from app.middleware import require_data_partition_id
-from app.context import Context
-from app.wdms_app import app_injector, wdms_app
-from tests.unit.test_utils import create_mock_class
+from app.clients import StorageRecordServiceClient
 
 
-StorageRecordServiceClientMock = create_mock_class(StorageRecordServiceClient)
-SearchServiceClientMock = create_mock_class(SearchServiceClient)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
 
 
 @pytest.fixture
-def client(nope_logger_fixture):
-    async def bypass_authorization():
-        # empty method
-        pass
+def client(app_configurable_with_testclient, nope_logger_fixture):
+    _, client = app_configurable_with_testclient(
+        storage_client_mock=storage_record_service_client_mock,
+    )
+    return client
 
-    async def set_default_partition(data_partition_id: str = Header("opendes")):
-        Context.set_current_with_value(partition_id=data_partition_id)
-
-    async def build_mock_storage():
-        return StorageRecordServiceClientMock()
-
-    async def build_mock_search():
-        return SearchServiceClientMock()
-
-    app_injector.register(StorageRecordServiceClient, build_mock_storage)
-    app_injector.register(SearchServiceClient, build_mock_search)
-
-    # override authentication dependency
-    previous_overrides = wdms_app.dependency_overrides
-
-    try:
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-        client = TestClient(wdms_app)
-        yield client
-    finally:
-        wdms_app.dependency_overrides = previous_overrides  # clean up
-
-
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
 
 legal = {"legaltags": ["foo"], "otherRelevantDataCountries": ["FR"]}
 acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
@@ -107,6 +77,8 @@ acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
         None,
     ],
 )
+@patch.object(storage_record_service_client_mock, 'create_or_update_records',
+              AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
 def test_post_v3_consistent_trajectory(client, available_trajectory_station_properties):
     response = client.post(
         url="/ddms/v3/wellboretrajectories",
@@ -127,7 +99,6 @@ def test_post_v3_consistent_trajectory(client, available_trajectory_station_prop
         headers={"content-type": "application/json"},
     )
     assert response.status_code == status.HTTP_200_OK
-
 
 
 @pytest.mark.parametrize(
