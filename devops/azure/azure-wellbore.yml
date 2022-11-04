@@ -124,6 +124,7 @@ azure_deploy:
       - $AZURE_SKIP_DEPLOY == 'true'
 azure_test_py:
   image: mcr.microsoft.com/mirror/docker/library/python:3.8-slim
+  tags: ["osdu-small"]
   stage: integration
   needs: ["azure_deploy"]
   allow_failure: true

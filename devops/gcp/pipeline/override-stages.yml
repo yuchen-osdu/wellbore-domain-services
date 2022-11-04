@@ -40,6 +40,7 @@ osdu-gcp-test-python:
   extends: .osdu-gcp-variables
   stage: integration
   image: python:3.8
+  tags: ["osdu-small"]
   needs: ["osdu-gcp-deploy-deployment"]
   script:
     - bash
@@ -106,6 +107,7 @@ osdu-gcp-anthos-test-python:
   extends: .osdu-gcp-anthos-variables
   stage: integration
   image: python:3.8
+  tags: ["osdu-small"]
   needs: ["osdu-gcp-anthos-deploy-deployment"]
   script:
     - bash
