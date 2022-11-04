@@ -41,6 +41,7 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
 
+    # for compile-and-unit-test
   - project: "osdu/platform/ci-cd-pipelines"
     file: "build/python.yml"
 
@@ -53,16 +54,22 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/osdu-gcp-global.yml"
 
+  # IBM it tests "ibm-test"
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: "cla/disable_randomly_in_wdms_it_test" # DO NOT MERGE
     file: "cloud-providers/ibm-wellbore-git.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
 
+  # AWS it tests "aws-test-python" will run local test/aws-test/buid-aws/run-integration-tests.sh
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
 
+  # AZURE it tests "azure_test_py"
   - local: "/devops/azure/azure-wellbore.yml"
+
+  # GCP it tests "osdu-gcp-test-python" & "osdu-gcp-anthos-test-python"
   - local: "devops/gcp/pipeline/override-stages.yml"
 
 #Override Python Image defined in python.yml
@@ -154,5 +161,7 @@ ibm-test:
 # Allow failure on private development deployments
 ibm-deploy-devpri:
   allow_failure: true
+
+# Allow failure on AWS flacky it test
 aws-test-python:
   allow_failure: true

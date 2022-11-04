@@ -50,7 +50,7 @@ osdu-gcp-test-python:
     - python3 -m venv env
     - source env/bin/activate
     - pip install --upgrade pip
-    - pip install wheel pytest pytest-cov
+    - pip install wheel
     - >
       for REQ in $PIP_REQUIREMENTS ; do
         pip install -r $REQ
@@ -67,7 +67,7 @@ osdu-gcp-test-python:
       --data_partition $OSDU_GCP_TENANT
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
-    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
+    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search -p no:randomly
 
 osdu-gcp-dev2-test-python:
   extends: .osdu-gcp-dev2-variables
@@ -121,7 +121,7 @@ osdu-gcp-anthos-test-python:
     - python3 -m venv env
     - source env/bin/activate
     - pip install --upgrade pip
-    - pip install wheel pytest pytest-cov
+    - pip install wheel
     - >
       for REQ in $PIP_REQUIREMENTS ; do
         pip install -r $REQ
@@ -135,7 +135,7 @@ osdu-gcp-anthos-test-python:
       --data_partition $OSDU_GCP_TENANT
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
-    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking'
+    - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking' -p no:randomly
 
 # Disable maven job in gcp common gke pipelines
 osdu-gcp-test:
