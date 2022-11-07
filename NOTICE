@@ -278,7 +278,7 @@ The following software have components provided under the terms of this license:
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
 - distributed (from https://distributed.dask.org)
-- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/)
+- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
 - fastapi (from https://github.com/tiangolo/fastapi)
 - grpcio (from https://grpc.io)
@@ -376,8 +376,6 @@ The following software have components provided under the terms of this license:
 ========================================================================
 Protobuf
 ========================================================================
-The following software have components provided under the terms of this license:
-
 - protobuf (from https://developers.google.com/protocol-buffers/)
 
 ========================================================================
@@ -388,7 +386,7 @@ The following software have components provided under the terms of this license:
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - coverage (from https://github.com/nedbat/coveragepy)
 - distributed (from https://distributed.readthedocs.io/en/latest/)
-- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/)
+- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
 - numpy
