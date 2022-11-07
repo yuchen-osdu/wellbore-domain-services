@@ -56,7 +56,6 @@ include:
 
   # IBM it tests "ibm-test"
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: "cla/disable_randomly_in_wdms_it_test" # DO NOT MERGE
     file: "cloud-providers/ibm-wellbore-git.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
