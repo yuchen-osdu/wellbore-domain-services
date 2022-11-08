@@ -74,6 +74,7 @@ The following software have components provided under the terms of this license:
 - ply (from http://www.dabeaz.com/ply/)
 - prometheus-client (from https://github.com/prometheus/client_python)
 - protobuf (from https://developers.google.com/protocol-buffers/)
+- pyarrow (from https://arrow.apache.org/)
 - pyasn1 (from http://sourceforge.net/projects/pyasn1/, https://github.com/etingof/pyasn1)
 - pyasn1-modules (from http://sourceforge.net/projects/pyasn1/, https://github.com/etingof/pyasn1-modules)
 - pycparser (from https://github.com/eliben/pycparser)
