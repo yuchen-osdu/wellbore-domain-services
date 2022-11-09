@@ -72,7 +72,9 @@ azure-storage-blob==12.13.1
     #   adlfs
     #   osdu-core-lib-python-azure
 backoff==1.11.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   osdu-core-lib-python-azure
 boto3==1.17.106
     # via
     #   aiobotocore
@@ -266,7 +268,7 @@ osdu-core-lib-python-anthos==1.0.0
     # via -r requirements.in
 osdu-core-lib-python-aws==1.0.1
     # via -r requirements.in
-osdu-core-lib-python-azure==3.0.0
+osdu-core-lib-python-azure==3.0.3
     # via -r requirements.in
 osdu-core-lib-python-gcp==2.0.0
     # via -r requirements.in
