@@ -2,7 +2,7 @@ fastapi==0.68.2
 pydantic>=1.9
 aiohttp==3.7.4.post0
 cryptography>=2.7
-pyarrow>=4.0.1
+pyarrow==9.0.0
 pandas==1.4.1
 uvicorn
 Click
