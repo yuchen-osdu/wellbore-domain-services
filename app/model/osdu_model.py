@@ -527,6 +527,32 @@ class AbstractFacilityEvent100(DDMSBaseModel):
     )
 
 
+class AbstractFacilityEvent110(DDMSBaseModel):
+    """
+    A significant occurrence in the life of a facility, which often changes its state, or the state of one of its components. It can describe a point-in-time (event) or a time interval of a specific type (FacilityEventType).
+    """
+
+    FacilityEventTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-FacilityEventType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="The facility event type is a picklist. Examples: 'Permit', 'Spud', 'Abandon', etc.",
+    )
+    EffectiveDateTime: Optional[datetime] = Field(
+        None,
+        description='The date and time at which the event took place or takes effect.',
+    )
+    TerminationDateTime: Optional[datetime] = Field(
+        None,
+        description="The date and time at which the event is no longer in effect. For point-in-time events the 'TerminationDateTime' must be set equal to 'EffectiveDateTime'. Open time intervals have an absent 'TerminationDateTime'.",
+    )
+    Remark: Optional[str] = Field(
+        None, description='A comment or remark about the facility event.'
+    )
+
+
 class AbstractFacilityOperator100(DDMSBaseModel):
     """
     The organisation that was responsible for a facility at some point in time.
@@ -550,6 +576,35 @@ class AbstractFacilityOperator100(DDMSBaseModel):
     TerminationDateTime: Optional[datetime] = Field(
         None,
         description="The date and time at which the facility operator is no longer in effect. If the operator is still effective, the 'TerminationDateTime' is left absent.",
+    )
+
+
+class AbstractFacilityOperator110(DDMSBaseModel):
+    """
+    The organisation that was responsible for a facility at some point in time.
+    """
+
+    FacilityOperatorID: Optional[str] = Field(
+        None,
+        description="Internal, unique identifier for an item 'AbstractFacilityOperator'. This identifier is used by 'AbstractFacility.CurrentOperatorID' and 'AbstractFacility.InitialOperatorID'.",
+        title='Facility Operator ID',
+    )
+    FacilityOperatorOrganisationID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The company that currently operates, or previously operated the facility',
+    )
+    EffectiveDateTime: Optional[datetime] = Field(
+        None,
+        description='The date and time at which the facility operator becomes effective.',
+    )
+    TerminationDateTime: Optional[datetime] = Field(
+        None,
+        description="The date and time at which the facility operator is no longer in effect. If the operator is still effective, the 'TerminationDateTime' is left absent.",
+    )
+    Remark: Optional[str] = Field(
+        None, description='A comment or remark about the facility operator.'
     )
 
 
@@ -609,6 +664,32 @@ class AbstractFacilityState100(DDMSBaseModel):
     ] = Field(
         None,
         description='Life Cycle [Facility State Type] is a set of major phases that are significant to regulators and/or business stakeholders. Life Cycle may apply to a well or its components [or other facility].',
+    )
+
+
+class AbstractFacilityState110(DDMSBaseModel):
+    """
+    The life cycle status of a facility at some point in time.
+    """
+
+    EffectiveDateTime: Optional[datetime] = Field(
+        None,
+        description='The date and time at which the facility state becomes effective.',
+    )
+    TerminationDateTime: Optional[datetime] = Field(
+        None,
+        description='The date and time at which the facility state is no longer in effect.',
+    )
+    FacilityStateTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-FacilityStateType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Life Cycle [Facility State Type] is a set of major phases that are significant to regulators and/or business stakeholders. Life Cycle may apply to a well or its components [or other facility].',
+    )
+    Remark: Optional[str] = Field(
+        None, description='A comment or remark about the facility state.'
     )
 
 
@@ -1238,6 +1319,44 @@ class AbstractWellboreDrillingReason100(DDMSBaseModel):
     )
 
 
+class AbstractWellboreDrillingReason110(DDMSBaseModel):
+    """
+    Purpose for drilling a wellbore, which often is an indication of the level of risk.
+    """
+
+    LaheeClassID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-LaheeClass:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The Lahee classification, based on the traditional, commonly accepted, scheme to categorize wells by the general degree of risk assumed by the operator at the time of drilling.',
+        title='Lahee Class ID',
+    )
+    DrillingReasonTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-DrillingReasonType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='DEPRECATED: Superseded by LaheeClassID. Identifier of the drilling reason type for the corresponding time period.',
+        title='Drilling Reason Type ID',
+    )
+    EffectiveDateTime: Optional[datetime] = Field(
+        None,
+        description='The date and time at which the event becomes effective.',
+        title='Effective Date Time',
+    )
+    TerminationDateTime: Optional[datetime] = Field(
+        None,
+        description='The date and time at which the event is no longer in effect.',
+        title='Termination Date Time',
+    )
+    Remark: Optional[str] = Field(
+        None,
+        description='A remark or comment explaining the drilling reason or LaheeClass assignment.',
+        title='Remark',
+    )
+
+
 class AbstractFacility100(DDMSBaseModel):
     """
     The schema fragment included by facilities. A facility is a grouping of equipment that is located within a specific geographic boundary or site and that is used in the context of energy-related activities such as exploration, extraction, generation, storage, processing, disposal, supply, or transfer. Clarifications: (1) A facility may be surface or subsurface located. (2) Usually facility equipment is commonly owned or operated. (3) Industry definitions may vary and differ from this one. This schema fragment is included by Well, Wellbore, Rig, as well as Tank Batteries, Compression Stations, Storage Facilities, Wind Farms, Wind Turbines, Mining Facilities, etc., once these types are included in to the OSDU.
@@ -1292,6 +1411,73 @@ class AbstractFacility100(DDMSBaseModel):
         description='The history of life cycle states the facility has been through.',
     )
     FacilityEvents: Optional[List[AbstractFacilityEvent100]] = Field(
+        None, description='A list of key facility events.'
+    )
+    FacilitySpecifications: Optional[List[AbstractFacilitySpecification100]] = Field(
+        None,
+        description='facilitySpecification maintains the specification like slot name, wellbore drilling permit number, rig name etc.',
+    )
+
+
+class AbstractFacility110(DDMSBaseModel):
+    """
+    The schema fragment included by facilities. A facility is a grouping of equipment that is located within a specific geographic boundary or site and that is used in the context of energy-related activities such as exploration, extraction, generation, storage, processing, disposal, supply, or transfer. Clarifications: (1) A facility may be surface or subsurface located. (2) Usually facility equipment is commonly owned or operated. (3) Industry definitions may vary and differ from this one. This schema fragment is included by Well, Wellbore, Rig, as well as Tank Batteries, Compression Stations, Storage Facilities, Wind Farms, Wind Turbines, Mining Facilities, etc., once these types are included in to the OSDU.
+    """
+
+    FacilityID: Optional[str] = Field(
+        None,
+        description='Native identifier from a Master Data Management System or other trusted source external to OSDU - stored here in order to allow for multi-system connection and synchronization. If used, the "Source" property should identify that source system.',
+        title='External Facility Identifier',
+    )
+    FacilityTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-FacilityType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The definition of a kind of capability to perform a business function or a service.',
+    )
+    FacilityOperators: Optional[List[AbstractFacilityOperator110]] = Field(
+        None, description='The history of operator organizations of the facility.'
+    )
+    InitialOperatorID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='A initial operator organization ID; the organization ID may also be found in the FacilityOperatorOrganisationID of the FacilityOperator array providing the actual dates.',
+        title='Initial Operator ID',
+    )
+    CurrentOperatorID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The current operator organization ID; the organization ID may also be found in the FacilityOperatorOrganisationID of the FacilityOperator array providing the actual dates.',
+        title='Current Operator ID',
+    )
+    DataSourceOrganisationID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Organisation:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(None, description='The main source of the header information.')
+    OperatingEnvironmentID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-OperatingEnvironment:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="Identifies the Facility's general location as being onshore vs. offshore.",
+    )
+    FacilityName: Optional[str] = Field(None, description='Name of the Facility.')
+    FacilityDescription: Optional[str] = Field(
+        None,
+        description='A descriptive text or remark about the Facility.',
+        title='Facility Description',
+    )
+    FacilityNameAliases: Optional[List[AbstractAliasNames100]] = Field(
+        None,
+        description='DEPRECATED: please use data.NameAliases. Alternative names, including historical, by which this facility is/has been known.',
+    )
+    FacilityStates: Optional[List[AbstractFacilityState110]] = Field(
+        None,
+        description='The history of life cycle states the facility has been through.',
+    )
+    FacilityEvents: Optional[List[AbstractFacilityEvent110]] = Field(
         None, description='A list of key facility events.'
     )
     FacilitySpecifications: Optional[List[AbstractFacilitySpecification100]] = Field(
@@ -1892,6 +2078,99 @@ class WellData110(AbstractCommonResources100, AbstractMaster110, AbstractFacilit
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
 
+class WellData120(AbstractCommonResources100, AbstractMaster110, AbstractFacility110):
+    DefaultVerticalMeasurementID: Optional[str] = Field(
+        None,
+        description='The default datum reference point, or zero depth point, used to determine other points vertically in a well.  References an entry in the VerticalMeasurements array.',
+    )
+    DefaultVerticalCRSID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-CoordinateReferenceSystem:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The default vertical coordinate reference system used in the vertical measurements for a well or wellbore if absent from input vertical measurements and there is no other recourse for obtaining a valid CRS.',
+    )
+    VerticalMeasurements: Optional[List[VerticalMeasurementWell110]] = Field(
+        None,
+        description='List of all depths and elevations pertaining to the well, like, water depth, mud line elevation, etc.',
+    )
+    InterestTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellInterestType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="Business Interest [Well Interest Type] describes whether a company currently considers a well or its data to be a real or planned asset, and if so, the nature of and motivation for that company's interest.",
+    )
+    BusinessIntentionID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellBusinessIntention:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Business Intention [Well Business Intention] is the general purpose for which resources are approved for drilling a new well or subsequent wellbore(s).',
+        title='Business Intention ID',
+    )
+    RoleID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-WellRole:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description="Role [Well Role] is the current purpose, whether planned or actual. If there are multiple Roles among a well's components, the well may be assigned the facet value with the highest significance. The value of Role may change over the Life Cycle.",
+        title='Role ID',
+    )
+    HistoricalInterests: Optional[List[HistoricalInterest]] = Field(
+        None,
+        description='The list of past and present interests associated with the time period they were/are valid',
+        title='Historical Interests',
+    )
+    WasBusinessInterestFinancialOperated: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been FinancialOperated in the past.',
+        title='BusinessInterestFinancialOperatedFormerly',
+    )
+    WasBusinessInterestFinancialNonOperated: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been FinancialNonOperated in the past.',
+        title='BusinessInterestFinancialNonOperatedFormerly',
+    )
+    WasBusinessInterestObligatory: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been Obligatory in the past.',
+        title='BusinessInterestObligatoryFormerly',
+    )
+    WasBusinessInterestTechnical: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this well has ever been Technical in the past.',
+        title='BusinessInterestTechnicalFormerly',
+    )
+    ConditionID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-WellCondition:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Condition [Well Condition] is the operational state of a well component relative to the Role [Well Role].',
+        title='ConditionID',
+    )
+    OutcomeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellBusinessIntentionOutcome:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Outcome [Well Drilling Outcome] is the result of attempting to accomplish the Business Intention [Well Business Intention].',
+        title='OutcomeID',
+    )
+    StatusSummaryID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellStatusSummary:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Identifies the status of a well component in a way that may combine and-or summarize concepts found in other status facets. For example, a Well Status Summary of Gas Injector Shut-in, which contains commonly desired business information, combines concepts from Product Type, Fluid Direction, and Condition.',
+        title='StatusSummaryID',
+    )
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
 
 class WellData(AbstractCommonResources100, AbstractMaster100, AbstractFacility100):
     DefaultVerticalMeasurementID: Optional[str] = Field(
@@ -1995,6 +2274,82 @@ class Well110(DDMSBaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellData110] = None
+
+
+class Well120(DDMSBaseModel):
+    """
+    The origin of a set of wellbores.
+    """
+
+    id: Optional[constr(regex=r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:master-data--Well:6c60ceb0-3521-57b7-9bd8-e1d7c9f66230',
+        title='Entity ID',
+    )
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:master-data--Well:1.2.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs, from which this record instance is derived.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellData120] = None
 
 
 class Well(DDMSBaseModel):
@@ -4336,6 +4691,184 @@ class WellBoreData111(AbstractCommonResources100, AbstractMaster110, AbstractFac
     ExtensionProperties: Optional[Dict[str, Any]] = None
 
 
+class WellBoreData120(AbstractCommonResources100, AbstractMaster110, AbstractFacility110):
+    WellID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+:[0-9]*$')
+    ] = None
+    SequenceNumber: Optional[int] = Field(
+        None,
+        description='A number that indicates the order in which wellbores were drilled.',
+    )
+    VerticalMeasurements: Optional[List[VerticalMeasurementWellbore110]] = Field(
+        None,
+        description='List of all depths and elevations pertaining to the wellbore, like, plug back measured depth, total measured depth, KB elevation',
+    )
+    DrillingReasons: Optional[List[AbstractWellboreDrillingReason110]] = Field(
+        None, description='The history of drilling reasons of the wellbore.'
+    )
+    KickOffWellbore: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='This is a pointer to the parent wellbore. The wellbore that starts from top has no parent.',
+    )
+    TrajectoryTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellboreTrajectoryType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Profile Type [Wellbore Trajectory Type] is the general geometry of the wellbore relative to the vertical plane. The specific criteria for Profile Type may vary by operator or regulator. The facet value may change if conditions encountered during drilling are not what was planned or permitted.',
+    )
+    DefinitiveTrajectoryID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='SRN of Wellbore Trajectory which is considered the authoritative or preferred version.',
+    )
+    TargetFormation: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-GeologicalFormation:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The Formation of interest for which the Wellbore is drilled to interact with. The Wellbore may terminate in a lower formation if the requirement is to drill through the entirety of the target formation, therefore this is not necessarily the Formation at TD.',
+    )
+    PrimaryMaterialID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-MaterialType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='DEPRECATED: Please use PrimaryProductTypeID instead, which refers to the narrower WellProductType. The primary material injected/produced from the wellbore.',
+    )
+    DefaultVerticalMeasurementID: Optional[str] = Field(
+        None,
+        description='The default datum reference point, or zero depth point, used to determine other points vertically in a wellbore.  References an entry in the Vertical Measurements array of this wellbore.',
+    )
+    ProjectedBottomHoleLocation: Optional[AbstractSpatialLocation110] = Field(
+        None,
+        description="The bottom hole location of the wellbore denoted by a projected horizontal coordinate reference system (Horizontal CRS), such a UTM zone. 'Projected' in this property does not mean 'planned' or 'projected-to-bit'. If both GeographicBottomHoleLocation and ProjectedBottomHoleLocation properties are populated on this wellbore, they must identify the same point, just in different CRSs.",
+    )
+    GeographicBottomHoleLocation: Optional[AbstractSpatialLocation110] = Field(
+        None,
+        description='The bottom hole location of the wellbore denoted by a specified geographic horizontal coordinate reference system (Horizontal CRS), such as WGS84, NAD27, or ED50. If both GeographicBottomHoleLocation and ProjectedBottomHoleLocation properties are populated on this wellbore, they must identify the same point, just in different CRSs.',
+    )
+    BusinessIntentionID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellBusinessIntention:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Business Intention [Well Business Intention] is the general purpose for which resources are approved for drilling a new well or subsequent wellbore(s).',
+    )
+    RoleID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-WellRole:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description="Role [Well Role] is the current purpose, whether planned or actual. If there are multiple Roles among a wellbore's components, the well may be assigned the facet value with the highest significance. The value of Role may change over the Life Cycle.",
+    )
+    InterestTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellInterestType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="Business Interest [Well Interest Type] describes whether a company currently considers a wellbore entity or its data to be a real or planned asset, and if so, the nature of and motivation for that company's interest.",
+    )
+    HistoricalInterests: Optional[List[HistoricalInterest]] = Field(
+        None,
+        description='The list of past and present interests associated with the time period they were/are valid',
+    )
+    WasBusinessInterestFinancialOperated: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been FinancialOperated in the past.',
+    )
+    WasBusinessInterestFinancialNonOperated: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been FinancialNonOperated in the past.',
+    )
+    WasBusinessInterestObligatory: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been Obligatory in the past.',
+    )
+    WasBusinessInterestTechnical: Optional[bool] = Field(
+        None,
+        description='Identifies, for the purpose of current use, if the Business Interest [Well Interest Type] for this Well has ever been Technical in the past.',
+    )
+    WellboreTrajectoryTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellboreTrajectoryType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='DEPRECATED: Added accidentally in version 1.1.0. Please use the original TrajectoryTypeID instead. Profile Type [Wellbore Trajectory Type] is the general geometry of the wellbore relative to the vertical plane. The specific criteria for Profile Type may vary by operator or regulator. The facet value may change if conditions encountered during drilling are not what was planned or permitted.',
+    )
+    PrimaryProductTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellProductType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Primary Product Significance identifies the Product Type that is most significant.',
+    )
+    SecondaryProductTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellProductType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Secondary Product Significance identifies the Product Type that is the second most significant.',
+    )
+    TertiaryProductTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellProductType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Tertiary Product Significance identifies the Product Type that is the third most significant.',
+    )
+    ShowProductTypeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellProductType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Product Type [Well Product Type] is the physical product(s) that can be attributed to any wellbore component. A Show Product Significance identifies a Product Type present in non-commercial quantity.',
+    )
+    ConditionID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-WellCondition:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Condition [Well Condition] is the operational state of a wellbore component relative to the Role [Well Role].',
+    )
+    FluidDirectionID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellFluidDirection:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Fluid Direction [Well Fluid Direction] is the flow direction of the wellhead stream. The facet value can change over the life of the wellbore.',
+    )
+    OutcomeID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellBusinessIntentionOutcome:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Outcome [Well Drilling Outcome] is the result of attempting to accomplish the Business Intention [Well Business Intention].',
+    )
+    StatusSummaryID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-WellStatusSummary:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Identifies the status of a wellbore component in a way that may combine and-or summarize concepts found in other status facets. For example, a Wellbore Status Summary of Gas Injector Shut-in, which contains commonly desired business information, combines concepts from Product Type, Fluid Direction, and Condition.',
+    )
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
 class Wellbore110(DDMSBaseModel):
     """
     A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.
@@ -4490,3 +5023,81 @@ class Wellbore111(DDMSBaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellBoreData111] = None
+
+
+class Wellbore120(DDMSBaseModel):
+    """
+    A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.
+    """
+
+    id: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')
+    ] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9',
+        title='Entity ID',
+    )
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:master-data--Wellbore:1.2.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs, from which this record instance is derived.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellBoreData120] = None

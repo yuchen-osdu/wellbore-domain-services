@@ -263,7 +263,7 @@
         "title": "AbstractContact100",
         "type": "object"
       },
-      "AbstractFacilityEvent100": {
+      "AbstractFacilityEvent110": {
         "additionalProperties": false,
         "description": "A significant occurrence in the life of a facility, which often changes its state, or the state of one of its components. It can describe a point-in-time (event) or a time interval of a specific type (FacilityEventType).",
         "properties": {
@@ -279,6 +279,11 @@
             "title": "Facilityeventtypeid",
             "type": "string"
           },
+          "Remark": {
+            "description": "A comment or remark about the facility event.",
+            "title": "Remark",
+            "type": "string"
+          },
           "TerminationDateTime": {
             "description": "The date and time at which the event is no longer in effect. For point-in-time events the 'TerminationDateTime' must be set equal to 'EffectiveDateTime'. Open time intervals have an absent 'TerminationDateTime'.",
             "format": "date-time",
@@ -286,10 +291,10 @@
             "type": "string"
           }
         },
-        "title": "AbstractFacilityEvent100",
+        "title": "AbstractFacilityEvent110",
         "type": "object"
       },
-      "AbstractFacilityOperator100": {
+      "AbstractFacilityOperator110": {
         "additionalProperties": false,
         "description": "The organisation that was responsible for a facility at some point in time.",
         "properties": {
@@ -310,6 +315,11 @@
             "title": "Facilityoperatororganisationid",
             "type": "string"
           },
+          "Remark": {
+            "description": "A comment or remark about the facility operator.",
+            "title": "Remark",
+            "type": "string"
+          },
           "TerminationDateTime": {
             "description": "The date and time at which the facility operator is no longer in effect. If the operator is still effective, the 'TerminationDateTime' is left absent.",
             "format": "date-time",
@@ -317,7 +327,7 @@
             "type": "string"
           }
         },
-        "title": "AbstractFacilityOperator100",
+        "title": "AbstractFacilityOperator110",
         "type": "object"
       },
       "AbstractFacilitySpecification100": {
@@ -373,7 +383,7 @@
         "title": "AbstractFacilitySpecification100",
         "type": "object"
       },
-      "AbstractFacilityState100": {
+      "AbstractFacilityState110": {
         "additionalProperties": false,
         "description": "The life cycle status of a facility at some point in time.",
         "properties": {
@@ -389,6 +399,11 @@
             "title": "Facilitystatetypeid",
             "type": "string"
           },
+          "Remark": {
+            "description": "A comment or remark about the facility state.",
+            "title": "Remark",
+            "type": "string"
+          },
           "TerminationDateTime": {
             "description": "The date and time at which the facility state is no longer in effect.",
             "format": "date-time",
@@ -396,7 +411,7 @@
             "type": "string"
           }
         },
-        "title": "AbstractFacilityState100",
+        "title": "AbstractFacilityState110",
         "type": "object"
       },
       "AbstractFacilityVerticalMeasurement100": {
@@ -809,30 +824,41 @@
         "title": "AbstractTechnicalAssurance100",
         "type": "object"
       },
-      "AbstractWellboreDrillingReason100": {
+      "AbstractWellboreDrillingReason110": {
         "additionalProperties": false,
         "description": "Purpose for drilling a wellbore, which often is an indication of the level of risk.",
         "properties": {
           "DrillingReasonTypeID": {
-            "description": "Identifier of the drilling reason type for the corresponding time period.",
+            "description": "DEPRECATED: Superseded by LaheeClassID. Identifier of the drilling reason type for the corresponding time period.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-DrillingReasonType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
-            "title": "Drillingreasontypeid",
+            "title": "Drilling Reason Type ID",
             "type": "string"
           },
           "EffectiveDateTime": {
             "description": "The date and time at which the event becomes effective.",
             "format": "date-time",
-            "title": "Effectivedatetime",
+            "title": "Effective Date Time",
+            "type": "string"
+          },
+          "LaheeClassID": {
+            "description": "The Lahee classification, based on the traditional, commonly accepted, scheme to categorize wells by the general degree of risk assumed by the operator at the time of drilling.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-LaheeClass:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Lahee Class ID",
+            "type": "string"
+          },
+          "Remark": {
+            "description": "A remark or comment explaining the drilling reason or LaheeClass assignment.",
+            "title": "Remark",
             "type": "string"
           },
           "TerminationDateTime": {
             "description": "The date and time at which the event is no longer in effect.",
             "format": "date-time",
-            "title": "Terminationdatetime",
+            "title": "Termination Date Time",
             "type": "string"
           }
         },
-        "title": "AbstractWellboreDrillingReason100",
+        "title": "AbstractWellboreDrillingReason110",
         "type": "object"
       },
       "AcceptableUsageItem": {
@@ -4131,7 +4157,7 @@
         "title": "Viewer",
         "type": "string"
       },
-      "Well110": {
+      "Well120": {
         "additionalProperties": false,
         "description": "The origin of a set of wellbores.",
         "properties": {
@@ -4167,7 +4193,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellData110"
+            "$ref": "#/components/schemas/WellData120"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -4178,7 +4204,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:master-data--Well:1.1.0",
+            "example": "osdu:wks:master-data--Well:1.2.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -4234,10 +4260,10 @@
           "acl",
           "legal"
         ],
-        "title": "Well110",
+        "title": "Well120",
         "type": "object"
       },
-      "WellBoreData111": {
+      "WellBoreData120": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4279,7 +4305,7 @@
           "DrillingReasons": {
             "description": "The history of drilling reasons of the wellbore.",
             "items": {
-              "$ref": "#/components/schemas/AbstractWellboreDrillingReason100"
+              "$ref": "#/components/schemas/AbstractWellboreDrillingReason110"
             },
             "title": "Drillingreasons",
             "type": "array"
@@ -4294,10 +4320,15 @@
             "title": "Extensionproperties",
             "type": "object"
           },
+          "FacilityDescription": {
+            "description": "A descriptive text or remark about the Facility.",
+            "title": "Facility Description",
+            "type": "string"
+          },
           "FacilityEvents": {
             "description": "A list of key facility events.",
             "items": {
-              "$ref": "#/components/schemas/AbstractFacilityEvent100"
+              "$ref": "#/components/schemas/AbstractFacilityEvent110"
             },
             "title": "Facilityevents",
             "type": "array"
@@ -4323,7 +4354,7 @@
           "FacilityOperators": {
             "description": "The history of operator organizations of the facility.",
             "items": {
-              "$ref": "#/components/schemas/AbstractFacilityOperator100"
+              "$ref": "#/components/schemas/AbstractFacilityOperator110"
             },
             "title": "Facilityoperators",
             "type": "array"
@@ -4339,7 +4370,7 @@
           "FacilityStates": {
             "description": "The history of life cycle states the facility has been through.",
             "items": {
-              "$ref": "#/components/schemas/AbstractFacilityState100"
+              "$ref": "#/components/schemas/AbstractFacilityState110"
             },
             "title": "Facilitystates",
             "type": "array"
@@ -4591,10 +4622,10 @@
             "type": "string"
           }
         },
-        "title": "WellBoreData111",
+        "title": "WellBoreData120",
         "type": "object"
       },
-      "WellData110": {
+      "WellData120": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4643,10 +4674,15 @@
             "title": "Extensionproperties",
             "type": "object"
           },
+          "FacilityDescription": {
+            "description": "A descriptive text or remark about the Facility.",
+            "title": "Facility Description",
+            "type": "string"
+          },
           "FacilityEvents": {
             "description": "A list of key facility events.",
             "items": {
-              "$ref": "#/components/schemas/AbstractFacilityEvent100"
+              "$ref": "#/components/schemas/AbstractFacilityEvent110"
             },
             "title": "Facilityevents",
             "type": "array"
@@ -4672,7 +4708,7 @@
           "FacilityOperators": {
             "description": "The history of operator organizations of the facility.",
             "items": {
-              "$ref": "#/components/schemas/AbstractFacilityOperator100"
+              "$ref": "#/components/schemas/AbstractFacilityOperator110"
             },
             "title": "Facilityoperators",
             "type": "array"
@@ -4688,7 +4724,7 @@
           "FacilityStates": {
             "description": "The history of life cycle states the facility has been through.",
             "items": {
-              "$ref": "#/components/schemas/AbstractFacilityState100"
+              "$ref": "#/components/schemas/AbstractFacilityState110"
             },
             "title": "Facilitystates",
             "type": "array"
@@ -4852,7 +4888,7 @@
             "type": "boolean"
           }
         },
-        "title": "WellData110",
+        "title": "WellData120",
         "type": "object"
       },
       "WellLocationType": {
@@ -5402,7 +5438,7 @@
         ],
         "title": "WellType"
       },
-      "Wellbore111": {
+      "Wellbore120": {
         "additionalProperties": false,
         "description": "A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.",
         "properties": {
@@ -5438,7 +5474,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellBoreData111"
+            "$ref": "#/components/schemas/WellBoreData120"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5449,7 +5485,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:master-data--Wellbore:1.1.1",
+            "example": "osdu:wks:master-data--Wellbore:1.2.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5505,7 +5541,7 @@
           "acl",
           "legal"
         ],
-        "title": "Wellbore111",
+        "title": "Wellbore120",
         "type": "object"
       },
       "WellboreMarkerSet121": {
@@ -16478,6 +16514,7 @@
                   "data": {
                     "ConditionID": "{{datapartitionid}}:reference-data--WellCondition:Active:",
                     "ExtensionProperties": {},
+                    "FacilityDescription": "{{wellboreDescription}}",
                     "FacilityName": "{{wellboreName}}",
                     "FacilityNameAliases": [
                       {
@@ -16487,7 +16524,8 @@
                     ],
                     "FacilityOperators": [
                       {
-                        "FacilityOperatorID": "Francois Vinyes"
+                        "FacilityOperatorID": "OperatorID",
+                        "Remark": "Remark on facility operator"
                       }
                     ],
                     "FluidDirectionID": "{{datapartitionid}}:reference-data--WellFluidDirection:DualFlow:",
@@ -16585,7 +16623,7 @@
                     "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:"
                   },
                   "id": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
-                  "kind": "osdu:wks:master-data--Wellbore:1.1.1",
+                  "kind": "osdu:wks:master-data--Wellbore:1.2.0",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
@@ -16612,7 +16650,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/Wellbore111"
+                  "$ref": "#/components/schemas/Wellbore120"
                 },
                 "title": "Wellbores",
                 "type": "array"
@@ -16763,7 +16801,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Wellbore111"
+                  "$ref": "#/components/schemas/Wellbore120"
                 }
               }
             },
@@ -16918,7 +16956,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Wellbore111"
+                  "$ref": "#/components/schemas/Wellbore120"
                 }
               }
             },
@@ -20139,6 +20177,7 @@
                     "BusinessIntentionID": "{{datapartitionid}}:reference-data--WellBusinessIntention:Appraise:",
                     "ConditionID": "{{datapartitionid}}:reference-data--WellCondition:Active:",
                     "ExtensionProperties": {},
+                    "FacilityDescription": "{{wellDesscription}}",
                     "FacilityName": "{{wellName}}",
                     "FacilityNameAliases": [
                       {
@@ -20180,7 +20219,7 @@
                     "WasBusinessInterestTechnical": true
                   },
                   "id": "{{datapartitionid}}:master-data--Well:{{wellId}}",
-                  "kind": "osdu:wks:master-data--Well:1.1.0",
+                  "kind": "osdu:wks:master-data--Well:1.2.0",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
@@ -20195,7 +20234,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/Well110"
+                  "$ref": "#/components/schemas/Well120"
                 },
                 "title": "Wells",
                 "type": "array"
@@ -20346,7 +20385,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Well110"
+                  "$ref": "#/components/schemas/Well120"
                 }
               }
             },
@@ -20501,7 +20540,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Well110"
+                  "$ref": "#/components/schemas/Well120"
                 }
               }
             },
