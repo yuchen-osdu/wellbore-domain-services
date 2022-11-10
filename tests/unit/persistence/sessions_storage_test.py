@@ -37,7 +37,7 @@ from unittest.mock import patch, PropertyMock
 
 
 @pytest.fixture
-def sessions_storage(ctx_fixture, tmp_path):
+def sessions_storage(ctx_fixture, tmp_path, nope_logger_fixture):
     yield SessionsStorage(LocalFSBlobStorage(directory=tmp_path))
 
 

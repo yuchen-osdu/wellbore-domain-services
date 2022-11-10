@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import Mock, PropertyMock
 
 from app import wdms_app
+from app.routers.about import AboutResponse
 from app.middleware.basic_context_middleware import CreateBasicContextMiddleware
 from app.context import Context
 from starlette.datastructures import URL
@@ -93,7 +94,7 @@ def test_context_populated_from_request_headers(app_initialized_with_testclient)
         assert ctx.request_id == "my_request_id"
 
     #  hijack AboutResponse to spy context content
-    with mock.patch("app.routers.about.AboutResponse", mock.Mock(construct=assert_context_populated)):
+    with mock.patch.object(AboutResponse, "construct", side_effect=assert_context_populated):
         client.get("/about", headers={
             'data-partition-id': 'my_data_partition',
             'correlation-id': 'my_correlation_id',

@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import json
-from unittest.mock import AsyncMock, patch
+from unittest.mock import create_autospec, patch
 
-
-from fastapi import Header, HTTPException, status
-from fastapi.testclient import TestClient
+from fastapi import HTTPException, status
 from odes_search.models import CursorQueryResponse
 from odes_storage import UnexpectedResponse
 from odes_storage.models import (
@@ -29,11 +27,7 @@ import pytest
 from tests.unit.test_utils import make_record
 
 
-from app.auth.auth import require_opendes_authorized_user
 from app.clients import SearchServiceClient, StorageRecordServiceClient
-from app.context import Context
-from app.helper import traces
-from app.middleware import require_data_partition_id
 from app.model.entity_utils import Entity
 from app.model.model_curated import *
 from app.model.osdu_model import (
@@ -146,41 +140,17 @@ tests_parameters_for_recursive = [
 ]
 
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
-search_service_client_mock = AsyncMock(spec=SearchServiceClient)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
+search_service_client_mock = create_autospec(SearchServiceClient, spec_set=True, instance=True)
+
 
 @pytest.fixture
-def client(nope_logger_fixture):
-    async def bypass_authorization():
-        # empty method
-        pass
-
-    async def set_default_partition(data_partition_id: str = Header('opendes')):
-        Context.set_current_with_value(partition_id=data_partition_id)
-
-    async def build_mock_storage():
-        return storage_record_service_client_mock
-
-    async def build_mock_search():
-        return search_service_client_mock
-
-    app_injector.register(StorageRecordServiceClient, build_mock_storage)
-    app_injector.register(SearchServiceClient, build_mock_search)
-
-    # override authentication dependency
-    previous_overrides = wdms_app.dependency_overrides
-
-    try:
-        wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-        client = TestClient(wdms_app)
-        yield client
-    finally:
-        wdms_app.dependency_overrides = previous_overrides  # clean up
-
-
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
+def client(nope_logger_fixture, app_configurable_with_testclient):
+    _, client = app_configurable_with_testclient(
+        search_client_mock=search_service_client_mock,
+        storage_client_mock=storage_record_service_client_mock
+    )
+    return client
 
 
 def assert_called_once_with_partial(mock_inst, **expected_kwargs):

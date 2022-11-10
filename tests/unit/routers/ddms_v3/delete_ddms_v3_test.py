@@ -12,72 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import create_autospec, patch
 
-from fastapi import Header, HTTPException, status
-from fastapi.testclient import TestClient
+from fastapi import HTTPException, status
 from odes_storage.models import RecordVersions
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import pytest
 
-from app.auth.auth import require_opendes_authorized_user
 from app.bulk_persistence import DaskBulkStorage
 from app.clients import StorageRecordServiceClient
-from app.context import Context
-from app.helper import traces
-from app.middleware import require_data_partition_id
 from app.routers.delete import delete_bulk_data
-from app.wdms_app import app_injector, wdms_app
 
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
-blob_storage_mock = AsyncMock(spec=BlobStorageBase)
-
-
-@pytest.fixture
-def logger_fixture():
-    from app.helper import logger
-    logger._LOGGER = MagicMock()
-    yield logger._LOGGER
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
+blob_storage_mock = create_autospec(BlobStorageBase, spec_set=True, instance=True)
 
 
 @pytest.fixture
-def client_delete(logger_fixture):
-    async def bypass_authorization():
-        # empty method
-        pass
+def client_delete(app_configurable_with_testclient, nope_logger_fixture):
+    _, client = app_configurable_with_testclient(
+        storage_client_mock=storage_record_service_client_mock,
+        dask_bulk_storage_mock=create_autospec(DaskBulkStorage, spec_set=True, instance=True),
+        blob_storage_base_mock=blob_storage_mock,
+    )
+    return client
 
-    async def set_default_partition(data_partition_id: str = Header("opendes")):
-        Context.set_current_with_value(partition_id=data_partition_id)
-
-    async def build_mock_storage():
-        return storage_record_service_client_mock
-
-    async def build_mock_blob_storage():
-        return blob_storage_mock
-
-    async def build_mock_dask_bulk_storage():
-        return AsyncMock(spec=DaskBulkStorage)
-
-    app_injector.register(StorageRecordServiceClient, build_mock_storage)
-    app_injector.register(BlobStorageBase, build_mock_blob_storage)
-    app_injector.register(DaskBulkStorage, build_mock_dask_bulk_storage)
-    # override authentication dependency
-    previous_overrides = wdms_app.dependency_overrides
-
-    try:
-        wdms_app.dependency_overrides[
-            require_opendes_authorized_user
-        ] = bypass_authorization
-        wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-        client = TestClient(wdms_app)
-        yield client
-    finally:
-        wdms_app.dependency_overrides = previous_overrides  # clean up
-
-
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name="tested-ddms")
 
 record_bulk_uris = ['59c1ab7b-3bc9-4963-976d-815952bc8ddc', None, None, '87be6134-1b8f-43c0-a7f6-384a6a323f60', None,
                     '356eb799-ba19-49ea-814c-cdd8cf87553b', None, 'a764776c-a389-415b-a92c-af8366ce6901']
@@ -98,7 +57,7 @@ v3_entities = ["welllogs", "wellboretrajectories"]
     ("/ddms/v3/welllogs", "opendes:work-product-component--WellLog:00001234"),
     ("/ddms/v3/wellboretrajectories", "opendes:work-product-component--WellboreTrajectory:00001234")
 ])
-def test_delete_purge_record(client_delete, logger_fixture, url_base_path, record_id):
+def test_delete_purge_record(client_delete, nope_logger_fixture, url_base_path, record_id):
     record_versions = RecordVersions(record_id=record_id, versions=versions)
 
     with patch.object(storage_record_service_client_mock, "delete_record",
@@ -119,5 +78,5 @@ def test_delete_purge_record(client_delete, logger_fixture, url_base_path, recor
         )
         assert response.status_code == status.HTTP_204_NO_CONTENT
         for i in range(4):
-            logger_exception = logger_fixture.exception.mock_calls[i].args[0]
+            logger_exception = nope_logger_fixture.exception.mock_calls[i].args[0]
             assert logger_exception == "Exception on bulk versions deletion: Error 404 not found"

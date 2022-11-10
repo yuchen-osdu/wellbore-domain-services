@@ -44,6 +44,8 @@ cryptography==3.4.7
     #   pyjwt
 deepdiff==5.7.0
     # via -r requirements_dev.in
+execnet==1.9.0
+    # via pytest-xdist
 h11==0.12.0
     # via
     #   -c requirements.txt
@@ -65,6 +67,8 @@ idna==3.2
     #   anyio
     #   requests
     #   rfc3986
+importlib-metadata==5.0.0
+    # via pytest-randomly
 iniconfig==1.1.1
     # via pytest
 isodate==0.6.0
@@ -77,8 +81,6 @@ jsonschema==3.2.0
     #   -r requirements_dev.in
     #   openapi-schema-validator
     #   openapi-spec-validator
-mockito==1.2.2
-    # via -r requirements_dev.in
 munch==2.5.0
     # via -r requirements_dev.in
 numpy==1.22.2
@@ -109,7 +111,7 @@ pluggy==0.13.1
     # via pytest
 py==1.10.0
     # via pytest
-pyarrow==7.0.0
+pyarrow==9.0.0
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in
@@ -136,6 +138,8 @@ pytest==6.2.4
     #   pytest-cov
     #   pytest-dependency
     #   pytest-httpx
+    #   pytest-randomly
+    #   pytest-xdist
 pytest-asyncio==0.15.1
     # via -r requirements_dev.in
 pytest-cov==2.12.1
@@ -143,6 +147,10 @@ pytest-cov==2.12.1
 pytest-dependency==0.5.1
     # via -r requirements_dev.in
 pytest-httpx==0.21.0
+    # via -r requirements_dev.in
+pytest-randomly==3.12.0
+    # via -r requirements_dev.in
+pytest-xdist==3.0.2
     # via -r requirements_dev.in
 python-dateutil==2.8.2
     # via
@@ -195,6 +203,8 @@ urllib3==1.26.6
     #   requests
 wheel==0.36.2
     # via pip-tools
+zipp==3.10.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

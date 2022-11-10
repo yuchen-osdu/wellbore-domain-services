@@ -18,34 +18,34 @@ def dask_client(event_loop, local_bulk_persistence_config):
                   autoclose_asynccontext=True
                   ):
         with mock.patch("app.bulk_persistence.dask.localcluster.system_memory",
-                        mock.Mock(return_value=system_memory_mock)):
-            with mock.patch("app.bulk_persistence.dask.localcluster.recommended_workers_and_threads",
-                            mock.Mock(return_value=worker_threads_mock)):
+                        return_value=system_memory_mock),\
+                mock.patch("app.bulk_persistence.dask.localcluster.recommended_workers_and_threads",
+                           return_value=worker_threads_mock):
 
-                if autoclose_asynccontext:
-                    # an async context manager to handle the daskclient close() coroutine function
-                    @contextlib.asynccontextmanager
-                    async def start():
-                        try:
-                            # CAREFUL: this is for the test to await for it (required to be usable in app fixture).
-                            yield DaskClient.create  #TODO : call with parameters here to specify test env for dask ?
-                            # because of the async close, we need a coroutine,
-                            # and therefore an async context manager
-                            # to ensure dask is properly closed in the test using it
-                        finally:
-                            # we also need a try finally in case the create() itself is triggering an exception.
-                            # As the context manager will not take care of this,
-                            # we still should call close() to cleanup what should be cleaned.
-                            await DaskClient.close()
+            if autoclose_asynccontext:
+                # an async context manager to handle the daskclient close() coroutine function
+                @contextlib.asynccontextmanager
+                async def start():
+                    try:
+                        # CAREFUL: this is for the test to await for it (required to be usable in app fixture).
+                        yield DaskClient.create  #TODO : call with parameters here to specify test env for dask ?
+                        # because of the async close, we need a coroutine,
+                        # and therefore an async context manager
+                        # to ensure dask is properly closed in the test using it
+                    finally:
+                        # we also need a try finally in case the create() itself is triggering an exception.
+                        # As the context manager will not take care of this,
+                        # we still should call close() to cleanup what should be cleaned.
+                        await DaskClient.close()
 
-                    yield start
+                yield start
 
-                else:
+            else:
 
-                    # return a coroutine, it is the responsibility of the test to await on it
-                    # within its own eventloop
-                    yield DaskClient.create
+                # return a coroutine, it is the responsibility of the test to await on it
+                # within its own eventloop
+                yield DaskClient.create
 
-                    # the caller must also call Daskclient.close()
+                # the caller must also call Daskclient.close()
 
     return configure

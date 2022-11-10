@@ -1,5 +1,5 @@
 import re
-
+import copy
 import pytest
 
 
@@ -66,8 +66,26 @@ def generate_test_data():
         "columns": ["MD", "GR[0]", "GR[1]", "GR[2]"],
         "data": bulk_values
     }
+    def value_with_tolerance(v):
+        rel_tol = 9e-10
+        delta = abs(v) * rel_tol
+        return v + delta
 
-    curves_data = [{
+
+    nominal_case = {
+        "Curves": [
+            {"CurveID": "MD", "NumberOfColumns": 1, "LogCurveFamilyID": "osdu:reference-data--LogCurveFamily:Measured%20Depth:"},
+            {"CurveID": "GR", "NumberOfColumns": 3},
+        ],
+        "ReferenceCurveID": "MD",
+        "TopMeasuredDepth": value_with_tolerance(bulk_values[0][0]),
+        "SamplingStart": value_with_tolerance(bulk_values[0][0]),
+        "BottomMeasuredDepth": value_with_tolerance(bulk_values[-1][0]),
+        "BottomMeasuredDepth": value_with_tolerance(bulk_values[-1][0]),
+    }
+
+    other_cases = [
+        {
         "Curves": [
             {"CurveID": "MD", "NumberOfColumns": 1},
             {"CurveID": "GR", "NumberOfColumns": 3},
@@ -76,67 +94,33 @@ def generate_test_data():
             {"CurveID": "MD", "NumberOfColumns": 1, "LogCurveFamilyID": None},
             {"CurveID": "GR", "NumberOfColumns": 3},
         ]},
-        {"Curves": [
-            {"CurveID": "MD", "NumberOfColumns": 1, "LogCurveFamilyID": "osdu:reference-data--LogCurveFamily:Measured%20Depth:"},
-            {"CurveID": "GR", "NumberOfColumns": 3},
-        ]}
-    ]
-
-
-    def value_with_tolerance(v):
-        rel_tol = 9e-10
-        delta = abs(v) * rel_tol
-        return v + delta
-
-    reference_curve_data = [
-        {"ReferenceCurveID": "MD"},
         {"ReferenceCurveID": ""},
         {"ReferenceCurveID": None},
-        {}
-    ]
-    top_measured_depth_data = [
-        {"TopMeasuredDepth": value_with_tolerance(bulk_values[0][0])},
         {"TopMeasuredDepth": None},
-        {}
-    ]
-    sampling_start_data = [
-        {"SamplingStart": value_with_tolerance(bulk_values[0][0])},
         {"SamplingStart": None},
-        {}
-    ]
-    bottom_measured_depth_data = [
-        {"BottomMeasuredDepth": value_with_tolerance(bulk_values[-1][0])},
         {"BottomMeasuredDepth": None},
-        {}
-    ]
-    sampling_stop_data = [
-        {"SamplingStop": value_with_tolerance(bulk_values[-1][0])},
         {"SamplingStop": None},
-        {}
     ]
 
+    test_data = [
+        pytest.param(
+            {
+                **nominal_case
+            },
+            bulk_data
+        )
+    ]
 
-    test_data = []
-    for reference_curve in reference_curve_data:
-        for top_measured_depth in top_measured_depth_data:
-            for sampling_start in sampling_start_data:
-                for bottom_measured_depth in bottom_measured_depth_data:
-                    for sampling_stop in sampling_stop_data:
-                        for curves in curves_data:
-                            test_data.append(
-                                pytest.param(
-                                    {
-                                        **curves,
-                                        **reference_curve,
-                                        **top_measured_depth,
-                                        **sampling_start,
-                                        **bottom_measured_depth,
-                                        **sampling_stop
-                                    },
-                                    bulk_data
-                                )
-                            )
-
+    for other in other_cases:
+        dict_3 = dict(nominal_case , **other)
+        test_data.append(
+            pytest.param(
+                {
+                    **dict_3
+                },
+                bulk_data
+            )
+        )
     return test_data
 
 
@@ -264,8 +248,10 @@ inconsistent_test_params = [
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns)
 def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_wrong_log_curve_family(dasked_test_app_client, welllog_data,
                                                                                   bulk_data, err, wrong_log_curve_family):
-    welllog_data["Curves"][0].update(wrong_log_curve_family)
-    record["data"] = welllog_data
+    # because accessing to welllog_data modifies the value for next tests
+    my_welllog_data = copy.deepcopy(welllog_data)
+    my_welllog_data["Curves"][0].update(wrong_log_curve_family)
+    record["data"] = my_welllog_data
     response = dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
 
     assert response.status_code == 422
@@ -275,8 +261,10 @@ def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_wrong_log_curve_fa
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns  )
 def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_no_log_curve_family(dasked_test_app_client, welllog_data,
                                                                                   bulk_data, err, no_log_curve_family):
-    welllog_data["Curves"][0].update(no_log_curve_family)
-    record["data"] = welllog_data
+    # because accessing to welllog_data modifies the value for next tests
+    my_welllog_data = copy.deepcopy(welllog_data)
+    my_welllog_data["Curves"][0].update(no_log_curve_family)
+    record["data"] = my_welllog_data
     response = dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
 
     assert response.status_code == 200
@@ -303,8 +291,10 @@ def test_post_inconsistent_whole_bulk_without_log_curve_family(dasked_test_app_c
 @pytest.mark.parametrize("welllog_data, bulk_data, err",
                          inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns + inconsistent_test_params)
 def test_post_inconsistent_whole_bulk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
-    welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
-    wid = _create_record(dasked_test_app_client, welllog_data)
+    # because accessing to welllog_data modifies the value for next tests
+    my_welllog_data = copy.deepcopy(welllog_data)
+    my_welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
+    wid = _create_record(dasked_test_app_client, my_welllog_data)
     response = _post_data(dasked_test_app_client, wid, bulk_data)
 
     assert response.status_code == 400
@@ -317,8 +307,10 @@ def test_post_inconsistent_whole_bulk_with_log_curve_family(dasked_test_app_clie
 
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns + inconsistent_test_params)
 def test_post_inconsistent_chunk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
-    welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
-    wid = _create_record(dasked_test_app_client, welllog_data)
+    # because accessing to welllog_data modifies the value for next tests
+    my_welllog_data = copy.deepcopy(welllog_data)
+    my_welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
+    wid = _create_record(dasked_test_app_client, my_welllog_data)
     session_id = _create_session(dasked_test_app_client, wid)
 
     response = _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)

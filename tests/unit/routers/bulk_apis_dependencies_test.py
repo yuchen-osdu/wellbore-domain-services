@@ -46,19 +46,20 @@ def _is_welllogs_v3_route(route_url: str):
     return route_url.startswith(DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH)
 
 
-@pytest.mark.parametrize("route_url,method", list(gen_all_routes_request(wdms_app)))
-def test_ensure_bulk_apis_dependencies_injection(dependencies_check_app, route_url, method):
+def test_ensure_bulk_apis_dependencies_injection(dependencies_check_app):
     client = dependencies_check_app
 
     bulk_paths = bulk_routes_path
     all_bulk_paths = {prefix + router_path: methods for prefix in base_paths for router_path, methods in bulk_paths}
 
-    if route_url in all_bulk_paths.keys() and method in all_bulk_paths[route_url]:
-        if _is_welllogs_v3_route(route_url) or _is_trajectories_v3_route(route_url):
-            with pytest.raises(RuntimeError):
-                client.request(method, route_url)
-        elif ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH in route_url:
-            with pytest.raises(ArithmeticError):
-                client.request(method, route_url)
-        else:
-            pytest.fail(f"bulk API with unknown prefix: '{route_url}'")
+    for route_url, method in gen_all_routes_request(wdms_app):
+
+        if route_url in all_bulk_paths.keys() and method in all_bulk_paths[route_url]:
+            if _is_welllogs_v3_route(route_url) or _is_trajectories_v3_route(route_url):
+                with pytest.raises(RuntimeError):
+                    client.request(method, route_url)
+            elif ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH in route_url:
+                with pytest.raises(ArithmeticError):
+                    client.request(method, route_url)
+            else:
+                pytest.fail(f"bulk API with unknown prefix: '{route_url}' '{method}")

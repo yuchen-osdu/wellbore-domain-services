@@ -107,6 +107,7 @@ def test_about_call_traces_request_header(app_configurable_with_testclient, head
 
 
 @pytest.mark.parametrize("well_record_data_fixture", ["well_v3_record_list", "well_v3_110_record_list"])
+@pytest.mark.slow
 def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_holding_data, well_v2_record_list,
                         well_record_data_fixture, request):
     well_record_data = request.getfixturevalue(well_record_data_fixture)

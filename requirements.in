@@ -2,7 +2,7 @@ fastapi==0.68.2
 pydantic>=1.9
 aiohttp==3.7.4.post0
 cryptography>=2.7
-pyarrow>=4.0.1
+pyarrow==9.0.0
 pandas==1.4.1
 uvicorn
 Click
@@ -21,11 +21,13 @@ opencensus-ext-ocagent
 opencensus-ext-logging
 
 # for chunking feature
-dask[distributed]==2022.2.0
-fsspec==2021.7.0
+dask[distributed]==2022.10.2
+fsspec>=2022.10.0
+adlfs==2022.10.0
+s3fs==2022.10.0
+gcsfs==2022.10.0
+aiobotocore[boto3]~=2.4.0
 python-ulid
-s3fs
-aiobotocore[boto3]
 
 --extra-index-url \
 https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
@@ -39,7 +41,7 @@ osdu-data-ecosystem-search~=1.0.0
 
 osdu-core-lib-python-ibm==2.0.0
 osdu-core-lib-python-gcp~=2.0.0
-osdu-core-lib-python-azure~=3.0.0
+osdu-core-lib-python-azure==3.0.3
 osdu-core-lib-python-aws~=1.0.1
 osdu-core-lib-python-anthos~=1.0.0
 osdu-core-lib-python~=2.0.0

@@ -51,6 +51,9 @@ def test_get_matching_column_success(requested, df_columns, expected):
     ([f"C{i}" for i in range(1000)], {f"C{i}[{j}]" for i in range(1000) for j in range(100)}, 100000),  # request many curves array
     ([f"C{i}" for i in range(100)], {f"C{i}[{j}]" for i in range(100) for j in range(1000)}, 100000)  # request many curves array
 ])
+@pytest.mark.perf
+@pytest.mark.serial
+@pytest.mark.slow
 def test_get_matching_column_perf(col_selection, all_columns, expected_count):
     start_process = process_time()
     result = DataFrameRender.get_matching_columns(col_selection, all_columns)

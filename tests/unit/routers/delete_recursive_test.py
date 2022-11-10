@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import create_autospec, patch
 
 from fastapi import HTTPException as fastApiHTTPException, status
 from odes_search.exceptions import UnexpectedResponse as clientHTTPException
@@ -20,14 +20,13 @@ from odes_search.models import CursorQueryResponse
 import pytest
 from starlette.exceptions import HTTPException as starletteHTTPException
 
-
 from app.clients import StorageRecordServiceClient
 from app.model.entity_utils import Entity, format_kind, get_kind
 from app.routers.ddms_v2.storage_helper import StorageHelper
 
 from tests.unit.test_utils import make_record, ctx_fixture
 
-storage_record_service_client_mock = AsyncMock(spec=StorageRecordServiceClient)
+storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
 
 
 @pytest.fixture(params=['authority_data_partition', 'authority_slb'])
