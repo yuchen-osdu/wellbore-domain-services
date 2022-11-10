@@ -20,9 +20,13 @@ The following software have components provided under the terms of this license:
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
 - google-cloud-core (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-cloud-core)
 - google-cloud-monitoring (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-monitoring)
+- google-cloud-storage (from https://github.com/googleapis/python-storage)
 - google-cloud-trace (from https://github.com/googleapis/googleapis, https://github.com/googleapis/python-trace)
+- google-crc32c (from https://github.com/googleapis/python-crc32c)
+- google-resumable-media (from https://github.com/googleapis/google-resumable-media-python)
 - googleapis-common-protos (from https://github.com/googleapis/googleapis, https://github.com/googleapis/python-api-common-protos)
 - grpcio (from https://grpc.io)
+- grpcio-status (from https://grpc.io)
 - importlib-metadata
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from http://msgpack.org/, https://msgpack.org/)
@@ -40,6 +44,7 @@ The following software have components provided under the terms of this license:
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/pypa/pep517, https://github.com/takluyver/pep517)
 - prometheus-fastapi-instrumentator (from https://github.com/trallnag/prometheus-fastapi-instrumentator)
+- proto-plus (from https://github.com/googleapis/proto-plus-python.git)
 - pyarrow (from https://arrow.apache.org/)
 - pytest-asyncio (from https://github.com/pytest-dev/pytest-asyncio)
 - pytest-dependency (from https://github.com/RKrahl/pytest-dependency)
@@ -63,6 +68,7 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- adlfs (from https://github.com/dask/adlfs/)
 - decorator (from https://github.com/micheles/decorator)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
@@ -101,6 +107,7 @@ The following software have components provided under the terms of this license:
 - fsspec (from http://github.com/fsspec/filesystem_spec)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
+- grpcio-status (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore)
 - httpx (from https://github.com/encode/httpx)
@@ -148,15 +155,15 @@ CC-BY-4.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- adlfs (from https://github.com/hayesgb/adlfs/)
-- dask (from http://github.com/dask/dask/)
-- distributed (from https://distributed.readthedocs.io/en/latest/)
-- fsspec (from http://github.com/intake/filesystem_spec)
-- gcsfs (from https://github.com/dask/gcsfs)
+- adlfs (from https://github.com/dask/adlfs/, https://github.com/hayesgb/adlfs/)
+- dask (from http://github.com/dask/dask/, https://github.com/dask/dask/)
+- distributed (from https://distributed.dask.org, https://distributed.readthedocs.io/en/latest/)
+- fsspec (from http://github.com/fsspec/filesystem_spec, http://github.com/intake/filesystem_spec)
+- gcsfs (from https://github.com/dask/gcsfs, https://github.com/fsspec/gcsfs)
 - numpy
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- s3fs (from http://github.com/dask/s3fs/)
+- s3fs (from http://github.com/dask/s3fs/, http://github.com/fsspec/s3fs/)
 - toolz (from http://github.com/pytoolz/toolz/)
 
 ========================================================================
@@ -186,8 +193,6 @@ The following software have components provided under the terms of this license:
 ========================================================================
 GPL-2.0-or-later
 ========================================================================
-The following software have components provided under the terms of this license:
-
 - grpcio (from https://grpc.io)
 
 ========================================================================
@@ -277,6 +282,7 @@ The following software have components provided under the terms of this license:
 - cffi
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer, https://github.com/ousret/charset_normalizer)
 - coverage (from https://github.com/nedbat/coveragepy)
+- dask (from https://github.com/dask/dask/)
 - deepdiff (from https://github.com/seperman/deepdiff)
 - distributed (from https://distributed.dask.org)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/)
@@ -343,9 +349,11 @@ MPL-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- botocore (from https://github.com/boto/botocore)
 - certifi (from http://certifi.io/, https://github.com/certifi/python-certifi)
 - charset-normalizer (from https://github.com/ousret/charset_normalizer)
 - grpcio (from https://grpc.io)
+- grpcio-status (from https://grpc.io)
 - hypothesis (from https://hypothesis.works)
 
 ========================================================================
@@ -377,6 +385,8 @@ The following software have components provided under the terms of this license:
 ========================================================================
 Protobuf
 ========================================================================
+The following software have components provided under the terms of this license:
+
 - protobuf (from https://developers.google.com/protocol-buffers/)
 
 ========================================================================
@@ -386,7 +396,7 @@ The following software have components provided under the terms of this license:
 
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - coverage (from https://github.com/nedbat/coveragepy)
-- distributed (from https://distributed.readthedocs.io/en/latest/)
+- distributed (from https://distributed.dask.org, https://distributed.readthedocs.io/en/latest/)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
@@ -418,8 +428,6 @@ The following software have components provided under the terms of this license:
 ========================================================================
 Unlicense
 ========================================================================
-The following software have components provided under the terms of this license:
-
 - grpcio (from https://grpc.io)
 
 ========================================================================
@@ -443,6 +451,13 @@ The following software have components provided under the terms of this license:
 - numpy
 
 ========================================================================
+apache-2.0 WITH llvm-exception
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from https://grpc.io)
+
+========================================================================
 cc-pd
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -461,7 +476,22 @@ mit-old-style-no-advert
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- grpcio (from https://grpc.io)
 - pytz (from http://pythonhosted.org/pytz)
+
+========================================================================
+openssl-nokia-psk-contribution
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from https://grpc.io)
+
+========================================================================
+openssl-ssleay
+========================================================================
+The following software have components provided under the terms of this license:
+
+- grpcio (from https://grpc.io)
 
 ========================================================================
 proprietary-license
