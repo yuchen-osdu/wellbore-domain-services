@@ -265,6 +265,7 @@ The following software have components provided under the terms of this license:
 - aioitertools (from https://aioitertools.omnilib.dev, https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis, https://github.com/aio-libs/aioredis-py)
 - anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/3.4.0/)
+- asgi-lifespan (from https://github.com/florimondmanca/asgi-lifespan)
 - asgiref (from http://github.com/django/asgiref/, https://github.com/django/asgiref/)
 - attrs (from https://attrs.readthedocs.io/, https://www.attrs.org/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -285,9 +286,9 @@ The following software have components provided under the terms of this license:
 - dask (from https://github.com/dask/dask/)
 - deepdiff (from https://github.com/seperman/deepdiff)
 - distributed (from https://distributed.dask.org)
-- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/)
+- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.0.3/)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
-- fastapi (from https://github.com/tiangolo/fastapi)
+- fastapi (from https://github.com/tiangolo/fastapi, https://pypi.org/project/fastapi/0.87.0/)
 - grpcio (from https://grpc.io)
 - h11
 - hypothesis (from https://hypothesis.works)
@@ -397,7 +398,7 @@ The following software have components provided under the terms of this license:
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - coverage (from https://github.com/nedbat/coveragepy)
 - distributed (from https://distributed.dask.org, https://distributed.readthedocs.io/en/latest/)
-- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/)
+- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.0.3/)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
 - numpy
