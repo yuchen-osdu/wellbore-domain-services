@@ -11,17 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import asyncio
+import anyio
+import pytest
+import time
+import uuid
+from anyio import to_process
 
 from app.context import Context
-import pytest
-import uuid
-import asyncio
-import time
-
-
 def get_context():
+    # TODO app.Context  is not cleaned-up at  test teardown
     return Context(logger='logger', correlation_id='correlation_id', request_id='request_id',
-                   dev_mode=True, auth='auth', partition_id='partition_id',
+                   dev_mode=True, auth='auth', partition_id='check_test_not_cleanup',
                    app_key='app_key', api_key='api_key', custom1='c1', custom2='c2', x_collaboration="c_space")
 
 
@@ -31,7 +32,7 @@ def context_base():
 
 
 def test_context_repr(context_base):
-    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "partition_id", "app_key": "app_key", "api_key": "api_key", "x_user_id": null, "x_collaboration": "c_space"}'
+    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "check_test_not_cleanup", "app_key": "app_key", "api_key": "api_key", "x_user_id": null, "x_collaboration": "c_space"}'
 
     assert str(context_base) == expected
     assert repr(context_base) == expected
@@ -43,7 +44,7 @@ def test_context_basic(context_base):
     assert context_base.request_id == 'request_id'
     assert context_base.dev_mode
     assert context_base.auth == 'auth'
-    assert context_base.partition_id == 'partition_id'
+    assert context_base.partition_id == 'check_test_not_cleanup'
     assert context_base.app_key == 'app_key'
     assert context_base.api_key == 'api_key'
     assert context_base.x_collaboration == "c_space"
@@ -77,15 +78,15 @@ def test_context_clone(context_base):
     assert new_context['custom3'] == 'added_c3'
 
 
-async def context_assert_current_rq_id(expected_request_id):
+def context_assert_current_rq_id(expected_request_id):
     assert Context.current().request_id == expected_request_id
 
 
 async def context_assigned_and_check():
     id = str(uuid.uuid4())
     Context.set_current(get_context().with_value(request_id=id))
-    await asyncio.sleep(1)
-    await context_assert_current_rq_id(id)
+    await anyio.sleep(1)
+    context_assert_current_rq_id(id)
 
 
 def test_set_current_with_value(context_base):
@@ -94,12 +95,11 @@ def test_set_current_with_value(context_base):
     assert Context.current().correlation_id == 'new_correlation_id'
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_context_current():
-    size = 100
-    coros = [context_assigned_and_check() for _ in range(size)]
-    assert len(coros) == size
-    await asyncio.gather(*coros)
+    async with anyio.create_task_group() as tg:
+        for _ in range(100):
+            tg.start_soon(context_assigned_and_check)
 
 
 def sync_context_assigned_and_check():
@@ -115,3 +115,15 @@ async def test_context_current_in_thread_executor_asyncio():
     coros = [asyncio.get_event_loop().run_in_executor(None, sync_context_assigned_and_check) for _ in range(size)]
     assert len(coros) == size
     await asyncio.gather(*coros)
+
+
+@pytest.mark.anyio
+async def test_context_current_in_thread_executor_anyio():
+    async def foo():
+        await to_process.run_sync(sync_context_assigned_and_check)
+
+    async with anyio.create_task_group() as tg:
+        for _ in range(30):
+            tg.start_soon(foo)
+
+
