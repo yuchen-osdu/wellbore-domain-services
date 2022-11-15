@@ -47,11 +47,6 @@ from app.wdms_app import app_injector
 from tests.unit.test_utils import make_record
 
 
-@pytest.fixture(scope="session")
-def anyio_backend():
-    return 'asyncio'
-
-
 class TestHelper:
     DATA_PARTITION_ID = 'test_partition'
     BASE_HEADERS = {'data-partition-id': DATA_PARTITION_ID}
