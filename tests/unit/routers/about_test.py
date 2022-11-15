@@ -25,15 +25,22 @@ wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 # parametrized for backward compatibility with /ddms/v2 APIs
 PathPrefixParams = [DDMS_V2_PATH, '']
 
+
 @pytest.fixture
 def client(ctx_fixture, nope_logger_fixture, app_configurable_with_testclient):
     _, client = app_configurable_with_testclient(fake_opendes_authorized_user=False)
     return client
 
 
+@pytest.fixture
+def client_with_authenticated_user(ctx_fixture, nope_logger_fixture, app_configurable_with_testclient):
+    _, client = app_configurable_with_testclient()
+    return client
+
 
 def build_url(prefix: str, path: str):
     return prefix + path
+
 
 @pytest.mark.parametrize("path_prefix", PathPrefixParams)
 @pytest.mark.anyio
