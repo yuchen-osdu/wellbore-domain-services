@@ -32,7 +32,7 @@ from app.routers.ddms_v2.log_ddms_v2 import (
     get_persistence,
 )
 from app.routers.record_utils import fetch_record, update_records
-from app import wdms_app
+from app.wdms_app import app_injector, wdms_app
 
 from tests.unit.test_utils import ctx_fixture
 
@@ -77,7 +77,7 @@ async def ctx_with_test_setup(app_configurable_with_testclient, ctx_fixture):
     # but since those tests call directly internal function instead making call to  apis
     # the app injector is not set in the context whereas functions under test need it for retrieving storage service client.
     # so we have to set manually the app injector in the context.
-    ctx = ctx_fixture.set_current_with_value(partition_id=data_partition_id, app_injector=wdms_app.app_injector)
+    ctx = ctx_fixture.set_current_with_value(partition_id=data_partition_id, app_injector=app_injector)
 
     return ctx
 
