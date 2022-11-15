@@ -25,6 +25,7 @@ async def test_should_start_and_leave_cleared_context(local_dev_config):
         'app_key', 'api_key', 'user', 'app_injector', 'x_user_id', 'x_collaboration']
 
     # GIVEN set current with values and request with no headers
+    # TODO app.Context  is not cleaned-up at  test teardown
     Context(**{v: v for v in properties_to_check}).set_current()
 
     # check current contains values
@@ -67,6 +68,7 @@ async def test_should_leave_cleared_context_in_case_of_exception(local_dev_confi
         'app_key', 'api_key', 'user', 'app_injector', 'x_user_id']
 
     # GIVEN set current with values and request with no headers
+    # TODO app.Context  is not cleaned-up at  test teardown
     Context(**{v: v for v in properties_to_check}).set_current()
 
     async def call_next_that_throw(*args, **kwargs):
