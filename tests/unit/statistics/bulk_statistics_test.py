@@ -4,27 +4,36 @@ import uuid
 from typing import List
 
 from unittest import mock
-from unittest.mock import PropertyMock
+from unittest.mock import PropertyMock, AsyncMock
 
 import numpy as np
 import pandas as pd
 import pytest
+
 from odes_storage.models import Record, StorageAcl, Legal
+
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
+
 
 from app.bulk_persistence.statistics.exceptions import StatisticsNotFoundError, RequestedCurvesError, \
     ComputationRunningError
-from app.bulk_persistence import DaskClient
+
 from app.bulk_persistence.statistics.models import BulkStatisticsStatus, InternalStatisticsComputationMeta
 from app.consistency import NoConsistencyChecks
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
 from app.bulk_persistence import (Session, SessionState, SessionUpdateMode)
+from app.bulk_persistence.dask.client import actx as dask_client_actx
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics, grouper, get_columns_count
 from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from app.bulk_persistence import MimeTypes
 from app.bulk_persistence.dataframe_validators import no_validation
+
+
+pytestmark = pytest.mark.statistics
 
 
 @pytest.mark.parametrize("container", [
@@ -72,47 +81,28 @@ def test_get_columns_count(max_columns_count, nb_rows, nb_cols, expected):
     assert result == expected
 
 
-@pytest.fixture(scope="module")
-async def local_dask_client_initialized(dask_client):
-    """
-    Fixture providing wdms_app started, along with a test client
-    """
-    # retrieve the dask_client starter, but let the app close it.
-    # CAREFUL about the fixture scope
-    with dask_client(autoclose_asynccontext=False) as dask_client_starter:
-        # Mocking dask_client for app to use it
-        with mock.patch('app.bulk_persistence.dask.client.DaskClient.create', dask_client_starter):
-            yield dask_client_starter
-            await DaskClient.close()
-
-
 @pytest.fixture
-async def bulk_stats_fixture(local_dask_client_initialized, tmp_path, nope_logger_fixture,
-                             ctx_fixture, local_bulk_persistence_config) -> (BulkStatistics, DaskBulkStorage):
-    from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
-    local_dask = await make_local_dask_bulk_storage(str(tmp_path), local_bulk_persistence_config)
-    async def _make_local_blob_storage():
-        return LocalFSBlobStorage(directory=tmp_path)
-    injector = ctx_fixture.app_injector
-    from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-    injector.register(BlobStorageBase, _make_local_blob_storage)
-    bulk_stats = BulkStatistics(dask_blob_storage=local_dask)
-    bulk_stats._paging_size_per_batch = 500_000
-    bulk_stats._max_cols_per_batch = 100
-    yield bulk_stats, local_dask
+async def bulk_stats_fixture(dask_custom_config, tmp_path, nope_logger_fixture, ctx_fixture,
+                             local_bulk_persistence_config) -> (BulkStatistics, DaskBulkStorage):
+    with dask_custom_config():
+        async with dask_client_actx(local_bulk_persistence_config) as client:
 
+            local_dask = await make_local_dask_bulk_storage(str(tmp_path),
+                                                            local_bulk_persistence_config,
+                                                            dask_client=client)
 
-async def add_bulk_data_to_fixture(dask_blob_storage, typed_df):
-    session = create_test_bulk_session()
+            async def _blob_storage_builder():
+                return LocalFSBlobStorage(str(tmp_path))
 
-    parquet_data = typed_df.to_parquet(engine='pyarrow')
+            ctx_fixture.app_injector.register(BlobStorageBase, _blob_storage_builder)
 
-    await dask_blob_storage.add_chunk_in_session(parquet_data, MimeTypes.PARQUET, no_validation, session.recordId,
-                                                 session.id)
-    new_bulk_id = await dask_blob_storage.session_commit(session)
-    assert new_bulk_id
+            bulk_stats = BulkStatistics(dask_blob_storage=local_dask)
 
-    return session.recordId, new_bulk_id
+            bulk_stats._paging_size_per_batch = 500_000
+            bulk_stats._max_cols_per_batch = 100
+            yield bulk_stats, local_dask
+
+            ctx_fixture.app_injector.register(BlobStorageBase, AsyncMock())
 
 
 def _add_nan_values_in_df(chunk_df):

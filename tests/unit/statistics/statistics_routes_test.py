@@ -24,6 +24,9 @@ from app.bulk_persistence.statistics.models import (
 )
 
 
+pytestmark = pytest.mark.statistics
+
+
 def post_record_data(client: TestClient, record_id: str, entity_type: str, columns: List[str], range_index: range):
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]["chunking_url"]

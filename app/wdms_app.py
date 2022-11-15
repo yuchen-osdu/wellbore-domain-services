@@ -12,71 +12,99 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import asyncio
+import sys
+from functools import partial
+from os import getpid
+from time import sleep
 
-from fastapi import FastAPI, Depends, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
 
-from app import __version__, __build_number__, __app_name__
+from app import __app_name__, __build_number__, __version__
 from app.auth.auth import require_opendes_authorized_user
+
+# ---------- import Bulk persistence ----------------------------------
+from app.bulk_persistence import (
+    BulkPersistenceConfig,
+    dask_client,
+    set_config_getter,
+)
+# ---------- import Core services clients ----------------------------------
+from app.clients import SearchServiceClient, StorageRecordServiceClient
+
+# ----------
 from app.conf import Config, check_environment
-from app.errors.exception_handlers import add_exception_handlers, create_custom_http_exception_handler
-from app.utils import get_http_client_session, OpenApiHandler
+from app.errors.exception_handlers import (
+    add_exception_handlers,
+    create_custom_http_exception_handler,
+)
 
 # ---------- import tracing, logging, metrics ----------------------------------
-from app.helper import traces, logger, metric
+from app.helper import logger, metric, traces
 from app.helper.traces import TracingRoute
-
-# ---------- import model ----------------------------------
-from app.model.entity_utils import Entity
-
 # ---------- import DI ----------------------------------
 from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
-
 # ---------- import middlewares ----------------------------------
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id
-
-# ---------- import Core services clients ----------------------------------
-from app.clients import StorageRecordServiceClient, SearchServiceClient
-
-# ---------- import Bulk persistence ----------------------------------
-from app.bulk_persistence import DaskClient, BulkPersistenceConfig, set_config_getter
-
+# ---------- import model ----------------------------------
+from app.model.entity_utils import Entity
+# ----------
+from app.pool_executor import run_in_pool_executor
 # ---------- import Routers ----------------------------------
-from app.routers import probes, about, sessions
-from app.routers.dependency import FetchRecordDependency, FetchRecordPartialDependency
-from app.routers.common_parameters import response_500, response_401, response_403
-from app.routers.ddms_v2 import (ddms_v2,
-                                 wellbore_ddms_v2,
-                                 logset_ddms_v2,
-                                 marker_ddms_v2,
-                                 log_ddms_v2,
-                                 well_ddms_v2)
-
-from app.routers.ddms_v3 import (wellbore_ddms_v3,
-                                 well_ddms_v3,
-                                 welllog_ddms_v3,
-                                 wellbore_trajectory_ddms_v3,
-                                 markerset_ddms_v3,
-                                 delete_v3)
-
+from app.routers import about, probes, sessions
 from app.routers.bulk import bulk_routes, statistics_routes
-from app.routers.trajectory import trajectory_ddms_v2
-from app.routers.dipset import dipset_ddms_v2, dip_ddms_v2
+from app.routers.bulk.bulk_uri_dependencies import (
+    set_log_bulk_id_access,
+    set_osdu_bulk_id_access,
+)
+from app.routers.bulk.utils import (
+    set_legacy_input_dataframe_check,
+    set_trajectory_data_consistency_check,
+    set_v3_input_dataframe_check,
+    set_welllog_data_consistency_check,
+    update_operation_ids,
+)
+from app.routers.common_parameters import (
+    response_401,
+    response_403,
+    response_500,
+)
+from app.routers.ddms_v2 import (
+    ddms_v2,
+    log_ddms_v2,
+    logset_ddms_v2,
+    marker_ddms_v2,
+    well_ddms_v2,
+    wellbore_ddms_v2,
+)
+from app.routers.ddms_v3 import (
+    delete_v3,
+    markerset_ddms_v3,
+    well_ddms_v3,
+    wellbore_ddms_v3,
+    wellbore_trajectory_ddms_v3,
+    welllog_ddms_v3,
+)
+from app.routers.dependency import (
+    FetchRecordDependency,
+    FetchRecordPartialDependency,
+)
+from app.routers.dipset import dip_ddms_v2, dipset_ddms_v2
 from app.routers.log_recognition import log_recognition
+from app.routers.record_utils import (
+    fetch_record_dependency,
+    fetch_record_partial_with_wdms_extension,
+)
 from app.routers.search import search_v3, search_v3_alpha
-
-
-from app.routers.bulk.utils import (update_operation_ids,
-                                    set_v3_input_dataframe_check,
-                                    set_legacy_input_dataframe_check,
-                                    set_welllog_data_consistency_check,
-                                    set_trajectory_data_consistency_check)
-from app.routers.record_utils import fetch_record_dependency, fetch_record_partial_with_wdms_extension
-from app.routers.bulk.bulk_uri_dependencies import set_osdu_bulk_id_access, set_log_bulk_id_access
+from app.routers.trajectory import trajectory_ddms_v2
+from app.utils import (
+    POOL_EXECUTOR_MAX_WORKER,
+    OpenApiHandler,
+    get_http_client_session,
+)
 
 
 # The sub application which contains all the routers
@@ -145,10 +173,12 @@ async def startup_event():
     MainInjector().configure(app_injector)
     wdms_app.trace_exporter = traces.create_exporter(service_name=service_name, config=Config)
 
-    # seems that the lock is not in the same event loop as requests
-    # so we need to wait instead of just fire a task
-    asyncio.create_task(DaskClient.create(bulk_config))
+    app_injector.register(dask_client.DaskDistributedClient, partial(dask_client.create, bulk_config))
+    asyncio.create_task(dask_client.create(bulk_config))
+
     create_custom_http_exception_handler(wdms_app, logger)
+
+
 
     metric.init_metric(wdms_app)
 
@@ -165,7 +195,7 @@ async def shutdown_event():
         await search_client.api_client.close()
 
     await get_http_client_session().close()
-    await DaskClient.close()
+    await dask_client.close()
 
 
 DDMS_V2_PATH = '/ddms/v2'

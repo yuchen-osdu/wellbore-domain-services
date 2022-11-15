@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
-from .. import DaskBulkStorage
+
+from .. import BulkPersistenceConfig, DaskBulkStorage, DaskDistributedClient
 
 
 def make_local_dask_storage_parameters(base_directory: str):
@@ -22,6 +23,8 @@ def make_local_dask_storage_parameters(base_directory: str):
                                  storage_options={'auto_mkdir': True})
 
 
-async def make_local_dask_bulk_storage(base_directory: str, bulk_config) -> DaskBulkStorage:
+async def make_local_dask_bulk_storage(base_directory: str,
+                                       bulk_config: BulkPersistenceConfig,
+                                       dask_client: DaskDistributedClient) -> DaskBulkStorage:
     params = make_local_dask_storage_parameters(base_directory)
-    return await DaskBulkStorage.create(params, bulk_config)
+    return await DaskBulkStorage.create(params, bulk_config, dask_client)

@@ -3,7 +3,7 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from app.clients import make_storage_record_client, make_search_client
-
+from tests.unit.fixtures import TEST_CLIENT_HOST
 from tests.unit.test_utils import ctx_fixture
 
 from app.helper import traces
@@ -45,7 +45,16 @@ async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config
         assert response is not None
 
 
-def test_outgoing_tracing_headers_with_incoming_headers(local_dev_config, app_configurable_with_testclient, httpx_mock):
+@pytest.fixture
+def non_mocked_hosts() -> list:
+    """ fixture to prevent pytest-httpx from mocking requests to the wdms app under test
+    """
+    return [TEST_CLIENT_HOST]
+
+
+
+def test_outgoing_tracing_headers_with_incoming_headers(
+        local_dev_config, app_configurable_with_testclient, httpx_mock, non_mocked_hosts):
 
     app, client = app_configurable_with_testclient(
         storage_client_mock=make_storage_record_client(host=local_dev_config.service_host_storage.value,
@@ -71,11 +80,16 @@ def test_outgoing_tracing_headers_with_incoming_headers(local_dev_config, app_co
         assert outgoing_context.span_id
         assert outgoing_context.trace_options.enabled
 
+        # POST /v2/records/{id}:delete to core storage service returns 200
         return httpx.Response(
             status_code=200, json={"url": str(request.url)},
         )
 
-    httpx_mock.add_callback(custom_response)
+    httpx_mock.add_callback(
+        custom_response,
+        method="POST",
+        url="https://test-endpoint/api/storage/v2/records/123456:delete"
+    )
 
     response = client.delete(f'/ddms/v2/logs/123456', headers=input_headers)
     assert response.status_code == 204
@@ -98,11 +112,16 @@ def test_outgoing_tracing_headers_without_headers(local_dev_config, app_configur
         assert outgoing_context.span_id, "check span id exists"
         assert outgoing_context.trace_options.enabled
 
+        # POST /v2/records/{id}:delete to core storage service returns 200
         return httpx.Response(
             status_code=200, json={"url": str(request.url)},
         )
 
-    httpx_mock.add_callback(custom_response)
+    httpx_mock.add_callback(
+        custom_response,
+        method="POST",
+        url="https://test-endpoint/api/storage/v2/records/123456:delete"
+    )
 
     response = client.delete('/ddms/v2/logs/123456')
     assert response.status_code == 204

@@ -1,10 +1,7 @@
-import asyncio
-import contextlib
 import copy
 import types
 from typing import List
-
-
+import asyncio
 import httpx
 import odes_storage
 import pytest
@@ -177,36 +174,39 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
 
 
 @pytest.fixture(scope="module")
-def base_app_initialized_with_testclient(local_dev_config, dask_client):
+def base_app_initialized_with_testclient(local_dev_config, dask_custom_config):
     """
-    Fixture providing wdms_app started, along with a test client
+    Fixture providing a base_app test client
     """
 
-    # retrieve the dask_client starter, but let the app close it.
-    # CAREFUL about the fixture scope
-    with dask_client(autoclose_asynccontext=False) as dask_client_starter:
+    # setup the dask_config with default values
+    with dask_custom_config():
+        with TestClient(base_app) as base_client:
+            yield base_client
 
-        # Mocking dask_client for app to use it
-        with mock.patch('app.bulk_persistence.dask.client.DaskClient.create', dask_client_starter):
+        # slb_app shutdown event should call DaskClient.close()
 
-            with TestClient(base_app) as base_client:
-                yield base_client
 
-            # slb_app shutdown event should call DaskClient.close()
-
-        # mock will return DaskClient.create to its original state
-    # context will close current client
+TEST_CLIENT_HOST = "test_wdms_app"
 
 
 @pytest.fixture(scope="module")
-def app_initialized_with_testclient(base_app_initialized_with_testclient):
+def app_initialized_with_testclient(local_dev_config, dask_custom_config):
     """
-    Fixture providing wdms_app started, along with a test client
+    Fixture providing wdms_app started, along with a AsyncClient
+    CAREFUL: we do not want to depend on base_app_initialized fixture,
+     as to not trigger the events twice.
+    This is consistent with normal operation because the base app events are not doing anything,
+     except calling the wdms_app events
     """
-    # dependent fixture because base_app and wdms_app are interdependent
 
-    with TestClient(wdms_app) as client:
-        yield wdms_app, client
+    # setup the dask_config with default values
+    with dask_custom_config():
+        with TestClient(app=wdms_app, base_url=f"http://{TEST_CLIENT_HOST}") as client:
+            yield wdms_app, client
+
+
+        # wdms_app shutdown event should call DaskClient.close() via app shutdown
 
 
 @pytest.fixture
@@ -320,6 +320,10 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
         WithLifeTime.Singleton())
     app_injector.register(
                 SearchServiceClient, injection_coro_builder(return_value=original_search_client),
+        WithLifeTime.Singleton())
+
+    app_injector.register(
+        BlobStorageBase, injection_coro_builder(return_value=None),
         WithLifeTime.Singleton())
 
     app.trace_exporter = original_trace_exporter

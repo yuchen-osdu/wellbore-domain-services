@@ -1,0 +1,68 @@
+#  Copyright © Microsoft Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+# referred https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure/-/blob/master/osdu-ddms/standard-ddms/wellbore.osdu.values.yaml  
+# updated the values accordingly
+
+azure:
+  keyvault:
+    secrets:
+    - key: appinsight.key
+      obj: appinsights-key
+deployment:
+  replicaCount: 1
+
+# disabling as Glab is going to use the Virtual service with Istio-Gateway
+# ingress:
+#   appGateway:
+#     issuer: letsencrypt-prod-dns
+#     enableKeyvaultCert: false
+
+configuration:
+  - service: wellbore-ddms
+    container:
+      image: wellbore-ddms
+      containerPort: 8080
+    path: /api/os-wellbore-ddms
+    podAnnotations:
+      prometheus.io/path: /api/os-wellbore-ddms/metrics
+      prometheus.io/port: "8080"
+      prometheus.io/scrape: "true"
+    probe:
+      readiness:
+        path: /api/os-wellbore-ddms/healthz
+      liveness:
+        path: /api/os-wellbore-ddms/healthz
+    auth:
+      disable:
+        - "/api/os-wellbore-ddms/"
+        - "/api/os-wellbore-ddms/about"
+        - "/api/os-wellbore-ddms/ddms/v2/about"
+        - "/api/os-wellbore-ddms/docs"
+        - "/api/os-wellbore-ddms/openapi.json"
+    config:
+      CLOUD_PROVIDER: "az"
+      SERVICE_NAME: "wellbore-ddms"
+      OPENAPI_PREFIX: "/api/os-wellbore-ddms"
+      KEYVAULT_URL: "https://{{ .Values.azure.keyvault.name }}.vault.azure.net/"
+      SERVICE_HOST_STORAGE: "http://storage.osdu/api/storage"
+      SERVICE_HOST_SEARCH: "http://search.osdu/api/search"
+      SERVICE_HOST_PARTITION: "http://partition.osdu/api/partition"
+      USE_PARTITION_SERVICE: "enabled"
+      AZ_LOGGER_LEVEL: "INFO"
+      ENVIRONMENT_NAME: gitlab
+
+    secrets:
+      - name: AZ_AI_INSTRUMENTATION_KEY
+        key: appinsight.key

@@ -14,39 +14,75 @@
 
 import asyncio
 import uuid
-from typing import Awaitable, Callable, List, Optional, Union, AsyncGenerator, Tuple
+from typing import (
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 from uuid import UUID
 
-import fsspec
-import pandas as pd
 import dask.dataframe as dd
 from dask.distributed import Client as DaskDistributedClient
+import fsspec
+import pandas as pd
 import pyarrow.parquet as pa
 
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
-from ..capture_timings import capture_timings
-from ..sessions_storage import Session
-from ..bulk_persistence_config import BulkPersistenceConfig
 
-from .client import DaskClient
-from .dask_worker_plugin import DaskWorkerPlugin
-from .errors import BulkRecordNotFound, BulkNotProcessable, internal_bulk_exceptions
-from .traces import map_with_trace, submit_with_trace, trace_attributes_root_span, trace_attributes_current_span
-from .utils import (WDMS_INDEX_NAME, by_pairs, do_merge, join_dataframes, worker_capture_timing_handlers,
-                    get_num_rows, set_index, index_union)
-from ..dataframe_validators import is_reserved_column_name, DataFrameValidationFunc
-from ..dataframe_serializer import DataframeSerializerSync
-from . import storage_path_builder as pathBuilder
-from . import session_file_meta as session_meta
 from ..bulk_id import new_bulk_id
-from .bulk_catalog import BulkCatalog, BulkCatalogOrigin, ChunkGroup, async_save_bulk_catalog_with_blob_storage, async_load_bulk_catalog_with_blob_storage
-from ..mime_types import MimeType
-from .dask_data_ipc import DaskNativeDataIPC, DaskLocalFileDataIPC
-from . import dask_worker_write_bulk as bulk_writer
+from ..bulk_persistence_config import BulkPersistenceConfig
+from ..capture_timings import capture_timings
 from ..consistency_checks import DataConsistencyChecks
+from ..dataframe_serializer import DataframeSerializerSync
+from ..dataframe_validators import (
+    DataFrameValidationFunc,
+    is_reserved_column_name,
+)
+from ..mime_types import MimeType
+from ..sessions_storage import Session
+from . import (
+    dask_worker_write_bulk as bulk_writer,
+    session_file_meta as session_meta,
+    storage_path_builder as pathBuilder,
+)
+from .bulk_catalog import (
+    BulkCatalog,
+    BulkCatalogOrigin,
+    ChunkGroup,
+    async_load_bulk_catalog_with_blob_storage,
+    async_save_bulk_catalog_with_blob_storage,
+)
+from .client import create as dask_client_create
+from .dask_data_ipc import DaskLocalFileDataIPC, DaskNativeDataIPC
+from .dask_worker_plugin import DaskWorkerPlugin
+from .errors import (
+    BulkNotProcessable,
+    BulkRecordNotFound,
+    internal_bulk_exceptions,
+)
+from .traces import (
+    map_with_trace,
+    submit_with_trace,
+    trace_attributes_current_span,
+    trace_attributes_root_span,
+)
+from .utils import (
+    WDMS_INDEX_NAME,
+    by_pairs,
+    do_merge,
+    get_num_rows,
+    index_union,
+    join_dataframes,
+    set_index,
+    worker_capture_timing_handlers,
+)
 
 # https://distributed.dask.org/en/latest/priority.html
 # low priority -10 < default priority = 0 < high priority 10
@@ -104,12 +140,13 @@ class DaskBulkStorage:
 
     @classmethod
     @with_trace("DaskBulkStorage-create()")
-    async def create(cls, parameters: DaskStorageParameters, config: BulkPersistenceConfig, dask_client=None) -> 'DaskBulkStorage':
+    async def create(cls, parameters: DaskStorageParameters,
+                     config: BulkPersistenceConfig,
+                     dask_client: DaskDistributedClient) -> 'DaskBulkStorage':
         instance = cls(config=config)
         instance._parameters = parameters
 
         # Initialise the dask client.
-        dask_client = dask_client or await DaskClient.create(config)
         if DaskBulkStorage.client is not dask_client:  # executed only once per dask client
             DaskBulkStorage.client = dask_client
 

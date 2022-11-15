@@ -27,6 +27,7 @@ import pandas as pd
 import pytest
 from starlette.responses import Response
 
+from app.bulk_persistence import dask_client
 from app.clients import StorageRecordServiceClient
 from app.model.osdu_model import Wellbore
 from app.wdms_app import DDMS_V3_PATH
@@ -44,7 +45,11 @@ storage_record_service_client_mock = create_autospec(StorageRecordServiceClient,
 async def dasked_test_app_with_mocked_core_service(app_configurable_with_testclient, tmp_path_factory, local_bulk_persistence_config):
     super_mocks = await create_bulk_mocks(local_blob_path=str(tmp_path_factory.mktemp(basename="storage-")),
                                           local_storage_path=str(tmp_path_factory.mktemp(basename="blob-")),
-                                          bulk_config=local_bulk_persistence_config)
+                                          bulk_config=local_bulk_persistence_config,
+                                          # TODO : instead of calling create,
+                                          #   it would be cleaner to explicitly grab the existing client
+                                          #   from the app_configurable_with_testclient.app.state
+                                          dask_client=await dask_client.create(local_bulk_persistence_config))
     super_mocks['storage_client_mock'] = storage_record_service_client_mock
 
     _, client = app_configurable_with_testclient(
@@ -119,9 +124,11 @@ def records_with_version(records):
 @pytest.mark.parametrize("url_entity_base_path, record_list_fixture", [
     ("wells", "well100_v3_list"),
     ("wells", "well110_v3_list"),
+    ("wells", "well120_v3_list"),
     ("wellbores", "wellbore100_v3_list"),
     ("wellbores", "wellbore110_v3_list"),
     ("wellbores", "wellbore111_v3_list"),
+    ("wellbores", "wellbore120_v3_list"),
     ("wellboremarkersets", "marker110_v3_list"),
     ("wellboremarkersets", "marker120_v3_list"),
     ("wellboremarkersets", "marker121_v3_list"),
