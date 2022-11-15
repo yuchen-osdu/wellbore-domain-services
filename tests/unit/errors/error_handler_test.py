@@ -33,7 +33,7 @@ storage_record_service_client_mock = create_autospec(StorageRecordServiceClient,
 
 
 @pytest.fixture
-async def client(app_configurable_with_testclient): #TODO remove async  ?
+def client(app_configurable_with_testclient):
     _, client = app_configurable_with_testclient(
         storage_client_mock=storage_record_service_client_mock
     )
