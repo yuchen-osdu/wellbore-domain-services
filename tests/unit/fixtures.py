@@ -187,9 +187,8 @@ def base_app_initialized_with_testclient(local_dev_config, dask_custom_config, a
     with dask_custom_config():
         with TestClient(app=base_app) as base_client: # TODO TestClient
             yield base_app, base_client
-        pass
-    pass
-        # slb_app shutdown event should call DaskClient.close()
+
+    # slb_app shutdown event should call DaskClient.close()
 
 
 TEST_CLIENT_HOST = "test_wdms_app"

@@ -55,10 +55,8 @@ async def test_client():
     local_app.include_router(router, prefix='/path-default')
     local_app.add_middleware(AddRequestStateDependencyMiddleware)
 
-
-    ac= AsyncClient(app=local_app, base_url=BASE_URL)
+    ac = AsyncClient(app=local_app, base_url=BASE_URL)
     yield ac
-    pass
 
 
 @pytest.mark.anyio

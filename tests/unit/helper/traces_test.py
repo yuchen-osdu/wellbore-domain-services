@@ -17,7 +17,7 @@ from app.helper import utils
 
 
 @pytest.mark.anyio
-async def test_tracing_route_add_path_in_Request():
+async def test_tracing_route_add_path_in_request():
 
     router = APIRouter(route_class=TracingRoute)
 
