@@ -258,6 +258,8 @@ async def bulk_storage_mock(ctx_fixture, tmp_path_factory):
     ctx_fixture.app_injector.register(BlobStorageBase, _storage_mock)
     return blob_storage
 
+    ctx_fixture.app_injector.register(BlobStorageBase, AsyncMock())
+
 
 async def store_chunks(storage: BlobStorageBase, tenant, chunks) -> BulkCatalog:
     catalog = BulkCatalog('r_id', origin=BulkCatalogOrigin.from_file())

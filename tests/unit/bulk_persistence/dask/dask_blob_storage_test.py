@@ -19,6 +19,8 @@ import numpy as np
 import pandas as pd
 
 import pytest
+from unittest.mock import AsyncMock
+
 from tests.unit.test_utils import ctx_fixture
 from tests.unit.generate_data import generate_df
 
@@ -26,7 +28,7 @@ from odes_storage.models import Record, StorageAcl, Legal
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 
-from app.bulk_persistence import Session, SessionState, SessionUpdateMode
+from app.bulk_persistence import Session, SessionState, SessionUpdateMode, dask_client
 from app.bulk_persistence.dask.dask_bulk_storage import BulkRecordNotFound, BulkNotProcessable, DaskBulkStorage
 from app.bulk_persistence.dask.dask_bulk_storage_local import make_local_dask_bulk_storage
 from app.bulk_persistence.mime_types import MimeTypes
@@ -36,15 +38,23 @@ from app.consistency import NoConsistencyChecks
 
 
 @pytest.fixture()
-async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path, local_bulk_persistence_config) -> DaskBulkStorage:
-    dask_storage = await make_local_dask_bulk_storage(base_directory=tmp_path,
-                                                      bulk_config=local_bulk_persistence_config)
+async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path,
+                       local_bulk_persistence_config, dask_custom_config) -> DaskBulkStorage:
+    with dask_custom_config():
+        async with dask_client.actx(local_bulk_persistence_config) as client:
 
-    async def _make_local_blob_storage():
-        return LocalFSBlobStorage(directory=tmp_path)
+            dask_storage = await make_local_dask_bulk_storage(base_directory=str(tmp_path),
+                                                              bulk_config=local_bulk_persistence_config,
+                                                              dask_client=client)
 
-    ctx_fixture.app_injector.register(BlobStorageBase, _make_local_blob_storage)
-    yield dask_storage
+            async def _make_local_blob_storage():
+                return LocalFSBlobStorage(directory=str(tmp_path))
+
+            ctx_fixture.app_injector.register(BlobStorageBase, _make_local_blob_storage)
+
+            yield dask_storage
+
+            ctx_fixture.app_injector.register(BlobStorageBase, AsyncMock())
 
 
 @pytest.fixture()

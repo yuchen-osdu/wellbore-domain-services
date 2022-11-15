@@ -11,21 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
 
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu_aws.storage.storage_aws import AwsStorage
-from osdu_aws.storage.dask_storage_parameters import get_dask_storage_parameters as aws_parameters
+from app.bulk_persistence import (
+    BulkPersistenceConfig,
+    DaskBulkStorage,
+    DaskDistributedClient,
+    get_config,
+)
+from app.conf import Config
 from app.context import Context
 from app.tenant import resolve_tenant
-from app.bulk_persistence import DaskBulkStorage, get_config
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from osdu_aws.storage.dask_storage_parameters import (
+    get_dask_storage_parameters as aws_parameters,
+)
+from osdu_aws.storage.storage_aws import AwsStorage
+
 from .app_injector import AppInjector, AppInjectorModule
-from app.conf import Config
 
 
 class AwsInjector(AppInjectorModule):
     def configure(self, app_injector: AppInjector):
         app_injector.register(BlobStorageBase, AwsInjector.build_aws_storage)
-        app_injector.register(DaskBulkStorage, AwsInjector.build_aws_dask_blob_storage)
+        app_injector.register(DaskBulkStorage, partial(AwsInjector.build_aws_dask_blob_storage,
+                                                       app_injector=app_injector,
+                                                       bulk_config=get_config()))
 
     @staticmethod
     async def build_aws_storage() -> BlobStorageBase:
@@ -35,9 +46,11 @@ class AwsInjector(AppInjectorModule):
         )
 
     @staticmethod
-    async def build_aws_dask_blob_storage() -> DaskBulkStorage:
+    async def build_aws_dask_blob_storage(app_injector: AppInjector,
+                                          bulk_config: BulkPersistenceConfig) -> DaskBulkStorage:
         ctx: Context = Context.current()
         tenant = await resolve_tenant(ctx.partition_id)
-        service_account_file=f'{Config.aws_region.value}$${Config.aws_env.value}'
+        service_account_file = f'{Config.aws_region.value}$${Config.aws_env.value}'
         params = await aws_parameters(tenant, service_account_file)
-        return await DaskBulkStorage.create(params, get_config())
+        dask_client = await app_injector.get(DaskDistributedClient)
+        return await DaskBulkStorage.create(params, bulk_config, dask_client)

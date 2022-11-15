@@ -12,13 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.tenant import resolve_tenant
-from app.bulk_persistence import DaskBulkStorage, get_config
+from functools import partial
+
+from app.bulk_persistence import (
+    BulkPersistenceConfig,
+    DaskBulkStorage,
+    DaskDistributedClient,
+    get_config,
+)
 from app.context import Context
+from app.tenant import resolve_tenant
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu_az.storage.blob_storage_az import AzureAioBlobStorage
-from osdu_az.storage.dask_storage_parameters import \
-    get_dask_storage_parameters as az_parameters
+from osdu_az.storage.dask_storage_parameters import (
+    get_dask_storage_parameters as az_parameters,
+)
 
 from .app_injector import AppInjector, AppInjectorModule
 
@@ -26,15 +34,18 @@ from .app_injector import AppInjector, AppInjectorModule
 class AzureInjector(AppInjectorModule):
     def configure(self, app_injector: AppInjector):
         app_injector.register(BlobStorageBase, AzureInjector.build_az_blob_storage)
-        app_injector.register(DaskBulkStorage, AzureInjector.build_dask_az_blob_storage)
+        app_injector.register(DaskBulkStorage, partial(AzureInjector.build_dask_az_blob_storage,
+                                                       app_injector=app_injector,
+                                                       bulk_config=get_config()))
 
     @staticmethod
     async def build_az_blob_storage() -> BlobStorageBase:
         return AzureAioBlobStorage()
 
     @staticmethod
-    async def build_dask_az_blob_storage() -> DaskBulkStorage:
+    async def build_dask_az_blob_storage(app_injector: AppInjector, bulk_config: BulkPersistenceConfig) -> DaskBulkStorage:
         ctx: Context = Context.current()
         tenant = await resolve_tenant(ctx.partition_id)
         params = await az_parameters(tenant)
-        return await DaskBulkStorage.create(params, get_config())
+        dask_client = await app_injector.get(DaskDistributedClient)
+        return await DaskBulkStorage.create(params, bulk_config, dask_client)

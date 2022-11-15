@@ -51,7 +51,7 @@ from .fixtures import (
 )
 
 from .fixtures_pkg import (
-    dask_client,
+    dask_custom_config,
     testing_app_local_chunking_no_consistency,
     testing_app_local_chunking_with_consistency
 )
