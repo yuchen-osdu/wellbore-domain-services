@@ -124,9 +124,11 @@ def records_with_version(records):
 @pytest.mark.parametrize("url_entity_base_path, record_list_fixture", [
     ("wells", "well100_v3_list"),
     ("wells", "well110_v3_list"),
+    ("wells", "well120_v3_list"),
     ("wellbores", "wellbore100_v3_list"),
     ("wellbores", "wellbore110_v3_list"),
     ("wellbores", "wellbore111_v3_list"),
+    ("wellbores", "wellbore120_v3_list"),
     ("wellboremarkersets", "marker110_v3_list"),
     ("wellboremarkersets", "marker120_v3_list"),
     ("wellboremarkersets", "marker121_v3_list"),
