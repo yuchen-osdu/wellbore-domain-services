@@ -71,31 +71,32 @@ def client(app_configurable_with_testclient, tmp_path, nope_logger_fixture):
 
 
 @pytest.fixture
-def client_with_log(client):
+@pytest.mark.anyio
+async def client_with_log(client):
     # Create or update a log record
-    response = client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
+    response = await client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
     assert response.status_code in range(200, 209), "Create or update log failed"
 
     log_id = response.json()["recordIds"][0]
 
     # add data to the log
-    response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data", params={"orient": "split"}, json=prev_data, headers=headers)
+    response = await client.post(f"/ddms/v2/trajectories/{trajectory_id}/data", params={"orient": "split"}, json=prev_data, headers=headers)
     assert response.status_code in range(200, 209), "PUT log data failed"
 
     # get data
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data", headers=headers)
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/data", headers=headers)
     assert response.status_code in range(200, 209), "GET log data by channels failed"
     assert response.json() == prev_data, "GET log data  response json body should match  data for latest version"
 
     # get versions
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions", headers=headers)
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions", headers=headers)
     assert response.status_code == 200, "GET log data failed"
 
     version_id = response.json()["versions"][1]
 
     yield client, log_id, version_id
 
-    response = client.delete(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
+    response = await client.delete(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
     assert response.status_code in range(200, 209), "Delete test log failed"
 
 
@@ -120,7 +121,8 @@ def client_with_log(client):
         }
     )
 ])
-def test_traj_bulk(client, orient_value, data):
+@pytest.mark.anyio
+async def test_traj_bulk(client, orient_value, data):
     traj_cpy = copy.deepcopy(traj)
     traj_cpy['data']['channels'] = [
         {'name': 'X', 'family': 'X_family'},
@@ -128,20 +130,20 @@ def test_traj_bulk(client, orient_value, data):
     ]
 
     # Create or update a traj record
-    response = client.post("/ddms/v2/trajectories", json=[traj_cpy], headers=headers)
-    assert response.ok, "Create or update trajectory failed"
+    response = await client.post("/ddms/v2/trajectories", json=[traj_cpy], headers=headers)
+    assert response.is_success, "Create or update trajectory failed"
 
     # get data
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT, "GET trajectory data should return 204 when trajectory doesn't have data"
 
     # add data to the traj
-    response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data, headers=headers)
-    assert response.ok, "PUT trajectory data failed"
+    response = await client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data, headers=headers)
+    assert response.is_success, "PUT trajectory data failed"
 
     # check record
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
-    assert response.ok, "GET trajectory record failed"
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
+    assert response.is_success, "GET trajectory record failed"
     computed_record = response.json()
 
     assert computed_record["id"] == trajectory_id, "id in the record should match trajectory id"
@@ -161,13 +163,13 @@ def test_traj_bulk(client, orient_value, data):
     assert computed_channel["NOT_IN_BULK"]["family"] == "NOT_IN_BULK_family", "channels properties should not be deleted if not in bulk"
 
     # get data
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
-    assert response.ok, "GET trajectory data failed"
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
+    assert response.is_success, "GET trajectory data failed"
     assert response.json() == data, "GET trajectory data  response json should match trajectory data"
 
     # get specific channels data
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data", headers=headers, params={'orient': 'columns', 'channels': ['X', 'Y']})
-    assert response.ok, "GET trajectory data by channels failed"
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/data", headers=headers, params={'orient': 'columns', 'channels': ['X', 'Y']})
+    assert response.is_success, "GET trajectory data by channels failed"
     assert response.json() == {
         "X": {
             "0": 10,
@@ -182,62 +184,67 @@ def test_traj_bulk(client, orient_value, data):
     }, "GET trajectory data by channels response json body should match trajectory channels data"
 
     # get unknow channels
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient=columns&channels=X&channels=Wrong",
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient=columns&channels=X&channels=Wrong",
                           headers=headers)
     assert response.status_code == status.HTTP_400_BAD_REQUEST, "Get unknown channels data should fail with code 400"
-    assert response.reason == "Bad Request"
+    assert response.reason_phrase == "Bad Request"
     assert response.text == '{"detail":"\\"[\'Wrong\'] not in index\\""}'
 
 
-def test_traj_create_and_delete(client):
-    response = client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
-    assert response.ok
+@pytest.mark.anyio
+async def test_traj_create_and_delete(client):
+    response = await client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
+    assert response.is_success
     data = response.json()
     assert data['recordCount'] == 1
     assert data['recordIds'] == [f'{trajectory_id}']
     assert data['skippedRecordIds'] is None
 
-    response = client.delete(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
-    assert response.ok
+    response = await client.delete(f"/ddms/v2/trajectories/{trajectory_id}", headers=headers)
+    assert response.is_success
 
 
 @pytest.mark.parametrize("orient_value, data", [("wrong_orient", {}), ("values", {})])
-def test_get_data_orient_param_validation_negative(client, orient_value, data):
+@pytest.mark.anyio
+async def test_get_data_orient_param_validation_negative(client, orient_value, data):
     # Create or update a traj record
-    response = client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
-    assert response.ok, "Create or update trajectory failed"
+    response = await client.post("/ddms/v2/trajectories", json=[traj], headers=headers)
+    assert response.is_success, "Create or update trajectory failed"
 
     # get data
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     # add data to the traj
-    response = client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data,
+    response = await client.post(f"/ddms/v2/trajectories/{trajectory_id}/data?orient={orient_value}", json=data,
                            headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-def test_log_version_data(client_with_log):
+@pytest.mark.anyio
+async def test_log_version_data(client_with_log):
     client, log_id, version_id = client_with_log
 
     # get data for previous version
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", headers=headers)
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", headers=headers)
     assert response.status_code == 200, "GET data for previous version failed"
     assert response.json() == prev_data, "response json body should match previous version data"
 
 
 @pytest.mark.parametrize("orient_value", ["split", "columns"])
-def test_log_version_data_orient_param_validation(client_with_log, orient_value):
+@pytest.mark.anyio
+async def test_log_version_data_orient_param_validation(client_with_log, orient_value):
     client, log_id, version_id = client_with_log
 
     # get data for previous version
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", params={"orient": orient_value}, headers=headers)
-    assert response.ok
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", params={"orient": orient_value}, headers=headers)
+    assert response.is_success
 
 
-def test_log_version_data_orient_param_validation_negative(client_with_log):
+@pytest.mark.anyio
+async def test_log_version_data_orient_param_validation_negative(client_with_log):
     client, log_id, version_id = client_with_log
 
     # get data for previous version
-    response = client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", params={"orient": "wrong"}, headers=headers)
+    response = await client.get(f"/ddms/v2/trajectories/{trajectory_id}/versions/{version_id}/data", params={"orient": "wrong"}, headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

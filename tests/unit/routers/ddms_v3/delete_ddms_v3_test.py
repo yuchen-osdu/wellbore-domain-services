@@ -57,7 +57,8 @@ v3_entities = ["welllogs", "wellboretrajectories"]
     ("/ddms/v3/welllogs", "opendes:work-product-component--WellLog:00001234"),
     ("/ddms/v3/wellboretrajectories", "opendes:work-product-component--WellboreTrajectory:00001234")
 ])
-def test_delete_purge_record(client_delete, nope_logger_fixture, url_base_path, record_id):
+@pytest.mark.anyio
+async def test_delete_purge_record(client_delete, nope_logger_fixture, url_base_path, record_id):
     record_versions = RecordVersions(record_id=record_id, versions=versions)
 
     with patch.object(storage_record_service_client_mock, "delete_record",
@@ -72,7 +73,7 @@ def test_delete_purge_record(client_delete, nope_logger_fixture, url_base_path, 
          patch.object(delete_bulk_data, "_get_bulk_uri_from_version",
                       side_effect=record_bulk_uris):
 
-        response = client_delete.delete(
+        response = await client_delete.delete(
             f"{url_base_path}/{record_id}?purge=true",
             headers={"data-partition-id": "testing_partition"},
         )

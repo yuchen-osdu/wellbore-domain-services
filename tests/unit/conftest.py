@@ -13,7 +13,6 @@
 # limitations under the License.
 from datetime import timedelta
 
-import asyncio
 import logging
 import os
 
@@ -118,11 +117,6 @@ def pytest_unconfigure(config):
     del os.environ['SERVICE_HOST_PARTITION']
 
 
-# all tests with pytest-asyncio will share the same loop
-# Ref: https://github.com/pytest-dev/pytest-asyncio#event_loop
 @pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    # teardown
-    loop.close()
+def anyio_backend():
+    return 'asyncio'

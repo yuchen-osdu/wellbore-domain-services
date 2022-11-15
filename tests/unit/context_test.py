@@ -88,8 +88,7 @@ async def context_assigned_and_check():
     await context_assert_current_rq_id(id)
 
 
-@pytest.mark.asyncio
-async def test_set_current_with_value(context_base):
+def test_set_current_with_value(context_base):
     context_base.set_current()
     Context.set_current_with_value(correlation_id='new_correlation_id')
     assert Context.current().correlation_id == 'new_correlation_id'
@@ -110,8 +109,8 @@ def sync_context_assigned_and_check():
     assert Context.current().request_id == id
 
 
-@pytest.mark.asyncio
-async def test_context_current_in_thread_executor():
+@pytest.mark.anyio
+async def test_context_current_in_thread_executor_asyncio():
     size = 30
     coros = [asyncio.get_event_loop().run_in_executor(None, sync_context_assigned_and_check) for _ in range(size)]
     assert len(coros) == size

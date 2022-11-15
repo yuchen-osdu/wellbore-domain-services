@@ -48,7 +48,7 @@ def format_routes(app, prefix, tags, strip_prefix=True):
 
 
 @pytest.fixture
-def openapi_json(app_configurable_with_testclient):
+async def openapi_json(app_configurable_with_testclient):
     app, client = app_configurable_with_testclient()
 
     # Initialize route filters for documentation
@@ -63,12 +63,13 @@ def openapi_json(app_configurable_with_testclient):
         format_routes(app, prefix, tags, not keep_prefix)
 
     # get the openapi spec
-    response = client.get("/openapi.json")
+    response = await client.get("/openapi.json")
     assert response.status_code == 200
     yield response.json()
 
 
-def test_api_spec(openapi_json):
+@pytest.mark.anyio
+async def test_api_spec(openapi_json):
     openapi_text = json.dumps(openapi_json, sort_keys=True, indent=2)
     # get the saved spec
     with open(OPENAPI_PATH, 'r') as specfile:
@@ -83,7 +84,8 @@ def test_api_spec(openapi_json):
         assert False, f"{OPENAPI_PATH} has changed, commit the updated file"
 
 
-def test_api_spec_for_duplicates(openapi_json):
+@pytest.mark.anyio
+async def test_api_spec_for_duplicates(openapi_json):
     # Check operationId for all paths are different
     # structure is
     # root
@@ -101,5 +103,6 @@ def test_api_spec_for_duplicates(openapi_json):
             operation_id_set.add(operation_id)
 
 
-def test_open_api_validity(openapi_json):
+@pytest.mark.anyio
+async def test_open_api_validity(openapi_json):
     validate_spec(openapi_json)

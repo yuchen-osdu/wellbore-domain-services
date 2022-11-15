@@ -4,7 +4,7 @@ from app.bulk_persistence import DaskException, dask_client
 from app.bulk_persistence.dask.localcluster import memory_leeway
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_dask_workers_not_enough_ram_available(dask_custom_config, nope_logger_fixture, local_bulk_persistence_config):
 
     with dask_custom_config(system_memory_mock=42, worker_threads_mock=(10, 10)):
@@ -19,7 +19,7 @@ async def test_dask_workers_not_enough_ram_available(dask_custom_config, nope_lo
 @pytest.mark.parametrize("expected_workers", [
     1, 3, 5
 ])
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_dask_workers_enough_ram_available(dask_custom_config,
                                                  local_bulk_persistence_config,
                                                  expected_workers,

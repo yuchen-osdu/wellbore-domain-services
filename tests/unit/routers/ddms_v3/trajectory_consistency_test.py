@@ -79,8 +79,9 @@ acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
 )
 @patch.object(storage_record_service_client_mock, 'create_or_update_records',
               AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
-def test_post_v3_consistent_trajectory(client, available_trajectory_station_properties):
-    response = client.post(
+@pytest.mark.anyio
+async def test_post_v3_consistent_trajectory(client, available_trajectory_station_properties):
+    response = await client.post(
         url="/ddms/v3/wellboretrajectories",
         json=[
             {
@@ -116,8 +117,9 @@ def test_post_v3_consistent_trajectory(client, available_trajectory_station_prop
         ],
     ],
 )
-def test_post_v3_inconsistent_trajectory(client, available_trajectory_station_properties):
-    response = client.post(
+@pytest.mark.anyio
+async def test_post_v3_inconsistent_trajectory(client, available_trajectory_station_properties):
+    response = await client.post(
         url="/ddms/v3/wellboretrajectories",
         json=[
             {

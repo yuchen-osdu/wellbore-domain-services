@@ -12,7 +12,7 @@ def test_ensure_basic_context_middleware_is_first():
     assert wdms_app.wdms_app.user_middleware[0].cls is CreateBasicContextMiddleware
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_should_start_and_leave_cleared_context(local_dev_config):
     middleware = CreateBasicContextMiddleware(config=local_dev_config, injector=None, app=None)
     request_mock = Mock()
@@ -54,7 +54,7 @@ async def test_should_start_and_leave_cleared_context(local_dev_config):
     assert all((after_ctx[p] is None for p in properties_to_check))
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_should_leave_cleared_context_in_case_of_exception(local_dev_config):
     middleware = CreateBasicContextMiddleware(config=local_dev_config, injector=None, app=None)
     request_mock = Mock()

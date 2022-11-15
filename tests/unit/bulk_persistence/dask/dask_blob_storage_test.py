@@ -112,7 +112,7 @@ async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_
     return bulkid
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_invalid_session_id(dask_storage: DaskBulkStorage, mode=SessionUpdateMode.Overwrite):
     invalid_session_id = "test_1234-abcd"
     utc_now = datetime.utcnow()
@@ -123,7 +123,7 @@ async def test_invalid_session_id(dask_storage: DaskBulkStorage, mode=SessionUpd
                 state=SessionState.Open)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_save_bulk_with_bulk_id(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     bulk_id = 'abcdef'
@@ -135,7 +135,7 @@ async def test_save_bulk_with_bulk_id(dask_storage: DaskBulkStorage):
     await compare_frame(df_ref, df)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_save_bulk(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     record_id = 'test_save_bulk_record_id'
@@ -149,7 +149,7 @@ async def test_save_bulk(dask_storage: DaskBulkStorage):
         await dask_storage.load_bulk_and_catalog(record_id="bad_record", bulk_id=bulk_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_post_dataframe_without_session_with_bulk_id(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     bulk_id = 'abcdef'
@@ -166,7 +166,7 @@ async def test_post_dataframe_without_session_with_bulk_id(dask_storage: DaskBul
     await compare_frame(df_ref, df)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_post_dataframe_without_session(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     record_id = 'test_save_bulk_record_id'
@@ -185,7 +185,7 @@ async def test_post_dataframe_without_session(dask_storage: DaskBulkStorage):
         await dask_storage.load_bulk_and_catalog(record_id="bad_record", bulk_id=bulk_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_save_blob_with_same_data_at_once(dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(100))
 
@@ -197,7 +197,7 @@ async def test_save_blob_with_same_data_at_once(dask_storage: DaskBulkStorage):
     assert len(bulk_ids) == concurrent_save_bulks  # TODO I don't understand the actual goal of this test
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_append_rows(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     for idx in range(0, 1000, 100):
@@ -212,7 +212,7 @@ async def test_session_append_rows(test_session, dask_storage: DaskBulkStorage):
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_append_columns(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
     for c in df_ref.columns:
@@ -226,7 +226,7 @@ async def test_session_append_columns(test_session, dask_storage: DaskBulkStorag
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_update_add_new_rows(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
@@ -243,7 +243,7 @@ async def test_session_update_add_new_rows(test_session, dask_storage: DaskBulkS
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_update_add_new_columns(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'floatB', 'strC'], range(1000))
 
@@ -260,7 +260,7 @@ async def test_session_update_add_new_columns(test_session, dask_storage: DaskBu
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_update_add_new_columns_shifted(test_session, dask_storage: DaskBulkStorage):
     A = generate_df(['A'], range(100))
     C = generate_df(['A', 'strC'], index=range(100, 200))
@@ -277,7 +277,7 @@ async def test_session_update_add_new_columns_shifted(test_session, dask_storage
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_empty_chunk(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(0))
 
@@ -288,13 +288,13 @@ async def test_session_empty_chunk(test_session, dask_storage: DaskBulkStorage):
         await save_bulk(dask_storage, df_ref, record_id=test_session.recordId)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_empty_session(dask_storage: DaskBulkStorage):
     with pytest.raises(BulkRecordNotFound):
         await dask_storage.load_bulk_and_catalog(record_id="123", bulk_id="bad_id")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_update_ovelap(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
@@ -318,7 +318,7 @@ async def test_session_update_ovelap(test_session, dask_storage: DaskBulkStorage
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_update_ovelap_by_column(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], range(1000))
 
@@ -339,20 +339,20 @@ async def test_session_update_ovelap_by_column(test_session, dask_storage: DaskB
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_bad_bulkId_commit(test_session, dask_storage: DaskBulkStorage):
     await add_chunk(dask_storage, test_session, generate_df(['A'], range(10)))
     with pytest.raises(BulkRecordNotFound):
         await dask_storage.session_commit(test_session, from_bulk_id="bad_bulk_id")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_empty_session_commit(test_session, dask_storage: DaskBulkStorage):
     with pytest.raises(BulkNotProcessable):
         await dask_storage.session_commit(test_session, from_bulk_id=test_session.recordId)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_bad_columns_requested(test_session, dask_storage: DaskBulkStorage):
     await add_chunk(dask_storage, test_session, generate_df(['A'], range(10)))
     bulk_id = await dask_storage.session_commit(test_session)
@@ -363,7 +363,7 @@ async def test_bad_columns_requested(test_session, dask_storage: DaskBulkStorage
         await dask_storage.load_bulk_and_catalog(test_session.recordId, bulk_id, ['A', 'B'])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_load_index(test_session, dask_storage: DaskBulkStorage):
     await add_chunk(dask_storage, test_session, generate_df(['A'], range(10)))
     await add_chunk(dask_storage, test_session, generate_df(['B'], range(10, 20)))
@@ -373,7 +373,7 @@ async def test_load_index(test_session, dask_storage: DaskBulkStorage):
     assert index.equals(expected_index)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_all_type(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['dateD', 'floatB', 'intA', 'strC'], range(5))
 
@@ -391,7 +391,7 @@ async def test_all_type(test_session, dask_storage: DaskBulkStorage):
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_index_float(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B', 'C'], np.arange(1, 10, 0.5))
 
@@ -414,7 +414,7 @@ async def test_index_float(test_session, dask_storage: DaskBulkStorage):
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_index_str(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B'], [f"str_{i}" for i in range(10)])
 
@@ -427,7 +427,7 @@ async def test_index_str(test_session, dask_storage: DaskBulkStorage):
         await add_chunk(dask_storage, test_session, df_ref)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_index_time(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A', 'B'], pd.date_range("2021-01-01", periods=10, freq="min"))
 
@@ -452,7 +452,7 @@ async def test_index_time(test_session, dask_storage: DaskBulkStorage):
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_duplicate_index(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['A'], [0, 1, 2, 2])
 
@@ -465,7 +465,7 @@ async def test_duplicate_index(test_session, dask_storage: DaskBulkStorage):
         await add_chunk(dask_storage, test_session, df_ref)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_array_values(test_session, dask_storage: DaskBulkStorage):
     df_ref = generate_df(['array_10_A', 'array_5_B', 'C'], range(5))
     assert len(df_ref['array_10_A'][0]) == 10
@@ -475,7 +475,7 @@ async def test_array_values(test_session, dask_storage: DaskBulkStorage):
     await compare_frame(df_ref, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_duplicate_chunk(test_session, dask_storage: DaskBulkStorage):
     chunk1 = generate_df(['A', 'B'], range(10))
     chunk2 = generate_df(['A', 'B'], range(10))
@@ -496,7 +496,7 @@ async def test_duplicate_chunk(test_session, dask_storage: DaskBulkStorage):
     await compare_frame(expected_df, ddf)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_named_index_chunk(test_session, dask_storage: DaskBulkStorage):
     chunk = generate_df(['A', 'B'], range(10))
     chunk['idx'] = range(10)

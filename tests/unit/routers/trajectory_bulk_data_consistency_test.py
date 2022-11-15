@@ -9,7 +9,7 @@ def dasked_test_app_client(testing_app_local_chunking_with_consistency):
     return client
 
 
-def _create_record(client, data):
+async def _create_record(client, data):
     record = {
         "kind": "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
         "acl": {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]},
@@ -20,34 +20,34 @@ def _create_record(client, data):
         "version": 0,
         "data": data,
     }
-    response = client.post("/ddms/v3/wellboretrajectories", json=[record])
+    response = await client.post("/ddms/v3/wellboretrajectories", json=[record])
     assert response.status_code == 200
     record_id = response.json()["recordIds"][0]
     return record_id
 
 
-def _post_data(client, record_id, data):
-    return client.post(
+async def _post_data(client, record_id, data):
+    return await client.post(
         url=f"/ddms/v3/wellboretrajectories/{record_id}/data",
         json=data,
         headers={"content-type": "application/json"},
     )
 
 
-def _create_session(client, record_id):
-    response = client.post(f"/ddms/v3/wellboretrajectories/{record_id}/sessions", json={"mode": "overwrite"})
+async def _create_session(client, record_id):
+    response = await client.post(f"/ddms/v3/wellboretrajectories/{record_id}/sessions", json={"mode": "overwrite"})
     assert response.status_code == 200
     session_id = response.json()["id"]
     return session_id
 
 
-def _post_chunk(client, record_id, session_id, data):
-    response = client.post(f"/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data", json=data)
+async def _post_chunk(client, record_id, session_id, data):
+    response = await client.post(f"/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}/data", json=data)
     return response
 
 
-def _commit_session(client, record_id, session_id):
-    response = client.patch(f"/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}", json={"state": "commit"})
+async def _commit_session(client, record_id, session_id):
+    response = await client.patch(f"/ddms/v3/wellboretrajectories/{record_id}/sessions/{session_id}", json={"state": "commit"})
     return response
 
 
@@ -204,21 +204,23 @@ test_param.append(
 
 
 @pytest.mark.parametrize("traj_data, bulk_data", test_param)
-def test_consistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data):
-    record_id = _create_record(client=dasked_test_app_client, data=traj_data)
-    response = _post_data(client=dasked_test_app_client, record_id=record_id, data=bulk_data)
+@pytest.mark.anyio
+async def test_consistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data):
+    record_id = await _create_record(client=dasked_test_app_client, data=traj_data)
+    response = await _post_data(client=dasked_test_app_client, record_id=record_id, data=bulk_data)
     assert response.status_code == 200
 
 
 @pytest.mark.parametrize("traj_data, bulk_data", test_param)
-def test_post_consistent_chunk(dasked_test_app_client, traj_data, bulk_data):
-    wid = _create_record(dasked_test_app_client, traj_data)
-    session_id = _create_session(dasked_test_app_client, wid)
+@pytest.mark.anyio
+async def test_post_consistent_chunk(dasked_test_app_client, traj_data, bulk_data):
+    wid = await _create_record(dasked_test_app_client, traj_data)
+    session_id = await _create_session(dasked_test_app_client, wid)
 
-    response = _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
+    response = await _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
     assert response.status_code == 200
 
-    response = _commit_session(dasked_test_app_client, wid, session_id)
+    response = await _commit_session(dasked_test_app_client, wid, session_id)
     assert response.status_code == 200
 
 
@@ -313,12 +315,13 @@ inconsistent_test_params = [
 ]
 
 @pytest.mark.parametrize("traj_data, bulk_data, expected", inconsistent_test_params)
-def test_inconsistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data, expected):
-    record_id = _create_record(
+@pytest.mark.anyio
+async def test_inconsistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data, expected):
+    record_id = await _create_record(
         dasked_test_app_client,
         data=traj_data
     )
-    response = _post_data(dasked_test_app_client, record_id, bulk_data)
+    response = await _post_data(dasked_test_app_client, record_id, bulk_data)
     assert response.status_code == 400
     computed = response.json()["detail"]
 
@@ -328,14 +331,15 @@ def test_inconsistent_whole_bulk(dasked_test_app_client, traj_data, bulk_data, e
 
 
 @pytest.mark.parametrize("traj_data, bulk_data, expected", inconsistent_test_params)
-def test_post_inconsistent_chunk(dasked_test_app_client, traj_data, bulk_data, expected):
-    wid = _create_record(dasked_test_app_client, traj_data)
-    session_id = _create_session(dasked_test_app_client, wid)
+@pytest.mark.anyio
+async def test_post_inconsistent_chunk(dasked_test_app_client, traj_data, bulk_data, expected):
+    wid = await _create_record(dasked_test_app_client, traj_data)
+    session_id = await _create_session(dasked_test_app_client, wid)
 
-    response = _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
+    response = await _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
     assert response.status_code == 200
 
-    response = _commit_session(dasked_test_app_client, wid, session_id)
+    response = await _commit_session(dasked_test_app_client, wid, session_id)
     assert response.status_code == 400
     computed = response.json()["detail"]
     pattern = re.compile(expected)

@@ -49,7 +49,7 @@ async def testing_app_local_chunking_no_consistency(app_configurable_with_testcl
                                                    )
     yield app, client
 
-
+# TODO same as testing_app_local_chunking_no_consistency ?
 @pytest.fixture
 async def testing_app_local_chunking_with_consistency(app_configurable_with_testclient, tmp_path_factory,
                                                       local_bulk_persistence_config):
@@ -61,7 +61,6 @@ async def testing_app_local_chunking_with_consistency(app_configurable_with_test
                                           #   it would be cleaner to explicitly grab the existing client
                                           #   from the app_configurable_with_testclient.app.state
                                           dask_client=await dask_client.create(local_bulk_persistence_config))
-
 
     app, client = app_configurable_with_testclient(fake_data_partition_id=True,
                                                    disable_bulk_consistency=False,

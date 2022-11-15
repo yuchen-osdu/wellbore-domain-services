@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 from fastapi import Depends
 from unittest.mock import AsyncMock
@@ -34,48 +32,37 @@ def test_local_dev_config(local_dev_config):
     assert Config.modules.value == local_dev_config.modules.value
 
 
-def test_mock_storage_client_holding_well_v2_record_data(
+@pytest.mark.anyio
+async def test_mock_storage_client_holding_well_v2_record_data(
     mock_storage_client_holding_data, well_v2_record_list
 ):
     """Test the mock_storage_client_holding_data behavior, along with the well_v2_record data itself"""
     storage_client = mock_storage_client_holding_data(well_v2_record_list)
 
-    # grab current eventloop if we already have one, otherwise creates it
-    loop = asyncio.get_event_loop()
-
     w2ids = [w2.id for w2 in well_v2_record_list]
     for w2id in w2ids:
-        assert (
-            loop.run_until_complete(
-                storage_client.get_record(w2id, "fake_data_partition_id")
-            )
-            == [w for w in well_v2_record_list if w.id == w2id][0]
-        )
+        assert await storage_client.get_record(w2id, "fake_data_partition_id")\
+               == [w for w in well_v2_record_list if w.id == w2id][0]
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize("well_record_data_fixture", ["well_v3_record_list", "well_v3_110_record_list"])
-def test_mock_storage_client_holding_well_v3_record_data(
+async def test_mock_storage_client_holding_well_v3_record_data(
     mock_storage_client_holding_data, well_record_data_fixture, request
 ):
     well_record_data = request.getfixturevalue(well_record_data_fixture)
     """Test the mock_storage_client_holding_data behavior, along with the well_v3_record data itself"""
     storage_client = mock_storage_client_holding_data(well_record_data)
 
-    # grab current eventloop if we already have one, otherwise creates it
-    loop = asyncio.get_event_loop()
-
     w3ids = [w3.id for w3 in well_record_data]
     for w3id in w3ids:
-        assert (
-            loop.run_until_complete(
-                storage_client.get_record(w3id, "fake_data_partition_id")
-            )
-            == [w for w in well_record_data if w.id == w3id][0]
-        )
+        assert await storage_client.get_record(w3id, "fake_data_partition_id") \
+               == [w for w in well_record_data if w.id == w3id][0]
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize("well_record_data_fixture", ["well_v3_record_list", "well_v3_110_record_list"])
-def test_mock_storage_client_holding_well_v3_record_with_version_data(
+async def test_mock_storage_client_holding_well_v3_record_with_version_data(
     mock_storage_client_holding_data, well_record_data_fixture, request
 ):
     well_record_data = request.getfixturevalue(well_record_data_fixture)
@@ -89,77 +76,58 @@ def test_mock_storage_client_holding_well_v3_record_with_version_data(
 
     storage_client = mock_storage_client_holding_data([single_record_v0, single_record_v1])
 
-    # grab current eventloop if we already have one, otherwise creates it
-    loop = asyncio.get_event_loop()
-
     # get latest
-    assert (
-            loop.run_until_complete(
-                storage_client.get_record(record_id, "fake_data_partition_id")
-            ).version == single_record_v1.version
-    )
+    assert (await storage_client.get_record(record_id, "fake_data_partition_id")).version == single_record_v1.version
 
     # get V0
-    r = loop.run_until_complete(
-        storage_client.get_record_version(record_id, 0, "fake_data_partition_id")
-    )
+    r = await storage_client.get_record_version(record_id, 0, "fake_data_partition_id")
+
     assert r.version == 0 and r.data['FacilityName'] == single_record_v0.data['FacilityName']
 
     # get V1
-    r = loop.run_until_complete(
-        storage_client.get_record_version(record_id, 1, "fake_data_partition_id")
-    )
+    r = await storage_client.get_record_version(record_id, 1, "fake_data_partition_id")
+
     assert r.version == 1 and r.data['FacilityName'] == single_record_v1.data['FacilityName']
 
     # get versions
-    r = loop.run_until_complete(
-        storage_client.get_all_record_versions(record_id, "fake_data_partition_id")
-    )
+    r = await storage_client.get_all_record_versions(record_id, "fake_data_partition_id")
     assert set(r.versions) == {0, 1}
 
 
-def test_mock_storage_client_holding_wellbore_v2_record_data(
+@pytest.mark.anyio
+async def test_mock_storage_client_holding_wellbore_v2_record_data(
     mock_storage_client_holding_data, wellbore_v2_record_list
 ):
     """Test the mock_storage_client_holding_data behavior, along with the well_v2_record data itself"""
     storage_client = mock_storage_client_holding_data(wellbore_v2_record_list)
 
-    # grab current eventloop if we already have one, otherwise creates it
-    loop = asyncio.get_event_loop()
 
     w2ids = [w2.id for w2 in wellbore_v2_record_list]
     for w2id in w2ids:
-        assert (
-            loop.run_until_complete(
-                storage_client.get_record(w2id, "fake_data_partition_id")
-            )
-            == [w for w in wellbore_v2_record_list if w.id == w2id][0]
-        )
+        assert await storage_client.get_record(w2id, "fake_data_partition_id") \
+               == [w for w in wellbore_v2_record_list if w.id == w2id][0]
 
 
+
+@pytest.mark.anyio
 @pytest.mark.parametrize("wellbore_record_data_fixture", ["wellbore_v3_record_list", "wellbore_v3_110_record_list"])
-def test_mock_storage_client_holding_wellbore_v3_record_data(
+async def test_mock_storage_client_holding_wellbore_v3_record_data(
     mock_storage_client_holding_data, wellbore_record_data_fixture, request
 ):
     wellbore_record_data = request.getfixturevalue(wellbore_record_data_fixture)
     """Test the mock_storage_client_holding_data behavior, along with the well_v2_record data itself"""
     storage_client = mock_storage_client_holding_data(wellbore_record_data)
 
-    # grab current eventloop if we already have one, otherwise creates it
-    loop = asyncio.get_event_loop()
 
     w3ids = [w3.id for w3 in wellbore_record_data]
     for w3id in w3ids:
-        assert (
-            loop.run_until_complete(
-                storage_client.get_record(w3id, "fake_data_partition_id")
-            )
-            == [w for w in wellbore_record_data if w.id == w3id][0]
-        )
+        assert await storage_client.get_record(w3id, "fake_data_partition_id")\
+               == [w for w in wellbore_record_data if w.id == w3id][0]
 
 
 @pytest.mark.parametrize("well_record_data_fixture", ["well_v3_record_list", "well_v3_110_record_list"])
-def test_app_configurable_with_and_without_data_partition(
+@pytest.mark.anyio
+async def test_app_configurable_with_and_without_data_partition(
     app_configurable_with_testclient, mock_storage_client_holding_data, well_record_data_fixture, request
 ):
     well_record_data = request.getfixturevalue(well_record_data_fixture)
@@ -171,16 +139,16 @@ def test_app_configurable_with_and_without_data_partition(
     )
 
     # no partition needed
-    assert client.get("/about").status_code == 200
+    assert (await client.get("/about")).status_code == 200
     # no partition needed but authentication ok
     response = client.get("/version")
     assert response
     # partition needed for any data retrieval
-    assert client.post(f"/wells/{well_record_data[0].id}").status_code == 404
-    assert client.get(f"/wellbores/123").status_code == 404
-    assert client.get(f"/logsets/123").status_code == 404
-    assert client.get(f"/trajectories/123").status_code == 404
-    assert client.get(f"/logs/123").status_code == 404
+    assert (await client.post(f"/wells/{well_record_data[0].id}")).status_code == 404
+    assert (await client.get(f"/wellbores/123")).status_code == 404
+    assert (await client.get(f"/logsets/123")).status_code == 404
+    assert (await client.get(f"/trajectories/123")).status_code == 404
+    assert (await client.get(f"/logs/123")).status_code == 404
 
     app, client = app_configurable_with_testclient(
         storage_client_mock=storage_client,
@@ -188,18 +156,19 @@ def test_app_configurable_with_and_without_data_partition(
     )
 
     # no partition needed
-    assert client.get("/about").status_code == 200
+    assert (await client.get("/about")).status_code == 200
     # no partition needed but authentication ok
-    assert client.get("/version").status_code == 200
+    assert (await client.get("/version")).status_code == 200
     # partition needed for any data retrieval
-    assert client.get(f"/wells/{well_record_data[0].id}").status_code == 404
-    assert client.get(f"/wellbores/123").status_code == 404
-    assert client.get(f"/logsets/123").status_code == 404
-    assert client.get(f"/trajectories/123").status_code == 404
-    assert client.get(f"/logs/123").status_code == 404
+    assert (await client.get(f"/wells/{well_record_data[0].id}")).status_code == 404
+    assert (await client.get(f"/wellbores/123")).status_code == 404
+    assert (await client.get(f"/logsets/123")).status_code == 404
+    assert (await client.get(f"/trajectories/123")).status_code == 404
+    assert (await client.get(f"/logs/123")).status_code == 404
 
 
-def test_app_configurable_with_unauthorized_client(
+@pytest.mark.anyio
+async def test_app_configurable_with_unauthorized_client(
     app_configurable_with_testclient,
 ):
     """Test the app configuration"""
@@ -209,21 +178,22 @@ def test_app_configurable_with_unauthorized_client(
     )
 
     # anonymous ok
-    assert client.get("/about").status_code == 200
+    assert (await client.get("/about")).status_code == 200
     # not authorized
-    assert client.get("/version").status_code == 403
+    assert (await client.get("/version")).status_code == 403
 
     app, client = app_configurable_with_testclient(
         fake_opendes_authorized_user=True
     )
 
     # anonymous ok
-    assert client.get("/about").status_code == 200
+    assert (await client.get("/about")).status_code == 200
     # authorized
-    assert client.get("/version").status_code == 200
+    assert (await client.get("/version")).status_code == 200
 
 
-def test_app_configurable_with_client_and_mocks(
+@pytest.mark.anyio
+async def test_app_configurable_with_client_and_mocks(
     app_configurable_with_testclient,
 ):
     """Test the app configuration"""
@@ -258,7 +228,7 @@ def test_app_configurable_with_client_and_mocks(
         app.router.add_api_route("/inside_out", inside_out_handler)
 
         # do the request
-        response = client.get("/inside_out").json()
+        response = (await client.get("/inside_out")).json()
 
         assert response["search"] == "MySearchClientMock"
         assert response["storage"] == "MyStorageClientMock"

@@ -39,7 +39,7 @@ def assert_await_called_once(mock: Mock):
     mock.assert_awaited_once()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_dask_client_create_close_idempotent_sync(nope_logger_fixture, local_cluster_mock, local_bulk_persistence_config, dask_distributed_client_mock):
     """Testing that DaskClient.create() and DaskClient.close() are idempotent when called in sequence"""
 
@@ -74,33 +74,34 @@ async def test_dask_client_create_close_idempotent_sync(nope_logger_fixture, loc
     assert_await_called_once(client_instance_mock.close)
 
 
-def test_dask_client_create_close_idempotent_async(nope_logger_fixture, local_cluster_mock,
+@pytest.mark.anyio
+async def test_dask_client_create_close_idempotent_async(nope_logger_fixture, local_cluster_mock,
                                                    local_bulk_persistence_config, dask_distributed_client_mock):
     """Testing that DaskClient.create() and DaskClient.close() are idempotent when called in parallel"""
 
     cluster_mock, cluster_instance_mock = local_cluster_mock
     client_mock, client_instance_mock = dask_distributed_client_mock
 
-    loop = asyncio.get_event_loop()
 
     # running n start in parallel
-    loop.run_until_complete(asyncio.gather(
+    # TODO it would be cleaner to use anyio task_group
+    await asyncio.gather(
         *[dask_client.create(local_bulk_persistence_config) for _ in range(8)]
-    ))
+    )
 
     assert_await_called_once(cluster_mock)
     assert_await_called_once(client_mock)
 
     # running m stop in parallel
-    loop.run_until_complete(asyncio.gather(
+    await asyncio.gather(
         *[dask_client.close()  for _ in range(6)]
-    ))
+    )
 
     assert_await_called_once(cluster_instance_mock.close)
     assert_await_called_once(client_instance_mock.close)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_dask_client_actx_idempotent(nope_logger_fixture, local_cluster_mock,
                                            dask_distributed_client_mock, local_bulk_persistence_config):
 

@@ -60,7 +60,8 @@ async def dasked_test_app_with_mocked_core_service(app_configurable_with_testcli
     yield client
 
 
-def test_post_records_successful(dasked_test_app_with_mocked_core_service):
+@pytest.mark.anyio
+async def test_post_records_successful(dasked_test_app_with_mocked_core_service):
     base_url = "/ddms/v3/wellbores"
     expected_response = CreateUpdateRecordsResponse(
         recordCount=1,
@@ -77,7 +78,7 @@ def test_post_records_successful(dasked_test_app_with_mocked_core_service):
             test_Wellbores = json.load(f)
         Wellbore.parse_obj(test_Wellbores[0])
         # when
-        response = dasked_test_app_with_mocked_core_service.post(
+        response = await dasked_test_app_with_mocked_core_service.post(
             base_url, data=json.dumps(test_Wellbores), headers={"content-type": "application/json"}
         )
 
@@ -86,6 +87,7 @@ def test_post_records_successful(dasked_test_app_with_mocked_core_service):
         assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "method, relative_path",
     [
@@ -102,12 +104,12 @@ def test_post_records_successful(dasked_test_app_with_mocked_core_service):
     "wellboremarkersets",
     "wellboretrajectories",
     "welllogs"])
-def test_get_delete_routes_refuse_incorrect_record_id(
+async def test_get_delete_routes_refuse_incorrect_record_id(
     app_configurable_with_testclient, method, relative_path, url_entity_base_path
 ):
     app, client = app_configurable_with_testclient()
 
-    response = client.request(method=method, url=f'{DDMS_V3_PATH}/{url_entity_base_path}/{relative_path}')
+    response = await client.request(method=method, url=f'{DDMS_V3_PATH}/{url_entity_base_path}/{relative_path}')
     assert response.status_code == 422
     assert "string does not match regex" in response.json()["detail"][0]["msg"]
 
@@ -121,6 +123,7 @@ def records_with_version(records):
     return records
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize("url_entity_base_path, record_list_fixture", [
     ("wells", "well100_v3_list"),
     ("wells", "well110_v3_list"),
@@ -133,11 +136,11 @@ def records_with_version(records):
     ("wellboretrajectories", "trajectory110_v3_list"),
     ("welllogs", "welllog120_v3_list")
 ])
-def test_get_delete_v3_routes_success(app_configurable_with_testclient,
-                                      mock_storage_client_holding_data,
-                                      url_entity_base_path,
-                                      record_list_fixture,
-                                      request):
+async def test_get_delete_v3_routes_success(app_configurable_with_testclient,
+                                            mock_storage_client_holding_data,
+                                            url_entity_base_path,
+                                            record_list_fixture,
+                                            request):
     all_records = request.getfixturevalue(record_list_fixture)  # dynamically load fixture
     record = all_records[0]  # using the first record
     model_cls = record.__class__
@@ -146,25 +149,25 @@ def test_get_delete_v3_routes_success(app_configurable_with_testclient,
     )
 
     # Get latest
-    response = client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}")
+    response = await client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}")
     assert response.status_code == 200
     record_data = response.json()
     retrieved_wr = model_cls.parse_obj(record_data)
     assert retrieved_wr == record
 
     # get all versions
-    response = client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}/versions")
+    response = await client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}/versions")
     assert response.status_code == 200
     first_version = response.json()['versions'][0]
 
     # get first version
-    response = client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}/versions/{first_version}")
+    response = await client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}/versions/{first_version}")
     assert response.status_code == 200
     retrieved_wr = model_cls.parse_obj(response.json())
     assert retrieved_wr == record
 
     # delete
-    response = client.delete(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}")
+    response = await client.delete(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}")
     assert response.status_code == 204
 
 
@@ -214,9 +217,10 @@ def validation_test_restricted_record_id(record_id, record_id_to_test, response,
         assert response.status_code == ok_response
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize("base_url, id", tests_parameters_restricted_record_id)
 @pytest.mark.parametrize("id_to_test, record_to_test, record_obj_to_test", tests_parameters_restricted_well)
-def test_restricted_record_id(
+async def test_restricted_record_id(
         dasked_test_app_with_mocked_core_service, base_url, id, id_to_test, record_to_test, record_obj_to_test
 ):
     record_id = id
@@ -232,21 +236,21 @@ def test_restricted_record_id(
          patch.object(storage_record_service_client_mock, "create_or_update_records", return_value=create_update_records_obj), \
          patch("app.routers.bulk.bulk_routes.set_bulk_field_and_send_record", return_value=create_update_records_obj), \
          patch.object(storage_record_service_client_mock, "delete_record", return_value=Response()):
-        response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+        response = await dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
 
         validation_test_restricted_record_id(record_id, record_id_to_test, response,
                                              status.HTTP_200_OK,status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         if base_url == "/ddms/v3/welllogs" or base_url == "/ddms/v3/wellboretrajectories":
             # Session
-            response = dasked_test_app_with_mocked_core_service.post(
+            response = await dasked_test_app_with_mocked_core_service.post(
                 f"{base_url}/{record_id_to_test}/sessions", json={"fromVersion": 11351351, "mode": "update"}
             )
             validation_test_restricted_record_id(record_id, record_id_to_test, response,
                                                  status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
             session_id = uuid.uuid4()
-            response = dasked_test_app_with_mocked_core_service.post(
+            response = await dasked_test_app_with_mocked_core_service.post(
                 f"{base_url}/{record_id_to_test}/sessions/{session_id}/data",
                 data=chunk.to_json(orient="split"),
                 headers={"Content-Type": "application/json"},
@@ -254,11 +258,11 @@ def test_restricted_record_id(
             validation_test_restricted_record_id(record_id, record_id_to_test, response,
                                                  status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-            response = dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}/sessions")
+            response = await dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}/sessions")
             validation_test_restricted_record_id(record_id, record_id_to_test, response,
                                                  status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-            response = dasked_test_app_with_mocked_core_service.get(
+            response = await dasked_test_app_with_mocked_core_service.get(
                 f"{base_url}/{record_id_to_test}/sessions/{session_id}"
             )
             validation_test_restricted_record_id(record_id, record_id_to_test, response,
@@ -283,19 +287,19 @@ def test_restricted_record_id(
                 data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
                 headers = {"content-type": "application/json"}
 
-                response = dasked_test_app_with_mocked_core_service.post(
+                response = await dasked_test_app_with_mocked_core_service.post(
                     f"{base_url}/{record_id_to_test}/data", data=data, headers=headers
                 )
                 validation_test_restricted_record_id(record_id, record_id_to_test, response,
                                                      status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-                response = dasked_test_app_with_mocked_core_service.get(
+                response = await dasked_test_app_with_mocked_core_service.get(
                     f"{base_url}/{record_id_to_test}/data?orient=split", headers={"Accept": "application/json"}
                 )
                 validation_test_restricted_record_id(record_id, record_id_to_test, response,
                                                      status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-                response = dasked_test_app_with_mocked_core_service.get(
+                response = await dasked_test_app_with_mocked_core_service.get(
                     f"{base_url}/{record_id_to_test}/versions/{version}/data"
                 )
                 validation_test_restricted_record_id(record_id, record_id_to_test, response,
@@ -334,10 +338,10 @@ def _records_for_invalid_bulk_uri_set_test(record_id, record_kind, data):
     return record_to_test
 
 
-def _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url, record_id,
+async def _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url, record_id,
                                                 record_kind, data, response_details):
     record_to_test = _records_for_invalid_bulk_uri_set_test(record_id=record_id, record_kind=record_kind, data=data)
-    response = dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+    response = await dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
     assert response.status_code == response_details["code"]
     if response_details["message"]:
         assert response.text == response_details["message"]
@@ -354,8 +358,9 @@ def _moc_get_record_previous_version(data, record_id, record_kind):
     )
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize("base_url, record_id, record_kind, data", tests_parameters_record_ids)
-def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url, record_id, record_kind, data):
+async def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url, record_id, record_kind, data):
     """
         record : Record which is tried to be created or updated gave in entry
         record_id : Record's id of the given record
@@ -438,12 +443,12 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
         response_details = {"code": status.HTTP_200_OK, "message": None}
 
         # NO Bulk URI and NO record_id
-        _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url, record_id=None,
+        await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url, record_id=None,
                                                     record_kind=record_kind, data=data,
                                                     response_details=response_details)
 
         # NO Bulk URI, record_id and NO old_record
-        _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+        await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                     record_id=record_id, record_kind=record_kind, data=data,
                                                     response_details=response_details)
 
@@ -455,7 +460,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
         data_test.update(data)
         response_details = {"code": status.HTTP_400_BAD_REQUEST,
                             "message": '{"detail":"Record[0] error : no Bulk URI can be specified without record id"}'}
-        _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url, record_id=None,
+        await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url, record_id=None,
                                                     record_kind=record_kind,
                                                     data=data_test, response_details=response_details)
 
@@ -464,7 +469,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
         response_details = {"code": status.HTTP_400_BAD_REQUEST,
                             "message": '{"detail":"Record[0] error : no Bulk URI can be specified, given record_id has no ' \
                                        'previous version"}'}
-        _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+        await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                     record_id=record_id,
                                                     record_kind=record_kind,
                                                     data=data_test, response_details=response_details)
@@ -482,7 +487,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
             # NO Bulk URI, record_id, old_record and old_bulk_uri
             response_details = {"code": status.HTTP_400_BAD_REQUEST,
                                 "message": '{"detail":"Record[0] error : Bulk URI isn\'t matching with the previous version one"}'}
-            _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+            await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                         record_id=record_id,
                                                         record_kind=record_kind,
                                                         data=data, response_details=response_details)
@@ -490,7 +495,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
             # Bulk URI, record_id, old_record, old_bulk_uri and NO matching Bulk URI
             response_details = {"code": status.HTTP_400_BAD_REQUEST,
                                 "message": '{"detail":"Record[0] error : Bulk URI isn\'t matching with the previous version one"}'}
-            _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+            await  _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                         record_id=record_id,
                                                         record_kind=record_kind,
                                                         data=data_test, response_details=response_details)
@@ -500,7 +505,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                 "ExtensionProperties": {"wdms": {'bulkURI': 'urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81'}}}
             data_test.update(data)
             response_details = {"code": status.HTTP_200_OK, "message": None}
-            _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+            await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                         record_id=record_id,
                                                         record_kind=record_kind,
                                                         data=data_test, response_details=response_details)
@@ -517,14 +522,14 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                 # Bulk URI, record_id, old_record and NO old_bulk_uri
                 response_details = {"code": status.HTTP_400_BAD_REQUEST,
                                     "message": '{"detail":"Record[0] error : no Bulk URI can be specified, given record_id has no bulkURI in its previous version"}'}
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id,
                                                             record_kind=record_kind,
                                                             data=data_test, response_details=response_details)
 
                 # NO Bulk URI, record_id, old_record and NO old_bulk_uri
                 response_details = {"code": status.HTTP_200_OK, "message": None}
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id,
                                                             record_kind=record_kind,
                                                             data=data, response_details=response_details)
@@ -543,14 +548,14 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                 record_to_test = _records_for_invalid_bulk_uri_set_test(record_id=None, record_kind=record_kind,
                                                                         data=data_test)
                 with pytest.raises(ValueError, match="badly formed hexadecimal UUID string"):
-                    dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+                    await dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
 
                 response_details = {"code": status.HTTP_200_OK, "message": None}
 
                 # data.ExtensionProperties field is None
                 data_test = {"ExtensionProperties": None}
                 data_test.update(data)
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=None,
                                                             record_kind=record_kind, data=data_test,
                                                             response_details=response_details)
@@ -558,7 +563,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                 # data.ExtensionProperties with no "wdms" field
                 data_test = {"ExtensionProperties": {}}
                 data_test.update(data)
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind,
                                                             data=data_test,
                                                             response_details=response_details)
@@ -566,7 +571,7 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
                 # data.ExtensionProperties["wdms"] with no bulkURI field
                 data_test = {"ExtensionProperties": {"wdms": {}}}
                 data_test.update(data)
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind,
                                                             data=data_test,
                                                             response_details=response_details)
@@ -582,30 +587,30 @@ def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, base_url
             '''
             with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_without_ExtensionProperties_field):
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
 
             with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_without_wdms_field):
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
 
             with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_with_ExtensionProperties_field_to_none):
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
 
             with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_with_wdms_field_to_none):
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)
 
             with patch.object(storage_record_service_client_mock, "get_record",
                               return_value=moc_old_version_record_with_bulk_uri_field_to_none):
-                _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
+                await _assert_check_for_invalid_bulk_uri_set_test(dasked_test_app_with_mocked_core_service, base_url,
                                                             record_id=record_id, record_kind=record_kind, data=data,
                                                             response_details=response_details)

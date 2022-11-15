@@ -17,14 +17,15 @@ tests specific to logset APIs. Common tests implemented in common_ddms_v2_test
 """
 
 import asyncio
+import anyio
 from io import BytesIO
-import pytest
 
 from fastapi import HTTPException
 import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pytest
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
@@ -46,6 +47,11 @@ from app.wdms_app import app_injector
 from tests.unit.test_utils import make_record
 
 
+@pytest.fixture(scope="session")
+def anyio_backend():
+    return 'asyncio'
+
+
 class TestHelper:
     DATA_PARTITION_ID = 'test_partition'
     BASE_HEADERS = {'data-partition-id': DATA_PARTITION_ID}
@@ -56,28 +62,20 @@ class TestHelper:
         return TestHelper.URL_PREFIX + path
 
     @staticmethod
-    def get_record_from_storage(record_id):
-        async def _fetcher(_id):
-            storage: StorageRecordServiceClient = await app_injector.get(StorageRecordServiceClient)
-            return await storage.get_record(_id, TestHelper.DATA_PARTITION_ID)
-
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(_fetcher(record_id))
+    async def get_record_from_storage(record_id):
+        storage: StorageRecordServiceClient = await app_injector.get(StorageRecordServiceClient)
+        return await storage.get_record(record_id, TestHelper.DATA_PARTITION_ID)
 
     @staticmethod
-    def post_record_to_storage(one_record_or_list_of_records):
+    async def post_record_to_storage(one_record_or_list_of_records):
         """ return one id it single record else list of ids """
 
-        async def _putter(record_or_list):
-            records = record_or_list if type(record_or_list) == list else [record_or_list]
-            storage: StorageRecordServiceClient = await app_injector.get(StorageRecordServiceClient)
-            response = await storage.create_or_update_records(record=records,
-                                                              data_partition_id=TestHelper.DATA_PARTITION_ID)
-            ids = response.record_ids
-            return ids if type(record_or_list) == list else ids[0]
-
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(_putter(one_record_or_list_of_records))
+        records = one_record_or_list_of_records if type(one_record_or_list_of_records) == list else [one_record_or_list_of_records]
+        storage: StorageRecordServiceClient = await app_injector.get(StorageRecordServiceClient)
+        response = await storage.create_or_update_records(record=records,
+                                                          data_partition_id=TestHelper.DATA_PARTITION_ID)
+        ids = response.record_ids
+        return ids if type(one_record_or_list_of_records) == list else ids[0]
 
     @staticmethod
     def make_minimal_log_dict(name: str, id: str = None) -> dict:
@@ -98,7 +96,7 @@ class TestHelper:
 
 
 @pytest.fixture
-def client(app_configurable_with_testclient, nope_logger_fixture, tmp_path):
+def client(app_configurable_with_testclient, nope_logger_fixture, tmp_path, anyio_backend):
     app, client = app_configurable_with_testclient(
         storage_client_mock=StorageRecordServiceBlobStorage(LocalFSBlobStorage(directory=tmp_path), 'p1', 'c1'),
         blob_storage_base_mock=LocalFSBlobStorage(directory=tmp_path),
@@ -124,11 +122,12 @@ log_data = [
 log_data_orient = 'split'
 
 
-def logs_write(client, test_data, nan_conversion):
+#TODO make a fixture
+async def logs_write(client, test_data, nan_conversion):
     # given
     log_id = '1337'
     record = TestHelper.make_minimal_log_record('test_logs_write_data_log', id=log_id)
-    TestHelper.post_record_to_storage(record)
+    await TestHelper.post_record_to_storage(record)
     df = pd.DataFrame(test_data)
     content = df
     if nan_conversion:
@@ -136,17 +135,20 @@ def logs_write(client, test_data, nan_conversion):
     json_content = content.to_json(orient=log_data_orient)
     byte_stream = BytesIO(str.encode(json_content))
     # when WRITE ----------------------------------------------------------
-    response = client.post(TestHelper.build_url(f'/logs/{log_id}/upload_data?orient=' + log_data_orient),
-                          files={'file': ('test_file_data.json', byte_stream, 'application/json')},
-                          headers=TestHelper.BASE_HEADERS)
+    response = await client.post(
+        TestHelper.build_url(f'/logs/{log_id}/upload_data?orient=' + log_data_orient),
+        files={'file': ('test_file_data.json', byte_stream, 'application/json')},
+        headers=TestHelper.BASE_HEADERS
+    )
     return log_id, df, response, client
 
 
 @pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
                                             pytest.param(False, id="native_nan")])
 @pytest.mark.parametrize("test_data", log_data)
-def test_logs_write_then_read_data(client, test_data, nan_conversion):
-    log_id, df, response, client = logs_write(client, test_data, nan_conversion)
+@pytest.mark.anyio
+async def test_logs_write_then_read_data(client, test_data, nan_conversion):
+    log_id, df, response, client = await logs_write(client, test_data, nan_conversion)
 
     # then
     assert response.status_code == 200
@@ -155,12 +157,12 @@ def test_logs_write_then_read_data(client, test_data, nan_conversion):
     assert store_response.record_ids[0] == log_id
 
     # check
-    actual = TestHelper.get_record_from_storage(log_id)
+    actual = await TestHelper.get_record_from_storage(log_id)
     bulk_id = TestHelper.get_bulk_id_from_record(actual)
     assert bulk_id
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
+    response = await client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
     f = BytesIO(response.content)
@@ -172,11 +174,12 @@ def test_logs_write_then_read_data(client, test_data, nan_conversion):
 @pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
                                             pytest.param(False, id="native_nan")])
 @pytest.mark.parametrize("test_data", log_data)
-def test_logs_write_then_read_data_statistics(client, test_data, nan_conversion):
-    log_id, df, response, client = logs_write(client, test_data, nan_conversion)
+@pytest.mark.anyio
+async def test_logs_write_then_read_data_statistics(client, test_data, nan_conversion):
+    log_id, df, response, client = await logs_write(client, test_data, nan_conversion)
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url(f'/logs/{log_id}/statistics'),
+    response = await client.get(TestHelper.build_url(f'/logs/{log_id}/statistics'),
                           headers=TestHelper.BASE_HEADERS)
 
     df_stat = df.describe(include="all").to_json()
@@ -188,9 +191,10 @@ def test_logs_write_then_read_data_statistics(client, test_data, nan_conversion)
 @pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
                                             pytest.param(False, id="native_nan")])
 @pytest.mark.parametrize("test_data", log_data)
-def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
+@pytest.mark.anyio
+async def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
 
-    log_id, df, response, client = logs_write(client, test_data, nan_conversion)
+    log_id, df, response, client = await logs_write(client, test_data, nan_conversion)
 
     # then
     assert response.status_code == 200
@@ -199,12 +203,12 @@ def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
     assert store_response.record_ids[0] == log_id
 
     # check
-    actual = TestHelper.get_record_from_storage(log_id)
+    actual = await TestHelper.get_record_from_storage(log_id)
     bulk_id = TestHelper.get_bulk_id_from_record(actual)
     assert bulk_id
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
+    response = await client.get(TestHelper.build_url(f'/logs/{log_id}/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
     f = BytesIO(response.content)
@@ -217,17 +221,18 @@ def test_logs_upload_file_then_read_data(client, test_data, nan_conversion):
     pd.DataFrame([[1, [1, 4]], [2, [2, 5]], [3, [3, 6]]]),
     pd.DataFrame({'ref': range(100_000), 'values': [float(val) + 0.1 for val in range(100_000)]})
 ])
-def test_logs_upload_parquet_read_json(client, df):
+@pytest.mark.anyio
+async def test_logs_upload_parquet_read_json(client, df):
     # given
     record = TestHelper.make_minimal_log_record('test_logs_upload_parquet_read_json', id='1337')
-    TestHelper.post_record_to_storage(record)
+    await TestHelper.post_record_to_storage(record)
 
     buffer = BytesIO()
     pq.write_table(pa.Table.from_pandas(df), buffer, compression='none')
     buffer.seek(0)
 
     # when WRITE ----------------------------------------------------------
-    response = client.post(TestHelper.build_url('/logs/1337/upload_data?orient=' + log_data_orient),
+    response = await client.post(TestHelper.build_url('/logs/1337/upload_data?orient=' + log_data_orient),
                            files={'file': ('test_file_data.parquet', buffer, MimeTypes.PARQUET.type)},
                            headers=TestHelper.BASE_HEADERS)
 
@@ -238,12 +243,12 @@ def test_logs_upload_parquet_read_json(client, df):
     assert store_response.record_ids[0] == '1337'
 
     # check
-    actual = TestHelper.get_record_from_storage('1337')
+    actual = await TestHelper.get_record_from_storage('1337')
     bulk_id = TestHelper.get_bulk_id_from_record(actual)
     assert bulk_id
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
+    response = await client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
                           headers=TestHelper.BASE_HEADERS)
 
     f = BytesIO(response.content)
@@ -255,10 +260,11 @@ def test_logs_upload_parquet_read_json(client, df):
 @pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
                                             pytest.param(False, id="native_nan")])
 @pytest.mark.parametrize("test_data", log_data)
-def test_logs_write_twice_then_read_data(client, test_data, nan_conversion):
+@pytest.mark.anyio
+async def test_logs_write_twice_then_read_data(client, test_data, nan_conversion):
     # given
     record = TestHelper.make_minimal_log_record('test_logs_write_twice_then_read_data', id='1337')
-    TestHelper.post_record_to_storage(record)
+    await TestHelper.post_record_to_storage(record)
 
     initial_df = pd.DataFrame(test_data)
     initial_df_json = initial_df
@@ -267,16 +273,16 @@ def test_logs_write_twice_then_read_data(client, test_data, nan_conversion):
     initial_df_json = initial_df_json.to_json(orient='split')
 
     # when WRITE twice ----------------------------------------------------------
-    client.post(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
-               initial_df_json,
-               headers=TestHelper.BASE_HEADERS)
+    await client.post(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
+                      data=initial_df_json,
+                      headers=TestHelper.BASE_HEADERS)
 
-    client.post(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
-               initial_df_json,
-               headers=TestHelper.BASE_HEADERS)
+    await client.post(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient),
+                      data=initial_df_json,
+                      headers=TestHelper.BASE_HEADERS)
 
     # when READ -----------------------------------------------------------
-    response = client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient), headers=TestHelper.BASE_HEADERS)
+    response = await client.get(TestHelper.build_url('/logs/1337/data?orient=' + log_data_orient), headers=TestHelper.BASE_HEADERS)
 
     assert response.status_code == 200
     f = BytesIO(response.content)
@@ -425,18 +431,19 @@ decimated_log_data_orient = 'split'
 @pytest.mark.parametrize("nan_conversion", [pytest.param(True, id="nan_string"),
                                             pytest.param(False, id="native_nan")])
 @pytest.mark.parametrize("decimated_test_data, expected_result, start, stop, quantile", decimated_log_data)
-def test_decimated_logs(client, decimated_test_data, expected_result, start, stop, quantile, nan_conversion):
+@pytest.mark.anyio
+async def test_decimated_logs(client, decimated_test_data, expected_result, start, stop, quantile, nan_conversion):
     # given
     record = TestHelper.make_minimal_log_record('test_decimated_logs', id='1337')
-    TestHelper.post_record_to_storage(record)
+    await TestHelper.post_record_to_storage(record)
     content = decimated_test_data
     if nan_conversion:
         content = content.fillna("NaN")
     content = content.to_json(orient='split')
 
-    response = client.post(TestHelper.build_url('/logs/1337/data?orient=' + decimated_log_data_orient),
-                          content,
-                          headers=TestHelper.BASE_HEADERS)
+    response = await client.post(TestHelper.build_url('/logs/1337/data?orient=' + decimated_log_data_orient),
+                                 data=content,
+                                 headers=TestHelper.BASE_HEADERS)
 
     assert response.status_code == 200
     store_response = CreateUpdateRecordsResponse.parse_raw(response.content)
@@ -444,7 +451,7 @@ def test_decimated_logs(client, decimated_test_data, expected_result, start, sto
     assert store_response.record_ids[0] == '1337'
 
     # when read decimated
-    actual = TestHelper.get_record_from_storage('1337')
+    actual = await TestHelper.get_record_from_storage('1337')
     bulk_id = TestHelper.get_bulk_id_from_record(actual)
     assert bulk_id
 
@@ -453,9 +460,9 @@ def test_decimated_logs(client, decimated_test_data, expected_result, start, sto
         params.update({'start': start})
     if stop is not None:
         params.update({'stop': stop})
-    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'), #  + decimated_log_data_orient),
-                          params=params,
-                          headers=TestHelper.BASE_HEADERS)
+    response = await client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'),
+                                params=params,
+                                headers=TestHelper.BASE_HEADERS)
     f = BytesIO(response.content)
     f.seek(0)
     if isinstance(expected_result, HTTPException):
@@ -466,41 +473,44 @@ def test_decimated_logs(client, decimated_test_data, expected_result, start, sto
         pd.testing.assert_frame_equal(expected_result, actual_df)
 
 
-def test_read_log_v2_data_422_bulk_storage_version_mismatch(client):
+@pytest.mark.anyio
+async def test_read_log_v2_data_422_bulk_storage_version_mismatch(client):
     # given a record with a V1 bulk storage version URI
     record = TestHelper.make_minimal_log_record('test_log', id='1337')
     LogBulkHelper.update_bulk_uri(record, BulkURI(new_bulk_id(), BulkStorageVersion_V1))
-    TestHelper.post_record_to_storage(record)
+    await TestHelper.post_record_to_storage(record)
 
     # when reading data
-    response = client.get(TestHelper.build_url('/logs/1337/data?orient=split'),
-                          headers=TestHelper.BASE_HEADERS)
+    response = await client.get(TestHelper.build_url('/logs/1337/data?orient=split'),
+                                headers=TestHelper.BASE_HEADERS)
 
     # the should 422, since read v2 only supports V0 bulk storage
     assert response.status_code == 422
 
     # when get decimated data
-    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'),
+    response = await client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'),
                           headers=TestHelper.BASE_HEADERS)
     # the should 422 as well
     assert response.status_code == 422
 
 
-def test_read_log_v2_data_404_bulk_not_found(client):
+@pytest.mark.anyio
+async def test_read_log_v2_data_404_bulk_not_found(client):
     # given a record with a not existing V0 bulk storage version URI
     record = TestHelper.make_minimal_log_record('test_log', id='1337')
     LogBulkHelper.update_bulk_uri(record, BulkURI(new_bulk_id(), BulkStorageVersion_V0))
-    TestHelper.post_record_to_storage(record)
+    await TestHelper.post_record_to_storage(record)
 
     # when reading data
-    response = client.get(TestHelper.build_url('/logs/1337/data?orient=split'),
-                          headers=TestHelper.BASE_HEADERS)
+    response = await client.get(TestHelper.build_url('/logs/1337/data?orient=split'),
+                                headers=TestHelper.BASE_HEADERS)
 
     # the should 404
     assert response.status_code == 404
 
     # when get decimated data
-    response = client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'),
-                          headers=TestHelper.BASE_HEADERS)
+    response = await client.get(TestHelper.build_url('/logs/1337/decimated?orient=values'),
+                                headers=TestHelper.BASE_HEADERS)
+
     # the should 404 as well
     assert response.status_code == 404

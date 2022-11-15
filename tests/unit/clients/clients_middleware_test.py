@@ -45,7 +45,7 @@ def expected_headers(headers_data):
     return {v[1]: v[2] for v in headers_data}
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fwd_headers_to_outgoing_request_to_storage(local_dev_config,
                                                           context: Context, expected_headers,
                                                           httpx_mock: HTTPXMock):
@@ -63,7 +63,7 @@ async def test_fwd_headers_to_outgoing_request_to_storage(local_dev_config,
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fwd_headers_to_outgoing_request_to_search(local_dev_config,
                                                          context: Context, expected_headers,
                                                          httpx_mock: HTTPXMock):

@@ -95,13 +95,13 @@ def basic_dataframe():
     return pd.DataFrame([[10, 11], [20, 21], [30, 31]], index=[1, 2, 3], columns=['c1', 'c2'])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_df_render_empty_accept_raise(default_get_params, basic_dataframe, nope_logger_fixture):
     with pytest.raises(ValueError):
         await DataFrameRender.df_render(basic_dataframe, default_get_params, render_type=None)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_df_render_accept_parquet(default_get_params, basic_dataframe):
     response = await DataFrameRender.df_render(basic_dataframe, default_get_params, MimeTypes.PARQUET)
 
@@ -109,7 +109,7 @@ async def test_df_render_accept_parquet(default_get_params, basic_dataframe):
     assert_df_in_parquet(basic_dataframe, response.body)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("orient", [JSONOrient.split, JSONOrient.columns])
 async def test_df_render_accept_json(default_get_params, basic_dataframe, orient):
     response = await DataFrameRender.df_render(basic_dataframe, default_get_params, MimeTypes.JSON, orient)
@@ -120,7 +120,7 @@ async def test_df_render_accept_json(default_get_params, basic_dataframe, orient
     assert_frame_equal(basic_dataframe, actual)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_df_render_describe():
     columns = [f'var_{i}' for i in range(10)]
     data = generate_df(columns, index=range(100))
@@ -141,7 +141,7 @@ class RequestMock:
         return self.body_content
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_df_from_request_parquet(basic_dataframe):
     request = RequestMock({"Content-Type": "application/x-parquet"},
                           basic_dataframe.to_parquet(engine='pyarrow', index=True))
@@ -150,7 +150,7 @@ async def test_get_df_from_request_parquet(basic_dataframe):
     assert_frame_equal(basic_dataframe, actual_df)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_df_from_request_json(basic_dataframe):
     request = RequestMock({"Content-Type": "application/json"},
                           basic_dataframe.to_json(orient='split'))
@@ -159,7 +159,7 @@ async def test_get_df_from_request_json(basic_dataframe):
     assert_frame_equal(basic_dataframe, actual_df)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("content_type, status", [
     ("application/json", 422),
     ("application/x-parquet", 422),

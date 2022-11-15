@@ -18,9 +18,8 @@ from app.context import get_ctx
 from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
 
 from .unique import get_unique_attr_values
-from ..clients.storage_service_client import get_storage_record_service
+
 from ..model.entity_utils import get_data_partition_from_record_id
-from ..model.osdu_record_id import split_record_id_version
 
 
 class DuplicatedCurveIdException(ConsistencyException):
