@@ -43,13 +43,13 @@ async def testing_app_local_chunking_no_consistency(app_configurable_with_testcl
                                           dask_client=await dask_client.create(local_bulk_persistence_config))
 
     app, client = app_configurable_with_testclient(fake_data_partition_id=True,
-                                                   disable_bulk_consistency=True,
+                                                   disable_bulk_consistency=True,  # Disable consistency
                                                    search_client_mock=None,
                                                    **super_mocks
                                                    )
     yield app, client
 
-# TODO same as testing_app_local_chunking_no_consistency ?
+
 @pytest.fixture
 async def testing_app_local_chunking_with_consistency(app_configurable_with_testclient, tmp_path_factory,
                                                       local_bulk_persistence_config):
@@ -63,7 +63,7 @@ async def testing_app_local_chunking_with_consistency(app_configurable_with_test
                                           dask_client=await dask_client.create(local_bulk_persistence_config))
 
     app, client = app_configurable_with_testclient(fake_data_partition_id=True,
-                                                   disable_bulk_consistency=False,
+                                                   disable_bulk_consistency=False,  # Enable consistency
                                                    search_client_mock=None,
                                                    **super_mocks
                                                    )
