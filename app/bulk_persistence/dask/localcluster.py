@@ -61,7 +61,7 @@ def get_dask_configuration(*, config: BulkPersistenceConfig, logger: Logger):
             )
             raise DaskException(message)
 
-        worker_memory_limit = available_memory_bytes / n_workers
+        worker_memory_limit: int = available_memory_bytes // n_workers
         logger.warning(
             f"Dask client - available RAM is too low. Reducing number of workers "
             f"to {n_workers} running with {format_bytes(worker_memory_limit)} of RAM"

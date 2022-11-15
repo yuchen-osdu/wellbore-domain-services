@@ -12,22 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from app.bulk_persistence import (
+    DaskBulkStorage,
+    SessionsStorage,
+    dask_client,
+    get_config,
+    make_local_dask_bulk_storage,
+)
+from app.clients import (
+    StorageRecordServiceClient,
+    make_search_client,
+    make_storage_record_client,
+)
+from app.clients.search_service_client import SearchServiceClient
+from app.clients.storage_service_blob_storage import (
+    StorageRecordServiceBlobStorage,
+)
+from app.conf import Config
+from app.helper.logger import get_logger
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 
-from app.conf import Config
-from app.helper.logger import get_logger
-
 from .app_injector import AppInjector, AppInjectorModule, WithLifeTime
-
-
-from app.clients import StorageRecordServiceClient
-from app.clients.storage_service_blob_storage import StorageRecordServiceBlobStorage
-from app.clients.search_service_client import SearchServiceClient
-from app.clients import make_search_client, make_storage_record_client
-from app.bulk_persistence import SessionsStorage
-
-from app.bulk_persistence import DaskBulkStorage, make_local_dask_bulk_storage, get_config
 
 
 class MainInjector(AppInjectorModule):
@@ -105,8 +111,10 @@ class MainInjector(AppInjectorModule):
                 app_injector.register(BlobStorageBase, _blob_storage_builder)
 
                 async def _dask_blob_storage_builder() -> DaskBulkStorage:
-                    return await make_local_dask_bulk_storage(base_directory=blob_storage_localfs,
-                                                              bulk_config=get_config())
+                    return await make_local_dask_bulk_storage(
+                        base_directory=blob_storage_localfs,
+                        bulk_config=get_config(),
+                        dask_client=await app_injector.get(dask_client.DaskDistributedClient))
 
                 app_injector.register(DaskBulkStorage, _dask_blob_storage_builder)
                 logger.warning(f'overriding DASK blob storage to use local fs on path ' + blob_storage_localfs)

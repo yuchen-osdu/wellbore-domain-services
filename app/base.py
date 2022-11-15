@@ -29,6 +29,8 @@ base_app.mount(Config.openapi_prefix.value, wdms_app.wdms_app)
 
 
 # workaround fastapi not triggering lifespan events for mounts
+# Ref : https://github.com/encode/starlette/issues/649
+# consequence : careful with app-related fixtures
 @base_app.on_event('startup')
 async def base_startup_event():
     await wdms_app.startup_event()

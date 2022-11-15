@@ -386,7 +386,27 @@ If necessary you can  make the tests run in order:
 
 ### Control the tests to be run 
 
+Some unit test are flagged with the following marks:
+    - slow: test that take time
+    - serial: tests that fail if run in parallel
+    - perf: performance test
+    - hypothesis: Tests that generates test data using hypothesis
+    - statistics: specific to test the functionality linked to the api of statistic
 
+For instance use the following decorator to mark a test as slow
+```
+@pytest.mark.slow
+```
+
+To control the test to run according those mark it is possible to pass to pytest the '-m'  option flag, for instance to disable the serial and slow test:
+```
+-m 'not serial and not slow"
+```
+
+to run only perf test:
+```
+-m 'serial'
+```
 
 #### Distribute tests across multiple CPUs
 
@@ -401,10 +421,10 @@ You can run them specifically in sequence in a second step by replacing the prev
 ```
 -n 0 -m "serial"
 ```
-
-This is still experimental. It is possible that in some cases the tests fail or that there are warnings. For instance 
-when several tests that create a dask cluster run concurrently. Moreover, in the case of execution of subset of tests, 
-the speed gain can be lower than the overhead.
+In addition to speeding up the execution time of a large set of tests, it challenges the isolation of the tests more strongly than randomization.
+That is, a test that depends on the state left by the execution of another test is much more likely to be detected by parallel execution
+than the sequential execution of tests in a random order.
+In the case of execution of subset of tests, the speed gain can be lower than the overhead.
 
 
 ### Run Integration Tests locally
@@ -423,7 +443,7 @@ In another terminal, generate a minimum configuration file and run the integrati
 ```bash
 cd tests/integration
 python gen_postman_env.py --token $(pyjwt --key=secret encode email=nobody@example.com) --base_url "http://127.0.0.1:8080/api/os-wellbore-ddms" --cloud_provider "local" --data_partition "dummy"
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic -p no:randomly
 ```
 
 For more information see the [integration tests README](tests/integration/README.md)

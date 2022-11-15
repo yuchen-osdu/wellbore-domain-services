@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from abc import ABC, abstractmethod
-from typing import Type, Any, Callable
 import asyncio
+import inspect
+from abc import ABC, abstractmethod
+from typing import Any, Callable, Type
 
 
 class WithLifeTime:
@@ -73,7 +73,10 @@ class AppInjector(ABC):
         everytime. Use WithLifeTime.Singleton to use a single instance instead
         :return:
         """
-        assert asyncio.iscoroutinefunction(factory_coroutine), 'only coroutine is expected'
+        # Note: asyncio.iscoroutinefunction accepts AsyncMock while inspect.iscoroutinefunction does not
+        #  both accept functools.partial() of coroutines,
+
+        assert asyncio.iscoroutinefunction(factory_coroutine), 'only coroutine (or partial coroutine) is expected'
         self._factory_dict[self._key_from_type(interface)] = lifetime.make(factory_coroutine)
 
     async def get(self, interface: Type, *args, **kwargs) -> Any:

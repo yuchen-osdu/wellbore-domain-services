@@ -89,7 +89,7 @@ python main.py -e USE_INTERNAL_STORAGE_SERVICE_WITH_PATH $STORAGE_SERVICE_PATH -
 # Note: this assumes that the environment variables for integration tests as outlined above are already exported in your environment.
 cd tests/integration
 python gen_postman_env.py --token $(pyjwt --key=secret encode email=nobody@example.com) --base_url "http://$SERVICE_HOST:$SERVICE_PORT/api/os-wellbore-ddms" --cloud_provider "local" --data_partition "dummy"
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=$FILTER_TAG
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=$FILTER_TAG -p no:randomly
 ```
 
 ## License

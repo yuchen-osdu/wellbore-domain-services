@@ -4,6 +4,7 @@ from unittest.mock import patch, mock_open
 from contextlib import suppress
 
 from dask.distributed import Client
+from app.bulk_persistence.dask.client import actx as dask_client_actx
 from app.bulk_persistence.dask.dask_data_ipc import DaskNoneDataIPC, DaskLocalFileDataIPC, DaskNativeDataIPC
 
 
@@ -56,12 +57,9 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
 
 @pytest.mark.asyncio
 @pytest.mark.slow
-async def test_dask_native_ipc_basic_usage(dask_client, local_bulk_persistence_config, nope_logger_fixture):
-
-    with dask_client(autoclose_asynccontext=True) as dask_client_asynccontext:
-        async with dask_client_asynccontext() as client_starter:
-            client = await client_starter(local_bulk_persistence_config)
-
+async def test_dask_native_ipc_basic_usage(dask_custom_config, local_bulk_persistence_config, nope_logger_fixture):
+    with dask_custom_config():
+        async with dask_client_actx(local_bulk_persistence_config) as client:
             ipc_obj = DaskNativeDataIPC(dask_client=client)
 
             # worker function, simply read and return the data

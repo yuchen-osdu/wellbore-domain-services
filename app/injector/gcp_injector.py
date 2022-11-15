@@ -11,22 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
 
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu_gcp.storage.blob_storage_gcp import GCloudAioStorage
-
-from app.utils import get_http_client_session
-from .app_injector import AppInjector, AppInjectorModule
+from app.bulk_persistence import (
+    BulkPersistenceConfig,
+    DaskBulkStorage,
+    DaskDistributedClient,
+    get_config,
+)
 from app.context import Context
 from app.tenant import resolve_tenant
-from app.bulk_persistence import DaskBulkStorage, get_config
-from osdu_gcp.storage.dask_storage_parameters import get_dask_storage_parameters as gcp_parameters
+from app.utils import get_http_client_session
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from osdu_gcp.storage.blob_storage_gcp import GCloudAioStorage
+from osdu_gcp.storage.dask_storage_parameters import (
+    get_dask_storage_parameters as gcp_parameters,
+)
+
+from .app_injector import AppInjector, AppInjectorModule
 
 
 class GCPInjector(AppInjectorModule):
     def configure(self, app_injector: AppInjector):
         app_injector.register(BlobStorageBase, GCPInjector.build_gcp_blob_storage)
-        app_injector.register(DaskBulkStorage, GCPInjector.build_dask_gcp_blob_storage)
+        app_injector.register(DaskBulkStorage, partial(GCPInjector.build_dask_gcp_blob_storage,
+                                                       app_injector=app_injector,
+                                                       bulk_config=get_config()))
 
     @staticmethod
     async def build_gcp_blob_storage(*args, **kwargs) -> BlobStorageBase:
@@ -39,9 +49,11 @@ class GCPInjector(AppInjectorModule):
         )
 
     @staticmethod
-    async def build_dask_gcp_blob_storage() -> DaskBulkStorage:
+    async def build_dask_gcp_blob_storage(app_injector: AppInjector,
+                                          bulk_config: BulkPersistenceConfig) -> DaskBulkStorage:
         ctx: Context = Context.current()
-        tenant =  await resolve_tenant(ctx.partition_id)
+        tenant = await resolve_tenant(ctx.partition_id)
         params = await gcp_parameters(tenant)
-        return await DaskBulkStorage.create(params, get_config())
+        dask_client = await app_injector.get(DaskDistributedClient)
+        return await DaskBulkStorage.create(params, bulk_config, dask_client)
 

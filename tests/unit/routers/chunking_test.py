@@ -21,7 +21,7 @@ from app.bulk_persistence import (
 )
 from app.bulk_persistence.dask.traces import TracingMode
 
-pytestmark = pytest.mark.slow
+pytestmark = [pytest.mark.slow, pytest.mark.chunking]
 
 Definitions = {
     'WellLog': {
