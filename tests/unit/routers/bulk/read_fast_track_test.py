@@ -1,4 +1,5 @@
-import asyncio
+import anyio
+
 import uuid
 from io import BytesIO
 
@@ -422,32 +423,38 @@ async def test_shifted_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_s
 call_count = 0
 
 
-@pytest.mark.asyncio
-async def test_load_dataframe_concurrency_is_limited(nope_logger_fixture, ctx_fixture):
-    sync_event = asyncio.Event()
+
+
+@pytest.mark.anyio
+async def test_load_dataframe_concurrency_is_limited(nope_logger_fixture, ctx_fixture, anyio_backend):
+
     data = pd.DataFrame().to_parquet(index=True)
     global call_count
     call_count = 0
 
-    async def download_mock(*_, **__):
-        global call_count
-        call_count = call_count + 1
-        await asyncio.wait_for(sync_event.wait(), 10)
-        return data
+    async with anyio.create_task_group() as tg:
+        sync_event = anyio.Event()
 
-    storage_mock = Mock()
-    storage_mock.download = download_mock
+        async def download_mock(*_, **__):
+            global call_count
+            call_count = call_count + 1
+            await sync_event.wait()
+            return data
 
-    tasks = [asyncio.create_task(read_fast_track._load_dataframe_from_storage(storage_mock, Mock(), "", 1)) for _ in
-             range(250)]
-    await asyncio.sleep(1)
+        storage_mock = AsyncMock()
+        storage_mock.download = download_mock
 
-    # only 100 download should been started
-    assert call_count == 100
+        for _ in range(250):
+            tg.start_soon(read_fast_track._load_dataframe_from_storage, storage_mock, Mock(), "", 1)
 
-    # release them all
-    sync_event.set()
-    await asyncio.wait_for(asyncio.gather(*tasks), 10)
+        await anyio.sleep(1)
+        # only 100 download should been started
+        assert call_count == 100
+
+        # release them all
+        sync_event.set()
+
+        await anyio.sleep(5)
 
     # all completed
     assert call_count == 250
