@@ -4,7 +4,7 @@ import pytest
 
 
 @pytest.fixture
-async def dasked_test_app_client(testing_app_local_chunking_with_consistency):
+def dasked_test_app_client(testing_app_local_chunking_with_consistency):
     _, client = testing_app_local_chunking_with_consistency
 
     return client

@@ -65,7 +65,7 @@ storage_record_service_client_mock = create_autospec(StorageRecordServiceClient,
 
 
 @pytest.fixture
-async def ctx_with_test_setup(app_configurable_with_testclient, ctx_fixture):
+def ctx_with_test_setup(app_configurable_with_testclient, ctx_fixture):
     # app_configurable_with_testclient may be  overkill (for instance we do not need dask cluster, neither TestClient)
     # and might slower the test setup
     # but it avoids copy/paste and it works well and cleanup correctly at teardown.

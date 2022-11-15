@@ -71,7 +71,6 @@ def client(app_configurable_with_testclient, tmp_path, nope_logger_fixture):
 
 
 @pytest.fixture
-@pytest.mark.anyio
 async def client_with_log(client):
     # Create or update a log record
     response = await client.post("/ddms/v2/trajectories", json=[traj], headers=headers)

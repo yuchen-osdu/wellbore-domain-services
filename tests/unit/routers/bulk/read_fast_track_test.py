@@ -244,7 +244,7 @@ async def test_request_too_many_values_raise(nope_logger_fixture):
 
 
 @pytest.fixture
-async def local_blob_path(tmp_path_factory):
+def local_blob_path(tmp_path_factory):
     return str(tmp_path_factory.mktemp(basename="blob-"))
 
 

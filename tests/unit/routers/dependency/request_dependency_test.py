@@ -38,7 +38,7 @@ async def get_route_b(value=Depends(TestDependencyNoDefault())):
 BASE_URL = "http://local_app"
 
 @pytest.fixture(scope="module")
-async def test_client():
+def test_client():
 
     local_app = FastAPI()
 
