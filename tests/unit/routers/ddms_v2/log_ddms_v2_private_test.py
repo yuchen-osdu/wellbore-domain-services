@@ -66,14 +66,15 @@ storage_record_service_client_mock = create_autospec(StorageRecordServiceClient,
 
 @pytest.fixture
 def ctx_with_test_setup(app_configurable_with_testclient, ctx_fixture):
-    # app_configurable_with_testclient may be  overkill (for instance we do not need dask cluster, neither TestClient)
-    # and might slower the test setup
-    # but it avoids copy/paste and it works well and cleanup correctly at teardown.
+    # app_configurable_with_testclient may be  overkill and might slower the test setup
+    # because it setup a app and a test client that are not needed for those tests
+    # but the code under test in this module are depending to the app module's  symbols such as app_injectore, Context, AppConfig
+    # so for convenience we reuse app_configurable_with_testclient which  tries to clean up everthings as well as possible at tests teardown
     app_configurable_with_testclient(
         storage_client_mock=storage_record_service_client_mock,
     )
 
-    # Usually basic_context_middleware sets the app injector in the context
+    # Usually the app injector in the context is set by basic_context_middleware
     # but since those tests call directly internal function instead making call to  apis
     # the app injector is not set in the context whereas functions under test need it for retrieving storage service client.
     # so we have to set manually the app injector in the context.

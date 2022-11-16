@@ -86,7 +86,7 @@ async def close():
     async with _lock_client:
         if _cluster:
             # explicitly closing the cluster is necessary
-            # since it has been started independently from the client
+            # since it has been started independently of the client
             await _cluster.close()
             _cluster = None
 
