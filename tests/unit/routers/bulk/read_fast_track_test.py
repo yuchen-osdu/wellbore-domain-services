@@ -454,7 +454,6 @@ async def test_load_dataframe_concurrency_is_limited(nope_logger_fixture, ctx_fi
         # release them all
         sync_event.set()
 
-        await anyio.sleep(5)
 
     # all completed
     assert call_count == 250
