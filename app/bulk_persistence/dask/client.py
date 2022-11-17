@@ -84,15 +84,17 @@ async def close():
         return
 
     async with _lock_client:
+
+        if _client:
+            await _client.close()  # or shutdown
+            _client = None
+
         if _cluster:
             # explicitly closing the cluster is necessary
             # since it has been started independently of the client
             await _cluster.close()
             _cluster = None
 
-        if _client:
-            await _client.close()  # or shutdown
-            _client = None
 
 
 @contextlib.asynccontextmanager
