@@ -67,6 +67,17 @@ request_path_dict = {
     "crud.osdu_wellbore_100.create_osdu_wellbore_100":
         crud.osdu_wellbore.build_request_create_osdu_wellbore_100,
 
+    "crud.osdu_wellbore_111.delete_osdu_wellbore_111":
+        crud.osdu_wellbore.build_request_delete_osdu_wellbore_111,
+    "crud.osdu_wellbore_111.get_osdu_wellbore_111_specific_version":
+        crud.osdu_wellbore.build_request_get_osdu_wellbore_111_specific_version,
+    "crud.osdu_wellbore_111.get_osdu_wellbore_111":
+        crud.osdu_wellbore.build_request_get_osdu_wellbore_111,
+    "crud.osdu_wellbore_111.get_versions_of_osdu_wellbore_111":
+        crud.osdu_wellbore.build_request_get_versions_of_osdu_wellbore_111,
+    "crud.osdu_wellbore_111.create_osdu_wellbore_111":
+        crud.osdu_wellbore.build_request_create_osdu_wellbore_111,
+
     "crud.osdu_well.delete_osdu_well":
         crud.osdu_well.build_request_delete_osdu_well,
     "crud.osdu_well.get_osdu_well_specific_version":
@@ -88,6 +99,17 @@ request_path_dict = {
         crud.osdu_well.build_request_get_versions_of_osdu_well_100,
     "crud.osdu_well_100.create_osdu_well_100":
         crud.osdu_well.build_request_create_osdu_well_100,
+
+    "crud.osdu_well_110.delete_osdu_well_110":
+        crud.osdu_well.build_request_delete_osdu_well_110,
+    "crud.osdu_well_110.get_osdu_well_110_specific_version":
+        crud.osdu_well.build_request_get_osdu_well_110_specific_version,
+    "crud.osdu_well_110.get_osdu_well_110":
+        crud.osdu_well.build_request_get_osdu_well_110,
+    "crud.osdu_well_110.get_versions_of_osdu_well_110":
+        crud.osdu_well.build_request_get_versions_of_osdu_well_110,
+    "crud.osdu_well_110.create_osdu_well_110":
+        crud.osdu_well.build_request_create_osdu_well_110,
 
     "crud.osdu_welllog.delete_osdu_welllog":
         crud.osdu_welllog.build_request_delete_osdu_welllog,
@@ -248,10 +270,14 @@ def get_cleaned_ref_and_res(kind: str) -> dict:
         return crud.osdu_wellbore.get_cleaned_ref_and_res()
     if kind == "osdu_wellbore_100":
         return crud.osdu_wellbore.get_cleaned_ref_and_res_100()
+    if kind == "osdu_wellbore_111":
+        return crud.osdu_wellbore.get_cleaned_ref_and_res_111()
     if kind == "osdu_well":
         return crud.osdu_well.get_cleaned_ref_and_res()
     if kind == "osdu_well_100":
         return crud.osdu_well.get_cleaned_ref_and_res_100()
+    if kind == "osdu_well_110":
+        return crud.osdu_well.get_cleaned_ref_and_res_110()
     if kind == "osdu_welllog":
         return crud.osdu_welllog.get_cleaned_ref_and_res()
     if kind == "osdu_wellboretrajectory":

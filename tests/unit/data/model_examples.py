@@ -5,8 +5,8 @@ import os
 import json
 
 from odes_storage.models import Record
-from app.model.osdu_model import Well, Well110, Wellbore, Wellbore110, WellboreMarkerSet110, WellboreMarkerSet120, \
-    WellboreTrajectory110, WellLog110, WellLog120, Wellbore111, WellboreMarkerSet121
+from app.model.osdu_model import Well, Well110, Well120, Wellbore, Wellbore110, Wellbore120, WellboreMarkerSet110, \
+    WellboreMarkerSet120, WellboreTrajectory110, WellLog110, WellLog120, Wellbore111, WellboreMarkerSet121
 
 from wdms_client.variables import Variables
 
@@ -37,6 +37,11 @@ def well_v3_110_file_contents() -> str:
 
 
 @pytest.fixture(scope="session")
+def well_v3_120_file_contents() -> str:
+    return load_model_example_file_contents("well_v3_120.json")
+
+
+@pytest.fixture(scope="session")
 def wellbore_v2_file_contents() -> str:
     return load_model_example_file_contents("wellbore_v2.json")
 
@@ -54,6 +59,11 @@ def wellbore_v3_110_file_contents() -> str:
 @pytest.fixture(scope="session")
 def wellbore_v3_111_file_contents() -> str:
     return load_model_example_file_contents("wellbore_v3_111.json")
+
+
+@pytest.fixture(scope="session")
+def wellbore_v3_120_file_contents() -> str:
+    return load_model_example_file_contents("wellbore_v3_120.json")
 
 
 @pytest.fixture(scope="session")
@@ -145,6 +155,20 @@ def well_v3_110_record_list(well_v3_110_file_contents, domain, data_partition, l
 
 
 @pytest.fixture
+def well_v3_120_record_list(well_v3_120_file_contents, domain, data_partition, legal_tags) -> List[Record]:
+    """ list of Well as Record model object loaded for model_example """
+    vars_to_replace = Variables.from_dict({
+        "domain": domain,
+        "datapartitionid": data_partition,
+        "legaltags": legal_tags,
+        "wellName": "my-example-well",
+        "wellId": "my-well-v3-example",
+    })
+
+    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in well_v3_120_file_contents]
+
+
+@pytest.fixture
 def well100_v3_list(well_v3_record_list) -> List[Well]:
     """ provide a list of wellbore v.1.0.0"""
     return [Well(**record.dict(exclude_unset=True, by_alias=True)) for record in well_v3_record_list]
@@ -152,8 +176,14 @@ def well100_v3_list(well_v3_record_list) -> List[Well]:
 
 @pytest.fixture
 def well110_v3_list(well_v3_110_record_list) -> List[Well110]:
-    """ provide a list of wellbore v.1.0.0"""
+    """ provide a list of wellbore v.1.1.0"""
     return [Well110(**record.dict(exclude_unset=True, by_alias=True)) for record in well_v3_110_record_list]
+
+
+@pytest.fixture
+def well120_v3_list(well_v3_120_record_list) -> List[Well120]:
+    """ provide a list of wellbore v.1.2.0"""
+    return [Well120(**record.dict(exclude_unset=True, by_alias=True)) for record in well_v3_120_record_list]
 
 
 @pytest.fixture
@@ -215,6 +245,23 @@ def wellbore_v3_111_record_list(wellbore_v3_111_file_contents, domain, data_part
 
     return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_111_file_contents]
 
+
+@pytest.fixture
+def wellbore_v3_120_record_list(wellbore_v3_120_file_contents, domain, data_partition, legal_tags) -> List[Record]:
+
+    vars_to_replace = Variables.from_dict({
+        "domain": domain,
+        "datapartitionid": data_partition,
+        "legaltags": legal_tags,
+        # to replace missing data in example
+        "wellboreName": "my-example-wellbore",
+        "wellboreId": "my-wellbore-v3-example",
+        "wellId": "my-well-v3-example"
+    })
+
+    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_120_file_contents]
+
+
 @pytest.fixture
 def wellbore100_v3_list(wellbore_v3_record_list) -> List[Wellbore]:
     """ provide a list of wellbore v.1.0.0"""
@@ -223,14 +270,20 @@ def wellbore100_v3_list(wellbore_v3_record_list) -> List[Wellbore]:
 
 @pytest.fixture
 def wellbore110_v3_list(wellbore_v3_110_record_list) -> List[Wellbore110]:
-    """ provide a list of wellbore v.1.0.0"""
+    """ provide a list of wellbore v.1.1.0"""
     return [Wellbore110(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_110_record_list]
 
 
 @pytest.fixture
 def wellbore111_v3_list(wellbore_v3_111_record_list) -> List[Wellbore111]:
-    """ provide a list of wellbore v.1.0.0"""
+    """ provide a list of wellbore v.1.1.1"""
     return [Wellbore111(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_111_record_list]
+
+
+@pytest.fixture
+def wellbore120_v3_list(wellbore_v3_120_record_list) -> List[Wellbore120]:
+    """ provide a list of wellbore v.1.2.0"""
+    return [Wellbore120(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_120_record_list]
 
 
 @pytest.fixture
