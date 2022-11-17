@@ -244,11 +244,6 @@ async def test_request_too_many_values_raise(nope_logger_fixture):
 
 
 @pytest.fixture
-def local_blob_path(tmp_path_factory):
-    return str(tmp_path_factory.mktemp(basename="blob-"))
-
-
-@pytest.fixture
 async def bulk_storage_mock(ctx_fixture, tmp_path_factory):
     local_blob_path = str(tmp_path_factory.mktemp(basename="blob-"))
     blob_storage = BlobStorageFsspec(local_blob_path, 'file', auto_mkdir=True)
