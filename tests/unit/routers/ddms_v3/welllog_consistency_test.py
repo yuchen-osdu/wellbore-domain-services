@@ -43,8 +43,9 @@ acl = {"owners": ["foo@bar.com"], "viewers": ["foo@bar.com"]}
 )
 @patch.object(storage_record_service_client_mock, 'create_or_update_records',
               AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
-def test_post_v3_consistent_welllog(client, data):
-    response = client.post(
+@pytest.mark.anyio
+async def test_post_v3_consistent_welllog(client, data):
+    response = await client.post(
         url="/ddms/v3/welllogs",
         json=[
             {"kind": kind, "legal": legal, "acl": acl, "data": d}
@@ -118,8 +119,9 @@ def test_post_v3_consistent_welllog(client, data):
         ),
     ],
 )
-def test_post_inconsistent_welllog(client, well_log_data, expected):
-    response = client.post(
+@pytest.mark.anyio
+async def test_post_inconsistent_welllog(client, well_log_data, expected):
+    response = await client.post(
         url="/ddms/v3/welllogs",
         json=[
             {"kind": kind, "legal": legal, "acl": acl, "data": data}

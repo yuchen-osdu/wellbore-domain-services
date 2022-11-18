@@ -11,6 +11,8 @@ anyio==3.2.1
     # via
     #   -c requirements.txt
     #   httpcore
+asgi-lifespan==1.0.1
+    # via -r requirements_dev.in
 attrs==21.2.0
     # via
     #   -c requirements.txt
@@ -134,14 +136,11 @@ pyrsistent==0.18.0
 pytest==6.2.4
     # via
     #   -r requirements_dev.in
-    #   pytest-asyncio
     #   pytest-cov
     #   pytest-dependency
     #   pytest-httpx
     #   pytest-randomly
     #   pytest-xdist
-pytest-asyncio==0.15.1
-    # via -r requirements_dev.in
 pytest-cov==2.12.1
     # via -r requirements_dev.in
 pytest-dependency==0.5.1
@@ -185,6 +184,7 @@ sniffio==1.2.0
     # via
     #   -c requirements.txt
     #   anyio
+    #   asgi-lifespan
     #   httpcore
     #   httpx
 sortedcontainers==2.4.0

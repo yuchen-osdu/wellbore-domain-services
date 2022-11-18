@@ -1,4 +1,5 @@
-import asyncio
+import anyio
+
 import uuid
 from io import BytesIO
 
@@ -46,7 +47,7 @@ async def assert_fast_track(*, ctx, catalog, accept_type, orient,
     assert_dataframe_from_content(expected_df, response.body, accept_type, orient)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_forward_parquet(nope_logger_fixture):
     storage_mock = Mock()
     storage_mock.download = AsyncMock(return_value=b'fake data')
@@ -79,7 +80,7 @@ def test_split_dataframe_iloc(nope_logger_fixture):
     assert actual_df.index[0] == 2
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_build_response_df(nope_logger_fixture, accept_type: MimeType, orient):
     df = generate_df(['B', 'C', 'A'], index=range(6))
@@ -93,7 +94,7 @@ async def test_build_response_df(nope_logger_fixture, accept_type: MimeType, ori
     assert_dataframe_from_content(df[['A', 'B', 'C']], result.body, accept_type, orient)  # column in natural order
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_build_response_big_df(nope_logger_fixture, accept_type: MimeType, orient):
     df = generate_df(['B', 'C', 'A'], index=range(350_000))
@@ -102,7 +103,7 @@ async def test_build_response_big_df(nope_logger_fixture, accept_type: MimeType,
     assert_dataframe_from_content(df[['A', 'B', 'C']], result.body, accept_type, orient)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_load_dataframe_from_storage(nope_logger_fixture):
     df = generate_df(['B', 'C', 'A'], index=range(6))
 
@@ -138,7 +139,7 @@ async def test_load_dataframe_from_storage(nope_logger_fixture):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_load_dataframe_from_storage_many_columns(nope_logger_fixture):
     cols = [f'c{i}' for i in range(read_fast_track.MAX_COLUMNS_DIRECT_PARQUET + 10)]
     df = generate_df([f'c{i}' for i in range(read_fast_track.MAX_COLUMNS_DIRECT_PARQUET + 10)], index=range(10))
@@ -152,7 +153,7 @@ async def test_load_dataframe_from_storage_many_columns(nope_logger_fixture):
     assert_frame_equal(df[cols_requested], actual_df)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unsupported_cases_raise(nope_logger_fixture):
     supported_filters = BulkReadFilters([])
     supported_format = MimeTypes.PARQUET
@@ -206,7 +207,7 @@ async def test_unsupported_cases_raise(nope_logger_fixture):
         await read_fast_track.read_data_fast_track(AsyncMock(), catalog, supported_format, None, supported_filters)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_request_too_many_column_raise(nope_logger_fixture):
     catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
     catalog.add_chunk(ChunkGroup({f'C[{i}]' for i in range(5001)}, ["path1"], []))
@@ -226,7 +227,7 @@ async def test_request_too_many_column_raise(nope_logger_fixture):
         await read_fast_track.read_data_fast_track(*args, curves_selection=curve_selection, offset=10, limit=1)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_request_too_many_values_raise(nope_logger_fixture):
     catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
     catalog.add_chunk(ChunkGroup({f'C[{i}]' for i in range(100)}, ["path1"], []))
@@ -240,11 +241,6 @@ async def test_request_too_many_values_raise(nope_logger_fixture):
     # request 4M but need to work on a 100M dataframe
     with pytest.raises(TooManyValuesRequested) as ex_info:
         await read_fast_track.read_data_fast_track(*args, limit=40_000)
-
-
-@pytest.fixture
-async def local_blob_path(tmp_path_factory):
-    return str(tmp_path_factory.mktemp(basename="blob-"))
 
 
 @pytest.fixture
@@ -271,7 +267,7 @@ async def store_chunks(storage: BlobStorageBase, tenant, chunks) -> BulkCatalog:
     return catalog
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_single_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     # GIVEN single chunk stored
@@ -303,7 +299,7 @@ async def test_single_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_
                             limit=1_000)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_single_chunk_case_many_columns(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     cols = [f'c{i}' for i in range(510)]
@@ -318,7 +314,7 @@ async def test_single_chunk_case_many_columns(nope_logger_fixture, ctx_fixture, 
     await assert_fast_track(**common_kwargs, expected_df=reference_df[cols[2:]], columns=cols[2:])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     # GIVEN df split into 2 chunks
@@ -359,7 +355,7 @@ async def test_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_m
                             offset=1, limit=1_000)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_multi_chunk_case_many_columns(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     cols = [f'c{i}' for i in range(600)]
@@ -377,7 +373,7 @@ async def test_multi_chunk_case_many_columns(nope_logger_fixture, ctx_fixture, b
     await assert_fast_track(**common_kwargs, expected_df=reference_df[cols[2:]], columns=cols[2:])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(["accept_type", "orient"], format_params)
 async def test_shifted_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_storage_mock, accept_type, orient):
     md_df = generate_df(['MD'], index=range(10))
@@ -422,32 +418,37 @@ async def test_shifted_multi_chunk_case(nope_logger_fixture, ctx_fixture, bulk_s
 call_count = 0
 
 
-@pytest.mark.asyncio
-async def test_load_dataframe_concurrency_is_limited(nope_logger_fixture, ctx_fixture):
-    sync_event = asyncio.Event()
+
+
+@pytest.mark.anyio
+async def test_load_dataframe_concurrency_is_limited(nope_logger_fixture, ctx_fixture, anyio_backend):
+
     data = pd.DataFrame().to_parquet(index=True)
     global call_count
     call_count = 0
 
-    async def download_mock(*_, **__):
-        global call_count
-        call_count = call_count + 1
-        await asyncio.wait_for(sync_event.wait(), 10)
-        return data
+    async with anyio.create_task_group() as tg:
+        sync_event = anyio.Event()
 
-    storage_mock = Mock()
-    storage_mock.download = download_mock
+        async def download_mock(*_, **__):
+            global call_count
+            call_count = call_count + 1
+            await sync_event.wait()
+            return data
 
-    tasks = [asyncio.create_task(read_fast_track._load_dataframe_from_storage(storage_mock, Mock(), "", 1)) for _ in
-             range(250)]
-    await asyncio.sleep(1)
+        storage_mock = AsyncMock()
+        storage_mock.download = download_mock
 
-    # only 100 download should been started
-    assert call_count == 100
+        for _ in range(250):
+            tg.start_soon(read_fast_track._load_dataframe_from_storage, storage_mock, Mock(), "", 1)
 
-    # release them all
-    sync_event.set()
-    await asyncio.wait_for(asyncio.gather(*tasks), 10)
+        await anyio.sleep(1)
+        # only 100 download should been started
+        assert call_count == 100
+
+        # release them all
+        sync_event.set()
+
 
     # all completed
     assert call_count == 250

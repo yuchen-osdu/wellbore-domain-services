@@ -1,15 +1,15 @@
 import pytest
 
 
-
-def test_wdms_app_initialized_via_about(
+@pytest.mark.anyio
+async def test_wdms_app_initialized_via_about(
     app_initialized_with_testclient,
 ):
     """Test wdms_app configuration"""
 
     _, client = app_initialized_with_testclient
 
-    assert (client.get("/about")).status_code == 200
+    assert (await client.get("/about")).status_code == 200
 
 
 

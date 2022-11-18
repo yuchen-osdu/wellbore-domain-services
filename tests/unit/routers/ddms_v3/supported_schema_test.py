@@ -57,8 +57,9 @@ trajectory_data = {
 )
 @patch.object(storage_record_service_client_mock, 'create_or_update_records',
               AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
-def test_check_supported_kind(client, api, record_type, data):
-    response = client.post(
+@pytest.mark.anyio
+async def test_check_supported_kind(client, api, record_type, data):
+    response = await client.post(
         url=api,
         json=[
             {
@@ -97,8 +98,9 @@ def test_check_supported_kind(client, api, record_type, data):
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:2.0.0", trajectory_data),
     ],
 )
-def test_check_not_supported_kind(client, api, record_type, data):
-    response = client.post(
+@pytest.mark.anyio
+async def test_check_not_supported_kind(client, api, record_type, data):
+    response = await client.post(
         url=api,
         json=[
             {
@@ -113,7 +115,8 @@ def test_check_not_supported_kind(client, api, record_type, data):
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_invalid_welllog_schema(client):
+@pytest.mark.anyio
+async def test_invalid_welllog_schema(client):
     # Schema 1.1.0 have a referenceCurveID field but not 1.0.0. So the validation should failed.
     json = [
         {
@@ -136,16 +139,15 @@ def test_invalid_welllog_schema(client):
         },
     ]
 
-    response = client.post(url="/ddms/v3/welllogs", json=json, headers={"content-type": "application/json"})
+    response = await client.post(url="/ddms/v3/welllogs", json=json, headers={"content-type": "application/json"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "Record[2] validation against schema 'work-product-component--WellLog:1.0.0' failed" in response.json().get(
         "detail"
     )
 
 
-
-
-def test_invalid_markerset_schema(client):
+@pytest.mark.anyio
+async def test_invalid_markerset_schema(client):
     json = [
         {
             "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
@@ -162,15 +164,15 @@ def test_invalid_markerset_schema(client):
             },
         }
     ]
-    response = client.post(url="/ddms/v3/wellboremarkersets", json=json , headers={"content-type": "application/json"})
+    response = await client.post(url="/ddms/v3/wellboremarkersets", json=json , headers={"content-type": "application/json"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "Record[0] validation against schema 'work-product-component--WellboreMarkerSet:1.0.0' failed" in response.json().get(
         "detail"
     )
 
 
-
-def test_invalid_trajectory_schema(client):
+@pytest.mark.anyio
+async def test_invalid_trajectory_schema(client):
     json = [
         {
             "kind": "osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
@@ -186,7 +188,7 @@ def test_invalid_trajectory_schema(client):
         },
 
     ]
-    response = client.post(url="/ddms/v3/wellboretrajectories", json=json , headers={"content-type": "application/json"})
+    response = await client.post(url="/ddms/v3/wellboretrajectories", json=json , headers={"content-type": "application/json"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "Record[0] validation against schema 'work-product-component--WellboreTrajectory:1.0.0" in response.json().get(
         "detail"

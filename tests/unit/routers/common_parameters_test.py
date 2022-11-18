@@ -5,7 +5,6 @@ from app.bulk_persistence import MimeTypes
 from app.routers.common_parameters import read_bulk_accept_type
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("value,expected", [
     # default is parquet
     (None, MimeTypes.PARQUET),

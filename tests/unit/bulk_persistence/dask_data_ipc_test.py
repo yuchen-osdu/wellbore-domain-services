@@ -24,21 +24,21 @@ async def assert_ipc_forward_equal(ipc, expected_data):
             assert file_like_data.read() == expected_data
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("in_data", [b"123456789", data_async_gen()])
 async def test_none_data_ipc_handle_async_generator_and_bytes(in_data):
     ipc_obj = DaskNoneDataIPC()
     await assert_ipc_forward_equal(ipc_obj, b"123456789")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("in_data", [b"123456789", data_async_gen()])
 async def test_file_data_ipc_handle_async_generator_and_bytes(nope_logger_fixture, tmp_path, in_data):
     ipc_obj = DaskLocalFileDataIPC(base_folder=tmp_path)
     await assert_ipc_forward_equal(ipc_obj, b"123456789")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("in_data", [b"123456789", data_async_gen()])
 async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
     async def identity(anything, **kwargs):
@@ -55,7 +55,7 @@ async def test_dask_native_ipc_handle_async_generator_and_bytes(in_data):
     dask_client_mock.scatter.assert_awaited()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.slow
 async def test_dask_native_ipc_basic_usage(dask_custom_config, local_bulk_persistence_config, nope_logger_fixture):
     with dask_custom_config():
@@ -77,7 +77,7 @@ async def test_dask_native_ipc_basic_usage(dask_custom_config, local_bulk_persis
                 assert result == b"123456789"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("in_data", [
     b"01234567890123456789012345",  # direct bytes
     data_async_gen(b"01234567890123456789012345", 5),  # async gen with chunk size smaller than write chunk size
@@ -102,7 +102,7 @@ async def test_file_data_ipc_write_by_chunk(nope_logger_fixture, in_data):
             assert b"".join(chunks_pass_in_write) == b"01234567890123456789012345"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_file_data_ipc_track_file_count_and_size(nope_logger_fixture, tmp_path):
     ipc_obj = DaskLocalFileDataIPC(base_folder=tmp_path)
 
@@ -121,7 +121,7 @@ async def test_file_data_ipc_track_file_count_and_size(nope_logger_fixture, tmp_
     assert DaskLocalFileDataIPC.total_files_count == 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_file_data_ipc_write_clean_up_files(nope_logger_fixture):
     with patch("builtins.open", mock_open(read_data=b"")) as open_mock:
         # due to the wierdo of mock patch, using this path since patching 'os.remove' not working ...
@@ -153,7 +153,7 @@ async def test_file_data_ipc_write_clean_up_files(nope_logger_fixture):
             assert all_opened_files == all_removed_files
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_data_ipc_new():
     async with DaskNoneDataIPC().set(b"42") as (ref, getter):
         with getter(ref) as file_data:

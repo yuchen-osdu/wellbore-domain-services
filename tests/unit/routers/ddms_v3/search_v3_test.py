@@ -32,11 +32,12 @@ PARAMS = [
 
 @pytest.mark.parametrize("base_url", URL_PARAM)
 @pytest.mark.parametrize("search_response, expected", PARAMS)
-def test_query_results_without_none(client, base_url, search_response, expected):
+@pytest.mark.anyio
+async def test_query_results_without_none(client, base_url, search_response, expected):
     with patch.object(search_service_client_mock, 'query_with_cursor',
                       return_value=CursorQueryResponse(results=[search_response])):
         # when
-        response = client.post(f'{base_url}', headers={'data-partition-id': 'testing_partition', 'names': 'dd'},
+        response = await client.post(f'{base_url}', headers={'data-partition-id': 'testing_partition', 'names': 'dd'},
                                json={'query': 'query'})
 
         # then

@@ -61,7 +61,7 @@ def with_patched_get_record(well_record):
         yield
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_recursive_only_delete_entity_provided(ctx_fixture,
                                                             nope_logger_fixture,
                                                             authority,
@@ -105,7 +105,7 @@ async def test_delete_recursive_only_delete_entity_provided(ctx_fixture,
         assert set(expect_delete_ids) == actual_deleted_id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
                                                              nope_logger_fixture,
                                                              authority,
@@ -144,7 +144,7 @@ async def test_delete_failure_on_parent_dont_delete_children(ctx_fixture,
         assert moc_storage_delete_record.call_args_list[0].kwargs['id'] == well_record.id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_should_keep_delete_heterogeneous_failure(
         ctx_fixture,
         nope_logger_fixture,
@@ -196,7 +196,7 @@ async def test_delete_should_keep_delete_heterogeneous_failure(
             assert nope_logger_fixture.error.call_count == len(sub_ids)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_should_keep_delete_homogenous_failure(
         ctx_fixture,
         nope_logger_fixture,
@@ -247,7 +247,7 @@ async def test_delete_should_keep_delete_homogenous_failure(
             assert nope_logger_fixture.error.call_count == len(sub_ids)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize('exception', [starletteHTTPException(status_code=status.HTTP_404_NOT_FOUND),
                                        fastApiHTTPException(status_code=status.HTTP_404_NOT_FOUND),
                                        clientHTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -289,7 +289,7 @@ async def test_delete_404_of_sub_delete_is_valid(ctx_fixture,
                 storage_record_service_client_mock)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize('exception',
                          [fastApiHTTPException(status_code=status.HTTP_403_FORBIDDEN),
                           fastApiHTTPException(status_code=status.HTTP_404_NOT_FOUND),

@@ -177,9 +177,6 @@ async def startup_event():
     asyncio.create_task(dask_client.create(bulk_config))
 
     create_custom_http_exception_handler(wdms_app, logger)
-
-
-
     metric.init_metric(wdms_app)
 
 

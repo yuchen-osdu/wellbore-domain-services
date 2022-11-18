@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
+import anyio
+
 import contextlib
 from typing import Optional
 
@@ -30,14 +31,14 @@ _client: Optional[DaskDistributedClient] = None
 _cluster: Optional[LocalCluster] = None
 
 # Ensure access to critical section is done for only one coroutine
-_lock_client: Optional[asyncio.Lock] = None
+_lock_client: Optional[anyio.Lock] = None
 
 
 async def create(config: BulkPersistenceConfig) -> DaskDistributedClient:
     global _lock_client, _client, _cluster
 
     if not _lock_client:
-        _lock_client = asyncio.Lock()
+        _lock_client = anyio.Lock()
 
     async with _lock_client:
         if not _client:
@@ -83,15 +84,17 @@ async def close():
         return
 
     async with _lock_client:
-        if _cluster:
-            # explicitly closing the cluster is necessary
-            # since it has been started independently from the client
-            await _cluster.close()
-            _cluster = None
 
         if _client:
             await _client.close()  # or shutdown
             _client = None
+
+        if _cluster:
+            # explicitly closing the cluster is necessary
+            # since it has been started independently of the client
+            await _cluster.close()
+            _cluster = None
+
 
 
 @contextlib.asynccontextmanager

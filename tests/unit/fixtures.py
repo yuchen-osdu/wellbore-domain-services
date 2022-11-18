@@ -1,8 +1,12 @@
+
+
+import contextlib
 import copy
 import types
 from typing import List
-import asyncio
-import httpx
+from asgi_lifespan import LifespanManager
+from httpx import AsyncClient, Headers
+
 import odes_storage
 import pytest
 from unittest import mock
@@ -137,7 +141,7 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                 reason_phrase="Item not found",
                 # not sure what to put here at this time
                 content="".encode(encoding="utf-8"),
-                headers=httpx.Headers(),
+                headers=Headers(),
             )
 
         async def mocked_get_all_record_versions(self,
@@ -159,7 +163,7 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
                     reason_phrase="Item not found",
                     # not sure what to put here at this time
                     content="".encode(encoding="utf-8"),
-                    headers=httpx.Headers(),
+                    headers=Headers(),
                 )
             return odes_storage.models.RecordVersions(recordId=id, versions=versions or None)
 
@@ -174,24 +178,24 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
 
 
 @pytest.fixture(scope="module")
-def base_app_initialized_with_testclient(local_dev_config, dask_custom_config):
+def base_app_initialized_with_testclient(local_dev_config, dask_custom_config, anyio_backend):
     """
     Fixture providing a base_app test client
     """
 
     # setup the dask_config with default values
     with dask_custom_config():
-        with TestClient(base_app) as base_client:
-            yield base_client
+        with TestClient(app=base_app) as base_client: # TODO TestClient
+            yield base_app, base_client
 
-        # slb_app shutdown event should call DaskClient.close()
+    # slb_app shutdown event should call DaskClient.close()
 
 
 TEST_CLIENT_HOST = "test_wdms_app"
 
 
 @pytest.fixture(scope="module")
-def app_initialized_with_testclient(local_dev_config, dask_custom_config):
+async def app_initialized_with_testclient(local_dev_config, dask_custom_config, anyio_backend):
     """
     Fixture providing wdms_app started, along with a AsyncClient
     CAREFUL: we do not want to depend on base_app_initialized fixture,
@@ -202,15 +206,15 @@ def app_initialized_with_testclient(local_dev_config, dask_custom_config):
 
     # setup the dask_config with default values
     with dask_custom_config():
-        with TestClient(app=wdms_app, base_url=f"http://{TEST_CLIENT_HOST}") as client:
-            yield wdms_app, client
-
+        async with LifespanManager(wdms_app):
+            async with AsyncClient(app=wdms_app, base_url=f"http://{TEST_CLIENT_HOST}") as ac:
+                yield wdms_app, ac
 
         # wdms_app shutdown event should call DaskClient.close() via app shutdown
 
 
 @pytest.fixture
-def app_configurable_with_testclient(app_initialized_with_testclient):
+async def app_configurable_with_testclient(app_initialized_with_testclient, anyio_backend):
     """
     Fixture to configure wdms_app after it has been started.
     It returns a function to be called from the test to configure the app,
@@ -226,10 +230,9 @@ def app_configurable_with_testclient(app_initialized_with_testclient):
     # saving app state for reset later on
     original_trace_exporter = app.trace_exporter
     original_dependency_overrides = copy.copy(app.dependency_overrides)
-
-    loop = asyncio.get_event_loop()
-    original_storage_client = loop.run_until_complete(app_injector.get(StorageRecordServiceClient))
-    original_search_client = loop.run_until_complete(app_injector.get(SearchServiceClient))
+    
+    original_storage_client = await app_injector.get(StorageRecordServiceClient)
+    original_search_client = await app_injector.get(SearchServiceClient)
 
     # setup safe defaults for tests
     # can't set spec_set because api_client is instance member and not a class member

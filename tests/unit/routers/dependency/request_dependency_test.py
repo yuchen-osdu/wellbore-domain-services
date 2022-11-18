@@ -1,10 +1,9 @@
-from fastapi import FastAPI, APIRouter, Depends
-from fastapi.testclient import TestClient
-from starlette.middleware.base import BaseHTTPMiddleware
-
-
+from anyio import ExceptionGroup
 import pytest
 
+from fastapi import FastAPI, APIRouter, Depends
+from httpx import AsyncClient
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.routers.dependency.request_dependency import RequestDependencyBase, RequestDependencyMetaClass
 
@@ -36,6 +35,8 @@ async def get_route_b(value=Depends(TestDependencyNoDefault())):
     return {"value": value}
 
 
+BASE_URL = "http://local_app"
+
 @pytest.fixture(scope="module")
 def test_client():
 
@@ -54,21 +55,24 @@ def test_client():
     local_app.include_router(router, prefix='/path-default')
     local_app.add_middleware(AddRequestStateDependencyMiddleware)
 
-    yield TestClient(local_app)
+    ac = AsyncClient(app=local_app, base_url=BASE_URL)
+    yield ac
 
 
-def test_dependency_value_resolution(test_client):
-    assert test_client.get('/path-1/route-a').json()["value"] == "1"
-    assert test_client.get('/path-1/route-b').json()["value"] == 1
+@pytest.mark.anyio
+async def test_dependency_value_resolution(test_client):
+    assert (await test_client.get(f'{BASE_URL}/path-1/route-a')).json()["value"] == "1"
+    assert (await test_client.get(f'{BASE_URL}/path-1/route-b')).json()["value"] == 1
 
-    assert test_client.get('/path-2/route-a').json()["value"] == "2"
-    assert test_client.get('/path-2/route-b').json()["value"] == 2
+    assert (await test_client.get(f'{BASE_URL}/path-2/route-a')).json()["value"] == "2"
+    assert (await test_client.get(f'{BASE_URL}/path-2/route-b')).json()["value"] == 2
 
 
-def test_dependency_default_value_resolution(test_client):
+@pytest.mark.anyio
+async def test_dependency_default_value_resolution(test_client, anyio_backend):
     # WHEN default is defined
-    assert test_client.get('/path-default/route-a').json()["value"] == "default_value"
+    assert (await test_client.get(f'{BASE_URL}/path-default/route-a')).json()["value"] == "default_value"
 
     # WHEN default is not defined, should raise
-    with pytest.raises(RuntimeError):
-        test_client.get('/path-default/route-b')
+    with pytest.raises(ExceptionGroup):
+        await test_client.get(f'{BASE_URL}/path-default/route-b')

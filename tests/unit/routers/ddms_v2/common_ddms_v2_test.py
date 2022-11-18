@@ -163,12 +163,13 @@ def assert_called_once_with_partial(mock_inst, **expected_kwargs):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_get_record_success(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_success(client, base_url, record_obj):
     record_id = record_obj.id
 
     with patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj) as moc:
         # when
-        response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        response = await client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_200_OK
 
         # then assert storage is called with the proper id and data_partition
@@ -179,12 +180,13 @@ def test_get_record_success(client, base_url, record_obj):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_errors_422)
-def test_get_record_422(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_422(client, base_url, record_obj):
     record_id = record_obj.id
 
     with patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj) as moc:
         # when
-        response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        response = await client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
         # then assert storage is called with the proper id and data_partition
@@ -192,11 +194,12 @@ def test_get_record_422(client, base_url, record_obj):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_get_record_without_default_values(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_without_default_values(client, base_url, record_obj):
     record_id = record_obj.id
     with patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj):
         # when
-        response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        response = await client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_200_OK
 
         # assert we retrieve only the input fields
@@ -204,23 +207,25 @@ def test_get_record_without_default_values(client, base_url, record_obj):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_get_record_not_found_case(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_not_found_case(client, base_url, record_obj):
     record_id = record_obj.id
     exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not found')
 
     with patch.object(storage_record_service_client_mock, 'get_record', side_effect=exception):
         # when
-        response = client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        response = await client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert 'not found' in response.text.lower()
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_delete_record_successful(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_delete_record_successful(client, base_url, record_obj):
     record_id = record_obj.id
 
     with patch.object(storage_record_service_client_mock, 'delete_record') as moc:
-        response = client.delete(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        response = await client.delete(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         # then assert storage is called with the proper id and data_partition
@@ -228,13 +233,14 @@ def test_delete_record_successful(client, base_url, record_obj):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_delete_recursive_record_with_recursive_not_in_query_successful(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_delete_recursive_record_with_recursive_not_in_query_successful(client, base_url, record_obj):
     record_id = record_obj.id
 
     with patch.object(storage_record_service_client_mock, 'delete_record') as mock_storage,\
             patch.object(search_service_client_mock, 'query_with_cursor') as mock_search:
         # when
-        response = client.delete(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
+        response = await client.delete(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
         # then
         mock_storage.assert_called_with(id=record_id, data_partition_id='testing_partition')
         assert not mock_search.called
@@ -242,12 +248,13 @@ def test_delete_recursive_record_with_recursive_not_in_query_successful(client, 
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_delete_recursive_record_with_recursive_false_successful(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_delete_recursive_record_with_recursive_false_successful(client, base_url, record_obj):
     record_id = record_obj.id
     with patch.object(storage_record_service_client_mock, 'delete_record') as mock_storage,\
             patch.object(search_service_client_mock, 'query_with_cursor') as mock_search:
         # when
-        response = client.delete(f'{base_url}/{record_id}',
+        response = await client.delete(f'{base_url}/{record_id}',
                                  headers={'data-partition-id': 'testing_partition'},
                                  params={'recursive': False})
         # then
@@ -257,17 +264,19 @@ def test_delete_recursive_record_with_recursive_false_successful(client, base_ur
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters_for_recursive)
-def test_delete_recursive_record_with_recursive_true_successful(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_delete_recursive_record_with_recursive_true_successful(client, base_url, record_obj):
     record_id = record_obj.id
 
     with patch('app.routers.ddms_v2.storage_helper.StorageHelper.delete_recursively') as moc_delete_rec:
-        client.delete(f'{base_url}/{record_id}',
+        await client.delete(f'{base_url}/{record_id}',
                       headers={'data-partition-id': 'testing_partition'}, params={'recursive': True})
         moc_delete_rec.assert_called_once()
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters_for_recursive)
-def test_delete_recursive_record_with_recursive_true_successful_delete_multiple_records(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_delete_recursive_record_with_recursive_true_successful_delete_multiple_records(client, base_url, record_obj):
     record_id = record_obj.id
     mocked_query_response = CursorQueryResponse(**{'results': [{'id': 'id:one', 'kind': 'data-partition:wks:log:1.0.5'},
                                                                {'id': 'id:two',
@@ -275,7 +284,7 @@ def test_delete_recursive_record_with_recursive_true_successful_delete_multiple_
     with patch('app.routers.search.search_wrapper.SearchWrapper.query_cursorless', return_value=mocked_query_response),\
             patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj),\
             patch.object(storage_record_service_client_mock, 'delete_record') as moc_storage_delete_record:
-        client.delete(f'{base_url}/{record_id}',
+        await client.delete(f'{base_url}/{record_id}',
                       headers={'data-partition-id': 'testing_partition'},
                       params={'recursive': True})
         # number of calls to delete_record is 3 because the record has 2 children
@@ -296,16 +305,18 @@ def test_delete_recursive_record_with_recursive_true_successful_delete_multiple_
                         Entity.TRAJECTORY,
                         Entity.DIPSET])
 ])
-def test_delete_recursive_check_sub_deleted_type(client, base_url, sub_entity_list):
+@pytest.mark.anyio
+async def test_delete_recursive_check_sub_deleted_type(client, base_url, sub_entity_list):
     with patch('app.routers.ddms_v2.storage_helper.StorageHelper.delete_recursively') as moc_delete_recursively:
-        client.delete(f'{base_url}/123',
+        await client.delete(f'{base_url}/123',
                       headers={'data-partition-id': 'dp'},
                       params={'recursive': True})
         assert set(moc_delete_recursively.call_args.kwargs['entity_list']) == set(sub_entity_list)
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_get_record_versions_successful(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_versions_successful(client, base_url, record_obj):
     record_id = record_obj.id
     expect_response = RecordVersions(recordId='123456', versions=["12356", "89693"])
 
@@ -319,7 +330,7 @@ def test_get_record_versions_successful(client, base_url, record_obj):
     try:
         with patch.object(storage_record_service_client_mock, 'get_all_record_versions', return_value=expect_response) as moc:
             # when
-            response = client.get(f'{base_url}/{record_id}/versions', headers={'data-partition-id': 'testing_partition'})
+            response = await client.get(f'{base_url}/{record_id}/versions', headers={'data-partition-id': 'testing_partition'})
 
             # then
             assert response.status_code == status.HTTP_200_OK
@@ -331,7 +342,8 @@ def test_get_record_versions_successful(client, base_url, record_obj):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_get_record_versions_errors(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_versions_errors(client, base_url, record_obj):
     exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not found')
 
     # Because test parameter include v3 routes which calls 'get_record'
@@ -344,7 +356,7 @@ def test_get_record_versions_errors(client, base_url, record_obj):
     try:
         with patch.object(storage_record_service_client_mock, 'get_all_record_versions', side_effect=exception):
             # when
-            response = client.get(f'{base_url}/{record_obj.id}/versions',
+            response = await client.get(f'{base_url}/{record_obj.id}/versions',
                                   headers={'data-partition-id': 'testing_partition'})
             assert response.status_code == exception.status_code
             assert exception.detail in response.text
@@ -354,13 +366,14 @@ def test_get_record_versions_errors(client, base_url, record_obj):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_get_record_at_version_successful(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_at_version_successful(client, base_url, record_obj):
     record_id = record_obj.id
     record_obj.version = 1337
 
     with patch.object(storage_record_service_client_mock, 'get_record_version', return_value=record_obj) as moc:
         # when
-        response = client.get(f'{base_url}/{record_id}/versions/{record_obj.version}',
+        response = await client.get(f'{base_url}/{record_id}/versions/{record_obj.version}',
                               headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_200_OK
 
@@ -376,13 +389,14 @@ def test_get_record_at_version_successful(client, base_url, record_obj):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_get_record_at_version_successful_without_default_values(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_at_version_successful_without_default_values(client, base_url, record_obj):
     record_id = record_obj.id
     record_obj.version = 1337
 
     with patch.object(storage_record_service_client_mock, 'get_record_version', return_value=record_obj):
         # when
-        response = client.get(f'{base_url}/{record_id}/versions/{record_obj.version}',
+        response = await client.get(f'{base_url}/{record_id}/versions/{record_obj.version}',
                               headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == status.HTTP_200_OK
 
@@ -391,19 +405,21 @@ def test_get_record_at_version_successful_without_default_values(client, base_ur
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_get_record_at_version_errors(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_get_record_at_version_errors(client, base_url, record_obj):
     exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not found')
 
     with patch.object(storage_record_service_client_mock, 'get_record_version', side_effect=exception):
         # when
-        response = client.get(f'{base_url}/{record_obj.id}/versions/1337',
+        response = await client.get(f'{base_url}/{record_obj.id}/versions/1337',
                               headers={'data-partition-id': 'testing_partition'})
         assert response.status_code == exception.status_code
         assert exception.detail in response.text
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_post_records_successful(client, base_url, record_obj):
+@pytest.mark.anyio
+async def test_post_records_successful(client, base_url, record_obj):
     expected_response = CreateUpdateRecordsResponse(recordCount=2, recordIds=['rec1', 'rec2'])
 
     # done this way because of the current inconsistency of root fields between wdms model vs storage client model
@@ -415,7 +431,7 @@ def test_post_records_successful(client, base_url, record_obj):
                                                      reason_phrase="", content=None, headers=None)), \
          patch.object(storage_record_service_client_mock, 'create_or_update_records', return_value=expected_response):
         # when
-        response = client.post(base_url, data=json.dumps(record_dict_list), headers={'content-type': 'application/json'})
+        response = await client.post(base_url, data=json.dumps(record_dict_list), headers={'content-type': 'application/json'})
 
         # then
         assert response.status_code == status.HTTP_200_OK
@@ -423,6 +439,7 @@ def test_post_records_successful(client, base_url, record_obj):
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
-def test_post_records_error_invalid_data(client, base_url, record_obj):
-    response = client.post(base_url, data=json.dumps([{"invalid": "data"}]))
+@pytest.mark.anyio
+async def test_post_records_error_invalid_data(client, base_url, record_obj):
+    response = await client.post(base_url, data=json.dumps([{"invalid": "data"}]))
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

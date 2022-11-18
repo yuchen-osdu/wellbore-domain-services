@@ -52,7 +52,7 @@ VALID_VALUES_FORMS = [
 ]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "executor,exporter", [
         (None, async_fake_exporter),
@@ -72,7 +72,7 @@ async def test_executor_exported_combination(executor, exporter):
         assert blob.metadata['content-type'] == CONSTANT_PLAIN_TEXT
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("values_form", VALID_VALUES_FORMS)
 async def test_create_blob_various_valid_values(values_form):
     table = pd.DataFrame(values_form, index=[1, 2, 3], columns=['c1', 'c2'])
@@ -87,7 +87,7 @@ async def test_create_blob_various_valid_values(values_form):
         assert df['c2'].tolist() == [11, 21, 31]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("values_form", VALID_VALUES_FORMS)
 async def test_create_blob_various_valid_values_no_column(values_form):
     table = pd.DataFrame(values_form, index=[1, 2, 3])
@@ -102,7 +102,7 @@ async def test_create_blob_various_valid_values_no_column(values_form):
         assert df[1].tolist() == [11, 21, 31]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_blob_should_forward_filename_and_df():
     def capture_it(*args, **kwargs):
         capture_it.args = args

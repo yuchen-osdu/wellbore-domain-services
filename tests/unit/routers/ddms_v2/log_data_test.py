@@ -57,46 +57,47 @@ def client(tmp_path, app_configurable_with_testclient):
 
     return client
 
-
 @pytest.fixture
-def client_with_log(client, nope_logger_fixture):
+async def client_with_log(client, nope_logger_fixture):
     # Create or update a log record
-    response = client.post("/ddms/v2/logs", json=[log_payload], headers=headers)
+    response = await client.post("/ddms/v2/logs", json=[log_payload], headers=headers)
     assert response.status_code in range(200, 209), "Create or update log failed"
 
     log_id = response.json()["recordIds"][0]
 
     # add data to the log
-    response = client.post(f"/ddms/v2/logs/{log_id}/data", params={"orient": "split"}, json=prev_data, headers=headers)
+    response = await client.post(f"/ddms/v2/logs/{log_id}/data", params={"orient": "split"}, json=prev_data, headers=headers)
     assert response.status_code in range(200, 209), "PUT log data failed"
 
     # get data
-    response = client.get(f"/ddms/v2/logs/{log_id}/data", headers=headers)
+    response = await client.get(f"/ddms/v2/logs/{log_id}/data", headers=headers)
     assert response.status_code in range(200, 209), "GET log data by channels failed"
     assert response.json() == prev_data, "GET log data  response json body should match  data for latest version"
 
     # get versions
-    response = client.get(f"/ddms/v2/logs/{log_id}/versions", headers=headers)
+    response = await client.get(f"/ddms/v2/logs/{log_id}/versions", headers=headers)
     assert response.status_code == 200, "GET log data failed"
 
     version_id = response.json()["versions"][1]
 
     yield client, log_id, version_id
 
-    response = client.delete(f"/ddms/v2/logs/{log_id}", headers=headers)
+    response = await client.delete(f"/ddms/v2/logs/{log_id}", headers=headers)
     assert response.status_code in range(200, 209), "Delete test log failed"
 
 
 @pytest.mark.parametrize("orient_value", ["split", "columns"])
-def test_log_get_data_orient_param_validation(client_with_log, orient_value):
+@pytest.mark.anyio
+async def test_log_get_data_orient_param_validation(client_with_log, orient_value):
     client, log_id, _ = client_with_log
-    response = client.get(f"/ddms/v2/logs/{log_id}/data", params={"orient":orient_value}, headers=headers)
+    response = await client.get(f"/ddms/v2/logs/{log_id}/data", params={"orient":orient_value}, headers=headers)
     assert response.status_code == 200
 
 
-def test_log_get_orient_param_validation_negative(client_with_log):
+@pytest.mark.anyio
+async def test_log_get_orient_param_validation_negative(client_with_log):
     client, log_id, _ = client_with_log
-    response = client.get(f"/ddms/v2/logs/{log_id}/data", params={"orient":"wrong_orient"}, headers=headers)
+    response = await client.get(f"/ddms/v2/logs/{log_id}/data", params={"orient":"wrong_orient"}, headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
@@ -118,39 +119,44 @@ def test_log_get_orient_param_validation_negative(client_with_log):
         }
     )
 ])
-def test_log_post_data_orient_param_validation(client_with_log, orient_value, data):
+@pytest.mark.anyio
+async def test_log_post_data_orient_param_validation(client_with_log, orient_value, data):
     client, log_id,  _ = client_with_log
-    response = client.post(f"/ddms/v2/logs/{log_id}/data", params={"orient": orient_value}, json=data, headers=headers)
-    assert response.ok
+    response = await client.post(f"/ddms/v2/logs/{log_id}/data", params={"orient": orient_value}, json=data, headers=headers)
+    assert response.is_success
 
 
-def test_log_post_data_orient_param_validation_negative(client_with_log):
+@pytest.mark.anyio
+async def test_log_post_data_orient_param_validation_negative(client_with_log):
     client, log_id, _ = client_with_log
-    response = client.post(f"/ddms/v2/logs/{log_id}/data", params={"orient": "wrong_orient"}, json={}, headers=headers)
+    response = await client.post(f"/ddms/v2/logs/{log_id}/data", params={"orient": "wrong_orient"}, json={}, headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-def test_log_version_data(client_with_log):
+@pytest.mark.anyio
+async def test_log_version_data(client_with_log):
     client, log_id, version_id = client_with_log
 
     # get data for previous version
-    response = client.get(f"/ddms/v2/logs/{log_id}/versions/{version_id}/data", headers=headers)
+    response = await client.get(f"/ddms/v2/logs/{log_id}/versions/{version_id}/data", headers=headers)
     assert response.status_code == 200, "GET data for previous version failed"
     assert response.json() == prev_data, "response json body should match previous version data"
 
 
 @pytest.mark.parametrize("orient_value", ["split", "columns"])
-def test_log_version_data_orient_param_validation(client_with_log, orient_value):
+@pytest.mark.anyio
+async def test_log_version_data_orient_param_validation(client_with_log, orient_value):
     client, log_id, version_id = client_with_log
 
     # get data for previous version
-    response = client.get(f"/ddms/v2/logs/{log_id}/versions/{version_id}/data", params={"orient": orient_value}, headers=headers)
-    assert response.ok
+    response = await client.get(f"/ddms/v2/logs/{log_id}/versions/{version_id}/data", params={"orient": orient_value}, headers=headers)
+    assert response.is_success
 
 
-def test_log_version_data_orient_param_validation_negative(client_with_log):
+@pytest.mark.anyio
+async def test_log_version_data_orient_param_validation_negative(client_with_log):
     client, log_id, version_id  = client_with_log
 
     # get data for previous version
-    response = client.get(f"/ddms/v2/logs/{log_id}/versions/{version_id}/data", params={"orient": "wrong"}, headers=headers)
+    response = await client.get(f"/ddms/v2/logs/{log_id}/versions/{version_id}/data", params={"orient": "wrong"}, headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
