@@ -19,22 +19,13 @@ import pytest
 from unittest.mock import create_autospec, patch
 import uuid
 
-
-from fastapi import Header
-
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record
 
-
-from app.injector.app_injector import WithLifeTime
-
-from app.auth.auth import require_opendes_authorized_user
 from app.clients.storage_service_client import StorageRecordServiceClient
-from app.context import Context
 from app.helper import traces
-from app.middleware import require_data_partition_id
 from app.routers.ddms_v2.log_ddms_v2 import (
     _get_log_data,
     _write_log_data,
@@ -43,7 +34,7 @@ from app.routers.ddms_v2.log_ddms_v2 import (
 from app.routers.record_utils import fetch_record, update_records
 from app.wdms_app import app_injector, wdms_app
 
-from tests.unit.test_utils import make_record, ctx_fixture
+from tests.unit.test_utils import ctx_fixture
 
 data_partition_id = 'test_partition'
 
@@ -74,39 +65,22 @@ storage_record_service_client_mock = create_autospec(StorageRecordServiceClient,
 
 
 @pytest.fixture
-def with_test_setup(ctx_fixture):
-    loop = asyncio.get_event_loop()
-    original_storage_client = None
-    try:
-        original_storage_client = loop.run_until_complete(app_injector.get(StorageRecordServiceClient))
-    except KeyError:
-        pass
+def ctx_with_test_setup(app_configurable_with_testclient, ctx_fixture):
+    # app_configurable_with_testclient may be  overkill and might slower the test setup
+    # because it setup a app and a test client that are not needed for those tests
+    # but the code under test in this module are depending to the app module's  symbols such as app_injectore, Context, AppConfig
+    # so for convenience we reuse app_configurable_with_testclient which  tries to clean up everthings as well as possible at tests teardown
+    app_configurable_with_testclient(
+        storage_client_mock=storage_record_service_client_mock,
+    )
 
-    previous_overrides = copy.copy(wdms_app.dependency_overrides)
+    # Usually the app injector in the context is set by basic_context_middleware
+    # but since those tests call directly internal function instead making call to  apis
+    # the app injector is not set in the context whereas functions under test need it for retrieving storage service client.
+    # so we have to set manually the app injector in the context.
+    ctx = ctx_fixture.set_current_with_value(partition_id=data_partition_id, app_injector=app_injector)
 
-    async def bypass_authorization():
-        # empty method
-        pass
-
-    async def set_default_partition(data_partition_id: str = Header('opendes')):
-        Context.set_current_with_value(partition_id=data_partition_id)
-
-    async def build_mock_storage():
-        return storage_record_service_client_mock
-
-    async def build_original_storage():
-        return original_storage_client
-
-    app_injector.register(StorageRecordServiceClient, build_mock_storage, WithLifeTime.Singleton())
-    wdms_app.dependency_overrides[require_opendes_authorized_user] = bypass_authorization
-    wdms_app.dependency_overrides[require_data_partition_id] = set_default_partition
-    Context.set_current_with_value(app_injector=app_injector)
-    yield
-
-    # reset app for reuse (we always cleanup without recreating the app - it would be too slow)
-    app_injector.register(StorageRecordServiceClient, build_original_storage, WithLifeTime.Singleton())
-
-    wdms_app.dependency_overrides = previous_overrides  # clean up
+    return ctx
 
 
 @pytest.fixture
@@ -142,25 +116,23 @@ def mock_persistence():
 wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
 
-@pytest.mark.asyncio
-async def test_fetch_record(with_test_setup):
+@pytest.mark.anyio
+async def test_fetch_record(ctx_with_test_setup):
     expected_record = Record.parse_obj(log_payload)
-
     with patch.object(storage_record_service_client_mock, 'get_record',
-                      return_value=expected_record) as moc_get_record,\
-        patch.object(storage_record_service_client_mock, 'get_record_version',
+                      return_value=expected_record) as moc_get_record, \
+            patch.object(storage_record_service_client_mock, 'get_record_version',
                          return_value=expected_record) as moc_get_record_version:
-
-        computed_record = await fetch_record(ctx=Context.set_current_with_value(partition_id=data_partition_id),
-                                             record_id="132")
+        computed_record = await fetch_record(ctx_with_test_setup, record_id="132")
 
         assert computed_record == expected_record
         moc_get_record.assert_called_with(id="132", data_partition_id=data_partition_id, attribute=None)
         moc_get_record_version.assert_not_called()
 
 
-@pytest.mark.asyncio
-async def test_fetch_record_version(with_test_setup):
+@pytest.mark.anyio
+async def test_fetch_record_version(ctx_with_test_setup):
+
     expected_record = Record.parse_obj(log_payload)
 
     with patch.object(storage_record_service_client_mock, 'get_record',
@@ -168,8 +140,7 @@ async def test_fetch_record_version(with_test_setup):
          patch.object(storage_record_service_client_mock, 'get_record_version',
                       return_value=expected_record) as moc_get_record_version:
 
-        computed_record = await fetch_record(ctx=Context.set_current_with_value(partition_id=data_partition_id),
-                                             record_id="132", version="1")
+        computed_record = await fetch_record(ctx_with_test_setup, record_id="132", version="1")
 
         assert computed_record == expected_record
         moc_get_record_version.assert_called_with(id="132", data_partition_id=data_partition_id, version="1",
@@ -177,22 +148,21 @@ async def test_fetch_record_version(with_test_setup):
         moc_get_record.assert_not_called()
 
 
-@pytest.mark.asyncio
-async def test_update_records(with_test_setup):
+@pytest.mark.anyio
+async def test_update_records(ctx_with_test_setup):
     expected_response = CreateUpdateRecordsResponse(record_count=2, record_ids=["1", "2"], skipped_record_ids=["1"])
 
     with patch.object(storage_record_service_client_mock, 'create_or_update_records',
                       return_value=expected_response) as moc:
         record = Record.parse_obj(log_payload)
-        computed_response = await update_records(ctx=Context.set_current_with_value(partition_id=data_partition_id),
-                                                 records=[record])
+        computed_response = await update_records(ctx_with_test_setup, records=[record])
 
         assert computed_response == expected_response
         moc.assert_called_with(record=[record], data_partition_id=data_partition_id)
 
 
-@pytest.mark.asyncio
-async def test_write_log_data(with_test_setup, mock_persistence):
+@pytest.mark.anyio
+async def test_write_log_data(ctx_with_test_setup, mock_persistence):
     expected_response = CreateUpdateRecordsResponse(record_count=2, record_ids=["1", "2"], skipped_record_ids=["1"])
     expected_record = Record.parse_obj(log_payload)
 
@@ -204,7 +174,7 @@ async def test_write_log_data(with_test_setup, mock_persistence):
                       return_value=expected_response) as create_or_update_records_moc:
 
         computed_response = await _write_log_data(
-            ctx=Context.set_current_with_value(partition_id=data_partition_id),
+            ctx_with_test_setup,
             persistence=mock_persistence,
             logid="1234",
             bulk_path=None,
@@ -217,8 +187,8 @@ async def test_write_log_data(with_test_setup, mock_persistence):
         assert_frame_equal(mock_persistence.dataframe, data)
 
 
-@pytest.mark.asyncio
-async def test_write_log_data_with_bulk_path(with_test_setup, mock_persistence):
+@pytest.mark.anyio
+async def test_write_log_data_with_bulk_path(ctx_with_test_setup, mock_persistence):
     expected_response = CreateUpdateRecordsResponse(record_count=2, record_ids=["1", "2"], skipped_record_ids=["1"])
 
     expected_record = Record.parse_obj(log_payload)
@@ -231,7 +201,7 @@ async def test_write_log_data_with_bulk_path(with_test_setup, mock_persistence):
          patch.object(storage_record_service_client_mock, 'create_or_update_records',
                       return_value=expected_response) as create_or_update_records_moc:
         computed_response = await _write_log_data(
-            ctx=Context.set_current_with_value(partition_id=data_partition_id),
+            ctx_with_test_setup,
             persistence=mock_persistence,
             logid="1234",
             bulk_path="data.custom_bulkid",
@@ -244,8 +214,8 @@ async def test_write_log_data_with_bulk_path(with_test_setup, mock_persistence):
         assert_frame_equal(mock_persistence.dataframe, data)
 
 
-@pytest.mark.asyncio
-async def test_get_log_data(with_test_setup, mock_persistence):
+@pytest.mark.anyio
+async def test_get_log_data(ctx_with_test_setup, mock_persistence):
     expected_record = Record.parse_obj(log_payload)
     expected_data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
 
@@ -255,7 +225,7 @@ async def test_get_log_data(with_test_setup, mock_persistence):
                       return_value=expected_record) as get_record_moc:
 
         computed_response = await _get_log_data(
-            ctx=Context.set_current_with_value(partition_id=data_partition_id),
+            ctx_with_test_setup,
             persistence=mock_persistence,
             logid="1234",
             version=None,
@@ -269,8 +239,8 @@ async def test_get_log_data(with_test_setup, mock_persistence):
         assert computed_response.media_type == 'application/json'
 
 
-@pytest.mark.asyncio
-async def test_get_log_data_with_bulk_path(with_test_setup, mock_persistence):
+@pytest.mark.anyio
+async def test_get_log_data_with_bulk_path(ctx_with_test_setup, mock_persistence):
     expected_record = Record.parse_obj(log_payload)
     expected_record.data["custom_bulkid"] = "424242"
     expected_data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
@@ -281,7 +251,7 @@ async def test_get_log_data_with_bulk_path(with_test_setup, mock_persistence):
                       return_value=expected_record) as get_record_moc:
 
         computed_response = await _get_log_data(
-            ctx=Context.set_current_with_value(partition_id=data_partition_id),
+            ctx_with_test_setup,
             persistence=mock_persistence,
             logid="1234",
             version=None,

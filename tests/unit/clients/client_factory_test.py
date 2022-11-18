@@ -35,7 +35,7 @@ from app.conf import Config
 
 from tests.unit.test_utils import ctx_fixture
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_make_storage_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture, nope_logger_fixture):
     async with make_storage_record_client(host=local_dev_config.service_host_storage.value,
                                           timeout=local_dev_config.de_client_config_timeout.value) as client:
@@ -53,7 +53,7 @@ async def test_make_storage_client(local_dev_config, httpx_mock: HTTPXMock, ctx_
             await client.create_or_update_records(data_partition_id="dp", record=[make_record(id='123')])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_make_search_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture, nope_logger_fixture):
     async with make_search_client(host=local_dev_config.service_host_search.value,
                                   timeout=local_dev_config.de_client_config_timeout.value) as client:

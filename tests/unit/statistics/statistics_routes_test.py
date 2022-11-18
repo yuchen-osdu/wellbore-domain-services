@@ -1,14 +1,17 @@
-import asyncio
+import anyio
 from datetime import datetime, timedelta
 from typing import List
-from unittest.mock import Mock, PropertyMock, patch
+
+from httpx import AsyncClient
+
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 from natsort import natsorted
 import osdu.core.api.storage.exceptions as osdu_storage_exception
 import pandas as pd
 import pytest
-from starlette.testclient import TestClient
+
 from tests.unit.generate_data import generate_df
 from tests.unit.routers.chunking_test import (
     Definitions,
@@ -27,7 +30,7 @@ from app.bulk_persistence.statistics.models import (
 pytestmark = pytest.mark.statistics
 
 
-def post_record_data(client: TestClient, record_id: str, entity_type: str, columns: List[str], range_index: range):
+async def post_record_data(client: AsyncClient, record_id: str, entity_type: str, columns: List[str], range_index: range):
     headers = {'content-type': 'application/x-parquet'}
     chunking_url = Definitions[entity_type]["chunking_url"]
 
@@ -38,7 +41,7 @@ def post_record_data(client: TestClient, record_id: str, entity_type: str, colum
 
     data_to_send = data_df.to_parquet(engine='pyarrow')
 
-    write_response = client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
+    write_response = await client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == 200
     return write_response
 
@@ -48,7 +51,7 @@ def create_df_from_dict(response):
     return pd.DataFrame.from_dict(dict_data, orient='index')
 
 
-def fetch_stats_for_3s(client, record_id, *, columns=None, timeout=3, assert_if_failed=True):
+async def fetch_stats_for_3s(client: AsyncClient, record_id, *, columns=None, timeout=3, assert_if_failed=True):
     """
     Try to get statistics several times until the timeout is reached for given record id with given columns
     """
@@ -66,12 +69,12 @@ def fetch_stats_for_3s(client, record_id, *, columns=None, timeout=3, assert_if_
 
     attempts = int(timeout / sleep_duration)
     for i in range(attempts):
-        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+        get_stats_response = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
         api_results.append(get_stats_response)
         if get_stats_response.status_code != 404:
             break
 
-        asyncio.get_event_loop().run_until_complete(asyncio.sleep(sleep_duration))
+        await anyio.sleep(sleep_duration)
 
     successful_response = [r for r in api_results if r.status_code == 200]
     faulty_responses = [r for r in api_results if r.status_code != 200]
@@ -80,49 +83,52 @@ def fetch_stats_for_3s(client, record_id, *, columns=None, timeout=3, assert_if_
     return successful_response[0] if successful_response else faulty_responses[0]
 
 
-def test_invalid_cases(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_invalid_cases(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
-    valid_record_id = _create_record(client, 'WellLog')
+    valid_record_id = await _create_record(client, 'WellLog')
 
     version = '123456789'
     unknown_record_id = 'test:work-product-component--WellLog:8fef694e8a5a49ec96db9e51c7522bc9'
 
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{unknown_record_id}/data/statistics')
+    get_stats_response = await client.get(f'/ddms/v3/welllogs/{unknown_record_id}/data/statistics')
     assert get_stats_response.status_code == 404
     assert get_stats_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
-    post_stats_response = client.post(f"/ddms/v3/welllogs/{unknown_record_id}/versions/{version}/data/statistics")
+    post_stats_response = await client.post(f"/ddms/v3/welllogs/{unknown_record_id}/versions/{version}/data/statistics")
     assert post_stats_response.status_code == 404
     assert post_stats_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
-    valid_record_no_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
+    valid_record_no_bulk_response = await client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
     assert valid_record_no_bulk_response.status_code == 404
     assert valid_record_no_bulk_response.json().get("detail") == f"bulk for record {valid_record_id} not found"
 
-    valid_record_invalid_version_response = client.get(
+    valid_record_invalid_version_response = await client.get(
         f"/ddms/v3/welllogs/{valid_record_id}/versions/{version}/data/statistics")
     assert valid_record_invalid_version_response.status_code == 404
     assert valid_record_invalid_version_response.json().get('origin') == "osdu-data-ecosystem-storage"
 
 
-def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
     with patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
         bob.side_effect = osdu_storage_exception.ResourceNotFoundException()
 
         _, client = testing_app_local_chunking_no_consistency
 
-        valid_record_id = _create_record(client, 'WellLog')
-        post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
+        valid_record_id = await _create_record(client, 'WellLog')
+        await post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
 
-        valid_record_with_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
+        valid_record_with_bulk_response = await client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
         assert valid_record_with_bulk_response.status_code == 404
         assert valid_record_with_bulk_response.content == b'{"errorType":"DATA_NOT_FOUND","message":"Statistics do not exist"}'
 
 
-def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency):
     with patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
         _, client = testing_app_local_chunking_no_consistency
-        valid_record_id = _create_record(client, 'WellLog')
+        valid_record_id = await _create_record(client, 'WellLog')
 
         meta_data = StatisticsComputationMeta(computationStartDatetime=datetime.utcnow(),
                                               recordId=valid_record_id,
@@ -131,66 +137,69 @@ def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency)
         bob.return_value = InternalStatisticsComputationMeta(computationAttempt=1, meta=meta_data,
                                                              lastComputationDate=datetime.utcnow())
 
-        post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
+        await post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
 
-        valid_record_with_bulk_response = client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
+        valid_record_with_bulk_response = await client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
         assert valid_record_with_bulk_response.status_code == 404
         assert valid_record_with_bulk_response.content \
                == b'{"errorType":"COMPUTATION_NOT_COMPLETE","message":"Statistics computation not finished yet"}'
 
-def _trigger_computation_on_record(client, record_id, record_version):
+@pytest.mark.anyio
+async def _trigger_computation_on_record(client, record_id, record_version):
     """ Trigger computation of bulk statistics for given record id at given record_version or last version if None """
 
     if not record_version:
-        record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+        record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
         assert record_response.status_code == 200
         record_version = record_response.json()['version']
 
-    return client.post(f"/ddms/v3/welllogs/{record_id}/versions/{record_version}/data/statistics")
+    return await client.post(f"/ddms/v3/welllogs/{record_id}/versions/{record_version}/data/statistics")
 
-def test_double_compute_stats(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_double_compute_stats(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
-    record_id = _create_record(client, 'WellLog')
-    _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
+    record_id = await _create_record(client, 'WellLog')
+    await _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20)),
                                                                         (['MD', 'X'], range(10, 30)),
                                                                         (['MD', 'X'], range(25, 40))])
 
-    record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+    record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
     assert record_response.status_code == 200
     version = record_response.json()['version']
 
-    computation_response = _trigger_computation_on_record(client, record_id, record_version=version)
+    computation_response = await _trigger_computation_on_record(client, record_id, record_version=version)
     assert computation_response.status_code == 200
 
-    fetch_stats_for_3s(client, record_id)
+    await fetch_stats_for_3s(client, record_id)
 
-    compute_stats_response = _trigger_computation_on_record(client, record_id, record_version=version)
+    compute_stats_response = await _trigger_computation_on_record(client, record_id, record_version=version)
     assert compute_stats_response.status_code == 409
     assert compute_stats_response.json()['detail'] == "Statistics computation already complete"
 
 
-def test_get_stats(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_get_stats(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
 
     columns = ['int-A', 'int-A-with-nan', 'float-B', 'float-B-with-nan', 'date-C', 'date-C-with-nan']
-    record_id = _create_record(client, 'WellLog')
-    post_record_data(client, record_id, 'WellLog', columns, range(1000))
+    record_id = await _create_record(client, 'WellLog')
+    await post_record_data(client, record_id, 'WellLog', columns, range(1000))
 
-    computation_response = _trigger_computation_on_record(client, record_id, record_version=None)
+    computation_response = await _trigger_computation_on_record(client, record_id, record_version=None)
     assert computation_response.status_code == 200
 
-    fetch_stats_for_3s(client, record_id)
+    await fetch_stats_for_3s(client, record_id)
 
-    record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+    record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
     assert record_response.status_code == 200
     version = record_response.json()['version']
 
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+    get_stats_response = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
     assert get_stats_response.status_code == 200
     df_result_last_version = create_df_from_dict(get_stats_response)
     assert df_result_last_version.shape == (len(columns), 9)
 
-    get_stats_version_response = client.get(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+    get_stats_version_response = await client.get(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert get_stats_version_response.status_code == 200
     df_result_version = create_df_from_dict(get_stats_version_response)
     assert df_result_version.shape == (len(columns), 9)
@@ -199,7 +208,7 @@ def test_get_stats(testing_app_local_chunking_no_consistency):
     params = {
         'curves': ','.join(sub_columns)
     }
-    get_stats_response_selected_cols = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    get_stats_response_selected_cols = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response_selected_cols.status_code == 200
     df_result_selected_cols = create_df_from_dict(get_stats_response_selected_cols)
     assert df_result_selected_cols.shape == (len(sub_columns), 9)
@@ -207,29 +216,30 @@ def test_get_stats(testing_app_local_chunking_no_consistency):
     params = {
         'curves': "UnknownColumnName"
     }
-    get_stats_response_unknown_cols = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    get_stats_response_unknown_cols = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response_unknown_cols.status_code == 404
     assert get_stats_response_unknown_cols.content == \
            b'{"errorType":"CURVES_NOT_FOUND","message":"bulk for curves: [\'UnknownColumnName\'] not found"}'
 
 
-def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
 
-    record_id = _create_record(client, 'WellLog')
-    _create_chunks(client, 'WellLog',
+    record_id = await _create_record(client, 'WellLog')
+    await _create_chunks(client, 'WellLog',
                    record_id=record_id,
                    cols_ranges=[(['int-A', 'string-B', 'bool-C', 'string-D'], range(20))])
 
-    computation_response = _trigger_computation_on_record(client, record_id, record_version=None)
+    computation_response = await _trigger_computation_on_record(client, record_id, record_version=None)
     assert computation_response.status_code == 200
-    fetch_stats_for_3s(client, record_id)
+    await fetch_stats_for_3s(client, record_id)
 
     # not computable curves + unknown curves requested => 404
     params = {
         'curves': "bool-D,string-E,UnknownColumn"
     }
-    get_stats_response_1 = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    get_stats_response_1 = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     assert get_stats_response_1.status_code == 404
 
     # not computable curves requested => 400
@@ -238,19 +248,20 @@ def test_get_stats_from_not_computable_columns(testing_app_local_chunking_no_con
     # }
 
     # todo: Update BulkStatistics class + swagger when only not computable columns are requested, 400 error is expected
-    # get_stats_response_2 = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
+    # get_stats_response_2 = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics', params=params)
     # assert get_stats_response_2.status_code == 400
 
 
-def test_get_stats_after_post_data(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_get_stats_after_post_data(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
-    record_id = _create_record(client, 'WellLog')
-    post_record_data(client, record_id, 'WellLog', ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
+    record_id = await _create_record(client, 'WellLog')
+    await post_record_data(client, record_id, 'WellLog', ['int-A', 'string-B', 'bool-C', 'string-D'], range(10))
 
-    computation_response = _trigger_computation_on_record(client, record_id, record_version=None)
+    computation_response = await _trigger_computation_on_record(client, record_id, record_version=None)
     assert computation_response.status_code == 200
 
-    response = fetch_stats_for_3s(client, record_id)
+    response = await fetch_stats_for_3s(client, record_id)
     assert response.status_code == 200
 
     df_result_df = create_df_from_dict(response)
@@ -258,24 +269,25 @@ def test_get_stats_after_post_data(testing_app_local_chunking_no_consistency):
 
 
 @pytest.mark.parametrize("mode", ['chunking', 'all_at_once'])
-def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
+@pytest.mark.anyio
+async def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
     _, client = testing_app_local_chunking_no_consistency
 
-    record_id = _create_record(client, 'WellLog')
+    record_id = await _create_record(client, 'WellLog')
     if mode == 'chunking':
-        _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20))])
+        await _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(['MD', 'X'], range(20))])
     elif mode == 'all_at_once':
-        post_record_data(client, record_id, 'WellLog', ['MD', 'X'], range(20))
+        await post_record_data(client, record_id, 'WellLog', ['MD', 'X'], range(20))
 
-    record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+    record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
     assert record_response.status_code == 200
     version = record_response.json()['version']
 
-    computation_response = _trigger_computation_on_record(client, record_id, version)
+    computation_response = await _trigger_computation_on_record(client, record_id, version)
     assert computation_response.status_code == 200
-    fetch_stats_for_3s(client, record_id)
+    await fetch_stats_for_3s(client, record_id)
 
-    get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+    get_stats_response = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
     assert get_stats_response.status_code == 200
 
     response_data = get_stats_response.json()
@@ -288,58 +300,63 @@ def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mode):
     assert now - timedelta(seconds=3) < retrieved_datetime < now + timedelta(seconds=3)
 
 
-def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_get_stats_if_error(nope_logger_fixture, testing_app_local_chunking_no_consistency):
     async def _compute_stats_on_bulk_batch(n):
         if n % 2 == 0:
             raise Exception("test_get_stats_if_error")
 
-    tasks = [asyncio.get_event_loop().create_task(_compute_stats_on_bulk_batch(i)) for i in range(5)]
+    tasks = [_compute_stats_on_bulk_batch(i) for i in range(5)]
 
     with patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as bob:
         _, client = testing_app_local_chunking_no_consistency
         bob.return_value = tasks
 
-        valid_record_id = _create_record(client, 'WellLog')
-        post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
-        computation_response = _trigger_computation_on_record(client, valid_record_id, record_version=None)
+        valid_record_id = await _create_record(client, 'WellLog')
+        await post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
+        computation_response = await _trigger_computation_on_record(client, valid_record_id, record_version=None)
         assert computation_response.status_code == 200
 
-        response = fetch_stats_for_3s(client, valid_record_id)
+        response = await fetch_stats_for_3s(client, valid_record_id)
         assert response.status_code == 200
 
         response_data = response.json()
         assert response_data['computationStatus'] == BulkStatisticsStatus.Error
 
 
-def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_compute_stats_on_legacy_welllog(testing_app_local_chunking_no_consistency):
     # Simulate the creation of a WellLog before Statistics features is available
     with patch.object(BulkStatistics, 'compute_bulk_statistics') as bob:
         _, client = testing_app_local_chunking_no_consistency
 
-        record_id = _create_record(client, 'WellLog')
-        post_record_data(client, record_id, 'WellLog', ['int-A', 'string-B', 'bool-C', 'string-D'], range(1000))
+        record_id = await _create_record(client, 'WellLog')
+        await post_record_data(client, record_id, 'WellLog', ['int-A', 'string-B', 'bool-C', 'string-D'], range(1000))
 
-        asyncio.get_event_loop().run_until_complete(asyncio.sleep(2))
-        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+        # TODO uncomment when automatic stat computation is enabled again
+        #await anyio.sleep(2)
+
+        get_stats_response = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
         assert get_stats_response.text == '{"errorType":"DATA_NOT_FOUND","message":"Statistics do not exist"}'
         assert get_stats_response.status_code == 404
 
-    record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+    record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
     assert record_response.status_code == 200
     version = record_response.json()['version']
 
     # Then trigger computation manually at specific version
-    compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+    compute_stats_response = await client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert compute_stats_response.status_code == 200
 
-    fetch_stats_for_3s(client, record_id)
+    await fetch_stats_for_3s(client, record_id)
 
 
-def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consistency):
     async def _compute_stats_on_bulk_batch():
         raise Exception("test_get_stats_if_error")
 
-    task = asyncio.get_event_loop().create_task(_compute_stats_on_bulk_batch())
+    task = _compute_stats_on_bulk_batch()
 
     computation_retry_attempts = BulkStatistics._max_computation_retry_count
 
@@ -347,33 +364,34 @@ def test_trigger_computations_after_n_error(testing_app_local_chunking_no_consis
         _, client = testing_app_local_chunking_no_consistency
         bob.return_value = [task]
 
-        record_id = _create_record(client, 'WellLog')
-        post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
-        computation_response = _trigger_computation_on_record(client, record_id, record_version=None)
+        record_id = await _create_record(client, 'WellLog')
+        await post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
+        computation_response = await _trigger_computation_on_record(client, record_id, record_version=None)
         assert computation_response.status_code == 200
 
-        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+        get_stats_response = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
         assert get_stats_response.status_code == 200
         assert get_stats_response.json()['computationStatus'] == BulkStatisticsStatus.Error
 
-        record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+        record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
         version = record_response.json()['version']
 
-        # one try is already done after posting data "post_record_data(client, record_id, ['int-A'], range(10))"
+        # one try is already done after posting data "await post_record_data(client, record_id, ['int-A'], range(10))"
         for i in range(computation_retry_attempts - 1):
-            compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+            compute_stats_response = await client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
             assert compute_stats_response.status_code == 200
 
-            get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+            get_stats_response = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
             assert get_stats_response.status_code == 200
             assert get_stats_response.json()['computationStatus'] == BulkStatisticsStatus.Error
 
-        compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+        compute_stats_response = await client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
         assert compute_stats_response.status_code == 409, \
             f"After '{computation_retry_attempts}' retries, 409 should be returned"
 
 
-def test_trigger_computations_after_duration(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_trigger_computations_after_duration(testing_app_local_chunking_no_consistency):
     with patch.object(BulkStatistics, '_duration_before_recompute', new_callable=PropertyMock) \
             as computations_parameter:
         computations_parameter.return_value = timedelta(minutes=1)
@@ -382,54 +400,56 @@ def test_trigger_computations_after_duration(testing_app_local_chunking_no_consi
         # simulate something went wrong when posting new data
         with patch.object(BulkStatistics, 'trigger_stats_computation_in_dask') as mock_trigger_computation:
             mock_trigger_computation.side_effect = RuntimeError("test_trigger_computations_after_duration")
-            record_id = _create_record(client, 'WellLog')
-            post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
+            record_id = await _create_record(client, 'WellLog')
+            await post_record_data(client, record_id, 'WellLog', ['int-A'], range(10))
 
             with pytest.raises(RuntimeError):
-                _trigger_computation_on_record(client, record_id, record_version=None)
+                await _trigger_computation_on_record(client, record_id, record_version=None)
 
         # so stats data are not available
-        get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+        get_stats_response = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
         assert get_stats_response.status_code == 404
         assert get_stats_response.content == b'{"errorType":"COMPUTATION_NOT_COMPLETE",' \
                                              b'"message":"Statistics computation not finished yet"}'
 
-        record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+        record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
         version = record_response.json()['version']
 
         # Try to trigger computation several times, but `_duration_before_recompute` is not past yet => 409
         for i in range(4):
-            compute_stats_response = _trigger_computation_on_record(client, record_id, version)
+            compute_stats_response = await _trigger_computation_on_record(client, record_id, version)
             assert compute_stats_response.status_code == 409
 
-            get_stats_response = client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
+            get_stats_response = await client.get(f'/ddms/v3/welllogs/{record_id}/data/statistics')
             assert get_stats_response.status_code == 404
             assert get_stats_response.content == b'{"errorType":"COMPUTATION_NOT_COMPLETE",' \
                                                  b'"message":"Statistics computation not finished yet"}'
 
         # update on the fly the value of expected duration before re-computation, to simulate time is up
         computations_parameter.return_value = timedelta(milliseconds=1)
-        compute_stats_response = _trigger_computation_on_record(client, record_id, version)
+        compute_stats_response = await _trigger_computation_on_record(client, record_id, version)
         assert compute_stats_response.status_code == 200
 
 
-def test_get_stats_array(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_get_stats_array(testing_app_local_chunking_no_consistency):
     _, client = testing_app_local_chunking_no_consistency
 
-    record_id = _create_record(client, 'WellLog')
+    record_id = await _create_record(client, 'WellLog')
     array_cols = [f'ARRAY[{i}]' for i in range(10)]
-    _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
+    await _create_chunks(client, 'WellLog', record_id=record_id, cols_ranges=[(array_cols, range(20))])
 
-    compute_stats_response = _trigger_computation_on_record(client, record_id, record_version=None)
+    compute_stats_response = await _trigger_computation_on_record(client, record_id, record_version=None)
     assert compute_stats_response.status_code == 200
 
-    response = fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
+    response = await fetch_stats_for_3s(client, record_id, columns=['ARRAY'])
     assert response.status_code == 200
     df_result_df = create_df_from_dict(response)
     assert df_result_df.shape == (10, 9)
 
 
-def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_no_consistency):
 
     with patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
             as computations_parameter:
@@ -438,26 +458,26 @@ def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_
         with patch.object(BulkStatistics, '_check_recomputation_allowed') as recompute_check_mock:
             _, client = testing_app_local_chunking_no_consistency
 
-            record_id = _create_record(client, 'WellLog')
+            record_id = await _create_record(client, 'WellLog')
             columns = [f'ARRAY[{i}]' for i in range(100)]
-            post_record_data(client, record_id, 'WellLog', columns, range(100))
-            compute_stats_response = _trigger_computation_on_record(client, record_id, record_version=None)
+            await post_record_data(client, record_id, 'WellLog', columns, range(100))
+            compute_stats_response = await _trigger_computation_on_record(client, record_id, record_version=None)
             assert compute_stats_response.status_code == 200
 
-            get_stats_response = fetch_stats_for_3s(client, record_id)
+            get_stats_response = await fetch_stats_for_3s(client, record_id)
             df_result_df = create_df_from_dict(get_stats_response)
             assert df_result_df.shape == (len(columns), 9)
             assert natsorted(list(df_result_df.index)) == columns
 
-            record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+            record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
             version = record_response.json()['version']
 
             # remove check to trigger again the computation
             recompute_check_mock.return_value = True
-            recompute_stats_response = _trigger_computation_on_record(client, record_id, record_version=version)
+            recompute_stats_response = await _trigger_computation_on_record(client, record_id, record_version=version)
             assert recompute_stats_response.status_code == 200
 
-        response = fetch_stats_for_3s(client, record_id)
+        response = await fetch_stats_for_3s(client, record_id)
         assert response.status_code == 200
         result_df = create_df_from_dict(response)
         assert result_df.shape == (len(columns), 9)
@@ -469,53 +489,56 @@ def test_stats_data_duplication_after_re_computation(testing_app_local_chunking_
     "WellboreTrajectory",
     "Log",
 ])
-def test_stats_available_welllog_only_on_bulk_creation(testing_app_local_chunking_no_consistency, mode, entity_type):
+@pytest.mark.anyio
+async def test_stats_available_welllog_only_on_bulk_creation(testing_app_local_chunking_no_consistency, mode, entity_type):
     _, client = testing_app_local_chunking_no_consistency
 
     with patch.object(BulkStatistics, 'compute_bulk_statistics') as compute_stats_triggered_mock:
         # ensure BulkStatistics::compute_bulk_statistics() is not called which means that the dependency
         # `stats_computation_enabled: bool = Depends(statistics_computation_enabled)` work correctly.
 
-        record_id = _create_record(client, entity_type)
+        record_id = await _create_record(client, entity_type)
         if mode == 'chunking':
-            _create_chunks(client, entity_type, record_id=record_id, cols_ranges=[(['MD', 'X'], range(20))])
+            await _create_chunks(client, entity_type, record_id=record_id, cols_ranges=[(['MD', 'X'], range(20))])
         elif mode == 'all_at_once':
-            post_record_data(client, record_id, entity_type, ['MD', 'X'], range(20))
+            await post_record_data(client, record_id, entity_type, ['MD', 'X'], range(20))
 
-        get_stats_response = fetch_stats_for_3s(client, record_id, assert_if_failed=False)
+        get_stats_response = await fetch_stats_for_3s(client, record_id, assert_if_failed=False)
         assert get_stats_response.status_code == 422
         compute_stats_triggered_mock.assert_not_called()
 
 
 @pytest.mark.parametrize("entity_type", ["WellboreTrajectory", "Log"])
-def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunking_no_consistency, entity_type):
+@pytest.mark.anyio
+async def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunking_no_consistency, entity_type):
     _, client = testing_app_local_chunking_no_consistency
 
-    record_id = _create_record(client, entity_type)
-    post_record_data(client, record_id, entity_type, ['MD', 'X'], range(20))
+    record_id = await _create_record(client, entity_type)
+    await post_record_data(client, record_id, entity_type, ['MD', 'X'], range(20))
 
-    get_stats_response = fetch_stats_for_3s(client, record_id, assert_if_failed=False)
+    get_stats_response = await fetch_stats_for_3s(client, record_id, assert_if_failed=False)
     assert get_stats_response.status_code == 422
 
     entity_url = Definitions[entity_type]['base_url']
-    record_response = client.get(f'{entity_url}/{record_id}')
+    record_response = await client.get(f'{entity_url}/{record_id}')
     assert record_response.status_code == 200
     version = record_response.json()['version']
 
-    compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+    compute_stats_response = await client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
     assert compute_stats_response.status_code == 422
 
 
-def test_invalid_bulk_uri_cases(testing_app_local_chunking_no_consistency):
+@pytest.mark.anyio
+async def test_invalid_bulk_uri_cases(testing_app_local_chunking_no_consistency):
 
     with patch('app.bulk_persistence.bulk_uri.BulkURI.is_valid', return_value=False):
         _, client = testing_app_local_chunking_no_consistency
-        record_id = _create_record(client, 'WellLog')
+        record_id = await _create_record(client, 'WellLog')
 
-        record_response = client.get(f'/ddms/v3/welllogs/{record_id}')
+        record_response = await client.get(f'/ddms/v3/welllogs/{record_id}')
         assert record_response.status_code == 200
         version = record_response.json()['version']
 
-        compute_stats_response = client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
+        compute_stats_response = await client.post(f"/ddms/v3/welllogs/{record_id}/versions/{version}/data/statistics")
         assert compute_stats_response.status_code == 422
         assert compute_stats_response.json() == {"detail": "Record contains an invalid bulk URI"}

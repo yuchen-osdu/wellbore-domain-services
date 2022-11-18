@@ -50,14 +50,15 @@ def log_recognition_testing_setup(app_configurable_with_testclient):
     ('TRUESTRATIGRAPHICTHICKNESS1', 'ft',
      {"family": "Thickness", "family_type": ["Formation Geometry", "Rock Quality"], "log_unit": "ft", "base_unit": "ft"})
 ])
-def test_family_assignment_rules(log_recognition_testing_setup, label, unit, expected):
+@pytest.mark.anyio
+async def test_family_assignment_rules(log_recognition_testing_setup, label, unit, expected):
     client, mock_storage, _ = log_recognition_testing_setup
     mock_storage.configure_mock(**{
         'get_record.side_effect':
             UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND, reason_phrase="", content=None, headers=None)
     })
 
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": label,
                                  "log_unit": unit})
     assert response.status_code == status.HTTP_200_OK
@@ -65,19 +66,21 @@ def test_family_assignment_rules(log_recognition_testing_setup, label, unit, exp
     assert response_json == expected
 
 
-def test_family_assignment_rules_not_found(log_recognition_testing_setup):
+@pytest.mark.anyio
+async def test_family_assignment_rules_not_found(log_recognition_testing_setup):
     client, mock_storage, _ = log_recognition_testing_setup
     mock_storage.configure_mock(**{
         'get_record.side_effect':
             UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND, reason_phrase="", content=None, headers=None)
     })
 
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": "unknown", "log_unit": ""})
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_upload_good_catalog(log_recognition_testing_setup):
+@pytest.mark.anyio
+async def test_upload_good_catalog(log_recognition_testing_setup):
     good_catalog = {
         "data": {
             "family_catalog": [{"unit": "f", "family": "fake family", "rule": "FF"},
@@ -111,7 +114,7 @@ def test_upload_good_catalog(log_recognition_testing_setup):
         'create_or_update_records.return_value': expected_response
     })
 
-    response = client.put("/log-recognition/upload-catalog", json=good_catalog)
+    response = await client.put("/log-recognition/upload-catalog", json=good_catalog)
     assert response.status_code == status.HTTP_200_OK
     assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
 
@@ -128,7 +131,8 @@ def test_upload_good_catalog(log_recognition_testing_setup):
     ('DTC', 'us/cm', status.HTTP_200_OK,
      {'family': 'Compressional Slowness', 'family_type': ['Slowness'], 'log_unit': 'us/cm', 'base_unit': 'us/ft'})
 ])
-def test_family_assignment_rules_custom(log_recognition_testing_setup, label, unit, code, expected):
+@pytest.mark.anyio
+async def test_family_assignment_rules_custom(log_recognition_testing_setup, label, unit, code, expected):
     record_obj = m.Record(
         data={
             "family_catalog": [
@@ -152,7 +156,7 @@ def test_family_assignment_rules_custom(log_recognition_testing_setup, label, un
         'get_record.return_value': record_obj
     })
 
-    response = client.post("/log-recognition/family", json={"label": label, "log_unit": unit})
+    response = await client.post("/log-recognition/family", json={"label": label, "log_unit": unit})
 
     assert response.status_code == code
     if code == status.HTTP_200_OK:
@@ -165,14 +169,15 @@ def test_family_assignment_rules_custom(log_recognition_testing_setup, label, un
     ('DTC', 'us/cm', status.HTTP_200_OK,
      {'family': 'Compressional Slowness', 'family_type': ['Slowness'], 'log_unit': 'us/cm', 'base_unit': 'us/ft'})
 ])
-def test_family_assignment_rules_custom_catalog_not_found(log_recognition_testing_setup, label, unit, code, expected):
+@pytest.mark.anyio
+async def test_family_assignment_rules_custom_catalog_not_found(log_recognition_testing_setup, label, unit, code, expected):
     client, mock_storage, _ = log_recognition_testing_setup
     mock_storage.configure_mock(**{
         'get_record.side_effect':
             UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND, reason_phrase="", content=None, headers=None)
     })
 
-    response = client.post("/log-recognition/family", json={"label": label, "log_unit": unit})
+    response = await client.post("/log-recognition/family", json={"label": label, "log_unit": unit})
 
     assert response.status_code == code
     if code == status.HTTP_200_OK:
@@ -180,7 +185,8 @@ def test_family_assignment_rules_custom_catalog_not_found(log_recognition_testin
         assert response_json == expected
 
 
-def test_failing_storage(log_recognition_testing_setup):
+@pytest.mark.anyio
+async def test_failing_storage(log_recognition_testing_setup):
     unexpected_response = UnexpectedResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                              reason_phrase="", content=b'content', headers=None)
     client, mock_storage, _ = log_recognition_testing_setup
@@ -188,11 +194,12 @@ def test_failing_storage(log_recognition_testing_setup):
         'get_record.side_effect': unexpected_response
     })
 
-    response = client.post("/log-recognition/family", json={"label": "MD", "log_unit": "M"})
+    response = await client.post("/log-recognition/family", json={"label": "MD", "log_unit": "M"})
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
-def test_unvalidate_catalogs(log_recognition_testing_setup):
+@pytest.mark.anyio
+async def test_unvalidate_catalogs(log_recognition_testing_setup):
     record_obj = m.Record(
         data={
             "family_catalog": [{"unit": "f", "family": "fake family", "rule": "FF"},
@@ -214,13 +221,13 @@ def test_unvalidate_catalogs(log_recognition_testing_setup):
     family_processor_manager._catalog_lifetime = 1000
 
     mock_storage.get_record.assert_not_called()
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": "FF",
                                  "log_unit": "f"})
     assert response.status_code == status.HTTP_200_OK
     assert mock_storage.get_record.call_count == 1
 
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": "FF",
                                  "log_unit": "f"})
     assert response.status_code == status.HTTP_200_OK
@@ -230,34 +237,35 @@ def test_unvalidate_catalogs(log_recognition_testing_setup):
     family_processor_manager._catalog_lifetime = 1
     # Sorry we need to sleep 1 second
     time.sleep(1)
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": "FF",
                                  "log_unit": "f"})
     assert response.status_code == status.HTTP_200_OK
     assert mock_storage.get_record.call_count == 2
 
     time.sleep(1)
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": "FF",
                                  "log_unit": "f"})
     assert response.status_code == status.HTTP_200_OK
     assert mock_storage.get_record.call_count == 3
 
 
-def test_invalidate_default_catalogs(log_recognition_testing_setup):
+@pytest.mark.anyio
+async def test_invalidate_default_catalogs(log_recognition_testing_setup):
     client, mock_storage, family_processor_manager = log_recognition_testing_setup
     mock_storage.configure_mock(**{
         'get_record.side_effect':
             UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND, reason_phrase="", content=None, headers=None)
     })
 
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": "GR",
                                  "log_unit": "gApi"})
     assert response.status_code == status.HTTP_200_OK
     assert mock_storage.get_record.call_count == 1
 
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": "GR",
                                  "log_unit": "gApi"})
     assert response.status_code == status.HTTP_200_OK
@@ -265,14 +273,15 @@ def test_invalidate_default_catalogs(log_recognition_testing_setup):
 
     family_processor_manager._catalog_lifetime = 1
     time.sleep(1)
-    response = client.post("/log-recognition/family",
+    response = await client.post("/log-recognition/family",
                            json={"label": "GR",
                                  "log_unit": "gApi"})
     assert response.status_code == status.HTTP_200_OK
     assert mock_storage.get_record.call_count == 2  # catalog_lifetime exceeded, one more call to DE expected
 
 
-def test_no_catalog(log_recognition_testing_setup):
+@pytest.mark.anyio
+async def test_no_catalog(log_recognition_testing_setup):
     record_obj = m.Record(
         data={
             "main_family_catalog": [{"MainFamily": "Fake", "Family": "fake family", "Unit": "ef"},
@@ -287,11 +296,12 @@ def test_no_catalog(log_recognition_testing_setup):
         'get_record.return_value': record_obj
     })
 
-    response = client.post("/log-recognition/family", json={"label": "MD", "log_unit": "m"})
+    response = await client.post("/log-recognition/family", json={"label": "MD", "log_unit": "m"})
     assert response.status_code == status.HTTP_200_OK
 
 
-def test_no_main_family_catalog(log_recognition_testing_setup):
+@pytest.mark.anyio
+async def test_no_main_family_catalog(log_recognition_testing_setup):
     record_obj = m.Record(
         data={
             "family_catalog": [{"unit": "f", "family": "fake family", "rule": "FF"},
@@ -306,7 +316,7 @@ def test_no_main_family_catalog(log_recognition_testing_setup):
         'get_record.return_value': record_obj
     })
 
-    response = client.post("/log-recognition/family", json={"label": "OF", "log_unit": "g"})
+    response = await client.post("/log-recognition/family", json={"label": "OF", "log_unit": "g"})
     assert response.status_code == status.HTTP_200_OK
     response_json = response.json()
     assert response_json == {"family": "other fake family", "family_type": None, "log_unit": "g", "base_unit": None}

@@ -42,14 +42,15 @@ def build_url(path: str):
     return DDMS_V2_PATH + path
 
 
-def test_about_call_creates_correlation_id_if_absent(app_configurable_with_testclient):
+@pytest.mark.anyio
+async def test_about_call_creates_correlation_id_if_absent(app_configurable_with_testclient):
     app, client_after_startup = app_configurable_with_testclient(
         trace_exporter=ExporterInTest(),
         fake_opendes_authorized_user=False
     )
 
     # no header -> works fine
-    response = client_after_startup.get(build_url("/about"))
+    response = await client_after_startup.get(build_url("/about"))
     assert response.status_code == 200
 
     # one call was exported, with correlation-id
@@ -59,14 +60,15 @@ def test_about_call_creates_correlation_id_if_absent(app_configurable_with_testc
     assert spandata.attributes["correlation-id"] is not None
 
 
-def test_about_call_traces_existing_correlation_id(app_configurable_with_testclient):
+@pytest.mark.anyio
+async def test_about_call_traces_existing_correlation_id(app_configurable_with_testclient):
     app, client_after_startup = app_configurable_with_testclient(
         trace_exporter=ExporterInTest(),
         fake_opendes_authorized_user=False
     )
 
     # no header -> works fine
-    response = client_after_startup.get(
+    response = await client_after_startup.get(
         build_url("/about"), headers={"correlation-id": "some correlation id"}
     )
     assert response.status_code == 200
@@ -78,15 +80,16 @@ def test_about_call_traces_existing_correlation_id(app_configurable_with_testcli
     assert spandata.attributes["correlation-id"] == "some correlation id"
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize("header_name", ["x-app-id", "data-partition-id"])
-def test_about_call_traces_request_header(app_configurable_with_testclient, header_name):
+async def test_about_call_traces_request_header(app_configurable_with_testclient, header_name):
     app, client_after_startup = app_configurable_with_testclient(
         trace_exporter=ExporterInTest(),
         fake_opendes_authorized_user=False
     )
 
     # no header -> works fine
-    response = client_after_startup.get(build_url("/about"))
+    response = await client_after_startup.get(build_url("/about"))
     assert response.status_code == 200
 
     # one call was exported, without header
@@ -96,7 +99,7 @@ def test_about_call_traces_request_header(app_configurable_with_testclient, head
     assert spandata.attributes[header_name] is None
 
     # with header -> works as well
-    client_after_startup.get(build_url("/about"), headers={header_name: "some value"})
+    await client_after_startup.get(build_url("/about"), headers={header_name: "some value"})
     assert response.status_code == 200
 
     # a second call was exported, with header
@@ -106,9 +109,10 @@ def test_about_call_traces_request_header(app_configurable_with_testclient, head
     assert spandata.attributes[header_name] == "some value"
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize("well_record_data_fixture", ["well_v3_record_list", "well_v3_110_record_list"])
 @pytest.mark.slow
-def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_holding_data, well_v2_record_list,
+async def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_holding_data, well_v2_record_list,
                         well_record_data_fixture, request):
     well_record_data = request.getfixturevalue(well_record_data_fixture)
     # empty storage client mock required because we use get_record result in route.
@@ -142,7 +146,7 @@ def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_ho
     call_count = 0
 
     # startup event has been called (client has been called in a context), so all routers should be mounted
-    for method, path in gen_all_routes_request(client_after_startup.app):
+    for method, path in gen_all_routes_request(app):
 
         # skip routes created on app instantiation
         # which are known to not have a trace
@@ -158,14 +162,14 @@ def test_call_trace_url(app_configurable_with_testclient, mock_storage_client_ho
         call_count += 1
 
         # Note : most of these will fail because of authentication -> we do not need to mock complex behaviour
-        resp = client_after_startup.request(method=method, url=path_with_id)
+        resp = await client_after_startup.request(method=method, url=path_with_id)
         print(f"{path_with_id} -> {resp.status_code}")
 
         # one call was exported
         assert (
-            len(client_after_startup.app.trace_exporter.exported) == call_count
+            len(app.trace_exporter.exported) == call_count
         )  # one call => one export
-        spandata = client_after_startup.app.trace_exporter.exported[call_count - 1]
+        spandata = app.trace_exporter.exported[call_count - 1]
 
         # with expected name and route
         assert spandata.name == path_with_id

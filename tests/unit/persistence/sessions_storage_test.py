@@ -46,7 +46,7 @@ def testing_tenant() -> Tenant:
     return Tenant(project_id='p', bucket_name='b', data_partition_id='d')
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("mode, meta, internal", [
     (SessionUpdateMode.Overwrite, {'custom1': 'value1'}, {'internal1': 1337}),
     (SessionUpdateMode.Update, None, None),
@@ -67,7 +67,7 @@ async def test_create_session(sessions_storage, mode, meta, internal):
     assert new_session.internal == internal
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_create_get(sessions_storage, testing_tenant):
     internal_details = {"key_str": "str", "key_int": 123}
 
@@ -87,7 +87,7 @@ async def test_session_create_get(sessions_storage, testing_tenant):
     assert internal_session == session_actual
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_multiple_session(sessions_storage, testing_tenant):
     s1 = await sessions_storage.create_session(testing_tenant, '123', 456, 5, SessionUpdateMode.Update)
     s2 = await sessions_storage.create_session(testing_tenant, '123', 456, 5, SessionUpdateMode.Update)
@@ -97,7 +97,7 @@ async def test_multiple_session(sessions_storage, testing_tenant):
     assert str(s1.session.id) in session_ids
     assert str(s2.session.id) in session_ids
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_error_during_commit_should_reset_state(sessions_storage, testing_tenant):
 
     my_session = await sessions_storage.create_session(testing_tenant, '123', 456, 5, SessionUpdateMode.Update)
@@ -113,7 +113,7 @@ async def test_error_during_commit_should_reset_state(sessions_storage, testing_
     assert my_session.session.state == SessionState.Open
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_commit_session(sessions_storage, testing_tenant):
     my_session = await sessions_storage.create_session(testing_tenant, '123', 456, 5, SessionUpdateMode.Update)
 
@@ -124,7 +124,7 @@ async def test_commit_session(sessions_storage, testing_tenant):
     assert my_session.session.state == SessionState.Committed
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_abandon_session(sessions_storage, testing_tenant):
     my_session = await sessions_storage.create_session(testing_tenant, '123', 456, 5, SessionUpdateMode.Update)
 
@@ -135,7 +135,7 @@ async def test_abandon_session(sessions_storage, testing_tenant):
     assert my_session.session.state == SessionState.Abandoned
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_error_during_abandon_should_reset_state(sessions_storage, testing_tenant):
 
     my_session = await sessions_storage.create_session(testing_tenant, '123', 456, 5, SessionUpdateMode.Update)
@@ -151,7 +151,7 @@ async def test_error_during_abandon_should_reset_state(sessions_storage, testing
     assert my_session.session.state == SessionState.Open
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_session(sessions_storage, testing_tenant):
     internal_details = {"key_str": "str", "key_int": 123}
 
@@ -175,7 +175,7 @@ async def test_update_session(sessions_storage, testing_tenant):
     assert s3.session.state == SessionState.Committed
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_session(sessions_storage, testing_tenant):
     s1 = await sessions_storage.create_session(testing_tenant, '456', 456, 5, SessionUpdateMode.Update)
     s2 = await sessions_storage.create_session(testing_tenant, '456', 456, 5, SessionUpdateMode.Update)
@@ -190,7 +190,7 @@ async def test_delete_session(sessions_storage, testing_tenant):
 
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_list_session(sessions_storage):
     tenant = Tenant(data_partition_id='dp', project_id='prj', bucket_name='bck')
 
@@ -217,7 +217,7 @@ async def test_get_list_session(sessions_storage):
     assert session_list == [str(session3.session.id)]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_raising_not_found(sessions_storage):
     tenant = Tenant(data_partition_id='dp', project_id='prj', bucket_name='bck')
 
@@ -243,7 +243,7 @@ async def test_raising_not_found(sessions_storage):
         await sessions_storage.get_session(tenant, '123', existing.session.id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_a_session(sessions_storage):
     tenant = Tenant(data_partition_id='dp', project_id='prj', bucket_name='bck')
     initial = await sessions_storage.create_session(tenant, '123', 0, 60, SessionUpdateMode.Update)
@@ -266,7 +266,7 @@ async def test_update_a_session(sessions_storage):
     assert actual.session.updatedTime > initial.session.updatedTime
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("commit, intermediate_state, final_state", [
     (False, SessionState.Abandoning, SessionState.Abandoned),
     (True, SessionState.Committing, SessionState.Committed)])
@@ -282,7 +282,7 @@ async def test_complete_session_success(sessions_storage, commit, intermediate_s
     assert session.session.state == final_state
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("commit", [False, True])
 @pytest.mark.parametrize("commit2", [False, True])
 async def test_cannot_initiate_completion_invalid_state(sessions_storage, commit, commit2):
@@ -302,7 +302,7 @@ async def test_cannot_initiate_completion_invalid_state(sessions_storage, commit
             pass
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("commit", [False, True])
 async def test_in_case_of_failure_should_rollback_state(sessions_storage, commit):
     tenant = Tenant(data_partition_id='dp', project_id='prj', bucket_name='bck')
@@ -325,7 +325,7 @@ async def test_in_case_of_failure_should_rollback_state(sessions_storage, commit
     assert actual.session.is_closed
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_open_session_should_fail(sessions_storage):
     tenant = Tenant(data_partition_id='dp', project_id='prj', bucket_name='bck')
     session_internal = await sessions_storage.create_session(tenant, '123', 0, 60, SessionUpdateMode.Update)
@@ -334,7 +334,7 @@ async def test_delete_open_session_should_fail(sessions_storage):
         await sessions_storage.delete_session(tenant, '123', session_internal.session.id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("commit, final_state", [
     (False, SessionState.Abandoned),
     (True, SessionState.Committed)])
@@ -377,7 +377,7 @@ async def test_disaster_case_recovery(sessions_storage, commit, final_state):
     assert actual.session.state == final_state
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_http_exception_from_not_found(sessions_storage):
     @SessionsStorage.raise_http_exception
     async def _inner():
@@ -391,7 +391,7 @@ async def test_http_exception_from_not_found(sessions_storage):
     assert ex.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_http_exception_from_invalid_state(sessions_storage):
     @SessionsStorage.raise_http_exception
     async def _inner():
@@ -408,7 +408,7 @@ async def test_http_exception_from_invalid_state(sessions_storage):
     assert ex.status_code == 409
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_http_exception_from_etag_unmatched(sessions_storage):
     @SessionsStorage.raise_http_exception
     async def _inner():
@@ -421,7 +421,7 @@ async def test_http_exception_from_etag_unmatched(sessions_storage):
     assert ex.status_code == 412
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_http_exception_raw(sessions_storage):
     @SessionsStorage.raise_http_exception
     async def _inner():

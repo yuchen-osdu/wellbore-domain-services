@@ -21,37 +21,37 @@ record = {
 }
 
 
-def _create_record(client, data):
+async def _create_record(client, data):
     record["data"] = data
-    response = client.post("/ddms/v3/welllogs", json=[record])
+    response = await client.post("/ddms/v3/welllogs", json=[record])
     assert response.status_code == 200
     record_id = response.json()["recordIds"][0]
     return record_id
 
 
-def _post_data(client, record_id, data):
-    return client.post(
+async def _post_data(client, record_id, data):
+    return await client.post(
         url=f"/ddms/v3/welllogs/{record_id}/data",
         json=data,
         headers={"content-type": "application/json"},
     )
 
 
-def _create_session(client, record_id):
-    response = client.post(f"/ddms/v3/welllogs/{record_id}/sessions", json={"mode": "overwrite"})
+async def _create_session(client, record_id):
+    response = await client.post(f"/ddms/v3/welllogs/{record_id}/sessions", json={"mode": "overwrite"})
     assert response.status_code == 200
     session_id = response.json()["id"]
     return session_id
 
 
-def _post_chunk(client, record_id, session_id, data):
-    response = client.post(f"/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data", json=data)
+async def _post_chunk(client, record_id, session_id, data):
+    response = await client.post(f"/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data", json=data)
 
     return response
 
 
-def _commit_session(client, record_id, session_id):
-    response = client.patch(f"/ddms/v3/welllogs/{record_id}/sessions/{session_id}", json={"state": "commit"})
+async def _commit_session(client, record_id, session_id):
+    response = await client.patch(f"/ddms/v3/welllogs/{record_id}/sessions/{session_id}", json={"state": "commit"})
     return response
 
 
@@ -168,21 +168,23 @@ test_param.append(
 
 
 @pytest.mark.parametrize("welllog_data, bulk_data", test_param)
-def test_post_consistent_bulk(dasked_test_app_client, welllog_data, bulk_data):
-    wid = _create_record(client=dasked_test_app_client, data=welllog_data)
-    response = _post_data(client=dasked_test_app_client, record_id=wid, data=bulk_data)
+@pytest.mark.anyio
+async def test_post_consistent_bulk(dasked_test_app_client, welllog_data, bulk_data):
+    wid = await _create_record(client=dasked_test_app_client, data=welllog_data)
+    response = await _post_data(client=dasked_test_app_client, record_id=wid, data=bulk_data)
     assert response.status_code == 200
 
 
 @pytest.mark.parametrize("welllog_data, bulk_data", test_param)
-def test_post_consistent_chunk(dasked_test_app_client, welllog_data, bulk_data):
-    wid = _create_record(dasked_test_app_client, welllog_data)
-    session_id = _create_session(dasked_test_app_client, wid)
+@pytest.mark.anyio
+async def test_post_consistent_chunk(dasked_test_app_client, welllog_data, bulk_data):
+    wid = await _create_record(dasked_test_app_client, welllog_data)
+    session_id = await _create_session(dasked_test_app_client, wid)
 
-    response = _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
+    response = await _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
     assert response.status_code == 200
 
-    response = _commit_session(dasked_test_app_client, wid, session_id)
+    response = await _commit_session(dasked_test_app_client, wid, session_id)
     assert response.status_code == 200
 
 
@@ -246,31 +248,33 @@ inconsistent_test_params = [
 
 @pytest.mark.parametrize("wrong_log_curve_family", [{"LogCurveFamilyID": ""}, {"LogCurveFamilyID": "TEST"}])
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns)
-def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_wrong_log_curve_family(dasked_test_app_client, welllog_data,
+@pytest.mark.anyio
+async def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_wrong_log_curve_family(dasked_test_app_client, welllog_data,
                                                                                   bulk_data, err, wrong_log_curve_family):
     # because accessing to welllog_data modifies the value for next tests
     my_welllog_data = copy.deepcopy(welllog_data)
     my_welllog_data["Curves"][0].update(wrong_log_curve_family)
     record["data"] = my_welllog_data
-    response = dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
+    response = await dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
 
     assert response.status_code == 422
 
 
 @pytest.mark.parametrize("no_log_curve_family", [{"LogCurveFamilyID": None}, {}])
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns  )
-def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_no_log_curve_family(dasked_test_app_client, welllog_data,
+@pytest.mark.anyio
+async def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_no_log_curve_family(dasked_test_app_client, welllog_data,
                                                                                   bulk_data, err, no_log_curve_family):
     # because accessing to welllog_data modifies the value for next tests
     my_welllog_data = copy.deepcopy(welllog_data)
     my_welllog_data["Curves"][0].update(no_log_curve_family)
     record["data"] = my_welllog_data
-    response = dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
+    response = await dasked_test_app_client.post("/ddms/v3/welllogs", json=[record])
 
     assert response.status_code == 200
     wid = response.json()["recordIds"][0]
 
-    response = _post_data(dasked_test_app_client, wid, bulk_data)
+    response = await _post_data(dasked_test_app_client, wid, bulk_data)
 
     assert response.status_code == 400
     computed = response.json()["detail"]
@@ -281,21 +285,23 @@ def test_post_inconsistent_whole_bulk_column_unmatch_curve_id_no_log_curve_famil
 
 
 @pytest.mark.parametrize("welllog_data, bulk_data, _", inconsistent_test_params)
-def test_post_inconsistent_whole_bulk_without_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, _):
-    wid = _create_record(dasked_test_app_client, welllog_data)
-    response = _post_data(dasked_test_app_client, wid, bulk_data)
+@pytest.mark.anyio
+async def test_post_inconsistent_whole_bulk_without_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, _):
+    wid = await _create_record(dasked_test_app_client, welllog_data)
+    response = await _post_data(dasked_test_app_client, wid, bulk_data)
 
     assert response.status_code == 200
 
 
 @pytest.mark.parametrize("welllog_data, bulk_data, err",
                          inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns + inconsistent_test_params)
-def test_post_inconsistent_whole_bulk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
+@pytest.mark.anyio
+async def test_post_inconsistent_whole_bulk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
     # because accessing to welllog_data modifies the value for next tests
     my_welllog_data = copy.deepcopy(welllog_data)
     my_welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
-    wid = _create_record(dasked_test_app_client, my_welllog_data)
-    response = _post_data(dasked_test_app_client, wid, bulk_data)
+    wid = await _create_record(dasked_test_app_client, my_welllog_data)
+    response = await _post_data(dasked_test_app_client, wid, bulk_data)
 
     assert response.status_code == 400
     computed = response.json()["detail"]
@@ -306,17 +312,18 @@ def test_post_inconsistent_whole_bulk_with_log_curve_family(dasked_test_app_clie
 
 
 @pytest.mark.parametrize("welllog_data, bulk_data, err", inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns + inconsistent_test_params)
-def test_post_inconsistent_chunk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
+@pytest.mark.anyio
+async def test_post_inconsistent_chunk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
     # because accessing to welllog_data modifies the value for next tests
     my_welllog_data = copy.deepcopy(welllog_data)
     my_welllog_data["Curves"][0]["LogCurveFamilyID"] = "osdu:reference-data--LogCurveFamily:Measured%20Depth:"
-    wid = _create_record(dasked_test_app_client, my_welllog_data)
-    session_id = _create_session(dasked_test_app_client, wid)
+    wid = await _create_record(dasked_test_app_client, my_welllog_data)
+    session_id = await _create_session(dasked_test_app_client, wid)
 
-    response = _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
+    response = await _post_chunk(dasked_test_app_client, wid, session_id, bulk_data)
     assert response.status_code == 200
 
-    response = _commit_session(dasked_test_app_client, wid, session_id)
+    response = await _commit_session(dasked_test_app_client, wid, session_id)
     assert response.status_code == 400
     computed = response.json()["detail"]
     pattern = re.compile(err)

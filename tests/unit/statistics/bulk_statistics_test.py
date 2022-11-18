@@ -181,7 +181,7 @@ def _bulk_stats_columns_if_date_type_only() -> List[str]:
     return columns
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("cols_name_by_index, returned_curves_count, expected_cols", [
     (
             # check common type of data types => check only integer, float and date are compatible.
@@ -231,7 +231,7 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
     assert now - timedelta(seconds=3) < stats_meta.computation_start_datetime < now + timedelta(seconds=3)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("cols_name_by_index, expected_shape", [
     (
             [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))],
@@ -265,7 +265,7 @@ async def test_bulk_statistics_get_statistics_invalid_cols(bulk_stats_fixture, c
     assert result_df_1.empty
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("cols_name_by_index, expected_shape", [
     (
             [(['int-A', 'float-B', 'date-C', 'bool-D', 'string-E'], range(500))],
@@ -294,7 +294,7 @@ async def test_bulk_statistics_get_statistics_mix_requested_cols(bulk_stats_fixt
     assert result_df_2.index == [computable_cols[0]]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("cols_name_by_index, expected_shape", [
     (
             [(['int-A-nan', 'float-B', 'date-C-nan', 'bool-D', 'string-E'], range(500))],
@@ -325,7 +325,7 @@ async def test_bulk_statistics_nan_columns(bulk_stats_fixture, cols_name_by_inde
     assert total_count > non_absent_values_count
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.statistics
 @pytest.mark.perf
 @pytest.mark.skip("This test if skipped for unit testing, it should be run for performances instead")
@@ -353,8 +353,8 @@ async def test_bulk_statistics_acoustic_data(bulk_stats_fixture):
     df_stats, stats_meta = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_uri, columns=None)
     assert df_stats.shape == (columns_count, len(_bulk_stats_columns()))
 
-
-@pytest.mark.asyncio
+import anyio
+@pytest.mark.anyio
 async def test_trigger_computations_after_error(bulk_stats_fixture):
 
     async def _compute_stats_on_bulk_batch(n):
@@ -381,7 +381,7 @@ async def test_trigger_computations_after_error(bulk_stats_fixture):
             await bulk_statistics.compute_bulk_statistics(record_id, bulk_uri, record_version=123456)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_computations_values(bulk_stats_fixture):
     with mock.patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
             as computations_parameter:
@@ -428,7 +428,7 @@ async def test_computations_values(bulk_stats_fixture):
         pd.testing.assert_frame_equal(stats_df, expected_stats_df, check_like=True)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_computations_not_computable_values(bulk_stats_fixture):
     with mock.patch.object(BulkStatistics, '_max_cols_per_batch', new_callable=PropertyMock) \
             as computations_parameter:

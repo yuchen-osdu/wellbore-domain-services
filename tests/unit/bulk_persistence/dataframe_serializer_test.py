@@ -134,7 +134,7 @@ def test_to_json_str_various_orient(data_dict, orient):
     assert actual_dict == data_dict
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_back_forth_async_serializer():
     import concurrent.futures
     executor = concurrent.futures.ThreadPoolExecutor(1)

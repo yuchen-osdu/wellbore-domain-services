@@ -9,7 +9,7 @@ from tests.unit.test_utils import ctx_fixture
 from app.helper import traces
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_config,
                                                                  httpx_mock: HTTPXMock,
                                                                  ctx_fixture,
@@ -27,7 +27,7 @@ async def test_fwd_correlation_id_to_outgoing_request_to_storage(local_dev_confi
         assert response is not None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fwd_correlation_id_to_outgoing_request_to_search(local_dev_config,
                                                                 httpx_mock: HTTPXMock,
                                                                 ctx_fixture,
@@ -52,8 +52,8 @@ def non_mocked_hosts() -> list:
     return [TEST_CLIENT_HOST]
 
 
-
-def test_outgoing_tracing_headers_with_incoming_headers(
+@pytest.mark.anyio
+async def test_outgoing_tracing_headers_with_incoming_headers(
         local_dev_config, app_configurable_with_testclient, httpx_mock, non_mocked_hosts):
 
     app, client = app_configurable_with_testclient(
@@ -91,11 +91,12 @@ def test_outgoing_tracing_headers_with_incoming_headers(
         url="https://test-endpoint/api/storage/v2/records/123456:delete"
     )
 
-    response = client.delete(f'/ddms/v2/logs/123456', headers=input_headers)
+    response = await client.delete(f'/ddms/v2/logs/123456', headers=input_headers)
     assert response.status_code == 204
 
 
-def test_outgoing_tracing_headers_without_headers(local_dev_config, app_configurable_with_testclient, httpx_mock):
+@pytest.mark.anyio
+async def test_outgoing_tracing_headers_without_headers(local_dev_config, app_configurable_with_testclient, httpx_mock):
 
     app, client = app_configurable_with_testclient(
         storage_client_mock=make_storage_record_client(host=local_dev_config.service_host_storage.value,
@@ -123,5 +124,5 @@ def test_outgoing_tracing_headers_without_headers(local_dev_config, app_configur
         url="https://test-endpoint/api/storage/v2/records/123456:delete"
     )
 
-    response = client.delete('/ddms/v2/logs/123456')
+    response = await client.delete('/ddms/v2/logs/123456')
     assert response.status_code == 204

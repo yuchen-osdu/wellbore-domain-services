@@ -20,7 +20,7 @@ from app.context import get_ctx, Context
 from app.utils import OpenApiHandler
 from app.helper.traces import with_trace
 from app.bulk_persistence import BulkReadFilterOperator, BulkReadFilters, GetDataParams, DataframeDescribe
-from app.bulk_persistence.dataframe_columns import get_array_columns, match_full_slice_pattern, select_columns
+from app.bulk_persistence.dataframe_columns import select_columns
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 
 from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks, TrajectoryDataConsistencyChecks

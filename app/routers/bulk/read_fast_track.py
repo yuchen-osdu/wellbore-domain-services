@@ -1,5 +1,6 @@
 from typing import Optional, Set, Tuple
 import asyncio
+import anyio
 from io import BytesIO
 
 import pandas as pd
@@ -34,7 +35,7 @@ class ReadFastTrackCaseNotSupportedException(Exception):
 MAX_COLUMNS_COUNT = 3_000  # restrict to max 3 000 columns
 MAX_TOTAL_VALUES_COUNT_FILTERED = 5_000_000  # restrict to max 5M values at once (~50MB in parquet)
 MAX_TOTAL_VALUES_COUNT_UNFILTERED = 20_000_000  # restrict to max 20M values at once (~200MB in parquet)
-LOAD_DATAFRAME_SEMAPHORE = asyncio.Semaphore(100)  # semaphore to not overwhelm the service
+LOAD_DATAFRAME_SEMAPHORE = anyio.Semaphore(100)  # semaphore to not overwhelm the service
 
 # thresholds for which dataframe is serialized in parquet in a thread
 MAX_COLUMNS_DIRECT_PARQUET = 200

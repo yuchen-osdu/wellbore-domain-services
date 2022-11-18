@@ -51,7 +51,7 @@ class AppInjectorModuleTesting(AppInjectorModule):
         injector.register(A, self.coro)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_app_injector2():
     injector = AppInjector()
 
@@ -63,7 +63,7 @@ async def test_app_injector2():
     print(obj)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_app_injector():
     injector = AppInjector()
 
@@ -75,14 +75,14 @@ async def test_app_injector():
     assert instance.foo() == B().foo()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_app_injector_known_should_raise():
     with pytest.raises(Exception):
         injector = AppInjector()
         await injector.get(A)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_app_injector_module():
     injector = AppInjector()
     AppInjectorModuleTesting(builder_b).configure(injector)
@@ -94,7 +94,7 @@ async def test_app_injector_module():
     assert instance.foo() == 'my_value'
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_app_injector_lifetime():
     class Inner:
         def __init__(self):
