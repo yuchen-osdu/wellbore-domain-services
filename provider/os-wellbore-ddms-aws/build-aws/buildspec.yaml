@@ -34,6 +34,10 @@ phases:
       - unzip -q ./sonar-scanner-cli-4.6.2.2472.zip
       - pip install safety
       # Install git secrets
+      #TODO temporarily adding hotfix, due to https://github.com/awslabs/git-secrets/issues/220
+      - export SAY_LOCATION=`ln -s "$(which echo)" say`
+      - export PATH="$PATH:$SAY_LOCATION"
+
       - git clone https://github.com/awslabs/git-secrets.git
       - cd git-secrets && make install && cd ..
       - git secrets --install && git secrets --register-aws
@@ -74,7 +78,7 @@ phases:
         java -jar sonar-scanner-4.6.2.2472/lib/sonar-scanner-cli-4.6.2.2472.jar -Dsonar.projectKey=wellbore-ddms -Dsonar.host.url=${SONAR_URL} \
           -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME}
       
-      - safety check -r requirements.txt -r requirements_dev.txt -o safety_check.txt; EXITCODE=$?
+      - safety check -r requirements.txt -r requirements_dev.txt -o text > safety_check.txt; EXITCODE=$?
       
       - echo "Logging into Docker Hub..."
       - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
