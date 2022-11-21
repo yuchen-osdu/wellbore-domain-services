@@ -21,7 +21,7 @@ opencensus-ext-ocagent
 opencensus-ext-logging
 
 # for chunking feature
-dask[distributed]==2022.10.2
+dask[distributed]==2022.4.1
 fsspec>=2022.10.0
 adlfs==2022.10.0
 s3fs==2022.10.0
