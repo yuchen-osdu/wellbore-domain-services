@@ -111,7 +111,6 @@ charset-normalizer==2.0.3
 click==8.0.1
     # via
     #   -r requirements.in
-    #   dask
     #   distributed
     #   uvicorn
 cloudpickle==1.6.0
@@ -129,7 +128,7 @@ cryptography==3.4.7
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
     #   pyjwt
-dask[distributed]==2022.10.2
+dask[distributed]==2022.4.1
     # via
     #   -r requirements.in
     #   distributed
@@ -137,7 +136,7 @@ decorator==5.0.9
     # via
     #   gcsfs
     #   jsonpath-ng
-distributed==2022.10.2
+distributed==2022.04.1
     # via dask
 fastapi==0.70.0
     # via
@@ -232,9 +231,7 @@ jsonpath-ng==1.5.3
 jsonschema==3.2.0
     # via osdu-api
 locket==1.0.0
-    # via
-    #   distributed
-    #   partd
+    # via partd
 markupsafe==2.0.1
     # via jinja2
 msal==1.12.0
