@@ -13,7 +13,7 @@ osdu-gcp-containerize-gitlab:
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
-  # check if it possible to be deleted before release 0.17 [GONRG-5590]
+  # FIXME (GONRG-6043): check if it possible to be deleted before next release
   before_script:
     - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0|g" requirements.txt
     - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
@@ -29,7 +29,7 @@ osdu-gcp-containerize-gcr:
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
-  # check if it possible to be deleted before release 0.17 [GONRG-5590]
+  # FIXME (GONRG-6043): check if it possible to be deleted before next release
   before_script:
     - cat $OSDU_GCP_DEPLOY_FILE | docker login -u _json_key --password-stdin https://gcr.io
     - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0|g" requirements.txt
