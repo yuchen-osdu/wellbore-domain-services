@@ -17,7 +17,7 @@ osdu-gcp-containerize-gitlab:
   before_script:
     - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0|g" requirements.txt
     - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
-    - sed -i "s|osdu-core-lib-python-aws==1.0.1|# osdu-core-lib-python-aws==1.0.1|g" requirements.txt
+    - sed -i "s|osdu-core-lib-python-aws==2.0.1|# osdu-core-lib-python-aws==2.0.1|g" requirements.txt
 
 osdu-gcp-containerize-gcr:
   variables:
@@ -34,7 +34,7 @@ osdu-gcp-containerize-gcr:
     - cat $OSDU_GCP_DEPLOY_FILE | docker login -u _json_key --password-stdin https://gcr.io
     - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0|g" requirements.txt
     - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
-    - sed -i "s|osdu-core-lib-python-aws==1.0.1|# osdu-core-lib-python-aws==1.0.1|g" requirements.txt
+    - sed -i "s|osdu-core-lib-python-aws==2.0.1|# osdu-core-lib-python-aws==2.0.1|g" requirements.txt
 
 osdu-gcp-test-python:
   extends: .osdu-gcp-variables
