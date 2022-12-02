@@ -198,7 +198,7 @@ class ConfigurationContainer:
     max_return_read_fast_track: EnvVar = EnvVar(
         key='READ_FAST_TRACK_MAX_VALUE',
         description='Maximum number of values, in millions, allowed in one call',
-        default='15',
+        default='10',
         factory=lambda x: int(x))
 
     max_working_read_fast_track: EnvVar = EnvVar(

@@ -234,9 +234,9 @@ async def test_request_too_many_values_raise(nope_logger_fixture):
     catalog.nb_rows = 1_000_000
     args = [AsyncMock(), catalog, MimeTypes.PARQUET, None, BulkReadFilters([])]
 
-    # request 16M
+    # request 11M
     with pytest.raises(TooManyValuesRequested):
-        await read_fast_track.read_data_fast_track(*args, curves_selection=[f'C[{i}]' for i in range(16)])
+        await read_fast_track.read_data_fast_track(*args, curves_selection=[f'C[{i}]' for i in range(11)])
 
     # request 4M but need to work on a 101M dataframe
     with pytest.raises(TooManyValuesRequested):
