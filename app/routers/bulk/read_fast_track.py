@@ -21,6 +21,7 @@ from app.bulk_persistence import (BulkCatalog,
 from app.bulk_persistence.capture_timings import capture_timings, timeit
 from app.bulk_persistence.dask import storage_path_builder
 from app.bulk_persistence.dataframe_columns import ColumnSelection, select_columns, sort_dataframe_column
+from app.conf import Config
 
 """
     The purpose of read fast track to speed up read on some specific circumstances
@@ -33,8 +34,6 @@ class ReadFastTrackCaseNotSupportedException(Exception):
 
 
 MAX_COLUMNS_COUNT = 3_000  # restrict to max 3 000 columns
-MAX_TOTAL_VALUES_COUNT_FILTERED = 5_000_000  # restrict to max 5M values at once (~50MB in parquet)
-MAX_TOTAL_VALUES_COUNT_UNFILTERED = 20_000_000  # restrict to max 20M values at once (~200MB in parquet)
 LOAD_DATAFRAME_SEMAPHORE = anyio.Semaphore(100)  # semaphore to not overwhelm the service
 
 # thresholds for which dataframe is serialized in parquet in a thread
@@ -185,8 +184,10 @@ def _validate_parameters(bulk_catalog: BulkCatalog,
 
     # validate the values count before any filtering
     total_values_unfiltered = bulk_catalog.nb_rows * len(columns_to_load)
-    if total_values_unfiltered > MAX_TOTAL_VALUES_COUNT_UNFILTERED:
-        raise TooManyValuesRequested(total_values_unfiltered, MAX_TOTAL_VALUES_COUNT_UNFILTERED)
+
+    max_total_values_unfiltered = Config.max_working_read_fast_track.value * 1_000_000
+    if total_values_unfiltered > max_total_values_unfiltered:
+        raise TooManyValuesRequested(total_values_unfiltered, max_total_values_unfiltered)
 
     # validate the values after filtering
     filtered_row_count = bulk_catalog.nb_rows
@@ -202,8 +203,9 @@ def _validate_parameters(bulk_catalog: BulkCatalog,
             filtered_row_count = limit
     total_values_filtered = filtered_row_count * len(columns_to_load)
 
-    if total_values_filtered > MAX_TOTAL_VALUES_COUNT_FILTERED:
-        raise TooManyValuesRequested(total_values_filtered, MAX_TOTAL_VALUES_COUNT_FILTERED)
+    max_total_values_filtered = Config.max_return_read_fast_track.value * 1_000_000
+    if total_values_filtered > max_total_values_filtered:
+        raise TooManyValuesRequested(total_values_filtered, max_total_values_filtered)
 
     return columns_to_load, offset, limit
 

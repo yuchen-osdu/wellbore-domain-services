@@ -195,6 +195,18 @@ class ConfigurationContainer:
         default='false',
         factory=lambda x: x.lower() == 'true' or x == '1')
 
+    max_return_read_fast_track: EnvVar = EnvVar(
+        key='READ_FAST_TRACK_MAX_VALUE',
+        description='Maximum number of values, in millions, allowed in one call',
+        default='15',
+        factory=lambda x: int(x))
+
+    max_working_read_fast_track: EnvVar = EnvVar(
+        key='READ_FAST_TRACK_MAX_WORKING_VALUE',
+        description='Maximum number of values, in millions, required to manipulate without filtering',
+        default='100',
+        factory=lambda x: int(x))
+
     dask_data_ipc: EnvVar = EnvVar(
         key='DASK_DATA_IPC',
         description='Specify data IPC type between main process and dask workers',
