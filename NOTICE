@@ -43,6 +43,7 @@ The following software have components provided under the terms of this license:
 - packaging (from https://github.com/pypa/packaging)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/pypa/pep517, https://github.com/takluyver/pep517)
+- prometheus-client (from https://github.com/prometheus/client_python)
 - prometheus-fastapi-instrumentator (from https://github.com/trallnag/prometheus-fastapi-instrumentator)
 - proto-plus (from https://github.com/googleapis/proto-plus-python.git)
 - pyarrow (from https://arrow.apache.org/)
@@ -56,7 +57,7 @@ The following software have components provided under the terms of this license:
 - s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio)
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
-- structlog (from http://www.structlog.org/, https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/22.2.0/)
+- structlog (from http://www.structlog.org/, https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/22.2.0/, https://pypi.org/project/structlog/22.3.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toposort (from https://bitbucket.org/ericvsmith/toposort, https://pypi.org/project/toposort/1.7/)
 - tornado (from http://www.tornadoweb.org/)
@@ -139,7 +140,7 @@ The following software have components provided under the terms of this license:
 - starlette (from https://github.com/encode/starlette, https://pypi.org/project/starlette/0.21.0/, https://pypi.org/project/starlette/0.22.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/, https://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.18.3/, https://pypi.org/project/uvicorn/0.19.0/, https://www.uvicorn.org/)
+- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.18.3/, https://pypi.org/project/uvicorn/0.19.0/, https://pypi.org/project/uvicorn/0.20.0/, https://www.uvicorn.org/)
 - wrapt (from https://github.com/GrahamDumpleton/wrapt)
 - zict (from http://github.com/dask/zict/, http://zict.readthedocs.io/en/latest/)
 
@@ -203,6 +204,13 @@ GPL-3.0-only
 - rfc3986 (from https://rfc3986.readthedocs.org)
 
 ========================================================================
+IETF
+========================================================================
+The following software have components provided under the terms of this license:
+
+- cryptography (from https://github.com/pyca/cryptography)
+
+========================================================================
 ISC
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -264,7 +272,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://aioitertools.omnilib.dev, https://github.com/jreese/aioitertools)
 - aioredis (from https://github.com/aio-libs/aioredis, https://github.com/aio-libs/aioredis-py)
-- anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/3.4.0/)
+- anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/3.4.0/, https://pypi.org/project/anyio/3.6.2/)
 - asgi-lifespan (from https://github.com/florimondmanca/asgi-lifespan, https://pypi.org/project/asgi-lifespan/2.0.0/)
 - asgiref (from http://github.com/django/asgiref/, https://github.com/django/asgiref/)
 - attrs (from https://attrs.readthedocs.io/, https://www.attrs.org/)
@@ -288,7 +296,7 @@ The following software have components provided under the terms of this license:
 - distributed (from https://distributed.dask.org)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.0.3/, https://pypi.org/project/exceptiongroup/1.0.4/)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
-- fastapi (from https://github.com/tiangolo/fastapi, https://pypi.org/project/fastapi/0.87.0/)
+- fastapi (from https://github.com/tiangolo/fastapi, https://pypi.org/project/fastapi/0.87.0/, https://pypi.org/project/fastapi/0.88.0/)
 - grpcio (from https://grpc.io)
 - h11
 - hypothesis (from https://hypothesis.works)
@@ -297,7 +305,7 @@ The following software have components provided under the terms of this license:
 - jsonschema
 - mockito (from https://github.com/kaste/mockito-python)
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
-- msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/)
+- msal-extensions (from https://pypi.org/project/msal-extensions/0.1.3/, https://pypi.org/project/msal-extensions/1.0.0/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - munch (from http://github.com/Infinidat/munch)
 - natsort (from https://github.com/SethMMorton/natsort)
@@ -324,7 +332,7 @@ The following software have components provided under the terms of this license:
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio)
 - starlette (from https://github.com/encode/starlette, https://pypi.org/project/starlette/0.21.0/, https://pypi.org/project/starlette/0.22.0/)
-- structlog (from http://www.structlog.org/, https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/22.2.0/)
+- structlog (from http://www.structlog.org/, https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/22.2.0/, https://pypi.org/project/structlog/22.3.0/)
 - toml (from https://github.com/uiri/toml)
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/, https://pypi.org/project/tomli/2.0.1/)
 - urllib3 (from https://urllib3.readthedocs.io/)
@@ -397,6 +405,7 @@ The following software have components provided under the terms of this license:
 
 - async-timeout (from https://github.com/aio-libs/async_timeout/)
 - coverage (from https://github.com/nedbat/coveragepy)
+- cryptography (from https://github.com/pyca/cryptography)
 - distributed (from https://distributed.dask.org, https://distributed.readthedocs.io/en/latest/)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.0.3/, https://pypi.org/project/exceptiongroup/1.0.4/)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
