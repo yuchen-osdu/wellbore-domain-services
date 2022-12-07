@@ -230,16 +230,16 @@ async def test_request_too_many_column_raise(nope_logger_fixture):
 @pytest.mark.anyio
 async def test_request_too_many_values_raise(nope_logger_fixture):
     catalog = BulkCatalog('', origin=BulkCatalogOrigin.generated_from_bulk())
-    catalog.add_chunk(ChunkGroup({f'C[{i}]' for i in range(100)}, ["path1"], []))
+    catalog.add_chunk(ChunkGroup({f'C[{i}]' for i in range(101)}, ["path1"], []))
     catalog.nb_rows = 1_000_000
     args = [AsyncMock(), catalog, MimeTypes.PARQUET, None, BulkReadFilters([])]
 
-    # request 6M
-    with pytest.raises(TooManyValuesRequested) as ex_info:
-        await read_fast_track.read_data_fast_track(*args, curves_selection=[f'C[{i}]' for i in range(6)])
+    # request 11M
+    with pytest.raises(TooManyValuesRequested):
+        await read_fast_track.read_data_fast_track(*args, curves_selection=[f'C[{i}]' for i in range(11)])
 
-    # request 4M but need to work on a 100M dataframe
-    with pytest.raises(TooManyValuesRequested) as ex_info:
+    # request 4M but need to work on a 101M dataframe
+    with pytest.raises(TooManyValuesRequested):
         await read_fast_track.read_data_fast_track(*args, limit=40_000)
 
 
