@@ -26,6 +26,9 @@ data:
   {{ if .Values.configMap.data.modules }}
   MODULES: {{ .Values.configMap.data.modules }}
   {{ end }}
+  {{ if .Values.configMap.data.fastTrackEnabled }}
+  READ_FAST_TRACK_ENABLE: {{ .Values.configMap.data.fastTrackEnabled }}
+  {{ end }}
 kind: ConfigMap
 metadata:
   annotations:
