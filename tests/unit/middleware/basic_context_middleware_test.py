@@ -97,7 +97,7 @@ def test_context_populated_from_request_headers(app_initialized_with_testclient)
 
     #  hijack AboutResponse to spy context content
     with mock.patch.object(AboutResponse, "construct", side_effect=assert_context_populated):
-        client.get("/about", headers={
+        await client.get("/about", headers={
             'data-partition-id': 'my_data_partition',
             'correlation-id': 'my_correlation_id',
             'x-collaboration': 'my_collaboration_space',
