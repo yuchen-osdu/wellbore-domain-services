@@ -29,9 +29,8 @@ from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 @router.get(
     "/wellboremarkersets/{wellboremarkersetid}",

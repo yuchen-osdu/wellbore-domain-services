@@ -26,9 +26,8 @@ from app.model.model_utils import to_record, from_record
 from app.model.entity_utils import Entity
 
 import app.routers.ddms_v2.storage_helper as storage_helper
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 
 @router.get('/logsets/{logsetid}',

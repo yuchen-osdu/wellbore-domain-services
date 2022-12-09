@@ -28,7 +28,7 @@ from app.bulk_persistence import (BulkReadFilters,
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler
-from app.helper.traces import TracingRoute, with_trace
+from app.helper.traces import with_trace
 from app.helper.logger import get_logger
 from app.bulk_persistence import MAX_COLUMNS_RETURN
 
@@ -82,7 +82,7 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
                                   BulkStatistics)
 
 
-router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
+router = APIRouter()  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}

@@ -26,10 +26,9 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 from app.helper.traces import with_trace
-from app.helper.traces import TracingRoute
 
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 router.prefix = '/log-recognition'
 router.tags = ['log-recognition']
 CUSTOM_CATALOG_LIFETIME = 300  # in seconds

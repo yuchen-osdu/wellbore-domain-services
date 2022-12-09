@@ -92,11 +92,9 @@ class TracingMiddleware(BaseHTTPMiddleware):
         tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_STATUS_CODE,
                                              attribute_value=status)
 
-        if hasattr(request.state, "traced_route"):
-            # This is set in Request state by the appropriate TracingRoute instance
-            # otherwise the value set in _before_request is used
+        if 'path' in request.scope:
             tracer.add_attribute_to_current_span(attribute_key=utils.HTTP_ROUTE,
-                                                attribute_value=request.state.traced_route)
+                                                attribute_value=request.scope['path'])
 
         if response:
             response_content_type = response.headers.get("Content-type")
