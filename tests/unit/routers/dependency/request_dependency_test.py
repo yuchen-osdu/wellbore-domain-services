@@ -74,5 +74,5 @@ async def test_dependency_default_value_resolution(test_client, anyio_backend):
     assert (await test_client.get(f'{BASE_URL}/path-default/route-a')).json()["value"] == "default_value"
 
     # WHEN default is not defined, should raise
-    with pytest.raises(ExceptionGroup):
+    with pytest.raises(RuntimeError):
         await test_client.get(f'{BASE_URL}/path-default/route-b')
