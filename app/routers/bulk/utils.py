@@ -3,6 +3,7 @@ import ast
 from natsort import natsorted
 from contextlib import suppress
 
+import re
 from fastapi import HTTPException, Request, status
 from fastapi.routing import APIRoute
 from fastapi.responses import Response
@@ -29,17 +30,25 @@ from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks, T
 def update_operation_ids(wdms_app):
     """ Ensure all operation_id are uniques """
 
+    # TODO alternative  https://fastapi.tiangolo.com/advanced/generate-clients/?h=generate_unique_id_function#custom-generate-unique-id-function
+    def generate_unique_name(route: APIRoute) -> str:
+        new_operation_id = list(route.methods)[0]
+        new_operation_id += "_" + route.path
+        new_operation_id = re.sub('[^a-zA-Z0-9\n\.]', '_', new_operation_id)
+        new_operation_id = new_operation_id.lower()
+        return new_operation_id
+
     operation_ids = set()
     for route in wdms_app.routes:
         if isinstance(route, APIRoute):
-            if route.operation_id in operation_ids:
-                # duplicate detected
-                new_operation_id = route.unique_id
+            if not route.operation_id or route.operation_id in operation_ids:
+                new_operation_id = generate_unique_name(route)
                 if route.operation_id in OpenApiHandler._handlers:
                     OpenApiHandler._handlers[new_operation_id] = OpenApiHandler._handlers[route.operation_id]
                 route.operation_id = new_operation_id
-            else:
-                operation_ids.add(route.operation_id)
+
+            assert route.operation_id not in operation_ids
+            operation_ids.add(route.operation_id)
 
 
 async def set_v3_input_dataframe_check(request: Request):
