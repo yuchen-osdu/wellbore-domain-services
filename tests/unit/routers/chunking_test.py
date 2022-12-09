@@ -403,7 +403,7 @@ async def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consist
     'application/json',
 ])
 @pytest.mark.anyio
-async def est_add_curve_by_chunk_same_cols(dasked_test_app_without_consistency_client, entity_type, data_format,
+async def test_add_curve_by_chunk_same_cols(dasked_test_app_without_consistency_client, entity_type, data_format,
                                       accept_content):
     """ Create session, append chunking with consecutive index, validate session """
 
