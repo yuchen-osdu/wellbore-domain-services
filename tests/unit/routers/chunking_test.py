@@ -403,7 +403,7 @@ async def test_add_curve_by_chunk_different_cols(dasked_test_app_without_consist
     'application/json',
 ])
 @pytest.mark.anyio
-async def est_add_curve_by_chunk_same_cols(dasked_test_app_without_consistency_client, entity_type, data_format,
+async def test_add_curve_by_chunk_same_cols(dasked_test_app_without_consistency_client, entity_type, data_format,
                                       accept_content):
     """ Create session, append chunking with consecutive index, validate session """
 
@@ -1322,8 +1322,7 @@ async def test_session_update_previous_storage_version(dasked_test_app_without_c
     assert list(df['X'].values) == [10, 11, 20, 21]
 
 
-@pytest.mark.anyio
-async def assert_mock_chunk(tracing_mock, chunk_df):
+def assert_mock_chunk(tracing_mock, chunk_df):
     tracing_mock.assert_called_with({"df rows count": chunk_df.shape[0], "df columns count": chunk_df.shape[1],
                                      'df index start': str(chunk_df.index[0]), 'df index end': str(chunk_df.index[-1]),
                                      'df index type': str(chunk_df.index.dtype)

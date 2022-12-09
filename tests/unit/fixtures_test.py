@@ -141,8 +141,8 @@ async def test_app_configurable_with_and_without_data_partition(
     # no partition needed
     assert (await client.get("/about")).status_code == 200
     # no partition needed but authentication ok
-    response = client.get("/version")
-    assert response
+    assert (await client.get("/version")).status_code == 200
+
     # partition needed for any data retrieval
     assert (await client.post(f"/wells/{well_record_data[0].id}")).status_code == 404
     assert (await client.get(f"/wellbores/123")).status_code == 404

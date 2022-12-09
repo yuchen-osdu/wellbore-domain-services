@@ -144,7 +144,6 @@ async def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consis
         assert valid_record_with_bulk_response.content \
                == b'{"errorType":"COMPUTATION_NOT_COMPLETE","message":"Statistics computation not finished yet"}'
 
-@pytest.mark.anyio
 async def _trigger_computation_on_record(client, record_id, record_version):
     """ Trigger computation of bulk statistics for given record id at given record_version or last version if None """
 

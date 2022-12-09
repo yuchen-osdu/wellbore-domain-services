@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import Mock, PropertyMock, patch
 
 from app import wdms_app
 from app.routers.about import AboutResponse
@@ -82,11 +82,9 @@ async def test_should_leave_cleared_context_in_case_of_exception(local_dev_confi
     after_ctx = Context.current()
     assert all((after_ctx[p] is None for p in properties_to_check))
 
-
-def test_context_populated_from_request_headers(app_initialized_with_testclient):
+@pytest.mark.anyio
+async def test_context_populated_from_request_headers(app_initialized_with_testclient):
     _, client = app_initialized_with_testclient
-
-    from unittest import mock
 
     def assert_context_populated(*args, **kwargs):
         ctx = Context.current()
@@ -96,8 +94,8 @@ def test_context_populated_from_request_headers(app_initialized_with_testclient)
         assert ctx.request_id == "my_request_id"
 
     #  hijack AboutResponse to spy context content
-    with mock.patch.object(AboutResponse, "construct", side_effect=assert_context_populated):
-        client.get("/about", headers={
+    with patch.object(AboutResponse, "construct", side_effect=assert_context_populated):
+        await client.get("/about", headers={
             'data-partition-id': 'my_data_partition',
             'correlation-id': 'my_correlation_id',
             'x-collaboration': 'my_collaboration_space',
