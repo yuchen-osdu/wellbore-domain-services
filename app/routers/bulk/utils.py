@@ -30,7 +30,6 @@ from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks, T
 def update_operation_ids(wdms_app):
     """ Ensure all operation_id are uniques """
 
-    # TODO alternative  https://fastapi.tiangolo.com/advanced/generate-clients/?h=generate_unique_id_function#custom-generate-unique-id-function
     def generate_unique_name(route: APIRoute) -> str:
         new_operation_id = list(route.methods)[0]
         new_operation_id += "_" + route.path
