@@ -40,7 +40,7 @@ The following software have components provided under the terms of this license:
 - opencensus-ext-ocagent (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent)
 - opencensus-ext-stackdriver (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver)
 - opencensus-proto (from https://github.com/census-instrumentation/opencensus-proto/tree/master/gen-python)
-- packaging (from https://github.com/pypa/packaging)
+- packaging (from https://github.com/pypa/packaging, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/pypa/pep517, https://github.com/takluyver/pep517)
 - prometheus-client (from https://github.com/prometheus/client_python)
@@ -69,14 +69,14 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- adlfs (from https://github.com/dask/adlfs/)
+- adlfs (from https://github.com/dask/adlfs/, https://github.com/hayesgb/adlfs/)
 - decorator (from https://github.com/micheles/decorator)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - mock (from https://github.com/testing-cabal/mock)
 - numpy
-- oauthlib (from https://github.com/oauthlib/oauthlib)
-- packaging (from https://github.com/pypa/packaging)
+- oauthlib (from https://github.com/idan/oauthlib, https://github.com/oauthlib/oauthlib)
+- packaging (from https://github.com/pypa/packaging, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - ply (from http://www.dabeaz.com/ply/)
 - prometheus-client (from https://github.com/prometheus/client_python)
@@ -100,13 +100,13 @@ The following software have components provided under the terms of this license:
 - asgiref (from https://github.com/django/asgiref/)
 - click (from http://github.com/mitsuhiko/click, https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
-- colorama (from https://github.com/tartley/colorama)
+- colorama (from https://github.com/tartley/colorama, https://pypi.org/project/colorama/0.4.6/)
 - cryptography (from https://github.com/pyca/cryptography)
 - dask (from http://github.com/dask/dask/, https://github.com/dask/dask/)
 - decorator (from https://github.com/micheles/decorator)
-- distributed (from https://distributed.dask.org)
-- fsspec (from http://github.com/fsspec/filesystem_spec)
-- gcsfs (from https://github.com/fsspec/gcsfs)
+- distributed (from https://distributed.dask.org, https://distributed.readthedocs.io/en/latest/)
+- fsspec (from http://github.com/fsspec/filesystem_spec, http://github.com/intake/filesystem_spec)
+- gcsfs (from https://github.com/dask/gcsfs, https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
@@ -127,8 +127,8 @@ The following software have components provided under the terms of this license:
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
 - pyarrow (from https://arrow.apache.org/)
-- pyasn1 (from http://sourceforge.net/projects/pyasn1/)
-- pyasn1-modules (from http://sourceforge.net/projects/pyasn1/)
+- pyasn1 (from http://sourceforge.net/projects/pyasn1/, https://github.com/etingof/pyasn1)
+- pyasn1-modules (from http://sourceforge.net/projects/pyasn1/, https://github.com/etingof/pyasn1-modules)
 - pycparser (from https://github.com/eliben/pycparser)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from http://github.com/tobgu/pyrsistent/, https://github.com/tobgu/pyrsistent/)
@@ -137,7 +137,7 @@ The following software have components provided under the terms of this license:
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 - s3fs (from http://github.com/dask/s3fs/, http://github.com/fsspec/s3fs/)
 - sniffio (from https://github.com/python-trio/sniffio)
-- starlette (from https://github.com/encode/starlette, https://pypi.org/project/starlette/0.21.0/, https://pypi.org/project/starlette/0.22.0/)
+- starlette (from https://github.com/encode/starlette, https://pypi.org/project/starlette/0.21.0/, https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.23.1/)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - toolz (from http://github.com/pytoolz/toolz/, https://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.18.3/, https://pypi.org/project/uvicorn/0.19.0/, https://pypi.org/project/uvicorn/0.20.0/, https://www.uvicorn.org/)
@@ -165,15 +165,15 @@ The following software have components provided under the terms of this license:
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
 - s3fs (from http://github.com/dask/s3fs/, http://github.com/fsspec/s3fs/)
-- toolz (from http://github.com/pytoolz/toolz/)
+- toolz (from http://github.com/pytoolz/toolz/, https://github.com/pytoolz/toolz/)
 
 ========================================================================
 CC0-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- dask (from https://github.com/dask/dask/)
-- distributed (from https://distributed.dask.org)
+- dask (from http://github.com/dask/dask/, https://github.com/dask/dask/)
+- distributed (from https://distributed.dask.org, https://distributed.readthedocs.io/en/latest/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 
 ========================================================================
@@ -287,16 +287,17 @@ The following software have components provided under the terms of this license:
 - azure-storage-blob (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob, https://github.com/Azure/azure-storage-python)
 - backoff
 - botocore (from https://github.com/boto/botocore)
+- build (from https://pypi.org/project/build/0.9.0/)
 - cachetools (from https://github.com/tkem/cachetools, https://github.com/tkem/cachetools/)
 - cffi
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer, https://github.com/ousret/charset_normalizer)
 - coverage (from https://github.com/nedbat/coveragepy)
-- dask (from https://github.com/dask/dask/)
+- dask (from http://github.com/dask/dask/, https://github.com/dask/dask/)
 - deepdiff (from https://github.com/seperman/deepdiff)
-- distributed (from https://distributed.dask.org)
+- distributed (from https://distributed.dask.org, https://distributed.readthedocs.io/en/latest/)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.0.3/, https://pypi.org/project/exceptiongroup/1.0.4/)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
-- fastapi (from https://github.com/tiangolo/fastapi, https://pypi.org/project/fastapi/0.87.0/, https://pypi.org/project/fastapi/0.88.0/)
+- fastapi (from https://github.com/tiangolo/fastapi, https://pypi.org/project/fastapi/0.86.0/, https://pypi.org/project/fastapi/0.87.0/, https://pypi.org/project/fastapi/0.88.0/)
 - grpcio (from https://grpc.io)
 - h11
 - hypothesis (from https://hypothesis.works)
@@ -331,7 +332,7 @@ The following software have components provided under the terms of this license:
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio)
-- starlette (from https://github.com/encode/starlette, https://pypi.org/project/starlette/0.21.0/, https://pypi.org/project/starlette/0.22.0/)
+- starlette (from https://github.com/encode/starlette, https://pypi.org/project/starlette/0.21.0/, https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.23.1/)
 - structlog (from http://www.structlog.org/, https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/22.2.0/, https://pypi.org/project/structlog/22.3.0/)
 - toml (from https://github.com/uiri/toml)
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/, https://pypi.org/project/tomli/2.0.1/)
@@ -360,7 +361,7 @@ The following software have components provided under the terms of this license:
 
 - botocore (from https://github.com/boto/botocore)
 - certifi (from http://certifi.io/, https://github.com/certifi/python-certifi)
-- charset-normalizer (from https://github.com/ousret/charset_normalizer)
+- charset-normalizer (from https://github.com/Ousret/charset_normalizer, https://github.com/ousret/charset_normalizer)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - hypothesis (from https://hypothesis.works)
@@ -408,6 +409,7 @@ The following software have components provided under the terms of this license:
 - cryptography (from https://github.com/pyca/cryptography)
 - distributed (from https://distributed.dask.org, https://distributed.readthedocs.io/en/latest/)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.0/, https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.0.3/, https://pypi.org/project/exceptiongroup/1.0.4/)
+- fastapi (from https://github.com/tiangolo/fastapi, https://pypi.org/project/fastapi/0.86.0/, https://pypi.org/project/fastapi/0.87.0/, https://pypi.org/project/fastapi/0.88.0/)
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
 - numpy
@@ -418,7 +420,7 @@ The following software have components provided under the terms of this license:
 - pytz (from http://pythonhosted.org/pytz)
 - rsa (from https://stuvel.eu/rsa)
 - sniffio (from https://github.com/python-trio/sniffio)
-- typing-extensions (from https://github.com/python/typing, https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.3.0/)
+- typing-extensions (from https://github.com/python/typing, https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.3.0/, https://pypi.org/project/typing-extensions/4.4.0/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 
 ========================================================================
