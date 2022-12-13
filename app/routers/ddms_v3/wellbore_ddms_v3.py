@@ -27,9 +27,8 @@ from app.context import Context, get_ctx
 from app.utils import load_schema_example
 
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 
 @router.get(

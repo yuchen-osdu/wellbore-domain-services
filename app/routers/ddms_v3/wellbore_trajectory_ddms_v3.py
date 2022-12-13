@@ -29,9 +29,8 @@ from app.routers.delete.delete_bulk_data import delete_record
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 WELLBORE_TRAJECTORIES_API_BASE_PATH = '/wellboretrajectories'
 

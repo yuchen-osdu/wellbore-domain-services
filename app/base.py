@@ -18,13 +18,12 @@ from fastapi import FastAPI
 
 from . import wdms_app
 from .conf import Config
-from .helper.traces import TracingRoute
 
 # create module logger
 logger = logging.getLogger(__name__)
 
 base_app = FastAPI()
-base_app.router.route_class = TracingRoute
+
 base_app.mount(Config.openapi_prefix.value, wdms_app.wdms_app)
 
 

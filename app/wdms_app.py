@@ -42,7 +42,6 @@ from app.errors.exception_handlers import (
 
 # ---------- import tracing, logging, metrics ----------------------------------
 from app.helper import logger, metric, traces
-from app.helper.traces import TracingRoute
 # ---------- import DI ----------------------------------
 from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
@@ -112,7 +111,6 @@ wdms_app = FastAPI(title=__app_name__,
                    description='build ' + __build_number__,
                    version=__version__,
                    )
-wdms_app.router.route_class = TracingRoute
 
 app_injector = AppInjector()
 

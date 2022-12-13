@@ -42,20 +42,6 @@ How to add specific span in a method
 """
 
 
-class TracingRoute(APIRoute):
-    def get_route_handler(self) -> Callable:
-        original_route_handler = super().get_route_handler()
-        path = self.path
-
-        async def custom_route_handler(request: Request) -> Response:
-            # https://www.starlette.io/requests/#other-state
-            request.state.traced_route = path
-            response: Response = await original_route_handler(request)
-            return response
-
-        return custom_route_handler
-
-
 def get_trace_propagator() -> TraceContextPropagator:
     """
         Returns the implementation of standard tracing propagation as defined

@@ -24,7 +24,6 @@ from app.clients.search_service_client import get_search_service
 from app.routers.common_parameters import REQUIRED_ROLES_READ
 from app.context import Context
 import app.routers.search.search_wrapper as search_wrapper
-from app.helper.traces import TracingRoute
 from .search import (
     LIMIT,
     query_type,
@@ -33,7 +32,7 @@ from .search import (
     query_type_returned_fields
     )
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 # osdu kind
 OSDU_WELLBORE_KIND = '*:wks:master-data--Wellbore:*'
