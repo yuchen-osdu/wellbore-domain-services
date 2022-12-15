@@ -8,6 +8,9 @@ acl_domain='example.com'
 legal_tag='opendes-wellddmstestlegaltag'
 svctoken=$(python3 tests/aws-test/build-aws/aws_jwt_client.py)
 
+cd tests/performance
+mkdir -p results
+
 echo 'Register Legal tag before Integration Tests ...'
 curl --location --request POST "$LEGAL_URL"'legaltags' \
   --header 'accept: application/json' \
@@ -28,11 +31,23 @@ curl --location --request POST "$LEGAL_URL"'legaltags' \
             "personalData":"No Personal Data"
         }
 }'
-cd tests/performance
 
-for filename in scripts/*.js; do 
-  test_name=$(basename $filename .js)
+write_test_list=(
+  writeMarkers
+  writeWellbores
+  writeWellLogMetadata
+)
 
+read_test_list=(
+  writeWellLogData
+  readMarkers
+  readWellbores
+  readWellLogData
+  readWellLogMetadata
+)
+
+# Perform writes before search/read so environment is guaranteed to have data loaded provided the writes were successful
+for test in ${write_test_list[@]}; do 
   k6 run \
     -e API_BASE_URL=$WELLBORE_DDMS_URL \
     -e DATA_PARTITION_ID=$tenant \
@@ -41,8 +56,51 @@ for filename in scripts/*.js; do
     -e TOKEN=$svctoken \
     --vus 100 \
     --iterations 100 \
-    $filename \
-    --out json=${test_name}_test_results.json
+    scripts/${test}.js \
+    --out json=results/${test}_test_results.json
+done
+
+curl --location --request POST "$SEARCH_URL"'query' \
+  --header 'Content-Type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --header 'authorization: Bearer '"$svctoken" \
+  --data-raw '
+  {
+      "kind": "opendes:osdu:marker:1.0.4"
+  }' \
+  | jq '.results[].id' | jq -s . > data/wellbore.json
+
+curl --location --request POST "$SEARCH_URL"'query' \
+  --header 'Content-Type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --header 'authorization: Bearer '"$svctoken" \
+  --data-raw '
+  {
+      "kind": "opendes:osdu:marker:1.0.4"
+  }' \
+  | jq '.results[].id' | jq -s . > data/marker.json
+
+curl --location --request POST "$SEARCH_URL"'query' \
+  --header 'Content-Type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --header 'authorization: Bearer '"$svctoken" \
+  --data-raw '
+  {
+      "kind": "opendes:wks:work-product-component--WellLog:1.1.0"
+  }' \
+  | jq '.results[].id' | jq -s . > data/welllog.json
+
+for test in ${read_test_list[@]}; do 
+  k6 run \
+    -e API_BASE_URL=$WELLBORE_DDMS_URL \
+    -e DATA_PARTITION_ID=$tenant \
+    -e LEGAL_TAG=$legal_tag \
+    -e ACL_DOMAIN=$acl_domain \
+    -e TOKEN=$svctoken \
+    --vus 100 \
+    --iterations 100 \
+    scripts/${test}.js \
+    --out json=results/${test}_test_results.json
 done
 
 echo Delete legaltag after Integration Tests...

@@ -2,7 +2,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 
-import { generateLogData, getParams, is2xx, logError, randomRecordId } from "./common.js";
+import { generateWellLogData, getParams, is2xx, logError, randomRecordId } from "./common.js";
 
 export const options = {
     vus: __ENV.VUS,
@@ -12,9 +12,9 @@ export const options = {
 export default function () {
     const baseUrl = `${__ENV.API_BASE_URL}`
     const params = getParams();
-    const payload = generateLogData();
+    const payload = generateWellLogData();
     
-    const response = http.post(`${baseUrl}/ddms/v2/logs/${randomRecordId()}/data?orient=split`, JSON.stringify(payload), params);
+    const response = http.post(`${baseUrl}/ddms/v3/welllogs/${randomRecordId('welllog')}/data`, JSON.stringify(payload), params);
 
     if (!is2xx(response.status)) {
         logError(params, response, baseUrl);
