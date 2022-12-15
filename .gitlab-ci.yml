@@ -150,8 +150,6 @@ containerize:
     - docker push $CI_REGISTRY_IMAGE:latest
 
 # Allow failure on flaky deployments
-aws-update-eks:
-  allow_failure: true
 ibm-deploy:
   allow_failure: true
 ibm-test:
@@ -159,8 +157,4 @@ ibm-test:
 
 # Allow failure on private development deployments
 ibm-deploy-devpri:
-  allow_failure: true
-
-# Allow failure on AWS flacky it test
-aws-test-python:
   allow_failure: true
