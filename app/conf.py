@@ -193,7 +193,7 @@ class ConfigurationContainer:
         key='READ_FAST_TRACK_ENABLE',
         description='enable read fast track preview',
         default='false',
-        factory=lambda x: x.lower() == 'true' or x == '1')
+        factory=lambda x: x.lower() == 'true' or x.lower() == 'enabled' or x == '1')
 
     max_return_read_fast_track: EnvVar = EnvVar(
         key='READ_FAST_TRACK_MAX_VALUE',
