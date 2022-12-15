@@ -127,7 +127,7 @@ export function generateLogData() {
 }
 
 /**
- * Generates a valid wks Well Log bulkdata
+ * Generates a valid wks Well Log
  * API : ddms/v3/welllogs/{{WellLogID}}/data
  */
  export function generateWellLogData() {
