@@ -46,6 +46,8 @@ phases:
     commands:
       - echo "Logging in to Amazon ECR..."
       - $(aws ecr get-login --no-include-email --region $AWS_REGION) # authenticate with ECR via the AWS CLI
+      - export CODEARTIFACT_DOMAIN=osdu-dev
+      - export CODEARTIFACT_REPO=osdu-python
   build:
     commands:
       - export OUTPUT_DIR="dist"
@@ -64,7 +66,9 @@ phases:
       - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh
       - ./tests/aws-test/build-aws/prepare-dist.sh
 
-      - aws codeartifact login --tool pip --domain osdu-dev --domain-owner $AWS_ACCOUNT_ID --repository pypi-store
+      - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain "${CODEARTIFACT_DOMAIN}" --domain-owner "${AWS_ACCOUNT_ID}" --query authorizationToken --duration-seconds 3600 --output text )
+      - export PIP_INDEX_URL="https://aws:${CODEARTIFACT_AUTH_TOKEN}@${CODEARTIFACT_DOMAIN}-${AWS_ACCOUNT_ID}.d.codeartifact.${AWS_REGION}.amazonaws.com/pypi/${CODEARTIFACT_REPO}/simple/"
+      - aws codeartifact login --tool pip --domain $CODEARTIFACT_DOMAIN --domain-owner $AWS_ACCOUNT_ID --repository $CODEARTIFACT_REPO
       - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
       - pip install -r ./requirements.txt
@@ -84,7 +88,7 @@ phases:
       - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 
       - echo "Building docker image..."
-      - docker build -f provider/os-wellbore-ddms-aws/build-aws/Dockerfile -t ${ECR_IMAGE} .
+      - docker build -f provider/os-wellbore-ddms-aws/build-aws/Dockerfile -t ${ECR_IMAGE} --build-arg PIP_INDEX_URL .
       - docker tag  ${ECR_IMAGE} ${ECR_IMAGE_BRANCH_LATEST}
       - echo "Pushing docker image..."
       - docker push ${ECR_IMAGE}
