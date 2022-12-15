@@ -203,7 +203,9 @@ def test_send_one_chunk_with_session_commit(with_wdms_env, entity_type, serializ
         ).call(
             with_wdms_env, headers={'Accept': serializer.mime_type}, assert_status=200
         )
-        pd.testing.assert_frame_equal(expected, serializer.read(result.response.content), check_dtype=False)
+        actual = serializer.read(result.response.content)
+        actual.index.name = None
+        pd.testing.assert_frame_equal(expected, actual, check_dtype=False)
         # check type set to false since in Json dType is lost so int32 can become int64
 
 
@@ -288,7 +290,9 @@ def test_get_data_with_offset_filter(with_wdms_env):
             ).call(with_wdms_env, headers=headers, params=params, assert_status=expected_status)
 
             if r.ok:
-                pd.testing.assert_frame_equal(expected_data, serializer.read(r.response.content))
+                actual_df = serializer.read(r.response.content)
+                actual_df.index.name = None
+                pd.testing.assert_frame_equal(expected_data, actual_df)
 
 
 @pytest.mark.tag('chunking', 'smoke')
@@ -323,7 +327,9 @@ def test_get_data_with_column_filter(with_wdms_env):
             ).call(with_wdms_env, headers=headers, params=params, assert_status=expected_status)
 
             if r.ok:
-                pd.testing.assert_frame_equal(expected_data, serializer.read(r.response.content))
+                actual_df = serializer.read(r.response.content)
+                actual_df.index.name = None
+                pd.testing.assert_frame_equal(expected_data, actual_df)
 
 
 @pytest.mark.tag('chunking', 'smoke')
@@ -424,8 +430,12 @@ def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, enti
             result = build_request_get_data(entity_type, record_id).call(
                 with_wdms_env, headers={'Accept': serializer.mime_type}, assert_status=200)
 
+            actual = serializer.read(result.response.content)
+            # for performance reason, dataframe provided may have a named index, it doesn't matter but make the assert
+            # dataframe equals to fail, just remove it
+            actual.index.name = None
             pd.testing.assert_frame_equal(
-                expected, serializer.read(result.response.content), check_dtype=False)
+                expected, actual,  check_dtype=False)
             # check type set to false since in Json dType is lost so int32 can become int64
 
 
@@ -551,7 +561,9 @@ def test_send_arrayd_without_session(with_wdms_env, entity_type, serializer):
         build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
 
         result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
-        pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
+        actual_df = serializer.read(result.response.content)
+        actual_df.index.name = None
+        pd.testing.assert_frame_equal(data, actual_df, check_dtype=False)
 
 
 @pytest.mark.tag('chunking', 'smoke')
