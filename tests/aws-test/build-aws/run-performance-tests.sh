@@ -32,13 +32,13 @@ curl --location --request POST "$LEGAL_URL"'legaltags' \
         }
 }'
 
-write_test_list=(
+independent_test_list=(
   writeMarkers
   writeWellbores
   writeWellLogMetadata
 )
 
-read_test_list=(
+dependent_test_list=(
   writeWellLogData
   readMarkers
   readWellbores
@@ -47,7 +47,7 @@ read_test_list=(
 )
 
 # Perform writes before search/read so environment is guaranteed to have data loaded provided the writes were successful
-for test in ${write_test_list[@]}; do 
+for test in ${independent_test_list[@]}; do 
   k6 run \
     -e API_BASE_URL=$WELLBORE_DDMS_URL \
     -e DATA_PARTITION_ID=$tenant \
@@ -90,7 +90,7 @@ curl --location --request POST "$SEARCH_URL"'query' \
   }' \
   | jq '.results[].id' | jq -s . > data/welllog.json
 
-for test in ${read_test_list[@]}; do 
+for test in ${dependent_test_list[@]}; do 
   k6 run \
     -e API_BASE_URL=$WELLBORE_DDMS_URL \
     -e DATA_PARTITION_ID=$tenant \
