@@ -30,7 +30,7 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 from app.model.osdu_record_id import WellLogId
-from bulk_persistence import model_chunking
+from app.bulk_persistence import model_chunking
 
 router = APIRouter()
 
