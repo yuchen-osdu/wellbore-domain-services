@@ -88,7 +88,7 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
 
 
 async def require_data_partition_id(
-        data_partition_id: str = Header(default=None,
+        data_partition_id: str = Header(...,
                                         title='data partition id',
                                         description='identifier of the data partition to query',
                                         min_length=1)):
