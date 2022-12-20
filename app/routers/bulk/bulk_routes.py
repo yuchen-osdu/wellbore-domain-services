@@ -16,7 +16,7 @@ from uuid import UUID
 
 import pandas as pd
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Response, Body
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from app.conf import Config
@@ -389,6 +389,9 @@ async def get_data(
 @router.patch(
     "/{record_id}/sessions/{session_id}",
     summary='Update a session, either commit or abandon.',
+    description="""Either validates the session' bulk data, a new version of record will be created with data sent 
+                within the session. Either abandon the session, and let record unchanged.  
+                Note: bulk data consistency check will be run when committing bulk data.""",
     responses={**response_404},
     response_model=CommitSessionResponse
 )
@@ -396,7 +399,7 @@ async def complete_session(
     record_id: str,
     session_id: UUID,
     request: Request,
-    update_request: UpdateSessionState,
+    update_request: UpdateSessionState = Body(..., examples=sessions_body_examples),
     with_session: WithSessionStorages = Depends(get_session_dependencies),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     ctx: Context = Depends(get_ctx),

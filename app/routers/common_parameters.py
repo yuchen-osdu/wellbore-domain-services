@@ -85,3 +85,19 @@ response_401 = {status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"}}
 response_403 = {status.HTTP_403_FORBIDDEN: {"description": "Forbidden"}}
 response_404 = {status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 response_500 = {status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Internal server error"}}
+
+# Session commit - body - examples
+sessions_body_examples = {
+    "commit": {
+        "summary": "Commit session data",
+        "value": {
+            "state": "commit",
+        },
+    },
+    "abandon": {
+        "summary": "Abandon session data",
+        "value": {
+            "state": "abandon",
+        },
+    },
+}
