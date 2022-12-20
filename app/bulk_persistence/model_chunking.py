@@ -75,12 +75,27 @@ class GetDataParams:
             default=None,
             alias='filter',
             regex='^(".+"|[^:]+):(' + '|'.join(BulkReadFilterOperator.values()) + '):.*$',
-            description="""
+            description=f"""
             
-The "filter" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.
-If the column name contains ':', enclose it in double quotation marks (").
-<br/>The supported operators are : """ + ', '.join(BulkReadFilterOperator.values()),
-            example='MD:lt:1000'
+The "filter" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  
+The supported operators are : {', '.join(BulkReadFilterOperator.values())}.  
+  
+Note: If the column name contains ':', enclose it in double quotation marks (").
+""",
+            examples={
+                "simple-md-filter": {
+                    "summary": "Select rows when column 'MD' values >= 1000",
+                    "value": ["MD:gte:1000"]
+                },
+                "simple-md-filter-2": {
+                    "summary": "Select rows when 'MD' column values <= 1000",
+                    "value": ["MD:lte:1000"]
+                },
+                "double-md-filter": {
+                    "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                    "value": ["MD:gt:1000", "MD:lt:42000"]
+                },
+}
         )
     ) -> None:
         self.offset = offset
