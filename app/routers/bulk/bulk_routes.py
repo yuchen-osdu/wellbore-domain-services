@@ -44,6 +44,8 @@ from .read_fast_track import read_data_fast_track, ReadFastTrackCaseNotSupported
 from ..record_utils import fetch_record
 from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
 
+from ..common_parameters import sessions_body_examples, successful_get_bulk_data_responses_examples
+
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
@@ -80,6 +82,8 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
                                   BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
                                   DataConsistencyChecks,
                                   BulkStatistics)
+
+
 
 
 router = APIRouter()  # router dedicated to bulk APIs
@@ -221,10 +225,7 @@ The requested columns must not exceed {MAX_COLUMNS_RETURN}. The query parameter 
     # response_model=RecordData,
     responses={
         404: {},
-        200: {"content": {
-            MimeTypes.JSON.type: {},
-            MimeTypes.PARQUET.type: {},
-        }}
+        200: successful_get_bulk_data_responses_examples
     }
 )
 async def get_data_version(
@@ -359,10 +360,7 @@ async def _process_request_v1(record_id: str,
     # response_model=Union[RecordData, Dict],
     responses={
         404: {},
-        200: {"content": {
-            MimeTypes.JSON.type: {},
-            MimeTypes.PARQUET.type: {},
-        }}
+        200: successful_get_bulk_data_responses_examples
     }
 )
 async def get_data(
