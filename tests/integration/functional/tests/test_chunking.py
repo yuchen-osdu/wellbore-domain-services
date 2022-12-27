@@ -171,7 +171,10 @@ def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
         build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
 
         result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
-        pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
+
+        actual_df = serializer.read(result.response.content)
+        actual_df.index.name = None
+        pd.testing.assert_frame_equal(data, actual_df, check_dtype=False)
         # check type set to false since in Json dType is lost so int32 can become int64
 
 
@@ -367,7 +370,9 @@ def test_get_data_with_limit_filter(with_wdms_env):
             ).call(with_wdms_env, headers=headers, params=params, assert_status=expected_status)
 
             if r.ok:
-                pd.testing.assert_frame_equal(expected_data, serializer.read(r.response.content))
+                actual_df =  serializer.read(r.response.content)
+                actual_df.index.name = None
+                pd.testing.assert_frame_equal(expected_data, actual_df)
 
 
 @pytest.mark.tag('chunking', 'smoke')
