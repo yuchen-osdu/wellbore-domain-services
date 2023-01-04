@@ -1,36 +1,40 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: "{{ .Release.Namespace }}"
-  name: "{{ .Values.conf.appName }}"
+  namespace: {{ .Release.Namespace | quote }}
+  name: {{ .Values.conf.appName | quote }}
   labels:
-    app: "{{ .Values.conf.appName }}"
+    app: {{ .Values.conf.appName | quote }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: "{{ .Values.conf.appName }}"
+      app: {{ .Values.conf.appName | quote }}
   template:
     metadata:
       labels:
-        app: "{{ .Values.conf.appName }}"
+        app: {{ .Values.conf.appName | quote }}
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
+        sidecar.istio.io/proxyCPU: {{ .Values.istio.proxyCPU | quote }}
+        sidecar.istio.io/proxyMemory: {{ .Values.istio.proxyMemory | quote }}
+        sidecar.istio.io/proxyCPULimit: {{ .Values.istio.proxyCPULimit | quote }}
+        sidecar.istio.io/proxyMemoryLimit: {{ .Values.istio.proxyMemoryLimit | quote }}
     spec:
-      serviceAccountName: "{{ .Values.data.serviceAccountName }}"
+      serviceAccountName: {{ .Values.data.serviceAccountName | quote }}
       containers:
-        - name: "{{ .Values.conf.appName }}"
-          image: "{{ .Values.data.image }}"
-          imagePullPolicy: "{{ .Values.data.imagePullPolicy }}"
+        - name: {{ .Values.conf.appName | quote }}
+          image: {{ .Values.data.image | quote }}
+          imagePullPolicy: {{ .Values.data.imagePullPolicy  | quote }}
           envFrom:
             - configMapRef:
-                name: "{{ .Values.conf.configmap }}"
+                name: {{ .Values.conf.configmap | quote }}
             {{- if .Values.conf.onPremEnabled }}
             - secretRef:
-                name: "{{ .Values.conf.keycloakSecretName }}"
+                name: {{ .Values.conf.keycloakSecretName | quote }}
             - secretRef:
-                name: "{{ .Values.conf.minioSecretName }}"
+                name: {{ .Values.conf.minioSecretName | quote }}
             {{- end }}
           ports:
             - name: http
@@ -46,8 +50,8 @@ spec:
               port: http
           resources:
             requests:
-              cpu: "{{ .Values.data.requestsCpu }}"
-              memory: "{{ .Values.data.requestsMemory }}"
+              cpu: {{ .Values.data.requestsCpu | quote }}
+              memory: {{ .Values.data.requestsMemory | quote }}
             limits:
-              cpu: "{{ .Values.data.limitsCpu }}"
-              memory: "{{ .Values.data.limitsMemory }}"
+              cpu: {{ .Values.data.limitsCpu | quote }}
+              memory: {{ .Values.data.limitsMemory | quote }}

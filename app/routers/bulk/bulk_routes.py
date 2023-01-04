@@ -16,7 +16,7 @@ from uuid import UUID
 
 import pandas as pd
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Response, Body
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from app.conf import Config
@@ -43,6 +43,8 @@ from .read_fast_track import read_data_fast_track, ReadFastTrackCaseNotSupported
 
 from ..record_utils import fetch_record
 from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
+
+from ..common_parameters import sessions_body_examples, successful_get_bulk_data_responses_examples
 
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
 from app.routers.bulk.utils import (with_dask_blob_storage,
@@ -80,6 +82,8 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
                                   BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
                                   DataConsistencyChecks,
                                   BulkStatistics)
+
+
 
 
 router = APIRouter()  # router dedicated to bulk APIs
@@ -221,10 +225,7 @@ The requested columns must not exceed {MAX_COLUMNS_RETURN}. The query parameter 
     # response_model=RecordData,
     responses={
         404: {},
-        200: {"content": {
-            MimeTypes.JSON.type: {},
-            MimeTypes.PARQUET.type: {},
-        }}
+        200: successful_get_bulk_data_responses_examples
     }
 )
 async def get_data_version(
@@ -359,10 +360,7 @@ async def _process_request_v1(record_id: str,
     # response_model=Union[RecordData, Dict],
     responses={
         404: {},
-        200: {"content": {
-            MimeTypes.JSON.type: {},
-            MimeTypes.PARQUET.type: {},
-        }}
+        200: successful_get_bulk_data_responses_examples
     }
 )
 async def get_data(
@@ -389,6 +387,9 @@ async def get_data(
 @router.patch(
     "/{record_id}/sessions/{session_id}",
     summary='Update a session, either commit or abandon.',
+    description="""Either validates the session' bulk data, a new version of record will be created with data sent 
+                within the session. Either abandon the session, and let record unchanged.  
+                Note: bulk data consistency check will be run when committing bulk data.""",
     responses={**response_404},
     response_model=CommitSessionResponse
 )
@@ -396,7 +397,7 @@ async def complete_session(
     record_id: str,
     session_id: UUID,
     request: Request,
-    update_request: UpdateSessionState,
+    update_request: UpdateSessionState = Body(..., examples=sessions_body_examples),
     with_session: WithSessionStorages = Depends(get_session_dependencies),
     dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
     ctx: Context = Depends(get_ctx),

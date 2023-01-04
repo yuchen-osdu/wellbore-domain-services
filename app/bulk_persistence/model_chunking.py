@@ -21,6 +21,29 @@ from pydantic import BaseModel, Field
 from .bulk_filter import BulkReadFilterOperator, BulkFilter
 from .dask.errors import FilterError
 
+curves_examples = {
+    "all": {
+        "summary": "Select all curves",
+        "value": ""
+    },
+    "basic": {
+        "summary": "Select specific curves",
+        "value": "MD,GR"
+    },
+    "array-slice": {
+        "summary": "Select a slice of array curves",
+        "value": "ARR[10:50]"
+    },
+    "array-curve": {
+        "summary": "Select one specific curve of an array",
+        "value": "ARR[100]"
+    },
+    "array-slice-plus-curve": {
+        "summary": "Select slice of array + another curve(s)",
+        "value": "MD,ARR[50:55],GR"
+    },
+}
+
 
 class GetDataParams:
     """ All parameters to query welllog data. """
@@ -41,7 +64,8 @@ class GetDataParams:
             default=None,
             description='Filters curves. List of curves to be returned. '
                         'The curves are returned in the same order as it is given.',
-            example='MD,GR'),
+            examples=curves_examples
+        ),
         describe: Optional[bool] = Query(
             default=False,
             description='The "describe" query option allows clients to request a description of the matching result. '
@@ -51,11 +75,27 @@ class GetDataParams:
             default=None,
             alias='filter',
             regex='^(".+"|[^:]+):(' + '|'.join(BulkReadFilterOperator.values()) + '):.*$',
-            description="""
-The "filter" query parameter allows clients to filter data following the pattern `$column_name:$operator:$value`.
-If the column name contains ':', enclose it in double quotation marks (").
-<br/>The supported operators are : """ + ', '.join(BulkReadFilterOperator.values()),
-            example='MD:lt:1000'
+            description=f"""
+            
+The "filter" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  
+The supported operators are : {', '.join(BulkReadFilterOperator.values())}.  
+  
+Note: If the column name contains ':', enclose it in double quotation marks (").
+""",
+            examples={
+                "simple-md-filter": {
+                    "summary": "Select rows when column 'MD' values >= 1000",
+                    "value": ["MD:gte:1000"]
+                },
+                "simple-md-filter-2": {
+                    "summary": "Select rows when 'MD' column values <= 1000",
+                    "value": ["MD:lte:1000"]
+                },
+                "double-md-filter": {
+                    "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                    "value": ["MD:gt:1000", "MD:lt:42000"]
+                },
+}
         )
     ) -> None:
         self.offset = offset
