@@ -30,6 +30,7 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 from app.model.osdu_record_id import WellLogId
+from app.bulk_persistence import model_chunking
 
 router = APIRouter()
 
@@ -107,7 +108,7 @@ async def get_bulk_statistics(
         record: Record = Depends(fetch_latest_version_record_dependency),
         curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
-                                      example='MD,GR'),
+                                      examples=model_chunking.curves_examples),
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
 ):
@@ -163,7 +164,7 @@ async def get_bulk_statistics_version(
         record: Record = Depends(fetch_record_dependency),
         curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
-                                      example='MD,GR'),
+                                      examples=model_chunking.curves_examples),
         dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
 ):
