@@ -1,7 +1,3 @@
-# Default values for wellbore-deploy.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 data:
   requestsCpu: "0.1"
   requestsMemory: "1G"
@@ -10,7 +6,7 @@ data:
   image: ""
   imagePullPolicy: "IfNotPresent"
   serviceAccountName: "wellbore"
-
+  projectId: ""
 conf:
   configmap: "wellbore-config"
   appName: "wellbore"

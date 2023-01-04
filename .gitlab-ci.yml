@@ -34,6 +34,9 @@ variables:
   IBM_HELM_CONFIG_PATH: devops/ibm/ibm-wellbore-domain-services-config
   IBM_HELM_DEPLOY_PATH: devops/ibm/ibm-wellbore-domain-services-deploy
 
+  # FIXME remove when all services are migrated to a single helm
+  OSDU_GCP_ENABLE_HELM_CONFIG: "false"
+
   # ignore model_curated_test.py workaround because ci/cd hang-out when test are long.
   PYTEST_OPTIONS: "--ignore=tests/unit/model/model_curated_test.py --durations=25 --strict-markers"
 
