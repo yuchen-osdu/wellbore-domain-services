@@ -106,7 +106,7 @@ The following software have components provided under the terms of this license:
 - grpcio-status (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore)
-- httpx (from https://pypi.org/project/httpx/0.23.1/)
+- httpx (from https://pypi.org/project/httpx/0.23.1/, https://pypi.org/project/httpx/0.23.2/)
 - idna (from https://pypi.org/project/idna/3.4/)
 - isodate (from https://github.com/gweis/isodate/)
 - numpy
@@ -278,7 +278,7 @@ The following software have components provided under the terms of this license:
 - pluggy
 - py (from https://py.readthedocs.io/)
 - pyarrow (from https://arrow.apache.org/)
-- pydantic (from https://github.com/samuelcolvin/pydantic)
+- pydantic (from https://github.com/pydantic/pydantic, https://github.com/samuelcolvin/pydantic)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
