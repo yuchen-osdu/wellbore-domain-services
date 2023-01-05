@@ -16151,7 +16151,7 @@
                       "MarkerName": "Example MarkerName",
                       "MarkerObservationNumber": 12345.6,
                       "MarkerSubSeaVerticalDepth": 12345.6,
-                      "MarkerTypeID": "{{datapartitionid}}:reference-data--MarkerType:BioStratigraphy:",
+                      "MarkerTypeID": "{{datapartitionid}}:reference-data--MarkerType:Biostratigraphy:",
                       "Missing": "Example Missing",
                       "NegativeVerticalDelta": 12345.6,
                       "PositiveVerticalDelta": 12345.6,
