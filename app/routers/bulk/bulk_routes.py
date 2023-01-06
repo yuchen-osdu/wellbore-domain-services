@@ -23,7 +23,7 @@ from app.conf import Config
 from app.bulk_persistence import (BulkReadFilters,
                                   GetDataParams,
                                   DataframeBasicDescribe,
-                                  BulkCatalog)
+                                  BulkCatalog, BulkURI)
 
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
@@ -31,7 +31,7 @@ from app.utils import OpenApiHandler
 from app.helper.traces import with_trace
 from app.helper.logger import get_logger
 from app.bulk_persistence import MAX_COLUMNS_RETURN
-
+from app.clients import bulk_worker_client
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_READ,
@@ -82,8 +82,6 @@ from app.bulk_persistence import (auto_cast_columns_to_string,
                                   BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
                                   DataConsistencyChecks,
                                   BulkStatistics)
-
-
 
 
 router = APIRouter()  # router dedicated to bulk APIs
@@ -208,6 +206,79 @@ async def post_chunk_data(record_id: str,
         ex.raise_as_http()
 
 
+@with_trace("read_data_with_bulk_worker")
+async def read_data_with_bulk_worker(ctx: Context,
+                                     record_id: str,
+                                     bulk_id: str,
+                                     data_param: GetDataParams,
+                                     accept_type: MimeType,
+                                     orient: JSONOrient):
+    return await bulk_worker_client.read_data(
+        Config.service_host_wdms_worker.value,
+        ctx,
+        record_id,
+        bulk_id,
+        data_param,
+        accept_type,
+        orient
+    )
+
+
+async def read_data_with_dask(ctx: Context,
+                              record_id: str,
+                              bulk_uri: BulkURI,
+                              data_param: GetDataParams,
+                              accept_type: MimeType,
+                              orient: JSONOrient):
+    columns = None
+    bulk_id = bulk_uri.bulk_id
+    bulk_filters = BulkReadFilters(data_param.get_bulk_filters())
+    dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+
+    future_index = None
+    if bulk_uri.is_bulk_storage_V0():
+        df = await get_dataframe(ctx, bulk_id)
+        auto_cast_columns_to_string(df)
+    else:
+        # in any case we need the catalog in any code path, because either 'read_stat' (to get the columns)
+        # or 'load_index' will need it
+        # TODO seems get columns/stat is not always needed - see df_render
+        bulk_catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_id)
+
+        # if describe without filters, the catalog is enough to answer:
+        column_selection = data_param.get_curves_list() if data_param.curves else None
+        if data_param.describe and not bulk_filters.has_filter():
+            descr = bulk_catalog.describe(
+                offset=data_param.offset,
+                limit=data_param.limit,
+                column_selection=column_selection)
+            return _build_describe_response(descr)
+
+        # if fast track enabled, try it
+        if Config.enable_read_fast_track.value:
+            with suppress(ReadFastTrackCaseNotSupportedException):
+                return await read_data_fast_track(ctx, bulk_catalog,
+                                                  accept_type, orient,
+                                                  bulk_filters,
+                                                  data_param.offset,
+                                                  data_param.limit,
+                                                  column_selection)
+
+        df, filters, columns = await _process_request_v1(record_id,
+                                                         bulk_id,
+                                                         data_param,
+                                                         bulk_filters,
+                                                         bulk_catalog,
+                                                         dask_blob_storage)
+
+        if data_param.offset or data_param.limit:
+            future_index = await dask_blob_storage.load_index(record_id, bulk_id, bulk_catalog)
+
+    df = await DataFrameRender.process_params(df, data_param, bulk_filters, dask_blob_storage, future_index)
+
+    return await DataFrameRender.df_render(df, data_param, accept_type, orient=orient, columns=columns)
+
+
 # TODO: set bulk config when configuration is reloaded from environment
 GET_DATA_DESCRIPTION = f"""  
 Multiple media types response are available ("application/json", "application/x-parquet").  
@@ -247,57 +318,16 @@ async def get_data_version(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI') from e
 
-    columns = None
     try:
         if not bulk_uri.is_valid():
             raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
-        bulk_id = bulk_uri.bulk_id
-        bulk_filters = BulkReadFilters(data_param.get_bulk_filters())
 
-        dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
+        wkr_endpoint = Config.service_host_wdms_worker.value
+        if not data_param.describe and wkr_endpoint:
+            return await read_data_with_bulk_worker(ctx, record_id, bulk_uri.bulk_id, data_param, accept_type, orient)
 
-        future_index = None
-        if bulk_uri.is_bulk_storage_V0():
-            df = await get_dataframe(ctx, bulk_id)
-            auto_cast_columns_to_string(df)
-        else:
-            # in any case we need the catalog in any code path, because either 'read_stat' (to get the columns)
-            # or 'load_index' will need it
-            # TODO seems get columns/stat is not always needed - see df_render
-            bulk_catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_id)
+        return await read_data_with_dask(ctx, record_id, bulk_uri, data_param, accept_type, orient)
 
-            # if describe without filters, the catalog is enough to answer:
-            column_selection = data_param.get_curves_list() if data_param.curves else None
-            if data_param.describe and not bulk_filters.has_filter():
-                descr = bulk_catalog.describe(
-                    offset=data_param.offset,
-                    limit=data_param.limit,
-                    column_selection=column_selection)
-                return _build_describe_response(descr)
-
-            # if fast track enabled, try it
-            if Config.enable_read_fast_track.value:
-                with suppress(ReadFastTrackCaseNotSupportedException):
-                    return await read_data_fast_track(ctx, bulk_catalog,
-                                                      accept_type, orient,
-                                                      bulk_filters,
-                                                      data_param.offset,
-                                                      data_param.limit,
-                                                      column_selection)
-
-            df, filters, columns = await _process_request_v1(record_id,
-                                                             bulk_id,
-                                                             data_param,
-                                                             bulk_filters,
-                                                             bulk_catalog,
-                                                             dask_blob_storage)
-
-            if data_param.offset or data_param.limit:
-                future_index = await dask_blob_storage.load_index(record_id, bulk_id, bulk_catalog)
-
-        df = await DataFrameRender.process_params(df, data_param, bulk_filters, dask_blob_storage, future_index)
-
-        return await DataFrameRender.df_render(df, data_param, accept_type, orient=orient, columns=columns)
     except BulkError as ex:
         ex.raise_as_http()
 
