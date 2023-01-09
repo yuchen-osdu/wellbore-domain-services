@@ -36,6 +36,11 @@ from .dask.dask_bulk_storage_local import (
     make_local_dask_bulk_storage,
     make_local_dask_storage_parameters,
 )
+
+# bulk reader
+from .bulk_reader_dask import BulkReaderDask
+from .bulk_reader_wdms_worker import BulkReaderWdmsWorker
+
 from .dask.errors import (
     BulkCurvesNotFound,
     BulkError,

@@ -11,27 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from contextlib import suppress
 from uuid import UUID
 
-import pandas as pd
-
-from fastapi import APIRouter, Depends, HTTPException, Request, status, Response, Body
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Body
 
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from app.conf import Config
-from app.bulk_persistence import (BulkReadFilters,
-                                  GetDataParams,
-                                  DataframeBasicDescribe,
-                                  BulkCatalog, BulkURI)
 
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
-from app.utils import OpenApiHandler
-from app.helper.traces import with_trace
+from app.utils import OpenApiHandler, get_http_client_session
 from app.helper.logger import get_logger
-from app.bulk_persistence import MAX_COLUMNS_RETURN
-from app.clients import bulk_worker_client
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_READ,
@@ -39,7 +29,6 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            json_orient_parameter,
                                            read_bulk_accept_type,
                                            write_bulk_content_type, response_404)
-from .read_fast_track import read_data_fast_track, ReadFastTrackCaseNotSupportedException
 
 from ..record_utils import fetch_record
 from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
@@ -50,7 +39,6 @@ from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAcc
 from app.routers.bulk.utils import (with_dask_blob_storage,
                                     get_df_validation_func,
                                     set_bulk_field_and_send_record,
-                                    DataFrameRender,
                                     get_data_consistency_checks)
 from app.routers.bulk.statistics_routes_dependencies import is_statistics_computation_enabled
 
@@ -61,7 +49,6 @@ from app.bulk_persistence import (
     SessionUpdateMode,
     SessionInternal,
     CommitSessionResponse,
-    capture_timings
 )
 
 from app.routers.sessions import (
@@ -72,17 +59,20 @@ from app.routers.sessions import (
 )
 
 # imports from bulk persistence
-from app.bulk_persistence import (auto_cast_columns_to_string,
-                                  DataFrameValidationFunc, no_validation,
+from app.bulk_persistence import (DataFrameValidationFunc, no_validation,
                                   JSONOrient,
-                                  get_dataframe, download_bulk,
+                                  download_bulk,
                                   DaskBulkStorage,
-                                  MimeTypes, MimeType,
+                                  MimeType,
                                   trace_dataframe_attributes, trace_attributes_root_span,
-                                  BulkError, BulkRecordNotFound, FilterError, TooManyColumnsRequested,
+                                  BulkError, BulkRecordNotFound,
                                   DataConsistencyChecks,
-                                  BulkStatistics)
-
+                                  BulkStatistics,
+                                  GetDataParams,
+                                  DataframeBasicDescribe,
+                                  MAX_COLUMNS_RETURN,
+                                  BulkReaderDask,
+                                  BulkReaderWdmsWorker)
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -206,79 +196,6 @@ async def post_chunk_data(record_id: str,
         ex.raise_as_http()
 
 
-@with_trace("read_data_with_bulk_worker")
-async def read_data_with_bulk_worker(ctx: Context,
-                                     record_id: str,
-                                     bulk_id: str,
-                                     data_param: GetDataParams,
-                                     accept_type: MimeType,
-                                     orient: JSONOrient):
-    return await bulk_worker_client.read_data(
-        Config.service_host_wdms_worker.value,
-        ctx,
-        record_id,
-        bulk_id,
-        data_param,
-        accept_type,
-        orient
-    )
-
-
-async def read_data_with_dask(ctx: Context,
-                              record_id: str,
-                              bulk_uri: BulkURI,
-                              data_param: GetDataParams,
-                              accept_type: MimeType,
-                              orient: JSONOrient):
-    columns = None
-    bulk_id = bulk_uri.bulk_id
-    bulk_filters = BulkReadFilters(data_param.get_bulk_filters())
-    dask_blob_storage: DaskBulkStorage = await with_dask_blob_storage()
-
-    future_index = None
-    if bulk_uri.is_bulk_storage_V0():
-        df = await get_dataframe(ctx, bulk_id)
-        auto_cast_columns_to_string(df)
-    else:
-        # in any case we need the catalog in any code path, because either 'read_stat' (to get the columns)
-        # or 'load_index' will need it
-        # TODO seems get columns/stat is not always needed - see df_render
-        bulk_catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_id)
-
-        # if describe without filters, the catalog is enough to answer:
-        column_selection = data_param.get_curves_list() if data_param.curves else None
-        if data_param.describe and not bulk_filters.has_filter():
-            descr = bulk_catalog.describe(
-                offset=data_param.offset,
-                limit=data_param.limit,
-                column_selection=column_selection)
-            return _build_describe_response(descr)
-
-        # if fast track enabled, try it
-        if Config.enable_read_fast_track.value:
-            with suppress(ReadFastTrackCaseNotSupportedException):
-                return await read_data_fast_track(ctx, bulk_catalog,
-                                                  accept_type, orient,
-                                                  bulk_filters,
-                                                  data_param.offset,
-                                                  data_param.limit,
-                                                  column_selection)
-
-        df, filters, columns = await _process_request_v1(record_id,
-                                                         bulk_id,
-                                                         data_param,
-                                                         bulk_filters,
-                                                         bulk_catalog,
-                                                         dask_blob_storage)
-
-        if data_param.offset or data_param.limit:
-            future_index = await dask_blob_storage.load_index(record_id, bulk_id, bulk_catalog)
-
-    df = await DataFrameRender.process_params(df, data_param, bulk_filters, dask_blob_storage, future_index)
-
-    return await DataFrameRender.df_render(df, data_param, accept_type, orient=orient, columns=columns)
-
-
 # TODO: set bulk config when configuration is reloaded from environment
 GET_DATA_DESCRIPTION = f"""  
 Multiple media types response are available ("application/json", "application/x-parquet").  
@@ -322,63 +239,16 @@ async def get_data_version(
         if not bulk_uri.is_valid():
             raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
 
-        wkr_endpoint = Config.service_host_wdms_worker.value
-        if not data_param.describe and wkr_endpoint:
-            return await read_data_with_bulk_worker(ctx, record_id, bulk_uri.bulk_id, data_param, accept_type, orient)
+        # by default use Dask bulk reader
+        reader = BulkReaderDask(Config.enable_read_fast_track.value)
+        if not data_param.describe and Config.service_host_wdms_worker.value:
+            reader = BulkReaderWdmsWorker(Config.service_host_wdms_worker.value,
+                                          get_http_client_session("wdms_bulk_worker"))
 
-        return await read_data_with_dask(ctx, record_id, bulk_uri, data_param, accept_type, orient)
+        return await reader.read_data(ctx, record_id, bulk_uri, data_param, accept_type, orient)
 
     except BulkError as ex:
         ex.raise_as_http()
-
-
-@capture_timings('_build_describe_response')
-def _build_describe_response(describe):
-    """ for performance reason in case of many columns """
-    columns = str(describe.columns).replace("'", '"')
-    json_string = f"{'{'}\"numberOfRows\":{describe.numberOfRows}, \"columns\":{columns}{'}'}"
-    return Response(
-        content=json_string,
-        media_type=MimeTypes.JSON.type
-    )
-
-
-@with_trace('_process_request_v1')
-async def _process_request_v1(record_id: str,
-                              bulk_id: str,
-                              data_param: GetDataParams,
-                              filters: BulkReadFilters,
-                              bulk_catalog: BulkCatalog,
-                              dask_blob_storage: DaskBulkStorage):
-    columns_to_load = None
-    columns = bulk_catalog.all_columns
-    existing_col = columns
-    if data_param.curves:
-        columns_to_load = DataFrameRender.get_matching_columns(data_param.get_curves_list(), existing_col)
-        columns = set(columns_to_load)
-
-    if not data_param.describe:  # don't limit columns when describe parameter is True
-        # if curves parameter is None, it means that we are going to load all existing columns
-        nb_cols_to_return = len(columns_to_load) if columns_to_load else len(existing_col)
-        if nb_cols_to_return > MAX_COLUMNS_RETURN:
-            raise TooManyColumnsRequested(nb_cols_to_return, MAX_COLUMNS_RETURN)
-
-    if filters.has_filter():
-        # get column needed for filtering which are not yet in columns
-        invalid_columns = filters.columns - existing_col
-        if invalid_columns:
-            raise FilterError(f'The columns:{list(invalid_columns)} to be filtered do not exist')
-        if columns_to_load:
-            columns_to_load = filters.columns.union(columns_to_load)
-
-    if columns_to_load is None and data_param.describe:
-        # optimization: create a fake dataset when describe on all columns
-        index = await dask_blob_storage.load_index(record_id, bulk_id, bulk_catalog)
-        df = pd.DataFrame(index=index)
-    else:
-        # loading the dataframe with filter on columns is faster than filtering columns on df
-        df = await dask_blob_storage.load_bulk(record_id, bulk_id, bulk_catalog, columns=columns_to_load)
-    return df, filters, columns
 
 
 @router.get(
