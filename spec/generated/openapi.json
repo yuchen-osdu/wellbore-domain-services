@@ -11,6 +11,10 @@
             "title": "Cloudenvironment",
             "type": "string"
           },
+          "release": {
+            "title": "Release",
+            "type": "string"
+          },
           "service": {
             "title": "Service",
             "type": "string"
@@ -3961,6 +3965,10 @@
             },
             "title": "Details",
             "type": "object"
+          },
+          "release": {
+            "title": "Release",
+            "type": "string"
           },
           "service": {
             "title": "Service",
