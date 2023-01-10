@@ -58,7 +58,7 @@ The following software have components provided under the terms of this license:
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/22.3.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
-- toposort (from https://pypi.org/project/toposort/1.7/, https://pypi.org/project/toposort/1.8/)
+- toposort (from https://pypi.org/project/toposort/1.7/)
 - tornado (from http://www.tornadoweb.org/)
 - urllib3 (from https://urllib3.readthedocs.io/)
 - yarl (from https://github.com/aio-libs/yarl/)
