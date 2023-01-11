@@ -179,7 +179,6 @@ async def post_chunk_data(record_id: str,
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
-                          get_record: GetRecordFunction = Depends(FetchRecordDependency())
                           ) -> DataframeBasicDescribe:
     # fetch the session
     i_session = await with_session.get_session(record_id, session_id)
