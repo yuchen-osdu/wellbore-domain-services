@@ -94,7 +94,7 @@ cachetools==4.2.2
     # via
     #   google-auth
     #   osdu-core-lib-python-azure
-certifi==2021.5.30
+certifi==2022.12.7
     # via
     #   httpcore
     #   httpx
@@ -376,7 +376,7 @@ pyyaml==5.4.1
     #   dask
     #   distributed
     #   osdu-api
-requests==2.26.0
+requests==2.28.1
     # via
     #   adal
     #   azure-core
