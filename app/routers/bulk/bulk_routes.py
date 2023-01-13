@@ -179,12 +179,7 @@ async def post_chunk_data(record_id: str,
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
                           dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
-                          get_record: GetRecordFunction = Depends(FetchRecordDependency())
                           ) -> DataframeBasicDescribe:
-    record = await get_record(record_id, None)
-    if hasattr(request.state, 'version') and request.state.version != "V2":
-        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
-
     # fetch the session
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
