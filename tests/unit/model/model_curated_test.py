@@ -22,7 +22,8 @@ from app.model.model_utils import from_record, to_record
 from ..data import *
 
 
-pytestmark = [pytest.mark.slow, pytest.mark.hypothesis, pytest.mark.serial]
+# pytestmark = [pytest.mark.slow, pytest.mark.hypothesis, pytest.mark.serial]
+pytestmark = pytest.mark.skip  # skip these long tests since there are targeting deprecated V2 schemas
 
 
 # typing utils
