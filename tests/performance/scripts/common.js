@@ -6,9 +6,10 @@ export const ACL_DOMAIN = __ENV.ACL_DOMAIN;
 export const DL_GROUP_DOMAIN = `${DATA_PARTITION_ID}.${ACL_DOMAIN}`;
 export const LEGAL_TAG = __ENV.LEGAL_TAG;
 
-export const logsRecordIds = open('../data/log.json');
-export const markersRecordIds = open('../data/marker.json');
-export const wellboresRecordIds = open('../data/wellbore.json');
+export const logsRecordIds = JSON.parse(open('../data/log.json'));
+export const wellLogsRecordIds = JSON.parse(open('../data/welllog.json'));
+export const markersRecordIds = JSON.parse(open('../data/marker.json'));
+export const wellboresRecordIds = JSON.parse(open('../data/wellbore.json'));
 
 ////////// Data generation functions ////////// 
 /**
@@ -44,7 +45,64 @@ export function generateLogMetadata() {
 };
 
 /**
- * Generates a valid wks log bulkdata with the split orient
+ * Generate a valid wks Well Log metadata
+ * API : ddms/v3/welllogs
+ */
+export function generateWellLogMetadata() {
+    return [
+        {
+            'acl': {
+                'owners': [`data.default.owners@${DL_GROUP_DOMAIN}`],
+                'viewers': [`data.default.viewers@${DL_GROUP_DOMAIN}`]
+            },
+            "kind": `${DATA_PARTITION_ID}:wks:work-product-component--WellLog:1.1.0`,
+            "legal": {
+                "legaltags": [
+                    LEGAL_TAG,
+                ],
+                "otherRelevantDataCountries": [
+                    "US",
+                    "FR"
+                ]
+            },
+            "data": {
+                "Curves": [
+                    {
+                        "CurveID": "DEPT",
+                        "Mnemonic": "DEPT",
+                        "NumberOfColumns": "1",
+                        "CurveUnit": `${DATA_PARTITION_ID}:reference-data--UnitOfMeasure:m:`,
+                        "LogCurveFamilyID": `${DATA_PARTITION_ID}:reference-data--LogCurveFamily:Dept:`
+                    },
+                    {
+                        "CurveID": "GR_ID",
+                        "Mnemonic": "GR",
+                        "NumberOfColumns": "1",
+                        "CurveUnit": `${DATA_PARTITION_ID}:reference-data--UnitOfMeasure:m:`,
+                        "LogCurveFamilyID": `${DATA_PARTITION_ID}:reference-data--LogCurveFamily:GammaRay:`
+                    },
+                    {
+                        "CurveID": "POR_ID",
+                        "Mnemonic": "NPOR",
+                        "NumberOfColumns": "1",
+                        "CurveUnit": `${DATA_PARTITION_ID}:reference-data--UnitOfMeasure:m:`,
+                        "LogCurveFamilyID": `${DATA_PARTITION_ID}:reference-data--LogCurveFamily:NeutronPorosity:`
+                    },
+                    {
+                        "CurveID": "Bulk Density",
+                        "Mnemonic": "RHOB",
+                        "NumberOfColumns": "1",
+                        "CurveUnit": `${DATA_PARTITION_ID}:reference-data--UnitOfMeasure:m:`,
+                        "LogCurveFamilyID": `${DATA_PARTITION_ID}:reference-data--LogCurveFamily:BulkDensity:`
+                    }
+                ],
+            },
+        }
+    ];
+};
+
+/**
+ * Generates a valid wks log bulkdata
  * API : /ddms/v2/log/{logid}/data
  */
 export function generateLogData() {
@@ -69,6 +127,27 @@ export function generateLogData() {
 }
 
 /**
+ * Generates a valid wks Well Log
+ * API : ddms/v3/welllogs/{{WellLogID}}/data
+ */
+ export function generateWellLogData() {
+    const columns = [
+        "DEPT",
+        "GR_ID",
+        "POR_ID",
+        "Bulk Density"
+    ];
+    const index = Array.from(Array(200).keys());
+    const data = index.map(() => columns.map(() => getRandomFloat(0, 150)))
+
+    return {
+        'columns': columns,
+        'index': index,
+        'data': data
+    };
+}
+
+/**
  * Generates a valid wks marker
  * API : /ddms/v2/markers
  */
@@ -77,10 +156,10 @@ export function generateMarker() {
         {
             "acl": {
                 "owners": [
-                    "data.default.owners@opendes.p4d.cloud.slb-ds.com"
+                    `data.default.owners@${DL_GROUP_DOMAIN}`
                 ],
                 "viewers": [
-                    "data.default.viewers@opendes.p4d.cloud.slb-ds.com"
+                    `data.default.viewers@${DL_GROUP_DOMAIN}`
                 ]
             },
             "data": {
@@ -110,10 +189,10 @@ export function generateWellboresOSDU() {
         {
             "acl": {
                 "owners": [
-                    "data.default.owners@opendes.p4d.cloud.slb-ds.com"
+                    `data.default.owners@${DL_GROUP_DOMAIN}`
                 ],
                 "viewers": [
-                    "data.default.viewers@opendes.p4d.cloud.slb-ds.com"
+                    `data.default.viewers@${DL_GROUP_DOMAIN}`
                 ]
             },
             "data": {
@@ -175,7 +254,7 @@ export function getParams() {
     const correlationId = `cid-wdms-perf-${uuidv4()}`;
     const requestId = `rid-wdms-perf-${uuidv4()}`;
 
-    return { headers: { "Authorization": `Bearer ${token}`, 'data-partition-id': DATA_PARTITION_ID, "request-id": requestId, "correlation-id": correlationId } };
+    return { headers: { "Authorization": `Bearer ${token}`, 'data-partition-id': DATA_PARTITION_ID, "request-id": requestId, "correlation-id": correlationId, "Content-Type": "application/json" } };
 }
 
 /**
@@ -222,6 +301,7 @@ export function flatUUID4() {
  */
 export function randomRecordId(recordType) {
     if (recordType == 'log') return logsRecordIds[Math.floor(Math.random() * logsRecordIds.length)];
+    if (recordType == 'welllog') return wellLogsRecordIds[Math.floor(Math.random() * logsRecordIds.length)];
     if (recordType == 'marker') return markersRecordIds[Math.floor(Math.random() * markersRecordIds.length)];
     if (recordType == 'wellbore') return wellboresRecordIds[Math.floor(Math.random() * wellboresRecordIds.length)];
 }
