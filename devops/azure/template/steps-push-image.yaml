@@ -25,7 +25,8 @@ parameters:
   destinationACRName: ''
   environment: ''
   imageTag: ''
-  appName: ''
+  appName: '' # destination app name to push
+  sourceAppName: 'os-wellbore-ddms' # source app name
 
 steps:
   - task: AzureCLI@2
@@ -39,6 +40,6 @@ steps:
         echo "${{ parameters.azureSubscription }}"
         echo "${{ parameters.destinationACRName }}"
         az acr login --name ${{ parameters.destinationACRName }}
-        docker tag ${{ parameters.sourceACRName }}.azurecr.io/os-wellbore-ddms:${{ parameters.imageTag }} ${{ parameters.destinationACRName }}.azurecr.io/${{ parameters.appName }}-${{ parameters.environment }}:$(Build.SourceVersion)
+        docker tag ${{ parameters.sourceACRName }}.azurecr.io/${{ parameters.sourceAppName }}:${{ parameters.imageTag }} ${{ parameters.destinationACRName }}.azurecr.io/${{ parameters.appName }}-${{ parameters.environment }}:$(Build.SourceVersion)
         docker push ${{ parameters.destinationACRName }}.azurecr.io/${{ parameters.appName }}-${{ parameters.environment }}:$(Build.SourceVersion)
         az acr repository show-tags --name ${{ parameters.destinationACRName }} --repository ${{ parameters.appName }}-${{ parameters.environment }} --orderby time_desc --top 3
