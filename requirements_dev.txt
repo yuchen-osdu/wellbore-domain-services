@@ -166,7 +166,7 @@ pyyaml==5.4.1
     # via
     #   -c requirements.txt
     #   openapi-spec-validator
-requests==2.26.0
+requests==2.28.1
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in
