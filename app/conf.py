@@ -123,6 +123,11 @@ class ConfigurationContainer:
         description='Back-end for storage service',
         is_mandatory=True)
 
+    service_host_wdms_worker: EnvVar = EnvVar(
+        key='SERVICE_HOST_WDMS_WORKER',
+        description='WDMS bulk worker host',
+        default='')
+
     de_client_config_timeout: EnvVar = EnvVar(
         key='DE_CLIENT_CFG_TIMEOUT',
         description='set connect, read, write, and pool timeouts (in seconds) for all DE client.',

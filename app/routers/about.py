@@ -14,7 +14,7 @@
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from app import __version__, __app_name__, __build_number__
+from app import __version__, __app_name__, __build_number__, __release__
 from app.conf import Config
 from typing import Dict
 from app.auth.auth import require_opendes_authorized_user
@@ -22,11 +22,13 @@ from app.routers.common_parameters import response_401, response_403
 
 router = APIRouter()
 
+
 class AboutResponse(BaseModel):
     service: str = None
     version: str = None
     buildNumber: str = None
     cloudEnvironment: str = None
+    release: str = None
 
 
 @router.get("/about", response_model=AboutResponse, include_in_schema=True)
@@ -35,6 +37,7 @@ async def get_about() -> AboutResponse:
         service=__app_name__,
         version=__version__,
         buildNumber=__build_number__,
+        release=__release__,
         cloudEnvironment=Config.cloud_provider.value
     )
 
@@ -43,6 +46,7 @@ class VersionDetailsResponse(BaseModel):
     service: str = None
     version: str = None
     buildNumber: str = None
+    release: str = None
     details: Dict[str, str] = None
 
 
@@ -55,11 +59,22 @@ async def get_version(user=Depends(require_opendes_authorized_user, use_cache=Fa
         key_val[0].strip(): key_val[1].replace('\\"', '"').strip(' "')
         for key_val in key_val_list
     }
-    # codecs.decode(s, 'unicode_escape')
+    # some additional environment info
+    details.update({k: Config.get_env_or_attribute(k).printable_value for k in [
+        "environment_name",
+        "cloud_provider",
+        "de_client_config_timeout",
+        "enable_read_fast_track"]}
+                   )
+
+    if Config.service_host_wdms_worker.value:
+        details["enable_wdms_bulk_worker"] = str(True)
+
     return VersionDetailsResponse.construct(
         service=__app_name__,
         version=__version__,
         buildNumber=__build_number__,
+        release=__release__,
         details=details
     )
 

@@ -1,7 +1,6 @@
 from typing import Optional, Set, Tuple
 import asyncio
 import anyio
-from io import BytesIO
 
 import pandas as pd
 
@@ -9,19 +8,20 @@ from fastapi import Response
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
-from app.bulk_persistence.dask.errors import TooManyValuesRequested
 from app.helper.logger import get_logger
 from app.helper.traces import with_trace
-
-from app.bulk_persistence import (BulkCatalog,
-                                  MimeType, MimeTypes, JSONOrient,
-                                  BulkCurvesNotFound,
-                                  BulkReadFilters,
-                                  DataframeSerializerSync, DataframeSerializerAsync, TooManyColumnsRequested)
-from app.bulk_persistence.capture_timings import capture_timings, timeit
-from app.bulk_persistence.dask import storage_path_builder
-from app.bulk_persistence.dataframe_columns import ColumnSelection, select_columns, sort_dataframe_column
 from app.conf import Config
+
+from .mime_types import MimeType, MimeTypes
+from .json_orient import JSONOrient
+from .dask.errors import BulkCurvesNotFound, TooManyColumnsRequested
+from .bulk_filter import BulkReadFilters
+from .dataframe_serializer import DataframeSerializerAsync, DataframeSerializerSync
+from .capture_timings import capture_timings, timeit
+from .dataframe_columns import ColumnSelection, select_columns, sort_dataframe_column
+from .dask import storage_path_builder
+from .dask.errors import TooManyValuesRequested
+from .dask.bulk_catalog import BulkCatalog
 
 """
     The purpose of read fast track to speed up read on some specific circumstances

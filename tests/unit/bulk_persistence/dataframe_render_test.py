@@ -8,7 +8,7 @@ from fastapi import HTTPException
 
 from app.bulk_persistence import JSONOrient, MimeTypes, GetDataParams, DataframeDescribe
 from app.bulk_persistence.dask.errors import BulkCurvesNotFound
-from app.routers.bulk.bulk_routes import DataFrameRender
+from app.bulk_persistence.dask.dataframe_render import DataFrameRender
 from app.routers.bulk.utils import get_df_from_request
 from tests.unit.generate_data import generate_df
 
@@ -98,12 +98,12 @@ def basic_dataframe():
 @pytest.mark.anyio
 async def test_df_render_empty_accept_raise(default_get_params, basic_dataframe, nope_logger_fixture):
     with pytest.raises(ValueError):
-        await DataFrameRender.df_render(basic_dataframe, default_get_params, render_type=None)
+        await DataFrameRender.df_render(basic_dataframe, None, default_get_params, render_type=None)
 
 
 @pytest.mark.anyio
 async def test_df_render_accept_parquet(default_get_params, basic_dataframe):
-    response = await DataFrameRender.df_render(basic_dataframe, default_get_params, MimeTypes.PARQUET)
+    response = await DataFrameRender.df_render(basic_dataframe, None, default_get_params, MimeTypes.PARQUET)
 
     assert response.headers.get('Content-Type') == "application/x-parquet"
     assert_df_in_parquet(basic_dataframe, response.body)
@@ -112,7 +112,7 @@ async def test_df_render_accept_parquet(default_get_params, basic_dataframe):
 @pytest.mark.anyio
 @pytest.mark.parametrize("orient", [JSONOrient.split, JSONOrient.columns])
 async def test_df_render_accept_json(default_get_params, basic_dataframe, orient):
-    response = await DataFrameRender.df_render(basic_dataframe, default_get_params, MimeTypes.JSON, orient)
+    response = await DataFrameRender.df_render(basic_dataframe, None, default_get_params, MimeTypes.JSON, orient)
     assert response.headers.get('Content-Type') == "application/json"
     f = BytesIO(response.body)
     f.seek(0)
@@ -124,7 +124,7 @@ async def test_df_render_accept_json(default_get_params, basic_dataframe, orient
 async def test_df_render_describe():
     columns = [f'var_{i}' for i in range(10)]
     data = generate_df(columns, index=range(100))
-    response = await DataFrameRender.df_render(data, GetDataParams(
+    response = await DataFrameRender.df_render(data, None, GetDataParams(
         describe=True, limit=None, curves=None, offset=None))
 
     assert type(response) is DataframeDescribe

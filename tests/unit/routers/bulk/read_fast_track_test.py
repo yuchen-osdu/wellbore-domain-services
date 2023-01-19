@@ -12,7 +12,7 @@ from app.bulk_persistence.dask import storage_path_builder
 from app.bulk_persistence.dask.bulk_catalog import BulkCatalogOrigin, ChunkGroup
 from app.bulk_persistence.dask.errors import TooManyValuesRequested
 from app.bulk_persistence.dask.session_file_meta import generate_chunk_filename
-from app.routers.bulk import read_fast_track
+from app.bulk_persistence import read_fast_track
 
 import pytest
 from unittest.mock import AsyncMock, Mock

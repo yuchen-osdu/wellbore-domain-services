@@ -258,7 +258,7 @@ async def test_restricted_record_id(
                 headers={"Content-Type": "application/json"},
             )
             validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                                 status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
+                                                 status.HTTP_200_OK, status.HTTP_404_NOT_FOUND)
 
             response = await dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}/sessions")
             validation_test_restricted_record_id(record_id, record_id_to_test, response,

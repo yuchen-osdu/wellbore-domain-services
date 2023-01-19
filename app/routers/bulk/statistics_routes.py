@@ -20,7 +20,8 @@ from odes_storage.models import Record
 
 from app.routers.record_utils import fetch_record_dependency, fetch_latest_version_record_dependency
 from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
-from app.routers.bulk.utils import with_dask_blob_storage, DataFrameRender
+from app.routers.bulk.utils import with_dask_blob_storage
+from app.bulk_persistence.dask.dataframe_render import DataFrameRender
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
