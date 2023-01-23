@@ -173,13 +173,6 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 
 ========================================================================
-IETF
-========================================================================
-The following software have components provided under the terms of this license:
-
-- cryptography (from https://github.com/pyca/cryptography)
-
-========================================================================
 ISC
 ========================================================================
 The following software have components provided under the terms of this license:
