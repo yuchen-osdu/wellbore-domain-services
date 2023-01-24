@@ -17,7 +17,15 @@ from app.model.osdu_model import (
     WellboreTrajectory110,
     WellLog,
     WellLog110,
-    WellLog120, Well110, Well120, Wellbore110, WellboreMarkerSet120, Wellbore111, Wellbore120, WellboreMarkerSet121
+    WellLog120,
+    Well110,
+    Well120,
+    Wellbore110,
+    WellboreMarkerSet120,
+    Wellbore111,
+    Wellbore120,
+    Wellbore130,
+    WellboreMarkerSet121
 )
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 from app.routers.record_utils import fetch_record
@@ -64,6 +72,7 @@ class DMSV3RouterUtils:
             -  master-data--Wellbore:1.0.0
             -  master-data--Wellbore:1.1.0
             -  master-data--Wellbore:1.2.0
+            -  master-data--Wellbore:1.3.0
             -  work-product-component--WellLog:1.0.0
             -  work-product-component--WellLog:1.1.0
             -  work-product-component--WellLog:1.2.0
@@ -85,7 +94,7 @@ class DMSV3RouterUtils:
         supported_models = {
             "master-data--Well": {"1.0.0": Well, "1.1.0": Well110, "1.2.0": Well120},
             "master-data--Wellbore": {"1.0.0": Wellbore, "1.1.0": Wellbore110, "1.1.1": Wellbore111,
-                                      "1.2.0": Wellbore120},
+                                      "1.2.0": Wellbore120, "1.3.0": Wellbore130},
             "work-product-component--WellLog": {"1.0.0": WellLog, "1.1.0": WellLog110, "1.2.0": WellLog120},
             "work-product-component--WellboreMarkerSet": {"1.0.0": WellboreMarkerSet, "1.1.0": WellboreMarkerSet110,
                                                           "1.2.0": WellboreMarkerSet120, "1.2.1": WellboreMarkerSet121},

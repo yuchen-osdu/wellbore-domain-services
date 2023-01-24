@@ -4271,7 +4271,7 @@
         "title": "Well120",
         "type": "object"
       },
-      "WellBoreData120": {
+      "WellBoreData130": {
         "additionalProperties": false,
         "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
         "properties": {
@@ -4393,6 +4393,11 @@
             "description": "Fluid Direction [Well Fluid Direction] is the flow direction of the wellhead stream. The facet value can change over the life of the wellbore.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellFluidDirection:[\\w\\-\\.\\:\\%]+:[0-9]*$",
             "title": "Fluiddirectionid",
+            "type": "string"
+          },
+          "FormationNameAtTotalDepth": {
+            "description": "The name of the formation encountered at total depth. The value is not controlled by any reference value list.",
+            "title": "Formationnameattotaldepth",
             "type": "string"
           },
           "GeoContexts": {
@@ -4623,6 +4628,20 @@
             "title": "Wellid",
             "type": "string"
           },
+          "WellboreCosts": {
+            "description": "The array of WellActivityPhaseType and associated Cost values.",
+            "items": {
+              "$ref": "#/components/schemas/WellboreCost"
+            },
+            "title": "Wellborecosts",
+            "type": "array"
+          },
+          "WellboreReasonID": {
+            "description": "The relationship to a reference-data record explaining the reason why this wellbore was drilled.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellboreReason:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Wellborereasonid",
+            "type": "string"
+          },
           "WellboreTrajectoryTypeID": {
             "description": "DEPRECATED: Added accidentally in version 1.1.0. Please use the original TrajectoryTypeID instead. Profile Type [Wellbore Trajectory Type] is the general geometry of the wellbore relative to the vertical plane. The specific criteria for Profile Type may vary by operator or regulator. The facet value may change if conditions encountered during drilling are not what was planned or permitted.",
             "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellboreTrajectoryType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
@@ -4630,7 +4649,7 @@
             "type": "string"
           }
         },
-        "title": "WellBoreData120",
+        "title": "WellBoreData130",
         "type": "object"
       },
       "WellData120": {
@@ -5446,7 +5465,7 @@
         ],
         "title": "WellType"
       },
-      "Wellbore120": {
+      "Wellbore130": {
         "additionalProperties": false,
         "description": "A hole in the ground extending from a point at the earth's surface to the maximum point of penetration.",
         "properties": {
@@ -5482,7 +5501,7 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WellBoreData120"
+            "$ref": "#/components/schemas/WellBoreData130"
           },
           "id": {
             "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
@@ -5493,7 +5512,7 @@
           },
           "kind": {
             "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
-            "example": "osdu:wks:master-data--Wellbore:1.2.0",
+            "example": "osdu:wks:master-data--Wellbore:1.3.0",
             "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
             "title": "Entity Kind",
             "type": "string"
@@ -5549,7 +5568,26 @@
           "acl",
           "legal"
         ],
-        "title": "Wellbore120",
+        "title": "Wellbore130",
+        "type": "object"
+      },
+      "WellboreCost": {
+        "additionalProperties": false,
+        "description": "A cost value associated to a WellActivityPhaseType value.",
+        "properties": {
+          "ActivityTypeID": {
+            "description": "The activity phase to which the Cost property is attributed to.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-WellActivityPhaseType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Well Activity Phase Type ID",
+            "type": "string"
+          },
+          "Cost": {
+            "description": "The cost value associated with the WellActivityPhaseType.",
+            "title": "Cost",
+            "type": "number"
+          }
+        },
+        "title": "WellboreCost",
         "type": "object"
       },
       "WellboreMarkerSet121": {
@@ -16842,6 +16880,7 @@
                       }
                     ],
                     "FluidDirectionID": "{{datapartitionid}}:reference-data--WellFluidDirection:DualFlow:",
+                    "FormationNameAtTotalDepth": "Example FormationNameAtTotalDepth",
                     "GeoContexts": [
                       {
                         "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:",
@@ -16933,10 +16972,17 @@
                     "WasBusinessInterestFinancialOperated": true,
                     "WasBusinessInterestObligatory": true,
                     "WasBusinessInterestTechnical": true,
-                    "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:"
+                    "WellID": "{{datapartitionid}}:master-data--Well:{{wellId}}:",
+                    "WellboreCosts": [
+                      {
+                        "ActivityTypeID": "{{datapartitionid}}:reference-data--WellActivityPhaseType:RMOVE:",
+                        "Cost": 12345.6
+                      }
+                    ],
+                    "WellboreReasonID": "{{datapartitionid}}:reference-data--WellboreReason:AccidentalSidetrack:"
                   },
                   "id": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
-                  "kind": "osdu:wks:master-data--Wellbore:1.2.0",
+                  "kind": "osdu:wks:master-data--Wellbore:1.3.0",
                   "legal": {
                     "legaltags": [
                       "{{legaltags}}"
@@ -16963,7 +17009,7 @@
               ],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/Wellbore120"
+                  "$ref": "#/components/schemas/Wellbore130"
                 },
                 "title": "Wellbores",
                 "type": "array"
@@ -17114,7 +17160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Wellbore120"
+                  "$ref": "#/components/schemas/Wellbore130"
                 }
               }
             },
@@ -17269,7 +17315,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Wellbore120"
+                  "$ref": "#/components/schemas/Wellbore130"
                 }
               }
             },

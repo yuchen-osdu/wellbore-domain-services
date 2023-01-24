@@ -132,6 +132,7 @@ def records_with_version(records):
     ("wellbores", "wellbore110_v3_list"),
     ("wellbores", "wellbore111_v3_list"),
     ("wellbores", "wellbore120_v3_list"),
+    ("wellbores", "wellbore130_v3_list"),
     ("wellboremarkersets", "marker110_v3_list"),
     ("wellboremarkersets", "marker120_v3_list"),
     ("wellboremarkersets", "marker121_v3_list"),
