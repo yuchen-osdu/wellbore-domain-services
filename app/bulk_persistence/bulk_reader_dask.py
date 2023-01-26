@@ -73,6 +73,7 @@ class BulkReaderDask:
     def __init__(self, fast_track: bool):
         self._fast_track = fast_track
 
+    @with_trace("dask.read_data")
     async def read_data(self,
                         ctx,
                         record_id: str,
