@@ -895,7 +895,7 @@ def build_request_search_tests_setup_create_osdu_markersets() -> RequestRunner:
           "MarkerDate": "2020-02-13T09:13:15.55Z",
           "MarkerObservationNumber": 12345.6,
           "MarkerInterpreter": "Example MarkerInterpreter",
-          "MarkerTypeID": "namespace:reference-data--MarkerType:BioStratigraphy:",
+          "MarkerTypeID": "namespace:reference-data--MarkerType:Biostratigraphy:",
           "FeatureTypeID": "namespace:reference-data--FeatureType:Base:",
           "FeatureName": "Example FeatureName",
           "PositiveVerticalDelta": 12345.6,
