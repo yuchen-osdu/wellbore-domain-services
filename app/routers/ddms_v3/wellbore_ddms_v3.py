@@ -20,7 +20,7 @@ from app.model.osdu_record_id import split_record_id_version, WellboreId
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.model.model_utils import from_record, to_record
-from app.model.osdu_model import Wellbore120 as Wellbore
+from app.model.osdu_model import Wellbore130 as Wellbore
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
@@ -132,7 +132,7 @@ async def get_osdu_wellbore_version(
 )
 async def post_wellbore_osdu(
     wellbores: List[Wellbore] = Body(
-        ..., example=load_schema_example("wellbore_v3_120.json")
+        ..., example=load_schema_example("wellbore_v3_130.json")
     ),
     ctx: Context = Depends(get_ctx),
 ) -> CreateUpdateRecordsResponse:

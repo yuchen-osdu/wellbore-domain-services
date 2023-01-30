@@ -7,7 +7,9 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.context import Context, get_ctx
 
 from app.model.osdu_model import Well, Well110, Well120, Wellbore, Wellbore110, WellboreMarkerSet110, \
-    WellboreMarkerSet120, WellboreTrajectory110, WellLog110, WellLog120, Wellbore111, Wellbore120, WellboreMarkerSet121
+    WellboreMarkerSet120, WellboreTrajectory110, WellLog110, WellLog120, Wellbore111, Wellbore120, \
+    Wellbore130, WellboreMarkerSet121
+
 
 
 def test_local_dev_config(local_dev_config):
@@ -278,6 +280,12 @@ def test_wellbore120_v3_list(wellbore120_v3_list):
     assert len(wellbore120_v3_list) > 0
     for inst in wellbore120_v3_list:
         Wellbore120.validate(inst)
+
+
+def test_wellbore130_v3_list(wellbore130_v3_list):
+    assert len(wellbore130_v3_list) > 0
+    for inst in wellbore130_v3_list:
+        Wellbore130.validate(inst)
 
 
 def test_welllog110_v3_list(welllog110_v3_list):

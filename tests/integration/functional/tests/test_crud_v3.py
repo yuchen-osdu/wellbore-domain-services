@@ -22,6 +22,7 @@ from wdms_client.request_builders import build_request, diff_record_against_ref
 kind_list = [
     'osdu_wellbore_100',
     'osdu_wellbore_111',
+    'osdu_wellbore_120',
     'osdu_wellbore',# is the latest
     'osdu_well_100',
     'osdu_well_110',
