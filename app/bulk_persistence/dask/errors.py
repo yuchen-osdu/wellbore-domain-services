@@ -27,6 +27,13 @@ class BulkError(RuntimeError):
         raise HTTPException(status_code=self.http_status, detail=str(self)) from self
 
 
+class BulkWorkerError(BulkError):
+    """ non successful response from worker """
+    def __init__(self, message: str, status_code: int):
+        super().__init__(message)
+        self.http_status = status_code
+
+
 class BulkRecordNotFound(BulkError):
     http_status = status.HTTP_404_NOT_FOUND
 

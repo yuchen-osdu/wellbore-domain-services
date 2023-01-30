@@ -1,10 +1,13 @@
 from typing import Optional
 from aiohttp import ClientSession
 from fastapi import HTTPException, Response
+
+from .dask.errors import BulkWorkerError
 from .model_chunking import GetDataParams
 from .mime_types import MimeType
 from .json_orient import JSONOrient
 from .bulk_uri import BulkURI
+from app.helper.traces import with_trace
 
 
 class BulkReaderWdmsWorker:
@@ -12,6 +15,7 @@ class BulkReaderWdmsWorker:
         self._host = host
         self._http_session = http_session
 
+    @with_trace("worker.read_data")
     async def read_data(self,
                         ctx,
                         record_id: str,
@@ -44,7 +48,6 @@ class BulkReaderWdmsWorker:
                 params=params
         ) as resp:
             if resp.status != 200:
-                # not sure how to properly manage errors yet so directly construct and forward an http exception
-                raise HTTPException(status_code=resp.status, detail=await resp.text())
+                raise BulkWorkerError(await resp.text(), resp.status)
 
             return Response(content=await resp.read(), media_type=accept_type.type)
