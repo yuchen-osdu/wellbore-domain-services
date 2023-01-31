@@ -19,6 +19,9 @@ data:
   OPENAPI_PREFIX: {{ include "os-wellbore-ddms.prefix" . }}
   SERVICE_HOST_STORAGE: {{ .Values.configMap.data.storageEndpoint }}
   SERVICE_HOST_SEARCH: {{ .Values.configMap.data.searchEndpoint }}
+  {{ if .Values.configMap.data.workersEndpoint }}
+  SERVICE_HOST_WDMS_WORKER: {{ .Values.configMap.data.workersEndpoint }}
+  {{ end }}
   SERVICE_HOST_PARTITION: {{ .Values.configMap.data.partitionEndpoint }}
   USE_PARTITION_SERVICE: {{ .Values.configMap.data.usePartitionService }}
   AZ_LOGGER_LEVEL: {{ .Values.configMap.data.loggerLevel }}
