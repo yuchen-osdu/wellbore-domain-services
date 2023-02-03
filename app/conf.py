@@ -106,10 +106,10 @@ class ConfigurationContainer:
 
     cloud_provider: EnvVar = EnvVar(
         key='CLOUD_PROVIDER',
-        description='Short name of the current cloud provider environment, must be "aws" or "gcp" or "az" or "ibm" or "anthos"',
+        description='Short name of the current cloud provider environment, must be "aws" or "gc" or "az" or "ibm" or "anthos"',
         default=None,
         is_mandatory=True,
-        allowed_values=['aws', 'gcp', 'az', 'local', 'ibm', 'anthos'],
+        allowed_values=['aws', 'gc', 'az', 'local', 'ibm', 'anthos'],
         factory=lambda x: x.lower()
     )
 
@@ -332,10 +332,10 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
 
         config.az_bulk_container = 'wdms-osdu'
 
-    if provider == 'gcp':
+    if provider == 'gc':
         config.add_from_env(attribute_name='default_data_tenant_project_id',
                             env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
-                            description='GCP data tenant ID',
+                            description='Google Cloud data tenant ID',
                             default='logstore-dev',
                             is_mandatory=True,
                             override=True)

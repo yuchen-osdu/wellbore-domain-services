@@ -65,14 +65,15 @@ Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Un
 ## Project Startup
 
 ### Dask Configuration - Locally
+
 By default, It will use all memory available and use CPU resources through workers. The number of workers is determined by the quantity of core the current local machine has.
 
 ### Dask Configuration - In a cluster
+
 In a container context, such as Kubernetes we recommend to set container memory limit at 3Gi of RAM and 4-8 CPUs.
 At the minimum 1.2Gi and 1 cpu but performance will be reduced, but enough to handle WellLogs of 10 curves with 1M values each.
 
 Note: container memory is not entirely dedicated to Dask workers, fastapi service with its process also require some.  
-
 
 ### Run the service locally
 
@@ -103,10 +104,10 @@ Note: container memory is not entirely dedicated to Dask workers, fastapi servic
     ```
 
     Or, for a developer setup, this will install tools to help you work with the code.
+
     ```bash
     pip install -r requirements.txt -r requirements_dev.txt
     ```
-    
 
 6. Run the service
 
@@ -132,7 +133,6 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 1. Generate bearer token as all APIs but `/about` require authentication.
 
     - Navigate to `http://127.0.0.1:8080/api/os-wellbore-ddms/docs`. Click `Authorize` and enter your token. That will allow for authenticated requests.
-
 
 2. Choose storage option
 
@@ -165,7 +165,7 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
   - SERVICE_HOST_STORAGE: The Storage Service host
 
   ```bash
-  python main.py -e CLOUD_PROVIDER gcp \
+  python main.py -e CLOUD_PROVIDER gc \
   -e OS_WELLBORE_DDMS_DATA_PROJECT_ID projectid \
   -e OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS pathtokeyfile \
   -e SERVICE_HOST_SEARCH search_host \
@@ -201,8 +201,6 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
   -e SERVICE_HOST_STORAGE storage_host \
   -e SERVICE_HOST_PARTITION partition_host 
   ```
-
-
 
 Note: If you're running locally, you may need to provide environmental variables in your IDE. Here is a sample for providing a `.env` file.
 
@@ -303,7 +301,6 @@ To create a `WellLog` record, below is a payload sample for the POST `/ddms/v3/w
 ]
 ```
 
-
 ### Run with Uvicorn
 
 ```bash
@@ -347,7 +344,6 @@ docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DI
     docker logs CONTAINER_ID
     ```
 
-
 ### Run Unit Tests
 
 ```bash
@@ -360,31 +356,36 @@ python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html -
 
 Coverage reports can be viewed after the command is run. The HMTL reports are saved in the htmlcov directory.
 
-
 #### Control order of the tests
 
-To detect inter-test dependencies and ensure that each test can pass both in isolation and when run in a suite  **test items are randomly shuffled** 
+To detect inter-test dependencies and ensure that each test can pass both in isolation and when run in a suite  **test items are randomly shuffled**
 thanks to the dependencies of the [pytest-randomly](https://pypi.org/project/pytest-xdist/) plugin.
 
 The output will start with an extra line that tells you the random seed. For instance:
+
 ```
 Using --randomly-seed=256596674
 ```
- 
+
 If  tests fail due to ordering, you can  repeat the last ordering:
+
 ```
 --randomly-seed=last
-``` 
+```
+
 or repeat a specific ordering:
+
 ```
 --randomly-seed=1234
 ```
-If necessary you can  make the tests run in order: 
+
+If necessary you can  make the tests run in order:
+
 ```
 -p no:randomly
 ```
 
-### Control the tests to be run 
+### Control the tests to be run
 
 Some unit test are flagged with the following marks:
     - slow: test that take time
@@ -394,16 +395,19 @@ Some unit test are flagged with the following marks:
     - statistics: specific to test the functionality linked to the api of statistic
 
 For instance use the following decorator to mark a test as slow
+
 ```
 @pytest.mark.slow
 ```
 
 To control the test to run according those mark it is possible to pass to pytest the '-m'  option flag, for instance to disable the serial and slow test:
+
 ```
 -m 'not serial and not slow"
 ```
 
 to run only perf test:
+
 ```
 -m 'serial'
 ```
@@ -412,20 +416,22 @@ to run only perf test:
 
 Thanks to plugin [pytest-xdist](https://pypi.org/project/pytest-xdist/) in dependencies,  it is possible to run the tests in parallel which can reduce the execution time.
 to activate it add the following option:
+
 ```
 -n auto -m "not serial"
 ```
 
 With the option `-m "not serial` **Tests that do not support distribution can be marked with 'pytest.mark.serial' and will be ignored.**
 You can run them specifically in sequence in a second step by replacing the previous option with the following:
+
 ```
 -n 0 -m "serial"
 ```
+
 In addition to speeding up the execution time of a large set of tests, it challenges the isolation of the tests more strongly than randomization.
 That is, a test that depends on the state left by the execution of another test is much more likely to be detected by parallel execution
 than the sequential execution of tests in a random order.
 In the case of execution of subset of tests, the speed gain can be lower than the overhead.
-
 
 ### Run Integration Tests locally
 
@@ -458,11 +464,13 @@ pip-sync
 ```
 
 If you want to work with other requirements file, you can specify them
+
 ```bash
 pip-sync requirements.txt requirements_dev.txt
 ```
 
 **Note:** On a Windows workstation, platform-specific modules such as `pywin32` are also needed. In this case don't use `pip-sync` but `pip install` instead.
+
 ```bash
 pip install -r requirements.txt -r requirements_dev.txt
 ```
@@ -481,9 +489,10 @@ pip-compile --upgrade-package fastapi
 
 **Note:** On a Windows workstation, **don't** commit the `pywin32` back to the `requirements.txt` file, that will cause CICD to fail.
 
-For more information: https://github.com/jazzband/pip-tools/
+For more information: <https://github.com/jazzband/pip-tools/>
 
-### Debugging:
+### Debugging
+
 #### Port Forward from Kubernetes
 
  1. List the pods: `kubectl get pods`

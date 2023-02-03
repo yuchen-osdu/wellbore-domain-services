@@ -20,16 +20,16 @@ import jwt
 payload = {}
 
 @pytest.fixture
-def skip_if_gcp_environment(base_url):
+def skip_if_gc_environment(base_url):
     """
-        In GCP environment there is no AuthorizationPolicy set. Certain tests may fail on GCP
-        and this fixture aims to skip a test case when targeted environment is GCP.
+        In Google Cloud environment there is no AuthorizationPolicy set. Certain tests may fail on Google Cloud
+        and this fixture aims to skip a test case when targeted environment is Google Cloud.
     """
     response = requests.request("GET", f"{base_url}/about", verify=False)
     assert response.status_code == 200
     about_response = response.json()
 
-    if about_response.get("cloudEnvironment") == "gcp":
+    if about_response.get("cloudEnvironment") == "gc":
         pytest.skip('skipped on this cloud provider because no AuthorizationPolicy in place')
 
 
@@ -63,7 +63,7 @@ def test_notoken_paths_returns_20X(base_url, check_cert, token, path):
 
 # Test for no token on some paths where JWT token is required due to the AuthorizationPolicy
 @pytest.mark.parametrize("path", ["version", "nonExistingPath"])
-def test_notoken_returns_40X(base_url, check_cert, token, skip_if_gcp_environment, path):
+def test_notoken_returns_40X(base_url, check_cert, token, skip_if_gc_environment, path):
 
     url = f"{base_url}/{path}"
     headers = {}

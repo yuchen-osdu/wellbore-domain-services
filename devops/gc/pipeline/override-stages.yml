@@ -1,9 +1,11 @@
 variables:
-  OSDU_GCP_SERVICE: wellbore
-  OSDU_GCP_VENDOR: gcp
-  OSDU_GCP_INT_TEST_TYPE: python
+  GC_SERVICE: wellbore
+  GC_VENDOR: gc
+  GC_INT_TEST_TYPE: python
+  # FIXME remove when all services are migrated to a single helm
+  GC_ENABLE_HELM_CONFIG: "false"
 
-osdu-gcp-containerize-gitlab:
+gc-containerize-gitlab:
   variables:
     BUILD_PATH: "./build/Dockerfile"
     BUILD_ARGS: >
@@ -19,7 +21,7 @@ osdu-gcp-containerize-gitlab:
     - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
     - sed -i "s|osdu-core-lib-python-aws==2.0.5|# osdu-core-lib-python-aws==2.0.5|g" requirements.txt
 
-osdu-gcp-containerize-gcr:
+gc-containerize-gcr:
   variables:
     BUILD_PATH: "./build/Dockerfile"
     BUILD_ARGS: >
@@ -31,17 +33,17 @@ osdu-gcp-containerize-gcr:
       --build-arg commit_branch=$CI_COMMIT_BRANCH
   # FIXME (GONRG-6043): check if it possible to be deleted before next release
   before_script:
-    - cat $OSDU_GCP_DEPLOY_FILE | docker login -u _json_key --password-stdin https://gcr.io
+    - cat $GC_DEPLOY_FILE | docker login -u _json_key --password-stdin https://gcr.io
     - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0|g" requirements.txt
     - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
     - sed -i "s|osdu-core-lib-python-aws==2.0.5|# osdu-core-lib-python-aws==2.0.5|g" requirements.txt
 
-osdu-gcp-test-python:
-  extends: .osdu-gcp-variables
+gc-test-python:
+  extends: .gc-variables
   stage: integration
   image: python:3.8
   tags: ["osdu-small"]
-  needs: ["osdu-gcp-deploy-deployment"]
+  needs: ["gc-deploy-deployment"]
   script:
     - bash
     - curl https://sdk.cloud.google.com > install.sh
@@ -57,24 +59,24 @@ osdu-gcp-test-python:
         pip install -r $REQ
       done
     - cd tests/integration
-    - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
+    - echo $GC_INTEGRATION_TESTER | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
-    - gcloud config set project $OSDU_GCP_PROJECT
+    - gcloud config set project $GC_PROJECT
     - >
       python gen_postman_env.py
       --token $(gcloud auth print-access-token)
-      --base_url $OSDU_GCP_WELLBORE_BASE_URL
-      --cloud_provider $OSDU_GCP_VENDOR
-      --data_partition $OSDU_GCP_TENANT
+      --base_url $GC_WELLBORE_BASE_URL
+      --cloud_provider $GC_VENDOR
+      --data_partition $GC_TENANT
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search -p no:randomly
 
-osdu-gcp-dev2-test-python:
-  extends: .osdu-gcp-dev2-variables
+gc-dev2-test-python:
+  extends: .gc-dev2-variables
   stage: integration
   image: python:3.8
-  needs: ["osdu-gcp-dev2-deploy-deployment"]
+  needs: ["gc-dev2-deploy-deployment"]
   script:
     - bash
     - curl https://sdk.cloud.google.com > install.sh
@@ -90,25 +92,25 @@ osdu-gcp-dev2-test-python:
         pip install -r $REQ
       done
     - cd tests/integration
-    - echo $OSDU_GCP_INTEGRATION_TESTER | base64 -d > file.json
+    - echo $GC_INTEGRATION_TESTER | base64 -d > file.json
     - gcloud auth activate-service-account --key-file file.json
-    - gcloud config set project $OSDU_GCP_PROJECT
+    - gcloud config set project $GC_PROJECT
     - >
       python gen_postman_env.py
       --token $(gcloud auth print-access-token)
-      --base_url $OSDU_GCP_WELLBORE_BASE_URL
-      --cloud_provider $OSDU_GCP_VENDOR
-      --data_partition $OSDU_GCP_TENANT
+      --base_url $GC_WELLBORE_BASE_URL
+      --cloud_provider $GC_VENDOR
+      --data_partition $GC_TENANT
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
 
-osdu-gcp-anthos-test-python:
-  extends: .osdu-gcp-anthos-variables
+gc-anthos-test-python:
+  extends: .gc-anthos-variables
   stage: integration
   image: python:3.8
   tags: ["osdu-small"]
-  needs: ["osdu-gcp-anthos-deploy-deployment"]
+  needs: ["gc-anthos-deploy-deployment"]
   script:
     - bash
     - wget -O /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
@@ -132,22 +134,22 @@ osdu-gcp-anthos-test-python:
     - >
       python gen_postman_env.py
       --token $TOKEN
-      --base_url $OSDU_GCP_WELLBORE_BASE_URL
+      --base_url $GC_WELLBORE_BASE_URL
       --cloud_provider "anthos"
-      --data_partition $OSDU_GCP_TENANT
+      --data_partition $GC_TENANT
       --acl_domain $DOMAIN
       --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking' -p no:randomly
 
-# Disable maven job in gcp common gke pipelines
-osdu-gcp-test:
+# Disable maven job in gc-com-gke pipelines
+gc-test:
   extends:
-    - .osdu-gcp-variables
+    - .gc-variables
 
-osdu-gcp-dev2-test:
+gc-dev2-test:
   extends:
-    - .osdu-gcp-dev2-variables
+    - .gc-dev2-variables
 
-osdu-gcp-anthos-test:
+gc-anthos-test:
   extends:
-    - .osdu-gcp-anthos-variables
+    - .gc-anthos-variables

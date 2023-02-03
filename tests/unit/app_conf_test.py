@@ -40,14 +40,14 @@ def testing_config():
 
 
 @pytest.fixture()
-def gcp_config_fixture():
+def gc_config_fixture():
     """
        DO NOT USE THIS
        BUG: global app.conf.Config corruption
     """
     original_provider_name = Config.cloud_provider.value
 
-    provider_name = "gcp"
+    provider_name = "gc"
 
     environment_dict = os.environ.copy()
     environment_dict[ConfigurationContainer.cloud_provider.key] = provider_name
@@ -109,16 +109,16 @@ def azure_config_fixture():
 
 
 @pytest.mark.skip("global app.conf.Config corruption")
-def test_gcp_configuration_checker(gcp_config_fixture):
-    gcp_config = gcp_config_fixture
+def test_gc_configuration_checker(gc_config_fixture):
+    gc_config = gc_config_fixture
 
-    assert gcp_config.cloud_provider.value == "gcp"
-    variables_dict = gcp_config.as_printable_dict()
+    assert gc_config.cloud_provider.value == "gc"
+    variables_dict = gc_config.as_printable_dict()
 
     assert "default_data_tenant_project_id" in variables_dict.keys()
     assert "default_data_tenant_credentials" in variables_dict.keys()
 
-    check_environment(gcp_config)
+    check_environment(gc_config)
 
 
 @pytest.mark.skip("global app.conf.Config corruption")
@@ -132,7 +132,7 @@ def test_azure_configuration_checker(azure_config_fixture):
 
     assert azure_config.az_bulk_container == 'wdms-osdu'
 
-    # below attribute are gcp only
+    # below attribute are Google Cloud only
     assert "default_data_tenant_project_id" not in variables_dict
     assert "default_data_tenant_credentials" not in variables_dict
 
@@ -152,17 +152,17 @@ def test_azure_trace_exporter_created(azure_config_fixture):
 
 
 @pytest.mark.skip("global app.conf.Config corruption")
-def test_gcp_trace_exporter_created(gcp_config_fixture):
+def test_gc_trace_exporter_created(gc_config_fixture):
     exporter_name = 'StackdriverExporter'
 
     mock_exporter = mock.MagicMock(exporter_name=exporter_name)
 
-    with mock.patch('app.helper.traces._create_gcp_exporter', return_value=mock_exporter):
-        exporter = create_exporter(service_name='test-service', config=gcp_config_fixture)
+    with mock.patch('app.helper.traces._create_gc_exporter', return_value=mock_exporter):
+        exporter = create_exporter(service_name='test-service', config=gc_config_fixture)
         assert len(exporter.exporters) == 1
-        # ensure called method is gcp exporter
-        gcp_exporter = exporter.exporters[0]
-        assert gcp_exporter.exporter_name == exporter_name
+        # ensure called method is Google Cloud exporter
+        gc_exporter = exporter.exporters[0]
+        assert gc_exporter.exporter_name == exporter_name
 
 
 def test_config_get_by_name(testing_config):
@@ -288,4 +288,3 @@ def test_config_dev_mode(input_value: str, expected_value: bool, testing_config)
     # then
     assert type(testing_config.dev_mode.value) == bool
     assert testing_config.dev_mode.value == expected_value
-
