@@ -48,7 +48,7 @@ class StackDriverRenderer(object):
         event_dict.setdefault("severity", method)
 
         if method == 'error' or method == 'critical':
-            # Enable display of this error in 'Error reporting' in GCP
+            # Enable display of this error in 'Error reporting' in Google Cloud
             event_dict['@type'] = 'type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent'
             if sys.exc_info()[0]:
                 # check if an exception exist https://docs.python.org/2/library/sys.html#sys.exc_info
@@ -96,8 +96,8 @@ def init_logger(*, service_name, config):
             az_ai_instrumentation_key=config.get('az_ai_instrumentation_key'),
             az_logger_level=config.get('az_logger_level')
         )
-    elif config.cloud_provider.value == 'gcp':
-        _LOGGER = create_gcp_logger(service_name)
+    elif config.cloud_provider.value == 'gc':
+        _LOGGER = create_gc_logger(service_name)
     else:
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
         _LOGGER = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
     return AzureContextLoggerAdapter(logger, extra=dict())
 
 
-def create_gcp_logger(service_name):
+def create_gc_logger(service_name):
     """
     Initialize structlog with following configuration:
         - Make logs compatible with Stackdriver
