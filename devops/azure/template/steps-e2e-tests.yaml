@@ -29,12 +29,12 @@ parameters:
     type: string
     default: "UndefinedEnv"
   - name: skipCertValidation
-    # Used in case of invalid certificate (self-signed,...) 
+    # Used in case of invalid certificate (self-signed,...)
     type: boolean
     default: false
-# The following parameters allow to inject a template intented to perform authentication and generate a token
-# the token is to be added as a secure output variable:
-#   echo "##vso[task.setvariable variable=token;issecret=true]${token}"
+  # The following parameters allow to inject a template intented to perform authentication and generate a token
+  # the token is to be added as a secure output variable:
+  #   echo "##vso[task.setvariable variable=token;issecret=true]${token}"
   - name: authenticationTemplate
     type: string
     default: ""
@@ -43,8 +43,7 @@ parameters:
     default: {}
 
 steps:
-
-- bash: |
+  - bash: |
       set -e
 
       echo "parameters.skipCertValidation: ${{ parameters.skipCertValidation }}"
@@ -55,107 +54,104 @@ steps:
       echo "parameters.legalTag: ${{ parameters.legalTag }}"
       echo "parameters.dataPartition: ${{ parameters.dataPartition }}"
       echo "parameters.environmentName: ${{ parameters.environmentName }}"
-  displayName: 'Display Info'
+    displayName: "Display Info"
 
-- task: Bash@3
-  displayName: 'testReportBaseName'
-  inputs:
-    targetType: 'inline'
-    script: |
+  - task: Bash@3
+    displayName: "testReportBaseName"
+    inputs:
+      targetType: "inline"
+      script: |
         prefix=$(System.StageName)#$(System.JobAttempt)
         echo "##vso[task.setvariable variable=testReportBaseName]${prefix}"
 
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.8'
-    addToPath: true
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: "3.8"
+      addToPath: true
 
+  # This template is injected by parameters
+  # and will generate the $(token) variable
+  - template: ${{ parameters.authenticationTemplate }}
+    parameters:
+      ${{ each parameter in parameters.authenticationTemplateParameters }}:
+        ${{ parameter.key}}: ${{ parameter.value}}
 
-# This template is injected by parameters
-# and will generate the $(token) variable
-- template: ${{ parameters.authenticationTemplate }}
-  parameters: 
-    ${{ each parameter in parameters.authenticationTemplateParameters }}:
-      ${{ parameter.key}}: ${{ parameter.value}}
+  - bash: |
+      set -e
 
+      insecure_flag=""
+      checkCert="True"
 
-- bash: |
-    set -e
+      # Depending on the value of 'skipCertValidation' we add the '--insecure' option to newman
+      # and update checkCert for pytest
+      skipCertValidation="${{ lower(parameters.skipCertValidation) }}"
+      if $skipCertValidation
+      then
+        echo "Adding --insecure flag to e2e tests to disable cert validation."
+        insecure_flag="--insecure"
+        checkCert=""
 
-    insecure_flag=""
-    checkCert="True"
+      fi
 
-    # Depending on the value of 'skipCertValidation' we add the '--insecure' option to newman
-    # and update checkCert for pytest
-    skipCertValidation="${{ lower(parameters.skipCertValidation) }}"
-    if $skipCertValidation
-    then
-      echo "Adding --insecure flag to e2e tests to disable cert validation."
-      insecure_flag="--insecure"
-      checkCert=""
+      echo "##vso[task.setvariable variable=insecure_flag]${insecure_flag}"
+      echo "##vso[task.setvariable variable=checkCert]${checkCert}"
 
-    fi
+    displayName: "Create test variables"
 
-    echo "##vso[task.setvariable variable=insecure_flag]${insecure_flag}"
-    echo "##vso[task.setvariable variable=checkCert]${checkCert}"
+  - bash: |
+      set -ex
 
-  displayName: 'Create test variables'
+      python tests/integration/gen_postman_env.py --token $(token) --base_url ${{ parameters.osduBaseUrl }} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
 
-- bash: |
-    set -ex
+      newman run tests/dependencies/core_dependencies_test.postman_collection.json -e generated/postman_environment.json -r junit,cli --reporter-junit-export dependencies_tests_report_$(testReportBaseName).xml --timeout-request 10000 $(insecure_flag)
 
-    python tests/integration/gen_postman_env.py --token $(token) --base_url ${{ parameters.osduBaseUrl }} --cloud_provider ${{ parameters.cloudProvider }} --acl_domain ${{ parameters.aclDomain }} --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
+    displayName: "Check healthiness of Core services"
+    condition: ne('${{ parameters.cloudProvider }}', 'gc')
+    continueOnError: true
 
-    newman run tests/dependencies/core_dependencies_test.postman_collection.json -e generated/postman_environment.json -r junit,cli --reporter-junit-export dependencies_tests_report_$(testReportBaseName).xml --timeout-request 10000 $(insecure_flag)
+  - bash: |
+      set -ex
 
-  displayName: 'Check healthiness of Core services'
-  condition: ne('${{ parameters.cloudProvider }}', 'gcp')
-  continueOnError: true
+      echo "Testing App on ${{ parameters.serviceUrl }}"
 
-- bash: |
-    set -ex
+      python gen_postman_env.py --token $(token) \
+          --base_url ${{ parameters.serviceUrl }} \
+          --cloud_provider ${{ parameters.cloudProvider }} \
+          --acl_domain ${{ parameters.aclDomain }} \
+          --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
 
-    echo "Testing App on ${{ parameters.serviceUrl }}"
+      pip install virtualenv
+      virtualenv venv37
+      source venv37/bin/activate
+      pip install -r ../../requirements_dev.txt
 
-    python gen_postman_env.py --token $(token) \
-        --base_url ${{ parameters.serviceUrl }} \
-        --cloud_provider ${{ parameters.cloudProvider }} \
-        --acl_domain ${{ parameters.aclDomain }} \
-        --legal_tag ${{ parameters.legalTag }} --data_partition ${{ parameters.dataPartition }}
+      pytest functional/ -p no:randomly --filter-tag=!search \
+          --junit-xml=$(testReportBaseName)_int_tests_report.xml  -o junit_suite_name="wdms_integration_$(testReportBaseName)" \
+          --environment=generated/postman_environment.json \
+          --retry-on-error=502 \
+          $(insecure_flag)
+      deactivate
+    displayName: "RUN INTEGRATION-E2E"
+    workingDirectory: tests/integration
 
-    pip install virtualenv
-    virtualenv venv37
-    source venv37/bin/activate
-    pip install -r ../../requirements_dev.txt
+  - bash: |
+      set -ex
 
-    pytest functional/ -p no:randomly --filter-tag=!search \
-        --junit-xml=$(testReportBaseName)_int_tests_report.xml  -o junit_suite_name="wdms_integration_$(testReportBaseName)" \
-        --environment=generated/postman_environment.json \
-        --retry-on-error=502 \
-        $(insecure_flag)
-    deactivate
-  displayName: 'RUN INTEGRATION-E2E'
-  workingDirectory: tests/integration
+      pip install virtualenv
+      virtualenv venv37
+      source venv37/bin/activate
+      pip install -r ./requirements_dev.txt
 
-- bash: |
-    set -ex
+      echo "Testing App on ${{ parameters.serviceUrl }}"
 
-    pip install virtualenv
-    virtualenv venv37
-    source venv37/bin/activate
-    pip install -r ./requirements_dev.txt
+      pytest tests/integration/security/test_auth.py --base_url ${{ parameters.serviceUrl }} --check_cert "$(checkCert)" --token="$(token)" --junit-xml=$(testReportBaseName)_auth_tests_report.xml -o junit_suite_name="wdms_auth_$(testReportBaseName)"
 
-    echo "Testing App on ${{ parameters.serviceUrl }}"
+      deactivate
+    displayName: "RUN INTEGRATION-AUTH"
+    workingDirectory: ./
 
-    pytest tests/integration/security/test_auth.py --base_url ${{ parameters.serviceUrl }} --check_cert "$(checkCert)" --token="$(token)" --junit-xml=$(testReportBaseName)_auth_tests_report.xml -o junit_suite_name="wdms_auth_$(testReportBaseName)"
-
-    deactivate
-  displayName: 'RUN INTEGRATION-AUTH'
-  workingDirectory: ./
-
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '**/*tests_report*.xml'
-  condition: always()
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: "JUnit"
+      testResultsFiles: "**/*tests_report*.xml"
+    condition: always()

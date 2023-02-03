@@ -57,16 +57,16 @@ class MainInjector(AppInjectorModule):
         )
 
         # TODO use constants
-        # switch gcp/azure
+        # switch gc/azure
         if Config.cloud_provider.value == 'az':
             from app.injector.az_injector import AzureInjector
             logger.info('using az injector')
             AzureInjector().configure(app_injector)
 
-        if Config.cloud_provider.value == 'gcp':
-            from app.injector.gcp_injector import GCPInjector
-            logger.info('using gcp injector')
-            GCPInjector().configure(app_injector)
+        if Config.cloud_provider.value == 'gc':
+            from app.injector.gc_injector import GCInjector
+            logger.info('using gc injector')
+            GCInjector().configure(app_injector)
 
         if Config.cloud_provider.value == 'ibm':
             from app.injector.ibm_injector import IBMInjector

@@ -104,7 +104,7 @@ def gen_env(output_file: str, no_edit=False, overwrite=False):
                 "enabled": True,
                 "key": "cloud_provider",
                 "value": "local",
-                "description": "any of ['local', 'az', 'gcp', 'aws', 'ibm']"
+                "description": "any of ['local', 'az', 'gc', 'aws', 'ibm']"
             },
             {
                 "enabled": True,

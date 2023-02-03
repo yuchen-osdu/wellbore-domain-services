@@ -55,7 +55,7 @@ def _create_azure_exporter(key: str):
     return AzureExporter(connection_string=f'InstrumentationKey={key}')
 
 
-def _create_gcp_exporter():
+def _create_gc_exporter():
     from opencensus.ext.stackdriver.trace_exporter import StackdriverExporter
     return StackdriverExporter(transport=AsyncTransport)
 
@@ -67,10 +67,10 @@ def create_exporter(*, service_name: str, config):
     """
     combined_exporter = CombinedExporter(service_name=service_name)
 
-    if config.cloud_provider.value == 'gcp':
+    if config.cloud_provider.value == 'gc':
         print("Registering OpenCensus trace Stackdriver")
 
-        stackdriver_exporter = _create_gcp_exporter()
+        stackdriver_exporter = _create_gc_exporter()
         combined_exporter.add_exporter(stackdriver_exporter)
     elif config.cloud_provider.value == 'az':
         print("Registering OpenCensus trace AzureExporter")
