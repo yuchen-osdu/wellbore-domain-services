@@ -173,4 +173,4 @@ async def test_call_trace_url(app_configurable_with_testclient, mock_storage_cli
 
         # with expected name and route
         assert spandata.name == path_with_id
-        assert spandata.attributes["http.route"] == path_with_id
+        assert spandata.attributes["http.route"] == path
