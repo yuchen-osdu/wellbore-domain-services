@@ -21,6 +21,7 @@ from app.conf import Config
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler, get_http_client_session
+from app.helper.traces import TracingRoute
 from app.helper.logger import get_logger
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
@@ -74,7 +75,7 @@ from app.bulk_persistence import (DataFrameValidationFunc, no_validation,
                                   BulkReaderDask,
                                   BulkReaderWdmsWorker)
 
-router = APIRouter()  # router dedicated to bulk APIs
+router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
 OPERATION_IDS = {"record_data": "write_record_data",
                  "chunk_data": "post_chunk_data"}

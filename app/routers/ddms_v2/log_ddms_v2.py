@@ -50,8 +50,9 @@ from app.routers.common_parameters import json_orient_parameter, REQUIRED_ROLES_
 from app.routers.record_utils import fetch_record, update_records
 from app.context import Context, get_ctx
 from app.utils import OpenApiHandler, OpenApiResponse, load_schema_example
+from app.helper.traces import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 LOGS_API_BASE_PATH = '/logs'
 

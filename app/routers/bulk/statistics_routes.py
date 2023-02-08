@@ -27,13 +27,15 @@ from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
 from app.bulk_persistence import BulkStatistics, BulkDataStatisticsResponse, exceptions as statistics_exceptions
 
+from app.helper.traces import TracingRoute
+
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 from app.model.osdu_record_id import WellLogId
 from app.bulk_persistence import model_chunking
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 responses_404_examples = {
             "description": "Not found",

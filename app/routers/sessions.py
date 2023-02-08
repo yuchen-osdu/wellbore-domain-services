@@ -16,14 +16,14 @@ from app.bulk_persistence import (Session,
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.context import Context
-
+from app.helper.traces import TracingRoute
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from pydantic import BaseModel, Field
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 
 class CreateDataSessionRequest(BaseModel):

@@ -18,8 +18,9 @@ from fastapi import APIRouter, Depends, Response, status
 from app.clients.storage_service_client import get_storage_record_service
 from ..common_parameters import REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
+from app.helper.traces import TracingRoute
 
-router = APIRouter()
+router = APIRouter(route_class=TracingRoute)
 
 @router.post(
     "/records/delete",
