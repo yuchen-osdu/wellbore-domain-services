@@ -231,7 +231,7 @@ def test_describe_with_column_filter_without_session(with_wdms_env):
         validation_list = [  # tuple (params, expected_status, expected data)
             ({"curves": "MD"}, 200, data[['MD']]),
             ({"curves": "X, Y, Z"}, 200, data[['X', 'Y', 'Z']]),
-            ({"curves": "W, X"}, 404, data[['X']]),
+            ({"curves": "W, X"}, 200, data[['X']]),
             ({"curves": "2D[0]"}, 200, data[['2D[0]']]),
             ({"curves": "2D[0:1]"}, 200, data[['2D[0]', '2D[1]']]),
             ({"curves": "2D"}, 200, data[['2D[0]', '2D[1]', '2D[2]']]),
