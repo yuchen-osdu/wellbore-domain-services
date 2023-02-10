@@ -2,8 +2,6 @@ variables:
   GC_SERVICE: wellbore
   GC_VENDOR: gc
   GC_INT_TEST_TYPE: python
-  # FIXME remove when all services are migrated to a single helm
-  GC_ENABLE_HELM_CONFIG: "false"
 
 gc-containerize-gitlab:
   variables:
