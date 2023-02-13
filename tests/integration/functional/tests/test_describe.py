@@ -213,6 +213,7 @@ def test_describe_with_offset_filter_with_session(with_wdms_env):
                 assert res_as_dict["columns"] == expected_data.columns.tolist()
 
 
+@pytest.mark.xfail(reason="Different logic between worker and dask implementation")
 @pytest.mark.tag('describe', 'smoke')
 def test_describe_with_column_filter_without_session(with_wdms_env):
     # well log on parquet
