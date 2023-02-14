@@ -32,17 +32,33 @@ def build_request_get_data_describe(entity_type: str, record_id: str, filters=No
     return build_request(f'{entity_type} get data', 'GET', url)
 
 
+def create_data_without_session(with_wdms_env, record_id, serializer, data, entity_type, headers):
+    data_to_send = serializer.dump(data)
+    build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+
+
+def create_data_with_session(with_wdms_env, record_id, serializer, data, entity_type):
+    data_to_send = serializer.dump(data)
+    # create session
+    session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
+    build_request_post_chunk(
+        entity_type, record_id, session_id, data_to_send
+    ).call(
+        with_wdms_env, headers={'Content-Type': serializer.mime_type},
+    ).assert_ok()
+    # commit session
+    complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
+
+
 @pytest.mark.tag('describe', 'smoke')
 @pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_describe_one_chunk_without_session(with_wdms_env, entity_type, serializer):
     col_and_nb_col = {'MD': 1, 'X': 1}
+    data = generate_df(col_and_nb_col.keys(), range(8))
+    headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
     with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
-        data = generate_df(col_and_nb_col.keys(), range(8))
-        data_to_send = serializer.dump(data)
-        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-
-        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+        create_data_without_session(with_wdms_env, record_id, serializer, data, entity_type, headers)
 
         result = build_request_get_data_describe(entity_type, record_id).call(with_wdms_env, headers=headers,
                                                                               assert_status=200)
@@ -57,21 +73,9 @@ def test_describe_one_chunk_without_session(with_wdms_env, entity_type, serializ
 def test_describe_one_chunk_with_session_commit(with_wdms_env, entity_type, serializer):
 
     col_and_nb_col = {'MD': 1, 'X': 1}
+    expected = generate_df(col_and_nb_col.keys(), range(8))
     with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
-        expected = generate_df(col_and_nb_col.keys(), range(8))
-
-        # create session
-        session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
-
-        # post chunk
-        build_request_post_chunk(
-            entity_type, record_id, session_id, serializer.dump(expected)
-        ).call(
-            with_wdms_env, headers={'Content-Type': serializer.mime_type},
-        ).assert_ok()
-
-        # commit session
-        complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
+        create_data_with_session(with_wdms_env, record_id, serializer, expected, entity_type)
 
         # then check describe
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
@@ -88,26 +92,9 @@ def test_describe_multiple_chunks_with_session_commit(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
     col_and_nb_col = {'MD': 1, 'X': 1, 'Y': 1, 'Z': 1}
+    data = generate_df(col_and_nb_col.keys(), range(1000))
     with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
-        data = generate_df(col_and_nb_col.keys(), range(1000))
-        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-
-        # create session
-        session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
-
-        # post a chunk
-        chunks = [data.iloc[idx:idx + 100].to_parquet(engine="pyarrow") for idx in range(0, 1000, 100)]
-
-        for chunk in chunks:
-            build_request_post_chunk(
-                entity_type, record_id, session_id, chunk
-            ).call(
-                with_wdms_env, headers=headers,
-            ).assert_ok()
-
-        # commit session
-        complete_session(with_wdms_env, entity_type, record_id, session_id, True)
-
+        create_data_with_session(with_wdms_env, record_id, serializer, data, entity_type)
         # then check describe
         headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
         result = build_request_get_data_describe(entity_type, record_id).call(with_wdms_env, headers=headers,
@@ -123,14 +110,11 @@ def test_describe_with_offset_filter_without_session(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
     col_and_nb_col = {'MD': 1, 'X': 1}
+    size = 100
+    data = generate_df(col_and_nb_col.keys(), range(size))
+    headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
     with create_record(with_wdms_env, entity_type,col_and_nb_col) as record_id:
-        size = 100
-        data = generate_df(col_and_nb_col.keys(), range(size))
-        data_to_send = serializer.dump(data)
-        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-
-        # post data
-        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+        create_data_without_session(with_wdms_env, record_id, serializer, data, entity_type, headers)
 
         validation_list = [  # tuple (params, expected_status, expected data)
             ({"offset": 0}, 200, data),
@@ -166,24 +150,10 @@ def test_describe_with_offset_filter_with_session(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
     col_and_nb_col = {'MD': 1, 'X': 1}
+    size = 100
+    data = generate_df(col_and_nb_col.keys(), range(size))
     with create_record(with_wdms_env, entity_type,col_and_nb_col) as record_id:
-        size = 100
-        data = generate_df(col_and_nb_col.keys(), range(size))
-        data_to_send = serializer.dump(data)
-        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-
-        # create session
-        session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
-
-        # post data
-        build_request_post_chunk(
-            entity_type, record_id, session_id, data_to_send
-        ).call(
-            with_wdms_env, headers={'Content-Type': serializer.mime_type},
-        ).assert_ok()
-
-        # commit session
-        complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
+        create_data_with_session(with_wdms_env, record_id, serializer, data, entity_type)
 
         validation_list = [  # tuple (params, expected_status, expected data)
             ({"offset": 0}, 200, data),
@@ -220,14 +190,11 @@ def test_describe_with_column_filter_without_session(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
     col_and_nb_col = {'MD': 1, 'X': 1, 'Y': 1, 'Z': 1, '2D': 3}
+    size = 100
+    data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
+    headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
     with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
-        size = 100
-        data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
-        data_to_send = serializer.dump(data)
-        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-
-        # post data
-        build_request_post_data(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
+        create_data_without_session(with_wdms_env, record_id, serializer, data, entity_type, headers)
 
         validation_list = [  # tuple (params, expected_status, expected data)
             ({"curves": "MD"}, 200, data[['MD']]),
@@ -260,24 +227,10 @@ def test_describe_with_column_filter_with_session(with_wdms_env):
     entity_type = "well_log"
     serializer = ParquetSerializer()
     col_and_nb_col = {'MD': 1, 'X': 1, 'Y': 1, 'Z': 1, '2D': 3}
+    size = 100
+    data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
     with create_record(with_wdms_env, entity_type, col_and_nb_col) as record_id:
-        size = 100
-        data = generate_df(['MD', 'X', 'Y', 'Z', '2D[0]', '2D[1]', '2D[2]'], range(size))
-        data_to_send = serializer.dump(data)
-        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-
-        # create session
-        session_id = create_session(with_wdms_env, entity_type, record_id, True)  # mode overwrite
-
-        # post data
-        build_request_post_chunk(
-            entity_type, record_id, session_id, data_to_send
-        ).call(
-            with_wdms_env, headers={'Content-Type': serializer.mime_type},
-        ).assert_ok()
-
-        # commit session
-        complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
+        create_data_with_session(with_wdms_env, record_id, serializer, data, entity_type)
 
         validation_list = [  # tuple (params, expected_status, expected data)
             ({"curves": "MD"}, 200, data[['MD']]),
