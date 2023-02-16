@@ -1,6 +1,6 @@
 data:
-  requestsCpu: "0.1"
-  requestsMemory: "1G"
+  requestsCpu: "130m"
+  requestsMemory: "750Mi"
   limitsCpu: "1"
   limitsMemory: "3G"
   image: ""
@@ -16,7 +16,7 @@ conf:
   onPremEnabled: false
 
 istio:
-  proxyCPU: "50m"
+  proxyCPU: "10m"
   proxyCPULimit: "500m"
-  proxyMemory: "64Mi"
+  proxyMemory: "100Mi"
   proxyMemoryLimit: "512Mi"
