@@ -29,6 +29,9 @@ phases:
     runtime-versions:
       java: corretto8
     commands:
+      # fix error noted here: https://github.com/yarnpkg/yarn/issues/7866
+      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+      - if [ $(echo $CODEBUILD_SOURCE_VERSION | grep -c  ^refs/heads.*) -eq 1 ]; then echo "Branch name found"; else echo "This build only supports branch builds" && exit 1; fi
       - apt-get update -y
       - wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472.zip
       - unzip -q ./sonar-scanner-cli-4.6.2.2472.zip
@@ -61,6 +64,12 @@ phases:
       - export AWS_ACCOUNT_ID=`aws sts get-caller-identity | grep Account | cut -d':' -f 2 | cut -d'"' -f 2`
 
       - echo "Placeholder" >> ${OUTPUT_DIR}/build-info.json # touched so that the output directory has some content incase the build fails so that testing reports are uploaded
+
+      - echo "Generate build-info.json"
+      - |
+        python provider/os-wellbore-ddms-aws/build-aws/build-info.py --branch ${CODEBUILD_SOURCE_VERSION} --commit ${CODEBUILD_RESOLVED_SOURCE_VERSION} \
+          --buildid ${CODEBUILD_BUILD_ID} --buildnumber ${CODEBUILD_BUILD_NUMBER} --reponame ${REPO_NAME} --outdir ${OUTPUT_DIR} \
+          --artifact ${ECR_IMAGE}
 
       - echo "Building integration testing assemblies and gathering artifacts..."
       - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh
@@ -96,11 +105,6 @@ phases:
      
       - python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit
 
-      - echo "Generate build-info.json"
-      - |
-        python provider/os-wellbore-ddms-aws/build-aws/build-info.py --branch ${CODEBUILD_SOURCE_VERSION} --commit ${CODEBUILD_RESOLVED_SOURCE_VERSION} \
-          --buildid ${CODEBUILD_BUILD_ID} --buildnumber ${CODEBUILD_BUILD_NUMBER} --reponame ${REPO_NAME} --outdir ${OUTPUT_DIR} \
-          --artifact ${ECR_IMAGE}
   post_build:
     commands:
       - cp safety_check.txt ${OUTPUT_DIR}/python-safety
