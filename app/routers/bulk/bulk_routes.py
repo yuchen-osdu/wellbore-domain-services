@@ -237,7 +237,7 @@ async def get_data_version(
 
         # by default use Dask bulk reader
         reader = BulkReaderDask(Config.enable_read_fast_track.value)
-        if not data_param.describe and Config.service_host_wdms_worker.value:
+        if Config.service_host_wdms_worker.value:
             reader = BulkReaderWdmsWorker(Config.service_host_wdms_worker.value,
                                           get_http_client_session("wdms_bulk_worker"))
 
