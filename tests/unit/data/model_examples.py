@@ -7,7 +7,7 @@ import json
 from odes_storage.models import Record
 from app.model.osdu_model import Well, Well110, Well120, Wellbore, Wellbore110, Wellbore120, Wellbore130, \
     WellboreMarkerSet110, WellboreMarkerSet120, WellboreTrajectory110, WellLog110, WellLog120, Wellbore111, \
-    WellboreMarkerSet121
+    WellboreMarkerSet121, WellboreIntervalSet100
 
 from wdms_client.variables import Variables
 
@@ -89,6 +89,11 @@ def marker_v3_120_file_contents() -> str:
 @pytest.fixture(scope="session")
 def marker_v3_121_file_contents() -> str:
     return load_model_example_file_contents("marker_v3_121.json")
+
+
+@pytest.fixture(scope="session")
+def wellboreintervalset_v3_100_file_contents() -> str:
+    return load_model_example_file_contents("wellboreintervalset_v3_100.json")
 
 
 @pytest.fixture(scope="session")
@@ -366,6 +371,19 @@ def marker_v3_121_record_list(marker_v3_121_file_contents, domain, data_partitio
     return [Record.parse_obj(vars_to_replace.resolve(marker_v3_121_file_contents))]
 
 
+@pytest.fixture
+def wellboreintervalset_v3_100_record_list(wellboreintervalset_v3_100_file_contents, domain, data_partition,
+                                           legal_tags) -> List[Record]:
+
+    vars_to_replace = Variables.from_dict({
+        "domain": domain,
+        "datapartitionid": data_partition,
+        "legaltags": legal_tags,
+    })
+
+    return [Record.parse_obj(vars_to_replace.resolve(file_content))
+            for file_content in wellboreintervalset_v3_100_file_contents]
+
 
 @pytest.fixture
 def marker110_v3_list(marker_v3_record_list) -> List[WellboreMarkerSet110]:
@@ -385,6 +403,13 @@ def marker121_v3_list(marker_v3_121_record_list) -> List[WellboreMarkerSet121]:
     """ provide a list of wellbore marker set v.1.1.0"""
     return [WellboreMarkerSet121(**record.dict(exclude_unset=True, by_alias=True))
             for record in marker_v3_121_record_list]
+
+
+@pytest.fixture
+def wellboreintervalset100_v3_list(wellboreintervalset_v3_100_record_list) -> List[WellboreIntervalSet100]:
+    """ provide a list of wellbore marker set v.1.1.0"""
+    return [WellboreIntervalSet100(**record.dict(exclude_unset=True, by_alias=True))
+            for record in wellboreintervalset_v3_100_record_list]
 
 
 @pytest.fixture

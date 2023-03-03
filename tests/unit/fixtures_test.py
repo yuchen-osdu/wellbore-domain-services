@@ -8,8 +8,7 @@ from app.context import Context, get_ctx
 
 from app.model.osdu_model import Well, Well110, Well120, Wellbore, Wellbore110, WellboreMarkerSet110, \
     WellboreMarkerSet120, WellboreTrajectory110, WellLog110, WellLog120, Wellbore111, Wellbore120, \
-    Wellbore130, WellboreMarkerSet121
-
+    Wellbore130, WellboreMarkerSet121, WellboreIntervalSet100
 
 
 def test_local_dev_config(local_dev_config):
@@ -316,6 +315,12 @@ def test_marker121_v3_list(marker121_v3_list):
     assert len(marker121_v3_list) > 0
     for inst in marker121_v3_list:
         WellboreMarkerSet121.validate(inst)
+
+
+def test_wellboreintervalset100_v3_list(wellboreintervalset100_v3_list):
+    assert len(wellboreintervalset100_v3_list) > 0
+    for inst in wellboreintervalset100_v3_list:
+        WellboreIntervalSet100.validate(inst)
 
 
 def test_trajectory110_v3_list(trajectory110_v3_list):

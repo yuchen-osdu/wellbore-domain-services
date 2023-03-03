@@ -23,6 +23,7 @@ class Entity(Enum):
     LOG = 'log'
     LOGSET = 'logSet'
     MARKER = 'marker'
+    WELLBOREINTERVALSET = 'wellboreintervalset'
     TRAJECTORY = 'trajectory'
     WELL = 'well'
     WELL_LOG = 'welllog'
@@ -53,6 +54,7 @@ current_version = \
         Entity.LOG: schema_version.log_version,
         Entity.LOGSET: schema_version.log_version,
         Entity.MARKER: schema_version.marker_version,
+        Entity.WELLBOREINTERVALSET: schema_version.wellboreintervalset_version,
         Entity.TRAJECTORY: schema_version.trajectory_version,
         Entity.WELL: schema_version.well_version,
         Entity.WELLBORE: schema_version.wellbore_version,

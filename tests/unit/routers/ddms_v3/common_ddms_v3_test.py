@@ -102,6 +102,7 @@ async def test_post_records_successful(dasked_test_app_with_mocked_core_service)
     "wells",
     "wellbores",
     "wellboremarkersets",
+    "wellboreintervalsets",
     "wellboretrajectories",
     "welllogs"])
 async def test_get_delete_routes_refuse_incorrect_record_id(
@@ -136,6 +137,7 @@ def records_with_version(records):
     ("wellboremarkersets", "marker110_v3_list"),
     ("wellboremarkersets", "marker120_v3_list"),
     ("wellboremarkersets", "marker121_v3_list"),
+    ("wellboreintervalsets", "wellboreintervalset100_v3_list"),
     ("wellboretrajectories", "trajectory110_v3_list"),
     ("welllogs", "welllog120_v3_list")
 ])
@@ -185,6 +187,10 @@ tests_parameters_restricted_record_id = [
     (
         "/ddms/v3/wellboremarkersets",
         r"namespace:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
+    ),
+    (
+        "/ddms/v3/wellboreintervalsets",
+        r"namespace:work-product-component--WellboreIntervalSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
     ),
 ]
 

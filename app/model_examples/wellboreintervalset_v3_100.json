@@ -1,0 +1,137 @@
+[
+  {
+    "acl": {
+      "viewers": [
+        "data.default.viewers@{{datapartitionid}}.{{domain}}"
+      ],
+      "owners": [
+        "data.default.owners@{{datapartitionid}}.{{domain}}"
+      ]
+    },
+    "id": "{{datapartitionid}}:work-product-component--WellboreIntervalSet:wellboreintervalsetId",
+    "kind": "osdu:wks:work-product-component--WellboreIntervalSet:1.0.0",
+    "legal": {
+      "legaltags": [
+        "{{legaltags}}"
+      ],
+      "otherRelevantDataCountries": [
+        "FR",
+        "US"
+      ]
+    },
+    "data": {
+      "Name": "{{wellboreintervalsetName}}",
+      "SubmitterName": "Example SubmitterName",
+      "AuthorIDs": [
+        "Example AuthorIDs"
+      ],
+      "WellboreID": "{{datapartitionid}}:master-data--Wellbore:SomeUniqueWellboreID:",
+      "VerticalMeasurement": {
+            "VerticalMeasurement": 2680.5,
+            "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
+            "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:ft:"
+        },      
+      "StratigraphicColumnID": "{{datapartitionid}}:work-product-component--StratigraphicColumn:stratigraphiccolumnid:",
+      "StratigraphicColumnRankInterpretationID": "{{datapartitionid}}:work-product-component--StratigraphicColumnRankInterpretation:Gudrun-Rank2-:",
+      "Intervals": [
+        {
+          "IntervalID": "ba829e6d-30e0-4375-906c-4e7c62c9f7ec",
+          "GeologicUnitInterpretationIDs": [
+            "partition-id:work-product-component--StratigraphicUnitInterpretation:Draupne-:"
+          ],
+          "StartMeasuredDepth": 4049.0,
+          "StartSubSeaVerticalDepth": 4030.9,
+          "StartIntervalName": "Top-Draupne",
+          "StartMarkerSetID": "{{datapartitionid}}:work-product-component--WellboreMarkerSet:15-3-7-SingleRank-:",
+          "StartMarkerID": "a580a3bb-c2db-4845-bbc1-050b417307c0",
+          "StartBoundaryInterpretationID": "{{datapartitionid}}:work-product-component--HorizonInterpretation:Top-Draupne-:",
+          "StopMeasuredDepth": 4502.0,
+          "StopSubSeaVerticalDepth": 4483.8,
+          "StopIntervalName": "Top-Heather",
+          "StopMarkerSetID": "{{datapartitionid}}:work-product-component--WellboreMarkerSet:15-3-7-SingleRank-:",
+          "StopMarkerID": "7699229b-36e8-4aed-884f-a1e844e5b9d7",
+          "StopBoundaryInterpretationID": "{{datapartitionid}}:work-product-component--HorizonInterpretation:Top-Heather-:"
+        }
+      ],
+      "IntervalProperties": {
+        "KeyColumns": [
+          {
+            "ValueType": "number",
+            "ValueCount": 1,
+            "UnitQuantityID": "{{datapartitionid}}:reference-data--UnitQuantity:plane%20angle:",
+            "PropertyType": {
+              "PropertyTypeID": "{{datapartitionid}}:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:",
+              "Name": "dip azimuth"
+            },
+            "RelationshipTargetKind": "osdu:wks:reference-data--UnitOfMeasure:",
+            "FacetIDs": [
+              {
+                "FacetTypeID": "{{datapartitionid}}:reference-data--FacetType:conditions:",
+                "FacetRoleID": "{{datapartitionid}}:reference-data--FacetRole:I:"
+              }
+            ]
+          }
+        ],
+        "Columns": [
+          {
+            "ValueType": "string",
+            "ValueCount": 1,
+            "UnitQuantityID": "{{datapartitionid}}:reference-data--UnitQuantity:plane%20angle:",
+            "PropertyType": {
+              "PropertyTypeID": "{{datapartitionid}}:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:",
+              "Name": "dip azimuth"
+            },
+            "RelationshipTargetKind": "osdu:wks:reference-data--UnitOfMeasure:",
+            "FacetIDs": [
+              {
+                "FacetTypeID": "{{datapartitionid}}:reference-data--FacetType:conditions:",
+                "FacetRoleID": "{{datapartitionid}}:reference-data--FacetRole:I:"
+              }
+            ]
+          }
+        ],
+        "ColumnSize": 5,
+        "ColumnValues": [
+          {
+            "BooleanColumn": [
+              true,
+              false,
+              true,
+              true,
+              false
+            ],
+            "IntegerColumn": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "NumberColumn": [
+              0.1,
+              2.3,
+              4.5,
+              6.7,
+              8.9
+            ],
+            "StringColumn": [
+              "foo",
+              "bar",
+              "foo again",
+              "bar again",
+              "foo bar"
+            ],
+            "UndefinedValueRows": [
+              3,
+              4
+            ]
+          }
+        ],
+        "ColumnBasedTableType": "{{datapartitionid}}:reference-data--ColumnBasedTableType:Facies:"
+      },
+      "ExtensionProperties": {}
+    },
+    "meta": []
+  }
+]
+  

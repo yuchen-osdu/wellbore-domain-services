@@ -152,6 +152,16 @@ request_path_dict = {
         crud.osdu_wellboremarkerset.build_request_get_versions_of_osdu_wellboremarkerset,
     "crud.osdu_wellboremarkerset.create_osdu_wellboremarkerset":
         crud.osdu_wellboremarkerset.build_request_create_osdu_wellboremarkerset,
+    "crud.osdu_wellboreintervalset_100.delete_osdu_wellboreintervalset_100":
+        crud.osdu_wellboreintervalset.build_request_delete_osdu_wellboreintervalset_100,
+    "crud.osdu_wellboreintervalset_100.get_osdu_wellboreintervalset_100_specific_version":
+        crud.osdu_wellboreintervalset.build_request_get_osdu_wellboreintervalset_100_specific_version,
+    "crud.osdu_wellboreintervalset_100.get_osdu_wellboreintervalset_100":
+        crud.osdu_wellboreintervalset.build_request_get_osdu_wellboreintervalset_100,
+    "crud.osdu_wellboreintervalset_100.get_versions_of_osdu_wellboreintervalset_100":
+        crud.osdu_wellboreintervalset.build_request_get_versions_of_osdu_wellboreintervalset_100,
+    "crud.osdu_wellboreintervalset_100.create_osdu_wellboreintervalset_100":
+        crud.osdu_wellboreintervalset.build_request_create_osdu_wellboreintervalset_100,
     "crud.logset.get_versions_of_logset":
         crud.logset.build_request_get_versions_of_logset,
     "crud.logset.get_logset_specific_version":
@@ -297,6 +307,8 @@ def get_cleaned_ref_and_res(kind: str) -> dict:
         return crud.osdu_wellboretrajectory.get_cleaned_ref_and_res()
     if kind == "osdu_wellboremarkerset":
         return crud.osdu_wellboremarkerset.get_cleaned_ref_and_res()
+    if kind == "osdu_wellboreintervalset_100":
+        return crud.osdu_wellboreintervalset.get_cleaned_ref_and_res()
 
 
 def diff_records(ref, res):

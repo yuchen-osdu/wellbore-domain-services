@@ -52,6 +52,7 @@ trajectory_data = {
                         "MarkerPropertyUnitID": "partition-id:reference-data--UnitOfMeasure:ft:",
                         "Name": "MissingThickness"
                     }]}),
+        ("/ddms/v3/wellboreintervalsets", "work-product-component--WellboreIntervalSet:1.0.0", {}),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.0.0", trajectory_data),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.1.0", trajectory_data),
     ],
@@ -93,6 +94,7 @@ async def test_check_supported_kind(client, api, record_type, data):
         ("/ddms/v3/wellboremarkersets", "work-product-component--foo:1.0.0", {}),
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.0.1", {}),
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:2.0.0", {}),
+        ("/ddms/v3/wellboreintervalsets", "work-product-component--WellboreIntervalSet:1.0.1", {}),
         ("/ddms/v3/wellboretrajectories", "work-product-component--foo:1.0.0", trajectory_data),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.0.1", trajectory_data),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.2.0", trajectory_data),
