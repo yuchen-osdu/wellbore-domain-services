@@ -60,7 +60,7 @@ cd tests/integration
 
 python3 gen_postman_env.py --token $token --base_url $WELLBORE_DDMS_URL --cloud_provider "aws" --acl_domain $acl_domain --legal_tag $legal_tag --data_partition $tenant
 
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic -p no:randomly
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search -p no:randomly
 
 TEST_EXIT_CODE=$?
 
