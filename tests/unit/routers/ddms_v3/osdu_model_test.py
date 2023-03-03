@@ -88,7 +88,7 @@ test_parameters = [
     (WellboreMarkerSet120, "WellboreMarkerSet_unit.json", None),
     (WellboreMarkerSet120, "WellboreMarkerSet110_unit.json", None),
     (WellboreMarkerSet120, "WellboreMarkerSet120_unit.json", None),
-    (WellboreIntervalSet100, "WellboreIntervalSet100_unit.json", None),
+    (WellboreIntervalSet100, "wellboreintervalset100_unit.json", None),
 ]
 
 
