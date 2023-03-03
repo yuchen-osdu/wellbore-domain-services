@@ -1,0 +1,4 @@
+{{- template "common.scaledobject" (list . "os-storage.scaledobject") -}}
+{{- define "os-storage.scaledobject" -}}
+## Define overrides for the service's scaled object resource here
+{{- end -}}
