@@ -80,6 +80,7 @@ class DMSV3RouterUtils:
             -  work-product-component--WellboreMarkerSet:1.1.0
             -  work-product-component--WellboreTrajectory:1.0.0
             -  work-product-component--WellboreTrajectory:1.1.0
+            -  work-product-component--WellboreIntervalSet:1.0.0
 
         Args:
             records (Record): entity object to be verified

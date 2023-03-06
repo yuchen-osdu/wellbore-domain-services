@@ -117,7 +117,7 @@ async def get_osdu_wellboreintervalsetid_version(
 @router.post(
     "/wellboreintervalsets",
     response_model=CreateUpdateRecordsResponse,
-    summary="Create or update the Wells using osdu schema",
+    summary="Create or update the WellboreIntervalSet using osdu schema",
     description="{}".format(REQUIRED_ROLES_WRITE),
     operation_id="post_wellboreintervalsetid_osdu",
     responses={
@@ -127,14 +127,14 @@ async def get_osdu_wellboreintervalsetid_version(
     },
 )
 async def post_wellboreintervalsetid_osdu(
-        wells: List[WellboreIntervalSet] = Body(..., example=load_schema_example("wellboreintervalset_v3_100.json")),
+        wellboreintervalsets: List[WellboreIntervalSet] = Body(..., example=load_schema_example("wellboreintervalset_v3_100.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
-    DMSV3RouterUtils.validate_record_against_kinds_schema(wells)
+    DMSV3RouterUtils.validate_record_against_kinds_schema(wellboreintervalsets)
     storage_client = await get_storage_record_service(ctx)
 
     r = await storage_client.create_or_update_records(
-        record=[to_record(w) for w in wells],
+        record=[to_record(w) for w in wellboreintervalsets],
         data_partition_id=ctx.partition_id,
     )
     return r
