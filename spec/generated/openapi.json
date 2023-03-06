@@ -16928,7 +16928,7 @@
                 "items": {
                   "$ref": "#/components/schemas/WellboreIntervalSet100"
                 },
-                "title": "Wells",
+                "title": "Wellboreintervalsets",
                 "type": "array"
               }
             }
@@ -16974,7 +16974,7 @@
             "HTTPBearer": []
           }
         ],
-        "summary": "Create or update the Wells using osdu schema",
+        "summary": "Create or update the WellboreIntervalSet using osdu schema",
         "tags": [
           "Wellbore IntervalSet"
         ]
