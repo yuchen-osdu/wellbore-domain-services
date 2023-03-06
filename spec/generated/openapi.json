@@ -16798,117 +16798,48 @@
                       "data.default.viewers@{{datapartitionid}}.{{domain}}"
                     ]
                   },
+                  "ancestry": {
+                    "parents": [
+                      "{{datapartitionid}}:zoneSet:techlog-8B14F36E-2297-4BB8-AF09-B73578FD7A02--BEB57B2D-A304-4DE2-94B8-C20117ACA6FB:1678091451598889"
+                    ]
+                  },
                   "data": {
-                    "AuthorIDs": [
-                      "Example AuthorIDs"
-                    ],
-                    "ExtensionProperties": {},
-                    "IntervalProperties": {
-                      "ColumnBasedTableType": "{{datapartitionid}}:reference-data--ColumnBasedTableType:Facies:",
-                      "ColumnSize": 5,
-                      "ColumnValues": [
-                        {
-                          "BooleanColumn": [
-                            true,
-                            false,
-                            true,
-                            true,
-                            false
-                          ],
-                          "IntegerColumn": [
-                            0,
-                            1,
-                            2,
-                            3,
-                            4
-                          ],
-                          "NumberColumn": [
-                            0.1,
-                            2.3,
-                            4.5,
-                            6.7,
-                            8.9
-                          ],
-                          "StringColumn": [
-                            "foo",
-                            "bar",
-                            "foo again",
-                            "bar again",
-                            "foo bar"
-                          ],
-                          "UndefinedValueRows": [
-                            3,
-                            4
-                          ]
-                        }
-                      ],
-                      "Columns": [
-                        {
-                          "FacetIDs": [
-                            {
-                              "FacetRoleID": "{{datapartitionid}}:reference-data--FacetRole:I:",
-                              "FacetTypeID": "{{datapartitionid}}:reference-data--FacetType:conditions:"
-                            }
-                          ],
-                          "PropertyType": {
-                            "Name": "dip azimuth",
-                            "PropertyTypeID": "{{datapartitionid}}:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:"
-                          },
-                          "RelationshipTargetKind": "osdu:wks:reference-data--UnitOfMeasure:",
-                          "UnitQuantityID": "{{datapartitionid}}:reference-data--UnitQuantity:plane%20angle:",
-                          "ValueCount": 1,
-                          "ValueType": "string"
-                        }
-                      ],
-                      "KeyColumns": [
-                        {
-                          "FacetIDs": [
-                            {
-                              "FacetRoleID": "{{datapartitionid}}:reference-data--FacetRole:I:",
-                              "FacetTypeID": "{{datapartitionid}}:reference-data--FacetType:conditions:"
-                            }
-                          ],
-                          "PropertyType": {
-                            "Name": "dip azimuth",
-                            "PropertyTypeID": "{{datapartitionid}}:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:"
-                          },
-                          "RelationshipTargetKind": "osdu:wks:reference-data--UnitOfMeasure:",
-                          "UnitQuantityID": "{{datapartitionid}}:reference-data--UnitQuantity:plane%20angle:",
-                          "ValueCount": 1,
-                          "ValueType": "number"
-                        }
-                      ]
-                    },
                     "Intervals": [
                       {
                         "GeologicUnitInterpretationIDs": [
-                          "partition-id:work-product-component--StratigraphicUnitInterpretation:Draupne-:"
+                          "{{datapartitionid}}:work-product-component--StratigraphicUnitInterpretation:globalZone-1af0e063fc0315f09166b9e8ca0d8fb3553051c5856dfc7173f8e73143220872:"
                         ],
-                        "IntervalID": "ba829e6d-30e0-4375-906c-4e7c62c9f7ec",
-                        "StartBoundaryInterpretationID": "{{datapartitionid}}:work-product-component--HorizonInterpretation:Top-Draupne-:",
-                        "StartIntervalName": "Top-Draupne",
-                        "StartMarkerID": "a580a3bb-c2db-4845-bbc1-050b417307c0",
-                        "StartMarkerSetID": "{{datapartitionid}}:work-product-component--WellboreMarkerSet:15-3-7-SingleRank-:",
-                        "StartMeasuredDepth": 4049.0,
-                        "StartSubSeaVerticalDepth": 4030.9,
-                        "StopBoundaryInterpretationID": "{{datapartitionid}}:work-product-component--HorizonInterpretation:Top-Heather-:",
-                        "StopIntervalName": "Top-Heather",
-                        "StopMarkerID": "7699229b-36e8-4aed-884f-a1e844e5b9d7",
-                        "StopMarkerSetID": "{{datapartitionid}}:work-product-component--WellboreMarkerSet:15-3-7-SingleRank-:",
-                        "StopMeasuredDepth": 4502.0,
-                        "StopSubSeaVerticalDepth": 4483.8
+                        "IntervalID": "1af0e063fc0315f09166b9e8ca0d8fb3553051c5856dfc7173f8e73143220872",
+                        "StartMeasuredDepth": 92.0,
+                        "StopMeasuredDepth": 1244.0
+                      },
+                      {
+                        "GeologicUnitInterpretationIDs": [
+                          "{{datapartitionid}}:work-product-component--StratigraphicUnitInterpretation:globalZone-db607cf218b70a1eb3c9601eb0df2586dc5337a823fe227892d20fa130d45619:"
+                        ],
+                        "IntervalID": "db607cf218b70a1eb3c9601eb0df2586dc5337a823fe227892d20fa130d45619",
+                        "StartMeasuredDepth": 1244.0,
+                        "StopMeasuredDepth": 1316.0
+                      },
+                      {
+                        "GeologicUnitInterpretationIDs": [
+                          "{{datapartitionid}}:work-product-component--StratigraphicUnitInterpretation:globalZone-d37153fe7f2f5d16f1e399e5fd3a2f12626a27b6ac0364c07b3bd647af831def:"
+                        ],
+                        "IntervalID": "d37153fe7f2f5d16f1e399e5fd3a2f12626a27b6ac0364c07b3bd647af831def",
+                        "StartMeasuredDepth": 1316.0,
+                        "StopMeasuredDepth": 1680.0
+                      },
+                      {
+                        "GeologicUnitInterpretationIDs": [
+                          "{{datapartitionid}}:work-product-component--StratigraphicUnitInterpretation:globalZone-5eb61a554f0ae898dcaba0b121e6eab1445cb563989de875271d562d0b6533fb:"
+                        ],
+                        "IntervalID": "5eb61a554f0ae898dcaba0b121e6eab1445cb563989de875271d562d0b6533fb",
+                        "StartMeasuredDepth": 1680.0,
+                        "StopMeasuredDepth": 1750.0
                       }
                     ],
-                    "Name": "{{wellboreintervalsetName}}",
-                    "StratigraphicColumnID": "{{datapartitionid}}:work-product-component--StratigraphicColumn:stratigraphiccolumnid:",
-                    "StratigraphicColumnRankInterpretationID": "{{datapartitionid}}:work-product-component--StratigraphicColumnRankInterpretation:Gudrun-Rank2-:",
-                    "SubmitterName": "Example SubmitterName",
-                    "VerticalMeasurement": {
-                      "VerticalMeasurement": 2680.5,
-                      "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
-                      "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:ft:"
-                    },
-                    "WellboreID": "{{datapartitionid}}:master-data--Wellbore:SomeUniqueWellboreID:"
+                    "Name": "Stratigraphy",
+                    "WellboreID": "{{datapartitionid}}:master-data--Wellbore:techlog-1E343D72-F814-4E4B-A919-A874B2C9952E--625CD42C-FDD1-466A-968A-0B53DA2D0FA9:"
                   },
                   "id": "{{datapartitionid}}:work-product-component--WellboreIntervalSet:wellboreintervalsetId",
                   "kind": "osdu:wks:work-product-component--WellboreIntervalSet:1.0.0",
@@ -16917,11 +16848,22 @@
                       "{{legaltags}}"
                     ],
                     "otherRelevantDataCountries": [
-                      "FR",
                       "US"
-                    ]
+                    ],
+                    "status": "compliant"
                   },
-                  "meta": []
+                  "meta": [
+                    {
+                      "kind": "Unit",
+                      "name": "m",
+                      "persistableReference": "\"{\\\"scaleOffset\\\":{\\\"scale\\\":1.0,\\\"offset\\\":0.0},\\\"symbol\\\":\\\"M\\\",\\\"baseMeasurement\\\":{\\\"ancestry\\\":\\\"Length\\\",\\\"type\\\":\\\"UM\\\"},\\\"type\\\":\\\"USO\\\"}\"",
+                      "propertyNames": [
+                        "Intervals[].StartMeasuredDepth",
+                        "Intervals[].StopMeasuredDepth"
+                      ],
+                      "unitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:"
+                    }
+                  ]
                 }
               ],
               "schema": {
