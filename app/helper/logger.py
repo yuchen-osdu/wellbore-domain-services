@@ -97,7 +97,10 @@ def init_logger(*, service_name, config):
             az_logger_level=config.get('az_logger_level')
         )
     elif config.cloud_provider.value == 'gc':
-        _LOGGER = create_gc_logger(service_name)
+        _LOGGER = create_gc_logger(
+            service_name=service_name,
+            gc_log_level=config.get('gc_log_level') 
+        )
     else:
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
         _LOGGER = logging.getLogger(__name__)
@@ -145,7 +148,7 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
     return AzureContextLoggerAdapter(logger, extra=dict())
 
 
-def create_gc_logger(service_name):
+def create_gc_logger(service_name,gc_log_level):
     """
     Initialize structlog with following configuration:
         - Make logs compatible with Stackdriver
@@ -175,7 +178,7 @@ def create_gc_logger(service_name):
     my_logger = structlog.getLogger(__name__)
 
     ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(logging.getLevelName(gc_log_level))
     ch.setFormatter(logging.Formatter('%(message)s'))
     my_logger.addHandler(ch)
 
