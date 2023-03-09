@@ -6,6 +6,7 @@ metadata:
   name: {{ .Values.conf.configmap | quote }}
   namespace: {{ .Release.Namespace | quote }}
 data:
+  LOG_LEVEL: {{ .Values.data.logLevel | quote }}
   {{- if not .Values.conf.onPremEnabled }}
   CLOUD_PROVIDER: "gc"
   OS_WELLBORE_DDMS_DATA_PROJECT_ID: {{ .Values.data.projectId | quote }}

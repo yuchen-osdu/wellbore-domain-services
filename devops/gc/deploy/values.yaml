@@ -1,4 +1,5 @@
 data:
+  logLevel: "ERROR"
   requestsCpu: "130m"
   requestsMemory: "750Mi"
   limitsCpu: "1"

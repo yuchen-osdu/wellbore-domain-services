@@ -333,6 +333,14 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
         config.az_bulk_container = 'wdms-osdu'
 
     if provider == 'gc':
+        config.add_from_env(attribute_name='gc_log_level',
+                            env_var_key='LOG_LEVEL',
+                            description='gc log level',
+                            default='INFO',
+                            secret=False,
+                            is_mandatory=False,
+                            override=True)
+        
         config.add_from_env(attribute_name='default_data_tenant_project_id',
                             env_var_key='OS_WELLBORE_DDMS_DATA_PROJECT_ID',
                             description='Google Cloud data tenant ID',
