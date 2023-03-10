@@ -301,7 +301,7 @@ export function flatUUID4() {
  */
 export function randomRecordId(recordType) {
     if (recordType == 'log') return logsRecordIds[Math.floor(Math.random() * logsRecordIds.length)];
-    if (recordType == 'welllog') return wellLogsRecordIds[Math.floor(Math.random() * logsRecordIds.length)];
+    if (recordType == 'welllog') return wellLogsRecordIds[Math.floor(Math.random() * wellLogsRecordIds.length)];
     if (recordType == 'marker') return markersRecordIds[Math.floor(Math.random() * markersRecordIds.length)];
     if (recordType == 'wellbore') return wellboresRecordIds[Math.floor(Math.random() * wellboresRecordIds.length)];
 }
