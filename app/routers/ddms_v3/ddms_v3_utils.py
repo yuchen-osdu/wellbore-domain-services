@@ -25,7 +25,8 @@ from app.model.osdu_model import (
     Wellbore111,
     Wellbore120,
     Wellbore130,
-    WellboreMarkerSet121, WellboreIntervalSet100
+    WellboreMarkerSet121,
+    WellboreIntervalSet100
 )
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 from app.routers.record_utils import fetch_record
