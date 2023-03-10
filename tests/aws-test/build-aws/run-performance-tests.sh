@@ -3,6 +3,7 @@
 cd ../../../
 
 svc_url=$WELLBORE_DDMS_URL
+export DATA_PARTITION_ID=opendes
 tenant='opendes'
 acl_domain='example.com'
 legal_tag='opendes-wellddmstestlegaltag'
@@ -59,6 +60,10 @@ for test in ${independent_test_list[@]}; do
     scripts/${test}.js \
     --out json=results/${test}_test_results.json
 done
+
+echo 'Sleeping for 30s for ingested records to index...'
+sleep 30s
+echo 'Searching for ingested records...'
 
 curl --location --request POST "$SEARCH_URL"'query' \
   --header 'Content-Type: application/json' \
