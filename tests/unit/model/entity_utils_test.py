@@ -27,6 +27,7 @@ def test_get_version():
     assert entity_utils.get_version(Entity.LOG) == schema_version.log_version
     assert entity_utils.get_version(Entity.LOGSET) == schema_version.logset_version
     assert entity_utils.get_version(Entity.MARKER) == schema_version.marker_version
+    assert entity_utils.get_version(Entity.WELLBOREINTERVALSET) == schema_version.wellboreintervalset_version
     assert entity_utils.get_version(Entity.TRAJECTORY) == schema_version.trajectory_version
     assert entity_utils.get_version(Entity.WELL) == schema_version.well_version
     assert entity_utils.get_version(Entity.WELLBORE) == schema_version.wellbore_version

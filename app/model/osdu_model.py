@@ -5394,3 +5394,420 @@ class Wellbore130(DDMSBaseModel):
         title='Frame of Reference Meta Data',
     )
     data: Optional[WellBoreData130] = None
+
+
+class GeologicUnitInterpretationID(DDMSBaseModel):
+    __root__: constr(
+        regex=r'^[\w\-\.]+:(work-product-component\-\-StratigraphicUnitInterpretation|work-product-component\-\-GeobodyInterpretation|work-product-component\-\-RockFluidUnitInterpretation):[\w\-\.\:\%]+:[0-9]*$'
+    )
+
+
+class Interval(DDMSBaseModel):
+    """
+    An interval given either by relationships to top/base markers or standalone top/base depths. To avoid confusion about entry and exit depths the naming convention uses Start as the entry point of the well path into the geologic unit and Stop as the exit point. For unfolded geologic units and vertical wellbores Start is Top and Stop is Base.
+    """
+
+    IntervalID: Optional[str] = Field(
+        None,
+        description='The unique identifier of the interval array member in the data.Intervals[] array. Ideally a UUID.',
+        example='ba829e6d-30e0-4375-906c-4e7c62c9f7ec',
+        title='Interval ID',
+    )
+    GeologicUnitInterpretationIDs: Optional[List[GeologicUnitInterpretationID]] = Field(
+        None,
+        description='An array of StratigraphicUnitInterpretation, GeobodyInterpretation or RockFluidUnitInterpretation record Ids associated to this interval.',
+        example=[
+            'partition-id:work-product-component--StratigraphicUnitInterpretation:Draupne-:'
+        ],
+        title='Interpretation Ids',
+    )
+    StartMeasuredDepth: Optional[float] = Field(
+        None,
+        description='The minimal MeasuredDepth of the interval. In the most common case this is the top.  If this value is associated with a marker then this value is a denormalization of data.Markers[].MarkerMeasuredDepth where the data.Markers[].MarkerID equals to StartMarkerID.',
+        example=4049,
+        title='Start Interval Measured Depth',
+    )
+    StartSubSeaVerticalDepth: Optional[float] = Field(
+        None,
+        description='True vertical depth sub-sea of the start of the interval. This is the same as true vertical depth referenced to the vertical CRS "MSL depth". If the start of the interval is associated with a marker then this value is a denormalization of data.Markers[].MarkerSubSeaVerticalDepth where the data.Markers[].MarkerID equals to StartMarkerID.',
+        example=4030.9,
+        title='Start Sub-Sea Vertical Depth',
+    )
+    StartIntervalName: Optional[str] = Field(
+        None,
+        description='Name of the interval start (typically the top); when associated with a marker in a WellboreMarkerSet then this name is a denormalization of data.Markers[].MarkerName where the data.Markers[].MarkerID equals to StartMarkerID.',
+        example='Top-Draupne',
+        title='Start Interval Marker Name',
+    )
+    StartMarkerSetID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Optional reference to the WellboreMarkerSet containing the interval start (typically the top), with MarkerID equals StartMarkerID.',
+        example='namespace:work-product-component--WellboreMarkerSet:15-3-7-SingleRank-:',
+        title='Start Interval WellboreMarkerSet ID',
+    )
+    StartMarkerID: Optional[str] = Field(
+        None,
+        description='Individual markers are not globally identifiable. TopMarkerID is the unique id (MarkerID) of the top interval marker (typically the interval base) in the data.Markers[] array where the data.Markers[].MarkerID equals to StartMarkerID.',
+        example='a580a3bb-c2db-4845-bbc1-050b417307c0',
+        title='Start Interval Marker ID',
+    )
+    StartBoundaryInterpretationID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:(work-product-component\-\-HorizonInterpretation|work-product-component\-\-GeobodyBoundaryInterpretation|work-product-component\-\-FaultInterpretation):[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The optional relationship to a HorizonInterpretation, GeobodyBoundaryInterpretation or FaultInterpretation. If the interval start (typically the top) is associated with a marker, this is considered a denormalization of the data.Markers[].InterpretationID for the data.Markers[].MarkerID equals to StartMarkerID.',
+        example='namespace:work-product-component--HorizonInterpretation:Top-Draupne-:',
+        title='Start Interval Boundary Interpretation ID',
+    )
+    StopMeasuredDepth: Optional[float] = Field(
+        None,
+        description='The maximum MeasuredDepth of the interval (typically the base). If the interval stop is associated with a marker then this value is a denormalization of data.Markers[].MarkerMeasuredDepth where the data.Markers[].MarkerID equals to StopMarkerID.',
+        example=4502,
+        title='Stop Interval Measured Depth',
+    )
+    StopSubSeaVerticalDepth: Optional[float] = Field(
+        None,
+        description='True vertical depth sub-sea of the interval stop (typically the base). This is the same as true vertical depth referenced to the vertical CRS "MSL depth". If the interval stop is associated with a marker then this value is a denormalization of data.Markers[].MarkerSubSeaVerticalDepth where the data.Markers[].MarkerID equals to StopMarkerID.',
+        example=4483.8,
+        title='Stop Sub-Sea Vertical Depth',
+    )
+    StopIntervalName: Optional[str] = Field(
+        None,
+        description='Name of the interval stop (typically the base); when associated with a marker in a WellboreMarkerSet then this name is a denormalization of data.Markers[].MarkerName where the data.Markers[].MarkerID equals to StopMarkerID.',
+        example='Top-Heather',
+        title='Stop Interval Marker Name',
+    )
+    StopMarkerSetID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='Optional reference to the WellboreMarkerSet containing the top with MarkerID equals StopMarkerID.',
+        example='namespace:work-product-component--WellboreMarkerSet:15-3-7-SingleRank-:',
+        title='Stop Interval WellboreMarkerSet ID',
+    )
+    StopMarkerID: Optional[str] = Field(
+        None,
+        description='Individual markers are not globally identifiable. StopMarkerID is the unique id (MarkerID) of the interval stop (typically the interval base) in the data.Markers[] array where the data.Markers[].MarkerID equals to StopMarkerID.',
+        example='7699229b-36e8-4aed-884f-a1e844e5b9d7',
+        title='Stop Interval Marker ID',
+    )
+    StopBoundaryInterpretationID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:(work-product-component\-\-HorizonInterpretation|work-product-component\-\-GeobodyBoundaryInterpretation|work-product-component\-\-FaultInterpretation):[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The optional relationship to a HorizonInterpretation, GeobodyBoundaryInterpretation or FaultInterpretation. If the interval stop (typically the base) is associated with a marker, this is considered a denormalization of the data.Markers[].InterpretationID where the data.Markers[].MarkerID equals to StopMarkerID.',
+        example='namespace:work-product-component--HorizonInterpretation:Top-Heather-:',
+        title='Stop Interval Boundary Interpretation ID',
+    )
+
+
+class ColumnValue(DDMSBaseModel):
+    """
+    Value of the column. Generally only one of the attribute should be instantiated.
+    """
+
+    BooleanColumn: Optional[List[bool]] = Field(
+        None,
+        description='A column of only boolean values',
+        example=[True, False, True, True, False],
+        title='Boolean Column',
+    )
+    IntegerColumn: Optional[List[int]] = Field(
+        None,
+        description='A column of only integer values',
+        example=[0, 1, 2, 3, 4],
+        title='Integer Column',
+    )
+    NumberColumn: Optional[List[float]] = Field(
+        None,
+        description='A column of only number values',
+        example=[0.1, 2.3, 4.5, 6.7, 8.9],
+        title='Number Column',
+    )
+    StringColumn: Optional[List[str]] = Field(
+        None,
+        description='A column of only string values',
+        example=['foo', 'bar', 'foo again', 'bar again', 'foo bar'],
+        title='String Column',
+    )
+    UndefinedValueRows: Optional[List[int]] = Field(
+        None,
+        description='The row indexes for which the values are flagged as undefined.',
+        example=[3, 4],
+        title='Undefined value rows',
+    )
+
+
+class AbstractFacet100(DDMSBaseModel):
+    """
+        A tuple FacetType, FacetRole, both calling specific references
+
+    FacetType: Enumeration of the type of additional context about the nature of a property type (it may include conditions, direction, qualifiers, or statistics).
+
+    FacetRole: Additional context about the nature of a property type. The purpose of such attribute is to minimize the need to create specialized property types by mutualizing some well known qualifiers such as "maximum", "minimum" which apply to a lot of different property types.
+    """
+
+    FacetTypeID: constr(
+        regex=r'^[\w\-\.]+:reference-data\-\-FacetType:[\w\-\.\:\%]+:[0-9]*$'
+    ) = Field(
+        ...,
+        description="FacetType: An 'enumeration' of the type of additional context about the nature of a property type (it may include conditions, direction, qualifiers, or statistics).",
+        title='Facet Type ID',
+    )
+    FacetRoleID: constr(
+        regex=r'^[\w\-\.]+:reference-data\-\-FacetRole:[\w\-\.\:\%]+:[0-9]*$'
+    ) = Field(
+        ...,
+        description='Additional context about the nature of a property type. The purpose of such attribute is to minimize the need to create specialized property types by mutualizing some well known qualifiers such as "maximum", "minimum" which apply to a lot of different property types.',
+        title='Facet Role ID',
+    )
+
+
+class AbstractPropertyType100(DDMSBaseModel):
+    """
+    It holds the PropertyType associated with this reference property type, further defining the semantics of the value. It contains a relationship to PropertyType record and its (de-normalized) name. String or number values can represent e.g. A date or a time by referring to the respective PropertyType record id.
+    """
+
+    PropertyTypeID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-PropertyType:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The relationship to the PropertyType reference data item, typically containing an Energistics PWLS 3 uuid. For better traceability and usability the property name is to be populated in the Name property.',
+        example='namespace:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:',
+        title='Property Type ID',
+    )
+    Name: Optional[str] = Field(
+        None,
+        description='The name of the PropertyType, de-normalized, derived from the record referenced in PropertyTypeID.',
+        example='dip azimuth',
+        title='Name',
+    )
+
+
+class AbstractReferencePropertyType110(DDMSBaseModel):
+    """
+    The purpose of this schema is best understood in the context of a columnar dataset: the AbstractReferencePropertyType describes a column in a columnar dataset by declaring its value type (number, string), a UnitQuantity if the value type is a number, a kind if the string value is actually a relationship to a e.g. reference-data type.
+    """
+
+    ValueType: Optional[str] = Field(
+        None,
+        description='The type of value to expect for this reference property, either "number" (floating point number), "integer",  "string", or "boolean".',
+        example='string',
+        title='Value Type',
+    )
+    ValueCount: Optional[int] = Field(
+        1,
+        description='The number of values in a tuple, e.g. For coordinates. The default is 1.',
+        example=1,
+        title='Value Count',
+    )
+    UnitQuantityID: Optional[
+        constr(regex=r'^[\w\-\.]+:reference-data\-\-UnitQuantity:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='Only populated of the ValueType is "number". It holds the UnitQuantity associated with this reference property type. It is a relationship to UnitQuantity record.',
+        example='namespace:reference-data--UnitQuantity:plane%20angle:',
+        title='Unit Quantity ID',
+    )
+    PropertyType: Optional[AbstractPropertyType100] = Field(
+        None,
+        description='It holds the PropertyType associated with this reference property type, further defining the semantics of the value. It contains a relationship to PropertyType record and its (de-normalized) name. String or number values can represent e.g. A date or a time by referring to the respective PropertyType record id.',
+        example={
+            'PropertyTypeID': 'namespace:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:',
+            'Name': 'dip azimuth',
+        },
+        title='Property Type',
+    )
+    RelationshipTargetKind: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:([0-9]+)?(\.)?([0-9]+)?(\.)?([0-9]+)?$'
+        )
+    ] = Field(
+        None,
+        description='Only populated if ValueType=="string" and the values are expected to represent record ids, e.g. to a reference-data type, then this value holds the kind (optionally without the semantic version number).',
+        example='osdu:wks:reference-data--UnitOfMeasure:',
+        title='Relationship Target Kind',
+    )
+    FacetIDs: Optional[List[AbstractFacet100]] = Field(
+        None,
+        description='Ordered array with: FacetType, FacetRole, both calling specific references\n\nFacetType: Enumerations of the type of additional context about the nature of a property type (it may include conditions, direction, qualifiers, or statistics). \n\nFacetRole: Additional context about the nature of a property type. The purpose of such attribute is to minimize the need to create specialized property types by mutualizing some well known qualifiers such as "maximum", "minimum" which apply to a lot of different property types.',
+        title='Facet IDs',
+    )
+
+
+class AbstractColumnBasedTable100(DDMSBaseModel):
+    """
+    An embedded ColumnBasedTable with the properties including their values associated to the intervals in data.Intervals[]. The association is done by array index.
+    """
+
+    KeyColumns: Optional[List[AbstractReferencePropertyType110]] = Field(
+        None,
+        description='A column whose values are considered as keys/indices. Do not use this attribute if you want to follow a given ColumnBasedTableType.',
+        title='Key columns',
+    )
+    Columns: Optional[List[AbstractReferencePropertyType110]] = Field(
+        None,
+        description='A common column storing values of a particular property kind. Do not use this attribute if you want to follow a given ColumnBasedTableType.',
+        title='Common columns',
+    )
+    ColumnSize: Optional[int] = Field(
+        None,
+        description='The count of elements in each column',
+        example=5,
+        title='Size of columns',
+    )
+    ColumnValues: Optional[List[ColumnValue]] = Field(
+        None,
+        description='First column values are related to first key column, second column values are related to the second key column, etc…\nColumn values at index KeyColumns count are related to first (non key) column, Column values at index KeyColumns count + 1 are related to second (non key) column, etc...',
+        title='The values of each column',
+    )
+    ColumnBasedTableType: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:reference-data\-\-ColumnBasedTableType:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description="Quickly indicate the type of the column based table (KrPc, PVT, Facies, ...) and its standard columns definition. It is supposed to be used when you don't use KeyColumns neither Columns as attributes of this WPC.",
+        example='namespace:reference-data--ColumnBasedTableType:Facies:',
+        title='The type of the column based table',
+    )
+
+
+class WellboreIntervalSetData100(
+    AbstractCommonResources100, AbstractWPCGroupType100, AbstractWorkProductComponent100
+):
+    WellboreID: Optional[
+        constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+:[0-9]*$')
+    ] = Field(
+        None,
+        description='The relationship to a Wellbore, to which this WellboreIntervalSet is associated with.',
+        example='namespace:master-data--Wellbore:NPD-4055:',
+        title='Wellbore ID',
+    )
+    VerticalMeasurement: Optional[AbstractFacilityVerticalMeasurement100] = Field(
+        None,
+        description='References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all marker measured depths of the WellboreIntervalSet Intervals array. It is strongly recommended specifying the VerticalMeasurement.WellboreTVDTrajectoryID  when SubSeaVerticalDepth are populated for the intervals.',
+        title='Vertical Measurement',
+    )
+    StratigraphicColumnID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-StratigraphicColumn:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The optional reference to a stratigraphic column (referring to multiple StratigraphicColumnRankInterpretation) providing the stratigraphic framework for the WellboreIntervalSet. It demonstrates the intent to describe complex, potentially overlapping stratigraphic intervals. Only one of the properties StratigraphicColumnID or StratigraphicColumnRankInterpretationID should be populated.',
+        title='Stratigraphic Column ID',
+    )
+    StratigraphicColumnRankInterpretationID: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-StratigraphicColumnRankInterpretation:[\w\-\.\:\%]+:[0-9]*$'
+        )
+    ] = Field(
+        None,
+        description='The optional reference to a StratigraphicColumnRankInterpretation. It expresses the intent of a stratigraphic framework with non-overlapping intervals. Only one of the properties StratigraphicColumnID or StratigraphicColumnRankInterpretationID should be populated.',
+        example='namespace:work-product-component--StratigraphicColumnRankInterpretation:Gudrun-Rank2-:',
+        title='Stratigraphic Column Rank Interpretation ID',
+    )
+    Intervals: Optional[List[Interval]] = Field(
+        None,
+        description='Array of Intervals, index-aligned with IntervalProperties.',
+        title='Intervals',
+    )
+    IntervalProperties: Optional[AbstractColumnBasedTable100] = Field(
+        None,
+        description='An embedded ColumnBasedTable with the properties including their values associated to the intervals in data.Intervals[]. The association is done by array index.',
+        title='Interval Property Values',
+    )
+    ExtensionProperties: Optional[Dict[str, Any]] = None
+
+
+class WellboreIntervalSet100(DDMSBaseModel):
+    """
+    Define the geologic unit (including stratigraphic units) or fluid intervals along the wellbore, independent or based on markers  (defined in one or several WellboreMarkerSets).
+    """
+
+    id: Optional[
+        constr(
+            regex=r'^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$'
+        )
+    ] = Field(
+        None,
+        description='Previously called ResourceID or SRN which identifies this OSDU resource object without version.',
+        example='namespace:work-product-component--WellboreIntervalSet:2828e1de-4bdd-5bfa-a4d0-c7727cd1b587',
+        title='Entity ID',
+    )
+    kind: constr(regex=r'^[\w\-\.]+:[\w\-\.]+:[\w\-\.]+:[0-9]+.[0-9]+.[0-9]+$') = Field(
+        ...,
+        description='The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.',
+        example='osdu:wks:work-product-component--WellboreIntervalSet:1.0.0',
+        title='Entity Kind',
+    )
+    version: Optional[int] = Field(
+        None,
+        description='The version number of this OSDU resource; set by the framework.',
+        example=1562066009929332,
+        title='Version Number',
+    )
+    acl: AbstractAccessControlList100 = Field(
+        ...,
+        description='The access control tags associated with this entity.',
+        title='Access Control List',
+    )
+    legal: AbstractLegalTags100 = Field(
+        ...,
+        description="The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+        title='Legal Tags',
+    )
+    tags: Optional[Dict[str, Tags]] = Field(
+        None,
+        description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
+        example={'NameOfKey': 'String value'},
+        title='Tag Dictionary',
+    )
+    createTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:46:20.163Z',
+        title='Resource Object Creation DateTime',
+    )
+    createUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created the first version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Creation User Reference',
+    )
+    modifyTime: Optional[datetime] = Field(
+        None,
+        description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
+        example='2020-12-16T11:52:24.477Z',
+        title='Resource Object Version Creation DateTime',
+    )
+    modifyUser: Optional[str] = Field(
+        None,
+        description='The user reference, which created this version of this resource object. Set by the System.',
+        example='some-user@some-company-cloud.com',
+        title='Resource Object Version Creation User Reference',
+    )
+    ancestry: Optional[AbstractLegalParentList100] = Field(
+        None,
+        description='The links to data, which constitute the inputs, from which this record instance is derived.',
+        title='Ancestry',
+    )
+    meta: Optional[List[Any]] = Field(
+        None,
+        description='The Frame of Reference meta data section linking the named properties to self-contained definitions.',
+        title='Frame of Reference Meta Data',
+    )
+    data: Optional[WellboreIntervalSetData100] = None
+
+

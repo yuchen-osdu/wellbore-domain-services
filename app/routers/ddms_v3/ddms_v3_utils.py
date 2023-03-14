@@ -25,7 +25,8 @@ from app.model.osdu_model import (
     Wellbore111,
     Wellbore120,
     Wellbore130,
-    WellboreMarkerSet121
+    WellboreMarkerSet121,
+    WellboreIntervalSet100
 )
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
 from app.routers.record_utils import fetch_record
@@ -80,6 +81,7 @@ class DMSV3RouterUtils:
             -  work-product-component--WellboreMarkerSet:1.1.0
             -  work-product-component--WellboreTrajectory:1.0.0
             -  work-product-component--WellboreTrajectory:1.1.0
+            -  work-product-component--WellboreIntervalSet:1.0.0
 
         Args:
             records (Record): entity object to be verified
@@ -98,6 +100,7 @@ class DMSV3RouterUtils:
             "work-product-component--WellLog": {"1.0.0": WellLog, "1.1.0": WellLog110, "1.2.0": WellLog120},
             "work-product-component--WellboreMarkerSet": {"1.0.0": WellboreMarkerSet, "1.1.0": WellboreMarkerSet110,
                                                           "1.2.0": WellboreMarkerSet120, "1.2.1": WellboreMarkerSet121},
+            "work-product-component--WellboreIntervalSet": {"1.0.0": WellboreIntervalSet100},
             "work-product-component--WellboreTrajectory": {"1.0.0": WellboreTrajectory, "1.1.0": WellboreTrajectory110}
         }
 

@@ -15,6 +15,7 @@
 log_version = '1.0.5'
 logset_version = '1.0.5'
 marker_version = '1.0.4'
+wellboreintervalset_version = '1.0.0'
 trajectory_version = '1.0.5'
 well_version = '1.0.2'
 wellbore_version = '1.0.6'

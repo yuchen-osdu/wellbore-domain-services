@@ -29,7 +29,8 @@ kind_list = [
     'osdu_well',# is the latest
     'osdu_welllog',
     'osdu_wellboretrajectory',
-    'osdu_wellboremarkerset'
+    'osdu_wellboremarkerset',
+    'osdu_wellboreintervalset_100'
 ]
 
 # parametrize of kind + dependency on the create_record

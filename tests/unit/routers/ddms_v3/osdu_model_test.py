@@ -27,7 +27,7 @@ from app.model.osdu_model import (
     WellboreTrajectory110,
     WellboreMarkerSet110,
     WellLog120,
-    Wellbore110, Well110, WellboreMarkerSet120,
+    Wellbore110, Well110, WellboreMarkerSet120, WellboreIntervalSet100,
 )
 
 test_parameters = [
@@ -88,6 +88,7 @@ test_parameters = [
     (WellboreMarkerSet120, "WellboreMarkerSet_unit.json", None),
     (WellboreMarkerSet120, "WellboreMarkerSet110_unit.json", None),
     (WellboreMarkerSet120, "WellboreMarkerSet120_unit.json", None),
+    (WellboreIntervalSet100, "wellboreintervalset100_unit.json", None),
 ]
 
 

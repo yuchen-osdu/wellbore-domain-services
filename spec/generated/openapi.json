@@ -225,6 +225,51 @@
         "title": "AbstractAnyCrsFeatureCollection110",
         "type": "object"
       },
+      "AbstractColumnBasedTable100": {
+        "additionalProperties": false,
+        "description": "An embedded ColumnBasedTable with the properties including their values associated to the intervals in data.Intervals[]. The association is done by array index.",
+        "properties": {
+          "ColumnBasedTableType": {
+            "description": "Quickly indicate the type of the column based table (KrPc, PVT, Facies, ...) and its standard columns definition. It is supposed to be used when you don't use KeyColumns neither Columns as attributes of this WPC.",
+            "example": "namespace:reference-data--ColumnBasedTableType:Facies:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ColumnBasedTableType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "The type of the column based table",
+            "type": "string"
+          },
+          "ColumnSize": {
+            "description": "The count of elements in each column",
+            "example": 5,
+            "title": "Size of columns",
+            "type": "integer"
+          },
+          "ColumnValues": {
+            "description": "First column values are related to first key column, second column values are related to the second key column, etc\u2026\nColumn values at index KeyColumns count are related to first (non key) column, Column values at index KeyColumns count + 1 are related to second (non key) column, etc...",
+            "items": {
+              "$ref": "#/components/schemas/ColumnValue"
+            },
+            "title": "The values of each column",
+            "type": "array"
+          },
+          "Columns": {
+            "description": "A common column storing values of a particular property kind. Do not use this attribute if you want to follow a given ColumnBasedTableType.",
+            "items": {
+              "$ref": "#/components/schemas/AbstractReferencePropertyType110"
+            },
+            "title": "Common columns",
+            "type": "array"
+          },
+          "KeyColumns": {
+            "description": "A column whose values are considered as keys/indices. Do not use this attribute if you want to follow a given ColumnBasedTableType.",
+            "items": {
+              "$ref": "#/components/schemas/AbstractReferencePropertyType110"
+            },
+            "title": "Key columns",
+            "type": "array"
+          }
+        },
+        "title": "AbstractColumnBasedTable100",
+        "type": "object"
+      },
       "AbstractContact100": {
         "additionalProperties": false,
         "description": "An object with properties that describe a specific person or other point-of-contact (like an email distribution list) that is relevant in this context (like a given data set or business project). The contact specified may be either internal or external to the organisation (something denoted via the Organisation object that is referenced). Note that some properties contain personally identifiable information, so it might not be appropriate to populate all properties in all scenarios.",
@@ -265,6 +310,30 @@
           }
         },
         "title": "AbstractContact100",
+        "type": "object"
+      },
+      "AbstractFacet100": {
+        "additionalProperties": false,
+        "description": "    A tuple FacetType, FacetRole, both calling specific references\n\nFacetType: Enumeration of the type of additional context about the nature of a property type (it may include conditions, direction, qualifiers, or statistics).\n\nFacetRole: Additional context about the nature of a property type. The purpose of such attribute is to minimize the need to create specialized property types by mutualizing some well known qualifiers such as \"maximum\", \"minimum\" which apply to a lot of different property types.",
+        "properties": {
+          "FacetRoleID": {
+            "description": "Additional context about the nature of a property type. The purpose of such attribute is to minimize the need to create specialized property types by mutualizing some well known qualifiers such as \"maximum\", \"minimum\" which apply to a lot of different property types.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-FacetRole:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Facet Role ID",
+            "type": "string"
+          },
+          "FacetTypeID": {
+            "description": "FacetType: An 'enumeration' of the type of additional context about the nature of a property type (it may include conditions, direction, qualifiers, or statistics).",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-FacetType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Facet Type ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "FacetTypeID",
+          "FacetRoleID"
+        ],
+        "title": "AbstractFacet100",
         "type": "object"
       },
       "AbstractFacilityEvent110": {
@@ -579,6 +648,83 @@
           "otherRelevantDataCountries"
         ],
         "title": "AbstractLegalTags100",
+        "type": "object"
+      },
+      "AbstractPropertyType100": {
+        "additionalProperties": false,
+        "description": "It holds the PropertyType associated with this reference property type, further defining the semantics of the value. It contains a relationship to PropertyType record and its (de-normalized) name. String or number values can represent e.g. A date or a time by referring to the respective PropertyType record id.",
+        "properties": {
+          "Name": {
+            "description": "The name of the PropertyType, de-normalized, derived from the record referenced in PropertyTypeID.",
+            "example": "dip azimuth",
+            "title": "Name",
+            "type": "string"
+          },
+          "PropertyTypeID": {
+            "description": "The relationship to the PropertyType reference data item, typically containing an Energistics PWLS 3 uuid. For better traceability and usability the property name is to be populated in the Name property.",
+            "example": "namespace:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-PropertyType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Property Type ID",
+            "type": "string"
+          }
+        },
+        "title": "AbstractPropertyType100",
+        "type": "object"
+      },
+      "AbstractReferencePropertyType110": {
+        "additionalProperties": false,
+        "description": "The purpose of this schema is best understood in the context of a columnar dataset: the AbstractReferencePropertyType describes a column in a columnar dataset by declaring its value type (number, string), a UnitQuantity if the value type is a number, a kind if the string value is actually a relationship to a e.g. reference-data type.",
+        "properties": {
+          "FacetIDs": {
+            "description": "Ordered array with: FacetType, FacetRole, both calling specific references\n\nFacetType: Enumerations of the type of additional context about the nature of a property type (it may include conditions, direction, qualifiers, or statistics). \n\nFacetRole: Additional context about the nature of a property type. The purpose of such attribute is to minimize the need to create specialized property types by mutualizing some well known qualifiers such as \"maximum\", \"minimum\" which apply to a lot of different property types.",
+            "items": {
+              "$ref": "#/components/schemas/AbstractFacet100"
+            },
+            "title": "Facet IDs",
+            "type": "array"
+          },
+          "PropertyType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractPropertyType100"
+              }
+            ],
+            "description": "It holds the PropertyType associated with this reference property type, further defining the semantics of the value. It contains a relationship to PropertyType record and its (de-normalized) name. String or number values can represent e.g. A date or a time by referring to the respective PropertyType record id.",
+            "example": {
+              "Name": "dip azimuth",
+              "PropertyTypeID": "namespace:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:"
+            },
+            "title": "Property Type"
+          },
+          "RelationshipTargetKind": {
+            "description": "Only populated if ValueType==\"string\" and the values are expected to represent record ids, e.g. to a reference-data type, then this value holds the kind (optionally without the semantic version number).",
+            "example": "osdu:wks:reference-data--UnitOfMeasure:",
+            "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:([0-9]+)?(\\.)?([0-9]+)?(\\.)?([0-9]+)?$",
+            "title": "Relationship Target Kind",
+            "type": "string"
+          },
+          "UnitQuantityID": {
+            "description": "Only populated of the ValueType is \"number\". It holds the UnitQuantity associated with this reference property type. It is a relationship to UnitQuantity record.",
+            "example": "namespace:reference-data--UnitQuantity:plane%20angle:",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitQuantity:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Unit Quantity ID",
+            "type": "string"
+          },
+          "ValueCount": {
+            "default": 1,
+            "description": "The number of values in a tuple, e.g. For coordinates. The default is 1.",
+            "example": 1,
+            "title": "Value Count",
+            "type": "integer"
+          },
+          "ValueType": {
+            "description": "The type of value to expect for this reference property, either \"number\" (floating point number), \"integer\",  \"string\", or \"boolean\".",
+            "example": "string",
+            "title": "Value Type",
+            "type": "string"
+          }
+        },
+        "title": "AbstractReferencePropertyType110",
         "type": "object"
       },
       "AbstractSpatialLocation100": {
@@ -1194,6 +1340,86 @@
           "data"
         ],
         "title": "CatalogRecord",
+        "type": "object"
+      },
+      "ColumnValue": {
+        "additionalProperties": false,
+        "description": "Value of the column. Generally only one of the attribute should be instantiated.",
+        "properties": {
+          "BooleanColumn": {
+            "description": "A column of only boolean values",
+            "example": [
+              true,
+              false,
+              true,
+              true,
+              false
+            ],
+            "items": {
+              "type": "boolean"
+            },
+            "title": "Boolean Column",
+            "type": "array"
+          },
+          "IntegerColumn": {
+            "description": "A column of only integer values",
+            "example": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "items": {
+              "type": "integer"
+            },
+            "title": "Integer Column",
+            "type": "array"
+          },
+          "NumberColumn": {
+            "description": "A column of only number values",
+            "example": [
+              0.1,
+              2.3,
+              4.5,
+              6.7,
+              8.9
+            ],
+            "items": {
+              "type": "number"
+            },
+            "title": "Number Column",
+            "type": "array"
+          },
+          "StringColumn": {
+            "description": "A column of only string values",
+            "example": [
+              "foo",
+              "bar",
+              "foo again",
+              "bar again",
+              "foo bar"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "title": "String Column",
+            "type": "array"
+          },
+          "UndefinedValueRows": {
+            "description": "The row indexes for which the values are flagged as undefined.",
+            "example": [
+              3,
+              4
+            ],
+            "items": {
+              "type": "integer"
+            },
+            "title": "Undefined value rows",
+            "type": "array"
+          }
+        },
+        "title": "ColumnValue",
         "type": "object"
       },
       "CommitSessionResponse": {
@@ -2266,6 +2492,13 @@
         "title": "GeoJsonPoint",
         "type": "object"
       },
+      "GeologicUnitInterpretationID": {
+        "additionalProperties": false,
+        "description": "The base model forbids fields which are not declared initially in the pydantic model",
+        "pattern": "^[\\w\\-\\.]+:(work-product-component\\-\\-StratigraphicUnitInterpretation|work-product-component\\-\\-GeobodyInterpretation|work-product-component\\-\\-RockFluidUnitInterpretation):[\\w\\-\\.\\:\\%]+:[0-9]*$",
+        "title": "GeologicUnitInterpretationID",
+        "type": "string"
+      },
       "GeometryItem": {
         "additionalProperties": false,
         "description": "The base model forbids fields which are not declared initially in the pydantic model",
@@ -2994,6 +3227,107 @@
           }
         },
         "title": "HistoricalInterest",
+        "type": "object"
+      },
+      "Interval": {
+        "additionalProperties": false,
+        "description": "An interval given either by relationships to top/base markers or standalone top/base depths. To avoid confusion about entry and exit depths the naming convention uses Start as the entry point of the well path into the geologic unit and Stop as the exit point. For unfolded geologic units and vertical wellbores Start is Top and Stop is Base.",
+        "properties": {
+          "GeologicUnitInterpretationIDs": {
+            "description": "An array of StratigraphicUnitInterpretation, GeobodyInterpretation or RockFluidUnitInterpretation record Ids associated to this interval.",
+            "example": [
+              "partition-id:work-product-component--StratigraphicUnitInterpretation:Draupne-:"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/GeologicUnitInterpretationID"
+            },
+            "title": "Interpretation Ids",
+            "type": "array"
+          },
+          "IntervalID": {
+            "description": "The unique identifier of the interval array member in the data.Intervals[] array. Ideally a UUID.",
+            "example": "ba829e6d-30e0-4375-906c-4e7c62c9f7ec",
+            "title": "Interval ID",
+            "type": "string"
+          },
+          "StartBoundaryInterpretationID": {
+            "description": "The optional relationship to a HorizonInterpretation, GeobodyBoundaryInterpretation or FaultInterpretation. If the interval start (typically the top) is associated with a marker, this is considered a denormalization of the data.Markers[].InterpretationID for the data.Markers[].MarkerID equals to StartMarkerID.",
+            "example": "namespace:work-product-component--HorizonInterpretation:Top-Draupne-:",
+            "pattern": "^[\\w\\-\\.]+:(work-product-component\\-\\-HorizonInterpretation|work-product-component\\-\\-GeobodyBoundaryInterpretation|work-product-component\\-\\-FaultInterpretation):[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Start Interval Boundary Interpretation ID",
+            "type": "string"
+          },
+          "StartIntervalName": {
+            "description": "Name of the interval start (typically the top); when associated with a marker in a WellboreMarkerSet then this name is a denormalization of data.Markers[].MarkerName where the data.Markers[].MarkerID equals to StartMarkerID.",
+            "example": "Top-Draupne",
+            "title": "Start Interval Marker Name",
+            "type": "string"
+          },
+          "StartMarkerID": {
+            "description": "Individual markers are not globally identifiable. TopMarkerID is the unique id (MarkerID) of the top interval marker (typically the interval base) in the data.Markers[] array where the data.Markers[].MarkerID equals to StartMarkerID.",
+            "example": "a580a3bb-c2db-4845-bbc1-050b417307c0",
+            "title": "Start Interval Marker ID",
+            "type": "string"
+          },
+          "StartMarkerSetID": {
+            "description": "Optional reference to the WellboreMarkerSet containing the interval start (typically the top), with MarkerID equals StartMarkerID.",
+            "example": "namespace:work-product-component--WellboreMarkerSet:15-3-7-SingleRank-:",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Start Interval WellboreMarkerSet ID",
+            "type": "string"
+          },
+          "StartMeasuredDepth": {
+            "description": "The minimal MeasuredDepth of the interval. In the most common case this is the top.  If this value is associated with a marker then this value is a denormalization of data.Markers[].MarkerMeasuredDepth where the data.Markers[].MarkerID equals to StartMarkerID.",
+            "example": 4049,
+            "title": "Start Interval Measured Depth",
+            "type": "number"
+          },
+          "StartSubSeaVerticalDepth": {
+            "description": "True vertical depth sub-sea of the start of the interval. This is the same as true vertical depth referenced to the vertical CRS \"MSL depth\". If the start of the interval is associated with a marker then this value is a denormalization of data.Markers[].MarkerSubSeaVerticalDepth where the data.Markers[].MarkerID equals to StartMarkerID.",
+            "example": 4030.9,
+            "title": "Start Sub-Sea Vertical Depth",
+            "type": "number"
+          },
+          "StopBoundaryInterpretationID": {
+            "description": "The optional relationship to a HorizonInterpretation, GeobodyBoundaryInterpretation or FaultInterpretation. If the interval stop (typically the base) is associated with a marker, this is considered a denormalization of the data.Markers[].InterpretationID where the data.Markers[].MarkerID equals to StopMarkerID.",
+            "example": "namespace:work-product-component--HorizonInterpretation:Top-Heather-:",
+            "pattern": "^[\\w\\-\\.]+:(work-product-component\\-\\-HorizonInterpretation|work-product-component\\-\\-GeobodyBoundaryInterpretation|work-product-component\\-\\-FaultInterpretation):[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Stop Interval Boundary Interpretation ID",
+            "type": "string"
+          },
+          "StopIntervalName": {
+            "description": "Name of the interval stop (typically the base); when associated with a marker in a WellboreMarkerSet then this name is a denormalization of data.Markers[].MarkerName where the data.Markers[].MarkerID equals to StopMarkerID.",
+            "example": "Top-Heather",
+            "title": "Stop Interval Marker Name",
+            "type": "string"
+          },
+          "StopMarkerID": {
+            "description": "Individual markers are not globally identifiable. StopMarkerID is the unique id (MarkerID) of the interval stop (typically the interval base) in the data.Markers[] array where the data.Markers[].MarkerID equals to StopMarkerID.",
+            "example": "7699229b-36e8-4aed-884f-a1e844e5b9d7",
+            "title": "Stop Interval Marker ID",
+            "type": "string"
+          },
+          "StopMarkerSetID": {
+            "description": "Optional reference to the WellboreMarkerSet containing the top with MarkerID equals StopMarkerID.",
+            "example": "namespace:work-product-component--WellboreMarkerSet:15-3-7-SingleRank-:",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Stop Interval WellboreMarkerSet ID",
+            "type": "string"
+          },
+          "StopMeasuredDepth": {
+            "description": "The maximum MeasuredDepth of the interval (typically the base). If the interval stop is associated with a marker then this value is a denormalization of data.Markers[].MarkerMeasuredDepth where the data.Markers[].MarkerID equals to StopMarkerID.",
+            "example": 4502,
+            "title": "Stop Interval Measured Depth",
+            "type": "number"
+          },
+          "StopSubSeaVerticalDepth": {
+            "description": "True vertical depth sub-sea of the interval stop (typically the base). This is the same as true vertical depth referenced to the vertical CRS \"MSL depth\". If the interval stop is associated with a marker then this value is a denormalization of data.Markers[].MarkerSubSeaVerticalDepth where the data.Markers[].MarkerID equals to StopMarkerID.",
+            "example": 4483.8,
+            "title": "Stop Sub-Sea Vertical Depth",
+            "type": "number"
+          }
+        },
+        "title": "Interval",
         "type": "object"
       },
       "JSONOrient": {
@@ -5588,6 +5922,332 @@
           }
         },
         "title": "WellboreCost",
+        "type": "object"
+      },
+      "WellboreIntervalSet100": {
+        "additionalProperties": false,
+        "description": "Define the geologic unit (including stratigraphic units) or fluid intervals along the wellbore, independent or based on markers  (defined in one or several WellboreMarkerSets).",
+        "properties": {
+          "acl": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractAccessControlList100"
+              }
+            ],
+            "description": "The access control tags associated with this entity.",
+            "title": "Access Control List"
+          },
+          "ancestry": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractLegalParentList100"
+              }
+            ],
+            "description": "The links to data, which constitute the inputs, from which this record instance is derived.",
+            "title": "Ancestry"
+          },
+          "createTime": {
+            "description": "Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.",
+            "example": "2020-12-16T11:46:20.163Z",
+            "format": "date-time",
+            "title": "Resource Object Creation DateTime",
+            "type": "string"
+          },
+          "createUser": {
+            "description": "The user reference, which created the first version of this resource object. Set by the System.",
+            "example": "some-user@some-company-cloud.com",
+            "title": "Resource Object Creation User Reference",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WellboreIntervalSetData100"
+          },
+          "id": {
+            "description": "Previously called ResourceID or SRN which identifies this OSDU resource object without version.",
+            "example": "namespace:work-product-component--WellboreIntervalSet:2828e1de-4bdd-5bfa-a4d0-c7727cd1b587",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
+            "title": "Entity ID",
+            "type": "string"
+          },
+          "kind": {
+            "description": "The schema identification for the OSDU resource object following the pattern {Namespace}:{Source}:{Type}:{VersionMajor}.{VersionMinor}.{VersionPatch}. The versioning scheme follows the semantic versioning, https://semver.org/.",
+            "example": "osdu:wks:work-product-component--WellboreIntervalSet:1.0.0",
+            "pattern": "^[\\w\\-\\.]+:[\\w\\-\\.]+:[\\w\\-\\.]+:[0-9]+.[0-9]+.[0-9]+$",
+            "title": "Entity Kind",
+            "type": "string"
+          },
+          "legal": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractLegalTags100"
+              }
+            ],
+            "description": "The entity's legal tags and compliance status. The actual contents associated with the legal tags is managed by the Compliance Service.",
+            "title": "Legal Tags"
+          },
+          "meta": {
+            "description": "The Frame of Reference meta data section linking the named properties to self-contained definitions.",
+            "items": {},
+            "title": "Frame of Reference Meta Data",
+            "type": "array"
+          },
+          "modifyTime": {
+            "description": "Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.",
+            "example": "2020-12-16T11:52:24.477Z",
+            "format": "date-time",
+            "title": "Resource Object Version Creation DateTime",
+            "type": "string"
+          },
+          "modifyUser": {
+            "description": "The user reference, which created this version of this resource object. Set by the System.",
+            "example": "some-user@some-company-cloud.com",
+            "title": "Resource Object Version Creation User Reference",
+            "type": "string"
+          },
+          "tags": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/app__model__osdu_model__Tags"
+            },
+            "description": "A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.",
+            "example": {
+              "NameOfKey": "String value"
+            },
+            "title": "Tag Dictionary",
+            "type": "object"
+          },
+          "version": {
+            "description": "The version number of this OSDU resource; set by the framework.",
+            "example": 1562066009929332,
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "acl",
+          "legal"
+        ],
+        "title": "WellboreIntervalSet100",
+        "type": "object"
+      },
+      "WellboreIntervalSetData100": {
+        "additionalProperties": false,
+        "description": "Common resources to be injected at root 'data' level for every entity, which is persistable in Storage. The insertion is performed by the OsduSchemaComposer script.",
+        "properties": {
+          "Artefacts": {
+            "description": "An array of Artefacts - each artefact has a Role, Resource tuple. An artefact is distinct from the file, in the sense certain valuable information is generated during loading process (Artefact generation process). Examples include retrieving location data, performing an OCR which may result in the generation of artefacts which need to be preserved distinctly",
+            "items": {
+              "$ref": "#/components/schemas/Artefact"
+            },
+            "title": "Artefacts",
+            "type": "array"
+          },
+          "AuthorIDs": {
+            "description": "Array of Authors' names of the work product component.  Could be a person or company entity.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Author IDs",
+            "type": "array"
+          },
+          "BusinessActivities": {
+            "description": "Array of business processes/workflows that the work product component has been through (ex. well planning, exploration).",
+            "items": {
+              "type": "string"
+            },
+            "title": "Businessactivities",
+            "type": "array"
+          },
+          "CreationDateTime": {
+            "description": "Date that a resource (work  product component here) is formed outside of OSDU before loading (e.g. publication date).",
+            "format": "date-time",
+            "title": "Creationdatetime",
+            "type": "string"
+          },
+          "Datasets": {
+            "description": "The record id, which identifies this OSDU File or dataset resource.",
+            "items": {
+              "$ref": "#/components/schemas/Dataset"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "Description": {
+            "description": "Description.  Summary of the work product component.  Not the same as Remark which captures thoughts of creator about the wpc.",
+            "title": "Description",
+            "type": "string"
+          },
+          "ExistenceKind": {
+            "description": "Where does this data resource sit in the cradle-to-grave span of its existence?",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ExistenceKind:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Existence Kind",
+            "type": "string"
+          },
+          "ExtensionProperties": {
+            "title": "Extensionproperties",
+            "type": "object"
+          },
+          "GeoContexts": {
+            "description": "List of geographic entities which provide context to the WPC.  This may include multiple types or multiple values of the same type.",
+            "items": {
+              "$ref": "#/components/schemas/AbstractGeoContext100"
+            },
+            "title": "Geocontexts",
+            "type": "array"
+          },
+          "IntervalProperties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractColumnBasedTable100"
+              }
+            ],
+            "description": "An embedded ColumnBasedTable with the properties including their values associated to the intervals in data.Intervals[]. The association is done by array index.",
+            "title": "Interval Property Values"
+          },
+          "Intervals": {
+            "description": "Array of Intervals, index-aligned with IntervalProperties.",
+            "items": {
+              "$ref": "#/components/schemas/Interval"
+            },
+            "title": "Intervals",
+            "type": "array"
+          },
+          "IsDiscoverable": {
+            "description": "A flag that indicates if the work product component is searchable, which means covered in the search index.",
+            "title": "Isdiscoverable",
+            "type": "boolean"
+          },
+          "IsExtendedLoad": {
+            "description": "A flag that indicates if the work product component is undergoing an extended load.  It reflects the fact that the work product component is in an early stage and may be updated before finalization.",
+            "title": "Isextendedload",
+            "type": "boolean"
+          },
+          "LineageAssertions": {
+            "description": "Defines relationships with other objects (any kind of Resource) upon which this work product component depends.  The assertion is directed only from the asserting WPC to ancestor objects, not children.  It should not be used to refer to files or artefacts within the WPC -- the association within the WPC is sufficient and Artefacts are actually children of the main WPC file. They should be recorded in the data.Artefacts[] array.",
+            "items": {
+              "$ref": "#/components/schemas/LineageAssertion"
+            },
+            "title": "Lineageassertions",
+            "type": "array"
+          },
+          "Name": {
+            "description": "Name",
+            "title": "Name",
+            "type": "string"
+          },
+          "ResourceCurationStatus": {
+            "description": "Describes the current Curation status.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceCurationStatus:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Curation Status",
+            "type": "string"
+          },
+          "ResourceHomeRegionID": {
+            "description": "The name of the home [cloud environment] region for this OSDU resource object.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-OSDURegion:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Home Region ID",
+            "type": "string"
+          },
+          "ResourceHostRegionIDs": {
+            "description": "The name of the host [cloud environment] region(s) for this OSDU resource object.",
+            "items": {
+              "$ref": "#/components/schemas/ResourceHostRegionID"
+            },
+            "title": "Resource Host Region ID",
+            "type": "array"
+          },
+          "ResourceLifecycleStatus": {
+            "description": "Describes the current Resource Lifecycle status.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceLifecycleStatus:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Lifecycle Status",
+            "type": "string"
+          },
+          "ResourceSecurityClassification": {
+            "description": "Classifies the security level of the resource.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-ResourceSecurityClassification:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Resource Security Classification",
+            "type": "string"
+          },
+          "Source": {
+            "description": "The entity that produced the record, or from which it is received; could be an organization, agency, system, internal team, or individual. For informational purposes only, the list of sources is not governed.",
+            "title": "Data Source",
+            "type": "string"
+          },
+          "SpatialArea": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+              }
+            ],
+            "description": "A polygon boundary that reflects the locale of the content of the work product component (location of the subject matter).",
+            "title": "Spatialarea"
+          },
+          "SpatialPoint": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractSpatialLocation100"
+              }
+            ],
+            "description": "A centroid point that reflects the locale of the content of the work product component (location of the subject matter).",
+            "title": "Spatialpoint"
+          },
+          "StratigraphicColumnID": {
+            "description": "The optional reference to a stratigraphic column (referring to multiple StratigraphicColumnRankInterpretation) providing the stratigraphic framework for the WellboreIntervalSet. It demonstrates the intent to describe complex, potentially overlapping stratigraphic intervals. Only one of the properties StratigraphicColumnID or StratigraphicColumnRankInterpretationID should be populated.",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-StratigraphicColumn:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Stratigraphic Column ID",
+            "type": "string"
+          },
+          "StratigraphicColumnRankInterpretationID": {
+            "description": "The optional reference to a StratigraphicColumnRankInterpretation. It expresses the intent of a stratigraphic framework with non-overlapping intervals. Only one of the properties StratigraphicColumnID or StratigraphicColumnRankInterpretationID should be populated.",
+            "example": "namespace:work-product-component--StratigraphicColumnRankInterpretation:Gudrun-Rank2-:",
+            "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-StratigraphicColumnRankInterpretation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Stratigraphic Column Rank Interpretation ID",
+            "type": "string"
+          },
+          "SubmitterName": {
+            "description": "Name of the person that first submitted the work product component to OSDU.",
+            "title": "Submittername",
+            "type": "string"
+          },
+          "Tags": {
+            "description": "Array of key words to identify the work product, especially to help in search.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "TechnicalAssuranceID": {
+            "description": "DEPRECATED: Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-TechnicalAssuranceType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Technical Assurance ID",
+            "type": "string"
+          },
+          "TechnicalAssurances": {
+            "description": "Describes a record's overall suitability for general business consumption based on data quality. Clarifications: Since Certified is the highest classification of suitable quality, any further change or versioning of a Certified record should be carefully considered and justified. If a Technical Assurance value is not populated then one can assume the data has not been evaluated or its quality is unknown (=Unevaluated). Technical Assurance values are not intended to be used for the identification of a single \"preferred\" or \"definitive\" record by comparison with other records.",
+            "items": {
+              "$ref": "#/components/schemas/AbstractTechnicalAssurance100"
+            },
+            "title": "Technical Assurances",
+            "type": "array"
+          },
+          "VerticalMeasurement": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AbstractFacilityVerticalMeasurement100"
+              }
+            ],
+            "description": "References an entry in the Vertical Measurement array for the Wellbore identified by WellboreID, which defines the vertical reference datum for all marker measured depths of the WellboreIntervalSet Intervals array. It is strongly recommended specifying the VerticalMeasurement.WellboreTVDTrajectoryID  when SubSeaVerticalDepth are populated for the intervals.",
+            "title": "Vertical Measurement"
+          },
+          "WellboreID": {
+            "description": "The relationship to a Wellbore, to which this WellboreIntervalSet is associated with.",
+            "example": "namespace:master-data--Wellbore:NPD-4055:",
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "title": "Wellbore ID",
+            "type": "string"
+          }
+        },
+        "title": "WellboreIntervalSetData100",
         "type": "object"
       },
       "WellboreMarkerSet121": {
@@ -16104,6 +16764,453 @@
         "summary": "Delete records. The API performs a logical deletion of the given records. ",
         "tags": [
           "Delete records V3"
+        ]
+      }
+    },
+    "/ddms/v3/wellboreintervalsets": {
+      "post": {
+        "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "post_wellboreintervalsetid_osdu",
+        "parameters": [
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": [
+                {
+                  "acl": {
+                    "owners": [
+                      "data.default.owners@{{datapartitionid}}.{{domain}}"
+                    ],
+                    "viewers": [
+                      "data.default.viewers@{{datapartitionid}}.{{domain}}"
+                    ]
+                  },
+                  "ancestry": {
+                    "parents": [
+                      "{{datapartitionid}}:zoneSet:techlog-8B14F36E-2297-4BB8-AF09-B73578FD7A02--BEB57B2D-A304-4DE2-94B8-C20117ACA6FB:1678091451598889"
+                    ]
+                  },
+                  "data": {
+                    "Intervals": [
+                      {
+                        "GeologicUnitInterpretationIDs": [
+                          "{{datapartitionid}}:work-product-component--StratigraphicUnitInterpretation:globalZone-1af0e063fc0315f09166b9e8ca0d8fb3553051c5856dfc7173f8e73143220872:"
+                        ],
+                        "IntervalID": "1af0e063fc0315f09166b9e8ca0d8fb3553051c5856dfc7173f8e73143220872",
+                        "StartMeasuredDepth": 92.0,
+                        "StopMeasuredDepth": 1244.0
+                      },
+                      {
+                        "GeologicUnitInterpretationIDs": [
+                          "{{datapartitionid}}:work-product-component--StratigraphicUnitInterpretation:globalZone-db607cf218b70a1eb3c9601eb0df2586dc5337a823fe227892d20fa130d45619:"
+                        ],
+                        "IntervalID": "db607cf218b70a1eb3c9601eb0df2586dc5337a823fe227892d20fa130d45619",
+                        "StartMeasuredDepth": 1244.0,
+                        "StopMeasuredDepth": 1316.0
+                      },
+                      {
+                        "GeologicUnitInterpretationIDs": [
+                          "{{datapartitionid}}:work-product-component--StratigraphicUnitInterpretation:globalZone-d37153fe7f2f5d16f1e399e5fd3a2f12626a27b6ac0364c07b3bd647af831def:"
+                        ],
+                        "IntervalID": "d37153fe7f2f5d16f1e399e5fd3a2f12626a27b6ac0364c07b3bd647af831def",
+                        "StartMeasuredDepth": 1316.0,
+                        "StopMeasuredDepth": 1680.0
+                      },
+                      {
+                        "GeologicUnitInterpretationIDs": [
+                          "{{datapartitionid}}:work-product-component--StratigraphicUnitInterpretation:globalZone-5eb61a554f0ae898dcaba0b121e6eab1445cb563989de875271d562d0b6533fb:"
+                        ],
+                        "IntervalID": "5eb61a554f0ae898dcaba0b121e6eab1445cb563989de875271d562d0b6533fb",
+                        "StartMeasuredDepth": 1680.0,
+                        "StopMeasuredDepth": 1750.0
+                      }
+                    ],
+                    "Name": "Stratigraphy",
+                    "WellboreID": "{{datapartitionid}}:master-data--Wellbore:techlog-1E343D72-F814-4E4B-A919-A874B2C9952E--625CD42C-FDD1-466A-968A-0B53DA2D0FA9:"
+                  },
+                  "id": "{{datapartitionid}}:work-product-component--WellboreIntervalSet:wellboreintervalsetId",
+                  "kind": "osdu:wks:work-product-component--WellboreIntervalSet:1.0.0",
+                  "legal": {
+                    "legaltags": [
+                      "{{legaltags}}"
+                    ],
+                    "otherRelevantDataCountries": [
+                      "US"
+                    ],
+                    "status": "compliant"
+                  },
+                  "meta": [
+                    {
+                      "kind": "Unit",
+                      "name": "m",
+                      "persistableReference": "\"{\\\"scaleOffset\\\":{\\\"scale\\\":1.0,\\\"offset\\\":0.0},\\\"symbol\\\":\\\"M\\\",\\\"baseMeasurement\\\":{\\\"ancestry\\\":\\\"Length\\\",\\\"type\\\":\\\"UM\\\"},\\\"type\\\":\\\"USO\\\"}\"",
+                      "propertyNames": [
+                        "Intervals[].StartMeasuredDepth",
+                        "Intervals[].StopMeasuredDepth"
+                      ],
+                      "unitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:"
+                    }
+                  ]
+                }
+              ],
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/WellboreIntervalSet100"
+                },
+                "title": "Wellboreintervalsets",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUpdateRecordsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Missing mandatory parameter or unknown parameter"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create or update the WellboreIntervalSet using osdu schema",
+        "tags": [
+          "Wellbore IntervalSet"
+        ]
+      }
+    },
+    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}": {
+      "delete": {
+        "description": "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>",
+        "operationId": "del_osdu_wellboreintervalsetid",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboreintervalsetsid",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
+              "title": "Wellboreintervalsetsid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Record deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellboreIntervalSet not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete the WellboreIntervalSetId. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
+        "tags": [
+          "Wellbore IntervalSet"
+        ]
+      },
+      "get": {
+        "description": "Get the WellboreIntervalSet object using its **id**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_wellboreintervalsetid_osdu",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboreintervalsetsid",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
+              "title": "Wellboreintervalsetsid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellboreIntervalSet100"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellboreIntervalSet not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the WellboreIntervalSet using osdu schema",
+        "tags": [
+          "Wellbore IntervalSet"
+        ]
+      }
+    },
+    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}/versions": {
+      "get": {
+        "description": "<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_osdu_wellboreintervalsetid_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboreintervalsetsid",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
+              "title": "Wellboreintervalsetsid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordVersions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellboreIntervalSet not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get all versions of the WellboreIntervalSet",
+        "tags": [
+          "Wellbore IntervalSet"
+        ]
+      }
+    },
+    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}/versions/{version}": {
+      "get": {
+        "description": "Get the WellboreIntervalSet object using its **id**. \n<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\"In addition, users must be a member of data groups to access the data.</p>",
+        "operationId": "get_osdu_wellboreintervalsetid_version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wellboreintervalsetsid",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
+              "title": "Wellboreintervalsetsid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellboreIntervalSet100"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellboreIntervalSet not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the given version of the WellboreIntervalSet using OSDU WellboreIntervalSetId schema",
+        "tags": [
+          "Wellbore IntervalSet"
         ]
       }
     },
