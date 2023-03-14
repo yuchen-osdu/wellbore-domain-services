@@ -1,0 +1,4 @@
+{{- template "common.hpa" (list . "os-indexer.hpa") -}}
+{{- define "os-indexer.hpa" -}}
+## Define overrides for the service HPA resource here
+{{- end -}}
