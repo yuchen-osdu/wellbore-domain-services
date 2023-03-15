@@ -42,12 +42,10 @@ resources:
     cpu: "1"
     memory: 4Gi
 autoscaling:
+  enabled: true
   minReplicas: 1
   maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  coolDownPeriod: 120
-  ServiceRequestCountThreshold: 35
-  ServiceRequestDurationAverage: 5000
+  targetCPUUtilizationPercentage: 50
 
 # Security Config
 serviceAccountRole: arn:aws:iam::{{ .Values.global.accountID }}:role/osdu-{{ .Values.global.resourcePrefix }}-{{ .Values.global.region }}-{{ include "common.name" . }}

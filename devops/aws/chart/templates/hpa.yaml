@@ -1,0 +1,4 @@
+{{- template "common.hpa" (list . "os-wellbore-ddms.hpa") -}}
+{{- define "os-wellbore-ddms.hpa" -}}
+## Define overrides for the service HPA resource here
+{{- end -}}
