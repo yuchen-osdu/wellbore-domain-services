@@ -138,7 +138,7 @@ decorator==5.0.9
     #   jsonpath-ng
 distributed==2022.04.1
     # via dask
-fastapi==0.88.0
+fastapi==0.94.1
     # via
     #   -r requirements.in
     #   osdu-data-ecosystem-search
@@ -421,7 +421,7 @@ sniffio==1.2.0
     #   httpx
 sortedcontainers==2.4.0
     # via distributed
-starlette==0.22.0
+starlette==0.26.1
     # via fastapi
 structlog==21.1.0
     # via -r requirements.in

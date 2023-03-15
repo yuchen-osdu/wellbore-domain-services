@@ -1,4 +1,4 @@
-fastapi
+fastapi>=0.92.0
 pydantic>=1.9
 aiohttp==3.7.4.post0
 cryptography>=39.0.2
