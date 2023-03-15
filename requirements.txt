@@ -117,7 +117,7 @@ cloudpickle==1.6.0
     # via
     #   dask
     #   distributed
-cryptography==3.4.7
+cryptography==39.0.2
     # via
     #   -r requirements.in
     #   adal
@@ -234,7 +234,7 @@ locket==1.0.0
     # via partd
 markupsafe==2.0.1
     # via jinja2
-msal==1.12.0
+msal==1.21.0
     # via
     #   azure-identity
     #   msal-extensions
