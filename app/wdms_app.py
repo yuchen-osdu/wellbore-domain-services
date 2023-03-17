@@ -15,8 +15,6 @@
 import asyncio
 import sys
 from functools import partial
-from os import getpid
-from time import sleep
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
@@ -35,10 +33,8 @@ from app.clients import SearchServiceClient, StorageRecordServiceClient
 
 # ----------
 from app.conf import Config, check_environment
-from app.errors.exception_handlers import (
-    add_exception_handlers,
-    create_custom_http_exception_handler,
-)
+from app.errors.exception_handlers import add_exception_handlers
+
 
 # ---------- import tracing, logging, metrics ----------------------------------
 from app.helper import logger, metric, traces
@@ -51,8 +47,7 @@ from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id
 # ---------- import model ----------------------------------
 from app.model.entity_utils import Entity
-# ----------
-from app.pool_executor import run_in_pool_executor
+
 # ---------- import Routers ----------------------------------
 from app.routers import about, probes, sessions
 from app.routers.bulk import bulk_routes, statistics_routes
@@ -101,11 +96,7 @@ from app.routers.record_utils import (
 )
 from app.routers.search import search_v3, search_v3_alpha
 from app.routers.trajectory import trajectory_ddms_v2
-from app.utils import (
-    POOL_EXECUTOR_MAX_WORKER,
-    OpenApiHandler,
-    get_http_client_session,
-)
+from app.utils import OpenApiHandler, get_http_client_session
 
 
 # The sub application which contains all the routers
@@ -177,7 +168,6 @@ async def startup_event():
     app_injector.register(dask_client.DaskDistributedClient, partial(dask_client.create, bulk_config))
     asyncio.create_task(dask_client.create(bulk_config))
 
-    create_custom_http_exception_handler(wdms_app, logger)
     metric.init_metric(wdms_app)
 
 

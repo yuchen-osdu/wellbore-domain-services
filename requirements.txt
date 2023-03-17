@@ -117,7 +117,7 @@ cloudpickle==1.6.0
     # via
     #   dask
     #   distributed
-cryptography==3.4.7
+cryptography==39.0.2
     # via
     #   -r requirements.in
     #   adal
@@ -138,7 +138,7 @@ decorator==5.0.9
     #   jsonpath-ng
 distributed==2022.04.1
     # via dask
-fastapi==0.88.0
+fastapi==0.94.1
     # via
     #   -r requirements.in
     #   osdu-data-ecosystem-search
@@ -234,7 +234,7 @@ locket==1.0.0
     # via partd
 markupsafe==2.0.1
     # via jinja2
-msal==1.12.0
+msal==1.21.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -421,7 +421,7 @@ sniffio==1.2.0
     #   httpx
 sortedcontainers==2.4.0
     # via distributed
-starlette==0.22.0
+starlette==0.26.1
     # via fastapi
 structlog==21.1.0
     # via -r requirements.in

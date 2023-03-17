@@ -1,7 +1,7 @@
-fastapi
+fastapi>=0.92.0
 pydantic>=1.9
 aiohttp==3.7.4.post0
-cryptography>=2.7
+cryptography>=39.0.2
 pyarrow==9.0.0
 pandas==1.4.1
 uvicorn
