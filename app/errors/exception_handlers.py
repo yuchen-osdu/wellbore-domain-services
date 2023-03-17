@@ -31,6 +31,9 @@ from fastapi.exception_handlers import http_exception_handler
 
 
 async def _log_internal_error_handler(request, exc: HTTPException):
+    """
+    'decorate' the default fastapi HTTPException handler to log every 500 exception
+    """
     if exc.status_code >= status.HTTP_500_INTERNAL_SERVER_ERROR:
         logger_inst = get_logger()
         if logger_inst is not None:
