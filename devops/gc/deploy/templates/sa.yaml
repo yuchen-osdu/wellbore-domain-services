@@ -1,4 +1,4 @@
-{{- if .Values.conf.onPremEnabled }}
+{{- if .Values.global.onPremEnabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
