@@ -1,3 +1,7 @@
+global:
+  domain: ""
+  onPremEnabled: false
+
 data:
   logLevel: "ERROR"
   requestsCpu: "130m"
@@ -8,16 +12,15 @@ data:
   imagePullPolicy: "IfNotPresent"
   serviceAccountName: "wellbore"
   projectId: ""
+
 conf:
   configmap: "wellbore-config"
   appName: "wellbore"
   keycloakSecretName: "wellbore-keycloak-secret"
   minioSecretName: "wellbore-minio-secret"
-  domain: ""
-  onPremEnabled: false
 
 istio:
   proxyCPU: "10m"
-  proxyCPULimit: "500m"
-  proxyMemory: "100Mi"
-  proxyMemoryLimit: "512Mi"
+  proxyCPULimit: "200m"
+  proxyMemory: "64Mi"
+  proxyMemoryLimit: "256Mi"
