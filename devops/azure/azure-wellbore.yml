@@ -99,7 +99,10 @@ azure_deploy:
       --set configuration[0].container.image=${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
       --set configuration[0].container.tag=${CI_COMMIT_SHA}
       --set ingress.dns=$AZURE_DNS_NAME
-    - kubectl get pods -l app=os-wellbore-ddms -n osdu && kubectl describe pods -l app=os-wellbore-ddms -n osdu | grep -A20 Events
+    - POD_SERVICE_NAME=os-wellbore-ddms
+    - pod=$(kubectl get pod -n osdu|grep $POD_SERVICE_NAME |tail -1 |awk '{print $1}') || echo "[WARN] Not able to get pod but helm upgrade was successful"
+    - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=300s)
+    - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
     - |
       echo "AZURE_REGISTRY_TOKEN=$(az acr login -n $AZURE_REGISTRY --expose-token --query 'accessToken' -otsv)" >> ${CI_PROJECT_DIR}/acr_tokens.env
       echo "DST_REGISTRY_TOKEN=$(az acr login -n msosdu --expose-token --query 'accessToken' -otsv)" >> ${CI_PROJECT_DIR}/acr_tokens.env
