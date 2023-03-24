@@ -128,7 +128,7 @@ The following software have components provided under the terms of this license:
 - sniffio (from https://github.com/python-trio/sniffio)
 - starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.25.0/)
 - toolz (from https://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.20.0/, https://www.uvicorn.org/)
+- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.21.0/, https://www.uvicorn.org/)
 - zict (from http://zict.readthedocs.io/en/latest/)
 
 ========================================================================
@@ -250,7 +250,7 @@ The following software have components provided under the terms of this license:
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
 - distributed (from https://distributed.dask.org)
-- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.1.0/)
+- exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.1.1/)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
 - fastapi (from https://pypi.org/project/fastapi/0.86.0/, https://pypi.org/project/fastapi/0.92.0/)
 - grpcio (from https://grpc.io)
