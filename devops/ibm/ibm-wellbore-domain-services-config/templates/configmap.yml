@@ -25,6 +25,7 @@ data:
   AUTHORIZE_API: "http://{{ .Release.Name }}-ibm-entitlement-deploy:8080/api/entitlements/v2"
   SERVICE_HOST_STORAGE: "http://{{ .Release.Name }}-ibm-storage-deploy:8080/api/storage"
   SERVICE_HOST_SEARCH: "http://{{ .Release.Name }}-ibm-search-deploy:8080/api/search"
+  SERVICE_HOST_SCHEMA: "http://{{ .Release.Name }}-ibm-schema-deploy:8080/api/schema-service"
   SERVICE_HOST_ENTITLEMENTS: "http://{{ .Release.Name }}-ibm-entitlement-deploy:8080/api/entitlements"
 
   #db

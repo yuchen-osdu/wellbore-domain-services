@@ -26,6 +26,12 @@ from odes_storage.exceptions import (
     ResponseValidationError as OSDUStorageResponseValidationError,
     ResponseHandlingException as OSDUStorageResponseHandlingException
 )
+from odes_schema.exceptions import  (
+    ApiException as OSDUSchemaException,
+    UnexpectedResponse as OSDUSchemaUnexpectedResponse,
+    ResponseValidationError as OSDUSchemaResponseValidationError,
+    ResponseHandlingException as OSDUSchemaResponseHandlingException
+)
 
 from osdu_az.exceptions.data_access_error import (DataAccessError as OSDUPartitionException)
 
@@ -38,7 +44,7 @@ from app.helper.logger import get_logger
 OSDU_DATA_ECOSYSTEM_SEARCH = "osdu-data-ecosystem-search"
 OSDU_DATA_ECOSYSTEM_STORAGE = "osdu-data-ecosystem-storage"
 OSDU_DATA_ECOSYSTEM_PARTITION = "osdu-data-ecosystem-partition"
-
+OSDU_DATA_ECOSYSTEM_SCHEMA = "osdu-data-ecosystem-schema"
 
 
 def load_content(content) -> Dict:
@@ -98,3 +104,21 @@ async def http_partition_error_handler(request: Request, exc: OSDUPartitionExcep
 
     return JSONResponse({"origin": OSDU_DATA_ECOSYSTEM_PARTITION, "errors": [exc.message]}, 
                         status_code=exc.status_code)
+
+
+async def http_schema_error_handler(request: Request, exc: OSDUSchemaException) -> JSONResponse:
+    """
+    Catches and handles Exceptions raised by os-python-client
+    """
+    get_logger().exception(f"http_schema_error_handler - url: '{request.url}'")
+    if isinstance(exc, OSDUSchemaUnexpectedResponse) or isinstance(exc, OSDUSchemaResponseValidationError):
+        status = exc.status_code
+        errors = [load_content(exc.content)]
+    elif isinstance(exc, OSDUSchemaResponseHandlingException):
+        status = HTTP_500_INTERNAL_SERVER_ERROR
+        errors = exc.source.args
+    else:
+        status = HTTP_500_INTERNAL_SERVER_ERROR
+        errors = exc.args
+
+    return JSONResponse({"origin": OSDU_DATA_ECOSYSTEM_SCHEMA, "errors": errors}, status_code=status)

@@ -55,6 +55,7 @@ def local_dev_config(tmp_path_factory):
         "CLOUD_PROVIDER": "local",
         "SERVICE_HOST_STORAGE": "https://test-endpoint/api/storage",
         "SERVICE_HOST_SEARCH": "https://test-endpoint/api/search",
+        "SERVICE_HOST_SCHEMA": "https://test-endpoint/api/schema-service",
         "MODULES": "log_recognition.routers.log_recognition",
         'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="blob-")),
         'USE_INTERNAL_STORAGE_SERVICE_WITH_PATH': str(tmp_path_factory.mktemp(basename="storage-")),

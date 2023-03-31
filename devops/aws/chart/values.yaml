@@ -28,6 +28,8 @@ environmentVariables:
     value: http://os-storage.osdu-services:8080/api/storage
   - name: SERVICE_HOST_SEARCH
     value: http://os-search.osdu-services:8080/api/search
+  - name: SERVICE_HOST_SCHEMA
+    value: http://os-schema.osdu-services:8080/api/schema-service
   - name: PARTITION_HOST
     value: http://os-partition.osdu-services:8080/api/partition/v1
   - name: CACHE_CLUSTER_KEY

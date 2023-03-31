@@ -117,6 +117,11 @@ class ConfigurationContainer:
         key='SERVICE_HOST_SEARCH',
         description='Back-end for search service',
         is_mandatory=True)
+
+    service_host_schema: EnvVar = EnvVar(
+        key='SERVICE_HOST_SCHEMA',
+        description='Back-end for schema service',
+        is_mandatory=True)
   
     service_host_storage: EnvVar = EnvVar(
         key='SERVICE_HOST_STORAGE',
@@ -370,6 +375,13 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             override=True,
                             default='http://search/api/search')
 
+        config.add_from_env(attribute_name='service_host_schema',
+                            env_var_key='SERVICE_HOST_SCHEMA',
+                            description='Back-end for schema service',
+                            is_mandatory=False,
+                            override=True,
+                            default='http://schema/api/schema-service')
+
     if provider == 'anthos':
         config.add_from_env(attribute_name='service_host_storage',
                             env_var_key='SERVICE_HOST_STORAGE',
@@ -383,6 +395,12 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             is_mandatory=False,
                             override=True,
                             default='http://search/api/search')
+        config.add_from_env(attribute_name='service_host_schema',
+                            env_var_key='SERVICE_HOST_SCHEMA',
+                            description='Back-end for schema service',
+                            is_mandatory=False,
+                            override=True,
+                            default='http://schema/api/schema-service')
 
     if provider == 'ibm':
         config.add_from_env(attribute_name='default_data_tenant_project_id',

@@ -58,6 +58,7 @@ configuration:
       KEYVAULT_URL: "https://{{ .Values.azure.keyvault.name }}.vault.azure.net/"
       SERVICE_HOST_STORAGE: "http://storage.osdu/api/storage"
       SERVICE_HOST_SEARCH: "http://search.osdu/api/search"
+      SERVICE_HOST_SCHEMA: "http://schema.osdu/api/schema-service"
       SERVICE_HOST_PARTITION: "http://partition.osdu/api/partition"
       USE_PARTITION_SERVICE: "enabled"
       AZ_LOGGER_LEVEL: "INFO"

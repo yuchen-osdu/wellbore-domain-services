@@ -23,8 +23,10 @@ from app.clients import (
     StorageRecordServiceClient,
     make_search_client,
     make_storage_record_client,
+    make_schema_client,
 )
 from app.clients.search_service_client import SearchServiceClient
+from app.clients.wellbore_schema_client import SchemaServiceClient
 from app.clients.storage_service_blob_storage import (
     StorageRecordServiceBlobStorage,
 )
@@ -53,6 +55,12 @@ class MainInjector(AppInjectorModule):
         app_injector.register(
             SearchServiceClient,
             self.build_search_service_client,
+            WithLifeTime.Singleton()
+        )
+
+        app_injector.register(
+            SchemaServiceClient,
+            self.build_schema_service_client,
             WithLifeTime.Singleton()
         )
 
@@ -160,6 +168,18 @@ class MainInjector(AppInjectorModule):
             host = Config.service_host_search.value
 
         return make_search_client(
+            host=host,
+            timeout=Config.de_client_config_timeout.value,
+            max_connections=Config.de_client_config_max_connection.value,
+            max_keepalive_connections=Config.de_client_config_max_keepalive.value
+        )
+
+    @staticmethod
+    async def build_schema_service_client(host=None, *args, **kwargs) -> SchemaServiceClient:
+        if host is None:
+            host = Config.service_host_schema.value
+
+        return make_schema_client(
             host=host,
             timeout=Config.de_client_config_timeout.value,
             max_connections=Config.de_client_config_max_connection.value,

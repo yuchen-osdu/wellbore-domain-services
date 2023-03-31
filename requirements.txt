@@ -141,6 +141,7 @@ distributed==2022.04.1
 fastapi==0.94.1
     # via
     #   -r requirements.in
+    #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   prometheus-fastapi-instrumentator
@@ -210,6 +211,7 @@ httpcore==0.15.0
     # via httpx
 httpx==0.23.0
     # via
+    #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
 idna==3.2
@@ -296,6 +298,8 @@ osdu-core-lib-python-gcp==2.0.0
     # via -r requirements.in
 osdu-core-lib-python-ibm==3.0.1
     # via -r requirements.in
+osdu-data-ecosystem-schema==1.0.0
+    # via -r requirements.in
 osdu-data-ecosystem-search==1.0.0
     # via -r requirements.in
 osdu-data-ecosystem-storage==2.0.0
@@ -346,6 +350,7 @@ pydantic==1.9.0
     # via
     #   -r requirements.in
     #   fastapi
+    #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
 pyjwt[crypto]==2.4.0
@@ -440,6 +445,7 @@ typing-extensions==4.3.0
     # via
     #   aiohttp
     #   azure-core
+    #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   pydantic
@@ -459,6 +465,6 @@ yarl==1.6.3
     # via aiohttp
 zict==2.0.0
     # via distributed
-
+wellbore-schema-manipulation==0.1.dev20
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
