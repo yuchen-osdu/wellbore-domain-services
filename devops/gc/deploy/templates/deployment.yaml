@@ -30,7 +30,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Values.conf.configmap | quote }}
-            {{- if .Values.conf.onPremEnabled }}
+            {{- if .Values.global.onPremEnabled }}
             - secretRef:
                 name: {{ .Values.conf.keycloakSecretName | quote }}
             - secretRef:

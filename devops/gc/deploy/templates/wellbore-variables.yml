@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
 data:
   LOG_LEVEL: {{ .Values.data.logLevel | quote }}
-  {{- if not .Values.conf.onPremEnabled }}
+  {{- if not .Values.global.onPremEnabled }}
   CLOUD_PROVIDER: "gc"
   OS_WELLBORE_DDMS_DATA_PROJECT_ID: {{ .Values.data.projectId | quote }}
   {{- else }}
