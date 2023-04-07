@@ -1,3 +1,17 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 from copy import deepcopy
 from enum import Enum
@@ -145,9 +159,9 @@ class SchemaManager:
         """
         entities = [jsonable_encoder(entity_record, exclude_none=True, exclude_unset=True, by_alias=True) for
                     entity_record in records]
-        await self.validate_entities(entities, ctx, mode)
+        await self._validate_entities(entities, ctx, mode)
 
-    async def validate_entities(self, entities: List[dict], ctx: Context,
+    async def _validate_entities(self, entities: List[dict], ctx: Context,
                           mode: SchemaMode = SchemaMode.EXTRA_FORBID_OPTIMISED):
         """
 
