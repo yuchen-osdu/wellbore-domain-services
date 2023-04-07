@@ -23,8 +23,8 @@
       "ExtensionProperties": {},
       "GeoContexts": [
         {
-          "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:",
-          "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:"
+          "GeoTypeID": "datapartition:reference-data--GeoPoliticalEntityType:Country:",
+          "GeoPoliticalEntityID": "{{datapartitionid}}:master-data--GeoPoliticalEntity:USA:"
         }
       ],
       "FacilityOperators": [
