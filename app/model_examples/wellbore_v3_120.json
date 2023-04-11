@@ -132,8 +132,7 @@
             "kind": "Unit",
             "name": "Measure depth default unit",
             "persistableReference": "persistableReference",
-            "propertyNames": ["symbol"],
-            "propertyValues": ["ft"] 
+            "propertyNames": ["symbol"]
         }
     ]
 }

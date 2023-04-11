@@ -13,21 +13,26 @@
 # limitations under the License.
 import json
 from os import path
+from unittest.mock import create_autospec, patch, AsyncMock
 
+import odes_schema
 import pytest
 
-from app.schemas import SchemaMode, SchemaManager
+from app.clients import SchemaServiceClient
+from app.injector.app_injector import WithLifeTime
+from app.schemas import SchemaMode, SchemaManager, schema_library
+from tests.unit.test_utils import ctx_fixture
 
 
 def test_schema_mode_values():
     enum_map = SchemaMode._value2member_map_
-    assert enum_map[1].name == 'ORIGINAL'
-    assert enum_map[2].name == 'OPTIMISED'
-    assert enum_map[3].name == 'EXTRA_FORBID'
-    assert enum_map[4].name == 'EXTRA_FORBID_OPTIMISED'
+    assert enum_map[0].name == 'ORIGINAL'
+    assert enum_map[1].name == 'OPTIMISED'
+    assert enum_map[2].name == 'EXTRA_FORBID'
+    assert enum_map[3].name == 'EXTRA_FORBID_OPTIMISED'
 
 
-def test__create_versions_of_schema():
+def test_create_versions_of_schema():
     # Load one schemas - Wellbore 1.3.0 for instance
     json_file = "osdu..wks..master-data--Wellbore..1.3.0.json"
     json_file_ref_org = "osdu..wks..master-data--Wellbore..1.3.0_ref.json"
@@ -53,9 +58,45 @@ def test_load_known_schemas():
     assert "osdu:wks:master-data--Wellbore:1.3.0" in SchemaManager.optimised_schema_forbid_extra_library
 
 
-def test_load_unknown_schema():
-    # TODO Use a mock for schema client
-    pass
+schema_service_client_mock = create_autospec(SchemaServiceClient, spec_set=True, instance=True)
+
+
+def injection_coro_builder(*, return_value):
+    # because of our app_injector design
+    async def injection_coro(
+            *args, **kwargs
+    ):
+        return return_value
+
+    return injection_coro
+
+
+@pytest.fixture
+def ctx_fixture_with_search_client(ctx_fixture):
+    ctx_fixture.app_injector.register(SchemaServiceClient,
+                                      injection_coro_builder(return_value=schema_service_client_mock),
+                                      WithLifeTime.Singleton())
+    yield ctx_fixture
+    ctx_fixture.app_injector.register(SchemaServiceClient, AsyncMock())
+
+
+@pytest.mark.anyio
+async def test_load_unknown_schema_success(ctx_fixture_with_search_client):
+    kind = "osdu:fs:fs:1.0.0"
+    returned_schema = {"x-osdu-schema-source": "osdu:fs:fs:1.0.0"}
+    with patch.object(schema_service_client_mock, 'get_schema', return_value=returned_schema):
+        res = await SchemaManager._load_unknown_schema(kind=kind, ctx=ctx_fixture_with_search_client)
+        assert res == returned_schema
+
+
+@pytest.mark.anyio
+async def test_load_unknown_schema_404(ctx_fixture_with_search_client):
+    kind = "osdu:fs:fs:1.0.0"
+    side_effect = odes_schema.UnexpectedResponse(status_code=404, reason_phrase="Not Found", content=None, headers=None)
+    with patch.object(schema_service_client_mock, 'get_schema', side_effect=side_effect):
+        with pytest.raises(odes_schema.UnexpectedResponse) as e:
+            res = await SchemaManager._load_unknown_schema(kind=kind, ctx=ctx_fixture_with_search_client)
+        assert e.value.status_code == 404
 
 
 @pytest.mark.parametrize(("mode"), [SchemaMode.OPTIMISED, SchemaMode.ORIGINAL, SchemaMode.EXTRA_FORBID,
@@ -78,16 +119,65 @@ def test_get_known_schema_unknown_schema():
     assert res is None
 
 
-def test_get_schema():
-    # TODO test with mock on schema service
+@pytest.mark.anyio
+async def test_get_schema_in_cache(ctx_fixture_with_search_client):
+    kind = "osdu:wks:master-data--Wellbore:1.3.0"
+    res = await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client, mode=SchemaMode.EXTRA_FORBID)
+    assert res["x-osdu-schema-source"] == kind
+
+
+@pytest.mark.anyio
+async def test_get_schema_from_service_success(ctx_fixture_with_search_client):
+    kind = "osdu:fs:fs:1.0.0"
+    returned_schema = {"x-osdu-schema-source": "osdu:fs:fs:1.0.0"}
+    with patch.object(schema_service_client_mock, 'get_schema', return_value=returned_schema):
+        res = await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
+                                             mode=SchemaMode.EXTRA_FORBID)
+        assert res["x-osdu-schema-source"] == kind
+
+
+@pytest.mark.anyio
+async def test_get_schema_from_service_404(ctx_fixture_with_search_client):
+    kind = "osdu:fs:fs:1.0.0"
+    side_effect = odes_schema.UnexpectedResponse(status_code=404, reason_phrase="Not Found", content=None, headers=None)
+    with patch.object(schema_service_client_mock, 'get_schema', side_effect=side_effect):
+        with pytest.raises(odes_schema.UnexpectedResponse) as e:
+            res = await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
+                                                 mode=SchemaMode.EXTRA_FORBID)
+        assert e.value.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_validate_entities(ctx_fixture_with_search_client, wellbore_v3_130_record_list):
     pass
 
 
-def test_validate_records():
-    # TODO test with mock on schema service
-    pass
+@pytest.mark.anyio
+@pytest.mark.parametrize(("mode"), [
+    SchemaMode.ORIGINAL,
+    SchemaMode.OPTIMISED,
+    SchemaMode.EXTRA_FORBID,
+    SchemaMode.EXTRA_FORBID_OPTIMISED,
+])
+@pytest.mark.parametrize(("record_list_f"), [
+    "well_v3_record_list",
+    "well_v3_110_record_list",
+    "well_v3_120_record_list",
+    "wellbore_v3_record_list",
+    "wellbore_v3_110_record_list",
+    "wellbore_v3_111_record_list",
+    "wellbore_v3_120_record_list",
+    "wellbore_v3_130_record_list",
+    "marker_v3_record_list",
+    "marker_v3_120_record_list",
+    "marker_v3_121_record_list",
+    "wellboreintervalset_v3_100_record_list",
+    "trajectory_v3_record_list",
+    "welllog110_v3_record_list",
+    "welllog120_v3_record_list",
 
-
-def test_validate_entities():
-    # TODO test with mock on schema service
-    pass
+])
+async def test_validate_records_success(ctx_fixture_with_search_client, mode, record_list_f, request):
+    # we expect no Exception
+    record_list = request.getfixturevalue(record_list_f)
+    await schema_library.validate_records(record_list, ctx_fixture_with_search_client, mode)

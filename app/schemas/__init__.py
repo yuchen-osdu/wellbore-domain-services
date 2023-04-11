@@ -14,7 +14,7 @@
 
 from app.schemas.schema_manager import SchemaManager
 from app.schemas.schema_manager import SchemaMode
-__all__ = ['schema_library', 'SchemaMode']
+__all__ = ['schema_library', 'SchemaMode', 'SchemaManager']
 
 schema_library = SchemaManager()
 schema_library.load_known_schemas()

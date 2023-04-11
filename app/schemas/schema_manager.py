@@ -14,7 +14,7 @@
 
 import json
 from copy import deepcopy
-from enum import Enum
+from enum import IntEnum
 from os import path, listdir
 from typing import Union, List, Tuple
 
@@ -28,11 +28,11 @@ from app.clients.wellbore_schema_client import get_schema_service
 from app.context import Context
 
 
-class SchemaMode(Enum):
-    ORIGINAL = 1
-    OPTIMISED = 2
-    EXTRA_FORBID = 3
-    EXTRA_FORBID_OPTIMISED = 4
+class SchemaMode(IntEnum):
+    ORIGINAL = 0
+    OPTIMISED = 1
+    EXTRA_FORBID = 2
+    EXTRA_FORBID_OPTIMISED = 3
 
 
 class SchemaManager:
@@ -126,30 +126,15 @@ class SchemaManager:
         :return:
         """
         schema = SchemaManager._get_known_schema(kind, mode)
-
         if schema is None:
             schema = await SchemaManager._load_unknown_schema(kind=kind, ctx=ctx)
-            if schema is None:
-                raise Exception
-            # Optimise schema ...
-            org_schema, optimised_schema, forbid_extra_schema, optimised_forbid_extra_schema = SchemaManager._create_versions_of_schema(
-                schema)
-            # Register schema in cache ? To de defined after risk analysis
-            if mode == SchemaMode.ORIGINAL:
-                schema = org_schema
-            elif mode == SchemaMode.OPTIMISED:
-                schema = optimised_schema
-            elif mode == SchemaMode.EXTRA_FORBID:
-                schema = forbid_extra_schema
-            elif mode == SchemaMode.EXTRA_FORBID_OPTIMISED:
-                schema = optimised_forbid_extra_schema
-            else:
-                schema = None
-
+            schemas = SchemaManager._create_versions_of_schema(schema)
+            # TODO decide if we put the schema in cache, it can be done here
+            return schemas[mode]
         return schema
 
     async def validate_records(self, records: List[Record], ctx: Context,
-                         mode: SchemaMode = SchemaMode.EXTRA_FORBID_OPTIMISED):
+                               mode: SchemaMode = SchemaMode.EXTRA_FORBID_OPTIMISED):
         """
 
         :param records:
@@ -162,7 +147,7 @@ class SchemaManager:
         await self._validate_entities(entities, ctx, mode)
 
     async def _validate_entities(self, entities: List[dict], ctx: Context,
-                          mode: SchemaMode = SchemaMode.EXTRA_FORBID_OPTIMISED):
+                                 mode: SchemaMode = SchemaMode.EXTRA_FORBID_OPTIMISED):
         """
 
         :param entities:
@@ -173,8 +158,6 @@ class SchemaManager:
         for entity_record in entities:
             kind = entity_record["kind"]
             validator = await self.get_schema(kind, ctx=ctx, mode=mode)
-            if validator is None:
-                raise Exception
             if mode in [SchemaMode.OPTIMISED, SchemaMode.EXTRA_FORBID_OPTIMISED]:
                 JSonValidator.validate_optimized(entity=entity_record, validator=validator)
             else:
