@@ -17990,8 +17990,8 @@
                     "FormationNameAtTotalDepth": "Example FormationNameAtTotalDepth",
                     "GeoContexts": [
                       {
-                        "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:",
-                        "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:"
+                        "GeoPoliticalEntityID": "{{datapartitionid}}:master-data--GeoPoliticalEntity:USA:",
+                        "GeoTypeID": "datapartition:reference-data--GeoPoliticalEntityType:Country:"
                       }
                     ],
                     "HistoricalInterests": [
