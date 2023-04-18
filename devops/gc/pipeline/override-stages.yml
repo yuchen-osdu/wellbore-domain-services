@@ -13,11 +13,6 @@ gc-containerize-gitlab:
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
-  # FIXME (GONRG-6043): check if it possible to be deleted before next release
-  before_script:
-    - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0|g" requirements.txt
-    - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
-    - sed -i "s|osdu-core-lib-python-aws==2.0.5|# osdu-core-lib-python-aws==2.0.5|g" requirements.txt
 
 gc-containerize-gcr:
   variables:
@@ -29,12 +24,6 @@ gc-containerize-gcr:
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
-  # FIXME (GONRG-6043): check if it possible to be deleted before next release
-  before_script:
-    - cat $GC_DEPLOY_FILE | docker login -u _json_key --password-stdin https://gcr.io
-    - sed -i "s|osdu-api==0.14.0|osdu_api~=0.15.0|g" requirements.txt
-    - sed -i "s|osdu-core-lib-python-anthos==1.0.0|osdu-core-lib-python-anthos==1.0.1|g" requirements.txt
-    - sed -i "s|osdu-core-lib-python-aws==2.0.5|# osdu-core-lib-python-aws==2.0.5|g" requirements.txt
 
 gc-test-python:
   extends: .gc-variables
