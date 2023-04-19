@@ -383,6 +383,14 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             default='http://schema/api/schema-service')
 
     if provider == 'anthos':
+        config.add_from_env(attribute_name='ref_log_level',
+                            env_var_key='LOG_LEVEL',
+                            description='ref log level',
+                            default='INFO',
+                            secret=False,
+                            is_mandatory=False,
+                            override=True)
+
         config.add_from_env(attribute_name='service_host_storage',
                             env_var_key='SERVICE_HOST_STORAGE',
                             description='Back-end for storage service',

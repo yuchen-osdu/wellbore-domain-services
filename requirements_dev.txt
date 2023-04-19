@@ -85,7 +85,6 @@ isodate==0.6.0
     #   openapi-schema-validator
 jsonschema==4.17.3
     # via
-    #   -c requirements.txt
     #   -r requirements_dev.in
     #   openapi-schema-validator
     #   openapi-spec-validator
@@ -141,9 +140,7 @@ pyparsing==2.4.7
     #   -c requirements.txt
     #   packaging
 pyrsistent==0.18.0
-    # via
-    #   -c requirements.txt
-    #   jsonschema
+    # via jsonschema
 pytest==6.2.4
     # via
     #   -r requirements_dev.in
