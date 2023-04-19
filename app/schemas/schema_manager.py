@@ -50,6 +50,9 @@ class SchemaManager:
         """
         JSonSchemaManipulator.remove_unsupported_id(original_schema)
 
+        # Relax GeoJson features constraint
+        SchemaManager.relax_geojson_constraint(original_schema)
+
         # Optimise schema
         json_optimised_schema = JSonSchemaManipulator.optimise_schema(original_schema)
 
@@ -83,6 +86,38 @@ class SchemaManager:
                 SchemaManager.optimised_schema_library[kind] = json_optimised_schema
                 SchemaManager.schema_forbid_extra_library[kind] = json_forbid_extra_schema_content
                 SchemaManager.optimised_schema_forbid_extra_library[kind] = json_optimised_forbid_extra_schema
+
+
+    @staticmethod
+    def relax_geojson_constraint(schema: dict) -> None:
+        """Relax GEO Json constraint
+        GEO Json has some fields marked as mandatory but which can be set to null
+        It seems this use case is not used in OSDU
+        WDMS used to remove all null fields before creating pydantic models, keeping this constraint breaks compatibility
+        with existing entities. Relaxing this constraint reproduces the same behavior as with using pydantic models
+        :param schema:
+        :return: schema updated inplace
+        """
+        abstract_feature_collection_definition = schema.get("definitions", {}).get(
+            "osdu:wks:AbstractFeatureCollection:1.0.0", None)
+        abstract_any_feature_collection100_definition = schema.get("definitions", {}).get(
+            "osdu:wks:AbstractAnyCrsFeatureCollection:1.0.0", None)
+        abstract_any_feature_collection110_definition = schema.get("definitions", {}).get(
+            "osdu:wks:AbstractAnyCrsFeatureCollection:1.1.0", None)
+        collections_to_update = [abstract_feature_collection_definition, abstract_any_feature_collection100_definition,
+                                 abstract_any_feature_collection110_definition]
+        for collection_to_update in collections_to_update:
+            if collection_to_update:
+                required_list = collection_to_update.get("properties").get("features").get("items").get("required")
+                try:
+                    required_list.remove("properties")
+                except ValueError:
+                    pass
+                try:
+                    required_list.remove("geometry")
+                except ValueError:
+                    pass
+
 
     @staticmethod
     async def _load_unknown_schema(kind: str, ctx: Context) -> dict:

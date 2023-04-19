@@ -95,7 +95,7 @@ def generate_test_data():
 
     traj_minimal_data = {
         "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
-        "VerticalMeasurement": [],
+        "VerticalMeasurement": {},
     }
 
     test_data = []
@@ -124,7 +124,7 @@ test_param.append(
     pytest.param(
         {
             "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
-            "VerticalMeasurement": [],
+            "VerticalMeasurement": {},
             "TopDepthMeasuredDepth": 0.0,
             "BaseDepthMeasuredDepth": 0.0,
             "AvailableTrajectoryStationProperties": [
@@ -151,7 +151,7 @@ test_param.append(
     pytest.param(
         {
             "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
-            "VerticalMeasurement": [],
+            "VerticalMeasurement": {},
             "TopDepthMeasuredDepth": 0.0,
             "BaseDepthMeasuredDepth": 0.0,
             "AvailableTrajectoryStationProperties": [
@@ -179,7 +179,7 @@ test_param.append(
     pytest.param(
         {
             "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
-            "VerticalMeasurement": [],
+            "VerticalMeasurement": {},
             "TopDepthMeasuredDepth": 0.0,
             "BaseDepthMeasuredDepth": 0.0,
             "AvailableTrajectoryStationProperties": [
@@ -231,7 +231,7 @@ inconsistent_test_params = [
             "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
             "TopDepthMeasuredDepth": 0.5,
             "BaseDepthMeasuredDepth": 2,
-            "VerticalMeasurement": [],
+            "VerticalMeasurement": {},
             "AvailableTrajectoryStationProperties": [
                 {
                     "Name": "Incl",
@@ -257,7 +257,7 @@ inconsistent_test_params = [
             "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
             "TopDepthMeasuredDepth": 0,
             "BaseDepthMeasuredDepth": 2.5,
-            "VerticalMeasurement": [],
+            "VerticalMeasurement": {},
             "AvailableTrajectoryStationProperties": [
                 {
                     "Name": "Incl",
@@ -283,7 +283,7 @@ inconsistent_test_params = [
             "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
             "TopDepthMeasuredDepth": 0,
             "BaseDepthMeasuredDepth": 2,
-            "VerticalMeasurement": [],
+            "VerticalMeasurement": {},
             "AvailableTrajectoryStationProperties": []
         },
         {
@@ -300,7 +300,7 @@ inconsistent_test_params = [
             "WellboreID": "partition-id:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
             "TopDepthMeasuredDepth": 0,
             "BaseDepthMeasuredDepth": 2,
-            "VerticalMeasurement": [],
+            "VerticalMeasurement": {},
             "AvailableTrajectoryStationProperties": None
         },
         {

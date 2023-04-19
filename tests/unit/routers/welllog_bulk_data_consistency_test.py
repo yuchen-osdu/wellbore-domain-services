@@ -91,10 +91,11 @@ def generate_test_data():
             {"CurveID": "GR", "NumberOfColumns": 3},
         ]},
         {"Curves": [
-            {"CurveID": "MD", "NumberOfColumns": 1, "LogCurveFamilyID": None},
+            {"CurveID": "MD", "NumberOfColumns": 1
+                , "LogCurveFamilyID": None
+             },
             {"CurveID": "GR", "NumberOfColumns": 3},
         ]},
-        {"ReferenceCurveID": ""},
         {"ReferenceCurveID": None},
         {"TopMeasuredDepth": None},
         {"SamplingStart": None},
@@ -294,7 +295,8 @@ async def test_post_inconsistent_whole_bulk_without_log_curve_family(dasked_test
 
 
 @pytest.mark.parametrize("welllog_data, bulk_data, err",
-                         inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns + inconsistent_test_params)
+                         inconsistent_test_params_column_unmatch_curve_id_and_number_of_columns +
+                         inconsistent_test_params)
 @pytest.mark.anyio
 async def test_post_inconsistent_whole_bulk_with_log_curve_family(dasked_test_app_client, welllog_data, bulk_data, err):
     # because accessing to welllog_data modifies the value for next tests

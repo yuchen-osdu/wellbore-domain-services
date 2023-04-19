@@ -38,3 +38,20 @@ def raise_if_attr_value_is_different(
         )
 
 
+def raise_if_dict_value_is_different(
+    record_data: dict,
+    attr_name: str,
+    reference_value: float,
+    error_msg: str,
+):
+    attr_value = record_data.get(attr_name, None)
+    if attr_value is not None and not math.isclose(attr_value, reference_value):
+        raise ReferenceCurveException(
+            error_msg.format(
+                attr_name=attr_name,
+                attr_value=attr_value,
+                reference_value=reference_value,
+            )
+        )
+
+

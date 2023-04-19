@@ -39,13 +39,14 @@ entity_names = {
     "welllog": "work-product-component--WellLog",
     "trajectory": "work-product-component--WellboreTrajectory",
     "marker": "work-product-component--WellboreMarkerSet",
+    "wellboreintervalset": "work-product-component--WellboreIntervalSet",
 }
 
 
 class DMSV3RouterUtils:
 
     @staticmethod
-    def raise_if_not_osdu_right_entity_kind(record, state):
+    def raise_if_not_osdu_right_entity_kind(record, state, status_code: int = status.HTTP_400_BAD_REQUEST):
         version = state.version if hasattr(state, 'version') else None
         entity = state.entity_type if hasattr(state, 'entity_type') else None
         if entity and record and version == "V3":
@@ -54,9 +55,17 @@ class DMSV3RouterUtils:
             if entity.value in entity_names:
                 matches = entity_names[entity.value] == entity_in_kind
                 if not matches:
-                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                    raise HTTPException(status_code=status_code,
                                         detail="Record is not an OSDU " + entity.value)
 
+    @staticmethod
+    def raise_if_not_osdu_right_entities_kind(records: List[Record], state):
+        for record in records:
+            DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, state
+                                                                 , status.HTTP_422_UNPROCESSABLE_ENTITY
+                                                                 )
+
+    #  TODO remove this methids it seems not used anymore
     @staticmethod
     def validate_record_against_kinds_schema(records: List[Record]):
         """

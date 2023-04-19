@@ -542,9 +542,7 @@
       "title": "GeoJSON Feature",
       "type": "object",
       "required": [
-       "type",
-       "properties",
-       "geometry"
+       "type"
       ],
       "properties": {
        "geometry": {
@@ -1150,9 +1148,7 @@
       "title": "AnyCrsGeoJSON Feature",
       "type": "object",
       "required": [
-       "type",
-       "properties",
-       "geometry"
+       "type"
       ],
       "properties": {
        "geometry": {

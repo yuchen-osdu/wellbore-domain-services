@@ -12,31 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
 from fastapi import APIRouter, Depends, Response, status, Body
 from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
 from odes_storage.models import (
     CreateUpdateRecordsResponse,
-    List,
-    RecordVersions,
+    RecordVersions, Record,
 )
-from app.model.osdu_model import Well120 as Well
 from app.model.osdu_record_id import split_record_id_version, WellId
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
-from app.model.model_utils import to_record, from_record
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.helper.traces import TracingRoute
+from app.schemas import schema_library
 
 router = APIRouter(route_class=TracingRoute)
 
 
 @router.get(
     "/wells/{wellid}",
-    response_model=Well,
+    response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the Well using osdu schema",
     description="""Get the Well object using its **id**. {}""".format(REQUIRED_ROLES_READ),
@@ -45,12 +44,13 @@ router = APIRouter(route_class=TracingRoute)
         status.HTTP_404_NOT_FOUND: {"description": "Well not found"}
     },
 )
-async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Well:
+async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Record:
     # Note: version is dropped here
     record_id, _ = split_record_id_version(wellid)
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
-    return from_record(Well, well_record)
+    await schema_library.validate_records([well_record], ctx)
+    return well_record
 
 
 @router.delete(
@@ -92,7 +92,7 @@ async def get_osdu_well_versions(wellid: WellId, request: Request, ctx: Context 
 
 @router.get(
     "/wells/{wellid}/versions/{version}",
-    response_model=Well,
+    response_model=Record,
     summary="Get the given version of the Well using OSDU well schema",
     description=""""Get the Well object using its **id**. {}""".format(REQUIRED_ROLES_READ),
     operation_id="get_osdu_well_version",
@@ -103,13 +103,14 @@ async def get_osdu_well_versions(wellid: WellId, request: Request, ctx: Context 
 )
 async def get_osdu_well_version(
     wellid: WellId, version: int, request: Request, ctx: Context = Depends(get_ctx)
-) -> Well:
+) -> Record:
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record_version(
         id=wellid, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(well_record, request.state)
-    return from_record(Well, well_record)
+    await schema_library.validate_records([well_record], ctx)
+    return well_record
 
 
 @router.post(
@@ -125,13 +126,15 @@ async def get_osdu_well_version(
     },
 )
 async def post_well_osdu(
-    wells: List[Well] = Body(..., example= load_schema_example("well_v3_120.json")), ctx: Context = Depends(get_ctx)
+    request: Request, wells: List[Record] = Body(..., example=load_schema_example("well_v3_120.json")),
+        ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
-    DMSV3RouterUtils.validate_record_against_kinds_schema(wells)
+    await schema_library.validate_records(wells, ctx)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entities_kind(wells, request.state)
     storage_client = await get_storage_record_service(ctx)
 
-    r= await storage_client.create_or_update_records(
-        record=[to_record(w) for w in wells],
+    r = await storage_client.create_or_update_records(
+        record=wells,
         data_partition_id=ctx.partition_id,
     )
     return r

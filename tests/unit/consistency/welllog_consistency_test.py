@@ -1,6 +1,7 @@
 import pytest
 
 from app.consistency import WelllogDataConsistencyChecks
+from app.model.model_utils import to_record
 from app.model.osdu_model import Curve120
 
 from tests.unit.generate_data import generate_df
@@ -18,4 +19,5 @@ def test_welllog_number_column_should_validate_many_columns(welllog120_v3_list, 
     df = generate_df([f'C1[{i}]' for i in range(columns_count)], [0, 1])
 
     # THEN check should work and not raise
-    WelllogDataConsistencyChecks.check_bulk_consistency_on_post_bulk(welllog_record, df)
+    record = to_record(welllog_record)
+    WelllogDataConsistencyChecks.check_bulk_consistency_on_post_bulk(record, df)
