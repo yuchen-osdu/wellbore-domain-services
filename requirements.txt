@@ -43,7 +43,6 @@ async-timeout==3.0.1
 attrs==21.2.0
     # via
     #   aiohttp
-    #   jsonschema
     #   osdu-core-lib-python
 azure-common==1.1.27
     # via
@@ -367,8 +366,6 @@ pyjwt[crypto]==2.4.0
     #   osdu-core-lib-python-gcp
 pyparsing==2.4.7
     # via packaging
-pyrsistent==0.18.0
-    # via jsonschema
 python-dateutil==2.8.2
     # via
     #   adal

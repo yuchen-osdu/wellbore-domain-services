@@ -101,6 +101,11 @@ def init_logger(*, service_name, config):
             service_name=service_name,
             gc_log_level=config.get('gc_log_level') 
         )
+    elif config.cloud_provider.value == 'anthos':
+        ref_log_level = config.get('ref_log_level')
+        log_level = logging.getLevelName(ref_log_level)
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=log_level)
+        _LOGGER = logging.getLogger(__name__)
     else:
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
         _LOGGER = logging.getLogger(__name__)
