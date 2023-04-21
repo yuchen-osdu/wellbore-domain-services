@@ -34,6 +34,8 @@ environmentVariables:
     value: http://os-partition.osdu-services:8080/api/partition/v1
   - name: CACHE_CLUSTER_KEY
     value: "{{ .Values.global.cacheClusterKey }}"
+  - name: TMP_VOLUME_PATH
+    value: "/tmp"
 
 # Resource Config
 replicaCount: 1
@@ -67,7 +69,7 @@ cors:
 securityContext: 
   runAsUser: 10001
   runAsNonRoot: true
-  readOnlyRootFilesystem: false
+  readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   capabilities:
     drop:

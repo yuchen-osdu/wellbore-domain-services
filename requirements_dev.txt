@@ -140,7 +140,7 @@ pyparsing==2.4.7
     # via
     #   -c requirements.txt
     #   packaging
-pyrsistent==0.18.0
+pyrsistent==0.19.3
     # via
     #   -c requirements.txt
     #   jsonschema

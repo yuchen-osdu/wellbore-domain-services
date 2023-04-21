@@ -367,7 +367,7 @@ pyjwt[crypto]==2.4.0
     #   osdu-core-lib-python-gcp
 pyparsing==2.4.7
     # via packaging
-pyrsistent==0.18.0
+pyrsistent==0.19.3
     # via jsonschema
 python-dateutil==2.8.2
     # via
