@@ -11,20 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import jsonschema
 from pydantic import ValidationError
 from odes_search.exceptions import ApiException as OSDUSearchException
 from odes_storage.exceptions import ApiException as OSDUStorageException
 from osdu_az.exceptions.data_access_error import DataAccessError as OSDUPartitionException
+from odes_schema.exceptions import ApiException as OSDUSchemaException
 from starlette import status
 
 from app.routers.bulk.statistics_routes import BulkStatisticsHTTPException, http_stats_error_handler
 from app.helper.logger import get_logger
 from .unhandled_error import unhandled_error_handler
-from .validation_error import http422_error_handler
+from .validation_error import http422_error_handler, json_schema_error_handler
 from .client_error import (
     http_search_error_handler,
     http_storage_error_handler,
-    http_partition_error_handler
+    http_partition_error_handler,
+    http_schema_error_handler
 )
 from fastapi import HTTPException
 from fastapi.exception_handlers import http_exception_handler
@@ -47,5 +50,7 @@ def add_exception_handlers(app):
     app.add_exception_handler(OSDUSearchException, http_search_error_handler)
     app.add_exception_handler(OSDUStorageException, http_storage_error_handler)
     app.add_exception_handler(OSDUPartitionException, http_partition_error_handler)
+    app.add_exception_handler(OSDUSchemaException, http_schema_error_handler)
+    app.add_exception_handler(jsonschema.exceptions.ValidationError, json_schema_error_handler)
     app.add_exception_handler(Exception, unhandled_error_handler)
     app.add_exception_handler(HTTPException, _log_internal_error_handler)

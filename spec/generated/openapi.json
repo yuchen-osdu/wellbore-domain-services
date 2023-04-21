@@ -17418,7 +17418,6 @@
                     "AsIngestedCoordinates": {
                       "CoordinateReferenceSystemID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
                       "VerticalCoordinateReferenceSystemID": "{{datapartitionid}}:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
-                      "VerticalUnitID": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
                       "bbox": [
                         12345.6,
                         12345.6,
@@ -17990,8 +17989,8 @@
                     "FormationNameAtTotalDepth": "Example FormationNameAtTotalDepth",
                     "GeoContexts": [
                       {
-                        "GeoPoliticalEntityID": "{{datapartitionid}}:osdu:master-data--GeoPoliticalEntity:USA:",
-                        "GeoTypeID": "datapartition:osdu:reference-data--GeoPoliticalEntityType:Country:"
+                        "GeoPoliticalEntityID": "{{datapartitionid}}:master-data--GeoPoliticalEntity:USA:",
+                        "GeoTypeID": "datapartition:reference-data--GeoPoliticalEntityType:Country:"
                       }
                     ],
                     "HistoricalInterests": [
@@ -18106,9 +18105,6 @@
                       "persistableReference": "persistableReference",
                       "propertyNames": [
                         "symbol"
-                      ],
-                      "propertyValues": [
-                        "ft"
                       ]
                     }
                   ]
@@ -20386,9 +20382,6 @@
                         "TopMeasuredDepth",
                         "BottomMeasuredDepth",
                         "SamplingInterval"
-                      ],
-                      "propertyValues": [
-                        "ft"
                       ]
                     },
                     {

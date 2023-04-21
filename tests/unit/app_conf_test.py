@@ -53,6 +53,7 @@ def gc_config_fixture():
     environment_dict[ConfigurationContainer.cloud_provider.key] = provider_name
     environment_dict['SERVICE_HOST_STORAGE'] = 'https://test-endpoint/api/storage'
     environment_dict['SERVICE_HOST_SEARCH'] = 'https://test-endpoint/api/search'
+    environment_dict['SERVICE_HOST_SCHEMA'] = 'https://test-endpoint/api/schema-service'
 
     assert Config.cloud_provider.value == original_provider_name
 
@@ -90,6 +91,7 @@ def azure_config_fixture():
     environment_dict['AZ_AI_INSTRUMENTATION_KEY'] = 'ffffffff-1111-2222-aaaa-ffffffffffff'
     environment_dict['SERVICE_HOST_STORAGE'] = 'https://test-endpoint/api/storage'
     environment_dict['SERVICE_HOST_SEARCH'] = 'https://test-endpoint/api/search'
+    environment_dict['SERVICE_HOST_SCHEMA'] = 'https://test-endpoint/api/schema-service'
     environment_dict['USE_PARTITION_SERVICE'] = 'disabled'
 
     assert Config.cloud_provider.value == original_provider_name

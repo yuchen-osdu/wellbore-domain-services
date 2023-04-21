@@ -15,21 +15,26 @@
 
 import odes_search
 import odes_storage
+import odes_schema
 from odes_search.api_client import AsyncSearchApi
 from odes_storage.api_client import AsyncRecordsApi
+from odes_schema.api_client import AsyncSchemaApi
 from dataclasses import dataclass
 from typing import Optional
 
 
 __all__ = ['SearchServiceClient',
            'StorageRecordServiceClient',
+           'SchemaServiceClient',
            'make_search_client',
-           'make_storage_record_client']
+           'make_storage_record_client'
+           'make_schema_client']
 
 from app.clients.clients_middleware import client_middleware, backoff_middleware
 
 SearchServiceClient = AsyncSearchApi
 StorageRecordServiceClient = AsyncRecordsApi
+SchemaServiceClient = AsyncSchemaApi
 
 
 @dataclass
@@ -63,3 +68,16 @@ def make_storage_record_client(*, host, timeout, max_connections=None, max_keepa
     storage_client.add_middleware(middleware=client_middleware)
     storage_client.add_middleware(middleware=backoff_middleware)
     return odes_storage.AsyncApis(storage_client).records_api
+
+
+def make_schema_client(*, host, timeout, max_connections=None, max_keepalive_connections=None) -> SchemaServiceClient:
+    schema_client = odes_schema.ApiClient(
+        host=host,
+        timeout=timeout,
+        limits=Limits(
+            max_connections=max_connections,
+            max_keepalive_connections=max_keepalive_connections)
+    )
+    schema_client.add_middleware(middleware=client_middleware)
+    schema_client.add_middleware(middleware=backoff_middleware)
+    return odes_schema.AsyncApis(schema_client).schema_api

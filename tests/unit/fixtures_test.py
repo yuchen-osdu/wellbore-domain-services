@@ -27,6 +27,9 @@ def test_local_dev_config(local_dev_config):
         Config.service_host_search.value == local_dev_config.service_host_search.value
     )
     assert (
+        Config.service_host_schema.value == local_dev_config.service_host_schema.value
+    )
+    assert (
         Config.service_host_storage.value == local_dev_config.service_host_storage.value
     )
 
