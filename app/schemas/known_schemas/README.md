@@ -14,5 +14,7 @@ Example for Wellbore 1.2.0 schemas
 
 `
 curl -X 'GET' \
-  'https://evt.api.enterprisedata.cloud.slb-ds.com/api/schema-service/v1/schema/osdu%3Awks%3Amaster-data--Well%3A1.2.0' -H 'accept: application/json' -H 'data-partition-id: opendes' -H 'Authorization: my_bearer'
+  'https://api.example.com/api/schema-service/v1/schema/osdu%3Awks%3Amaster-data--Well%3A1.2.0' -H 'accept: application/json' -H 'data-partition-id: opendes' -H 'Authorization: my_bearer'
 `
+
+replacing `api.example.com` by the actual OSDU deployment URL
