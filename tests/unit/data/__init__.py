@@ -23,7 +23,8 @@ from .model_examples import (
     marker_v3_121_file_contents,
     wellboreintervalset_v3_100_file_contents,
     trajectory_v3_file_contents,
-    welllog_v3_file_contents,
+    welllog_v3_110_file_contents,
+    welllog_v3_120_file_contents,
     domain, data_partition, legal_tags,
     well_v2_record_list,
     well_v3_record_list,
@@ -54,7 +55,8 @@ from .model_examples import (
     wellboreintervalset100_v3_list,
     trajectory_v3_record_list,
     trajectory110_v3_list,
-    welllog_v3_record_list,
+    welllog110_v3_record_list,
+    welllog120_v3_record_list,
     welllog110_v3_list,
     welllog120_v3_list
 )

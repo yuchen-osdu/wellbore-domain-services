@@ -125,7 +125,7 @@ Note: container memory is not entirely dedicated to Dask workers, fastapi servic
 The hosts for the search and storage services have to be provided as environment variables, or on the command line.
 
 ```bash
-python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVICE_HOST_SEARCH https://api.example.com/search
+python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVICE_HOST_SEARCH https://api.example.com/search-service -e SERVICE_HOST_SCHEMA https://api.example.com/schema
 ```
 
 ### Connect and Run Endpoints
@@ -162,6 +162,7 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
   - OS_WELLBORE_DDMS_DATA_PROJECT_ID: Google Cloud Data Tenant ID
   - OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS: path to the key file of the SA to access the data tenant
   - SERVICE_HOST_SEARCH: The Search Service host
+  - SERVICE_HOST_SCHEMA: The Schema Service host
   - SERVICE_HOST_STORAGE: The Storage Service host
 
   ```bash
@@ -169,12 +170,14 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
   -e OS_WELLBORE_DDMS_DATA_PROJECT_ID projectid \
   -e OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS pathtokeyfile \
   -e SERVICE_HOST_SEARCH search_host \
+  -e SERVICE_HOST_SCHEMA schema_host \
   -e SERVICE_HOST_STORAGE storage_host
   ```
 
 - The following environment variables are required when the cloud provider is set to Azure:
   - AZ_AI_INSTRUMENTATION_KEY: Azure Application Insights instrumentation key
   - SERVICE_HOST_SEARCH: The Search Service host
+  - SERVICE_HOST_SCHEMA: The Schema Service host 
   - SERVICE_HOST_STORAGE: The Storage Service host
   - SERVICE_HOST_PARTITION: The Partition Service internal host
   - KEYVAULT_URL: The Key Vault url (needed by the Partition Service)
@@ -184,6 +187,7 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
   python main.py -e CLOUD_PROVIDER az \
   -e AZ_AI_INSTRUMENTATION_KEY instrumentationkey \
   -e SERVICE_HOST_SEARCH search_host \
+  -e SERVICE_HOST_SCHEMA schema_host \
   -e SERVICE_HOST_STORAGE storage_host \
   -e SERVICE_HOST_PARTITION partition_host \
   -e KEYVAULT_URL keyvault_url \
@@ -192,12 +196,14 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 
 - The following environment variables are required when the cloud provider is set to AWS:
   - SERVICE_HOST_SEARCH: The Search Service host
+  - SERVICE_HOST_SCHEMA: The Schema Service host
   - SERVICE_HOST_STORAGE: The Storage Service host
   - SERVICE_HOST_PARTITION: The Partition Service host
 
   ```bash
   python main.py -e CLOUD_PROVIDER aws \
   -e SERVICE_HOST_SEARCH search_host \
+  -e SERVICE_HOST_SCHEMA schema_host \
   -e SERVICE_HOST_STORAGE storage_host \
   -e SERVICE_HOST_PARTITION partition_host 
   ```
