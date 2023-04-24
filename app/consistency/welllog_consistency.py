@@ -93,7 +93,11 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     """
 
     @classmethod
-    @with_trace('bulk_consistency')
+    async def check_bulk_consistency(cls, record: "Record", bulk_info: BulkInfoForConsistency):
+        pass
+
+    @classmethod
+    @with_trace("bulk_consistency")
     def check_bulk_consistency_on_post_bulk(cls, record: Record, df: pd.DataFrame):
         """ Perform welllog consistency checks of a bulk  dataframe against a welllog record
         used by bulk_persistence when post a whole bulk (not chunking apis)

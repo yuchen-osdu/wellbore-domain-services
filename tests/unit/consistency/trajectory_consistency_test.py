@@ -1,7 +1,7 @@
 import pytest
-import pandas as pd
-from app.consistency import  TrajectoryDataConsistencyChecks
+from app.consistency import TrajectoryDataConsistencyChecks
 from app.model.model_utils import to_record
+
 
 from app.model.osdu_model import (
     AbstractAccessControlList100,
@@ -28,40 +28,21 @@ mini_traj_data = {
     "WellboreID": "data_partition:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
     "TopDepthMeasuredDepth": 0.0,
     "BaseDepthMeasuredDepth": 1.0,
-    "VerticalMeasurement": []
+    "VerticalMeasurement": [],
 }
 
 
 @pytest.mark.parametrize(
     "trajectory_data, expected",
     [
-
-        (
-            WellboreTrajectoryData110(**mini_traj_data),
-            None
-        ),
+        (WellboreTrajectoryData110(**mini_traj_data), None),
+        (WellboreTrajectoryData110(**mini_traj_data, AvailableTrajectoryStationProperties=None), None),
+        (WellboreTrajectoryData110(**mini_traj_data, AvailableTrajectoryStationProperties=[]), None),
         (
             WellboreTrajectoryData110(
-                **mini_traj_data,
-                AvailableTrajectoryStationProperties=None
+                **mini_traj_data, AvailableTrajectoryStationProperties=[AvailableTrajectoryStationProperty()]
             ),
-            None
-        ),
-        (
-            WellboreTrajectoryData110(
-                **mini_traj_data,
-                AvailableTrajectoryStationProperties=[]
-            ),
-            None
-        ),
-        (
-            WellboreTrajectoryData110(
-                **mini_traj_data,
-                AvailableTrajectoryStationProperties=[
-                    AvailableTrajectoryStationProperty()
-                ]
-            ),
-            None
+            None,
         ),
         (
             WellboreTrajectoryData110(
@@ -69,11 +50,13 @@ mini_traj_data = {
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
                         Name="Incl",
-                        TrajectoryStationPropertyTypeID="data_partition:reference-data--TrajectoryStationPropertyType:Inclination:"
+                        TrajectoryStationPropertyTypeID=(
+                            "data_partition:reference-data--TrajectoryStationPropertyType:Inclination:"
+                        ),
                     )
-                ]
+                ],
             ),
-            None
+            None,
         ),
         (
             WellboreTrajectoryData110(
@@ -81,11 +64,13 @@ mini_traj_data = {
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
                         Name="",
-                        TrajectoryStationPropertyTypeID="data_partition:reference-data--TrajectoryStationPropertyType:Inclination:"
+                        TrajectoryStationPropertyTypeID=(
+                            "data_partition:reference-data--TrajectoryStationPropertyType:Inclination:"
+                        ),
                     )
-                ]
+                ],
             ),
-            None
+            None,
         ),
         (
             WellboreTrajectoryData110(
@@ -93,11 +78,13 @@ mini_traj_data = {
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
                         Name=None,
-                        TrajectoryStationPropertyTypeID="data_partition:reference-data--TrajectoryStationPropertyType:Inclination:"
+                        TrajectoryStationPropertyTypeID=(
+                            "data_partition:reference-data--TrajectoryStationPropertyType:Inclination:"
+                        ),
                     )
-                ]
+                ],
             ),
-            None
+            None,
         ),
         (
             WellboreTrajectoryData110(
@@ -105,11 +92,13 @@ mini_traj_data = {
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
                         Name="MD",
-                        TrajectoryStationPropertyTypeID="data_partition:reference-data--TrajectoryStationPropertyType:MD:"
+                        TrajectoryStationPropertyTypeID=(
+                            "data_partition:reference-data--TrajectoryStationPropertyType:MD:"
+                        ),
                     )
-                ]
+                ],
             ),
-            "MD"
+            "MD",
         ),
         (
             WellboreTrajectoryData110(
@@ -117,11 +106,13 @@ mini_traj_data = {
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
                         Name="",
-                        TrajectoryStationPropertyTypeID="data_partition:reference-data--TrajectoryStationPropertyType:MD:"
+                        TrajectoryStationPropertyTypeID=(
+                            "data_partition:reference-data--TrajectoryStationPropertyType:MD:"
+                        ),
                     )
-                ]
+                ],
             ),
-            None
+            None,
         ),
         (
             WellboreTrajectoryData110(
@@ -129,11 +120,13 @@ mini_traj_data = {
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
                         Name=None,
-                        TrajectoryStationPropertyTypeID="data_partition:reference-data--TrajectoryStationPropertyType:MD:"
+                        TrajectoryStationPropertyTypeID=(
+                            "data_partition:reference-data--TrajectoryStationPropertyType:MD:"
+                        ),
                     )
-                ]
+                ],
             ),
-            None
+            None,
         ),
         (
             WellboreTrajectoryData110(
@@ -141,21 +134,24 @@ mini_traj_data = {
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
                         Name="Incl",
-                        TrajectoryStationPropertyTypeID="data_partition:reference-data--TrajectoryStationPropertyType:Inclination:"
+                        TrajectoryStationPropertyTypeID=(
+                            "data_partition:reference-data--TrajectoryStationPropertyType:Inclination:"
+                        ),
                     ),
                     AvailableTrajectoryStationProperty(
                         Name="MD",
-                        TrajectoryStationPropertyTypeID="data_partition:reference-data--TrajectoryStationPropertyType:MD:"
+                        TrajectoryStationPropertyTypeID=(
+                            "data_partition:reference-data--TrajectoryStationPropertyType:MD:"
+                        ),
                     ),
-                ]
+                ],
             ),
-            "MD"
+            "MD",
         ),
-    ]
+    ],
 )
 def test_get_reference_name(trajectory, trajectory_data, expected):
     trajectory.data = trajectory_data
     trajectory_record = to_record(trajectory)
     computed = TrajectoryDataConsistencyChecks.get_reference_name(trajectory_record)
     assert computed == expected
-

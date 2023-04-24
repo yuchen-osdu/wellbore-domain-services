@@ -23,7 +23,12 @@ from .bulk_persistence_config import (
 )
 from .bulk_uri import BulkURI
 from .capture_timings import capture_timings
-from .consistency_checks import ConsistencyException, DataConsistencyChecks
+from .consistency_checks import (
+    ConsistencyException,
+    DataConsistencyChecks,
+    BulkInfoForConsistency,
+    BulkReferenceInfoForConsistency,
+)
 from .dask import client as dask_client
 from .dask.bulk_catalog import (
     BulkCatalog,
