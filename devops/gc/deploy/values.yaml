@@ -4,8 +4,8 @@ global:
 
 data:
   logLevel: "ERROR"
-  requestsCpu: "130m"
-  requestsMemory: "750Mi"
+  requestsCpu: "110m"
+  requestsMemory: "450Mi"
   limitsCpu: "1"
   limitsMemory: "3G"
   image: ""
@@ -20,7 +20,7 @@ conf:
   minioSecretName: "wellbore-minio-secret"
 
 istio:
-  proxyCPU: "10m"
+  proxyCPU: "5m"
   proxyCPULimit: "200m"
-  proxyMemory: "64Mi"
+  proxyMemory: "50Mi"
   proxyMemoryLimit: "256Mi"
