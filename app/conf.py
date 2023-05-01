@@ -407,8 +407,8 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
                             is_mandatory=True,
                             override=True)
         config.add_from_env(attribute_name='aws_env',
-                            env_var_key='ENVIRONMENT',
-                            description='AWS ResourcePrefix',
+                            env_var_key='OSDU_INSTANCE_NAME',
+                            description='AWS OSDU instance',
                             default='osdu-',
                             is_mandatory=True,
                             override=True)
