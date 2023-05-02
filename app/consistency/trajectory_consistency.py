@@ -14,6 +14,9 @@ from app.context import get_ctx
 from .unique import get_unique_dict_attr_values
 from .reference_check import check_reference_is_strictly_monotonic, raise_if_dict_value_is_different
 
+AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY = "AvailableTrajectoryStationProperties"
+TRAJECTORY_STATION_PROPERTY_TYPE_ID = "TrajectoryStationPropertyTypeID"
+
 
 class DuplicatedStationProperties(RuntimeError):
     """raised if all trajectoryStationProperties names are not unique"""
@@ -38,12 +41,12 @@ def check_trajectory_consistency(traj: Record):
     """
     if not traj.data:
         return
-    if "AvailableTrajectoryStationProperties" not in traj.data:
+    if AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY not in traj.data:
         return
 
     # All   name  must be unique
     station_name, duplicated_error = get_unique_dict_attr_values(
-        traj.data["AvailableTrajectoryStationProperties"],
+        traj.data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY],
         "Name"
     )
     if duplicated_error:
@@ -63,15 +66,15 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
     def get_reference_name(traj: Record):
         if not traj.data:
             return
-        if "AvailableTrajectoryStationProperties" not in traj.data or \
-                traj.data["AvailableTrajectoryStationProperties"] is None:
+        if AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY not in traj.data or \
+                traj.data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY] is None:
             return None
-        for station in traj.data["AvailableTrajectoryStationProperties"]:
-            if station and "TrajectoryStationPropertyTypeID" in station:
+        for station in traj.data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY]:
+            if station and TRAJECTORY_STATION_PROPERTY_TYPE_ID in station:
                 if (
-                    station["TrajectoryStationPropertyTypeID"]
+                    station[TRAJECTORY_STATION_PROPERTY_TYPE_ID]
                     and TrajectoryDataConsistencyChecks.reference_trajectory_station_property_type_id
-                    in station["TrajectoryStationPropertyTypeID"]
+                    in station[TRAJECTORY_STATION_PROPERTY_TYPE_ID]
                 ):
                     if "Name" in station and station["Name"]:
                         return station["Name"]
@@ -139,7 +142,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
     def _check_columns_consistency(traj_data: dict, col_labels: List[str]):
         error_msg = "do(es) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record."
 
-        curve_ids, _ = get_unique_dict_attr_values(traj_data["AvailableTrajectoryStationProperties"], "Name")
+        curve_ids, _ = get_unique_dict_attr_values(traj_data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY], "Name")
         col_names = DataConsistencyChecks._get_curve_name_and_column_count(col_labels).keys()
 
         not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
