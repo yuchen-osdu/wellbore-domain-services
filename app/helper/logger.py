@@ -146,6 +146,9 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
     # Ensure logging messages from Dask (killing, restart worker) are exported to Azure
     _set_logger_handlers(logger_name='distributed.nanny', log_level=logging.WARNING, handlers=[az_handler])
 
+    # Limit logging messages from Dask worker to error and above to prevent exposing secrets in args
+    _set_logger_handlers(logger_name='distributed.worker', log_level=logging.ERROR, handlers=[az_handler])
+
     # Acquire the logger for wdms
     logger = _set_logger_handlers(logger_name=__name__, log_level=logging.DEBUG, handlers=[stdout_handler, az_handler])
 
