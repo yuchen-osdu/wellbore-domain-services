@@ -1,12 +1,10 @@
 {
-    "$schema": "osdu-aws-services-helm",
+    "$schema": "osdu-aws-services-public",
     "type": "object",
     "default": {},
     "required": [
         "image",
-        "imagePullPolicy",
         "service",
-        "replicaCount",
         "serviceAccountRole"
     ],
     "properties": {
@@ -22,8 +20,6 @@
         "service": {
             "type": "object",
             "required": [
-                "type",
-                "port",
                 "apiPath"
             ],
             "properties": {
@@ -260,8 +256,7 @@
                 "type": "string",
                 "title": "Allowed principal",
                 "examples": [
-                    "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account",
-                    "cluster.local/ns/osdu-services/sa/compliance-queue"
+                    "cluster.local/ns/istio-system/sa/istio-ingressgateway"
                 ]
             }
         }
