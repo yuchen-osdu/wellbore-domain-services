@@ -24,7 +24,7 @@ variables:
 
   AWS_SERVICE: wellbore-ddms
   AWS_SERVICE_GATEWAY: osdu-services/osdu-gateway
-  AWS_SERVICE_NAMESPACE: osdu-wellbore-ddms
+  AWS_SERVICE_NAMESPACE_SUFFIX: wellbore-ddms
   AWS_ENVIRONMENT: dev
   AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
   AWS_TEST_SUBDIR: tests/aws-test/build-aws
