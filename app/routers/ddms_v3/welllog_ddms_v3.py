@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
 from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
 from starlette.requests import Request
 
-from odes_storage.models import CreateUpdateRecordsResponse, List, RecordVersions
+from odes_storage.models import CreateUpdateRecordsResponse, RecordVersions, Record
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.consistency import (
@@ -23,9 +24,7 @@ from app.consistency import (
     ReferenceCurveIdNotFoundException,
     check_welllog_consistency
 )
-from app.model.model_utils import from_record, to_record
 from app.model.osdu_record_id import split_record_id_version, WellLogId
-from app.model.osdu_model import WellLog120 as WellLog
 from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
@@ -33,6 +32,7 @@ from app.routers.delete.delete_bulk_data import delete_record
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
+from app.schemas import schema_library
 from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
@@ -42,7 +42,7 @@ WELL_LOGS_API_BASE_PATH = '/welllogs'
 
 @router.get(
     WELL_LOGS_API_BASE_PATH + "/{welllogid}",
-    response_model=WellLog,
+    response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellLog using osdu schema",
     description="""Get the WellLog object using its **id**. {}""".format(REQUIRED_ROLES_READ),
@@ -53,7 +53,7 @@ WELL_LOGS_API_BASE_PATH = '/welllogs'
 )
 async def get_welllog_osdu(
         welllogid: WellLogId, request: Request, ctx: Context = Depends(get_ctx)
-) -> WellLog:
+) -> Record:
     storage_client = await get_storage_record_service(ctx)
     # Note: version is dropped here
     welllogid, _ = split_record_id_version(welllogid)
@@ -62,7 +62,8 @@ async def get_welllog_osdu(
         id=welllogid, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(welllog_record, request.state)
-    return from_record(WellLog, welllog_record)
+    await schema_library.validate_records([welllog_record], ctx)
+    return welllog_record
 
 
 @router.delete(
@@ -115,7 +116,7 @@ async def get_osdu_welllog_versions(
 
 @router.get(
     WELL_LOGS_API_BASE_PATH + "/{welllogid}/versions/{version}",
-    response_model=WellLog,
+    response_model=Record,
     summary="Get the given version of the WellLog using OSDU welllog schema",
     description=""""Get the WellLog object using its **id**. {}""".format(REQUIRED_ROLES_READ),
     operation_id="get_osdu_welllog_version",
@@ -126,14 +127,15 @@ async def get_osdu_welllog_versions(
 )
 async def get_osdu_welllog_version(
     welllogid: WellLogId, version: int, request: Request, ctx: Context = Depends(get_ctx)
-) -> WellLog:
+) -> Record:
     storage_client = await get_storage_record_service(ctx)
     welllogid, _ = split_record_id_version(welllogid)
     welllog_record = await storage_client.get_record_version(
         id=welllogid, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(welllog_record, request.state)
-    return from_record(WellLog, welllog_record)
+    await schema_library.validate_records([welllog_record], ctx)
+    return welllog_record
 
 
 @router.post(
@@ -149,10 +151,13 @@ async def get_osdu_welllog_version(
     },
 )
 async def post_welllog_osdu(
-    welllogs: List[WellLog] = Body(..., example=load_schema_example("wellLog_v3_120.json")), ctx: Context = Depends(get_ctx),
+    request: Request,
+    welllogs: List[Record] = Body(..., example=load_schema_example("wellLog_v3_120.json")), ctx: Context = Depends(get_ctx),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)
 ) -> CreateUpdateRecordsResponse:
-    DMSV3RouterUtils.validate_record_against_kinds_schema(welllogs)
+    await schema_library.validate_records(welllogs, ctx)  # Checks the entities Vs their respective schemas
+    DMSV3RouterUtils.raise_if_not_osdu_right_entities_kind(welllogs, request.state)  # Checks the kind of the entities is in the list of supported kinds of this API
+    # DMSV3RouterUtils.validate_record_against_kinds_schema(welllogs)  # Checks the entities vs their respective schemas ... might be removed
     await DMSV3RouterUtils.raise_if_invalid_bulk_uri(welllogs, bulk_uri_access)
     for idx, w in enumerate(welllogs):
         try:
@@ -165,12 +170,13 @@ async def post_welllog_osdu(
         except ReferenceCurveIdNotFoundException:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"WellLog[{idx}] should have a curve with a curveID value equal to the ReferenceCurveID value: '{w.data.ReferenceCurveID}'",
+                detail=f"WellLog[{idx}] should have a curve with a curveID value equal to the ReferenceCurveID value:"
+                       f" '{w.data.get('ReferenceCurveID', None)}'",
             )
 
     storage_client = await get_storage_record_service(ctx)
 
     return await storage_client.create_or_update_records(
-        record=[to_record(w) for w in welllogs],
+        record=welllogs,
         data_partition_id=ctx.partition_id,
     )

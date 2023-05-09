@@ -12,30 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
 from fastapi import APIRouter, Depends, Response, status, Body
 from odes_storage.models import (
     CreateUpdateRecordsResponse,
-    List,
     RecordVersions,
+    Record
 )
 from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service
-from app.model.model_utils import to_record, from_record
 from app.model.osdu_record_id import split_record_id_version, WellboreMarkerSetId
-from app.model.osdu_model import WellboreMarkerSet121 as WellboreMarkerSet
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
+from app.schemas import schema_library
 from app.helper.traces import TracingRoute
 
 router = APIRouter(route_class=TracingRoute)
 
 @router.get(
     "/wellboremarkersets/{wellboremarkersetid}",
-    response_model=WellboreMarkerSet,
+    response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellboreMarkerSet using osdu schema",
     description="""Get the WellboreMarkerSet object using its **id**. {}""".format(REQUIRED_ROLES_READ),
@@ -46,14 +46,15 @@ router = APIRouter(route_class=TracingRoute)
 )
 async def get_wellbore_markerset_osdu(
         wellboremarkersetid: WellboreMarkerSetId, request: Request, ctx: Context = Depends(get_ctx)
-) -> WellboreMarkerSet:
+) -> Record:
     # Note: version is dropped here
     record_id, _ = split_record_id_version(wellboremarkersetid)
     storage_client = await get_storage_record_service(ctx)
 
     wellboreMarkerset_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreMarkerset_record, request.state)
-    return from_record(WellboreMarkerSet, wellboreMarkerset_record)
+    await schema_library.validate_records([wellboreMarkerset_record], ctx)
+    return wellboreMarkerset_record
 
 
 @router.delete(
@@ -102,7 +103,7 @@ async def get_osdu_wellboreMarkerset_versions(
 
 @router.get(
     "/wellboremarkersets/{wellboremarkersetid}/versions/{version}",
-    response_model=WellboreMarkerSet,
+    response_model=Record,
     summary="Get the given version of the WellboreMarkerSet using OSDU WellboreMarkerset schema",
     description=""""Get the WellboreMarkerSet object using its **id**. {}""".format(REQUIRED_ROLES_READ),
     operation_id="get_osdu_wellboreMarkerset_version",
@@ -113,7 +114,7 @@ async def get_osdu_wellboreMarkerset_versions(
 )
 async def get_osdu_wellboreMarkerset_version(
         wellboremarkersetid: WellboreMarkerSetId, version: int, request: Request, ctx: Context = Depends(get_ctx)
-) -> WellboreMarkerSet:
+) -> Record:
     storage_client = await get_storage_record_service(ctx)
     wellboremarkersetid, _ = split_record_id_version(wellboremarkersetid)
 
@@ -121,7 +122,8 @@ async def get_osdu_wellboreMarkerset_version(
         id=wellboremarkersetid, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreMarkerset_record, request.state)
-    return from_record(WellboreMarkerSet, wellboreMarkerset_record)
+    await schema_library.validate_records([wellboreMarkerset_record], ctx)
+    return wellboreMarkerset_record
 
 
 @router.post(
@@ -137,13 +139,15 @@ async def get_osdu_wellboreMarkerset_version(
     },
 )
 async def post_wellboreMarkerset_osdu(
-        wellboremarkersets: List[WellboreMarkerSet] = Body(..., example= load_schema_example("marker_v3_121.json")),
+        request: Request,
+        wellboremarkersets: List[Record] = Body(..., example= load_schema_example("marker_v3_121.json")),
         ctx: Context = Depends(get_ctx)
 ) -> CreateUpdateRecordsResponse:
-    DMSV3RouterUtils.validate_record_against_kinds_schema(wellboremarkersets)
+    await schema_library.validate_records(wellboremarkersets, ctx)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entities_kind(wellboremarkersets, request.state)
     storage_client = await get_storage_record_service(ctx)
 
     return await storage_client.create_or_update_records(
-        record=[to_record(w) for w in wellboremarkersets],
+        record=wellboremarkersets,
         data_partition_id=ctx.partition_id,
     )

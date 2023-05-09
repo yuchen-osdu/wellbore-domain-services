@@ -11,13 +11,11 @@ from pandas import DataFrame
 from app.helper.traces import with_trace
 from app.bulk_persistence import BulkRecordNotFound, \
     DaskBulkStorage, ConsistencyException, DataConsistencyChecks, submit_with_trace
-from app.model.model_utils import from_record
-from app.model.osdu_model import WellLog120
 from app.context import get_ctx
 
-from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
+from .reference_check import check_reference_is_strictly_monotonic, raise_if_dict_value_is_different
 
-from .unique import get_unique_attr_values
+from .unique import get_unique_dict_attr_values
 
 from ..model.entity_utils import get_data_partition_from_record_id
 
@@ -38,15 +36,23 @@ class TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(ConsistencyExcepti
     """raised when total of columns doesn't match NumberOfColumns field"""
 
 
+def absent_or_none(d: dict, key: str):
+    return key not in d or d[key] is None
+
+
+def present_and_not_none(d: dict, key: str):
+    return key in d and d[key] is not None
+
+
 @with_trace('welllog_consistency')
-def check_welllog_consistency(wl: WellLog120):
+def check_welllog_consistency(wl: Record):
     """Check wellLog metadata.
 
     Curves ids in data.Curves must be unique
     Welllog must have a curve whose curveID value is equal to the  wellLog's ReferenceCurveID value if any
 
     Args:
-        wl (WellLog120): wellLog object to be verified
+        wl (Record): wellLog object to be verified
 
     Returns:
         None
@@ -59,21 +65,20 @@ def check_welllog_consistency(wl: WellLog120):
     # There are no Curves or ReferenceCurveID
     if not wl.data:
         return
-
-    if not wl.data.Curves and not wl.data.ReferenceCurveID:
+    if absent_or_none(wl.data, "Curves") and absent_or_none(wl.data, "ReferenceCurveID"):
         return
 
     # Can't define a  ReferenceCurveID when welllog doesn't have any Curve
-    if not wl.data.Curves and wl.data.ReferenceCurveID:
+    if absent_or_none(wl.data, "Curves") and present_and_not_none(wl.data, "ReferenceCurveID"):
         raise ReferenceCurveIdNotFoundException()
 
     # All curve ids must be unique
-    curve_ids, duplicated_error = get_unique_attr_values(wl.data.Curves, "CurveID")
+    curve_ids, duplicated_error = get_unique_dict_attr_values(wl.data["Curves"], "CurveID")
     if duplicated_error:
         raise DuplicatedCurveIdException()
 
     # ReferenceCurveID should match a curve
-    if wl.data.ReferenceCurveID and wl.data.ReferenceCurveID not in curve_ids:
+    if present_and_not_none(wl.data, "ReferenceCurveID") and wl.data["ReferenceCurveID"] not in curve_ids:
         raise ReferenceCurveIdNotFoundException()
 
 
@@ -101,20 +106,22 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         Returns: None
         """
-        wl = from_record(WellLog120, record)
+        wl = record
         cls._check_columns_consistency(wl, df.columns)
-
-        if not (wl.data and wl.data.ReferenceCurveID):
+        if not wl.data:
             return
 
-        if not wl.data.ReferenceCurveID in df:
+        if absent_or_none(wl.data, "ReferenceCurveID"):
+            return
+
+        if wl.data["ReferenceCurveID"] not in df:
             return
 
         data_partition = get_data_partition_from_record_id(record)
-        if not cls._is_curve_reference_family_measured_depth(wl, data_partition):
+        if not cls._is_curve_reference_family_measured_depth(wl.data, data_partition):
             return
 
-        ref = df[wl.data.ReferenceCurveID]
+        ref = df[wl.data["ReferenceCurveID"]]
         check_reference_is_strictly_monotonic(ref)
         cls._check_top_bottom_reference(wl, ref)
 
@@ -132,7 +139,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         Returns: None
         """
-        wl = from_record(WellLog120, record)
+        wl = record
 
         # check col match record.curves
         dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)
@@ -142,32 +149,36 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         cls._check_columns_consistency(wl, schema.keys())
 
         # check reference
-        if not (wl.data and wl.data.ReferenceCurveID):
+        if not wl.data:
+            return
+
+        if absent_or_none(wl.data, "ReferenceCurveID"):
             return
 
         data_partition = get_data_partition_from_record_id(record)
-        if not cls._is_curve_reference_family_measured_depth(wl, data_partition):
+        if not cls._is_curve_reference_family_measured_depth(wl.data, data_partition):
             return
 
         try:
-            ref_ddf, _ = await dask_blob_storage.load_bulk_and_catalog(record.id, bulk_id, columns=[wl.data.ReferenceCurveID])
+            ref_ddf, _ = await dask_blob_storage.load_bulk_and_catalog(record.id, bulk_id,
+                                                                       columns=[wl.data["ReferenceCurveID"]])
         except BulkRecordNotFound:
             return
 
         # wrap what should be called in dask workers
-        def check_welllog_reference(wl: WellLog120, ref_ddf: DaskDataFrame):
-            ref = ref_ddf[wl.data.ReferenceCurveID].compute()
+        def check_welllog_reference(wl_data: dict, ref_ddf: DaskDataFrame):
+            ref = ref_ddf[wl_data["ReferenceCurveID"]].compute()
             check_reference_is_strictly_monotonic(ref)
             cls._check_top_bottom_reference(wl, ref)
 
-        await submit_with_trace(dask_blob_storage.client, check_welllog_reference, wl, ref_ddf)
+        await submit_with_trace(dask_blob_storage.client, check_welllog_reference, wl.data, ref_ddf)
 
     @staticmethod
-    def _check_columns_consistency(wl: WellLog120, col_labels: Iterable[str]):
+    def _check_columns_consistency(wl: Record, col_labels: Iterable[str]):
         """Checks bulk data column names match welllog record curves ids
 
         Args:
-            wl(WellLog120): welllog record
+            wl(Record): welllog record
             col_labels: column's labels to check against the record
 
         Returns: None
@@ -175,10 +186,10 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         Raises:
             ColumnDoesNotMatchCurveIdException: column and record's curves doesn't match
         """
-        if (not wl.data or not wl.data.Curves) and len(col_labels) > 0:
+        if (not wl.data or not wl.data.get("Curves", None)) and len(col_labels) > 0:
             raise ColumnDoesNotMatchCurveIdException(f"Column(s) do(es) not match any CurveID of the WellLog record.")
 
-        curve_ids, _ = get_unique_attr_values(wl.data.Curves, "CurveID")
+        curve_ids, _ = get_unique_dict_attr_values(wl.data["Curves"], "CurveID")
         nb_col_per_names = DataConsistencyChecks._get_curve_name_and_column_count(col_labels)
 
         not_matching_col_name = [col_name for col_name in nb_col_per_names.keys() if col_name not in curve_ids]
@@ -187,9 +198,9 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
                 f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any CurveID of the WellLog record."
             )
 
-        not_matching_nb_col_per_name = {curve.CurveID: curve.NumberOfColumns for curve in wl.data.Curves
-                               if curve.CurveID in nb_col_per_names
-                               and nb_col_per_names[curve.CurveID] != curve.NumberOfColumns}
+        not_matching_nb_col_per_name = {curve["CurveID"]: curve["NumberOfColumns"] for curve in wl.data["Curves"]
+                               if curve["CurveID"] in nb_col_per_names
+                               and nb_col_per_names[curve["CurveID"]] != curve["NumberOfColumns"]}
         if any(not_matching_nb_col_per_name):
             expected_nb_of_col_per_name = {curve_id: nb_col_per_names[curve_id] for curve_id in not_matching_nb_col_per_name}
             raise TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(
@@ -197,15 +208,15 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             )
 
     @staticmethod
-    def _check_top_bottom_reference(wl: WellLog120, ref: pd.Series):
-        raise_if_attr_value_is_different(
+    def _check_top_bottom_reference(wl: Record, ref: pd.Series):
+        raise_if_dict_value_is_different(
             record_data=wl.data,
             attr_name="SamplingStart",
             reference_value=ref.iloc[0],
             error_msg="Reference top value ({reference_value}) is different from {attr_name} value ({attr_value}) of the WellLog record."
         )
 
-        raise_if_attr_value_is_different(
+        raise_if_dict_value_is_different(
             record_data=wl.data,
             attr_name="SamplingStop",
             reference_value=ref.iloc[-1],
@@ -213,9 +224,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         )
 
     @staticmethod
-    def _is_curve_reference_family_measured_depth(wl: WellLog120, data_partition: str):
+    def _is_curve_reference_family_measured_depth(data: dict, data_partition: str):
         log_curve_family_id_expected = data_partition + ":reference-data--LogCurveFamily:Measured%20Depth:"
-        return any(curve.LogCurveFamilyID == log_curve_family_id_expected for curve in wl.data.Curves if curve.CurveID == wl.data.ReferenceCurveID)
-
-
-
+        return any(curve.get("LogCurveFamilyID", None) == log_curve_family_id_expected for curve in data["Curves"] if
+                   curve["CurveID"] == data["ReferenceCurveID"])

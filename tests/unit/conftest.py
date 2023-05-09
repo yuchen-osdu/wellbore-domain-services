@@ -51,7 +51,8 @@ from .fixtures import (
     base_app_initialized_with_testclient,
     app_initialized_with_testclient,
     app_configurable_with_testclient,
-    mock_storage_client_holding_data
+    mock_storage_client_holding_data,
+    mock_schema_client_holding_data
 )
 
 from .fixtures_pkg import (

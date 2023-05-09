@@ -148,11 +148,6 @@ async def test_get_schema_from_service_404(ctx_fixture_with_search_client):
 
 
 @pytest.mark.anyio
-async def test_validate_entities(ctx_fixture_with_search_client, wellbore_v3_130_record_list):
-    pass
-
-
-@pytest.mark.anyio
 @pytest.mark.parametrize(("mode"), [
     SchemaMode.ORIGINAL,
     SchemaMode.OPTIMISED,

@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 from app.consistency import  TrajectoryDataConsistencyChecks
-
+from app.model.model_utils import to_record
 
 from app.model.osdu_model import (
     AbstractAccessControlList100,
@@ -155,6 +155,7 @@ mini_traj_data = {
 )
 def test_get_reference_name(trajectory, trajectory_data, expected):
     trajectory.data = trajectory_data
-    computed = TrajectoryDataConsistencyChecks.get_reference_name(trajectory)
+    trajectory_record = to_record(trajectory)
+    computed = TrajectoryDataConsistencyChecks.get_reference_name(trajectory_record)
     assert computed == expected
 

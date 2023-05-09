@@ -5,16 +5,17 @@ import math
 
 from odes_storage.models import Record
 
-from app.model.osdu_model import WellboreTrajectory110
 from app.helper.traces import with_trace
 from app.bulk_persistence import ConsistencyException, DataConsistencyChecks, \
 	BulkRecordNotFound, \
 	DaskBulkStorage, submit_with_trace
-from app.model.model_utils import from_record
 from app.context import get_ctx
 
-from .unique import get_unique_attr_values
-from .reference_check import check_reference_is_strictly_monotonic, raise_if_attr_value_is_different
+from .unique import get_unique_dict_attr_values
+from .reference_check import check_reference_is_strictly_monotonic, raise_if_dict_value_is_different
+
+AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY = "AvailableTrajectoryStationProperties"
+TRAJECTORY_STATION_PROPERTY_TYPE_ID = "TrajectoryStationPropertyTypeID"
 
 
 class DuplicatedStationProperties(RuntimeError):
@@ -25,7 +26,7 @@ class ColumnDoesNotMatchTrajectoryStationException(ConsistencyException):
     """raised when column doesn't match any AvailableTrajectoryStationProperties"""
 
 
-def check_trajectory_consistency(traj: WellboreTrajectory110):
+def check_trajectory_consistency(traj: Record):
     """Check if trajectory is consistent.
 
     Each station in data.AvailableTrajectoryStationProperties must have a unique name.
@@ -38,12 +39,14 @@ def check_trajectory_consistency(traj: WellboreTrajectory110):
     Raises:
         DuplicatedStationProperties: All AvailableTrajectoryStationProperties Name  are not unique.
     """
-    if not traj.data or not traj.data.AvailableTrajectoryStationProperties:
+    if not traj.data:
+        return
+    if AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY not in traj.data:
         return
 
     # All   name  must be unique
-    station_name, duplicated_error = get_unique_attr_values(
-        traj.data.AvailableTrajectoryStationProperties,
+    station_name, duplicated_error = get_unique_dict_attr_values(
+        traj.data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY],
         "Name"
     )
     if duplicated_error:
@@ -60,18 +63,21 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
     reference_trajectory_station_property_type_id = ":reference-data--TrajectoryStationPropertyType:MD:"
 
     @staticmethod
-    def get_reference_name(traj: WellboreTrajectory110):
-        if not traj.data.AvailableTrajectoryStationProperties:
+    def get_reference_name(traj: Record):
+        if not traj.data:
+            return
+        if AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY not in traj.data or \
+                traj.data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY] is None:
             return None
-        for station in traj.data.AvailableTrajectoryStationProperties:
-            if station and hasattr(station, "TrajectoryStationPropertyTypeID"):
+        for station in traj.data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY]:
+            if station and TRAJECTORY_STATION_PROPERTY_TYPE_ID in station:
                 if (
-                    station.TrajectoryStationPropertyTypeID
+                    station[TRAJECTORY_STATION_PROPERTY_TYPE_ID]
                     and TrajectoryDataConsistencyChecks.reference_trajectory_station_property_type_id
-                    in station.TrajectoryStationPropertyTypeID
+                    in station[TRAJECTORY_STATION_PROPERTY_TYPE_ID]
                 ):
-                    if hasattr(station, "Name") and station.Name:
-                        return station.Name
+                    if "Name" in station and station["Name"]:
+                        return station["Name"]
         return None
 
     @classmethod
@@ -91,8 +97,8 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         if not record.data:
             return
 
-        traj = from_record(WellboreTrajectory110, record)
-        cls._check_columns_consistency(traj, df.columns)
+        traj = record
+        cls._check_columns_consistency(traj.data, df.columns)
 
         reference_name = TrajectoryDataConsistencyChecks.get_reference_name(traj)
         if not reference_name:
@@ -106,14 +112,14 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
     @classmethod
     @with_trace("bulk_consistency")
     async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
-        traj = from_record(WellboreTrajectory110, record)
+        traj = record
 
         # check colums match TrajectoryStationProperties names
         dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)
         stats = await dask_blob_storage.read_stat(record.id, bulk_id)
         schema = stats.get("schema")
 
-        cls._check_columns_consistency(traj, schema.keys())
+        cls._check_columns_consistency(traj.data, schema.keys())
 
         reference_name = TrajectoryDataConsistencyChecks.get_reference_name(traj)
         if not reference_name:
@@ -125,7 +131,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
             return
 
         # wrap what should be called in dask workers
-        def check_reference(traj: WellboreTrajectory110, ref_ddf_: DaskDataFrame):
+        def check_reference(traj: Record, ref_ddf_: DaskDataFrame):
             ref = ref_ddf_[reference_name].compute()
             check_reference_is_strictly_monotonic(ref)
             cls._check_top_bottom_reference(traj, ref)
@@ -133,10 +139,10 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         await submit_with_trace(dask_blob_storage.client, check_reference, traj, ref_ddf)
 
     @staticmethod
-    def _check_columns_consistency(traj: WellboreTrajectory110, col_labels: List[str]):
+    def _check_columns_consistency(traj_data: dict, col_labels: List[str]):
         error_msg = "do(es) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record."
 
-        curve_ids, _ = get_unique_attr_values(traj.data.AvailableTrajectoryStationProperties, "Name")
+        curve_ids, _ = get_unique_dict_attr_values(traj_data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY], "Name")
         col_names = DataConsistencyChecks._get_curve_name_and_column_count(col_labels).keys()
 
         not_matching_col_name = [col_name for col_name in col_names if col_name not in curve_ids]
@@ -146,8 +152,8 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
             )
 
     @staticmethod
-    def _check_top_bottom_reference(traj: WellboreTrajectory110, ref: pd.Series):
-        raise_if_attr_value_is_different(
+    def _check_top_bottom_reference(traj: Record, ref: pd.Series):
+        raise_if_dict_value_is_different(
             record_data=traj.data,
             attr_name="TopDepthMeasuredDepth",
             reference_value=ref.iloc[0],
@@ -155,7 +161,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
 
         )
 
-        raise_if_attr_value_is_different(
+        raise_if_dict_value_is_different(
             record_data=traj.data,
             attr_name="BaseDepthMeasuredDepth",
             reference_value=ref.iloc[-1],
