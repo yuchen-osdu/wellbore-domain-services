@@ -130,7 +130,7 @@ async def post_well_osdu(
     DMSV3RouterUtils.validate_record_against_kinds_schema(wells)
     storage_client = await get_storage_record_service(ctx)
 
-    r= await storage_client.create_or_update_records(
+    r = await storage_client.create_or_update_records(
         record=[to_record(w) for w in wells],
         data_partition_id=ctx.partition_id,
     )

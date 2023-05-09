@@ -277,7 +277,7 @@ opencensus-ext-stackdriver==0.8.0
     # via -r requirements.in
 opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
-osdu-api==0.21.0rc604+ef183bf6
+osdu-api[all]==0.21.0rc674+0191dcf9
     # via
     #   osdu-core-lib-python-anthos
     #   osdu-core-lib-python-aws
@@ -285,7 +285,7 @@ osdu-core-lib-python==2.0.0
     # via -r requirements.in
 osdu-core-lib-python-anthos==1.0.3
     # via -r requirements.in
-osdu-core-lib-python-aws==2.0.6
+osdu-core-lib-python-aws==2.0.8
     # via -r requirements.in
 osdu-core-lib-python-azure==3.0.3
     # via -r requirements.in
@@ -381,6 +381,7 @@ requests==2.28.1
     #   msal
     #   msrest
     #   opencensus-ext-azure
+    #   osdu-api
     #   requests-oauthlib
 requests-oauthlib==1.3.0
     # via
@@ -407,6 +408,7 @@ six==1.16.0
     #   jsonpath-ng
     #   python-dateutil
     #   python-multipart
+    #   tenacity
 sniffio==1.2.0
     # via
     #   anyio
@@ -420,6 +422,8 @@ structlog==21.1.0
     # via -r requirements.in
 tblib==1.7.0
     # via distributed
+tenacity==6.2.0
+    # via osdu-api
 toolz==0.11.1
     # via
     #   dask

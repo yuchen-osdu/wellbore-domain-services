@@ -37,13 +37,13 @@ class AwsInjector(AppInjectorModule):
         app_injector.register(DaskBulkStorage, partial(AwsInjector.build_aws_dask_blob_storage,
                                                        app_injector=app_injector,
                                                        bulk_config=get_config()))
-
     @staticmethod
     async def build_aws_storage() -> BlobStorageBase:
         return AwsStorage(
-            session=None,
-            service_account_file=f'{Config.aws_region.value}$${Config.aws_env.value}'
-        )
+             session=None,
+             service_account_file=f'{Config.aws_region.value}$${Config.aws_env.value}'
+         )
+
 
     @staticmethod
     async def build_aws_dask_blob_storage(app_injector: AppInjector,
