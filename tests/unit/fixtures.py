@@ -4,6 +4,8 @@ import contextlib
 import copy
 import types
 from typing import List
+
+import odes_schema
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient, Headers
 
@@ -17,7 +19,8 @@ from fastapi.testclient import TestClient
 from app.conf import ConfigurationContainer, cloud_provider_additional_environment
 from app.auth.auth import require_opendes_authorized_user
 from app.middleware.basic_context_middleware import require_data_partition_id
-from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client
+from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client, make_schema_client, \
+    SchemaServiceClient
 from app.helper.traces import CombinedExporter
 from app.injector.app_injector import WithLifeTime
 from app.base import base_app
@@ -55,6 +58,7 @@ def local_dev_config(tmp_path_factory):
         "CLOUD_PROVIDER": "local",
         "SERVICE_HOST_STORAGE": "https://test-endpoint/api/storage",
         "SERVICE_HOST_SEARCH": "https://test-endpoint/api/search",
+        "SERVICE_HOST_SCHEMA": "https://test-endpoint/api/schema-service",
         "MODULES": "log_recognition.routers.log_recognition",
         'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="blob-")),
         'USE_INTERNAL_STORAGE_SERVICE_WITH_PATH': str(tmp_path_factory.mktemp(basename="storage-")),
@@ -177,6 +181,56 @@ def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
     return setup_data_for_mock
 
 
+@pytest.fixture
+def mock_schema_client_holding_data(local_dev_config, nope_logger_fixture):
+    """
+    Fixture mocking the Schema Client, except for a specific record that we want to return when requested.
+     The data we want the Client to hold and return as the service would normally do is passed as an argument.
+
+     For usage examples, see fixtures_test.py in this directory
+
+     We depend on :
+     - local_dev_config to have a valid configuration, but also avoid doing unexpected network requests
+     - nope_logger_fixture because configuring this will mount middlewares, and they need a logger
+    """
+
+    def setup_data_for_mock(data):
+        template_client = make_schema_client(
+            host=local_dev_config.service_host_schema.value,
+            timeout=local_dev_config.de_client_config_timeout.value
+        )
+
+        # Note: we want to be able to modify the mock to handle get_record and get_record_version specifically
+        mock_client = create_autospec(template_client, spec_set=True, instance=True)
+
+        # override api_client to use an async mock (needed on shutdown when we call api_client.close())
+        mock_client.api_client = AsyncMock(spec_set=template_client.api_client)
+
+        async def mocked_get_schema(self,
+                             id: str,
+                             data_partition_id: str = None,
+                             appkey: str = None,
+                             token: str = None) -> dict:
+            for d in data:
+                if id is not None and (id == d.get("x-osdu-schema-source")):
+                    return d
+
+            # if not found, attempt to emulate behavior of the actual client
+            raise odes_schema.UnexpectedResponse(
+                status_code=404,
+                reason_phrase="Item not found",
+                content="".encode(encoding="utf-8"),
+                headers=Headers(),
+            )
+
+        # override get_record method on the instance to return sample data
+        mock_client.get_schema = types.MethodType(mocked_get_schema, mock_client)
+
+        return mock_client
+
+    return setup_data_for_mock
+
+
 @pytest.fixture(scope="module")
 def base_app_initialized_with_testclient(local_dev_config, dask_custom_config, anyio_backend):
     """
@@ -233,6 +287,7 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
     
     original_storage_client = await app_injector.get(StorageRecordServiceClient)
     original_search_client = await app_injector.get(SearchServiceClient)
+    original_schema_client = await app_injector.get(SchemaServiceClient)
 
     # setup safe defaults for tests
     # can't set spec_set because api_client is instance member and not a class member
@@ -244,6 +299,11 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
     default_search_mock = create_autospec(SearchServiceClient, instance=True)
     # override api_client to use an async mock (needed on shutdown when we call api_client.close())
     default_search_mock.api_client = AsyncMock()
+
+    # can't set spec_set because api_client is instance member and not a class member
+    default_schema_mock = create_autospec(SchemaServiceClient, instance=True)
+    # override api_client to use an async mock (needed on shutdown when we call api_client.close())
+    default_schema_mock.api_client = AsyncMock()
 
     def injection_coro_builder(*, return_value):
         # because of our app_injector design
@@ -257,6 +317,7 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
         *,
         search_client_mock=default_search_mock,
         storage_client_mock=default_storage_mock,
+        schema_client_mock=default_schema_mock,
         dask_bulk_storage_mock=None,
         blob_storage_base_mock=None,
         sessions_storage_mock=None,
@@ -279,6 +340,10 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
 
         if search_client_mock is not None:
             app_injector.register(SearchServiceClient, injection_coro_builder(return_value=search_client_mock),
+        WithLifeTime.Singleton())
+
+        if schema_client_mock is not None:
+            app_injector.register(SchemaServiceClient, injection_coro_builder(return_value=schema_client_mock),
         WithLifeTime.Singleton())
 
         if dask_bulk_storage_mock is not None:
@@ -323,6 +388,9 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
         WithLifeTime.Singleton())
     app_injector.register(
                 SearchServiceClient, injection_coro_builder(return_value=original_search_client),
+        WithLifeTime.Singleton())
+    app_injector.register(
+                SchemaServiceClient, injection_coro_builder(return_value=original_schema_client),
         WithLifeTime.Singleton())
 
     app_injector.register(

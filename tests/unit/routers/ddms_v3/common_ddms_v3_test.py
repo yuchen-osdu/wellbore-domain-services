@@ -76,7 +76,7 @@ async def test_post_records_successful(dasked_test_app_with_mocked_core_service)
         dir_path = os.path.dirname(os.path.realpath(__file__))
         with open(os.path.join(dir_path, r"Wellbore_unit.json")) as f:
             test_Wellbores = json.load(f)
-        Wellbore.parse_obj(test_Wellbores[0])
+
         # when
         response = await dasked_test_app_with_mocked_core_service.post(
             base_url, data=json.dumps(test_Wellbores), headers={"content-type": "application/json"}
@@ -199,14 +199,14 @@ tests_parameters_restricted_well = [
         r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9",
         {
             "id": "namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            "kind": "namespace:osdu:master-data--Well:1.0.0",
+            "kind": "osdu:wks:master-data--Well:1.0.0",
             "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
             "data": {}
         },
         Record(
             id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            kind="namespace:osdu:master-data--Well:1.0.0",
+            kind="osdu:wks:master-data--Well:1.0.0",
             acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
             version=1976,
             legal={
@@ -248,7 +248,7 @@ async def test_restricted_record_id(
         response = await dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
 
         validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                             status.HTTP_200_OK,status.HTTP_422_UNPROCESSABLE_ENTITY)
+                                             status.HTTP_200_OK, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         if base_url == "/ddms/v3/welllogs" or base_url == "/ddms/v3/wellboretrajectories":
             # Session
@@ -280,7 +280,7 @@ async def test_restricted_record_id(
             # Data
             moc_record = Record(
                 id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-                kind="namespace:osdu:master-data--Well:1.0.0",
+                kind="osdu:wks:master-data--Well:1.0.0",
                 acl={"owners": ["test"], "viewers": ["test"]},
                 version=1976,
                 legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
@@ -319,13 +319,13 @@ tests_parameters_record_ids = [
     (
         "/ddms/v3/welllogs",
         r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        "namespace:osdu:work-product-component--WellLog:1.0.0",
+        "osdu:wks:work-product-component--WellLog:1.0.0",
         {}
     ),
     (
         "/ddms/v3/wellboretrajectories",
         r"namespace:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        "namespace:osdu:work-product-component--WellboreTrajectory:1.0.0",
+        "osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
         {
             "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
             "TopDepthMeasuredDepth": 12345.6,
@@ -425,7 +425,7 @@ async def test_invalid_bulk_uri_set(dasked_test_app_with_mocked_core_service, ba
     moc_old_version_record_without_bulk_uri_field = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {'wdms': {}}},
                                                 record_id, record_kind)
     moc_old_version_record_with_ExtensionProperties_field_to_none = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': None},
-                                                record_id, record_kind)
+                                                 record_id, record_kind)
     moc_old_version_record_with_wdms_field_to_none = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {'wdms': None}},
                                                 record_id, record_kind)
     moc_old_version_record_with_bulk_uri_field_to_none = _moc_get_record_previous_version({'name': 'myWell', 'uwi': '00-000-00000-00', 'ExtensionProperties': {'wdms':  {'bulkURI': None}}},

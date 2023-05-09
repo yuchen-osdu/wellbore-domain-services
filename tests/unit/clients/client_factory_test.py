@@ -20,12 +20,14 @@ from httpx import (RemoteProtocolError, TimeoutException)
 
 import odes_search.exceptions
 import odes_storage.exceptions
+import odes_schema.exceptions
 
 from app.clients import (
     make_storage_record_client,
     make_search_client,
     StorageRecordServiceClient,
-    SearchServiceClient)
+    SearchServiceClient,
+    make_schema_client, SchemaServiceClient)
 from app.clients.backoff_policy import backoff_policy, _exceptions_type_to_retry
 
 from app.context import get_or_create_ctx
@@ -69,6 +71,24 @@ async def test_make_search_client(local_dev_config, httpx_mock: HTTPXMock, ctx_f
         # expect the correct exception - ie. composition do not mix several clients
         with pytest.raises(odes_search.exceptions.UnexpectedResponse):
             await client.get_index_schema(kind='kind', data_partition_id="dp")
+
+
+@pytest.mark.anyio
+async def test_make_schema_client(local_dev_config, httpx_mock: HTTPXMock, ctx_fixture, nope_logger_fixture):
+    async with make_schema_client(host=local_dev_config.service_host_schema.value,
+                                  timeout=local_dev_config.de_client_config_timeout.value) as client:
+        assert isinstance(client, SchemaServiceClient)
+
+        # ensure host
+        assert client.api_client.host == local_dev_config.service_host_schema.value
+        assert client.api_client._async_client.timeout == httpx.Timeout(timeout=10)
+        get_or_create_ctx()
+
+        httpx_mock.add_response(status_code=500)
+
+        # expect the correct exception - ie. composition do not mix several clients
+        with pytest.raises(odes_schema.exceptions.UnexpectedResponse):
+            await client.get_schema(id='kind', data_partition_id="dp")
 
 
 class MyException(Exception):

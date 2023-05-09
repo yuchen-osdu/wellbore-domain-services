@@ -65,9 +65,6 @@
                 "TopMeasuredDepth",
                 "BottomMeasuredDepth",
                 "SamplingInterval"
-            ],
-            "propertyValues": [
-                "ft"
             ]
         }, {
             "kind": "DateTime",
