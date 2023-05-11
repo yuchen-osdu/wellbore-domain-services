@@ -28,6 +28,7 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - importlib-metadata
+- importlib-resources (from https://github.com/python/importlib_resources)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from https://msgpack.org/)
 - multidict (from https://github.com/aio-libs/multidict)
@@ -58,7 +59,9 @@ The following software have components provided under the terms of this license:
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.1.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
+- tenacity (from https://github.com/jd/tenacity)
 - tornado (from http://www.tornadoweb.org/)
+- types-jsonschema (from https://github.com/python/typeshed)
 - urllib3 (from https://pypi.org/project/urllib3/2.0.2/)
 - yarl (from https://github.com/aio-libs/yarl/)
 
@@ -169,6 +172,7 @@ GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 
 ========================================================================
@@ -249,6 +253,7 @@ The following software have components provided under the terms of this license:
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
 - distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.4.1/)
+- dpath (from https://github.com/dpath-maintainers/dpath-python)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.1.1/)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
 - fastapi (from https://pypi.org/project/fastapi/0.86.0/, https://pypi.org/project/fastapi/0.95.1/)
@@ -259,14 +264,14 @@ The following software have components provided under the terms of this license:
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
-- msal-extensions (from https://pypi.org/project/msal-extensions/1.0.0/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - munch (from http://github.com/Infinidat/munch)
 - natsort (from https://github.com/SethMMorton/natsort)
 - numpy
-- ordered-set (from http://github.com/LuminosoInsight/ordered-set)
+- ordered-set (from https://pypi.org/project/ordered-set/4.1.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/pypa/pep517)
+- pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
 - pluggy
 - py (from https://py.readthedocs.io/)
 - pyarrow (from https://arrow.apache.org/)
@@ -281,7 +286,6 @@ The following software have components provided under the terms of this license:
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - python-ulid (from https://github.com/mdomke/python-ulid)
 - pytz (from http://pythonhosted.org/pytz)
-- requests (from http://python-requests.org, https://requests.readthedocs.io)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.1.0/)
@@ -346,8 +350,11 @@ The following software have components provided under the terms of this license:
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.1.1/)
 - numpy
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
+- pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
 - portalocker (from https://github.com/WoLpH/portalocker)
+- python-dateutil (from https://github.com/dateutil/dateutil)
 - typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/)
 
 ========================================================================
 SunPro
