@@ -42,38 +42,30 @@ variables:
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
-    ref: m18-pipeline-update-mm
 
     # for compile-and-unit-test
   - project: "osdu/platform/ci-cd-pipelines"
     file: "build/python.yml"
-    ref: m18-pipeline-update-mm
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/fossa-python.yml"
-    ref: m18-pipeline-update-mm
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
-    ref: m18-pipeline-update-mm
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/gc-global.yml"
-    ref: m18-pipeline-update-mm
 
   # IBM it tests "ibm-test"
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm-wellbore-git.yml"
-    ref: m18-pipeline-update-mm
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
-    ref: m18-pipeline-update-mm
 
   # AWS it tests "aws-test-python" will run local test/aws-test/buid-aws/run-integration-tests.sh
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
-    ref: m18-pipeline-update-mm
 
   # AZURE it tests "azure_test_py"
   - local: "/devops/azure/azure-wellbore.yml"
