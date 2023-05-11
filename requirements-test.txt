@@ -1,2 +1,2 @@
 --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
-osdu-core-lib-python-aws==2.0.5
+osdu-core-lib-python-aws==2.0.8

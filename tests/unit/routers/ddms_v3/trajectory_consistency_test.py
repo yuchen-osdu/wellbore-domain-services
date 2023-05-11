@@ -92,7 +92,7 @@ async def test_post_v3_consistent_trajectory(client, available_trajectory_statio
                     "WellboreID": "namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:456",
                     "TopDepthMeasuredDepth": 1.0,
                     "BaseDepthMeasuredDepth": 1.0,
-                    "VerticalMeasurement": [],
+                    "VerticalMeasurement": {},
                     "AvailableTrajectoryStationProperties": available_trajectory_station_properties
                 },
             }
@@ -130,7 +130,7 @@ async def test_post_v3_inconsistent_trajectory(client, available_trajectory_stat
                     "WellboreID": "namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:456",
                     "TopDepthMeasuredDepth": 1,
                     "BaseDepthMeasuredDepth": 1,
-                    "VerticalMeasurement": [],
+                    "VerticalMeasurement": {},
                     "AvailableTrajectoryStationProperties": available_trajectory_station_properties
                 },
             }

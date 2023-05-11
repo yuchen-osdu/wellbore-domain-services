@@ -14,6 +14,7 @@
 
 from typing import Union
 
+import jsonschema
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 from fastapi.openapi.constants import REF_PREFIX
@@ -35,6 +36,18 @@ async def http422_error_handler(
 
     get_logger().exception(f"http422_error_handler - {request.url}")
     return JSONResponse(content=jsonable_encoder({"errors": exc.errors()}), status_code=HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+async def json_schema_error_handler(
+    request: Request, exc: jsonschema.exceptions.ValidationError,
+) -> JSONResponse:
+    """
+    Catches and handles JSon Schema validation errors
+    """
+
+    get_logger().exception(f"json_schema_error_handler - {request.url}")
+    return JSONResponse(content=jsonable_encoder({"errors": exc.message}), status_code=HTTP_422_UNPROCESSABLE_ENTITY)
+
 
 # TODO remove this once this fastapi issue is closed https://github.com/tiangolo/fastapi/issues/3790
 validation_error_definition["properties"] = {
