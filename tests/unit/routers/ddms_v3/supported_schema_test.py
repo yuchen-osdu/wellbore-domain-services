@@ -43,11 +43,12 @@ trajectory_data = {
         ("/ddms/v3/welllogs", "work-product-component--WellLog:1.1.0", {}),
         ("/ddms/v3/welllogs", "work-product-component--WellLog:1.0.0", {"TopMeasuredDepth": 10}),
         ("/ddms/v3/welllogs", "work-product-component--WellLog:1.1.0", {"TopMeasuredDepth": 10, "SamplingStart": 10}),
-
-
+        ("/ddms/v3/welllogs", "work-product-component--WellLog:1.2.0", {"TopMeasuredDepth": 10, "SamplingStart": 10}),
+        ("/ddms/v3/welllogs", "work-product-component--WellLog:1.3.0", {"TopMeasuredDepth": 10, "SamplingStart": 10}),
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.0.0", {}),
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.2.0", {}),
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.2.1", {}),
+        ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.3.0", {}),
         ("/ddms/v3/wellboremarkersets", "work-product-component--WellboreMarkerSet:1.1.0", {   "AvailableMarkerProperties": [
                     {
                         "MarkerPropertyTypeID": "partition-id:reference-data--MarkerPropertyType:MissingThickness:",
@@ -55,8 +56,10 @@ trajectory_data = {
                         "Name": "MissingThickness"
                     }]}),
         ("/ddms/v3/wellboreintervalsets", "work-product-component--WellboreIntervalSet:1.0.0", {}),
+        ("/ddms/v3/wellboreintervalsets", "work-product-component--WellboreIntervalSet:1.1.0", {}),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.0.0", trajectory_data),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.1.0", trajectory_data),
+        ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.2.0", trajectory_data),
     ],
 )
 @patch.object(storage_record_service_client_mock, 'create_or_update_records',
@@ -100,7 +103,6 @@ async def test_check_supported_kind(client, api, record_type, data):
         ("/ddms/v3/wellboreintervalsets", "work-product-component--WellboreIntervalSet:1.0.1", {}, 404),
         ("/ddms/v3/wellboretrajectories", "work-product-component--foo:1.0.0", trajectory_data, 404),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.0.1", trajectory_data, 404),
-        ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.2.0", trajectory_data, 404),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:2.0.0", trajectory_data, 404),
     ],
 )
