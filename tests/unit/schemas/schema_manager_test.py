@@ -188,7 +188,7 @@ async def test_validate_records_success(ctx_fixture_with_search_client, mode, re
     "marker_v3_130",
     "wellboreintervalset_v3_110",
     "trajectory_v3_120",
-    "welllog_v3_130",
+    "wellLog_v3_130",
 ])
 async def test_validate_new_schemas(ctx_fixture_with_search_client, mode, file_name):
     # Test schemas that does not have pydantic models
