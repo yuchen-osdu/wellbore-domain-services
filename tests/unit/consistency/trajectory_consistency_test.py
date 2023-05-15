@@ -1,6 +1,5 @@
 import pytest
 from app.consistency import TrajectoryDataConsistencyChecks
-from app.model.model_utils import to_record
 
 
 from app.model.osdu_model import (
@@ -150,8 +149,6 @@ mini_traj_data = {
         ),
     ],
 )
-def test_get_reference_name(trajectory, trajectory_data, expected):
-    trajectory.data = trajectory_data
-    trajectory_record = to_record(trajectory)
-    computed = TrajectoryDataConsistencyChecks.get_reference_name(trajectory_record)
+def test_get_reference_name(trajectory_data, expected):
+    computed = TrajectoryDataConsistencyChecks._get_reference_name(trajectory_data.dict())
     assert computed == expected

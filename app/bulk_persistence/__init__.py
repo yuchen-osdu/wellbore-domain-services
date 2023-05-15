@@ -27,7 +27,7 @@ from .consistency_checks import (
     ConsistencyException,
     DataConsistencyChecks,
     BulkInfoForConsistency,
-    BulkReferenceInfoForConsistency,
+    ColumnDescribe,
 )
 from .dask import client as dask_client
 from .dask.bulk_catalog import (

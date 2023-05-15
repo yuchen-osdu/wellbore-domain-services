@@ -10,7 +10,7 @@ from pandas import DataFrame
 
 from app.helper.traces import with_trace
 from app.bulk_persistence import BulkRecordNotFound, \
-    DaskBulkStorage, ConsistencyException, DataConsistencyChecks, submit_with_trace
+    DaskBulkStorage, ConsistencyException, DataConsistencyChecks, submit_with_trace, BulkInfoForConsistency
 from app.context import get_ctx
 
 from .reference_check import check_reference_is_strictly_monotonic, raise_if_dict_value_is_different
@@ -93,7 +93,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     """
 
     @classmethod
-    async def check_bulk_consistency(cls, record: "Record", bulk_info: BulkInfoForConsistency):
+    def check_bulk_consistency(cls, record: "Record", bulk_info: BulkInfoForConsistency):
         pass
 
     @classmethod
