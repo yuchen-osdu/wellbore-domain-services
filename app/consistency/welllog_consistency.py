@@ -1,23 +1,35 @@
-import math
-import urllib
-from typing import Iterable
+from typing import Dict
+from enum import Enum
 
 import pandas as pd
 from dask.dataframe.core import DataFrame as DaskDataFrame
 
 from odes_storage.models import Record
-from pandas import DataFrame
 
 from app.helper.traces import with_trace
-from app.bulk_persistence import BulkRecordNotFound, \
-    DaskBulkStorage, ConsistencyException, DataConsistencyChecks, submit_with_trace, BulkInfoForConsistency
+from app.bulk_persistence import (
+    BulkRecordNotFound,
+    DaskBulkStorage,
+    ConsistencyException,
+    DataConsistencyChecks,
+    submit_with_trace,
+    BulkInfoForConsistency,
+    ColumnDescribe,
+)
 from app.context import get_ctx
-
 from .reference_check import check_reference_is_strictly_monotonic, raise_if_dict_value_is_different
-
 from .unique import get_unique_dict_attr_values
-
 from ..model.entity_utils import get_data_partition_from_record_id
+
+
+class WellLogProperties(str, Enum):
+    CURVES = "Curves"
+    CURVE_ID = "CurveID"
+    REFERENCE_CURVE_ID = "ReferenceCurveID"
+    SAMPLING_START = "SamplingStart"
+    SAMPLING_STOP = "SamplingStop"
+    LOG_CURVE_FAMILY_ID = "LogCurveFamilyID"
+    NUMBER_OF_COLUMNS = "NumberOfColumns"
 
 
 class DuplicatedCurveIdException(ConsistencyException):
@@ -36,49 +48,29 @@ class TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(ConsistencyExcepti
     """raised when total of columns doesn't match NumberOfColumns field"""
 
 
-def absent_or_none(d: dict, key: str):
-    return key not in d or d[key] is None
-
-
-def present_and_not_none(d: dict, key: str):
-    return key in d and d[key] is not None
-
-
-@with_trace('welllog_consistency')
+@with_trace("welllog_consistency")
 def check_welllog_consistency(wl: Record):
-    """Check wellLog metadata.
-
-    Curves ids in data.Curves must be unique
-    Welllog must have a curve whose curveID value is equal to the  wellLog's ReferenceCurveID value if any
-
-    Args:
-        wl (Record): wellLog object to be verified
-
-    Returns:
-        None
-
-    Raises:
+    """
+    Check wellLog metadata. Curves ids in data.Curves must be unique Welllog must have a curve whose curveID value is
+    equal to the  wellLog's ReferenceCurveID value if any
+    :param wl: well log object to be verified
+    :raise:
         DuplicatedCurveIdException: All CurveIDs are not unique.
         ReferenceCurveIdNotFoundException: No curve whose curveID value are equal to ReferenceCurveID value.
     """
-
-    # There are no Curves or ReferenceCurveID
     if not wl.data:
-        return
-    if absent_or_none(wl.data, "Curves") and absent_or_none(wl.data, "ReferenceCurveID"):
+        # There are no Curves or ReferenceCurveID
         return
 
-    # Can't define a  ReferenceCurveID when welllog doesn't have any Curve
-    if absent_or_none(wl.data, "Curves") and present_and_not_none(wl.data, "ReferenceCurveID"):
-        raise ReferenceCurveIdNotFoundException()
+    curves = wl.data.get(WellLogProperties.CURVES) or {}
+    reference_curve_id = wl.data.get(WellLogProperties.REFERENCE_CURVE_ID)
 
     # All curve ids must be unique
-    curve_ids, duplicated_error = get_unique_dict_attr_values(wl.data["Curves"], "CurveID")
+    curve_ids, duplicated_error = get_unique_dict_attr_values(curves, WellLogProperties.CURVE_ID)
     if duplicated_error:
         raise DuplicatedCurveIdException()
 
-    # ReferenceCurveID should match a curve
-    if present_and_not_none(wl.data, "ReferenceCurveID") and wl.data["ReferenceCurveID"] not in curve_ids:
+    if reference_curve_id and reference_curve_id not in curve_ids:
         raise ReferenceCurveIdNotFoundException()
 
 
@@ -93,142 +85,156 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     """
 
     @classmethod
-    def check_bulk_consistency(cls, record: "Record", bulk_info: BulkInfoForConsistency):
-        pass
+    def check_bulk_consistency(cls, record: Record, bulk_info: BulkInfoForConsistency):
+        if not record.data:
+            return
+
+        cls._check_columns_consistency(record.data, bulk_info.curves)
+
+        reference_name = record.data.get(WellLogProperties.REFERENCE_CURVE_ID)
+        if reference_name not in bulk_info.curves:
+            return
+
+        data_partition = get_data_partition_from_record_id(record)
+        if not cls._is_curve_reference_family_measured_depth(record.data, data_partition):
+            return
+
+        if bulk_info.reference is not None and reference_name == bulk_info.reference.name:
+            cls._check_reference(record, bulk_info.reference)
 
     @classmethod
     @with_trace("bulk_consistency")
     def check_bulk_consistency_on_post_bulk(cls, record: Record, df: pd.DataFrame):
-        """ Perform welllog consistency checks of a bulk  dataframe against a welllog record
-        used by bulk_persistence when post a whole bulk (not chunking apis)
-
-         Args:
-            record (Record): welllog record to check
-            df (pandas.DataFrame): bulk data to check against the record
-
-        Raises: ConsistencyException
-
-        Returns: None
+        """Perform welllog consistency checks of a bulk  dataframe against a welllog record used by bulk_persistence
+            when post a whole bulk (not chunking apis)
+        :param: record (Record): welllog record to check
+        :param: df (pandas.DataFrame): bulk data to check against the record
+        :raise: ConsistencyException
         """
-        wl = record
-        cls._check_columns_consistency(wl, df.columns)
-        if not wl.data:
+        if not record.data:
             return
 
-        if absent_or_none(wl.data, "ReferenceCurveID"):
-            return
+        reference_name = record.data.get(WellLogProperties.REFERENCE_CURVE_ID)
+        if reference_name not in df.columns:
+            reference_name = None
 
-        if wl.data["ReferenceCurveID"] not in df:
-            return
-
-        data_partition = get_data_partition_from_record_id(record)
-        if not cls._is_curve_reference_family_measured_depth(wl.data, data_partition):
-            return
-
-        ref = df[wl.data["ReferenceCurveID"]]
-        check_reference_is_strictly_monotonic(ref)
-        cls._check_top_bottom_reference(wl, ref)
+        bulk_info = BulkInfoForConsistency.construct(
+            rowCount=len(df.index),
+            curves=DataConsistencyChecks._get_curve_name_and_column_count(df.columns),
+            reference=ColumnDescribe.from_series(df[reference_name]) if reference_name else None,
+        )
+        cls.check_bulk_consistency(record, bulk_info)
 
     @classmethod
-    @with_trace('bulk_consistency')
+    @with_trace("bulk_consistency")
     async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
-        """ Perform welllog consistency checks of a bulk  against a welllog record
-        used by bulk_persistence when commit a session (chunking apis)
-
-         Args:
-            record (Record): welllog record to check
-            bulk_id (str): id of the bulk  to check against the record
-
-        Raises: ConsistencyException
-
-        Returns: None
+        """Perform welllog consistency checks of a bulk  against a welllog record used by bulk_persistence
+            when commit a session (chunking apis)
+        :param: record (Record): welllog record to check
+        :param: bulk_id (str): id of the bulk  to check against the record
+        :raise: ConsistencyException
         """
-        wl = record
 
         # check col match record.curves
         dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)
         stats = await dask_blob_storage.read_stat(record.id, bulk_id)
         schema = stats.get("schema")
 
-        cls._check_columns_consistency(wl, schema.keys())
+        curve_sizes = DataConsistencyChecks._get_curve_name_and_column_count(schema.keys())
+        cls._check_columns_consistency(record.data, curve_sizes)
 
         # check reference
-        if not wl.data:
+        if not record.data:
             return
 
-        if absent_or_none(wl.data, "ReferenceCurveID"):
+        reference_curve_id = record.data.get(WellLogProperties.REFERENCE_CURVE_ID)
+        if not reference_curve_id:
             return
 
         data_partition = get_data_partition_from_record_id(record)
-        if not cls._is_curve_reference_family_measured_depth(wl.data, data_partition):
+        if not cls._is_curve_reference_family_measured_depth(record.data, data_partition):
             return
 
         try:
-            ref_ddf, _ = await dask_blob_storage.load_bulk_and_catalog(record.id, bulk_id,
-                                                                       columns=[wl.data["ReferenceCurveID"]])
+            ref_ddf, _ = await dask_blob_storage.load_bulk_and_catalog(record.id, bulk_id, columns=[reference_curve_id])
         except BulkRecordNotFound:
             return
 
         # wrap what should be called in dask workers
-        def check_welllog_reference(wl_data: dict, ref_ddf: DaskDataFrame):
-            ref = ref_ddf[wl_data["ReferenceCurveID"]].compute()
-            check_reference_is_strictly_monotonic(ref)
-            cls._check_top_bottom_reference(wl, ref)
+        def check_welllog_reference(wl_record: Record, df: DaskDataFrame):
+            ref = df[reference_curve_id].compute()
+            ref_bulk_info = ColumnDescribe.from_series(ref)
+            cls._check_reference(wl_record, ref_bulk_info)
 
-        await submit_with_trace(dask_blob_storage.client, check_welllog_reference, wl.data, ref_ddf)
+        await submit_with_trace(dask_blob_storage.client, check_welllog_reference, record, ref_ddf)
 
     @staticmethod
-    def _check_columns_consistency(wl: Record, col_labels: Iterable[str]):
+    def _check_columns_consistency(wl_data: dict, curve_sizes: Dict[str, int]):
         """Checks bulk data column names match welllog record curves ids
-
-        Args:
-            wl(Record): welllog record
-            col_labels: column's labels to check against the record
-
-        Returns: None
-
-        Raises:
-            ColumnDoesNotMatchCurveIdException: column and record's curves doesn't match
+        :param: wl_data: welllog data part
+        :param: curve_sizes: column's labels with column number
+        :raise: ColumnDoesNotMatchCurveIdException: column and record's curves doesn't match
         """
-        if (not wl.data or not wl.data.get("Curves", None)) and len(col_labels) > 0:
-            raise ColumnDoesNotMatchCurveIdException(f"Column(s) do(es) not match any CurveID of the WellLog record.")
 
-        curve_ids, _ = get_unique_dict_attr_values(wl.data["Curves"], "CurveID")
-        nb_col_per_names = DataConsistencyChecks._get_curve_name_and_column_count(col_labels)
+        curves = wl_data.get(WellLogProperties.CURVES)
+        if not curves and len(curve_sizes) > 0:
+            raise ColumnDoesNotMatchCurveIdException(
+                f"Column(s) do(es) not match any {WellLogProperties.CURVE_ID} of the WellLog record."
+            )
 
-        not_matching_col_name = [col_name for col_name in nb_col_per_names.keys() if col_name not in curve_ids]
+        curve_sizes_from_meta = {
+            c[WellLogProperties.CURVE_ID]: c.get(WellLogProperties.NUMBER_OF_COLUMNS, 1) for c in curves
+        }
+
+        not_matching_col_name = curve_sizes.keys() - curve_sizes_from_meta.keys()
         if any(not_matching_col_name):
             raise ColumnDoesNotMatchCurveIdException(
-                f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any CurveID of the WellLog record."
+                f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any {WellLogProperties.CURVE_ID} of the"
+                " WellLog record."
             )
 
-        not_matching_nb_col_per_name = {curve["CurveID"]: curve["NumberOfColumns"] for curve in wl.data["Curves"]
-                               if curve["CurveID"] in nb_col_per_names
-                               and nb_col_per_names[curve["CurveID"]] != curve["NumberOfColumns"]}
+        not_matching_nb_col_per_name = {
+            c: size_in_meta
+            for c, size_in_meta in curve_sizes_from_meta.items()
+            if c in curve_sizes and curve_sizes[c] != size_in_meta
+        }
         if any(not_matching_nb_col_per_name):
-            expected_nb_of_col_per_name = {curve_id: nb_col_per_names[curve_id] for curve_id in not_matching_nb_col_per_name}
+            expected_nb_of_col_per_name = {curve_id: curve_sizes[curve_id] for curve_id in not_matching_nb_col_per_name}
+
             raise TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(
-                f"The number of columns for curve(s): {expected_nb_of_col_per_name} in the bulk data do(es) not match the 'NumberOfColumns' property value in the WellLog record for CurveID: {not_matching_nb_col_per_name} ."
+                f"The number of columns for curve(s): {expected_nb_of_col_per_name} in the bulk data do(es) not match"
+                f" the '{WellLogProperties.NUMBER_OF_COLUMNS}' property value in the WellLog record for"
+                f" {WellLogProperties.CURVE_ID}: {not_matching_nb_col_per_name} ."
             )
 
     @staticmethod
-    def _check_top_bottom_reference(wl: Record, ref: pd.Series):
+    def _check_reference(wl: Record, ref_bulk_info: ColumnDescribe):
+        check_reference_is_strictly_monotonic(ref_bulk_info)
         raise_if_dict_value_is_different(
             record_data=wl.data,
-            attr_name="SamplingStart",
-            reference_value=ref.iloc[0],
-            error_msg="Reference top value ({reference_value}) is different from {attr_name} value ({attr_value}) of the WellLog record."
+            attr_name=WellLogProperties.SAMPLING_START,
+            reference_value=ref_bulk_info.start,
+            error_msg=(
+                "Reference top value ({reference_value}) is different from {attr_name} value ({attr_value}) of the"
+                " WellLog record."
+            ),
         )
 
         raise_if_dict_value_is_different(
             record_data=wl.data,
-            attr_name="SamplingStop",
-            reference_value=ref.iloc[-1],
-            error_msg="Reference bottom value ({reference_value}) is different from {attr_name} value ({attr_value}) of the WellLog record."
+            attr_name=WellLogProperties.SAMPLING_STOP,
+            reference_value=ref_bulk_info.end,
+            error_msg=(
+                "Reference bottom value ({reference_value}) is different from {attr_name} value ({attr_value}) of the"
+                " WellLog record."
+            ),
         )
 
     @staticmethod
     def _is_curve_reference_family_measured_depth(data: dict, data_partition: str):
         log_curve_family_id_expected = data_partition + ":reference-data--LogCurveFamily:Measured%20Depth:"
-        return any(curve.get("LogCurveFamilyID", None) == log_curve_family_id_expected for curve in data["Curves"] if
-                   curve["CurveID"] == data["ReferenceCurveID"])
+        return any(
+            curve.get(WellLogProperties.LOG_CURVE_FAMILY_ID, None) == log_curve_family_id_expected
+            for curve in data[WellLogProperties.CURVES]
+            if curve[WellLogProperties.CURVE_ID] == data[WellLogProperties.REFERENCE_CURVE_ID]
+        )

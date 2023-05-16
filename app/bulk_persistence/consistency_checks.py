@@ -116,7 +116,7 @@ class DataConsistencyChecks(ABC):
         pass
 
     @staticmethod
-    def _get_curve_name_and_column_count(col_labels: Iterable[str]) -> dict:
+    def _get_curve_name_and_column_count(col_labels: Iterable[str]) -> Dict[str, int]:
         """
         Get column names and the number of column from bulk data column labels
         """
