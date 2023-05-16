@@ -170,9 +170,34 @@ async def test_get_schema_from_service_404(ctx_fixture_with_search_client):
     "trajectory_v3_record_list",
     "welllog110_v3_record_list",
     "welllog120_v3_record_list",
-
 ])
 async def test_validate_records_success(ctx_fixture_with_search_client, mode, record_list_f, request):
     # we expect no Exception
     record_list = request.getfixturevalue(record_list_f)
     await schema_library.validate_records(record_list, ctx_fixture_with_search_client, mode)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(("mode"), [
+    SchemaMode.ORIGINAL,
+    SchemaMode.OPTIMISED,
+    SchemaMode.EXTRA_FORBID,
+    SchemaMode.EXTRA_FORBID_OPTIMISED,
+])
+@pytest.mark.parametrize(("file_name"), [
+    "marker_v3_130",
+    "wellboreintervalset_v3_110",
+    "trajectory_v3_120",
+    "wellLog_v3_130",
+])
+async def test_validate_new_schemas(ctx_fixture_with_search_client, mode, file_name):
+    # Test schemas that does not have pydantic models
+    # we expect no Exception
+    with open(
+            path.join(
+                path.dirname(path.realpath(__file__)), f"resources/{file_name}.json"
+            )
+    ) as f:
+        entities = json.load(f)
+
+    await schema_library._validate_entities(entities, ctx_fixture_with_search_client, mode)
