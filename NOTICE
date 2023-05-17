@@ -59,9 +59,10 @@ The following software have components provided under the terms of this license:
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.1.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
+- tenacity (from https://github.com/jd/tenacity)
 - tornado (from http://www.tornadoweb.org/)
 - types-jsonschema (from https://github.com/python/typeshed)
-- urllib3 (from https://urllib3.readthedocs.io/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/)
 - yarl (from https://github.com/aio-libs/yarl/)
 
 ========================================================================
@@ -98,9 +99,9 @@ The following software have components provided under the terms of this license:
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.4.0/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.4.1/)
 - decorator (from https://github.com/micheles/decorator)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.4.0/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.4.1/)
 - fsspec (from http://github.com/fsspec/filesystem_spec)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
@@ -129,7 +130,7 @@ The following software have components provided under the terms of this license:
 - sniffio (from https://github.com/python-trio/sniffio)
 - starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.26.1/)
 - toolz (from https://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.21.1/, https://www.uvicorn.org/)
+- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.22.0/, https://www.uvicorn.org/)
 - zict (from http://zict.readthedocs.io/en/latest/)
 
 ========================================================================
@@ -155,8 +156,8 @@ CC0-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.4.0/)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.4.0/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.4.1/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.4.1/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 
 ========================================================================
@@ -171,6 +172,7 @@ GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- coverage (from https://github.com/nedbat/coveragepy)
 - grpcio (from https://grpc.io)
 
 ========================================================================
@@ -230,7 +232,7 @@ The following software have components provided under the terms of this license:
 - aioitertools (from https://aioitertools.omnilib.dev)
 - aioredis (from https://github.com/aio-libs/aioredis-py)
 - anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/3.6.2/)
-- asgi-lifespan (from https://pypi.org/project/asgi-lifespan/2.0.0/)
+- asgi-lifespan (from https://pypi.org/project/asgi-lifespan/2.0.0/, https://pypi.org/project/asgi-lifespan/2.1.0/)
 - asgiref (from https://github.com/django/asgiref/)
 - attrs (from https://attrs.readthedocs.io/, https://pypi.org/project/attrs/23.1.0/, https://www.attrs.org/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -250,7 +252,7 @@ The following software have components provided under the terms of this license:
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer)
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.4.0/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.4.1/)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.1.1/)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
@@ -262,12 +264,11 @@ The following software have components provided under the terms of this license:
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
-- msal-extensions (from https://pypi.org/project/msal-extensions/1.0.0/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - munch (from http://github.com/Infinidat/munch)
 - natsort (from https://github.com/SethMMorton/natsort)
 - numpy
-- ordered-set (from http://github.com/LuminosoInsight/ordered-set)
+- ordered-set (from https://pypi.org/project/ordered-set/4.1.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/pypa/pep517)
 - pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
@@ -285,13 +286,12 @@ The following software have components provided under the terms of this license:
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - python-ulid (from https://github.com/mdomke/python-ulid)
 - pytz (from http://pythonhosted.org/pytz)
-- requests (from http://python-requests.org, https://requests.readthedocs.io)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.1.0/)
 - toml (from https://github.com/uiri/toml)
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/, https://pypi.org/project/tomli/2.0.1/)
-- urllib3 (from https://urllib3.readthedocs.io/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)
 
@@ -352,7 +352,9 @@ The following software have components provided under the terms of this license:
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
 - portalocker (from https://github.com/WoLpH/portalocker)
+- python-dateutil (from https://github.com/dateutil/dateutil)
 - typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/)
 
 ========================================================================
 SunPro
