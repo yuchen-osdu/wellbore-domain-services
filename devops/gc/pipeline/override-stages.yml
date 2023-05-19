@@ -92,12 +92,12 @@ gc-dev2-test-python:
       --legal_tag $LEGAL_TAG
     - pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=!search
 
-gc-anthos-test-python:
-  extends: .gc-anthos-variables
+gc-baremetal-test-python:
+  extends: .gc-baremetal-variables
   stage: integration
   image: python:3.8
   tags: ["osdu-small"]
-  needs: ["gc-anthos-deploy"]
+  needs: ["gc-baremetal-deploy"]
   script:
     - bash
     - wget -O /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
@@ -137,6 +137,6 @@ gc-dev2-test:
   extends:
     - .gc-dev2-variables
 
-gc-anthos-test:
+gc-baremetal-test:
   extends:
-    - .gc-anthos-variables
+    - .gc-baremetal-variables
