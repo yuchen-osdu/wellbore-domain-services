@@ -70,7 +70,7 @@ include:
   # AZURE it tests "azure_test_py"
   - local: "/devops/azure/azure-wellbore.yml"
 
-  # Google Cloud int tests "gc-test-python" & "gc-anthos-test-python"
+  # Google Cloud int tests "gc-test-python" & "gc-baremetal-test-python"
   - local: "devops/gc/pipeline/override-stages.yml"
 
 #Override Python Image defined in python.yml
