@@ -10,21 +10,22 @@ from app.consistency.reference_check import (
 
 
 def test_check_reference_is_strictly_monotonic_success():
-    check_reference_is_strictly_monotonic(ColumnDescribe.from_series((pd.Series([0, 1, 2, 3, 4]))))
-    check_reference_is_strictly_monotonic(ColumnDescribe.from_series((pd.Series())))
+    check_reference_is_strictly_monotonic(ColumnDescribe.from_column(pd.DataFrame(), "MD"))
+    check_reference_is_strictly_monotonic(ColumnDescribe.from_column(pd.DataFrame({"MD": [0, 1, 2, 3, 4]}), "MD"))
+    check_reference_is_strictly_monotonic(ColumnDescribe.from_column(pd.DataFrame({"MD": [0]}), "MD"))
 
 
 @pytest.mark.parametrize(
     "ref, error",
     [
-        ([0, 1, 1, 2, 3, 4], "Repeated values in a reference curve aren't allowed."),
-        ([0, None, 1, 2, 3, 4], "Nan values in a reference curve are not allowed."),
-        ([0, 2, 4, 3, 5], "Reference must be monotonically increasing or decreasing."),
+        (pd.DataFrame({"MD": [0, 1, 1, 2, 3, 4]}), "Repeated values in a reference curve aren't allowed."),
+        (pd.DataFrame({"MD": [0, None, 1, 2, 3, 4]}), "Nan values in a reference curve are not allowed."),
+        (pd.DataFrame({"MD": [0, 2, 4, 3, 5]}), "Reference must be monotonically increasing or decreasing."),
     ],
 )
 def test_check_reference_is_strictly_monotonic_error(ref, error):
     with pytest.raises(ReferenceCurveException, match=f"^{error}$"):
-        check_reference_is_strictly_monotonic(ColumnDescribe.from_series((pd.Series(ref))))
+        check_reference_is_strictly_monotonic(ColumnDescribe.from_column(ref, "MD"))
 
 
 @pytest.mark.parametrize(

@@ -5,7 +5,7 @@ import re
 
 import pandas as pd
 from fastapi import status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 from odes_storage.models import Record
 
 from .dask.errors import BulkError
@@ -20,28 +20,80 @@ class Monotonicity(str, Enum):
     MonotonicDecreasing = "decreasing"
 
 
-class ColumnDescribe(BaseModel):
-    """
-    Provide basic description of a column from bulk data. Either constructed locally directly from a dataframe or
-    as a response from a remote processing
-    """
+DataframeDictSplit = Dict
+"""orient 'split' serialisation, see https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_dict.html"""
 
-    name: str = Field(description="column label")
-    start: Any = Field(None, description="value at first row")
-    end: Any = Field(None, description="value at last row")
-    type: Optional[str] = Field(None, description="type of the underlying data")
+
+class ColumnDescribe(BaseModel):
+    """information on a single column"""
+
+    name: str = Field(description="name of the column, if index them set to '_wdms_index_'")
+    # TODO see to change start|end to the first|last not NaN value instead
+    startEnd: DataframeDictSplit = Field(
+        description=(
+            "Simplified dataframe contains only the first and last row, with the reference column if requested."
+            "See https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_dict.html `split` orient."
+            "Dataframe can simply be constructed directly using dataframe constructor as it."
+        )
+    )
     monotonicity: Optional[Monotonicity] = Field(
         None, description="If not None, data are monotonic increasing or decreasing"
     )
-    hasDuplicate: bool = Field(description="if `False`, data does not contains any duplicated value")
-    hasNan: bool = Field(description="if `True`, data contains one or more missing value")
+    hasDuplicate: bool = Field(default=False, description="boolean if the column contains any duplicated values")
+    hasNan: bool = Field(default=False, description="boolean if there are any NaNs")
+    dType: Optional[str] = Field(default=None, description="dtype of the column, e.g. 'float64'")
+
+    # private attributes
+    _start: Any = PrivateAttr(None)
+    _end: Any = PrivateAttr(None)
 
     def __init__(self, **data):
         super().__init__(**data)
-        if self.type is not None:
-            # in case start, end value has been stringify
-            edges = pd.Series([self.start, self.end]).astype(self.type)
-            self.start, self.end = edges.iloc[0], edges.iloc[1]
+
+        # extract start, end references values
+        df = pd.DataFrame(**self.startEnd)
+        if df.empty:
+            self._start, self._end = None, None
+        else:
+            if self.dType:
+                # restore type in case values were stringify
+                df[self.name] = df[self.name].astype(self.dType)
+            values = df[self.name].tolist()
+            if len(values) > 1:
+                self._start, self._end = values[0], values[-1]
+            else:
+                self._start, self._end = values[0], values[0]
+
+    @classmethod
+    def from_column(cls, df: pd.DataFrame, reference_name: str) -> "ColumnDescribe":
+        if df.empty or reference_name not in df:
+            reduced_df = pd.DataFrame()
+            column_series = pd.Series()
+        else:
+            column_series = df[reference_name]
+            reduced_df = df.iloc[[0, -1]].copy() if len(df) > 1 else df.copy()
+            reduced_df = reduced_df[[reference_name]]
+
+        return cls(
+            name=reference_name,
+            startEnd=reduced_df.to_dict("split"),
+            monotonicity=(
+                Monotonicity.MonotonicIncreasing
+                if column_series.is_monotonic_increasing
+                else Monotonicity.MonotonicDecreasing if column_series.is_monotonic_decreasing else None
+            ),
+            hasDuplicate=not column_series.is_unique,
+            hasNan=column_series.hasnans,
+            dType=str(column_series.dtype),
+        )
+
+    @property
+    def start(self) -> Any:
+        return self._start
+
+    @property
+    def end(self) -> Any:
+        return self._end
 
     @property
     def is_monotonic(self) -> bool:
@@ -54,34 +106,6 @@ class ColumnDescribe(BaseModel):
     @property
     def is_monotonic_decreasing(self) -> bool:
         return self.monotonicity == Monotonicity.MonotonicDecreasing
-
-    @classmethod
-    def from_series(cls, series: pd.Series) -> "ColumnDescribe":
-        if series.empty:
-            # corner case, we choose to qualify empty data as monotonic increasing
-            return cls(
-                name=str(series.name),
-                start=None,
-                end=None,
-                monotonicity=Monotonicity.MonotonicIncreasing,
-                hasDuplicate=False,
-                hasNan=False,
-            )
-        monotonic = None
-        if series.is_monotonic_increasing:
-            monotonic = Monotonicity.MonotonicIncreasing
-        elif series.is_monotonic_decreasing:
-            monotonic = Monotonicity.MonotonicDecreasing
-
-        return cls(
-            name=str(series.name),
-            start=series.iloc[0],
-            end=series.iloc[-1],
-            type=str(series.dtype),
-            monotonicity=monotonic,
-            hasDuplicate=not series.is_unique,
-            hasNan=series.hasnans,
-        )
 
 
 class BulkInfoForConsistency(BaseModel):

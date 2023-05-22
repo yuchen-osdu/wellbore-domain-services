@@ -116,7 +116,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         bulk_info = BulkInfoForConsistency.construct(
             rowCount=len(df.index),
             curves=DataConsistencyChecks._get_curve_name_and_column_count(df.columns),
-            reference=ColumnDescribe.from_series(df[reference_name]) if reference_name else None,
+            reference=ColumnDescribe.from_column(df, reference_name) if reference_name else None,
         )
         cls.check_bulk_consistency(record, bulk_info)
 
@@ -142,8 +142,8 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
 
         # wrap what should be called in dask workers
         def check_reference(record: Record, ref_ddf_: DaskDataFrame):
-            ref = ref_ddf_[reference_name].compute()
-            ref_bulk_info = ColumnDescribe.from_series(ref)
+            ref = ref_ddf_[[reference_name]].compute()
+            ref_bulk_info = ColumnDescribe.from_column(ref, reference_name)
             cls._check_reference(record, ref_bulk_info)
 
         await submit_with_trace(dask_blob_storage.client, check_reference, record, ref_ddf)
