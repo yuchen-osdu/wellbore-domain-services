@@ -1,6 +1,6 @@
 import uuid
 from odes_storage.models import Record, Legal, StorageAcl
-from app.routers.bulk.bulk_uri_dependencies import OsduBulkIdAccess
+from app.routers.bulk.bulk_routes_dependencies import OsduBulkIdAccess
 
 def test_set_bulk_uri_merge_extension_properties():
     record = Record(id='foo',

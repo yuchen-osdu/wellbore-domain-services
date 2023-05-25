@@ -134,6 +134,8 @@ Note: If the column name contains ':', enclose it in double quotation marks (").
 
 
 class DataframeBasicDescribe(BaseModel):
+    # TODO to remove, to be replaced by new df description model
+
     row_count: int = Field(alias="rowCount")
     column_count: int = Field(alias="columnCount")
     columns: List[str] = Field(

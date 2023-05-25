@@ -39,7 +39,7 @@ from app.helper.traces import with_trace
 from ..bulk_id import new_bulk_id
 from ..bulk_persistence_config import BulkPersistenceConfig
 from ..capture_timings import capture_timings
-from ..consistency_checks import DataConsistencyChecks
+from ..consistency_checks import DataConsistencyChecks, BulkInfoForConsistency
 from ..dataframe_serializer import DataframeSerializerSync
 from ..dataframe_validators import (
     DataFrameValidationFunc,
@@ -556,7 +556,7 @@ class DaskBulkStorage:
                                         df_validator_func: DataFrameValidationFunc,
                                         consistency_checks: DataConsistencyChecks,
                                         record: "Record",
-                                        bulk_id: Optional[str] = None) -> Tuple[str, bulk_writer.DataframeBasicDescribe]:
+                                        bulk_id: Optional[str] = None) -> Tuple[str, BulkInfoForConsistency]:
         """
         process post data outside of a session, delegate the entire work in Dask worker. It constructs the path
         for the bulk in current context, prepare and
@@ -595,7 +595,7 @@ class DaskBulkStorage:
                                              df_validator_func: DataFrameValidationFunc,
                                              consistency_checks: DataConsistencyChecks,
                                              record: "Record",
-                                             bulk_id: Optional[str] = None) -> Tuple[str, bulk_writer.DataframeBasicDescribe]:
+                                             bulk_id: Optional[str] = None) -> Tuple[str, BulkInfoForConsistency]:
         bulk_id = bulk_id or new_bulk_id()
         bulk_base_path = pathBuilder.record_bulk_path(self.base_directory, record.id, bulk_id, self.protocol)
         # ensure directory exists for local storage, do nothing on remote storage

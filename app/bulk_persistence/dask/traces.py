@@ -15,6 +15,7 @@ from app.helper import traces
 from app.context import get_ctx
 from opencensus.trace import execution_context
 from . import dask_worker_write_bulk as bulk_writer
+from .. import BulkInfoForConsistency
 
 _EXPORTER = None
 
@@ -118,7 +119,7 @@ def trace_attributes_current_span(attributes):
     _add_trace_attributes(attributes, TracingMode.CURRENT_SPAN)
 
 
-def trace_dataframe_attributes(df: Union[pd.DataFrame, bulk_writer.DataframeBasicDescribe]):
+def trace_dataframe_attributes(df: Union[pd.DataFrame, bulk_writer.DataframeBasicDescribe, BulkInfoForConsistency]):
     """
         Add dataframe shape into current tracing span if tracer exists
     """
