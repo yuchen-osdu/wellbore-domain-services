@@ -171,6 +171,11 @@ class DataConsistencyChecks(ABC):
 
     @classmethod
     @abstractmethod
+    def get_reference_curve(cls, record: Record) -> Optional[str]:
+        pass
+
+    @classmethod
+    @abstractmethod
     def check_bulk_consistency(cls, record: Record, bulk_info: BulkInfoForConsistency):
         pass
 

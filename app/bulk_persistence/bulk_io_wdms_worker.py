@@ -83,12 +83,16 @@ class BulkIOWdmsWorker(BulkIO):
             'Authorization': f'Bearer {ctx.auth}'
         }
 
+        reference_name = consistency_checks.get_reference_curve(record)
+        params = {"reference": reference_name} if reference_name else None
+
         content = await self._prepare_content(data)
 
         async with self._http_session.post(
                 f'{self._host}/data/{record.id}',
                 headers=headers,
-                data=content
+                data=content,
+                params=params
         ) as resp:
             if resp.status != 200:
                 raise BulkWorkerError(await resp.text(), resp.status)
