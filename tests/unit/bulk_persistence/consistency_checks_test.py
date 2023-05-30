@@ -21,7 +21,7 @@ def test_column_describe_monotonicity():
     assert ColumnDescribe.from_column(pd.DataFrame({"MD": [1, 2, 3]}), "MD").is_monotonic_increasing
     assert not ColumnDescribe.from_column(pd.DataFrame({"MD": [1, 2, 3]}), "MD").is_monotonic_decreasing
     assert ColumnDescribe(
-        name="", monotonicity=Monotonicity.MonotonicDecreasing, hasDuplicate=False, hasNan=False, startEnd={}
+        name="", monotonicity=Monotonicity.Decreasing, hasDuplicate=False, hasNan=False, startEnd={}
     ).is_monotonic_decreasing
     assert ColumnDescribe.parse_raw(
         '{"name": "ref","monotonicity": "increasing", "hasDuplicate": false, "hasNan": false, "startEnd": {}}'

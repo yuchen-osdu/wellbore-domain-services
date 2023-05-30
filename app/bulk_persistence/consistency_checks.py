@@ -16,8 +16,8 @@ class ConsistencyException(BulkError):
 
 
 class Monotonicity(str, Enum):
-    MonotonicIncreasing = "increasing"
-    MonotonicDecreasing = "decreasing"
+    Increasing = "increasing"
+    Decreasing = "decreasing"
 
 
 DataframeDictSplit = Dict
@@ -27,7 +27,7 @@ DataframeDictSplit = Dict
 class ColumnDescribe(BaseModel):
     """information on a single column"""
 
-    name: str = Field(description="name of the column, if index them set to '_wdms_index_'")
+    name: str = Field(description="name of the column, if index then set to '_wdms_index_'")
     # TODO see to change start|end to the first|last not NaN value instead
     startEnd: DataframeDictSplit = Field(
         description=(
@@ -41,7 +41,7 @@ class ColumnDescribe(BaseModel):
     )
     hasDuplicate: bool = Field(default=False, description="boolean if the column contains any duplicated values")
     hasNan: bool = Field(default=False, description="boolean if there are any NaNs")
-    dType: Optional[str] = Field(default=None, description="dtype of the column, e.g. 'float64'")
+    dataType: Optional[str] = Field(default=None, description="dtype of the column, e.g. 'float64'")
 
     # private attributes
     _start: Any = PrivateAttr(None)
@@ -55,9 +55,9 @@ class ColumnDescribe(BaseModel):
         if df.empty:
             self._start, self._end = None, None
         else:
-            if self.dType:
+            if self.dataType:
                 # restore type in case values were stringify
-                df[self.name] = df[self.name].astype(self.dType)
+                df[self.name] = df[self.name].astype(self.dataType)
             values = df[self.name].tolist()
             if len(values) > 1:
                 self._start, self._end = values[0], values[-1]
@@ -78,9 +78,9 @@ class ColumnDescribe(BaseModel):
             name=reference_name,
             startEnd=reduced_df.to_dict("split"),
             monotonicity=(
-                Monotonicity.MonotonicIncreasing
+                Monotonicity.Increasing
                 if column_series.is_monotonic_increasing
-                else Monotonicity.MonotonicDecreasing if column_series.is_monotonic_decreasing else None
+                else Monotonicity.Decreasing if column_series.is_monotonic_decreasing else None
             ),
             hasDuplicate=not column_series.is_unique,
             hasNan=column_series.hasnans,
@@ -101,21 +101,25 @@ class ColumnDescribe(BaseModel):
 
     @property
     def is_monotonic_increasing(self) -> bool:
-        return self.monotonicity == Monotonicity.MonotonicIncreasing
+        return self.monotonicity == Monotonicity.Increasing
 
     @property
     def is_monotonic_decreasing(self) -> bool:
-        return self.monotonicity == Monotonicity.MonotonicDecreasing
+        return self.monotonicity == Monotonicity.Decreasing
 
 
 class BulkInfoForConsistency(BaseModel):
-    """gather information from bulk to check the consistency"""
+    """gather information from bulk to check the consistency
+
+    class attributes:
+        - rowCount: number of rows
+        - curves: dictionary curve name/id <=> number of column for the curve
+        - reference: column description of the reference if known and provided, the index otherwise
+    """
 
     rowCount: int
-    """ number of rows """
 
     curves: Dict[str, int]
-    """ dictionary curve name/id <=> number of column for the curve """
 
     reference: Optional[ColumnDescribe]
 
