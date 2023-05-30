@@ -43,7 +43,7 @@ def test_column_describe_start_end_type(ref, in_values, types):
     for v in in_values:
         for t in types:
             d_input = {
-                "dType": t,
+                "dataType": t,
                 "name": "ref",
                 "hasDuplicate": False,
                 "hasNan": False,
