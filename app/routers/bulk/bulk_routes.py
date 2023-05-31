@@ -164,7 +164,7 @@ async def post_chunk_data(record_id: str,
 
     # process and store the data chunk
     try:
-        bulk_id, basic_describe = await bulk_io.write_chunk(
+        basic_describe = await bulk_io.write_chunk(
             get_ctx(),
             request.stream(),
             content_type,

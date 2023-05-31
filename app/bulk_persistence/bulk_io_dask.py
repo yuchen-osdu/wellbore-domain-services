@@ -78,6 +78,8 @@ async def _process_request_v1(
 
 
 class BulkIODask(BulkIO):
+    """implementation of bulk I/O using Dask"""
+
     def __init__(self, fast_track: bool):
         self._fast_track = fast_track
 
@@ -167,7 +169,7 @@ class BulkIODask(BulkIO):
         df_validator_func: DataFrameValidationFunc,
         record_id: str,
         session_id: UUID,
-    ) -> Tuple[str, BulkInfoForConsistency]:
+    ) -> BulkInfoForConsistency:
         dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
 
         # TODO for now return type does not match the return type hint, this will be fixed soon
