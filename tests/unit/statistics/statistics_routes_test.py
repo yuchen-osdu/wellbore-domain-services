@@ -1,10 +1,10 @@
 import anyio
 from datetime import datetime, timedelta
 from typing import List
-
+from aiohttp import ClientSession
 from httpx import AsyncClient
 
-from unittest.mock import PropertyMock, patch
+from unittest.mock import PropertyMock, patch, Mock, AsyncMock
 
 import numpy as np
 from natsort import natsorted
@@ -25,6 +25,7 @@ from app.bulk_persistence.statistics.models import (
     InternalStatisticsComputationMeta,
     StatisticsComputationMeta,
 )
+from conf import Config
 
 
 pytestmark = pytest.mark.statistics
@@ -122,6 +123,59 @@ async def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
         valid_record_with_bulk_response = await client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
         assert valid_record_with_bulk_response.status_code == 404
         assert valid_record_with_bulk_response.content == b'{"errorType":"DATA_NOT_FOUND","message":"Statistics do not exist"}'
+
+
+@pytest.fixture(scope='function')
+def enable_worker_fixture():
+    original_value = str(Config.service_host_wdms_worker.value)
+
+    Config.service_host_wdms_worker.value = "this is a non-null value"
+    yield
+    Config.service_host_wdms_worker.value = original_value
+
+
+@pytest.mark.anyio
+async def test_get_stats_with_worker(enable_worker_fixture, testing_app_local_chunking_no_consistency):
+
+    with patch.object(ClientSession, 'get', return_value=AsyncMock(name="toto")) as get_statistics_mock:
+        get_statistics_mock.return_value.__aenter__.return_value.status = 200
+        get_statistics_mock.return_value.__aenter__.return_value.read.return_value = b'raw bytes'
+
+        _, client = testing_app_local_chunking_no_consistency
+
+        valid_record_id = await _create_record(client, 'WellLog')
+        post_data_response = await post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
+        assert post_data_response.status_code == 200
+
+        await client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics')
+        get_statistics_mock.assert_called_once()
+
+        _args, _kwargs = get_statistics_mock.call_args
+        assert _kwargs["headers"] == {'Authorization': 'Bearer None', 'data-partition-id': None}
+        assert _kwargs["params"] == {"columns": []}
+        assert _args[0].startswith(f"this is a non-null value/data/{valid_record_id}/")
+
+
+@pytest.mark.anyio
+async def test_post_stats_with_worker(enable_worker_fixture, testing_app_local_chunking_no_consistency):
+
+    with patch.object(ClientSession, 'post', return_value=AsyncMock(name="post")) as post_statistics_mock:
+        post_statistics_mock.return_value.__aenter__.return_value.status = 200
+        post_statistics_mock.return_value.__aenter__.return_value.read.return_value = b'raw bytes'
+
+        _, client = testing_app_local_chunking_no_consistency
+
+        valid_record_id = await _create_record(client, 'WellLog')
+        post_data_response = await post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
+        assert post_data_response.status_code == 200
+        version = post_data_response.json()['recordIdVersions'][0].split(':')[-1]
+        compute_stats_response = await client.post(f"/ddms/v3/welllogs/{valid_record_id}/versions/{version}/data/statistics")
+
+        assert compute_stats_response.status_code == 200
+        post_statistics_mock.assert_called_once()
+        _args, _kwargs = post_statistics_mock.call_args
+        assert _kwargs["headers"] == {'Authorization': 'Bearer None', 'data-partition-id': None}
+        assert _args[0].startswith(f"this is a non-null value/data/{valid_record_id}/")
 
 
 @pytest.mark.anyio
