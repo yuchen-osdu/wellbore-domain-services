@@ -3,7 +3,7 @@ from aiohttp import ClientSession
 from fastapi import Response
 
 from app.helper.traces import with_trace
-from bulk_persistence import BulkURI, MimeTypes
+from app.bulk_persistence import MimeTypes
 
 
 class BulkStatisticWdmsWorker:

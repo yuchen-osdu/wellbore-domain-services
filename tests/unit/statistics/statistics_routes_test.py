@@ -1,16 +1,16 @@
 import anyio
-from datetime import datetime, timedelta
 from typing import List
-from aiohttp import ClientSession
 from httpx import AsyncClient
-
-from unittest.mock import PropertyMock, patch, Mock, AsyncMock
+from aiohttp import ClientSession
+from datetime import datetime, timedelta
 
 import numpy as np
-from natsort import natsorted
-import osdu.core.api.storage.exceptions as osdu_storage_exception
 import pandas as pd
+from natsort import natsorted
+
 import pytest
+from unittest.mock import PropertyMock, patch, AsyncMock
+import osdu.core.api.storage.exceptions as osdu_storage_exception
 
 from tests.unit.generate_data import generate_df
 from tests.unit.routers.chunking_test import (
@@ -19,13 +19,13 @@ from tests.unit.routers.chunking_test import (
     _create_record,
 )
 
+from app.conf import Config
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 from app.bulk_persistence.statistics.models import (
     BulkStatisticsStatus,
     InternalStatisticsComputationMeta,
     StatisticsComputationMeta,
 )
-from conf import Config
 
 
 pytestmark = pytest.mark.statistics

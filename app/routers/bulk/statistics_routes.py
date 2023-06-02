@@ -13,9 +13,10 @@
 # limitations under the License.
 
 from typing import Optional
+from fastapi.encoders import jsonable_encoder
 from fastapi import Query
-
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from starlette.responses import JSONResponse
 from odes_storage.models import Record
 
 from app.routers.record_utils import fetch_record_dependency, fetch_latest_version_record_dependency
@@ -26,18 +27,15 @@ from app.bulk_persistence.dask.dataframe_render import DataFrameRender
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
 from app.bulk_persistence import BulkStatistics, BulkDataStatisticsResponse, exceptions as statistics_exceptions
+from app.bulk_persistence import model_chunking
+from app.bulk_persistence.statistics.bulk_statistics_wdms_worker import BulkStatisticWdmsWorker
 
 from app.helper.traces import TracingRoute
 
-from fastapi.encoders import jsonable_encoder
-from starlette.responses import JSONResponse
-
+from app.conf import Config
 from app.model.osdu_record_id import WellLogId
-from app.bulk_persistence import model_chunking
-from bulk_persistence.statistics.bulk_statistics_wdms_worker import BulkStatisticWdmsWorker
-from conf import Config
 from app.context import Context, get_ctx
-from utils import get_http_client_session
+from app.utils import get_http_client_session
 
 router = APIRouter(route_class=TracingRoute)
 
