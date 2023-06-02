@@ -28,7 +28,6 @@ gc-containerize-gcr:
 gc-test-python:
   extends: .gc-variables
   stage: integration
-  image: python:3.8
   tags: ["osdu-small"]
   needs: ["gc-deploy"]
   script:
@@ -62,7 +61,6 @@ gc-test-python:
 gc-dev2-test-python:
   extends: .gc-dev2-variables
   stage: integration
-  image: python:3.8
   needs: ["gc-dev2-deploy"]
   script:
     - bash
