@@ -1,5 +1,6 @@
 from typing import Union, AsyncGenerator, Tuple, Optional
 from uuid import UUID
+from abc import ABC, abstractmethod
 
 from fastapi import Response
 from odes_storage.models import Record
@@ -13,9 +14,10 @@ from .bulk_uri import BulkURI
 from .model_chunking import GetDataParams
 
 
-class BulkIO:
+class BulkIO(ABC):
     """abstract class for bulk I/O"""
 
+    @abstractmethod
     async def write_bulk(
         self,
         ctx,
@@ -37,6 +39,7 @@ class BulkIO:
         """
         raise NotImplementedError()
 
+    @abstractmethod
     async def write_chunk(
         self,
         ctx,
@@ -58,6 +61,7 @@ class BulkIO:
         """
         raise NotImplementedError()
 
+    @abstractmethod
     async def write_complete_session(
         self,
         ctx,
@@ -77,6 +81,7 @@ class BulkIO:
         """
         raise NotImplementedError()
 
+    @abstractmethod
     async def read_data(
         self,
         ctx,

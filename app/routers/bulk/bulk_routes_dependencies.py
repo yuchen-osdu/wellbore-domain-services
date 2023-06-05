@@ -76,9 +76,17 @@ def get_bulk_id_access(request: Request) -> BulkIdAccess:
     return request.state.bulk_id_access
 
 
+def bulk_worker_host() -> str:
+    return Config.service_host_wdms_worker
+
+
+def is_bulk_worker_enabled() -> bool:
+    return bool(bulk_worker_host())
+
+
 async def get_bulk_io() -> BulkIO:
-    if Config.service_host_wdms_worker.value:
-        return BulkIOWdmsWorker(Config.service_host_wdms_worker.value, get_http_client_session("wdms_bulk_worker"))
+    if is_bulk_worker_enabled():
+        return BulkIOWdmsWorker(bulk_worker_host(), get_http_client_session("wdms_bulk_worker"))
     return BulkIODask(Config.enable_read_fast_track.value)
 
 

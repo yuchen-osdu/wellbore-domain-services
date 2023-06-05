@@ -1,10 +1,12 @@
 from typing import Union, AsyncGenerator, Tuple, List, Optional
+from uuid import UUID
 
 from aiohttp import ClientSession
 from fastapi import Response
 
 from odes_storage.models import Record
 
+from .sessions_storage import Session
 from .dask.errors import BulkWorkerError
 from .model_chunking import GetDataParams
 from .mime_types import MimeType
@@ -22,6 +24,27 @@ class BulkIOWdmsWorker(BulkIO):
     def __init__(self, host: str, http_session: ClientSession):
         self._host = host
         self._http_session = http_session
+
+    async def write_chunk(
+        self,
+        ctx,
+        data: Union[bytes, AsyncGenerator[bytes, None]],
+        content_type: MimeType,
+        df_validator_func: DataFrameValidationFunc,
+        record_id: str,
+        session_id: UUID,
+    ) -> BulkInfoForConsistency:
+        raise NotImplementedError("BulkIOWdmsWorker.write_chunk")
+
+    async def write_complete_session(
+        self,
+        ctx,
+        record: Record,
+        session: Session,
+        update_from_bulk_uri: Optional[BulkURI],
+        consistency_checks: DataConsistencyChecks,
+    ) -> str:
+        raise NotImplementedError("BulkIOWdmsWorker.write_complete_session")
 
     @with_trace("worker.read_data")
     async def read_data(
