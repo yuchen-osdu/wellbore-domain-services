@@ -73,6 +73,7 @@ class ColumnDescribe(BaseModel):
         if df.empty:
             reduced_df = pd.DataFrame()
             column_series = pd.Series()
+            reference_name = WDMS_INDEX_NAME
         else:
             if not reference_name or reference_name not in df:
                 reference_name = WDMS_INDEX_NAME
@@ -154,15 +155,21 @@ class BulkInfoForConsistency(BaseModel):
 
     @property
     def index_start(self) -> str:
-        return str(self.reference.start_end_df.index[0])
+        if self.reference is not None and len(self.reference.start_end_df.index):
+            return str(self.reference.start_end_df.index[0])
+        return ""
 
     @property
     def index_end(self) -> str:
-        return str(self.reference.start_end_df.index[-1])
+        if self.reference is not None and len(self.reference.start_end_df.index):
+            return str(self.reference.start_end_df.index[-1])
+        return ""
 
     @property
     def index_type(self) -> str:
-        return str(self.reference.start_end_df.index.dtype)
+        if self.reference is not None and len(self.reference.start_end_df.index):
+            return str(self.reference.start_end_df.index.dtype)
+        return ""
 
 
 class DataConsistencyChecks(ABC):

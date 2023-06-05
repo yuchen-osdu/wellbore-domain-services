@@ -1,6 +1,11 @@
 import pandas as pd
 import pytest
-from app.bulk_persistence.consistency_checks import DataConsistencyChecks, ColumnDescribe, Monotonicity
+from app.bulk_persistence.consistency_checks import (
+    DataConsistencyChecks,
+    ColumnDescribe,
+    Monotonicity,
+    BulkInfoForConsistency,
+)
 import numpy as np
 
 
@@ -35,10 +40,13 @@ def test_column_describe_monotonicity():
     assert ColumnDescribe.from_column(pd.DataFrame(), "MD").is_monotonic_increasing
 
 
-@pytest.mark.parametrize("ref, in_values, types", [
-    (1.1, ["1.1", 1.1], ["float", "float32", "float64"]),
-    (1, ["1", 1], ["int", "int32", "int64"]),
-])
+@pytest.mark.parametrize(
+    "ref, in_values, types",
+    [
+        (1.1, ["1.1", 1.1], ["float", "float32", "float64"]),
+        (1, ["1", 1], ["int", "int32", "int64"]),
+    ],
+)
 def test_column_describe_start_end_type(ref, in_values, types):
     for v in in_values:
         for t in types:
@@ -47,7 +55,7 @@ def test_column_describe_start_end_type(ref, in_values, types):
                 "name": "ref",
                 "hasDuplicate": False,
                 "hasNan": False,
-                "startEnd": {"columns": ["ref"], "data": [[v]]}
+                "startEnd": {"columns": ["ref"], "data": [[v]]},
             }
 
             cd = ColumnDescribe(**d_input)
@@ -55,3 +63,15 @@ def test_column_describe_start_end_type(ref, in_values, types):
             assert np.isclose(cd.start, ref)
             assert np.isclose(ref, cd.end)
             assert np.isclose(cd.end, ref)
+
+
+def test_bulk_info_for_consistency():
+    obj = BulkInfoForConsistency.from_dataframe(pd.DataFrame())
+    assert obj.index_start == ""
+    assert obj.index_end == ""
+    assert obj.index_type == ""
+
+    obj = BulkInfoForConsistency.from_dataframe(pd.DataFrame({"MD": [17]}, index=[42]), "MD")
+    assert obj.index_start == "42"
+    assert obj.index_end == "42"
+    assert "int" in obj.index_type
