@@ -56,7 +56,7 @@ def test_set_bulk_uri_merge_extension_properties():
 
 
 @pytest.mark.anyio
-async def test_get_bulk_io():
+async def test_get_bulk_io_dependency():
     with patch("app.routers.bulk.bulk_routes_dependencies.bulk_worker_host", return_value="mock_host"):
         inst = await get_bulk_io()
         assert isinstance(inst, BulkIOWdmsWorker)
@@ -70,3 +70,9 @@ async def test_get_bulk_io():
         assert isinstance(await get_bulk_io_write_no_session(), BulkIODask)
         assert isinstance(await get_bulk_io_read(), BulkIODask)
         assert isinstance(await get_bulk_io_write_with_session(), BulkIODask)
+
+    # by default
+    assert isinstance(await get_bulk_io(), BulkIODask)
+    assert isinstance(await get_bulk_io_write_no_session(), BulkIODask)
+    assert isinstance(await get_bulk_io_read(), BulkIODask)
+    assert isinstance(await get_bulk_io_write_with_session(), BulkIODask)

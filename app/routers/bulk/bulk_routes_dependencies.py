@@ -77,7 +77,7 @@ def get_bulk_id_access(request: Request) -> BulkIdAccess:
 
 
 def bulk_worker_host() -> str:
-    return Config.service_host_wdms_worker
+    return Config.service_host_wdms_worker.value
 
 
 def is_bulk_worker_enabled() -> bool:
