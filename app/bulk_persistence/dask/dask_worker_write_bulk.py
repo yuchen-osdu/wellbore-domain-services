@@ -1,4 +1,3 @@
-from typing import List
 import json
 
 import fsspec
@@ -18,7 +17,7 @@ from .errors import BulkNotProcessable, BulkSaveException
 from . import storage_path_builder as path_builder
 from . import session_file_meta as session_meta
 
-from ..consistency_checks import DataConsistencyChecks
+from ..consistency_checks import DataConsistencyChecks, BulkInfoForConsistency
 
 """
 Contains functions related to writing bulk that mean to be run inside worker
@@ -49,7 +48,7 @@ def write_bulk_without_session(data_handle,
                                storage_options,
                                consistency_checks: DataConsistencyChecks,
                                record: "Record",
-                               ) -> DataframeBasicDescribe:
+                               ) -> BulkInfoForConsistency:
     """
         process post data outside of a session - write data straight to blob storage
 
@@ -84,7 +83,7 @@ def write_dataframe_without_session(df,
                                     storage_options,
                                     consistency_checks: DataConsistencyChecks,
                                     record: "Record"
-                                    ) -> DataframeBasicDescribe:
+                                    ) -> BulkInfoForConsistency:
 
     # 2- input dataframe validation
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
@@ -106,7 +105,7 @@ def write_dataframe_without_session(df,
         raise BulkSaveException('Unexpected error and save bulk') from e
 
     # 4- return basic describe
-    return basic_describe(df)
+    return BulkInfoForConsistency.from_dataframe(df, None)
 
 
 def add_chunk_in_session(data_handle,
@@ -139,7 +138,8 @@ def add_chunk_in_session(data_handle,
     # 2- perf some check
     assert_df_validate(df, [df_validator_func, validate_number_of_columns, columns_not_in_reserved_names, validate_index])
 
-    # sort column by names and set index column name  # TODO could it be avoided ? then we could keep input untouched and save serialization step?
+    # sort column by names and set index column name
+    # TODO could it be avoided ? then we could keep input untouched and save serialization step?
     df = df[sorted(df.columns)]
     df.index.name = WDMS_INDEX_NAME
 

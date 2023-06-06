@@ -21,7 +21,7 @@ from odes_storage.models import CreateUpdateRecordsResponse, RecordVersions, Rec
 from app.clients.storage_service_client import get_storage_record_service
 from app.consistency import DuplicatedStationProperties, check_trajectory_consistency
 from app.model.osdu_record_id import split_record_id_version, WellboreTrajectoryId
-from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess, get_bulk_id_access
+from app.routers.bulk.bulk_routes_dependencies import BulkIdAccess, get_bulk_id_access
 from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.delete.delete_bulk_data import delete_record

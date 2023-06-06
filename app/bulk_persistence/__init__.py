@@ -42,9 +42,10 @@ from .dask.dask_bulk_storage_local import (
     make_local_dask_storage_parameters,
 )
 
-# bulk reader
-from .bulk_reader_dask import BulkReaderDask
-from .bulk_reader_wdms_worker import BulkReaderWdmsWorker
+# bulk IO
+from .bulk_io import BulkIO
+from .bulk_io_dask import BulkIODask
+from .bulk_io_wdms_worker import BulkIOWdmsWorker
 
 from .dask.errors import (
     BulkCurvesNotFound,

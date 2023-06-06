@@ -19,7 +19,7 @@ import asyncio
 
 from app.clients import StorageRecordServiceClient
 from app.clients.storage_service_client import get_storage_record_service
-from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
+from app.routers.bulk.bulk_routes_dependencies import BulkIdAccess
 
 from app.routers.record_utils import fetch_record
 from app.context import Context

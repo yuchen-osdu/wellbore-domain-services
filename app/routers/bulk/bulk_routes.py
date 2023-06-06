@@ -15,14 +15,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Body
 
-from osdu.core.api.storage.exceptions import ResourceNotFoundException
-from app.conf import Config
-
 from app.model.osdu_record_id import split_record_id_version
 from app.context import Context, get_ctx
-from app.utils import OpenApiHandler, get_http_client_session
+from app.utils import OpenApiHandler
 from app.helper.traces import TracingRoute
-from app.helper.logger import get_logger
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_READ,
@@ -36,12 +32,8 @@ from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, Ge
 
 from ..common_parameters import sessions_body_examples, successful_get_bulk_data_responses_examples
 
-from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
-from app.routers.bulk.utils import (with_dask_blob_storage,
-                                    get_df_validation_func,
-                                    set_bulk_field_and_send_record,
-                                    get_data_consistency_checks)
-from app.routers.bulk.statistics_routes_dependencies import is_statistics_computation_enabled
+from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess
+from app.routers.bulk.utils import get_df_validation_func, set_bulk_field_and_send_record, get_data_consistency_checks
 
 # imports for session manipulation
 from app.bulk_persistence import (
@@ -60,20 +52,23 @@ from app.routers.sessions import (
 )
 
 # imports from bulk persistence
-from app.bulk_persistence import (DataFrameValidationFunc, no_validation,
+from app.bulk_persistence import (DataFrameValidationFunc,
                                   JSONOrient,
-                                  download_bulk,
-                                  DaskBulkStorage,
                                   MimeType,
                                   trace_dataframe_attributes, trace_attributes_root_span,
                                   BulkError, BulkRecordNotFound,
                                   DataConsistencyChecks,
-                                  BulkStatistics,
                                   GetDataParams,
                                   DataframeBasicDescribe,
                                   MAX_COLUMNS_RETURN,
-                                  BulkReaderDask,
-                                  BulkReaderWdmsWorker)
+                                  )
+
+from .bulk_routes_dependencies import (
+    BulkIO, get_bulk_io_read,
+    get_bulk_io_write_no_session,
+    get_bulk_io_write_with_session,
+)
+
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
 
@@ -101,22 +96,20 @@ async def post_data(record_id: str,
                     request: Request,
                     content_type: MimeType = Depends(write_bulk_content_type),
                     ctx: Context = Depends(get_ctx),
-                    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+                    bulk_io: BulkIO = Depends(get_bulk_io_write_no_session),
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
                     get_record: GetRecordFunction = Depends(FetchRecordDependency()),
-                    stats_computation_enabled: bool = Depends(is_statistics_computation_enabled),
                     ):
-    """
-    Handle a post data outside a session. The given bulk will fully replace any existing one
-    """
+    """ Handle a post data outside a session. The given bulk will fully replace any existing one """
     record = await get_record(record_id, None)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
 
     # process and store the data
     try:
-        bulk_id, basic_describe = await dask_blob_storage.post_data_without_session(
+        bulk_id, basic_describe = await bulk_io.write_bulk(
+            ctx,
             data=request.stream(),
             content_type=content_type,
             df_validator_func=df_validation_func,
@@ -132,13 +125,6 @@ async def post_data(record_id: str,
                                                                   bulk_id=bulk_id,
                                                                   record=record,
                                                                   bulk_uri_access=bulk_uri_access)
-
-    if stats_computation_enabled:
-        _, updated_record_version = split_record_id_version(update_record_response.record_id_versions[0])
-        try:
-            await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_id, updated_record_version)
-        except Exception:
-            get_logger().exception(f"Statistics computation failed for record '{record.id}' with bulk id '{bulk_id}'")
 
     return update_record_response
     # TODO proposal: adding basic describe of data that has been stored
@@ -166,7 +152,7 @@ async def post_chunk_data(record_id: str,
                           request: Request,
                           content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
-                          dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+                          bulk_io: BulkIO = Depends(get_bulk_io_write_with_session),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                           ) -> DataframeBasicDescribe:
     # fetch the session
@@ -178,7 +164,8 @@ async def post_chunk_data(record_id: str,
 
     # process and store the data chunk
     try:
-        bulk_id, basic_describe = await dask_blob_storage.add_chunk_in_session(
+        basic_describe = await bulk_io.write_chunk(
+            get_ctx(),
             request.stream(),
             content_type,
             df_validation_func,
@@ -197,7 +184,8 @@ GET_DATA_DESCRIPTION = f"""
 Multiple media types response are available ("application/json", "application/x-parquet").  
 The desired format can be specify in the "Accept" header, default is Parquet.  
 When bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  
-The requested columns must not exceed {MAX_COLUMNS_RETURN}. The query parameter __curves__ can be use to limit the number of columns."""
+The requested columns must not exceed {MAX_COLUMNS_RETURN}. 
+The query parameter __curves__ can be use to limit the number of columns."""
 
 
 @router.get(
@@ -218,7 +206,7 @@ async def get_data_version(
     data_param: GetDataParams = Depends(),
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
-    ctx: Context = Depends(get_ctx),
+    bulk_io: BulkIO = Depends(get_bulk_io_read),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     get_record: GetRecordFunction = Depends(FetchRecordPartialDependency())
 ):
@@ -235,13 +223,7 @@ async def get_data_version(
         if not bulk_uri.is_valid():
             raise BulkRecordNotFound(record_id=record_id, bulk_id=None)
 
-        # by default use Dask bulk reader
-        reader = BulkReaderDask(Config.enable_read_fast_track.value)
-        if Config.service_host_wdms_worker.value:
-            reader = BulkReaderWdmsWorker(Config.service_host_wdms_worker.value,
-                                          get_http_client_session("wdms_bulk_worker"))
-
-        return await reader.read_data(ctx, record_id, bulk_uri, data_param, accept_type, orient)
+        return await bulk_io.read_data(get_ctx(), record_id, bulk_uri, data_param, accept_type, orient)
 
     except BulkError as ex:
         ex.raise_as_http()
@@ -265,7 +247,7 @@ async def get_data(
     ctrl_p: GetDataParams = Depends(),
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
-    ctx: Context = Depends(get_ctx),
+    bulk_io: BulkIO = Depends(get_bulk_io_read),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     get_record: GetRecordFunction = Depends(FetchRecordPartialDependency())
 ):
@@ -275,7 +257,7 @@ async def get_data(
                                   ctrl_p,
                                   accept_type,
                                   orient,
-                                  ctx,
+                                  bulk_io,
                                   bulk_uri_access,
                                   get_record)
 
@@ -293,13 +275,12 @@ async def complete_session(
     record_id: str,
     session_id: UUID,
     request: Request,
+    ctx: Context = Depends(get_ctx),
     update_request: UpdateSessionState = Body(..., examples=sessions_body_examples),
     with_session: WithSessionStorages = Depends(get_session_dependencies),
-    dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
-    ctx: Context = Depends(get_ctx),
+    bulk_io: BulkIO = Depends(get_bulk_io_write_with_session),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
-    stats_computation_enabled: bool = Depends(is_statistics_computation_enabled),
 ) -> CommitSessionResponse:
     tenant = with_session.tenant
     sessions_storage = with_session.sessions_storage
@@ -316,10 +297,9 @@ async def complete_session(
 
                 record = await fetch_record(ctx, record_id, i_session.session.fromVersion)
                 DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
-                previous_bulk_id = None
+                previous_bulk_uri = None
 
                 if i_session.session.mode == SessionUpdateMode.Update:
-
                     try:
                         previous_bulk_uri = bulk_uri_access.get_bulk_uri(record)  # TODO PATH logv2
                     except ValueError:
@@ -327,27 +307,11 @@ async def complete_session(
                                             detail=f'Record with version {i_session.session.fromVersion} from which '
                                                    f'update contains an invalid bulk URI')
 
-                    if previous_bulk_uri.is_bulk_storage_V0():
-                        try:
-                            data, content_type = await download_bulk(ctx, previous_bulk_uri.bulk_id)
-                            # convert old bulk to new one
-                            previous_bulk_id, _ = await dask_blob_storage.post_data_without_session(
-                                data=data,
-                                content_type=content_type,
-                                df_validator_func=no_validation,
-                                consistency_checks=consistency_checks,
-                                record=record)
-                        except BulkError as ex:
-                            ex.raise_as_http()
-                        except ResourceNotFoundException:
-                            BulkRecordNotFound(record_id=record_id, bulk_id=previous_bulk_id).raise_as_http()
-
-                    else:
-                        previous_bulk_id = previous_bulk_uri.bulk_id
-
-                new_bulk_id = await dask_blob_storage.session_commit(i_session.session, previous_bulk_id)
-
-                await consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id)
+                new_bulk_id = await bulk_io.write_complete_session(ctx,
+                                                                   record,
+                                                                   i_session.session,
+                                                                   previous_bulk_uri,
+                                                                   consistency_checks)
                 # ==============>
                 # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
                 # ==============>
@@ -359,13 +323,6 @@ async def complete_session(
             _, updated_version = split_record_id_version(new_record.record_id_versions[0])
             if updated_version is None:
                 raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
-
-            if stats_computation_enabled:
-                try:
-                    await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, new_bulk_id, updated_version)
-                except Exception:
-                    get_logger().exception(
-                        f"Statistics computation failed for record '{record.id}' with bulk id '{new_bulk_id}'")
 
             response = CommitSessionResponse(
                 **i_session.session.dict(exclude_unset=True, by_alias=True),

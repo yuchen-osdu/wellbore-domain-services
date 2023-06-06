@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 from enum import Enum
 
 import pandas as pd
@@ -83,6 +83,12 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         SamplingStart is close to top reference value with 1e-9% tolerance
         SamplingStop is close to bottom reference value with 1e-9% tolerance
     """
+
+    @classmethod
+    def get_reference_curve(cls, record: Record) -> Optional[str]:
+        if not record.data:
+            return None
+        return record.data.get(WellLogProperties.REFERENCE_CURVE_ID)
 
     @classmethod
     def check_bulk_consistency(cls, record: Record, bulk_info: BulkInfoForConsistency):

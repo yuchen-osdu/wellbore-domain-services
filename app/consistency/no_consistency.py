@@ -1,9 +1,14 @@
+from typing import Optional
 import pandas as pd
 from odes_storage.models import Record
 from app.bulk_persistence import DataConsistencyChecks, BulkInfoForConsistency
 
 
 class NoConsistencyChecks(DataConsistencyChecks):
+    @classmethod
+    def get_reference_curve(cls, record: Record) -> Optional[str]:
+        return None
+
     @classmethod
     def check_bulk_consistency(cls, record: Record, bulk_info: BulkInfoForConsistency):
         pass

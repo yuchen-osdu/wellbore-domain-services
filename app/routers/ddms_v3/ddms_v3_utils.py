@@ -4,31 +4,10 @@ from typing import List
 from fastapi import HTTPException
 from odes_storage import UnexpectedResponse
 from odes_storage.models import Record
-from pydantic import validate_model
 from starlette import status
 
 from app.model.entity_utils import get_kind_meta
-from app.model.osdu_model import (
-    Well,
-    Wellbore,
-    WellboreMarkerSet,
-    WellboreMarkerSet110,
-    WellboreTrajectory,
-    WellboreTrajectory110,
-    WellLog,
-    WellLog110,
-    WellLog120,
-    Well110,
-    Well120,
-    Wellbore110,
-    WellboreMarkerSet120,
-    Wellbore111,
-    Wellbore120,
-    Wellbore130,
-    WellboreMarkerSet121,
-    WellboreIntervalSet100
-)
-from app.routers.bulk.bulk_uri_dependencies import BulkIdAccess
+from app.routers.bulk.bulk_routes_dependencies import BulkIdAccess
 from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 

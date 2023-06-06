@@ -51,7 +51,7 @@ from app.model.entity_utils import Entity
 # ---------- import Routers ----------------------------------
 from app.routers import about, probes, sessions
 from app.routers.bulk import bulk_routes, statistics_routes
-from app.routers.bulk.bulk_uri_dependencies import (
+from app.routers.bulk.bulk_routes_dependencies import (
     set_log_bulk_id_access,
     set_osdu_bulk_id_access,
 )

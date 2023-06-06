@@ -19,15 +19,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from odes_storage.models import Record
 
 from app.routers.record_utils import fetch_record_dependency, fetch_latest_version_record_dependency
-from app.routers.bulk.bulk_uri_dependencies import get_bulk_id_access, BulkIdAccess
-from app.routers.bulk.utils import with_dask_blob_storage
+from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess
 from app.bulk_persistence.dask.dataframe_render import DataFrameRender
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
 from app.bulk_persistence import BulkStatistics, BulkDataStatisticsResponse, exceptions as statistics_exceptions
 
-from app.helper.traces import TracingRoute
+from app.helper.traces import TracingRoute, with_trace
+from app.context import get_ctx
 
 from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
@@ -87,6 +87,11 @@ Data types supported:
             - float  
             - date  
 """
+
+
+@with_trace("with_dask_blob_storage")
+async def with_dask_blob_storage() -> DaskBulkStorage:
+    return await get_ctx().app_injector.get(DaskBulkStorage)
 
 
 @router.get(

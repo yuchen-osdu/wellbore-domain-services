@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import pandas as pd
 from dask.dataframe.core import DataFrame as DaskDataFrame
@@ -68,34 +68,38 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
     reference_trajectory_station_property_type_id = ":reference-data--TrajectoryStationPropertyType:MD:"
 
     @classmethod
-    def check_bulk_consistency(cls, record: Record, bulk_info: BulkInfoForConsistency):
-        if not record.data:
-            return
+    def get_reference_curve(cls, record: Record) -> Optional[str]:
+        record_data = record.data
+        if record_data is None:
+            return None
 
-        cls._check_columns_consistency(record.data, bulk_info.curves)
-
-        reference_name = cls._get_reference_name(record.data)
-        if not reference_name:
-            return
-
-        if bulk_info.reference is not None and reference_name == bulk_info.reference.name:
-            cls._check_reference(record, bulk_info.reference)
-
-    @staticmethod
-    def _get_reference_name(record_data: Dict):
         station_properties = record_data.get(AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY)
         if station_properties is None:
             return None
         for station in station_properties:
             if station and TRAJECTORY_STATION_PROPERTY_TYPE_ID in station:
                 if (
-                    station[TRAJECTORY_STATION_PROPERTY_TYPE_ID]
-                    and TrajectoryDataConsistencyChecks.reference_trajectory_station_property_type_id
-                    in station[TRAJECTORY_STATION_PROPERTY_TYPE_ID]
+                        station[TRAJECTORY_STATION_PROPERTY_TYPE_ID]
+                        and TrajectoryDataConsistencyChecks.reference_trajectory_station_property_type_id
+                        in station[TRAJECTORY_STATION_PROPERTY_TYPE_ID]
                 ):
                     if "Name" in station and station["Name"]:
                         return station["Name"]
         return None
+
+    @classmethod
+    def check_bulk_consistency(cls, record: Record, bulk_info: BulkInfoForConsistency):
+        if not record.data:
+            return
+
+        cls._check_columns_consistency(record.data, bulk_info.curves)
+
+        reference_name = cls.get_reference_curve(record)
+        if not reference_name:
+            return
+
+        if bulk_info.reference is not None and reference_name == bulk_info.reference.name:
+            cls._check_reference(record, bulk_info.reference)
 
     @classmethod
     @with_trace("bulk_consistency")
@@ -109,7 +113,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         if not record.data:
             return
 
-        reference_name = TrajectoryDataConsistencyChecks._get_reference_name(record.data)
+        reference_name = TrajectoryDataConsistencyChecks.get_reference_curve(record)
         if reference_name not in df.columns:
             reference_name = None
 
@@ -131,7 +135,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         curve_sizes = DataConsistencyChecks._get_curve_name_and_column_count(schema.keys())
         cls._check_columns_consistency(record.data, curve_sizes)
 
-        reference_name = TrajectoryDataConsistencyChecks._get_reference_name(record.data)
+        reference_name = TrajectoryDataConsistencyChecks.get_reference_curve(record)
         if not reference_name:
             return
 

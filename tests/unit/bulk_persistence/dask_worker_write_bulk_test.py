@@ -6,7 +6,7 @@ import pytest
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from app.bulk_persistence import MimeTypes
+from app.bulk_persistence import MimeTypes, BulkInfoForConsistency
 from app.bulk_persistence.dask.utils import WDMS_INDEX_NAME
 
 from app.bulk_persistence.dask.dask_worker_write_bulk import (basic_describe,
@@ -124,7 +124,7 @@ def test_write_bulk_without_session_success(content_type):
         assert args[0].startswith('my_path')
         assert kwargs['storage_options'] == {'storage_opt1': 42}
 
-        assert result == basic_describe(df)
+        assert result == BulkInfoForConsistency.from_dataframe(df, None)
 
 
 @pytest.mark.parametrize("content_type", [
