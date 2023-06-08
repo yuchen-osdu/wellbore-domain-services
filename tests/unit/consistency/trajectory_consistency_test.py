@@ -9,7 +9,7 @@ from app.model.osdu_model import (
     WellboreTrajectory110,
     WellboreTrajectoryData110,
 )
-
+from tests.unit.test_utils import make_record
 
 KIND = "osdu:wks:work-product-component--WellboreTrajectory:1.0.0"
 LEGAL = AbstractLegalTags100(legaltags=["legal_tag"], otherRelevantDataCountries=["FR"], status="compliant")
@@ -150,5 +150,6 @@ mini_traj_data = {
     ],
 )
 def test_get_reference_name(trajectory_data, expected):
-    computed = TrajectoryDataConsistencyChecks._get_reference_name(trajectory_data.dict())
+    record = make_record(data=trajectory_data.dict())
+    computed = TrajectoryDataConsistencyChecks.get_reference_curve(record)
     assert computed == expected

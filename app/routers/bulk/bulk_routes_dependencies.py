@@ -1,0 +1,100 @@
+import abc
+from abc import ABC
+from typing import Optional
+from fastapi import Request
+
+from app.bulk_persistence import BulkURI, BulkIO, BulkIODask, BulkIOWdmsWorker
+from app.model.log_bulk import LogBulkHelper
+from app.conf import Config
+from app.utils import get_http_client_session
+
+
+BULK_URI_FIELD = "bulkURI"
+
+
+class BulkIdAccess(ABC):
+    @staticmethod
+    @abc.abstractmethod
+    def get_bulk_uri(record) -> BulkURI:
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def set_bulk_uri(record, bulk_id: str):
+        ...
+
+
+class OsduBulkIdAccess(BulkIdAccess):
+    @staticmethod
+    def get_bulk_uri(record) -> BulkURI:
+        bulk_uri = None
+        if hasattr(record, "data") and isinstance(record.data, dict):
+            extension_properties = record.data.get("ExtensionProperties", None)
+            if extension_properties:
+                wdms = extension_properties.get("wdms", None)
+                bulk_uri = wdms.get(BULK_URI_FIELD, None) if wdms else None
+        elif (
+            hasattr(record, "data")
+            and hasattr(record.data, "ExtensionProperties")
+            and isinstance(record.data.ExtensionProperties, dict)
+        ):
+            wdms = record.data.ExtensionProperties.get("wdms", None)
+            bulk_uri = wdms.get(BULK_URI_FIELD, None) if wdms else None
+        return BulkURI.decode(bulk_uri)
+
+    @staticmethod
+    def set_bulk_uri(record, bulk_id: str):
+        if not record.data.get("ExtensionProperties", None):
+            record.data["ExtensionProperties"] = {}
+        elif not record.data["ExtensionProperties"].get("wdms", None):
+            record.data["ExtensionProperties"]["wdms"] = {}
+        bulk_uri = BulkURI.from_bulk_storage_V1(bulk_id=bulk_id)
+        record.data.setdefault("ExtensionProperties", {}).setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
+
+
+class LogBulkIdAccess(BulkIdAccess):
+    @staticmethod
+    def get_bulk_uri(record, custom_bulk_id_path: Optional[str] = None) -> BulkURI:
+        return LogBulkHelper.get_bulk_uri(record=record, custom_bulk_id_path=custom_bulk_id_path)
+
+    @staticmethod
+    def set_bulk_uri(record, bulk_id: str):
+        LogBulkHelper.update_bulk_uri(record=record, bulk_uri=BulkURI.from_bulk_storage_V1(bulk_id=bulk_id))
+
+
+async def set_log_bulk_id_access(request: Request):
+    request.state.bulk_id_access = LogBulkIdAccess
+
+
+async def set_osdu_bulk_id_access(request: Request):
+    request.state.bulk_id_access = OsduBulkIdAccess
+
+
+def get_bulk_id_access(request: Request) -> BulkIdAccess:
+    if not getattr(request.state, "bulk_id_access", None):
+        raise RuntimeError("bulk_id_access dependency is not defined")
+    return request.state.bulk_id_access
+
+
+def bulk_worker_host() -> str:
+    return Config.service_host_wdms_worker.value
+
+
+def is_bulk_worker_enabled() -> bool:
+    return bool(bulk_worker_host())
+
+
+async def get_bulk_io() -> BulkIO:
+    if is_bulk_worker_enabled():
+        return BulkIOWdmsWorker(bulk_worker_host(), get_http_client_session("wdms_bulk_worker"))
+    return BulkIODask(Config.enable_read_fast_track.value)
+
+
+async def get_bulk_io_dask() -> BulkIO:
+    return BulkIODask(Config.enable_read_fast_track.value)
+
+
+# still WIP so explicitly distinguish read, write without session and write inside session
+get_bulk_io_read = get_bulk_io
+get_bulk_io_write_no_session = get_bulk_io
+get_bulk_io_write_with_session = get_bulk_io_dask

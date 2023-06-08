@@ -4,12 +4,9 @@ from time import process_time
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from fastapi import HTTPException
-
 from app.bulk_persistence import JSONOrient, MimeTypes, GetDataParams, DataframeDescribe
 from app.bulk_persistence.dask.errors import BulkCurvesNotFound
 from app.bulk_persistence.dask.dataframe_render import DataFrameRender
-from app.routers.bulk.utils import get_df_from_request
 from tests.unit.generate_data import generate_df
 
 
@@ -130,44 +127,3 @@ async def test_df_render_describe():
     assert type(response) is DataframeDescribe
     assert response.columns == columns
     assert response.numberOfRows == 100
-
-
-class RequestMock:
-    def __init__(self, headers: dict = {}, body=None):
-        self.headers = headers
-        self.body_content = body
-
-    async def body(self):
-        return self.body_content
-
-
-@pytest.mark.anyio
-async def test_get_df_from_request_parquet(basic_dataframe):
-    request = RequestMock({"Content-Type": "application/x-parquet"},
-                          basic_dataframe.to_parquet(engine='pyarrow', index=True))
-
-    actual_df = await get_df_from_request(request)
-    assert_frame_equal(basic_dataframe, actual_df)
-
-
-@pytest.mark.anyio
-async def test_get_df_from_request_json(basic_dataframe):
-    request = RequestMock({"Content-Type": "application/json"},
-                          basic_dataframe.to_json(orient='split'))
-
-    actual_df = await get_df_from_request(request)
-    assert_frame_equal(basic_dataframe, actual_df)
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize("content_type, status", [
-    ("application/json", 422),
-    ("application/x-parquet", 422),
-    ("image/jpeg", 400)
-])
-async def test_get_df_from_request_invalid_raise(content_type, status):
-    request = RequestMock({"Content-Type": content_type}, b'some invalid data')
-    with pytest.raises(HTTPException) as ex_info:
-        await get_df_from_request(request)
-    exception = ex_info.value
-    assert exception.status_code == status

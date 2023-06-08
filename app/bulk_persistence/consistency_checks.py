@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field, PrivateAttr
 from odes_storage.models import Record
 
 from .dask.errors import BulkError
+from .dask.utils import WDMS_INDEX_NAME
+from .dataframe_columns import group_curve_columns
 
 
 class ConsistencyException(BulkError):
@@ -46,6 +48,7 @@ class ColumnDescribe(BaseModel):
     # private attributes
     _start: Any = PrivateAttr(None)
     _end: Any = PrivateAttr(None)
+    _start_end_df: Any = PrivateAttr(None)
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -63,16 +66,21 @@ class ColumnDescribe(BaseModel):
                 self._start, self._end = values[0], values[-1]
             else:
                 self._start, self._end = values[0], values[0]
+        self._start_end_df = df
 
     @classmethod
-    def from_column(cls, df: pd.DataFrame, reference_name: str) -> "ColumnDescribe":
-        if df.empty or reference_name not in df:
+    def from_column(cls, df: pd.DataFrame, reference_name: Optional[str]) -> "ColumnDescribe":
+        if df.empty:
             reduced_df = pd.DataFrame()
             column_series = pd.Series()
+            reference_name = WDMS_INDEX_NAME
         else:
-            column_series = df[reference_name]
+            if not reference_name or reference_name not in df:
+                reference_name = WDMS_INDEX_NAME
             reduced_df = df.iloc[[0, -1]].copy() if len(df) > 1 else df.copy()
+            reduced_df[WDMS_INDEX_NAME] = reduced_df.index
             reduced_df = reduced_df[[reference_name]]
+            column_series = df[reference_name] if reference_name in df else df.index
 
         return cls(
             name=reference_name,
@@ -94,6 +102,10 @@ class ColumnDescribe(BaseModel):
     @property
     def end(self) -> Any:
         return self._end
+
+    @property
+    def start_end_df(self) -> pd.DataFrame:
+        return self._start_end_df
 
     @property
     def is_monotonic(self) -> bool:
@@ -123,10 +135,51 @@ class BulkInfoForConsistency(BaseModel):
 
     reference: Optional[ColumnDescribe]
 
+    @classmethod
+    def from_dataframe(cls, df: pd.DataFrame, reference_curve: Optional[str] = None) -> "BulkInfoForConsistency":
+        curves = {c: len(v) for c, v in group_curve_columns(df.columns).items()}
+        return BulkInfoForConsistency(
+            rowCount=len(df),
+            curves=curves,
+            reference=ColumnDescribe.from_column(df, reference_curve)
+        )
+
+    # additional properties to ease migration from previous model DataframeBasicDescribe
+    @property
+    def row_count(self) -> int:
+        return self.rowCount
+
+    @property
+    def column_count(self) -> int:
+        return sum(self.curves.values())
+
+    @property
+    def index_start(self) -> str:
+        if self.reference is not None and len(self.reference.start_end_df.index):
+            return str(self.reference.start_end_df.index[0])
+        return ""
+
+    @property
+    def index_end(self) -> str:
+        if self.reference is not None and len(self.reference.start_end_df.index):
+            return str(self.reference.start_end_df.index[-1])
+        return ""
+
+    @property
+    def index_type(self) -> str:
+        if self.reference is not None and len(self.reference.start_end_df.index):
+            return str(self.reference.start_end_df.index.dtype)
+        return ""
+
 
 class DataConsistencyChecks(ABC):
     # regular expression pattern for extracting column name from bulk data column label
     _col_label_pattern = re.compile(r"^(?P<name>.+)\[(?P<start>[^:]+):?(?P<stop>.*)\]$")
+
+    @classmethod
+    @abstractmethod
+    def get_reference_curve(cls, record: Record) -> Optional[str]:
+        pass
 
     @classmethod
     @abstractmethod

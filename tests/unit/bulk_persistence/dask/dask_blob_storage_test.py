@@ -91,13 +91,12 @@ async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
 
 async def add_chunk(storage: DaskBulkStorage, session, df: pd.DataFrame):
     df_parquet_bytes = df.to_parquet()
-    bulkid, _ = await storage.add_chunk_in_session(
+    await storage.add_chunk_in_session(
         df_parquet_bytes,
         MimeTypes.PARQUET,
         no_validation,
         session.recordId,
         session.id)
-    return bulkid
 
 
 async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_id=None):

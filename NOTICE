@@ -255,7 +255,7 @@ The following software have components provided under the terms of this license:
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - exceptiongroup (from https://pypi.org/project/exceptiongroup/1.0.1/, https://pypi.org/project/exceptiongroup/1.1.1/)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
-- fastapi (from https://pypi.org/project/fastapi/0.86.0/, https://pypi.org/project/fastapi/0.95.2/)
+- fastapi (from https://pypi.org/project/fastapi/0.86.0/, https://pypi.org/project/fastapi/0.96.0/)
 - grpcio (from https://grpc.io)
 - h11
 - hypothesis (from https://hypothesis.works)
