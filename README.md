@@ -91,7 +91,7 @@ Note: container memory is not entirely dedicated to Dask workers, fastapi servic
 
     ```bash
     # Windows
-    source env/Scripts/activate
+    .\env\Scripts\activate
 
     # macOS/Linux
     source env/bin/activate
@@ -107,6 +107,12 @@ Note: container memory is not entirely dedicated to Dask workers, fastapi servic
 
     ```bash
     pip install -r requirements.txt -r requirements_dev.txt
+    ```
+
+    Note: If you encounter an error, ensure pip is updated to the latest version in the context of the virtual environment and install dependencies again.
+
+    ```bash
+    python -m pip install --upgrade pip
     ```
 
 6. Run the service
