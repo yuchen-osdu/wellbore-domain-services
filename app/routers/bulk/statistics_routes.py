@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, List
 from fastapi.encoders import jsonable_encoder
 from fastapi import Query
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -20,14 +20,17 @@ from starlette.responses import JSONResponse
 from odes_storage.models import Record
 
 from app.routers.record_utils import fetch_record_dependency, fetch_latest_version_record_dependency
-from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess
+from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess, get_bulk_io_read
 from app.bulk_persistence.dask.dataframe_render import DataFrameRender
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
 from app.bulk_persistence import BulkStatistics, BulkDataStatisticsResponse, exceptions as statistics_exceptions
 from app.bulk_persistence import model_chunking
-from app.bulk_persistence.statistics.bulk_statistics_wdms_worker import BulkStatisticWdmsWorker
+# from app.bulk_persistence.statistics.bulk_statistics_wdms_worker import BulkStatisticWdmsWorker
+
+from app.bulk_persistence import async_load_bulk_catalog_with_blob_storage
+from app.bulk_persistence import BulkIO
 
 from app.helper.traces import TracingRoute, with_trace
 from app.context import get_ctx
@@ -36,6 +39,7 @@ from app.conf import Config
 from app.model.osdu_record_id import WellLogId
 from app.context import Context, get_ctx
 from app.utils import get_http_client_session
+
 
 router = APIRouter(route_class=TracingRoute)
 
@@ -119,7 +123,7 @@ async def get_bulk_statistics(
         curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
                                       examples=model_chunking.curves_examples),
-        dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+        bulk_io: BulkIO = Depends(get_bulk_io_read),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         ctx: Context = Depends(get_ctx),
 ):
@@ -128,7 +132,7 @@ async def get_bulk_statistics(
                                              record=record,
                                              version=None,
                                              curves=curves,
-                                             dask_blob_storage=dask_blob_storage,
+                                             bulk_io=bulk_io,
                                              bulk_uri_access=bulk_uri_access,
                                              ctx=ctx)
 
@@ -147,25 +151,25 @@ class BulkStatisticsHTTPException(Exception):
         return {'errorType': self.error_type, 'message': self.message}
 
 
-async def get_statistics_with_dask(dask_blob_storage, catalog, record, bulk_uri, columns):
-    """ Get bulk data statistics using Dask storage to access data """
-    try:
-        stats_df, stats_meta = await BulkStatistics(dask_blob_storage).get_bulk_statistics(catalog, record.id,
-                                                                                           bulk_uri.bulk_id, columns)
-    except BulkRecordNotFound as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except (statistics_exceptions.StatisticsNotFoundError,
-            statistics_exceptions.RequestedCurvesError,
-            statistics_exceptions.ComputationNotCompleteError) as e:
-        raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND, error_type=e.public_error_type,
-                                          message=str(e))
-
-    # replace np.nan by string "NaN" to have unified str type values for std column
-    if not stats_df.empty:
-        stats_df['std'].fillna(value=str("NaN"), inplace=True)
-
-    # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
-    return BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
+# async def get_statistics_with_dask(dask_blob_storage, catalog, record_id: str, bulk_uri: str, columns: List[str]):
+#     """ Get bulk data statistics using Dask storage to access data """
+#     try:
+#         stats_df, stats_meta = await BulkStatistics(dask_blob_storage).get_bulk_statistics(catalog, record_id,
+#                                                                                            bulk_uri, columns)
+#     except BulkRecordNotFound as e:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+#     except (statistics_exceptions.StatisticsNotFoundError,
+#             statistics_exceptions.RequestedCurvesError,
+#             statistics_exceptions.ComputationNotCompleteError) as e:
+#         raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND, error_type=e.public_error_type,
+#                                           message=str(e))
+#
+#     # replace np.nan by string "NaN" to have unified str type values for std column
+#     if not stats_df.empty:
+#         stats_df['std'].fillna(value=str("NaN"), inplace=True)
+#
+#     # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
+#     return BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
 
 
 async def http_stats_error_handler(request, e: BulkStatisticsHTTPException) -> JSONResponse:
@@ -198,7 +202,7 @@ async def get_bulk_statistics_version(
         curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
                                       examples=model_chunking.curves_examples),
-        dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+        bulk_io: BulkIO = Depends(get_bulk_io_read),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         ctx: Context = Depends(get_ctx),
 ):
@@ -210,26 +214,25 @@ async def get_bulk_statistics_version(
     if not bulk_uri.is_valid():
         raise BulkRecordNotFound(record_id=record.id).raise_as_http()
 
-    requested_columns = []
+    curves_selection = []
     if curves:
-        requested_columns = filter(None, map(str.strip, curves.split(',')))
-        requested_columns = list(dict.fromkeys(requested_columns))
+        curves_selection = filter(None, map(str.strip, curves.split(',')))
+        curves_selection = list(dict.fromkeys(curves_selection))
 
-    catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_uri.bulk_id)
     try:
-        columns = DataFrameRender.get_matching_columns(requested_columns, set(catalog.all_columns_dtypes.keys()))
+        response = await bulk_io.get_statistics(ctx, record.id, bulk_uri.bulk_id, curves_selection)
     except BulkCurvesNotFound as e:
         raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                           error_type=statistics_exceptions.RequestedCurvesError.public_error_type,
                                           message=str(e))
-
-    if Config.service_host_wdms_worker.value:
-        return await BulkStatisticWdmsWorker(
-            Config.service_host_wdms_worker.value,
-            get_http_client_session("wdms_bulk_worker")
-        ).get_statistics(ctx, record_id, bulk_uri.bulk_id, columns)
-    else:
-        return await get_statistics_with_dask(dask_blob_storage, catalog, record, bulk_uri, columns)
+    except BulkRecordNotFound as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except (statistics_exceptions.StatisticsNotFoundError,
+            statistics_exceptions.RequestedCurvesError,
+            statistics_exceptions.ComputationNotCompleteError) as e:
+        raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND, error_type=e.public_error_type,
+                                          message=str(e))
+    return response
 
 
 @router.post(
@@ -252,7 +255,7 @@ async def compute_bulk_statistics(
         record_id: WellLogId,
         version: int,
         record: Record = Depends(fetch_record_dependency),
-        dask_blob_storage: DaskBulkStorage = Depends(with_dask_blob_storage),
+        bulk_io: BulkIO = Depends(get_bulk_io_read),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         ctx: Context = Depends(get_ctx),
 ):
@@ -265,13 +268,7 @@ async def compute_bulk_statistics(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI')
 
-    if Config.service_host_wdms_worker.value:
-        return await BulkStatisticWdmsWorker(
-            Config.service_host_wdms_worker.value,
-            get_http_client_session("wdms_bulk_worker")
-        ).compute_statistics(ctx, record_id, bulk_uri.bulk_id)
-
     try:
-        await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record.id, bulk_uri.bulk_id, record.version)
+        await bulk_io.post_statistics(ctx, record.id, bulk_uri.bulk_id, record.version)
     except statistics_exceptions.ComputationRunningError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))

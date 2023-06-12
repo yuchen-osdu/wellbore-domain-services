@@ -1,4 +1,4 @@
-from typing import Union, AsyncGenerator, Tuple, Optional
+from typing import Union, AsyncGenerator, Tuple, Optional, List
 from uuid import UUID
 from abc import ABC, abstractmethod
 
@@ -100,5 +100,41 @@ class BulkIO(ABC):
         :param accept_type: format requested, either JSON or parquet
         :param orient: if JSON, orient value
         :return: Response to forward directly (TODO: this need to be reviewed, response must be constructed in routers)
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def get_statistics(
+        self,
+        ctx,
+        record_id: str,
+        bulk_uri: str,
+        curves_selection: List[str],
+    ) -> Response:
+        """
+        Get data from a given record
+        :param ctx: context instance
+        :param record_id: record id as string
+        :param bulk_uri: bulk uri as string
+        :param curves_selection list of columns name requested by the user
+        :return: Return bulk statistics if exist
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def post_statistics(
+        self,
+        ctx,
+        record_id: str,
+        bulk_uri: str,
+        record_version: int,
+    ) -> Response:
+        """
+        Get data from a given record
+        :param ctx: context instance
+        :param record_id: record id as string
+        :param bulk_uri: bulk uri as string
+        :param record_version version of given record
+        :return: Return bulk statistics if exist
         """
         raise NotImplementedError()

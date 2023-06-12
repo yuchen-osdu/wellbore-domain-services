@@ -10,7 +10,7 @@ from app.bulk_persistence.bulk_persistence_config import MAX_COLUMNS_RETURN
 from app.helper.logger import get_logger
 from .models import StatisticsComputationMeta, BulkStatisticsStatus, InternalStatisticsComputationMeta
 
-from .. import DataframeSerializerSync
+from ..dataframe_serializer import DataframeSerializerSync
 from ..dask.traces import submit_with_trace
 from ..dask.bulk_catalog import BulkCatalog
 from ..dask.dask_bulk_storage import DaskBulkStorage, DASK_BACKGROUND_TASK_PRIORITY
