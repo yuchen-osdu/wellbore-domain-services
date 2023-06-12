@@ -21,24 +21,16 @@ from odes_storage.models import Record
 
 from app.routers.record_utils import fetch_record_dependency, fetch_latest_version_record_dependency
 from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess, get_bulk_io_read
-from app.bulk_persistence.dask.dataframe_render import DataFrameRender
 
 from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
 from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
-from app.bulk_persistence import BulkStatistics, BulkDataStatisticsResponse, exceptions as statistics_exceptions
+from app.bulk_persistence import BulkDataStatisticsResponse, exceptions as statistics_exceptions
 from app.bulk_persistence import model_chunking
-# from app.bulk_persistence.statistics.bulk_statistics_wdms_worker import BulkStatisticWdmsWorker
-
-from app.bulk_persistence import async_load_bulk_catalog_with_blob_storage
 from app.bulk_persistence import BulkIO
 
 from app.helper.traces import TracingRoute, with_trace
-from app.context import get_ctx
-
-from app.conf import Config
 from app.model.osdu_record_id import WellLogId
 from app.context import Context, get_ctx
-from app.utils import get_http_client_session
 
 
 router = APIRouter(route_class=TracingRoute)
@@ -149,27 +141,6 @@ class BulkStatisticsHTTPException(Exception):
 
     def to_dict(self):
         return {'errorType': self.error_type, 'message': self.message}
-
-
-# async def get_statistics_with_dask(dask_blob_storage, catalog, record_id: str, bulk_uri: str, columns: List[str]):
-#     """ Get bulk data statistics using Dask storage to access data """
-#     try:
-#         stats_df, stats_meta = await BulkStatistics(dask_blob_storage).get_bulk_statistics(catalog, record_id,
-#                                                                                            bulk_uri, columns)
-#     except BulkRecordNotFound as e:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-#     except (statistics_exceptions.StatisticsNotFoundError,
-#             statistics_exceptions.RequestedCurvesError,
-#             statistics_exceptions.ComputationNotCompleteError) as e:
-#         raise BulkStatisticsHTTPException(status_code=status.HTTP_404_NOT_FOUND, error_type=e.public_error_type,
-#                                           message=str(e))
-#
-#     # replace np.nan by string "NaN" to have unified str type values for std column
-#     if not stats_df.empty:
-#         stats_df['std'].fillna(value=str("NaN"), inplace=True)
-#
-#     # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
-#     return BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
 
 
 async def http_stats_error_handler(request, e: BulkStatisticsHTTPException) -> JSONResponse:
