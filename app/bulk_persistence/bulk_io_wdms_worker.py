@@ -160,7 +160,8 @@ class BulkIOWdmsWorker(BulkIO):
         :param ctx: context instance
         :param record_id: record id as string
         :param bulk_uri: bulk uri as string
-        :param record_version version of given record
+        :param record_version version of given record. Statistics meta-data contains the record's version
+        which triggers the statistics computation. But there is no knowledge of OSDU Record inside worker service.
         :return: Return bulk statistics if exist
         """
 
