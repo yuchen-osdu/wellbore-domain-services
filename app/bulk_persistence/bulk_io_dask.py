@@ -214,6 +214,7 @@ class BulkIODask(BulkIO):
         await consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id)
         return new_bulk_id
 
+    @with_trace("dask-get_statistics")
     async def get_statistics(
             self,
             ctx,
@@ -235,6 +236,7 @@ class BulkIODask(BulkIO):
         result = BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
         return JSONResponse(content=jsonable_encoder(result))
 
+    @with_trace("dask-post_statistics")
     async def post_statistics(
         self,
         ctx,

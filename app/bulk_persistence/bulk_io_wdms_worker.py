@@ -123,6 +123,7 @@ class BulkIOWdmsWorker(BulkIO):
             consistency_checks.check_bulk_consistency(record, describe)
             return bulk_id, describe
 
+    @with_trace("worker-get_statistics")
     async def get_statistics(
             self,
             ctx,
@@ -148,6 +149,7 @@ class BulkIOWdmsWorker(BulkIO):
                 media_type=MimeTypes.JSON.type,
             )
 
+    @with_trace("worker-post_statistics")
     async def post_statistics(
         self,
         ctx,
