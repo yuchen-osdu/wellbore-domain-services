@@ -1,4 +1,4 @@
-# Copyright 2021 Schlumberger
+# Copyright 2023 Schlumberger
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 {{- if .Values.ingress.enabled -}}
 {{$nameSuffix := include "os-wellbore-ddms.name-suffix" .}}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -36,9 +36,12 @@ spec:
   - http:
       paths:
       - backend:
-          serviceName: {{ .Values.deployment.name }}{{ $nameSuffix }}
-          servicePort: 80
+          service:
+            name: {{ .Values.deployment.name }}{{ $nameSuffix }}
+            port:
+              number: 80
         path: {{ include "os-wellbore-ddms.prefix" . }}/*
+        pathType: Prefix
 {{ if .Values.ingress.hosts.host }}
     host: {{ .Values.ingress.hosts.host }}
 {{ end }}  
