@@ -161,7 +161,7 @@ async def test_get_stats_with_worker(enable_worker_fixture, testing_app_local_ch
 async def test_post_stats_with_worker(enable_worker_fixture, testing_app_local_chunking_no_consistency):
 
     with patch.object(ClientSession, 'post', return_value=AsyncMock(name="post")) as post_statistics_mock:
-        post_statistics_mock.return_value.__aenter__.return_value.status = 200
+        post_statistics_mock.return_value.__aenter__.return_value.status = 209
         post_statistics_mock.return_value.__aenter__.return_value.read.return_value = b'raw bytes'
 
         app, client = testing_app_local_chunking_no_consistency
@@ -175,7 +175,7 @@ async def test_post_stats_with_worker(enable_worker_fixture, testing_app_local_c
 
         compute_stats_response = await client.post(f"/ddms/v3/welllogs/{valid_record_id}/versions/{record_version}/data/statistics")
 
-        assert compute_stats_response.status_code == 200
+        assert compute_stats_response.status_code == 209 # choose arbitrary code to ensure status code is returned
         post_statistics_mock.assert_called_once()
         _args, _kwargs = post_statistics_mock.call_args
         assert sorted(_kwargs["headers"].keys()) == sorted(["Authorization", "data-partition-id",  "correlation-id"])

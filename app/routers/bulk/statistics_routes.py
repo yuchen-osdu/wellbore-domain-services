@@ -240,6 +240,6 @@ async def compute_bulk_statistics(
                             detail='Record contains an invalid bulk URI')
 
     try:
-        await bulk_io.post_statistics(ctx, record.id, bulk_uri.bulk_id, record.version)
+        return await bulk_io.post_statistics(ctx, record.id, bulk_uri.bulk_id, record.version)
     except statistics_exceptions.ComputationRunningError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
