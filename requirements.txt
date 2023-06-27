@@ -140,7 +140,7 @@ distributed==2022.04.1
     # via dask
 dpath==2.1.5
     # via wellbore-schema-manipulation
-fastapi==0.94.1
+fastapi==0.95.2
     # via
     #   -r requirements.in
     #   osdu-data-ecosystem-schema
@@ -432,7 +432,7 @@ sniffio==1.2.0
     #   httpx
 sortedcontainers==2.4.0
     # via distributed
-starlette==0.26.1
+starlette==0.27.0
     # via fastapi
 structlog==21.1.0
     # via -r requirements.in
