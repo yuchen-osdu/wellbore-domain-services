@@ -131,3 +131,39 @@ async def test_context_current_in_thread_executor_anyio():
             tg.start_soon(foo)
 
 
+from bulk_persistence.bulk_io_wdms_worker import get_headers_from_ctx
+from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
+from opencensus.trace import tracer as open_tracer
+from unittest import mock
+
+@pytest.mark.parametrize("params, expected_result", [
+    ({}, {'Authorization': 'Bearer None', 'correlation-id': None, 'data-partition-id': None, 'x-app-id': None, 'x-user-id': None}),
+    ({
+         "correlation_id": 'my-correlation-id',
+         "request_id": 'my-request-id',
+         "auth": 'my-auth',
+         "partition_id": 'my-partition-id',
+         "x_user_id": 'my-x-user-id',
+         "x_app_id": "my-x-app-id"},
+     {
+         "Authorization": "Bearer my-auth",
+         "correlation-id": "my-correlation-id",
+         "data-partition-id": "my-partition-id",
+         "x-app-id": "my-x-app-id",
+         "x-user-id": "my-x-user-id"
+     }),
+    ({"tracer": open_tracer.Tracer()}, {
+        'Authorization': 'Bearer None',
+        'correlation-id': None,
+        'data-partition-id': None,
+        'traceparent': "my-traceparent-value",
+        'x-app-id': None,
+        'x-user-id': None
+    }),
+])
+def test_get_headers_from_ctx(params, expected_result):
+    created_ctx = Context(**params)
+
+    with mock.patch.object(TraceContextPropagator, "to_headers", return_value={"traceparent": "my-traceparent-value"}):
+        created_headers = get_headers_from_ctx(created_ctx)
+        assert created_headers == expected_result

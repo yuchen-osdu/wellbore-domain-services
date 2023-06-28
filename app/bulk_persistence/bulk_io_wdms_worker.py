@@ -167,12 +167,7 @@ class BulkIOWdmsWorker(BulkIO):
         :return: Return bulk statistics if exist
         """
 
-        headers = {
-            "data-partition-id": ctx.partition_id,
-            "Authorization": f"Bearer {ctx.auth}",
-            "correlation-id": ctx.correlation_id,
-            # todo: add forwarding of correlation id
-        }
+        headers = get_headers_from_ctx(ctx)
 
         async with self._http_session.post(
                 f"{self._host}/data/{record_id}/{bulk_uri}/statistics",
@@ -184,3 +179,31 @@ class BulkIOWdmsWorker(BulkIO):
                 status_code=response.status,
                 media_type=MimeTypes.JSON.type,
             )
+
+
+from context import Context
+from app.helper import traces
+from conf import (
+    CORRELATION_ID_HEADER_NAME,
+    X_USER_ID_HEADER_NAME,
+    PARTITION_ID_HEADER_NAME,
+    AUTHORIZATION_HEADER_NAME,
+    APP_ID_HEADER_NAME
+)
+
+
+def get_headers_from_ctx(ctx: Context):
+    """ Return headers enriched with context values and ensure requests tracing is forwarded """
+    headers = {
+        PARTITION_ID_HEADER_NAME: ctx.partition_id,
+        AUTHORIZATION_HEADER_NAME: f"Bearer {ctx.auth}",
+        CORRELATION_ID_HEADER_NAME: ctx.correlation_id,
+        X_USER_ID_HEADER_NAME: ctx.x_user_id,
+        APP_ID_HEADER_NAME: ctx.x_app_id,
+    }
+    if ctx.tracer:
+        # propagate current tracing context to outgoing request's headers
+        tracing_headers = traces.get_trace_propagator().to_headers(ctx.tracer.span_context)
+        headers.update(tracing_headers)
+
+    return headers
