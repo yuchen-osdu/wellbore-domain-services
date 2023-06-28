@@ -1,13 +1,17 @@
 from contextlib import suppress
-from typing import Optional, Union, AsyncGenerator, Tuple
 from uuid import UUID
+from typing import Optional, Union, AsyncGenerator, Tuple, List
 
-from fastapi import Response
 import pandas as pd
+from fastapi import Response
+from fastapi.encoders import jsonable_encoder
 
 from odes_storage.models import Record
+from starlette.responses import JSONResponse
 from osdu.core.api.storage.exceptions import ResourceNotFoundException
 
+from .statistics.bulk_statistics import BulkStatistics
+from .statistics.models import BulkDataStatisticsResponse
 from .read_fast_track import ReadFastTrackCaseNotSupportedException, read_data_fast_track
 from .model_chunking import GetDataParams
 from .mime_types import MimeType, MimeTypes
@@ -39,12 +43,12 @@ def _build_describe_response(describe):
 
 @with_trace("_process_request_v1")
 async def _process_request_v1(
-    record_id: str,
-    bulk_id: str,
-    data_param: GetDataParams,
-    filters: BulkReadFilters,
-    bulk_catalog: BulkCatalog,
-    dask_blob_storage: DaskBulkStorage,
+        record_id: str,
+        bulk_id: str,
+        data_param: GetDataParams,
+        filters: BulkReadFilters,
+        bulk_catalog: BulkCatalog,
+        dask_blob_storage: DaskBulkStorage,
 ):
     columns_to_load = None
     columns = bulk_catalog.all_columns
@@ -85,13 +89,13 @@ class BulkIODask(BulkIO):
 
     @with_trace("dask.read_data")
     async def read_data(
-        self,
-        ctx,
-        record_id: str,
-        bulk_uri: BulkURI,
-        data_param: GetDataParams,
-        accept_type: MimeType,
-        orient: Optional[JSONOrient],
+            self,
+            ctx,
+            record_id: str,
+            bulk_uri: BulkURI,
+            data_param: GetDataParams,
+            accept_type: MimeType,
+            orient: Optional[JSONOrient],
     ) -> Response:
         columns = None
         bulk_id = bulk_uri.bulk_id
@@ -144,13 +148,13 @@ class BulkIODask(BulkIO):
         )
 
     async def write_bulk(
-        self,
-        ctx,
-        data: Union[bytes, AsyncGenerator[bytes, None]],
-        content_type: MimeType,
-        df_validator_func: DataFrameValidationFunc,
-        consistency_checks: DataConsistencyChecks,
-        record: Record,
+            self,
+            ctx,
+            data: Union[bytes, AsyncGenerator[bytes, None]],
+            content_type: MimeType,
+            df_validator_func: DataFrameValidationFunc,
+            consistency_checks: DataConsistencyChecks,
+            record: Record,
     ) -> Tuple[str, BulkInfoForConsistency]:
         dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
         return await dask_blob_storage.post_data_without_session(
@@ -162,13 +166,13 @@ class BulkIODask(BulkIO):
         )
 
     async def write_chunk(
-        self,
-        ctx,
-        data: Union[bytes, AsyncGenerator[bytes, None]],
-        content_type: MimeType,
-        df_validator_func: DataFrameValidationFunc,
-        record_id: str,
-        session_id: UUID,
+            self,
+            ctx,
+            data: Union[bytes, AsyncGenerator[bytes, None]],
+            content_type: MimeType,
+            df_validator_func: DataFrameValidationFunc,
+            record_id: str,
+            session_id: UUID,
     ) -> BulkInfoForConsistency:
         dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
 
@@ -178,12 +182,12 @@ class BulkIODask(BulkIO):
         )
 
     async def write_complete_session(
-        self,
-        ctx,
-        record: Record,
-        session: Session,
-        update_from_bulk_uri: Optional[BulkURI],
-        consistency_checks: DataConsistencyChecks,
+            self,
+            ctx,
+            record: Record,
+            session: Session,
+            update_from_bulk_uri: Optional[BulkURI],
+            consistency_checks: DataConsistencyChecks,
     ) -> str:
         dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
         previous_bulk_id = None
@@ -209,3 +213,45 @@ class BulkIODask(BulkIO):
 
         await consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id)
         return new_bulk_id
+
+    @with_trace("dask-get_statistics")
+    async def get_statistics(
+            self,
+            ctx,
+            record_id: str,
+            bulk_uri: str,
+            curves_selection: List[str],
+    ) -> Response:
+        dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
+        catalog = await dask_blob_storage.get_bulk_catalog(record_id, bulk_uri)
+        columns = DataFrameRender.get_matching_columns(curves_selection, catalog.all_columns)
+
+        stats_df, stats_meta = await BulkStatistics(dask_blob_storage).get_bulk_statistics(catalog, record_id,
+                                                                                           bulk_uri, columns)
+        # replace np.nan by string "NaN" to have unified str type values for std column
+        if not stats_df.empty:
+            stats_df['std'].fillna(value=str("NaN"), inplace=True)
+
+        # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
+        result = BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
+        return JSONResponse(content=jsonable_encoder(result))
+
+    @with_trace("dask-post_statistics")
+    async def post_statistics(
+        self,
+        ctx,
+        record_id: str,
+        bulk_uri: str,
+        record_version: int,
+    ) -> Response:
+        """
+        Get data from a given record
+        :param ctx: context instance
+        :param record_id: record id as string
+        :param bulk_uri: bulk uri as string
+        :param record_version version of given record
+        :return: Return bulk statistics if exist
+        """
+        dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
+
+        await BulkStatistics(dask_blob_storage).compute_bulk_statistics(record_id, bulk_uri, record_version)

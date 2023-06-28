@@ -9,7 +9,7 @@ from odes_storage.models import Record
 from .sessions_storage import Session
 from .dask.errors import BulkWorkerError
 from .model_chunking import GetDataParams
-from .mime_types import MimeType
+from .mime_types import MimeTypes, MimeType
 from .json_orient import JSONOrient
 from .bulk_uri import BulkURI
 from .bulk_io import BulkIO
@@ -26,35 +26,35 @@ class BulkIOWdmsWorker(BulkIO):
         self._http_session = http_session
 
     async def write_chunk(
-        self,
-        ctx,
-        data: Union[bytes, AsyncGenerator[bytes, None]],
-        content_type: MimeType,
-        df_validator_func: DataFrameValidationFunc,
-        record_id: str,
-        session_id: UUID,
+            self,
+            ctx,
+            data: Union[bytes, AsyncGenerator[bytes, None]],
+            content_type: MimeType,
+            df_validator_func: DataFrameValidationFunc,
+            record_id: str,
+            session_id: UUID,
     ) -> BulkInfoForConsistency:
         raise NotImplementedError("BulkIOWdmsWorker.write_chunk")
 
     async def write_complete_session(
-        self,
-        ctx,
-        record: Record,
-        session: Session,
-        update_from_bulk_uri: Optional[BulkURI],
-        consistency_checks: DataConsistencyChecks,
+            self,
+            ctx,
+            record: Record,
+            session: Session,
+            update_from_bulk_uri: Optional[BulkURI],
+            consistency_checks: DataConsistencyChecks,
     ) -> str:
         raise NotImplementedError("BulkIOWdmsWorker.write_complete_session")
 
     @with_trace("worker.read_data")
     async def read_data(
-        self,
-        ctx,
-        record_id: str,
-        bulk_uri: BulkURI,
-        data_param: GetDataParams,
-        accept_type: MimeType,
-        orient: Optional[JSONOrient],
+            self,
+            ctx,
+            record_id: str,
+            bulk_uri: BulkURI,
+            data_param: GetDataParams,
+            accept_type: MimeType,
+            orient: Optional[JSONOrient],
     ) -> Response:
         params = {}
         if data_param.limit:
@@ -76,7 +76,7 @@ class BulkIOWdmsWorker(BulkIO):
             "Authorization": f"Bearer {ctx.auth}",
         }
         async with self._http_session.get(
-            f"{self._host}/data/{record_id}/{bulk_uri.bulk_id}", headers=headers, params=params
+                f"{self._host}/data/{record_id}/{bulk_uri.bulk_id}", headers=headers, params=params
         ) as resp:
             if resp.status != 200:
                 raise BulkWorkerError(await resp.text(), resp.status)
@@ -93,13 +93,13 @@ class BulkIOWdmsWorker(BulkIO):
 
     @with_trace("worker.read_data")
     async def write_bulk(
-        self,
-        ctx,
-        data: Union[bytes, AsyncGenerator[bytes, None]],
-        content_type: MimeType,
-        df_validator_func: DataFrameValidationFunc,
-        consistency_checks: DataConsistencyChecks,
-        record: Record,
+            self,
+            ctx,
+            data: Union[bytes, AsyncGenerator[bytes, None]],
+            content_type: MimeType,
+            df_validator_func: DataFrameValidationFunc,
+            consistency_checks: DataConsistencyChecks,
+            record: Record,
     ) -> Tuple[str, BulkInfoForConsistency]:
         headers = {
             "Content-Type": content_type.type,
@@ -113,7 +113,7 @@ class BulkIOWdmsWorker(BulkIO):
         content = await self._prepare_content(data)
 
         async with self._http_session.post(
-            f"{self._host}/data/{record.id}", headers=headers, data=content, params=params
+                f"{self._host}/data/{record.id}", headers=headers, data=content, params=params
         ) as resp:
             if resp.status != 200:
                 raise BulkWorkerError(await resp.text(), resp.status)
@@ -122,3 +122,65 @@ class BulkIOWdmsWorker(BulkIO):
             bulk_id, describe = response["bulkid"], BulkInfoForConsistency(**response["describe"])
             consistency_checks.check_bulk_consistency(record, describe)
             return bulk_id, describe
+
+    @with_trace("worker-get_statistics")
+    async def get_statistics(
+            self,
+            ctx,
+            record_id: str,
+            bulk_uri: str,
+            curves_selection: List[str],
+    ) -> Response:
+
+        headers = {
+            "data-partition-id": ctx.partition_id,
+            "Authorization": f"Bearer {ctx.auth}",
+            "correlation-id": ctx.correlation_id,
+        }
+
+        async with self._http_session.get(
+                f"{self._host}/data/{record_id}/{bulk_uri}/statistics",
+                headers=headers,
+                params={"curves_selection": curves_selection},
+        ) as response:
+            return Response(
+                content=await response.read(),
+                status_code=response.status,
+                media_type=MimeTypes.JSON.type,
+            )
+
+    @with_trace("worker-post_statistics")
+    async def post_statistics(
+        self,
+        ctx,
+        record_id: str,
+        bulk_uri: str,
+        record_version: int,
+    ) -> Response:
+        """
+        Get data from a given record
+        :param ctx: context instance
+        :param record_id: record id as string
+        :param bulk_uri: bulk uri as string
+        :param record_version version of given record. Statistics meta-data contains the record's version
+        which triggers the statistics computation. But there is no knowledge of OSDU Record inside worker service.
+        :return: Return bulk statistics if exist
+        """
+
+        headers = {
+            "data-partition-id": ctx.partition_id,
+            "Authorization": f"Bearer {ctx.auth}",
+            "correlation-id": ctx.correlation_id,
+            # todo: add forwarding of correlation id
+        }
+
+        async with self._http_session.post(
+                f"{self._host}/data/{record_id}/{bulk_uri}/statistics",
+                headers=headers,
+                params={"record_version": record_version},
+        ) as response:
+            return Response(
+                content=await response.read(),
+                status_code=response.status,
+                media_type=MimeTypes.JSON.type,
+            )
