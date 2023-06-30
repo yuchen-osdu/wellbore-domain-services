@@ -1,16 +1,16 @@
 import anyio
-from datetime import datetime, timedelta
 from typing import List
-
 from httpx import AsyncClient
-
-from unittest.mock import PropertyMock, patch
+from aiohttp import ClientSession
+from datetime import datetime, timedelta
 
 import numpy as np
-from natsort import natsorted
-import osdu.core.api.storage.exceptions as osdu_storage_exception
 import pandas as pd
+from natsort import natsorted
+
 import pytest
+from unittest.mock import PropertyMock, patch, AsyncMock, Mock
+import osdu.core.api.storage.exceptions as osdu_storage_exception
 
 from tests.unit.generate_data import generate_df
 from tests.unit.routers.chunking_test import (
@@ -26,6 +26,7 @@ from app.bulk_persistence.statistics.models import (
     StatisticsComputationMeta,
 )
 
+from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access
 
 pytestmark = pytest.mark.statistics
 
@@ -124,6 +125,63 @@ async def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
         assert valid_record_with_bulk_response.content == b'{"errorType":"DATA_NOT_FOUND","message":"Statistics do not exist"}'
 
 
+@pytest.fixture(scope='function')
+def enable_worker_fixture():
+    with patch("app.routers.bulk.bulk_routes_dependencies.bulk_worker_host",
+               return_value="this is a non-null value"):
+        yield
+
+
+@pytest.mark.anyio
+async def test_get_stats_with_worker(enable_worker_fixture, testing_app_local_chunking_no_consistency):
+
+    with patch.object(ClientSession, 'get', return_value=AsyncMock(name="clientSession_get")) as get_statistics_mock:
+        get_statistics_mock.return_value.__aenter__.return_value.status = 200
+        get_statistics_mock.return_value.__aenter__.return_value.read.return_value = b'mock raw bytes'
+
+        app, client = testing_app_local_chunking_no_consistency
+        valid_record_id = await _create_record(client, 'WellLog')
+
+        # to skip `if not bulk_uri.is_valid():` condition in get_statistics router
+        m = Mock(name='get_bulk_id_access', return_value=1)
+        m.get_bulk_uri.return_value.is_valid.return_value = True
+        m.get_bulk_uri.return_value.bulk_id = "bob_uri"
+        app.dependency_overrides[get_bulk_id_access] = lambda: m
+
+        await client.get(f'/ddms/v3/welllogs/{valid_record_id}/data/statistics', params={"curves": "A,B,C"})
+        get_statistics_mock.assert_called_once()
+
+        _args, _kwargs = get_statistics_mock.call_args
+        assert sorted(_kwargs["headers"].keys()) == sorted(["Authorization", "data-partition-id",  "correlation-id"])
+        assert _kwargs["params"] == {"curves_selection": ["A", "B", "C"]}
+        assert _args[0].startswith(f"this is a non-null value/data/{valid_record_id}/")
+
+
+@pytest.mark.anyio
+async def test_post_stats_with_worker(enable_worker_fixture, testing_app_local_chunking_no_consistency):
+
+    with patch.object(ClientSession, 'post', return_value=AsyncMock(name="post")) as post_statistics_mock:
+        post_statistics_mock.return_value.__aenter__.return_value.status = 209
+        post_statistics_mock.return_value.__aenter__.return_value.read.return_value = b'raw bytes'
+
+        app, client = testing_app_local_chunking_no_consistency
+        valid_record_id, record_version = await _create_record(client, 'WellLog', return_version=True)
+
+        # to skip `if not bulk_uri.is_valid():` condition in get_statistics router
+        m = Mock(name='get_bulk_id_access', return_value=1)
+        m.get_bulk_uri.return_value.is_valid.return_value = True
+        m.get_bulk_uri.return_value.bulk_id = "bob_uri"
+        app.dependency_overrides[get_bulk_id_access] = lambda: m
+
+        compute_stats_response = await client.post(f"/ddms/v3/welllogs/{valid_record_id}/versions/{record_version}/data/statistics")
+
+        assert compute_stats_response.status_code == 209 # choose arbitrary code to ensure status code is returned
+        post_statistics_mock.assert_called_once()
+        _args, _kwargs = post_statistics_mock.call_args
+        assert sorted(_kwargs["headers"].keys()) == sorted(["Authorization", "data-partition-id",  "correlation-id"])
+        assert _args[0] == f"this is a non-null value/data/{valid_record_id}/bob_uri/statistics"
+
+
 @pytest.mark.anyio
 async def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consistency):
     with patch.object(BulkStatistics, '_fetch_statistics_meta_file') as bob:
@@ -143,6 +201,7 @@ async def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consis
         assert valid_record_with_bulk_response.status_code == 404
         assert valid_record_with_bulk_response.content \
                == b'{"errorType":"COMPUTATION_NOT_COMPLETE","message":"Statistics computation not finished yet"}'
+
 
 async def _trigger_computation_on_record(client, record_id, record_version):
     """ Trigger computation of bulk statistics for given record id at given record_version or last version if None """

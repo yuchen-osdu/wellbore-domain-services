@@ -85,7 +85,7 @@ def _df_to_format(df, data_format):
         raise ValueError(f"Unknown content-type: '{data_format}'")
 
 
-async def _create_record(client: AsyncClient, entity_type):
+async def _create_record(client: AsyncClient, entity_type, *, return_version=False):
     entity_def = Definitions[entity_type]
     create_url = entity_def['base_url']
     kind = entity_def['kind']
@@ -105,9 +105,13 @@ async def _create_record(client: AsyncClient, entity_type):
         "data": record_data
     }
     response = await client.post(create_url, json=[record])
-    assert response.status_code == 200
-    record_id = response.json()["recordIds"][0]
+    assert response.status_code == 200, response.text
+    response_data = response.json()
+    record_id = response_data["recordIds"][0]
+    if return_version:
+        return record_id, response_data['recordIdVersions'][0].split(':')[-1]
     return record_id
+
 
 
 def _cast_datetime_to_datetime64_ns(result_df):
