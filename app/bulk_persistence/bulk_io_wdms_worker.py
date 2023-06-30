@@ -16,6 +16,7 @@ from .bulk_io import BulkIO
 from .dataframe_validators import DataFrameValidationFunc
 from .consistency_checks import DataConsistencyChecks, BulkInfoForConsistency
 from app.helper.traces import with_trace
+from app.context import get_headers_from_ctx
 
 
 class BulkIOWdmsWorker(BulkIO):
@@ -70,11 +71,9 @@ class BulkIOWdmsWorker(BulkIO):
         if data_param.describe:
             params["describe"] = str(True)
 
-        headers = {
-            "accept": accept_type.type,
-            "data-partition-id": ctx.partition_id,
-            "Authorization": f"Bearer {ctx.auth}",
-        }
+        headers = get_headers_from_ctx(ctx)
+        headers.update({"accept": accept_type.type})
+
         async with self._http_session.get(
                 f"{self._host}/data/{record_id}/{bulk_uri.bulk_id}", headers=headers, params=params
         ) as resp:
@@ -101,11 +100,9 @@ class BulkIOWdmsWorker(BulkIO):
             consistency_checks: DataConsistencyChecks,
             record: Record,
     ) -> Tuple[str, BulkInfoForConsistency]:
-        headers = {
-            "Content-Type": content_type.type,
-            "data-partition-id": ctx.partition_id,
-            "Authorization": f"Bearer {ctx.auth}",
-        }
+
+        headers = get_headers_from_ctx(ctx)
+        headers.update({"Content-Type": content_type.type})
 
         reference_name = consistency_checks.get_reference_curve(record)
         params = {"reference": reference_name} if reference_name else None
@@ -132,11 +129,7 @@ class BulkIOWdmsWorker(BulkIO):
             curves_selection: List[str],
     ) -> Response:
 
-        headers = {
-            "data-partition-id": ctx.partition_id,
-            "Authorization": f"Bearer {ctx.auth}",
-            "correlation-id": ctx.correlation_id,
-        }
+        headers = get_headers_from_ctx(ctx)
 
         async with self._http_session.get(
                 f"{self._host}/data/{record_id}/{bulk_uri}/statistics",
@@ -179,31 +172,3 @@ class BulkIOWdmsWorker(BulkIO):
                 status_code=response.status,
                 media_type=MimeTypes.JSON.type,
             )
-
-
-from context import Context
-from app.helper import traces
-from conf import (
-    CORRELATION_ID_HEADER_NAME,
-    X_USER_ID_HEADER_NAME,
-    PARTITION_ID_HEADER_NAME,
-    AUTHORIZATION_HEADER_NAME,
-    APP_ID_HEADER_NAME
-)
-
-
-def get_headers_from_ctx(ctx: Context):
-    """ Return headers enriched with context values and ensure requests tracing is forwarded """
-    headers = {
-        PARTITION_ID_HEADER_NAME: ctx.partition_id,
-        AUTHORIZATION_HEADER_NAME: f"Bearer {ctx.auth}",
-        CORRELATION_ID_HEADER_NAME: ctx.correlation_id,
-        X_USER_ID_HEADER_NAME: ctx.x_user_id,
-        APP_ID_HEADER_NAME: ctx.x_app_id,
-    }
-    if ctx.tracer:
-        # propagate current tracing context to outgoing request's headers
-        tracing_headers = traces.get_trace_propagator().to_headers(ctx.tracer.span_context)
-        headers.update(tracing_headers)
-
-    return headers
