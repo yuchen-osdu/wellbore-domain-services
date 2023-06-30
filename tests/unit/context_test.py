@@ -11,14 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import asyncio
 import anyio
 import pytest
 import time
 import uuid
 from anyio import to_process
+from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
+from opencensus.trace import tracer as open_tracer
 
-from app.context import Context
+from unittest import mock
+
+from app.context import Context, get_headers_from_ctx
 
 
 def get_context():
@@ -131,34 +136,41 @@ async def test_context_current_in_thread_executor_anyio():
             tg.start_soon(foo)
 
 
-from app.context import get_headers_from_ctx
-from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
-from opencensus.trace import tracer as open_tracer
-from unittest import mock
-
 @pytest.mark.parametrize("params, expected_result", [
-    ({}, {'Authorization': 'Bearer None', 'correlation-id': None, 'data-partition-id': None, 'x-app-id': None, 'x-user-id': None}),
-    ({
+    ({  # some headers are missing
+         "correlation_id": None,
+         "request_id": 'my-request-id',
+         "auth": 'my-auth',
+         "partition_id": 'my-partition-id',
+         "x_user_id": None,
+         "x_app_id": "my-x-app-id"},
+     {
+         "Authorization": "Bearer my-auth",
+         "data-partition-id": "my-partition-id",
+         "x-app-id": "my-x-app-id",
+     }),
+    ({   # all headers are here
          "correlation_id": 'my-correlation-id',
          "request_id": 'my-request-id',
          "auth": 'my-auth',
          "partition_id": 'my-partition-id',
          "x_user_id": 'my-x-user-id',
-         "x_app_id": "my-x-app-id"},
+         "x_app_id": "my-x-app-id",
+         "tracer": open_tracer.Tracer()
+     },
      {
          "Authorization": "Bearer my-auth",
          "correlation-id": "my-correlation-id",
          "data-partition-id": "my-partition-id",
          "x-app-id": "my-x-app-id",
-         "x-user-id": "my-x-user-id"
+         "x-user-id": "my-x-user-id",
+         "traceparent": "my-traceparent-value"
      }),
-    ({"tracer": open_tracer.Tracer()}, {
+    ({   # only tracing headers is present
+         "tracer": open_tracer.Tracer()},
+     {
         'Authorization': 'Bearer None',
-        'correlation-id': None,
-        'data-partition-id': None,
         'traceparent': "my-traceparent-value",
-        'x-app-id': None,
-        'x-user-id': None
     }),
 ])
 def test_get_headers_from_ctx(params, expected_result):
