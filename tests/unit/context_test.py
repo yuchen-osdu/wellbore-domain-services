@@ -131,7 +131,7 @@ async def test_context_current_in_thread_executor_anyio():
             tg.start_soon(foo)
 
 
-from bulk_persistence.bulk_io_wdms_worker import get_headers_from_ctx
+from app.context import get_headers_from_ctx
 from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
 from opencensus.trace import tracer as open_tracer
 from unittest import mock
