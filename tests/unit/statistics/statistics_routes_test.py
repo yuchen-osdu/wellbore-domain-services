@@ -157,7 +157,9 @@ async def test_get_stats_with_worker(enable_worker_fixture, testing_app_local_ch
         get_statistics_mock.assert_called_once()
 
         _args, _kwargs = get_statistics_mock.call_args
-        assert sorted(_kwargs["headers"].keys()) == sorted(["Authorization", "data-partition-id",  "correlation-id"])
+        assert sorted(_kwargs["headers"].keys()) == sorted(
+            ["Authorization", "correlation-id", "traceparent"]
+        )
         assert _kwargs["params"] == {"curves_selection": ["A", "B", "C"]}
         assert _args[0].startswith(f"this is a non-null value/data/{valid_record_id}/")
 
@@ -183,7 +185,9 @@ async def test_post_stats_with_worker(enable_worker_fixture, testing_app_local_c
         assert compute_stats_response.status_code == 209 # choose arbitrary code to ensure status code is returned
         post_statistics_mock.assert_called_once()
         _args, _kwargs = post_statistics_mock.call_args
-        assert sorted(_kwargs["headers"].keys()) == sorted(["Authorization", "data-partition-id",  "correlation-id"])
+        assert sorted(_kwargs["headers"].keys()) == sorted(
+            ["Authorization", "correlation-id", "traceparent"]
+        )
         assert _args[0] == f"this is a non-null value/data/{valid_record_id}/bob_uri/statistics"
 
 
