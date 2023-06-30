@@ -20,6 +20,14 @@ from osdu.core.api.storage.tenant import Tenant
 
 from app.model.user import User
 from app.injector.app_injector import AppInjector
+from app.helper import traces
+from app.conf import (
+    CORRELATION_ID_HEADER_NAME,
+    X_USER_ID_HEADER_NAME,
+    PARTITION_ID_HEADER_NAME,
+    AUTHORIZATION_HEADER_NAME,
+    APP_ID_HEADER_NAME
+)
 
 
 class Context:
@@ -320,19 +328,8 @@ def get_or_create_ctx() -> Context:
     return ctx
 
 
-from app.context import Context
-from app.helper import traces
-from app.conf import (
-    CORRELATION_ID_HEADER_NAME,
-    X_USER_ID_HEADER_NAME,
-    PARTITION_ID_HEADER_NAME,
-    AUTHORIZATION_HEADER_NAME,
-    APP_ID_HEADER_NAME
-)
-
-
 def get_headers_from_ctx(ctx: Context):
-    """ Return headers enriched with context values and ensure requests tracing is forwarded """
+    """ Return headers enriched with context values if exists and ensure requests tracing is forwarded if exits """
     headers = {
         PARTITION_ID_HEADER_NAME: ctx.partition_id,
         AUTHORIZATION_HEADER_NAME: f"Bearer {ctx.auth}",
@@ -345,4 +342,4 @@ def get_headers_from_ctx(ctx: Context):
         tracing_headers = traces.get_trace_propagator().to_headers(ctx.tracer.span_context)
         headers.update(tracing_headers)
 
-    return headers
+    return {k: v for k, v in headers.items() if v is not None}
