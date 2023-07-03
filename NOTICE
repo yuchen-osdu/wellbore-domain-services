@@ -254,7 +254,7 @@ The following software have components provided under the terms of this license:
 - distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.6.1/)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - execnet (from https://execnet.readthedocs.io/en/latest/)
-- fastapi (from https://pypi.org/project/fastapi/0.86.0/, https://pypi.org/project/fastapi/0.99.1/)
+- fastapi (from https://pypi.org/project/fastapi/0.86.0/, https://pypi.org/project/fastapi/0.98.0/)
 - grpcio (from https://grpc.io)
 - h11
 - hypothesis (from https://hypothesis.works)
