@@ -20,6 +20,14 @@ from osdu.core.api.storage.tenant import Tenant
 
 from app.model.user import User
 from app.injector.app_injector import AppInjector
+from app.helper import traces
+from app.conf import (
+    CORRELATION_ID_HEADER_NAME,
+    X_USER_ID_HEADER_NAME,
+    PARTITION_ID_HEADER_NAME,
+    AUTHORIZATION_HEADER_NAME,
+    APP_ID_HEADER_NAME
+)
 
 
 class Context:
@@ -40,7 +48,8 @@ class Context:
         '_attr_dict',
         '_tenant',
         '_x_user_id',
-        '_x_collaboration'
+        '_x_collaboration',
+        '_x_app_id',
     ]
 
     def __init__(self,
@@ -57,6 +66,7 @@ class Context:
                  tenant: Optional[Tenant] = None,
                  x_user_id: Optional[str] = None,
                  x_collaboration: Optional[str] = None,
+                 x_app_id: Optional[str] = None,
                  **keys):
 
         self._tracer = tracer
@@ -72,6 +82,7 @@ class Context:
         self._tenant = tenant
         self._x_user_id = x_user_id
         self._x_collaboration = x_collaboration
+        self._x_app_id = x_app_id
 
         # pass
         self._attr_dict = keys or {}
@@ -96,7 +107,7 @@ class Context:
     @classmethod
     def set_current_with_value(cls, tracer=None, correlation_id=None, request_id=None, auth=None,
                                partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                               dev_mode=None, tenant=None, x_user_id=None, x_collaboration=None,
+                               dev_mode=None, tenant=None, x_user_id=None, x_collaboration=None, x_app_id=None,
                                **keys) -> 'Context':
         """
         clone the current context with the given values, set the new ctx as current and returns it
@@ -117,6 +128,7 @@ class Context:
                                      tenant=tenant,
                                      x_user_id=x_user_id,
                                      x_collaboration=x_collaboration,
+                                     x_app_id=x_app_id,
                                      **keys)
         new_ctx.set_current()
         return new_ctx
@@ -151,6 +163,7 @@ class Context:
             tenant=self._tenant,
             x_user_id=self._x_user_id,
             x_collaboration=self._x_collaboration,
+            x_app_id=self._x_app_id,
             **self._attr_dict)
 
     def with_correlation_id(self, correlation_id):
@@ -200,7 +213,8 @@ class Context:
 
     def with_value(self, tracer=None, correlation_id=None, request_id=None, auth=None,
                    partition_id=None, app_key=None, api_key=None, user=None, app_injector=None,
-                   dev_mode=None, tenant=None, x_user_id=None, x_collaboration=None, **keys) -> 'Context':
+                   dev_mode=None, tenant=None, x_user_id=None, x_collaboration=None, x_app_id=None,
+                   **keys) -> 'Context':
         """ Clone context, adding all keys in future logs """
         cloned = self.__class__(
             tracer=tracer or self._tracer,
@@ -216,6 +230,7 @@ class Context:
             tenant=tenant or self._tenant,
             x_user_id=x_user_id or self._x_user_id,
             x_collaboration=x_collaboration or self._x_collaboration,
+            x_app_id=x_app_id or self._x_app_id,
             **self._attr_dict)
 
         if keys is not None:
@@ -274,6 +289,10 @@ class Context:
     def x_collaboration(self) -> Optional[str]:
         return self._x_collaboration
 
+    @property
+    def x_app_id(self) -> Optional[str]:
+        return self._x_app_id
+
     def __dict__(self):
         return {
             "tracer": self.tracer,
@@ -285,6 +304,7 @@ class Context:
             "api_key": self.api_key,
             "x_user_id": self.x_user_id,
             "x_collaboration": self.x_collaboration,
+            "x_app_id": self.x_app_id,
         }
 
     def __repr__(self):
@@ -307,3 +327,19 @@ def get_or_create_ctx() -> Context:
         ctx.set_current()
     return ctx
 
+
+def get_headers_from_ctx(ctx: Context):
+    """ Return headers enriched with context values if exists and ensure requests tracing is forwarded if exits """
+    headers = {
+        PARTITION_ID_HEADER_NAME: ctx.partition_id,
+        AUTHORIZATION_HEADER_NAME: f"Bearer {ctx.auth}",
+        CORRELATION_ID_HEADER_NAME: ctx.correlation_id,
+        X_USER_ID_HEADER_NAME: ctx.x_user_id,
+        APP_ID_HEADER_NAME: ctx.x_app_id,
+    }
+    if ctx.tracer:
+        # propagate current tracing context to outgoing request's headers
+        tracing_headers = traces.get_trace_propagator().to_headers(ctx.tracer.span_context)
+        headers.update(tracing_headers)
+
+    return {k: v for k, v in headers.items() if v is not None}

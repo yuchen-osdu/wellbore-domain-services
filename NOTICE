@@ -116,7 +116,7 @@ The following software have components provided under the terms of this license:
 - openapi-schema-validator (from https://github.com/python-openapi/openapi-schema-validator)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- pip-tools (from https://pypi.org/project/pip-tools/6.12.0/, https://pypi.org/project/pip-tools/6.12.1/, https://pypi.org/project/pip-tools/6.13.0/)
+- pip-tools (from https://pypi.org/project/pip-tools/6.12.0/, https://pypi.org/project/pip-tools/6.12.1/, https://pypi.org/project/pip-tools/6.14.0/)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
@@ -274,7 +274,7 @@ The following software have components provided under the terms of this license:
 - pluggy
 - py (from https://py.readthedocs.io/)
 - pyarrow (from https://arrow.apache.org/)
-- pydantic (from https://github.com/pydantic/pydantic, https://github.com/samuelcolvin/pydantic)
+- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.0/)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
