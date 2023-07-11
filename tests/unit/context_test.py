@@ -11,19 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import asyncio
 import anyio
 import pytest
 import time
 import uuid
 from anyio import to_process
+from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
+from opencensus.trace import tracer as open_tracer
 
-from app.context import Context
+from unittest import mock
+
+from app.context import Context, get_headers_from_ctx
+
+
 def get_context():
     # TODO app.Context  is not cleaned-up at  test teardown
     return Context(logger='logger', correlation_id='correlation_id', request_id='request_id',
                    dev_mode=True, auth='auth', partition_id='check_test_not_cleanup',
-                   app_key='app_key', api_key='api_key', custom1='c1', custom2='c2', x_collaboration="c_space")
+                   app_key='app_key', api_key='api_key', custom1='c1', custom2='c2',
+                   x_collaboration="c_space", x_app_id="my-x-app-id")
 
 
 @pytest.fixture
@@ -32,14 +40,13 @@ def context_base():
 
 
 def test_context_repr(context_base):
-    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "check_test_not_cleanup", "app_key": "app_key", "api_key": "api_key", "x_user_id": null, "x_collaboration": "c_space"}'
+    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "check_test_not_cleanup", "app_key": "app_key", "api_key": "api_key", "x_user_id": null, "x_collaboration": "c_space", "x_app_id": "my-x-app-id"}'
 
     assert str(context_base) == expected
     assert repr(context_base) == expected
 
 
 def test_context_basic(context_base):
-
     assert context_base.correlation_id == 'correlation_id'
     assert context_base.request_id == 'request_id'
     assert context_base.dev_mode
@@ -48,6 +55,7 @@ def test_context_basic(context_base):
     assert context_base.app_key == 'app_key'
     assert context_base.api_key == 'api_key'
     assert context_base.x_collaboration == "c_space"
+    assert context_base.x_app_id == "my-x-app-id"
 
     assert context_base['custom1'] == 'c1'
     assert context_base.get('custom1') == 'c1'
@@ -72,6 +80,7 @@ def test_context_clone(context_base):
     assert new_context.app_key == context_base.app_key
     assert new_context.api_key == context_base.api_key
     assert new_context.x_collaboration == context_base.x_collaboration
+    assert new_context.x_app_id == context_base.x_app_id
 
     assert new_context['custom1'] == 'new_c1'
     assert new_context['custom2'] == context_base['custom2']
@@ -127,3 +136,46 @@ async def test_context_current_in_thread_executor_anyio():
             tg.start_soon(foo)
 
 
+@pytest.mark.parametrize("params, expected_result", [
+    ({  # some headers are missing
+         "correlation_id": None,
+         "request_id": 'my-request-id',
+         "auth": 'my-auth',
+         "partition_id": 'my-partition-id',
+         "x_user_id": None,
+         "x_app_id": "my-x-app-id"},
+     {
+         "Authorization": "Bearer my-auth",
+         "data-partition-id": "my-partition-id",
+         "x-app-id": "my-x-app-id",
+     }),
+    ({   # all headers are here
+         "correlation_id": 'my-correlation-id',
+         "request_id": 'my-request-id',
+         "auth": 'my-auth',
+         "partition_id": 'my-partition-id',
+         "x_user_id": 'my-x-user-id',
+         "x_app_id": "my-x-app-id",
+         "tracer": open_tracer.Tracer()
+     },
+     {
+         "Authorization": "Bearer my-auth",
+         "correlation-id": "my-correlation-id",
+         "data-partition-id": "my-partition-id",
+         "x-app-id": "my-x-app-id",
+         "x-user-id": "my-x-user-id",
+         "traceparent": "my-traceparent-value"
+     }),
+    ({   # only tracing headers is present
+         "tracer": open_tracer.Tracer()},
+     {
+        'Authorization': 'Bearer None',
+        'traceparent': "my-traceparent-value",
+    }),
+])
+def test_get_headers_from_ctx(params, expected_result):
+    created_ctx = Context(**params)
+
+    with mock.patch.object(TraceContextPropagator, "to_headers", return_value={"traceparent": "my-traceparent-value"}):
+        created_headers = get_headers_from_ctx(created_ctx)
+        assert created_headers == expected_result

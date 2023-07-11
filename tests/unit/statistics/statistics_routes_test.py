@@ -18,7 +18,12 @@ from tests.unit.routers.chunking_test import (
     _create_chunks,
     _create_record,
 )
+from app.context import Context
+from unittest.mock import Mock
 
+from opencensus.trace import tracer
+from app.bulk_persistence import BulkIOWdmsWorker
+from app.bulk_persistence.dask.errors import BulkWorkerError
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 from app.bulk_persistence.statistics.models import (
     BulkStatisticsStatus,
@@ -152,7 +157,9 @@ async def test_get_stats_with_worker(enable_worker_fixture, testing_app_local_ch
         get_statistics_mock.assert_called_once()
 
         _args, _kwargs = get_statistics_mock.call_args
-        assert sorted(_kwargs["headers"].keys()) == sorted(["Authorization", "data-partition-id",  "correlation-id"])
+        assert sorted(_kwargs["headers"].keys()) == sorted(
+            ["Authorization", "correlation-id", "traceparent"]
+        )
         assert _kwargs["params"] == {"curves_selection": ["A", "B", "C"]}
         assert _args[0].startswith(f"this is a non-null value/data/{valid_record_id}/")
 
@@ -178,8 +185,57 @@ async def test_post_stats_with_worker(enable_worker_fixture, testing_app_local_c
         assert compute_stats_response.status_code == 209 # choose arbitrary code to ensure status code is returned
         post_statistics_mock.assert_called_once()
         _args, _kwargs = post_statistics_mock.call_args
-        assert sorted(_kwargs["headers"].keys()) == sorted(["Authorization", "data-partition-id",  "correlation-id"])
+        assert sorted(_kwargs["headers"].keys()) == sorted(
+            ["Authorization", "correlation-id", "traceparent"]
+        )
         assert _args[0] == f"this is a non-null value/data/{valid_record_id}/bob_uri/statistics"
+
+
+def _prepare_mock():
+    async_mock = AsyncMock(ClientSession, name="http_session_mock")
+    async_mock.get.return_value.__aenter__.return_value.status = 400
+    async_mock.get.return_value.__aenter__.return_value.read.return_value = b'mock raw bytes'
+    async_mock.post.return_value.__aenter__.return_value.status = 400
+    async_mock.post.return_value.__aenter__.return_value.read.return_value = b'mock raw bytes'
+    async_mock.post.return_value.__aenter__.return_value.text.return_value = b'mock raw bytes'
+
+    return async_mock
+
+
+@pytest.mark.anyio
+async def test_verify_stats_headers():
+
+    created_ctx = Context(**{
+        "correlation_id": 'my-correlation-id',
+        "request_id": 'my-request-id',
+        "auth": 'my-auth',
+        "partition_id": 'my-partition-id',
+        "x_user_id": 'my-x-user-id',
+        "x_app_id": "my-x-app-id",
+        "tracer": tracer.Tracer()
+    })
+    expected_headers = ["Authorization", "data-partition-id",  "correlation-id", "x-user-id", "x-app-id", "traceparent"]
+
+    async_mock = _prepare_mock()
+    bulk_io_worker = BulkIOWdmsWorker(Mock(), async_mock)
+
+    await bulk_io_worker.get_statistics(created_ctx, Mock(), Mock(), Mock())
+    _, _kwargs = async_mock.get.call_args
+    assert sorted(_kwargs["headers"].keys()) == sorted(expected_headers)
+
+    await bulk_io_worker.post_statistics(created_ctx, Mock(), Mock(), Mock())
+    _, _kwargs = async_mock.post.call_args
+    assert sorted(_kwargs["headers"].keys()) == sorted(expected_headers)
+
+    with pytest.raises(BulkWorkerError):
+        await bulk_io_worker.write_bulk(created_ctx, b'some bytes', Mock(), Mock(), Mock(), Mock())
+    _, _kwargs = async_mock.post.call_args
+    assert sorted(_kwargs["headers"].keys()) == sorted([*expected_headers, "Content-Type"])
+
+    with pytest.raises(BulkWorkerError):
+        await bulk_io_worker.read_data(created_ctx, Mock(), Mock(), Mock(), Mock(), Mock())
+    _, _kwargs = async_mock.get.call_args
+    assert sorted(_kwargs["headers"].keys()) == sorted([*expected_headers, "accept"])
 
 
 @pytest.mark.anyio
