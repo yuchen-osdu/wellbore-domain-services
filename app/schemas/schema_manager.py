@@ -75,8 +75,13 @@ class SchemaManager:
         schema_directory = path.join(path.dirname(path.realpath(__file__)), "known_schemas")
         json_files = [json_file for json_file in listdir(schema_directory) if json_file.endswith('.json')]
         for json_file in json_files:
-            with open(path.join(path.dirname(path.realpath(__file__)), "known_schemas", json_file)) as json_file_stream:
-                json_schema_content = json.load(json_file_stream)
+            with open(path.join(path.dirname(path.realpath(__file__)), "known_schemas", json_file), encoding='utf-8') \
+                    as json_file_stream:
+                try:
+                    json_schema_content = json.load(json_file_stream)
+                except UnicodeDecodeError as e:
+                    print(f"Unable to load '{json_file}', error: {e}")
+                    raise e
 
                 json_schema_content, json_optimised_schema, json_forbid_extra_schema_content, \
                 json_optimised_forbid_extra_schema = SchemaManager._create_versions_of_schema(json_schema_content)
