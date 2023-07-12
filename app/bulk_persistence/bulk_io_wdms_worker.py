@@ -34,18 +34,51 @@ class BulkIOWdmsWorker(BulkIO):
             df_validator_func: DataFrameValidationFunc,
             record_id: str,
             session_id: UUID,
+            reference_curve: Optional[str]
     ) -> BulkInfoForConsistency:
-        raise NotImplementedError("BulkIOWdmsWorker.write_chunk")
+        headers = get_headers_from_ctx(ctx)
+        headers.update({"Content-Type": content_type.type})
+
+        params = {"reference": reference_curve} if reference_curve else None
+
+        content = await self._prepare_content(data)
+
+        async with self._http_session.post(
+                f"{self._host}/data/{record_id}/session/{session_id}", headers=headers, data=content, params=params
+        ) as resp:
+            if resp.status != 200:
+                raise BulkWorkerError(await resp.text(), resp.status)
+
+            response = await resp.json()
+            return BulkInfoForConsistency(**response)
 
     async def write_complete_session(
             self,
             ctx,
+            consistency_checks: DataConsistencyChecks,
             record: Record,
             session: Session,
             update_from_bulk_uri: Optional[BulkURI],
-            consistency_checks: DataConsistencyChecks,
+            reference_curve: Optional[str]
     ) -> str:
-        raise NotImplementedError("BulkIOWdmsWorker.write_complete_session")
+        headers = get_headers_from_ctx(ctx)
+
+        params = {"completion": session.mode.value}
+        if reference_curve:
+            params["reference"] = reference_curve
+        if update_from_bulk_uri is not None:
+            params["from_bulk"] = update_from_bulk_uri.bulk_id
+
+        async with self._http_session.patch(
+                f"{self._host}/data/{record.id}/session/{session.id}", headers=headers, params=params
+        ) as resp:
+            if resp.status != 200:
+                raise BulkWorkerError(await resp.text(), resp.status)
+
+            response = await resp.json()
+            bulk_id, describe = response["bulkid"], BulkInfoForConsistency(**response["describe"])
+            consistency_checks.check_bulk_consistency(record, describe)
+            return bulk_id
 
     @with_trace("worker.read_data")
     async def read_data(

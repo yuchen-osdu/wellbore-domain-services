@@ -173,6 +173,7 @@ class BulkIODask(BulkIO):
             df_validator_func: DataFrameValidationFunc,
             record_id: str,
             session_id: UUID,
+            reference_curve: Optional[str]
     ) -> BulkInfoForConsistency:
         dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
 
@@ -184,10 +185,11 @@ class BulkIODask(BulkIO):
     async def write_complete_session(
             self,
             ctx,
+            consistency_checks: DataConsistencyChecks,
             record: Record,
             session: Session,
             update_from_bulk_uri: Optional[BulkURI],
-            consistency_checks: DataConsistencyChecks,
+            reference_curve: Optional[str]
     ) -> str:
         dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
         previous_bulk_id = None

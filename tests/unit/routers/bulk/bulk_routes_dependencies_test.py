@@ -63,7 +63,7 @@ async def test_get_bulk_io_dependency():
         assert inst._host == "mock_host"
         assert isinstance(await get_bulk_io_read(), BulkIOWdmsWorker)
         assert isinstance(await get_bulk_io_write_no_session(), BulkIOWdmsWorker)
-        assert isinstance(await get_bulk_io_write_with_session(), BulkIODask)
+        assert isinstance(await get_bulk_io_write_with_session(), BulkIOWdmsWorker)
 
     with patch("app.routers.bulk.bulk_routes_dependencies.bulk_worker_host", return_value=None):
         assert isinstance(await get_bulk_io(), BulkIODask)

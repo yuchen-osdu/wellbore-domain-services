@@ -162,6 +162,8 @@ async def post_chunk_data(record_id: str,
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
+    reference_curve = i_session.session.get_meta_value("reference_curve")
+
     # process and store the data chunk
     try:
         basic_describe = await bulk_io.write_chunk(
@@ -170,7 +172,9 @@ async def post_chunk_data(record_id: str,
             content_type,
             df_validation_func,
             record_id,
-            i_session.session.id)
+            i_session.session.id,
+            reference_curve
+        )
 
         trace_dataframe_attributes(basic_describe)
         return basic_describe
@@ -307,11 +311,13 @@ async def complete_session(
                                             detail=f'Record with version {i_session.session.fromVersion} from which '
                                                    f'update contains an invalid bulk URI')
 
+                reference_curve = consistency_checks.get_reference_curve(record)
                 new_bulk_id = await bulk_io.write_complete_session(ctx,
+                                                                   consistency_checks,
                                                                    record,
                                                                    i_session.session,
                                                                    previous_bulk_uri,
-                                                                   consistency_checks)
+                                                                   reference_curve)
                 # ==============>
                 # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
                 # ==============>

@@ -97,4 +97,5 @@ async def get_bulk_io_dask() -> BulkIO:
 # still WIP so explicitly distinguish read, write without session and write inside session
 get_bulk_io_read = get_bulk_io
 get_bulk_io_write_no_session = get_bulk_io
-get_bulk_io_write_with_session = get_bulk_io_dask
+get_bulk_io_write_with_session = get_bulk_io
+
