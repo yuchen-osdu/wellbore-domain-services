@@ -8,7 +8,7 @@ from odes_storage.models import Record
 
 from .sessions_storage import Session
 from .dask.errors import BulkWorkerError
-from .model_chunking import GetDataParams
+from .model_chunking import GetDataParams, DataframeBasicDescribe
 from .mime_types import MimeTypes, MimeType
 from .json_orient import JSONOrient
 from .bulk_uri import BulkURI
@@ -50,7 +50,16 @@ class BulkIOWdmsWorker(BulkIO):
                 raise BulkWorkerError(await resp.text(), resp.status)
 
             response = await resp.json()
-            return BulkInfoForConsistency(**response)
+            bulk_info = BulkInfoForConsistency(**response)
+            # TODO for now return type does not match the return type hint, this will be fixed soon
+            return DataframeBasicDescribe(
+                rowCount=bulk_info.row_count,
+                columnCount=bulk_info.column_count,
+                columns=[],
+                indexStart=bulk_info.index_start,
+                indexEnd=bulk_info.index_end,
+                indexType=bulk_info.index_type
+            )
 
     async def write_complete_session(
             self,
