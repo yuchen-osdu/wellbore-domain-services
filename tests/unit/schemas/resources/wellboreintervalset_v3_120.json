@@ -1,6 +1,6 @@
 [
 {
-  "kind": "GmC4uNxG:WmxkT:00.JVkmffu:3763200r86785%892659",
+  "kind": "osdu:wks:work-product-component--WellboreIntervalSet:1.2.0",
   "acl": {
     "owners": [
       "vN&.Ch&.KOVyR_5qR.hQKeIXJ.djJ6tgE@04K.CPrm.7.3ch9ol3ye8.GU.wwLoqlYJh0C.fWnjEgOtl8.utlThX",
@@ -1581,21 +1581,15 @@
           "FacetIDs": [
             {
               "FacetTypeID": "fjkL45Iu:reference-data--FacetType:7NclfJe1w7:432265560",
-              "FacetRoleID": "0oQ0kZqzP:reference-data--FacetRole:N2ehGzk:85",
-              "esse_49": "elit"
+              "FacetRoleID": "0oQ0kZqzP:reference-data--FacetRole:N2ehGzk:85"
             },
             {
               "FacetTypeID": "ZYA.zHb:reference-data--FacetType:X1MtCukdF6T:2",
-              "FacetRoleID": "WO4pJ8v:reference-data--FacetRole:SZv4IMA:654965",
-              "dolor_7b7": true,
-              "commodo_1e": "commodo magna"
+              "FacetRoleID": "WO4pJ8v:reference-data--FacetRole:SZv4IMA:654965"
             },
             {
               "FacetTypeID": "mfR:reference-data--FacetType:wzCJH2zoMR:7290406997",
-              "FacetRoleID": "wDOjaA8:reference-data--FacetRole:JP:775481",
-              "Excepteur0c4": -89360599.27664408,
-              "nona8": "consectetur proident",
-              "eiusmod_951": "velit mollit nulla sed"
+              "FacetRoleID": "wDOjaA8:reference-data--FacetRole:JP:775481"
             }
           ],
           "UnitQuantityID": "hO:reference-data--UnitQuantity:hGIWWizzW3b:361",
@@ -1614,7 +1608,9 @@
             77375595.56998047,
             -82818474.6102869
           ],
-          "IntegerColumn": "717010",
+          "IntegerColumn": [
+            717010
+          ],
           "BooleanColumn": [
             true,
             true,
@@ -1624,7 +1620,9 @@
             "non in sunt Lorem culpa",
             "ut occaecat"
           ],
-          "UndefinedValueRows": "65007304"
+          "UndefinedValueRows": [
+            65007304
+          ]
         },
         {
           "StringColumn": [
@@ -1636,14 +1634,18 @@
             31553544.27980937,
             6767190.623241454
           ],
-          "IntegerColumn": "46846",
+          "IntegerColumn": [
+            46846
+          ],
           "BooleanColumn": [
             true,
             false,
             false,
             false
           ],
-          "UndefinedValueRows": "2516512"
+          "UndefinedValueRows": [
+            2516512
+          ]
         }
       ],
       "Columns": []
@@ -1662,9 +1664,9 @@
   "modifyTime": "1962-06-05T02:35:07.0Z",
   "createTime": "1946-08-27T20:29:13.0Z",
   "tags": {
-    "aliquip2ba": 28646499.55744338,
-    "ea_5c": 36414340,
-    "id_6": -6214725.783996865,
+    "aliquip2ba": "28646499.55744338",
+    "ea_5c": "36414340",
+    "id_6": "-6214725.783996865",
     "dolor9d": "occaecat sit esse",
     "dolore_01f": "esse velit ut non culpa"
   },

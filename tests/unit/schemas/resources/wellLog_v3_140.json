@@ -1,6 +1,6 @@
 [
 {
-  "kind": "S:PerN:J3:2!09423176401Z4872269649",
+  "kind": "osdu:wks:work-product-component--WellLog:1.4.0",
   "acl": {
     "owners": [
       "-.epi3Kr.m&fQQv55TiB@H.eIPmXo.T65D.Lva.gGoXJA-KU.FjYft9aB.uhb.wx.G.reKxvm.zHMZBvT.SgORoHX",
@@ -26,10 +26,10 @@
   "id": "1:work-product-component--WellLog:jw%q_KMy8Y",
   "tags": {
     "ullamco10": "dolore nulla mollit exercitation",
-    "sit_a": 85861216,
-    "commodoff": -86298845.6392862,
-    "cillum_1": -17205020.8777311,
-    "exercitationa": -85519883.47483505,
+    "sit_a": "85861216",
+    "commodoff": "-86298845.6392862",
+    "cillum_1": "-17205020.8777311",
+    "exercitationa": "-85519883.47483505",
     "commodo93f": "tempor incididunt ut",
     "elitf": "Lorem",
     "eu__4": "anim esse",
