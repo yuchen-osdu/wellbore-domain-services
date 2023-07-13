@@ -186,9 +186,15 @@ async def test_validate_records_success(ctx_fixture_with_search_client, mode, re
 ])
 @pytest.mark.parametrize(("file_name"), [
     "marker_v3_130",
+    "marker_v3_140",
     "wellboreintervalset_v3_110",
+    "wellboreintervalset_v3_120",
     "trajectory_v3_120",
+    "trajectory_v3_130",
     "wellLog_v3_130",
+    "wellLog_v3_140",
+    "well_v3_130",
+    "wellbore_v3_140"
 ])
 async def test_validate_new_schemas(ctx_fixture_with_search_client, mode, file_name):
     # Test schemas that does not have pydantic models
