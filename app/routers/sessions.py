@@ -155,6 +155,7 @@ async def create_session(record_id: str,
     if reference_curve:
         meta = create_rq.meta or {}
         meta["reference_curve"] = reference_curve
+        create_rq.meta = meta
 
     session_internal = await with_storages.sessions_storage.create_session(
         tenant=with_storages.tenant,
