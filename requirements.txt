@@ -34,8 +34,6 @@ anyio==3.6.2
     # via
     #   httpcore
     #   starlette
-asgiref==3.4.1
-    # via uvicorn
 async-timeout==3.0.1
     # via
     #   aiohttp
@@ -136,7 +134,7 @@ decorator==5.0.9
     # via
     #   gcsfs
     #   jsonpath-ng
-distributed==2022.04.1
+distributed==2022.4.1
     # via dask
 dpath==2.1.5
     # via wellbore-schema-manipulation
@@ -458,12 +456,13 @@ typing-extensions==4.3.0
     #   osdu-data-ecosystem-storage
     #   pydantic
     #   starlette
+    #   uvicorn
 urllib3==1.26.6
     # via
     #   botocore
     #   distributed
     #   requests
-uvicorn==0.14.0
+uvicorn==0.23.1
     # via -r requirements.in
 wellbore-schema-manipulation==1.0.1
     # via -r requirements.in
