@@ -156,7 +156,7 @@ pytest-cov==2.12.1
     # via -r requirements_dev.in
 pytest-dependency==0.5.1
     # via -r requirements_dev.in
-pytest-httpx==0.21.0
+pytest-httpx==0.21.3
     # via -r requirements_dev.in
 pytest-randomly==3.12.0
     # via -r requirements_dev.in
