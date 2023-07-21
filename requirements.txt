@@ -220,7 +220,7 @@ idna==3.2
     #   requests
     #   rfc3986
     #   yarl
-importlib-resources==5.12.0
+importlib-resources==6.0.0
     # via jsonschema
 isodate==0.6.0
     # via msrest
@@ -284,7 +284,7 @@ opencensus-ext-stackdriver==0.8.0
     # via -r requirements.in
 opencensus-proto==0.1.0
     # via opencensus-ext-ocagent
-osdu-api[all]==0.21.0rc674+0191dcf9
+osdu-api[all]==0.21.3
     # via
     #   osdu-core-lib-python-anthos
     #   osdu-core-lib-python-aws
@@ -292,7 +292,7 @@ osdu-core-lib-python==2.0.0
     # via -r requirements.in
 osdu-core-lib-python-anthos==1.0.3
     # via -r requirements.in
-osdu-core-lib-python-aws==2.0.8
+osdu-core-lib-python-aws==2.1.2
     # via -r requirements.in
 osdu-core-lib-python-azure==3.0.3
     # via -r requirements.in
@@ -474,7 +474,7 @@ yarl==1.6.3
     # via aiohttp
 zict==2.0.0
     # via distributed
-zipp==3.15.0
+zipp==3.16.2
     # via importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
