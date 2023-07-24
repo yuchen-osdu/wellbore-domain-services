@@ -220,6 +220,8 @@ idna==3.2
     #   requests
     #   rfc3986
     #   yarl
+importlib-resources==6.0.0
+    # via jsonschema
 isodate==0.6.0
     # via msrest
 jinja2==3.0.3
@@ -470,6 +472,8 @@ yarl==1.6.3
     # via aiohttp
 zict==2.0.0
     # via distributed
+zipp==3.16.2
+    # via importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
