@@ -58,21 +58,31 @@ def test_set_bulk_uri_merge_extension_properties():
 @pytest.mark.anyio
 async def test_get_bulk_io_dependency():
     with patch("app.routers.bulk.bulk_routes_dependencies.bulk_worker_host", return_value="mock_host"):
-        inst = await get_bulk_io()
+        inst = await get_bulk_io(True)
+        assert isinstance(inst, BulkIOWdmsWorker)
+        assert inst._host == "mock_host"
+        inst = await get_bulk_io(False)
         assert isinstance(inst, BulkIOWdmsWorker)
         assert inst._host == "mock_host"
         assert isinstance(await get_bulk_io_read(), BulkIOWdmsWorker)
         assert isinstance(await get_bulk_io_write_no_session(), BulkIOWdmsWorker)
         assert isinstance(await get_bulk_io_write_with_session(), BulkIOWdmsWorker)
+        with patch("app.conf.Config.wdms_worker_write_disable"):
+            # when is wdms_worker_write_disable return true
+            assert isinstance(await get_bulk_io_read(), BulkIOWdmsWorker)
+            assert isinstance(await get_bulk_io_write_no_session(), BulkIODask)
+            assert isinstance(await get_bulk_io_write_with_session(), BulkIODask)
 
     with patch("app.routers.bulk.bulk_routes_dependencies.bulk_worker_host", return_value=None):
-        assert isinstance(await get_bulk_io(), BulkIODask)
+        assert isinstance(await get_bulk_io(True), BulkIODask)
+        assert isinstance(await get_bulk_io(False), BulkIODask)
         assert isinstance(await get_bulk_io_write_no_session(), BulkIODask)
         assert isinstance(await get_bulk_io_read(), BulkIODask)
         assert isinstance(await get_bulk_io_write_with_session(), BulkIODask)
 
     # by default
-    assert isinstance(await get_bulk_io(), BulkIODask)
+    assert isinstance(await get_bulk_io(True), BulkIODask)
+    assert isinstance(await get_bulk_io(False), BulkIODask)
     assert isinstance(await get_bulk_io_write_no_session(), BulkIODask)
     assert isinstance(await get_bulk_io_read(), BulkIODask)
     assert isinstance(await get_bulk_io_write_with_session(), BulkIODask)
