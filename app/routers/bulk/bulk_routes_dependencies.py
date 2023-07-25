@@ -1,6 +1,5 @@
 import abc
 from abc import ABC
-from functools import partial
 from typing import Optional
 from fastapi import Request
 
@@ -85,17 +84,20 @@ def is_bulk_worker_enabled() -> bool:
     return bool(bulk_worker_host())
 
 
-async def get_bulk_io(target_write_operation: bool) -> BulkIO:
+async def get_bulk_io(is_write_operation: bool = False) -> BulkIO:
     if is_bulk_worker_enabled():
-        if target_write_operation and Config.wdms_worker_write_disable.value:
+        if is_write_operation and Config.wdms_worker_write_disable.value:
             # write operation explicitly disabled by configuration
             pass
         else:
             return BulkIOWdmsWorker(bulk_worker_host(), get_http_client_session("wdms_bulk_worker"))
     return BulkIODask(Config.enable_read_fast_track.value)
 
-# still WIP so explicitly distinguish read, write without session and write inside session
-get_bulk_io_read = partial(get_bulk_io, target_write_operation=False)
-get_bulk_io_write_no_session = partial(get_bulk_io, target_write_operation=True)
-get_bulk_io_write_with_session = partial(get_bulk_io, target_write_operation=True)
 
+# still WIP so explicitly distinguish read and write
+async def get_bulk_io_read() -> BulkIO:
+    return await get_bulk_io(False)
+
+
+async def get_bulk_io_write() -> BulkIO:
+    return await get_bulk_io(True)

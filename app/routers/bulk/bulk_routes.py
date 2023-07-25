@@ -63,11 +63,7 @@ from app.bulk_persistence import (DataFrameValidationFunc,
                                   MAX_COLUMNS_RETURN,
                                   )
 
-from .bulk_routes_dependencies import (
-    BulkIO, get_bulk_io_read,
-    get_bulk_io_write_no_session,
-    get_bulk_io_write_with_session,
-)
+from .bulk_routes_dependencies import BulkIO, get_bulk_io_read, get_bulk_io_write
 
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
@@ -96,7 +92,7 @@ async def post_data(record_id: str,
                     request: Request,
                     content_type: MimeType = Depends(write_bulk_content_type),
                     ctx: Context = Depends(get_ctx),
-                    bulk_io: BulkIO = Depends(get_bulk_io_write_no_session),
+                    bulk_io: BulkIO = Depends(get_bulk_io_write),
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
@@ -152,7 +148,7 @@ async def post_chunk_data(record_id: str,
                           request: Request,
                           content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
-                          bulk_io: BulkIO = Depends(get_bulk_io_write_with_session),
+                          bulk_io: BulkIO = Depends(get_bulk_io_write),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                           ) -> DataframeBasicDescribe:
     # fetch the session
@@ -282,7 +278,7 @@ async def complete_session(
     ctx: Context = Depends(get_ctx),
     update_request: UpdateSessionState = Body(..., examples=sessions_body_examples),
     with_session: WithSessionStorages = Depends(get_session_dependencies),
-    bulk_io: BulkIO = Depends(get_bulk_io_write_with_session),
+    bulk_io: BulkIO = Depends(get_bulk_io_write),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
 ) -> CommitSessionResponse:
