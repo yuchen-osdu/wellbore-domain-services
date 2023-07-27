@@ -11,7 +11,7 @@ from .consistency_checks import DataConsistencyChecks, BulkInfoForConsistency
 from .sessions_storage import Session
 from .json_orient import JSONOrient
 from .bulk_uri import BulkURI
-from .model_chunking import GetDataParams
+from .model_chunking import GetDataParams, DataframeBasicDescribe
 
 
 class BulkIO(ABC):
@@ -49,7 +49,7 @@ class BulkIO(ABC):
         record_id: str,
         session_id: UUID,
         reference_curve: Optional[str]
-    ) -> BulkInfoForConsistency:
+    ) -> DataframeBasicDescribe:  # TODO to change with BulkInfoForConsistency:
         """
         Write a chunk in a given session
         :param ctx: context instance

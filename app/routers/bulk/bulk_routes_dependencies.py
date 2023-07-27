@@ -96,8 +96,8 @@ async def get_bulk_io(is_write_operation: bool = False) -> BulkIO:
 
 # still WIP so explicitly distinguish read and write
 async def get_bulk_io_read() -> BulkIO:
-    return await get_bulk_io(False)
+    return await get_bulk_io(is_write_operation=False)
 
 
 async def get_bulk_io_write() -> BulkIO:
-    return await get_bulk_io(True)
+    return await get_bulk_io(is_write_operation=True)

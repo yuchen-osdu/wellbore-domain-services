@@ -13,7 +13,7 @@ from osdu.core.api.storage.exceptions import ResourceNotFoundException
 from .statistics.bulk_statistics import BulkStatistics
 from .statistics.models import BulkDataStatisticsResponse
 from .read_fast_track import ReadFastTrackCaseNotSupportedException, read_data_fast_track
-from .model_chunking import GetDataParams
+from .model_chunking import GetDataParams, DataframeBasicDescribe
 from .mime_types import MimeType, MimeTypes
 from .json_orient import JSONOrient
 from .bulk_uri import BulkURI
@@ -174,10 +174,9 @@ class BulkIODask(BulkIO):
             record_id: str,
             session_id: UUID,
             reference_curve: Optional[str]
-    ) -> BulkInfoForConsistency:
+    ) -> DataframeBasicDescribe:
         dask_blob_storage: DaskBulkStorage = await ctx.app_injector.get(DaskBulkStorage)
 
-        # TODO for now return type does not match the return type hint, this will be fixed soon
         return await dask_blob_storage.add_chunk_in_session(
             data, content_type, df_validator_func, record_id, session_id
         )
