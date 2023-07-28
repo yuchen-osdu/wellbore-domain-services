@@ -255,6 +255,7 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         tags=bulk_tags if bulk_tags else ["WellLog"],
         dependencies=[
             *basic_dependencies,
+            Depends(set_welllog_data_consistency_check),
             Depends(make_entity_type_dependency(Entity.WELL_LOG, "V3"))
         ],
         responses={**response_401, **response_403, **response_500},
@@ -286,6 +287,7 @@ for bulk_prefix, bulk_tags, is_visible in [(ALPHA_APIS_PREFIX + DDMS_V3_PATH, al
         tags=bulk_tags if bulk_tags else ["Trajectory v3"],
         dependencies=[
             *basic_dependencies,
+            Depends(set_trajectory_data_consistency_check),
             Depends(make_entity_type_dependency(Entity.TRAJECTORY, "V3")),
         ],
         responses={**response_401, **response_403, **response_500},

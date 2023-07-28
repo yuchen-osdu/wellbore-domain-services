@@ -63,11 +63,7 @@ from app.bulk_persistence import (DataFrameValidationFunc,
                                   MAX_COLUMNS_RETURN,
                                   )
 
-from .bulk_routes_dependencies import (
-    BulkIO, get_bulk_io_read,
-    get_bulk_io_write_no_session,
-    get_bulk_io_write_with_session,
-)
+from .bulk_routes_dependencies import BulkIO, get_bulk_io_read, get_bulk_io_write
 
 
 router = APIRouter(route_class=TracingRoute)  # router dedicated to bulk APIs
@@ -96,7 +92,7 @@ async def post_data(record_id: str,
                     request: Request,
                     content_type: MimeType = Depends(write_bulk_content_type),
                     ctx: Context = Depends(get_ctx),
-                    bulk_io: BulkIO = Depends(get_bulk_io_write_no_session),
+                    bulk_io: BulkIO = Depends(get_bulk_io_write),
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
@@ -152,7 +148,7 @@ async def post_chunk_data(record_id: str,
                           request: Request,
                           content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
-                          bulk_io: BulkIO = Depends(get_bulk_io_write_with_session),
+                          bulk_io: BulkIO = Depends(get_bulk_io_write),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                           ) -> DataframeBasicDescribe:
     # fetch the session
@@ -162,6 +158,8 @@ async def post_chunk_data(record_id: str,
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Session cannot accept data, state={i_session.session.state}")
 
+    reference_curve = i_session.session.get_meta_value("reference_curve")
+
     # process and store the data chunk
     try:
         basic_describe = await bulk_io.write_chunk(
@@ -170,7 +168,9 @@ async def post_chunk_data(record_id: str,
             content_type,
             df_validation_func,
             record_id,
-            i_session.session.id)
+            i_session.session.id,
+            reference_curve
+        )
 
         trace_dataframe_attributes(basic_describe)
         return basic_describe
@@ -278,7 +278,7 @@ async def complete_session(
     ctx: Context = Depends(get_ctx),
     update_request: UpdateSessionState = Body(..., examples=sessions_body_examples),
     with_session: WithSessionStorages = Depends(get_session_dependencies),
-    bulk_io: BulkIO = Depends(get_bulk_io_write_with_session),
+    bulk_io: BulkIO = Depends(get_bulk_io_write),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
 ) -> CommitSessionResponse:
@@ -307,11 +307,13 @@ async def complete_session(
                                             detail=f'Record with version {i_session.session.fromVersion} from which '
                                                    f'update contains an invalid bulk URI')
 
+                reference_curve = consistency_checks.get_reference_curve(record)
                 new_bulk_id = await bulk_io.write_complete_session(ctx,
+                                                                   consistency_checks,
                                                                    record,
                                                                    i_session.session,
                                                                    previous_bulk_uri,
-                                                                   consistency_checks)
+                                                                   reference_curve)
                 # ==============>
                 # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
                 # ==============>

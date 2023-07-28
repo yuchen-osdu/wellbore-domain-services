@@ -98,6 +98,17 @@ class Session(BaseModel):
     def elapsed_since_update(self) -> float:
         return (datetime.utcnow() - self.updatedTime).total_seconds()
 
+    def set_meta_value(self, key: str, value: str):
+        if self.meta is None:
+            self.meta = {key: value}
+        else:
+            self.meta[key] = value
+
+    def get_meta_value(self, key: str, default: Optional[str] = None) -> Optional[str]:
+        if self.meta is None:
+            return default
+        return self.meta.get(key, default)
+
 
 class CommitSessionResponse(Session):
     class Config:
