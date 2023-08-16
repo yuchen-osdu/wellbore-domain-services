@@ -522,6 +522,7 @@ def test_get_data_from_record_data_without_dask(with_wdms_env, entity_type, seri
 @pytest.mark.tag('chunking', 'smoke')
 @pytest.mark.parametrize('entity_type', ["log"])
 @pytest.mark.parametrize('serializer', [JsonSerializer()])
+@pytest.mark.skip(reason="worker not support update on top of previous M9 bulk storage (before Dask)")
 def test_data_without_dask_update_session(with_wdms_env, entity_type, serializer):
     col = ['MD', 'X']
     with create_record(with_wdms_env, entity_type, col) as record_id:

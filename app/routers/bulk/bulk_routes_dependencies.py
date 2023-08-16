@@ -84,17 +84,20 @@ def is_bulk_worker_enabled() -> bool:
     return bool(bulk_worker_host())
 
 
-async def get_bulk_io() -> BulkIO:
+async def get_bulk_io(is_write_operation: bool = False) -> BulkIO:
     if is_bulk_worker_enabled():
-        return BulkIOWdmsWorker(bulk_worker_host(), get_http_client_session("wdms_bulk_worker"))
+        if is_write_operation and Config.wdms_worker_write_disable.value:
+            # write operation explicitly disabled by configuration
+            pass
+        else:
+            return BulkIOWdmsWorker(bulk_worker_host(), get_http_client_session("wdms_bulk_worker"))
     return BulkIODask(Config.enable_read_fast_track.value)
 
 
-async def get_bulk_io_dask() -> BulkIO:
-    return BulkIODask(Config.enable_read_fast_track.value)
+# still WIP so explicitly distinguish read and write
+async def get_bulk_io_read() -> BulkIO:
+    return await get_bulk_io(is_write_operation=False)
 
 
-# still WIP so explicitly distinguish read, write without session and write inside session
-get_bulk_io_read = get_bulk_io
-get_bulk_io_write_no_session = get_bulk_io
-get_bulk_io_write_with_session = get_bulk_io_dask
+async def get_bulk_io_write() -> BulkIO:
+    return await get_bulk_io(is_write_operation=True)

@@ -1,14 +1,14 @@
-from typing import Union, AsyncGenerator, Tuple, List, Optional
+from typing import Union, AsyncGenerator, Tuple, List, Optional, Any
 from uuid import UUID
 
 from aiohttp import ClientSession
-from fastapi import Response
+from fastapi import Response, status
 
 from odes_storage.models import Record
 
 from .sessions_storage import Session
 from .dask.errors import BulkWorkerError
-from .model_chunking import GetDataParams
+from .model_chunking import GetDataParams, DataframeBasicDescribe
 from .mime_types import MimeTypes, MimeType
 from .json_orient import JSONOrient
 from .bulk_uri import BulkURI
@@ -26,6 +26,13 @@ class BulkIOWdmsWorker(BulkIO):
         self._host = host
         self._http_session = http_session
 
+    @staticmethod
+    async def _response_as_json(response, expected_status: int = status.HTTP_200_OK) -> Any:
+        if response.status != expected_status:
+            raise BulkWorkerError(await response.text(), response.status)
+
+        return await response.json()
+
     async def write_chunk(
             self,
             ctx,
@@ -34,18 +41,53 @@ class BulkIOWdmsWorker(BulkIO):
             df_validator_func: DataFrameValidationFunc,
             record_id: str,
             session_id: UUID,
-    ) -> BulkInfoForConsistency:
-        raise NotImplementedError("BulkIOWdmsWorker.write_chunk")
+            reference_curve: Optional[str]
+    ) -> DataframeBasicDescribe:
+        headers = get_headers_from_ctx(ctx)
+        headers.update({"Content-Type": content_type.type})
+
+        params = {"reference": reference_curve} if reference_curve else None
+
+        content = await self._prepare_content(data)
+
+        async with self._http_session.post(
+                f"{self._host}/data/{record_id}/session/{session_id}", headers=headers, data=content, params=params
+        ) as resp:
+            response_obj = await self._response_as_json(resp)
+            bulk_info = BulkInfoForConsistency(**response_obj)
+            return DataframeBasicDescribe(
+                rowCount=bulk_info.row_count,
+                columnCount=bulk_info.column_count,
+                columns=[],
+                indexStart=bulk_info.index_start,
+                indexEnd=bulk_info.index_end,
+                indexType=bulk_info.index_type
+            )
 
     async def write_complete_session(
             self,
             ctx,
+            consistency_checks: DataConsistencyChecks,
             record: Record,
             session: Session,
             update_from_bulk_uri: Optional[BulkURI],
-            consistency_checks: DataConsistencyChecks,
+            reference_curve: Optional[str]
     ) -> str:
-        raise NotImplementedError("BulkIOWdmsWorker.write_complete_session")
+        headers = get_headers_from_ctx(ctx)
+
+        params = {"completion": session.mode.value}
+        if reference_curve:
+            params["reference"] = reference_curve
+        if update_from_bulk_uri is not None:
+            params["from_bulk"] = update_from_bulk_uri.bulk_id
+
+        async with self._http_session.patch(
+                f"{self._host}/data/{record.id}/session/{session.id}", headers=headers, params=params
+        ) as resp:
+            response_obj = await self._response_as_json(resp)
+            bulk_id, describe = response_obj["bulkid"], BulkInfoForConsistency(**response_obj["describe"])
+            consistency_checks.check_bulk_consistency(record, describe)
+            return bulk_id
 
     @with_trace("worker.read_data")
     async def read_data(
@@ -112,11 +154,8 @@ class BulkIOWdmsWorker(BulkIO):
         async with self._http_session.post(
                 f"{self._host}/data/{record.id}", headers=headers, data=content, params=params
         ) as resp:
-            if resp.status != 200:
-                raise BulkWorkerError(await resp.text(), resp.status)
-
-            response = await resp.json()
-            bulk_id, describe = response["bulkid"], BulkInfoForConsistency(**response["describe"])
+            response_obj = await self._response_as_json(resp)
+            bulk_id, describe = response_obj["bulkid"], BulkInfoForConsistency(**response_obj["describe"])
             consistency_checks.check_bulk_consistency(record, describe)
             return bulk_id, describe
 

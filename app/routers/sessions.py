@@ -12,9 +12,10 @@ from app.clients import StorageRecordServiceClient
 from app.bulk_persistence import (Session,
                                   SessionInternal,
                                   SessionsStorage,
-                                  SessionUpdateMode)
+                                  SessionUpdateMode,
+                                  DataConsistencyChecks)
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
-from app.routers.record_utils import fetch_record
+from app.routers.bulk.utils import get_data_consistency_checks
 from app.context import Context
 from app.helper.traces import TracingRoute
 
@@ -127,7 +128,9 @@ async def get_session_dependencies():
 async def create_session(record_id: str,
                          request: Request,
                          create_rq: CreateDataSessionRequest,
-                         with_storages: WithSessionStorages = Depends(get_session_dependencies)) -> Session:
+                         with_storages: WithSessionStorages = Depends(get_session_dependencies),
+                         consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks)
+                         ) -> Session:
     """
     when creating a session:
     check that the record exists
@@ -144,9 +147,15 @@ async def create_session(record_id: str,
         await with_storages.storage_service_client.get_record_version(record_id,
                                                                       create_rq.fromVersion,
                                                                       with_storages.ctx.partition_id)
+
+    reference_curve = consistency_checks.get_reference_curve(record)
     internal_session_data = None
 
     create_rq = create_rq or CreateDataSessionRequest()
+    if reference_curve:
+        meta = create_rq.meta or {}
+        meta["reference_curve"] = reference_curve
+        create_rq.meta = meta
 
     session_internal = await with_storages.sessions_storage.create_session(
         tenant=with_storages.tenant,

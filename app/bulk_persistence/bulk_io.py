@@ -11,7 +11,7 @@ from .consistency_checks import DataConsistencyChecks, BulkInfoForConsistency
 from .sessions_storage import Session
 from .json_orient import JSONOrient
 from .bulk_uri import BulkURI
-from .model_chunking import GetDataParams
+from .model_chunking import GetDataParams, DataframeBasicDescribe
 
 
 class BulkIO(ABC):
@@ -32,7 +32,7 @@ class BulkIO(ABC):
         :param ctx: context instance
         :param data: data corresponding to the serialized dataframe
         :param content_type: either JSON or parquet
-        :param df_validator_func: dataframe validation function, (TODO: to be deprecated soon)
+        :param df_validator_func: dataframe validation function
         :param consistency_checks: consistency check instance
         :param record: metadata as plain `Record` object
         :return: pair BulkId, bulk description
@@ -48,15 +48,17 @@ class BulkIO(ABC):
         df_validator_func: DataFrameValidationFunc,
         record_id: str,
         session_id: UUID,
-    ) -> BulkInfoForConsistency:
+        reference_curve: Optional[str]
+    ) -> DataframeBasicDescribe:  # TODO to change with BulkInfoForConsistency:
         """
         Write a chunk in a given session
         :param ctx: context instance
         :param data: data corresponding to the serialized dataframe
         :param content_type: either JSON or parquet
-        :param df_validator_func: dataframe validation function, (TODO: to be deprecated soon)
-        :param record_id: record id as string
+        :param df_validator_func: dataframe validation function
+        :param record_id: record id
         :param session_id: session id as UUID
+        :param reference_curve: reference curve if any else `None`
         :return: chunk dataframe description
         """
         raise NotImplementedError()
@@ -65,10 +67,11 @@ class BulkIO(ABC):
     async def write_complete_session(
         self,
         ctx,
+        consistency_checks: DataConsistencyChecks,
         record: Record,
         session: Session,
         update_from_bulk_uri: Optional[BulkURI],
-        consistency_checks: DataConsistencyChecks,
+        reference_curve: Optional[str]
     ) -> str:
         """
         Complete a session, will run consistency rules and update record creating a new version if successful
@@ -77,6 +80,7 @@ class BulkIO(ABC):
         :param session: session object
         :param update_from_bulk_uri: update from a version, if `None` will perform an overwrite
         :param consistency_checks: consistency check instance
+        :param reference_curve: reference curve if any
         :return: bulk id
         """
         raise NotImplementedError()

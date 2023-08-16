@@ -133,6 +133,13 @@ class ConfigurationContainer:
         description='WDMS bulk worker host',
         default='')
 
+    wdms_worker_write_disable: EnvVar = EnvVar(
+        key='WDMS_WORKER_WRITE_DISABLE',
+        description='by default worker is enabled if worker_host is set, the current flag disable worker to fall back '
+                    'into `Dask` implementation for write bulk operations.',
+        default='false',
+        factory=lambda x: x.lower() == 'true' or x.lower() == 'enabled' or x == '1')
+
     de_client_config_timeout: EnvVar = EnvVar(
         key='DE_CLIENT_CFG_TIMEOUT',
         description='set connect, read, write, and pool timeouts (in seconds) for all DE client.',
