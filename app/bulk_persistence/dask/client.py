@@ -34,7 +34,10 @@ _cluster: Optional[LocalCluster] = None
 _lock_client: Optional[anyio.Lock] = None
 
 
-async def create(config: BulkPersistenceConfig) -> DaskDistributedClient:
+async def create(config: BulkPersistenceConfig) -> Optional[DaskDistributedClient]:
+    if not config.is_dask_enabled:
+        return None
+
     global _lock_client, _client, _cluster
 
     if not _lock_client:

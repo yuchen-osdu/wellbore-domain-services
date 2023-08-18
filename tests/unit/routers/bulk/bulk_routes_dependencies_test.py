@@ -9,7 +9,7 @@ from app.routers.bulk.bulk_routes_dependencies import (
     get_bulk_io_write,
     get_bulk_io,
 )
-from app.bulk_persistence import BulkIODask, BulkIOWdmsWorker
+from app.bulk_persistence import BulkIODask, BulkIOWdmsWorker, BulkPersistenceConfig
 
 
 def test_set_bulk_uri_merge_extension_properties():
@@ -56,7 +56,18 @@ def test_set_bulk_uri_merge_extension_properties():
 
 @pytest.mark.anyio
 async def test_get_bulk_io_dependency():
-    with patch("app.routers.bulk.bulk_routes_dependencies.bulk_worker_host", return_value="mock_host"):
+    mock_config = BulkPersistenceConfig()
+    mock_config.bulk_worker_host = "mock_host"
+    with patch("app.routers.bulk.bulk_routes_dependencies.get_config_bulk", return_value=mock_config):
+        # by default
+        assert isinstance(await get_bulk_io(True), BulkIODask)
+        assert isinstance(await get_bulk_io(False), BulkIODask)
+        assert isinstance(await get_bulk_io_write(), BulkIODask)
+        assert isinstance(await get_bulk_io_read(), BulkIODask)
+
+        # all worker
+        mock_config.dask_enabled_on_read = False
+        mock_config.dask_enabled_on_write = False
         inst = await get_bulk_io(True)
         assert isinstance(inst, BulkIOWdmsWorker)
         assert inst._host == "mock_host"
@@ -65,19 +76,10 @@ async def test_get_bulk_io_dependency():
         assert inst._host == "mock_host"
         assert isinstance(await get_bulk_io_read(), BulkIOWdmsWorker)
         assert isinstance(await get_bulk_io_write(), BulkIOWdmsWorker)
-        with patch("app.conf.Config.wdms_worker_write_disable"):
-            # when is wdms_worker_write_disable return true
-            assert isinstance(await get_bulk_io_read(), BulkIOWdmsWorker)
-            assert isinstance(await get_bulk_io_write(), BulkIODask)
 
-    with patch("app.routers.bulk.bulk_routes_dependencies.bulk_worker_host", return_value=None):
-        assert isinstance(await get_bulk_io(True), BulkIODask)
-        assert isinstance(await get_bulk_io(False), BulkIODask)
+        mock_config.dask_enabled_on_write = True
+        # when is wdms_worker_write_disable return true
+        assert isinstance(await get_bulk_io_read(), BulkIOWdmsWorker)
         assert isinstance(await get_bulk_io_write(), BulkIODask)
-        assert isinstance(await get_bulk_io_read(), BulkIODask)
 
-    # by default
-    assert isinstance(await get_bulk_io(True), BulkIODask)
-    assert isinstance(await get_bulk_io(False), BulkIODask)
-    assert isinstance(await get_bulk_io_write(), BulkIODask)
-    assert isinstance(await get_bulk_io_read(), BulkIODask)
+
