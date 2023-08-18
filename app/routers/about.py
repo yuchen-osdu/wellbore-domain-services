@@ -20,9 +20,9 @@ from typing import Dict
 from app.auth.auth import require_opendes_authorized_user
 from app.helper.traces import TracingRoute
 from app.routers.common_parameters import response_401, response_403
+from app.routers.bulk.bulk_routes_dependencies import BulkIO, get_bulk_io_read, get_bulk_io_write
 
 router = APIRouter(route_class=TracingRoute)
-
 
 
 class AboutResponse(BaseModel):
@@ -54,7 +54,11 @@ class VersionDetailsResponse(BaseModel):
 
 @router.get("/version", response_model=VersionDetailsResponse, include_in_schema=True,
             responses={**response_401, **response_403})
-async def get_version(user=Depends(require_opendes_authorized_user, use_cache=False)):
+async def get_version(
+        user=Depends(require_opendes_authorized_user, use_cache=False),
+        bulk_io_read: BulkIO = Depends(get_bulk_io_read),
+        bulk_io_write: BulkIO = Depends(get_bulk_io_write),
+):
     # very basic parsing for now
     key_val_list = [key_val.split('=', 1) for key_val in Config.build_details.value.split(';') if '=' in key_val]
     details = {
@@ -69,6 +73,8 @@ async def get_version(user=Depends(require_opendes_authorized_user, use_cache=Fa
         "enable_read_fast_track"]}
                    )
 
+    details["read_bulk_backend"] = bulk_io_read.name()
+    details["write_bulk_backend"] = bulk_io_write.name()
     if Config.service_host_wdms_worker.value:
         details["enable_wdms_bulk_worker"] = str(True)
 

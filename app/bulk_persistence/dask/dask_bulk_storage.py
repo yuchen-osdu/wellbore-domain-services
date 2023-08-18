@@ -146,6 +146,9 @@ class DaskBulkStorage:
         instance = cls(config=config)
         instance._parameters = parameters
 
+        if not config.is_dask_enabled:
+            return instance
+
         # Initialise the dask client.
         if DaskBulkStorage.client is not dask_client:  # executed only once per dask client
             DaskBulkStorage.client = dask_client

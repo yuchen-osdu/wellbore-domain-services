@@ -27,11 +27,21 @@ class BulkPersistenceConfig:
 
     def __init__(self, min_worker_memory: str = "512Mi",
                  dask_data_ipc: str = 'dask_native',
-                 service_name: str = 'os-wellbore-ddms---local'
+                 service_name: str = 'os-wellbore-ddms---local',
+                 dask_enabled_on_read: bool = True,
+                 dask_enabled_on_write: bool = True,
+                 bulk_worker_host: str = ""
                  ):
         self._min_worker_memory_recommended = parse_bytes(min_worker_memory)
         self._dask_data_ipc = dask_data_ipc
         self._service_name = service_name
+        self.dask_enabled_on_read = dask_enabled_on_read
+        self.dask_enabled_on_write = dask_enabled_on_write
+        self.bulk_worker_host = bulk_worker_host
+
+    @property
+    def is_dask_enabled(self):
+        return self.dask_enabled_on_read or self.dask_enabled_on_write
 
     @property
     def min_worker_memory_recommended(self) -> int:

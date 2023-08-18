@@ -26,6 +26,9 @@ class BulkIOWdmsWorker(BulkIO):
         self._host = host
         self._http_session = http_session
 
+    def name(self) -> str:
+        return "Bulk worker service"
+
     @staticmethod
     async def _response_as_json(response, expected_status: int = status.HTTP_200_OK) -> Any:
         if response.status != expected_status:

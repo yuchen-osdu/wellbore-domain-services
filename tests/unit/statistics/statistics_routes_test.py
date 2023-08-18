@@ -22,7 +22,7 @@ from app.context import Context
 from unittest.mock import Mock
 
 from opencensus.trace import tracer
-from app.bulk_persistence import BulkIOWdmsWorker
+from app.bulk_persistence import BulkIOWdmsWorker, BulkPersistenceConfig
 from app.bulk_persistence.dask.errors import BulkWorkerError
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
 from app.bulk_persistence.statistics.models import (
@@ -132,8 +132,11 @@ async def test_with_bulk_no_stats(testing_app_local_chunking_no_consistency):
 
 @pytest.fixture(scope='function')
 def enable_worker_fixture():
-    with patch("app.routers.bulk.bulk_routes_dependencies.bulk_worker_host",
-               return_value="this is a non-null value"):
+    mock_config = BulkPersistenceConfig()
+    mock_config.bulk_worker_host = "worker_host"
+    mock_config.dask_enabled_on_write = False
+    mock_config.dask_enabled_on_read = False
+    with patch("app.routers.bulk.bulk_routes_dependencies.get_config_bulk", return_value=mock_config):
         yield
 
 
@@ -161,7 +164,7 @@ async def test_get_stats_with_worker(enable_worker_fixture, testing_app_local_ch
             ["Authorization", "correlation-id", "traceparent"]
         )
         assert _kwargs["params"] == {"curves_selection": ["A", "B", "C"]}
-        assert _args[0].startswith(f"this is a non-null value/data/{valid_record_id}/")
+        assert _args[0].startswith(f"worker_host/data/{valid_record_id}/")
 
 
 @pytest.mark.anyio
@@ -188,7 +191,7 @@ async def test_post_stats_with_worker(enable_worker_fixture, testing_app_local_c
         assert sorted(_kwargs["headers"].keys()) == sorted(
             ["Authorization", "correlation-id", "traceparent"]
         )
-        assert _args[0] == f"this is a non-null value/data/{valid_record_id}/bob_uri/statistics"
+        assert _args[0] == f"worker_host/data/{valid_record_id}/bob_uri/statistics"
 
 
 def _prepare_mock():

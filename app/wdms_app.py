@@ -15,6 +15,7 @@
 import asyncio
 import sys
 from functools import partial
+from typing import Optional
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
@@ -143,6 +144,10 @@ def make_entity_type_dependency(entity_type: Entity, version: str):
     return _set_entity_type
 
 
+def _get_bulk_worker_host() -> Optional[str]:
+    return Config.service_host_wdms_worker.value
+
+
 @wdms_app.on_event("startup")
 async def startup_event():
     service_name = Config.service_name.value
@@ -154,10 +159,18 @@ async def startup_event():
 
     check_environment(Config)
     # build bulk persistence specific configuration
+
+    # figure out bulk persistence backend: Dask or worker service
+    worker_service_host = _get_bulk_worker_host()
+    is_dask_backend = not bool(worker_service_host)
+
     bulk_config = BulkPersistenceConfig(
         min_worker_memory=Config.min_worker_memory.value,
         dask_data_ipc=Config.dask_data_ipc.value,
-        service_name=Config.service_name.value
+        service_name=Config.service_name.value,
+        dask_enabled_on_read=is_dask_backend,
+        dask_enabled_on_write=is_dask_backend,
+        bulk_worker_host=worker_service_host
     )
     wdms_app.state.bulk_config = bulk_config
     set_config_getter(lambda: wdms_app.state.bulk_config)

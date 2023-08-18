@@ -18,6 +18,10 @@ class BulkIO(ABC):
     """abstract class for bulk I/O"""
 
     @abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError()
+
+    @abstractmethod
     async def write_bulk(
         self,
         ctx,

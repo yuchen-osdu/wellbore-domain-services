@@ -38,6 +38,10 @@ def test_version(with_wdms_env):
     result = build_request_version().call(with_wdms_env)
     result.assert_ok()
     assert result.get_response_obj()
+    details = result.get_response_obj()["details"]
+    print(details)
+    assert details["read_bulk_backend"]
+    assert details["write_bulk_backend"]
 
 
 @pytest.mark.tag('basic', 'smoke')
