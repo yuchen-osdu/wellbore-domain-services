@@ -133,6 +133,7 @@ class ConfigurationContainer:
         description='WDMS bulk worker host',
         default='')
 
+    # TODO currently not taken into account
     wdms_worker_write_disable: EnvVar = EnvVar(
         key='WDMS_WORKER_WRITE_DISABLE',
         description='by default worker is enabled if worker_host is set, the current flag disable worker to fall back '

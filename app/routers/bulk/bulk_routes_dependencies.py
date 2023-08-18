@@ -3,7 +3,7 @@ from abc import ABC
 from typing import Optional
 from fastapi import Request
 
-from app.bulk_persistence import BulkURI, BulkIO, BulkIODask, BulkIOWdmsWorker
+from app.bulk_persistence import BulkURI, BulkIO, BulkIODask, BulkIOWdmsWorker, get_config as get_config_bulk
 from app.model.log_bulk import LogBulkHelper
 from app.conf import Config
 from app.utils import get_http_client_session
@@ -76,22 +76,13 @@ def get_bulk_id_access(request: Request) -> BulkIdAccess:
     return request.state.bulk_id_access
 
 
-def bulk_worker_host() -> str:
-    return Config.service_host_wdms_worker.value
-
-
-def is_bulk_worker_enabled() -> bool:
-    return bool(bulk_worker_host())
-
-
 async def get_bulk_io(is_write_operation: bool = False) -> BulkIO:
-    if is_bulk_worker_enabled():
-        if is_write_operation and Config.wdms_worker_write_disable.value:
-            # write operation explicitly disabled by configuration
-            pass
-        else:
-            return BulkIOWdmsWorker(bulk_worker_host(), get_http_client_session("wdms_bulk_worker"))
-    return BulkIODask(Config.enable_read_fast_track.value)
+    bulk_config = get_config_bulk()
+    if (not is_write_operation and bulk_config.dask_enabled_on_read) or (
+        is_write_operation and bulk_config.dask_enabled_on_write
+    ):
+        return BulkIODask(Config.enable_read_fast_track.value)
+    return BulkIOWdmsWorker(bulk_config.bulk_worker_host, get_http_client_session("wdms_bulk_worker"))
 
 
 # still WIP so explicitly distinguish read and write
