@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import time
 import uuid
 from typing import Optional
 from fastapi import Depends, Header
@@ -24,8 +24,18 @@ from app import conf
 from app.injector.app_injector import AppInjector
 from app.model.user import User
 from app.context import Context
-from app.helper.logger import get_logger
 from app.tenant import resolve_tenant
+
+
+class ServerTimingHdrMiddleware(BaseHTTPMiddleware):
+
+    async def dispatch(self, request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        # compute time in millisecond as per W3C recommendation
+        process_time_ms = int((time.time() - start_time) * 1000)
+        response.headers["Server-Timing"] = f"total;dur={str(process_time_ms)}"
+        return response
 
 
 class CreateBasicContextMiddleware(BaseHTTPMiddleware):

@@ -233,6 +233,12 @@ class ConfigurationContainer:
         factory=lambda x: x.lower()
     )
 
+    enable_header_server_timings: EnvVar = EnvVar(
+        key='OS_WELLBORE_DDMS_SERVER_TIMINGS_HDR',
+        description='enable or not Server-Timing response header',
+        default='true',
+        factory=lambda x: x.lower() == 'true' or x.lower() == 'enabled' or x == '1')
+
     _environment_dict: Dict = os.environ
 
     _contextual_loader: Callable = None
