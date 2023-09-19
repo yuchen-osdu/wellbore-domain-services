@@ -74,12 +74,40 @@ REQUEST_DATA_BODY_SCHEMA = {
     }
 }
 
-REQUIRED_ROLES_READ = """
-<p>Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.
-"In addition, users must be a member of data groups to access the data.</p>
+REQUIRED_ROLES_READ = """  
+Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.
+In addition, users must be a member of data groups to access the data.
 """
 
-REQUIRED_ROLES_WRITE = "<p>Required roles: 'users.datalake.editors' or 'users.datalake.admins'.</p>"
+REQUIRED_ROLES_WRITE = """  
+Required roles: 'users.datalake.editors' or 'users.datalake.admins
+"""
+
+BULK_READ_NOTE = """  
+**Important**: In order to minimize reading time.
+
+1. Partial reading
+    - Select only needed columns
+    
+Note: using curves filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.
+
+2. Full reading
+    - Try to read all the curves, if those errors are returned go to next steps:
+        - HTTP 400 "Too many columns requested"
+        - HTTP 400 "Too many values requested"
+        - HTTP 413 "the resource requested exceeds the limit" (When WDDMS worker are enabled)
+    - Get curve names and number of rows per curve by using describe parameter
+       - Each request should fetch as many as columns it is possible until upper limits are reached
+"""
+
+BULK_WRITE_NOTE = """  
+**Important**: In order to minimize writing time, it's necessary to:  
+- Double check whether bulk data is big enough to be sent with chunking APIs: meaning > 10 millions values or > 500 columns
+    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data API
+- Ensure all curve's values are in the same chunk to be sent
+- Each chunk should contain as many as columns it is possible until upper limits are reached
+"""
+
 
 response_401 = {status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"}}
 response_403 = {status.HTTP_403_FORBIDDEN: {"description": "Forbidden"}}
