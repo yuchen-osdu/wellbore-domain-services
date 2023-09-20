@@ -6,10 +6,10 @@ In this tutorial we will explain how to read and write bulk data efficiently.
 
 ## 1. Introduction
 
-Firstly, before adressing how to send or read efficiently the bulk data, ensure to:
+Firstly, before addressing how to send or read efficiently the bulk data, ensure to:
 - Use parquet format for sending and fetching bulk data is much faster
 - Use asynchronous requests in case of multiple calls
-- Use a deployment with WDDMS worker service enabled, it improves a lot performances for:
+- Use a deployment with WDDMS worker service enabled, it improves a lot of performances for:
     - reading from OSDU M16 release
     - writing from OSDU M20 release
     
@@ -39,13 +39,13 @@ Note: "welllogs" must be replaced by "wellboretrajectories" to manage bulk data 
     
 ## 2. Chunking or not chunking?
 Chunk APIs have been created to handle large amount of bulk data (GB) or when network is not stable enough and requires to split up data into smaller pieces.  
-When writting, using the **chunking feature has a ressource and timing cost**: it requires to manage a session, verify that chunks can be assembled all together and resolving conflicts if any.
+When writing, using the **chunking feature has a resource and timing cost**: it requires to manage a session, verify that chunks can be assembled all together and resolving conflicts if any.
 
-It implies, you should not use chunking APIs if your bulk data has a:
+It implies, you **should not** use chunking APIs if your bulk data has a:
 - Total number of values below **5 millions**
 - Total size is below **50MB**
 
-## 3. WDMS bulk data limits 
+## 3. WDDMS bulk data limits 
 Each read or writing call using chunking APIs must request below **10 millions values** or **500 columns**, otherwise an HTTP 400 or HTTP 413 error will be returned
 
 
@@ -64,24 +64,24 @@ In order to minimize reading time.
 1. [Partial reading](#Partial-reading)
     - Select only needed columns
     
-**Important**: using curves filtering has a cost, use it only if it reduces significally the amount of retrieved bulk data.
+**Important**: using curves filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.
 
 2. [Full reading](#Full-reading)
     - Try to read everything, if those errors are returned go to next steps:
         - HTTP 400 "Too many columns requested"
         - HTTP 400 "Too many values requested"
-        - HTTP 413 "the resource requested exceeds the limitthe resource requested exceeds the limit" (When WDMS is enabled)
+        - HTTP 413 "the resource requested exceeds the limit" (When WDDMS is enabled)
     - Get curve names and number of rows per curve by using describe parameter
        - Each request should fetch as many as columns it is possible until upper limits are reached
 
-**NOTE**: reading exact same chunks that written chunks wihout any modifications (no filtering and ask for all the columns contained in the chunk) will speed up a lot the reading
+**NOTE**: reading exact same chunks that written chunks without any modifications (no filtering and ask for all the columns contained in the chunk) will speed up a lot the reading
 
 # Code snippets
 
 ## Prerequisites
 
 ### Required Python packages
-Before to start to write bulk data through Wellbore DDMS API's, you will need to install the Python packages below:
+Before to start to write bulk data through Wellbore DDMS APIs, you will need to install the Python packages below:
 
 - The **pandas** library and its Pandas.Dataframe json format to structure log bulk data to be written to the Wellbore DDMS.
 - The **pyarrow** library to transform Pandas.Dataframe to parquet file through the pyarrow engine.
@@ -95,9 +95,9 @@ Before to start to write bulk data through Wellbore DDMS API's, you will need to
 
 ### Settings
 
-For any call to Wellbore DDMS API's you need to pass into the header of the request a valid bearer token. Copy this token value and assign it to the TOKEN variable below.
+For any call to Wellbore DDMS APIs you need to pass into the header of the request a valid bearer token. Copy this token value and assign it to the TOKEN variable below.
 
-Several settings as the **osdu_base_urlosdu_base_url** end-point and the **data-partition-id** are needed to create a WellLog to the Wellbore DDMS. Please, change those settings accordingly to your environment that you want to target.
+Several settings as the **osdu_base_url** and the **data-partition-id** are needed to create a WellLog to the Wellbore DDMS. Please, change those settings accordingly to your environment that you want to target.
 
 
 
@@ -119,7 +119,7 @@ record_legal_tags = list()
 
 
 ```python
-# WDMS upper limits
+# WDDMS upper limits
 COLUMNS_LIMIT = 3_000
 VALUES_LIMIT = 10_000_000
 
@@ -134,7 +134,7 @@ httpx_clients_config = {
     "timeout": 60
 }
 
-# http clients configured to target WDMS deployement
+# http clients configured to target WDDMS deployement
 client = httpx.Client(**httpx_clients_config)
 async_client = httpx.AsyncClient(**httpx_clients_config)
 ```
@@ -181,7 +181,7 @@ def generate_df(columns: List[str], index):
 def print_response(resp):
     print(f'{resp.request.method} : {resp.url} -> {resp.status_code}')
     if resp.status_code != httpx.codes.OK:
-        display(resp.content)
+        print(resp.content)
 
         
 def create_df_from_response(response):
@@ -300,8 +300,8 @@ def create_dummy_welllog_record_with_curves(_curves_name: List[str], _data_parti
 
 To speed up writing time, it's necessary to:
 1. Double check that bulk data is big enough to be sent with chunking APIs: meaning > 10 millions values or > 500 curves
-1. Ensure all curve's values are in the same chunk to be sent
-1. Each chunk should contain as many as curves it is possible until upper limits are reached
+2. Ensure all curve's values are in the same chunk to be sent
+3. Each chunk should contain as many as curves it is possible until upper limits are reached
 
 ### Prepare bulk data and chunks to be sent
 
@@ -331,7 +331,7 @@ print(f"Dataframe is split up into {len(writting_chunk_dfs)} chunks. Each chunk 
 record_id = "my-record-id"
 ```
 
-### Sent chunks to WDMS asynchronously
+### Sent chunks to WDDMS asynchronously
 
 
 ```python
