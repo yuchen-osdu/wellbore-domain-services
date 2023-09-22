@@ -25,7 +25,10 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_WRITE,
                                            json_orient_parameter,
                                            read_bulk_accept_type,
-                                           write_bulk_content_type, response_404, BULK_READ_NOTE, BULK_WRITE_NOTE)
+                                           write_bulk_content_type,
+                                           response_404,
+                                           BULK_READ_NOTE,
+                                           BULK_WRITE_NOTE)
 
 from ..record_utils import fetch_record
 from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
