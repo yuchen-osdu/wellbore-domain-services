@@ -85,11 +85,11 @@ phases:
 
       - GIT_SECRETS_SCAN_RESULT=$(git secrets --scan 2> ${OUTPUT_DIR}/git_secrets.out.txt && echo OK || echo FAILED)
       - if [ "$GIT_SECRETS_SCAN_RESULT" = "FAILED" ]; then echo "Secrets detected!" && exit 1; fi
-
+      - pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit/injector/aws_injector_test.py
       # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
       - |
         java -jar sonar-scanner-4.6.2.2472/lib/sonar-scanner-cli-4.6.2.2472.jar -Dsonar.projectKey=wellbore-ddms -Dsonar.host.url=${SONAR_URL} \
-          -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME}
+          -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME} -Dsonar.python.coverage.reportPaths=coverage.xml
       
       - safety check -r requirements.txt -r requirements_dev.txt -o text > safety_check.txt; EXITCODE=$?
 
@@ -106,9 +106,6 @@ phases:
       - echo "Pushing docker image..."
       - docker push ${ECR_IMAGE}
       - docker push ${ECR_IMAGE_BRANCH_LATEST}
-     
-      - python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit
-
   post_build:
     commands:
       - cp safety_check.txt ${OUTPUT_DIR}/python-safety
