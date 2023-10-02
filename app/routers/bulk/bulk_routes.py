@@ -25,7 +25,10 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            REQUIRED_ROLES_WRITE,
                                            json_orient_parameter,
                                            read_bulk_accept_type,
-                                           write_bulk_content_type, response_404)
+                                           write_bulk_content_type,
+                                           response_404,
+                                           BULK_READ_NOTE,
+                                           BULK_WRITE_NOTE)
 
 from ..record_utils import fetch_record
 from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
@@ -82,7 +85,9 @@ Payload is expected to contain the entire bulk which will replace as latest vers
 any previous bulk. Previous bulk versions are accessible via the get bulk data version API.
 Support JSON and Parquet format ('Content_Type' must be set accordingly).
 Support http chunked encoding transfer.
-""" + REQUIRED_ROLES_WRITE,
+"""
+    + REQUIRED_ROLES_WRITE
+    + BULK_WRITE_NOTE,
     operation_id=OPERATION_IDS["record_data"],
     responses={
             404: {},
@@ -183,9 +188,11 @@ async def post_chunk_data(record_id: str,
 GET_DATA_DESCRIPTION = f"""  
 Multiple media types response are available ("application/json", "application/x-parquet").  
 The desired format can be specify in the "Accept" header, default is Parquet.  
+
 When bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  
 The requested columns must not exceed {MAX_COLUMNS_RETURN}. 
-The query parameter __curves__ can be use to limit the number of columns."""
+The query parameter __curves__ can be use to limit the number of columns.  
+"""
 
 
 @router.get(
@@ -193,7 +200,8 @@ The query parameter __curves__ can be use to limit the number of columns."""
     summary='Returns data of the specified version.',
     description='Returns the data of a specific version according to the specified query parameters.'
     + GET_DATA_DESCRIPTION
-    + REQUIRED_ROLES_READ,
+    + REQUIRED_ROLES_READ
+    + BULK_READ_NOTE,
     # response_model=RecordData,
     responses={
         404: {},
@@ -233,8 +241,9 @@ async def get_data_version(
     "/{record_id}/data",
     summary='Returns the data according to the specified query parameters.',
     description='Returns the data according to the specified query parameters.'
-    + GET_DATA_DESCRIPTION
-    + REQUIRED_ROLES_READ,
+                + GET_DATA_DESCRIPTION
+                + REQUIRED_ROLES_READ
+                + BULK_READ_NOTE,
     # response_model=Union[RecordData, Dict],
     responses={
         404: {},

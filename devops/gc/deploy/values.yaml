@@ -5,8 +5,8 @@ global:
 
 data:
   logLevel: "ERROR"
-  requestsCpu: "110m"
-  requestsMemory: "450Mi"
+  requestsCpu: "370m"
+  requestsMemory: "710Mi"
   limitsCpu: "1"
   limitsMemory: "3G"
   image: ""

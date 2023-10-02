@@ -10,7 +10,7 @@ The following software have components provided under the terms of this license:
 
 - aiobotocore (from https://github.com/aio-libs/aiobotocore)
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
-- async-timeout (from https://github.com/aio-libs/async_timeout/)
+- async-timeout (from https://github.com/aio-libs/async-timeout, https://github.com/aio-libs/async_timeout/)
 - boto3 (from https://github.com/boto/boto3)
 - botocore (from https://github.com/boto/botocore)
 - coverage (from https://github.com/nedbat/coveragepy)
@@ -61,7 +61,7 @@ The following software have components provided under the terms of this license:
 - tenacity (from https://github.com/jd/tenacity)
 - tornado (from http://www.tornadoweb.org/)
 - types-jsonschema (from https://github.com/python/typeshed)
-- urllib3 (from https://pypi.org/project/urllib3/2.0.4/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 - yarl (from https://github.com/aio-libs/yarl/)
 
 ========================================================================
@@ -97,16 +97,16 @@ The following software have components provided under the terms of this license:
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.6.0/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.9.1/)
 - decorator (from https://github.com/micheles/decorator)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.7.0/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.9.2/)
 - fsspec (from http://github.com/fsspec/filesystem_spec)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
-- httpcore (from https://github.com/encode/httpcore)
-- httpx (from https://pypi.org/project/httpx/0.23.1/, https://pypi.org/project/httpx/0.24.1/)
+- httpcore (from https://github.com/encode/httpcore, https://pypi.org/project/httpcore/0.18.0/)
+- httpx (from https://pypi.org/project/httpx/0.23.1/, https://pypi.org/project/httpx/0.25.0/)
 - idna (from https://pypi.org/project/idna/3.4/)
 - isodate (from http://cheeseshop.python.org/pypi/isodate, https://github.com/gweis/isodate/)
 - numpy
@@ -114,7 +114,7 @@ The following software have components provided under the terms of this license:
 - openapi-schema-validator (from https://github.com/python-openapi/openapi-schema-validator)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- pip-tools (from https://pypi.org/project/pip-tools/6.12.0/, https://pypi.org/project/pip-tools/6.12.1/, https://pypi.org/project/pip-tools/7.1.0/)
+- pip-tools (from https://pypi.org/project/pip-tools/6.12.0/, https://pypi.org/project/pip-tools/6.12.1/, https://pypi.org/project/pip-tools/7.3.0/)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
@@ -126,9 +126,9 @@ The following software have components provided under the terms of this license:
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - s3fs (from http://github.com/fsspec/s3fs/)
 - sniffio (from https://github.com/python-trio/sniffio)
-- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.30.0/)
+- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.31.1/)
 - toolz (from https://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.23.1/, https://www.uvicorn.org/)
+- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.23.2/, https://www.uvicorn.org/)
 - zict (from http://zict.readthedocs.io/en/latest/)
 
 ========================================================================
@@ -154,8 +154,8 @@ CC0-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.6.0/)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.7.0/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.9.1/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.9.2/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 
 ========================================================================
@@ -228,7 +228,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://aioitertools.omnilib.dev)
 - aioredis (from https://github.com/aio-libs/aioredis-py)
-- anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/3.7.1/)
+- anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/4.0.0/)
 - asgi-lifespan (from https://pypi.org/project/asgi-lifespan/2.0.0/, https://pypi.org/project/asgi-lifespan/2.1.0/)
 - attrs (from https://attrs.readthedocs.io/, https://pypi.org/project/attrs/23.1.0/, https://www.attrs.org/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -242,16 +242,16 @@ The following software have components provided under the terms of this license:
 - azure-storage-blob (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob)
 - backoff
 - botocore (from https://github.com/boto/botocore)
-- build (from https://pypi.org/project/build/0.10.0/, https://pypi.org/project/build/0.9.0/)
+- build (from https://pypi.org/project/build/0.10.0/, https://pypi.org/project/build/0.9.0/, https://pypi.org/project/build/1.0.3/)
 - cachetools (from https://github.com/tkem/cachetools/)
 - cffi
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer)
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.7.0/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.9.2/)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
-- execnet (from https://pypi.org/project/execnet/2.0.2/)
-- fastapi (from https://pypi.org/project/fastapi/0.100.0/, https://pypi.org/project/fastapi/0.86.0/)
+- execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/)
+- fastapi (from https://pypi.org/project/fastapi/0.103.1/, https://pypi.org/project/fastapi/0.86.0/)
 - grpcio (from https://grpc.io)
 - h11
 - hypothesis (from https://hypothesis.works)
@@ -262,7 +262,7 @@ The following software have components provided under the terms of this license:
 - msal (from https://github.com/AzureAD/microsoft-authentication-library-for-python)
 - msal-extensions (from https://pypi.org/project/msal-extensions/1.0.0/)
 - msrest (from https://github.com/Azure/msrest-for-python)
-- munch (from https://github.com/Infinidat/munch)
+- munch (from http://github.com/Infinidat/munch, https://github.com/Infinidat/munch)
 - natsort (from https://github.com/SethMMorton/natsort)
 - numpy
 - ordered-set (from https://pypi.org/project/ordered-set/4.1.0/)
@@ -272,7 +272,7 @@ The following software have components provided under the terms of this license:
 - pluggy
 - py (from https://py.readthedocs.io/)
 - pyarrow (from https://arrow.apache.org/)
-- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.0.3/)
+- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.3.0/)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
@@ -288,7 +288,7 @@ The following software have components provided under the terms of this license:
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.1.0/)
 - toml (from https://github.com/uiri/toml)
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/, https://pypi.org/project/tomli/2.0.1/)
-- urllib3 (from https://pypi.org/project/urllib3/2.0.4/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)
 
@@ -350,7 +350,7 @@ The following software have components provided under the terms of this license:
 - portalocker (from https://github.com/WoLpH/portalocker)
 - python-dateutil (from https://github.com/dateutil/dateutil)
 - typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
-- urllib3 (from https://pypi.org/project/urllib3/2.0.4/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 
 ========================================================================
 SunPro

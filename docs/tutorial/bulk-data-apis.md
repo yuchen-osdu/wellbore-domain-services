@@ -133,7 +133,7 @@ def create_df_from_response(response):
     if content_type == 'application/json':
         return pd.DataFrame.from_dict(response.json())
     
-    elif content_type == 'application/x-parquet':
+    elif content_type == 'application/parquet':
         f = io.BytesIO(response.content)
         f.seek(0)
         return pd.read_parquet(f)
@@ -334,7 +334,7 @@ Sending the whole dataframe to the WellLog bulk data.
 
 ```python
 data_to_send_parquet = generated_dataframe.to_parquet(path=None, engine="pyarrow")
-headers = { 'content-type': 'application/x-parquet'}
+headers = { 'content-type': 'application/parquet'}
 
 print_response(client.post(f'{welllog_dms_url}/{record_id}/data', data=data_to_send_parquet, headers=headers))
 ```
@@ -368,15 +368,10 @@ print_response(client.post(f'{welllog_dms_url}/{record_id}/data', params=params,
 
 In order to write WellLog bulk data by chunks to the Wellbore DDMS you have to follow those 3 steps:
 
-1. Create a WellLog session - POST /alpha/ddms/v3/welllogs/{record_id}/sessions
-2. Send data by chunk in the session - POST /alpha/ddms/v3/welllogs/{record_id}/sessions/{session_id}/data  
-3. Commit the session once all chunks are sent -  PATCH /alpha/ddms/v3/welllogs/{welllog_id}/sessions/{session_id}
+1. Create a WellLog session - POST /ddms/v3/welllogs/{record_id}/sessions
+2. Send data by chunk in the session - POST /ddms/v3/welllogs/{record_id}/sessions/{session_id}/data  
+3. Commit or abandon the session once all chunks are sent -  PATCH /ddms/v3/welllogs/{welllog_id}/sessions/{session_id}
 
-In step 3 you can also update the session or abandon. This is controlled by the state attribute that is passed in the JSON of the PATCH HTTP session API.
-
-{
-  "state": "commit", "abandon" or "update"
-}
 
 ## Flow to send json: 
 ## Open a new session > Send json chunks > Commit the session
@@ -459,7 +454,7 @@ print(f"Session created: {session_data['state']} with id {session_id}\n")
 ```python
 # append first chunk - PARQUET
 chunk_3 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(15,20))
-headers = {'content-type': 'application/x-parquet'}
+headers = {'content-type': 'application/parquet'}
 response_chunk_3 = client.post(f'{wellbore_dms_url}/{record_id}/sessions/{session_id}/data', data=chunk_3.to_parquet(engine="pyarrow"), headers=headers)
 print_response(response_chunk_3)
 ```
@@ -468,7 +463,7 @@ print_response(response_chunk_3)
 ```python
 # append second chunk - PARQUET
 chunk_4 = generate_df(['COLUMN_MD', 'COLUMN_X'], range(20,25))
-headers = {'content-type': 'application/x-parquet'}
+headers = {'content-type': 'application/parquet'}
 response_chunk_4 = client.post(f'{wellbore_dms_url}/{record_id}/sessions/{session_id}/data', data=chunk_4.to_parquet(engine="pyarrow"), headers=headers)
 print_response(response_chunk_4)
 ```
@@ -2731,11 +2726,13 @@ record_2d_id = record_2d_response.json()["recordIds"][0]
 print(f"2D record created '{record_2d_id}'")
 
 initial_df = generate_df(['COLUMN_MD', 'COLUMN_X'], range(10))
-headers = { 'content-type': 'application/x-parquet'}
-print_response(client.post(f'{welllog_dms_url}/{record_2d_id}/data', data=initial_df.to_parquet(engine="pyarrow"), headers=headers))
+headers = { 'content-type': 'application/parquet'}
+x-parquetprint_response(client.post(f'{welllog_dms_url}/{record_2d_id}/data', data=initial_df.to_parquet(engine="pyarrow"), headers=headers))
 ```
     
-By convention array data are added to the WellLog record through a Panda dataframe with columns that contain the name of the array and the column number between square bracket. The orient value has to be set to columns.
+By convention array data are added to the WellLog record through a Panda dataframe with columns that contain the name of the array and the column number between square bracket.
+The parameter `orient` value has to be set to columns.
+
 
 ```python
 # Create a session
@@ -2744,7 +2741,7 @@ create_2d_session_response = client.post(f'{welllog_dms_url}/{record_2d_id}/sess
 print_response(create_2d_session_response)
 session_id_2d = create_2d_session_response.json()['id']
 
-# Send chunk data for 2D
+# Create an array data named '2D' into the WellLog with 2 columns
 arr_data_dataframe = generate_df(['2D[0]', '2D[1]'], range(15))
 
 print_response(client.post(f'{welllog_dms_url}/{record_2d_id}/sessions/{session_id_2d}/data',
@@ -3501,7 +3498,7 @@ record_id
 
 # posting bulk data to the WellLog record
 initial_df = generate_df(['COLUMN_MD', 'COLUMN_X'], range(10))
-headers = { 'content-type': 'application/x-parquet'}
+headers = { 'content-type': 'application/parquet'}
 print_response(client.post(f'{welllog_dms_url}/{record_id}/data', data=initial_df.to_parquet(engine="pyarrow"), headers=headers))
 
 # checking for versions = 2 versions of the WellLog record with only the last one with associated bulk data
@@ -3595,7 +3592,7 @@ record_id
 
 # sending data for column A 
 generated_A_dataframe = generate_df(['COLUMN_MD','COLUMN_X'], range(10))
-headers = { 'content-type': 'application/x-parquet'}
+headers = { 'content-type': 'application/parquet'}
 print_response(client.post(f'{welllog_dms_url}/{record_id}/data', data=generated_A_dataframe.to_parquet(engine="pyarrow"), headers=headers))
 
 
