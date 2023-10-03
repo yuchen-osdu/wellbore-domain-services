@@ -28,7 +28,6 @@ from app.tenant import resolve_tenant
 
 
 class ServerTimingHdrMiddleware(BaseHTTPMiddleware):
-
     async def dispatch(self, request, call_next):
         start_time = time.time()
         response = await call_next(request)
@@ -50,44 +49,50 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
         Returns the response with the additional CSP headers added to allow for swagger js and css files from the given domains.
         """
         if "/docs" in request.url.path:
-            response.headers[
-                "Content-Security-Policy"] = "default-src 'self'; script-src 'self' *.jsdelivr.net 'unsafe-inline'; style-src 'self' *.jsdelivr.net; img-src 'self' *.tiangolo.com data:;"
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; script-src 'self' *.jsdelivr.net 'unsafe-inline'; style-src 'self' *.jsdelivr.net;"
+                " img-src 'self' *.tiangolo.com data:;"
+            )
 
     async def dispatch(self, request, call_next):
         request.state.dependencies = dict()
 
-        api_key = request.headers.get('x-api-key', None)
+        api_key = request.headers.get("x-api-key", None)
         app_key = request.headers.get(conf.APP_KEY_HEADER_NAME, None)
-        partition_id = request.headers.get('data-partition-id', None)
+        partition_id = request.headers.get("data-partition-id", None)
         tenant = await resolve_tenant(partition_id)
         x_user_id = request.headers.get(conf.X_USER_ID_HEADER_NAME, None)
         correlation_id = request.headers.get(conf.CORRELATION_ID_HEADER_NAME, str(uuid.uuid4()))
         request_id = request.headers.get(conf.REQUEST_ID_HEADER_NAME, str(uuid.uuid4()))
-        anonymous_user = User(email='anonymous', authenticated=False)
+        anonymous_user = User(email="anonymous", authenticated=False)
         x_collaboration = request.headers.get(conf.X_COLLABORATION_HEADER_NAME, None)
 
         clear_logger_contextvars()
-        logger_utils.add_fields(correlation_id=correlation_id,
-                                request_id=request_id,
-                                partition_id=partition_id,
-                                app_key=app_key,
-                                api_key=api_key)
+        logger_utils.add_fields(
+            correlation_id=correlation_id,
+            request_id=request_id,
+            partition_id=partition_id,
+            app_key=app_key,
+            api_key=api_key,
+        )
 
         Context.clear_current()
-        ctx = Context(correlation_id=correlation_id,
-                      request_id=request_id,
-                      dev_mode=self._config.get('dev_mode'),
-                      partition_id=partition_id,
-                      app_key=app_key,
-                      api_key=api_key,
-                      user=anonymous_user,
-                      tenant=tenant,
-                      x_user_id=x_user_id,
-                      x_collaboration=x_collaboration,
-                      app_injector=self._app_injector)
+        ctx = Context(
+            correlation_id=correlation_id,
+            request_id=request_id,
+            dev_mode=self._config.get("dev_mode"),
+            partition_id=partition_id,
+            app_key=app_key,
+            api_key=api_key,
+            user=anonymous_user,
+            tenant=tenant,
+            x_user_id=x_user_id,
+            x_collaboration=x_collaboration,
+            app_injector=self._app_injector,
+        )
         ctx.set_current()
 
-        request.scope['user'] = anonymous_user
+        request.scope["user"] = anonymous_user
         try:
             response = await call_next(request)
         finally:
@@ -98,10 +103,10 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
 
 
 async def require_data_partition_id(
-        data_partition_id: str = Header(default=None,
-                                        title='data partition id',
-                                        description='identifier of the data partition to query',
-                                        min_length=1)):
+    data_partition_id: str = Header(
+        default=None, title="data partition id", description="identifier of the data partition to query", min_length=1
+    )
+):
     Context.set_current_with_value(partition_id=data_partition_id)
 
 
