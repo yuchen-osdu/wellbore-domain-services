@@ -74,6 +74,26 @@ spec:
             secretKeyRef:
               name: {{ .Values.deployment.instrumentationKey.secretName }}
               key: appinsights
+        - name: TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: active-directory
+              key: tenantid
+        - name: CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: active-directory
+              key: principal-clientid
+        - name: CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: active-directory
+              key: principal-clientpassword
+        - name: WORKSPACE_ID
+          valueFrom:
+            secretKeyRef:
+              name: central-logging
+              key: workspace-id
         - name: KEYVAULT_URL
           valueFrom:
             configMapKeyRef:
