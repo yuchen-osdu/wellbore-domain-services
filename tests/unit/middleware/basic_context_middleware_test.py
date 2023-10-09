@@ -1,15 +1,22 @@
 import pytest
 from unittest.mock import Mock, PropertyMock, patch
 
+from fastapi import Response
+
 from app import wdms_app
 from app.routers.about import AboutResponse
-from app.middleware.basic_context_middleware import CreateBasicContextMiddleware
+from app.middleware.basic_context_middleware import CreateBasicContextMiddleware, ServerTimingHdrMiddleware
 from app.context import Context
 from starlette.datastructures import URL
+from time import sleep
 
 
 def test_ensure_basic_context_middleware_is_first():
     assert wdms_app.wdms_app.user_middleware[0].cls is CreateBasicContextMiddleware
+
+
+def test_server_time_middleware_enabled_by_default():
+    assert any(m.cls is ServerTimingHdrMiddleware for m in wdms_app.wdms_app.user_middleware)
 
 
 @pytest.mark.anyio
@@ -53,6 +60,22 @@ async def test_should_start_and_leave_cleared_context(local_dev_config):
     # and THEN context values should be back to none
     after_ctx = Context.current()
     assert all((after_ctx[p] is None for p in properties_to_check))
+
+
+@pytest.mark.anyio
+async def test_server_time_middleware_add_header(local_dev_config):
+    middleware = ServerTimingHdrMiddleware(app=None)
+
+    async def call_mock_response(*_args, **_kwargs):
+        sleep(0.1)
+        return Response(content=b"")
+
+    # WHEN middleware called, server-timing is there and duration is expressed in millisecond
+    response = await middleware.dispatch(Mock(), call_mock_response)
+    server_timings = response.headers["Server-Timing"]
+    assert server_timings.startswith("total;dur=")
+    duration = int(server_timings.split("=")[1])
+    assert duration >= 100
 
 
 @pytest.mark.anyio

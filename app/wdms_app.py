@@ -45,7 +45,7 @@ from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
 # ---------- import middlewares ----------------------------------
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
-from app.middleware.basic_context_middleware import require_data_partition_id
+from app.middleware.basic_context_middleware import require_data_partition_id, ServerTimingHdrMiddleware
 # ---------- import model ----------------------------------
 from app.model.entity_utils import Entity
 
@@ -413,6 +413,9 @@ update_operation_ids(wdms_app)
 
 # order is last executed first
 wdms_app.add_middleware(TracingMiddleware, skip_for_path_suffix=[r.path for r in probes.router.routes])
+
+if Config.enable_header_server_timings.value:
+    wdms_app.add_middleware(ServerTimingHdrMiddleware)
 
 # must be added last to be executed first, it's responsible to clean and create WDMS Context
 wdms_app.add_middleware(CreateBasicContextMiddleware, config=Config, injector=app_injector)

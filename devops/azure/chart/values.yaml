@@ -31,6 +31,8 @@ replicaCount: 2
 
 # undefined by default, but you can specify it if needed
 # nodepool: services
+
+# TODO reduced resources in case of bulk workers enabled to requested:256Mi/500m, limit:1Gi/1000m
 resources:
  limits:
    memory: 2Gi
@@ -39,15 +41,24 @@ resources:
    memory: 2Gi
    cpu: 1000m
 
+kedaconfig:
+  servicepath: "/api/os-wellbore-ddms" #monitor ddms end points
+  duration: "2m"
+  thresholdcoefficient: "0.8"
+  threshold: "1600"
+  metricType: "Utilization"
+  utilization:
+    cpu: 70
+
 probes:
   startup:
     failureThreshold: 6
     periodSeconds: 5
   liveness:
     initialDelaySeconds: 15
-    periodSeconds: 5
-    timeoutSeconds: 1
-    failureThreshold: 3
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 5
   readiness:
     initialDelaySeconds: 5
     timeoutSeconds: 5

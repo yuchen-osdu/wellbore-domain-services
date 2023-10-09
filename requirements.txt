@@ -290,7 +290,7 @@ osdu-api[all]==0.21.3
     #   osdu-core-lib-python-aws
 osdu-core-lib-python==2.0.0
     # via -r requirements.in
-osdu-core-lib-python-anthos==1.0.3
+osdu-core-lib-python-anthos==1.0.4
     # via -r requirements.in
 osdu-core-lib-python-aws==2.1.2
     # via -r requirements.in
