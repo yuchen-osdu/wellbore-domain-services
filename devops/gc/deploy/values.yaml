@@ -19,6 +19,7 @@ conf:
   appName: "wellbore"
   keycloakSecretName: "wellbore-keycloak-secret"
   minioSecretName: "wellbore-minio-secret"
+  replicas: 1
 
 istio:
   proxyCPU: "5m"
