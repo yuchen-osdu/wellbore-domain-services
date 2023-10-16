@@ -86,10 +86,10 @@ class MainInjector(AppInjectorModule):
             logger.info('using aws injector')
             AwsInjector().configure(app_injector)
 
-        if Config.cloud_provider.value == 'anthos':
-            from app.injector.anthos_injector import AnthosInjector
-            logger.info('using anthos injector')
-            AnthosInjector().configure(app_injector)
+        if Config.cloud_provider.value == 'baremetal':
+            from app.injector.baremetal_injector import BaremetalInjector
+            logger.info('using baremetal injector')
+            BaremetalInjector().configure(app_injector)
 
         async def make_sessions_storage():
             return SessionsStorage(await app_injector.get(BlobStorageBase))

@@ -105,11 +105,11 @@ class ConfigurationContainer:
     cloud_provider: EnvVar = EnvVar(
         key="CLOUD_PROVIDER",
         description=(
-            'Short name of the current cloud provider environment, must be "aws" or "gc" or "az" or "ibm" or "anthos"'
+            'Short name of the current cloud provider environment, must be "aws" or "gc" or "az" or "ibm" or "baremetal"'
         ),
         default=None,
         is_mandatory=True,
-        allowed_values=["aws", "gc", "az", "local", "ibm", "anthos"],
+        allowed_values=["aws", "gc", "az", "local", "ibm", "baremetal"],
         factory=lambda x: x.lower(),
     )
 
@@ -425,7 +425,7 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
             default="http://schema/api/schema-service",
         )
 
-    if provider == "anthos":
+    if provider == "baremetal":
         config.add_from_env(
             attribute_name="ref_log_level",
             env_var_key="LOG_LEVEL",

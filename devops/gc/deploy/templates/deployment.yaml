@@ -26,16 +26,30 @@ spec:
       containers:
         - name: {{ .Values.conf.appName | quote }}
           image: {{ .Values.data.image | quote }}
-          imagePullPolicy: {{ .Values.data.imagePullPolicy  | quote }}
+          imagePullPolicy: {{ .Values.data.imagePullPolicy | quote }}
           envFrom:
             - configMapRef:
                 name: {{ .Values.conf.configmap | quote }}
-            {{- if .Values.global.onPremEnabled }}
+          {{- if .Values.global.onPremEnabled }}
             - secretRef:
                 name: {{ .Values.conf.keycloakSecretName | quote }}
-            - secretRef:
-                name: {{ .Values.conf.minioSecretName | quote }}
-            {{- end }}
+          env:
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.conf.minioSecretName | quote }}
+                  key: MINIO_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.conf.minioSecretName | quote }}
+                  key: MINIO_SECRET_KEY
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.conf.minioSecretName | quote }}
+                  key: MINIO_ENDPOINT
+          {{- end }}
           ports:
             - name: http
               containerPort: 8080
