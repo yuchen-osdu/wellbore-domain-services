@@ -28,6 +28,7 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - importlib-metadata
+- importlib-resources (from https://github.com/python/importlib_resources)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from https://pypi.org/project/msgpack/1.0.7/)
 - multidict (from https://github.com/aio-libs/multidict)
@@ -255,7 +256,6 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - h11
 - hypothesis (from https://hypothesis.works)
-- importlib-resources (from https://github.com/python/importlib_resources)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig, https://pypi.org/project/iniconfig/2.0.0/)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema
