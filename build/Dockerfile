@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Using Debian 11 - bullseye, slim version as base OS
-FROM python:3.8-slim-bullseye
+FROM python:3.8-slim-bookworm
 
+WORKDIR /
 COPY requirements.txt ./
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 
 COPY ./app /app
 ENV PYTHONPATH=./
@@ -32,11 +32,14 @@ ENV OS_WELLBORE_DDMS_BUILD_DETAILS build_date=$build_date;build_number=$build_nu
 
 
 EXPOSE 8080
-WORKDIR ./
+WORKDIR /
 
 # Make the container run as non-root user
 #(https://medium.com/better-programming/running-a-container-with-a-non-root-user-e35830d1f42a)
 RUN addgroup --system appuser && adduser --system appuser && adduser appuser appuser
+
+# Prevent CVE-2023-31484 by removing perl-base. To be removed, as soon as this CVE is fixed in official images
+RUN apt-get purge perl-base -y --allow-remove-essential
 
 USER appuser
 
