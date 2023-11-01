@@ -31,7 +31,7 @@ cd tests/integration
 python gen_postman_env.py \
 --token $TOKEN \
 --base_url $GC_WELLBORE_BASE_URL \
---cloud_provider "anthos" \
+--cloud_provider "baremetal" \
 --data_partition $GC_TENANT \
 --acl_domain $GROUP_ID \
 --legal_tag $LEGAL_TAG

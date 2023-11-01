@@ -28,8 +28,9 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - importlib-metadata
+- importlib-resources (from https://github.com/python/importlib_resources)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
-- msgpack (from https://msgpack.org/)
+- msgpack (from https://msgpack.org/, https://pypi.org/project/msgpack/1.0.6/, https://pypi.org/project/msgpack/1.0.7/)
 - multidict (from https://github.com/aio-libs/multidict)
 - numpy
 - openapi-spec-validator (from https://github.com/python-openapi/openapi-spec-validator)
@@ -40,7 +41,7 @@ The following software have components provided under the terms of this license:
 - opencensus-ext-ocagent (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent)
 - opencensus-ext-stackdriver (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver)
 - opencensus-proto (from https://github.com/census-instrumentation/opencensus-proto/tree/master/gen-python)
-- packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/23.1/)
+- packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/23.2/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/pypa/pep517)
 - prometheus-client (from https://github.com/prometheus/client_python)
@@ -56,12 +57,12 @@ The following software have components provided under the terms of this license:
 - s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio)
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
-- structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.1.0/)
+- structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.2.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - tenacity (from https://github.com/jd/tenacity)
 - tornado (from http://www.tornadoweb.org/)
 - types-jsonschema (from https://github.com/python/typeshed)
-- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/, https://pypi.org/project/urllib3/2.0.7/)
 - yarl (from https://github.com/aio-libs/yarl/)
 
 ========================================================================
@@ -75,7 +76,7 @@ The following software have components provided under the terms of this license:
 - locket (from http://github.com/mwilliamson/locket.py)
 - numpy
 - oauthlib (from https://github.com/oauthlib/oauthlib)
-- packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/23.1/)
+- packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/23.2/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - prometheus-client (from https://github.com/prometheus/client_python)
 - protobuf (from https://developers.google.com/protocol-buffers/)
@@ -97,10 +98,10 @@ The following software have components provided under the terms of this license:
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.9.1/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.10.0/)
 - decorator (from https://github.com/micheles/decorator)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.9.2/)
-- fsspec (from http://github.com/fsspec/filesystem_spec)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.10.0/)
+- fsspec (from http://github.com/fsspec/filesystem_spec, https://github.com/fsspec/filesystem_spec)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
@@ -144,7 +145,7 @@ CC-BY-4.0
 The following software have components provided under the terms of this license:
 
 - adlfs (from https://github.com/dask/adlfs/)
-- fsspec (from http://github.com/fsspec/filesystem_spec)
+- fsspec (from http://github.com/fsspec/filesystem_spec, https://github.com/fsspec/filesystem_spec)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - numpy
 - s3fs (from http://github.com/fsspec/s3fs/)
@@ -154,8 +155,8 @@ CC0-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.9.1/)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.9.2/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.10.0/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.10.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 
 ========================================================================
@@ -248,14 +249,13 @@ The following software have components provided under the terms of this license:
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer)
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.9.2/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.10.0/)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/)
-- fastapi (from https://pypi.org/project/fastapi/0.103.1/, https://pypi.org/project/fastapi/0.86.0/)
+- fastapi (from https://pypi.org/project/fastapi/0.104.0/, https://pypi.org/project/fastapi/0.86.0/)
 - grpcio (from https://grpc.io)
 - h11
 - hypothesis (from https://hypothesis.works)
-- importlib-resources (from https://github.com/python/importlib_resources)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig, https://pypi.org/project/iniconfig/2.0.0/)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema
@@ -272,7 +272,7 @@ The following software have components provided under the terms of this license:
 - pluggy
 - py (from https://py.readthedocs.io/)
 - pyarrow (from https://arrow.apache.org/)
-- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.3.0/)
+- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.4.2/)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
@@ -285,10 +285,10 @@ The following software have components provided under the terms of this license:
 - pytz (from http://pythonhosted.org/pytz)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio)
-- structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.1.0/)
+- structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/23.2.0/)
 - toml (from https://github.com/uiri/toml)
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/, https://pypi.org/project/tomli/2.0.1/)
-- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/, https://pypi.org/project/urllib3/2.0.7/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://github.com/jaraco/zipp)
 
@@ -350,7 +350,7 @@ The following software have components provided under the terms of this license:
 - portalocker (from https://github.com/WoLpH/portalocker)
 - python-dateutil (from https://github.com/dateutil/dateutil)
 - typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
-- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
+- urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/, https://pypi.org/project/urllib3/2.0.7/)
 
 ========================================================================
 SunPro

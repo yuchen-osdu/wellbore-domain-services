@@ -77,7 +77,6 @@ from app.routers.ddms_v2 import (
     wellbore_ddms_v2,
 )
 from app.routers.ddms_v3 import (
-    delete_v3,
     markerset_ddms_v3,
     well_ddms_v3,
     wellbore_ddms_v3,
@@ -252,8 +251,6 @@ wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_
                         dependencies=basic_dependencies,
                         responses={**response_401, **response_403, **response_500})
 
-wdms_app.include_router(delete_v3.router, prefix=DDMS_V3_PATH, tags=["Delete records V3"],
-                        dependencies=basic_dependencies, responses={**response_401, **response_403, **response_500})
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
 

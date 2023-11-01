@@ -18,10 +18,10 @@ from app.bulk_persistence import DaskBulkStorage, get_config
 from app.context import Context
 from app.tenant import resolve_tenant
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from osdu_anthos.storage.dask_storage_parameters import (
-    get_dask_storage_parameters as anthos_parameters,
+from osdu_baremetal.storage.dask_storage_parameters import (
+    get_dask_storage_parameters as baremetal_parameters,
 )
-from osdu_anthos.storage.storage_anthos import AnthosStorage
+from osdu_baremetal.storage.storage_baremetal import S3Storage
 
 from ..bulk_persistence import (
     BulkPersistenceConfig,
@@ -31,23 +31,23 @@ from ..bulk_persistence import (
 from .app_injector import AppInjector, AppInjectorModule
 
 
-class AnthosInjector(AppInjectorModule):
+class BaremetalInjector(AppInjectorModule):
     def configure(self, app_injector: AppInjector):
-        app_injector.register(BlobStorageBase, AnthosInjector.build_anthos_storage)
-        app_injector.register(DaskBulkStorage, partial(AnthosInjector.build_anthos_dask_blob_storage,
+        app_injector.register(BlobStorageBase, BaremetalInjector.build_baremetal_storage)
+        app_injector.register(DaskBulkStorage, partial(BaremetalInjector.build_baremetal_dask_blob_storage,
                                                        app_injector=app_injector,
                                                        bulk_config=get_config()))
 
     @staticmethod
-    async def build_anthos_storage() -> BlobStorageBase:
-        return AnthosStorage()
+    async def build_baremetal_storage() -> BlobStorageBase:
+        return S3Storage()
 
     @staticmethod
-    async def build_anthos_dask_blob_storage(app_injector: AppInjector,
+    async def build_baremetal_dask_blob_storage(app_injector: AppInjector,
                                              bulk_config: BulkPersistenceConfig) -> DaskBulkStorage:
         ctx: Context = Context.current()
         tenant = await resolve_tenant(ctx.partition_id)
-        params = await anthos_parameters(tenant)
+        params = await baremetal_parameters(tenant)
         dask_client = await app_injector.get(DaskDistributedClient)
         return await DaskBulkStorage.create(params, bulk_config, dask_client)
 
