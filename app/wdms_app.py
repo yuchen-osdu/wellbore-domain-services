@@ -243,13 +243,23 @@ for v3_api, tag, entity_type in ddms_v3_routes_groups_with_bulk:
                             responses={**response_401, **response_403, **response_500},
                             dependencies=[*v3_bulk_dependencies, Depends(make_entity_type_dependency(entity_type, "V3"))])
 
-wdms_app.include_router(search_v3.router, prefix=DDMS_V3_PATH, tags=['search v3'], dependencies=basic_dependencies,
-                        responses={**response_401, **response_403, **response_500})
+wdms_app.include_router(
+    search_v3.router,
+    prefix=DDMS_V3_PATH,
+    deprecated=True,
+    tags=["DEPRECATED"],
+    dependencies=basic_dependencies,
+    responses={**response_401, **response_403, **response_500}
+)
 
-wdms_app.include_router(search_v3_alpha.router, prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH,
-                        tags=['ALPHA feature: search v3'],
-                        dependencies=basic_dependencies,
-                        responses={**response_401, **response_403, **response_500})
+wdms_app.include_router(
+    search_v3_alpha.router,
+    prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH,
+    deprecated=True,
+    tags=["DEPRECATED"],
+    dependencies=basic_dependencies,
+    responses={**response_401, **response_403, **response_500}
+)
 
 
 alpha_tags = ['ALPHA feature: bulk data chunking']
