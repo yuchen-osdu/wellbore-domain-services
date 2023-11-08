@@ -16,7 +16,7 @@ hypothesis
 openapi-spec-validator
 
 requests # used by starlette.TestClient for testing
-cryptography
+cryptography>=41.0.2
 
 # the following are used in functional integration tests
 pytest-dependency
