@@ -7,8 +7,6 @@
 --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 --extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
 
-adal==1.2.7
-    # via azure-datalake-store
 adlfs==2022.10.0
     # via
     #   -r requirements.in
@@ -17,7 +15,7 @@ aiobotocore[boto3]==2.4.0
     # via
     #   -r requirements.in
     #   s3fs
-aiohttp==3.7.4.post0
+aiohttp==3.8.0
     # via
     #   -r requirements.in
     #   adlfs
@@ -30,11 +28,13 @@ aioitertools==0.8.0
     # via aiobotocore
 aioredis==1.3.1
     # via osdu-core-lib-python
+aiosignal==1.3.1
+    # via aiohttp
 anyio==3.6.2
     # via
     #   httpcore
     #   starlette
-async-timeout==3.0.1
+async-timeout==4.0.3
     # via
     #   aiohttp
     #   aioredis
@@ -56,9 +56,9 @@ azure-core==1.25.1
     #   azure-keyvault-keys
     #   azure-keyvault-secrets
     #   azure-storage-blob
-azure-datalake-store==0.0.52
+azure-datalake-store==0.0.53
     # via adlfs
-azure-identity==1.10.0
+azure-identity==1.15.0
     # via
     #   adlfs
     #   osdu-core-lib-python-azure
@@ -92,7 +92,7 @@ cachetools==4.2.2
     # via
     #   google-auth
     #   osdu-core-lib-python-azure
-certifi==2022.12.7
+certifi==2023.7.22
     # via
     #   httpcore
     #   httpx
@@ -102,10 +102,10 @@ cffi==1.14.6
     # via
     #   azure-datalake-store
     #   cryptography
-chardet==4.0.0
-    # via aiohttp
 charset-normalizer==2.0.3
-    # via requests
+    # via
+    #   aiohttp
+    #   requests
 click==8.0.1
     # via
     #   -r requirements.in
@@ -115,10 +115,9 @@ cloudpickle==1.6.0
     # via
     #   dask
     #   distributed
-cryptography==39.0.2
+cryptography==41.0.5
     # via
     #   -r requirements.in
-    #   adal
     #   azure-identity
     #   azure-keyvault-keys
     #   azure-storage-blob
@@ -145,6 +144,10 @@ fastapi==0.95.2
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   prometheus-fastapi-instrumentator
+frozenlist==1.4.0
+    # via
+    #   aiohttp
+    #   aiosignal
 fsspec==2022.10.0
     # via
     #   -r requirements.in
@@ -191,7 +194,7 @@ googleapis-common-protos==1.56.4
     # via
     #   google-api-core
     #   grpcio-status
-grpcio==1.48.1
+grpcio==1.53.2
     # via
     #   google-api-core
     #   grpcio-status
@@ -238,11 +241,12 @@ locket==1.0.0
     # via partd
 markupsafe==2.0.1
     # via jinja2
-msal==1.21.0
+msal==1.25.0
     # via
+    #   azure-datalake-store
     #   azure-identity
     #   msal-extensions
-msal-extensions==0.3.0
+msal-extensions==1.0.0
     # via azure-identity
 msgpack==1.0.2
     # via distributed
@@ -359,7 +363,6 @@ pydantic==1.9.0
     #   osdu-data-ecosystem-storage
 pyjwt[crypto]==2.4.0
     # via
-    #   adal
     #   msal
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
@@ -369,7 +372,6 @@ pyrsistent==0.19.3
     # via jsonschema
 python-dateutil==2.8.2
     # via
-    #   adal
     #   botocore
     #   pandas
 python-multipart==0.0.5
@@ -386,7 +388,6 @@ pyyaml==5.4.1
     #   distributed
 requests==2.28.1
     # via
-    #   adal
     #   azure-core
     #   azure-datalake-store
     #   gcsfs
@@ -412,12 +413,10 @@ s3transfer==0.6.0
 six==1.16.0
     # via
     #   azure-core
-    #   azure-identity
     #   azure-keyvault-certificates
     #   azure-keyvault-keys
     #   azure-keyvault-secrets
     #   google-auth
-    #   grpcio
     #   isodate
     #   jsonpath-ng
     #   python-dateutil
@@ -449,7 +448,6 @@ types-jsonschema==4.17.0.7
     # via wellbore-schema-manipulation
 typing-extensions==4.3.0
     # via
-    #   aiohttp
     #   azure-core
     #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
