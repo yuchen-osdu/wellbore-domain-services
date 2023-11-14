@@ -48,7 +48,7 @@ phases:
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR..."
-      - $(aws ecr get-login --no-include-email --region $AWS_REGION) # authenticate with ECR via the AWS CLI
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_REGISTRY} # authenticate with ECR via the AWS CLI
       - export CODEARTIFACT_DOMAIN=osdu-dev
       - export CODEARTIFACT_REPO=osdu-python
   build:
