@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.8-slim-bullseye
+FROM python:3.8-slim-bookworm
 ARG PIP_INDEX_URL
 
 COPY requirements.txt ./
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 
 COPY ./app /app
 COPY provider/os-wellbore-ddms-aws/build-aws/entrypoint.sh .
