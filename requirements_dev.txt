@@ -124,7 +124,7 @@ pluggy==0.13.1
     # via pytest
 py==1.10.0
     # via pytest
-pyarrow==9.0.0
+pyarrow==14.0.1
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in

@@ -92,10 +92,8 @@ def do_merge(df1: dd.DataFrame, df2: Optional[dd.DataFrame]):
 @capture_timings("get_num_rows", handlers=worker_capture_timing_handlers)
 def get_num_rows(dataset: pa.ParquetDataset) -> int:
     """Returns the number of rows from a pyarrow ParquetDataset"""
-    metadata = dataset.common_metadata
-    if metadata and metadata.num_rows > 0:
-        return metadata.num_rows
-    return sum((piece.get_metadata().num_rows for piece in dataset.pieces))
+    
+    return sum([fragment.metadata.num_rows for fragment in dataset.fragments])
 
 
 @capture_timings("index_union", handlers=worker_capture_timing_handlers)
