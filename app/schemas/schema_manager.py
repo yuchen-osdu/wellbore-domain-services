@@ -173,10 +173,10 @@ class SchemaManager:
             kind = schemas[SchemaMode.ORIGINAL]["x-osdu-schema-source"]
             if kind.lower().startswith("osdu:wks"):
                 # we only cache well known schema from OSDU authority
-                SchemaManager.schema_library[kind] = schemas[mode]
-                SchemaManager.optimised_schema_library[kind] = schemas[mode]
-                SchemaManager.schema_forbid_extra_library[kind] = schemas[mode]
-                SchemaManager.optimised_schema_forbid_extra_library[kind] = schemas[mode]
+                SchemaManager.schema_library[kind] = schemas[SchemaMode.ORIGINAL]
+                SchemaManager.optimised_schema_library[kind] = schemas[SchemaMode.OPTIMISED]
+                SchemaManager.schema_forbid_extra_library[kind] = schemas[SchemaMode.EXTRA_FORBID]
+                SchemaManager.optimised_schema_forbid_extra_library[kind] = schemas[SchemaMode.EXTRA_FORBID_OPTIMISED]
             return schemas[mode]
         return schema
 

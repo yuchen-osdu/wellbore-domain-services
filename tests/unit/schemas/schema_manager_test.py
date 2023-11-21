@@ -137,8 +137,8 @@ async def test_get_schema_in_cache(ctx_fixture_with_search_client, kind, expecte
 
     with patch.object(schema_service_client_mock, 'get_schema', side_effect=RuntimeError):
         if expected_cached:
-            await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
-                                           mode=SchemaMode.EXTRA_FORBID)
+            for mode in SchemaMode:
+                await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client, mode=mode)
         else:
             with pytest.raises(RuntimeError):
                 await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
