@@ -120,10 +120,29 @@ def test_get_known_schema_unknown_schema():
 
 
 @pytest.mark.anyio
-async def test_get_schema_in_cache(ctx_fixture_with_search_client):
-    kind = "osdu:wks:master-data--Wellbore:1.3.0"
-    res = await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client, mode=SchemaMode.EXTRA_FORBID)
-    assert res["x-osdu-schema-source"] == kind
+@pytest.mark.parametrize("kind,expected_cached", [
+    ("osdu:wks:master-data--Wellbore:1111.3.0", True),
+    ("unknown:fs:fs:1.0.0", False),
+])
+async def test_get_schema_in_cache(ctx_fixture_with_search_client, kind, expected_cached):
+    returned_schema = {"x-osdu-schema-source": kind}
+    with patch.object(schema_service_client_mock, 'get_schema', return_value=returned_schema):
+        res = await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
+                                              mode=SchemaMode.EXTRA_FORBID)
+        assert res["x-osdu-schema-source"] == kind
+        assert SchemaManager.schema_library.__contains__(kind) == expected_cached
+        assert SchemaManager.optimised_schema_library.__contains__(kind) == expected_cached
+        assert SchemaManager.schema_forbid_extra_library.__contains__(kind) == expected_cached
+        assert SchemaManager.optimised_schema_forbid_extra_library.__contains__(kind) == expected_cached
+
+    with patch.object(schema_service_client_mock, 'get_schema', side_effect=RuntimeError):
+        if expected_cached:
+            await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
+                                           mode=SchemaMode.EXTRA_FORBID)
+        else:
+            with pytest.raises(RuntimeError):
+                await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
+                                               mode=SchemaMode.EXTRA_FORBID)
 
 
 @pytest.mark.anyio
@@ -207,3 +226,5 @@ async def test_validate_new_schemas(ctx_fixture_with_search_client, mode, file_n
         entities = json.load(f)
 
     await schema_library._validate_entities(entities, ctx_fixture_with_search_client, mode)
+
+

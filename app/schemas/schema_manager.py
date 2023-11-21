@@ -169,7 +169,14 @@ class SchemaManager:
         if schema is None:
             schema = await SchemaManager._load_unknown_schema(kind=kind, ctx=ctx)
             schemas = SchemaManager._create_versions_of_schema(schema)
-            # TODO decide if we put the schema in cache, it can be done here
+
+            kind = schemas[SchemaMode.ORIGINAL]["x-osdu-schema-source"]
+            if kind.lower().startswith("osdu:wks"):
+                # we only cache well known schema from OSDU authority
+                SchemaManager.schema_library[kind] = schemas[mode]
+                SchemaManager.optimised_schema_library[kind] = schemas[mode]
+                SchemaManager.schema_forbid_extra_library[kind] = schemas[mode]
+                SchemaManager.optimised_schema_forbid_extra_library[kind] = schemas[mode]
             return schemas[mode]
         return schema
 
