@@ -60,6 +60,7 @@ configuration:
       SERVICE_HOST_SEARCH: "http://search.osdu/api/search"
       SERVICE_HOST_SCHEMA: "http://schema-service.osdu/api/schema-service"
       SERVICE_HOST_PARTITION: "http://partition.osdu/api/partition"
+      SERVICE_HOST_WDMS_WORKER: "http://wellbore-ddms-worker-service.osdu/api/wdms-worker" 
       USE_PARTITION_SERVICE: "enabled"
       AZ_LOGGER_LEVEL: "INFO"
       ENVIRONMENT_NAME: gitlab

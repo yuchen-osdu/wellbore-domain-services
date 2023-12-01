@@ -54,7 +54,7 @@ The following software have components provided under the terms of this license:
 - python-dateutil (from https://github.com/dateutil/dateutil)
 - python-multipart (from https://pypi.org/project/python-multipart/0.0.6/)
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
-- rfc3986 (from https://rfc3986.readthedocs.org)
+- rfc3986 (from http://rfc3986.readthedocs.io)
 - rsa (from https://stuvel.eu/rsa)
 - s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio)
@@ -65,7 +65,7 @@ The following software have components provided under the terms of this license:
 - tornado (from http://www.tornadoweb.org/)
 - types-jsonschema (from https://github.com/python/typeshed)
 - urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/, https://pypi.org/project/urllib3/2.1.0/)
-- yarl (from https://github.com/aio-libs/yarl/)
+- yarl (from https://github.com/aio-libs/yarl)
 
 ========================================================================
 BSD-2-Clause
@@ -242,7 +242,6 @@ The following software have components provided under the terms of this license:
 - execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/)
 - fastapi (from https://pypi.org/project/fastapi/0.104.1/, https://pypi.org/project/fastapi/0.86.0/)
 - h11
-- hypothesis (from https://hypothesis.works)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig, https://pypi.org/project/iniconfig/2.0.0/)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema
