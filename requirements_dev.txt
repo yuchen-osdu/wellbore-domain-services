@@ -28,7 +28,7 @@ certifi==2023.7.22
     #   httpcore
     #   httpx
     #   requests
-cffi==1.14.6
+cffi==1.16.0
     # via
     #   -c requirements.txt
     #   cryptography
@@ -40,7 +40,7 @@ click==8.0.1
     # via
     #   -c requirements.txt
     #   pip-tools
-coverage==5.5
+coverage==7.3.2
     # via pytest-cov
 cryptography==41.0.5
     # via
@@ -49,7 +49,7 @@ cryptography==41.0.5
     #   pyjwt
 deepdiff==5.7.0
     # via -r requirements_dev.in
-execnet==1.9.0
+execnet
     # via pytest-xdist
 h11==0.12.0
     # via
@@ -72,13 +72,13 @@ idna==3.2
     #   anyio
     #   requests
     #   rfc3986
-importlib-metadata==5.0.0
+importlib-metadata==7.0.0
     # via pytest-randomly
 importlib-resources==6.1.0
     # via
     #   -c requirements.txt
     #   jsonschema
-iniconfig==1.1.1
+iniconfig==2.0.0
     # via pytest
 isodate==0.6.0
     # via
@@ -92,7 +92,7 @@ jsonschema==4.17.3
     #   openapi-spec-validator
 munch==2.5.0
     # via -r requirements_dev.in
-numpy==1.22.2
+numpy==1.23.2
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in
@@ -109,7 +109,7 @@ packaging==21.0
     #   -c requirements.txt
     #   build
     #   pytest
-pandas==1.4.1
+pandas==1.5.3
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in
@@ -121,9 +121,9 @@ pkgutil-resolve-name==1.3.10
     # via
     #   -c requirements.txt
     #   jsonschema
-pluggy==0.13.1
+pluggy==1.3.0
     # via pytest
-py==1.10.0
+py==1.11.0
     # via pytest
 pyarrow==14.0.1
     # via
@@ -145,7 +145,7 @@ pyrsistent==0.19.3
     # via
     #   -c requirements.txt
     #   jsonschema
-pytest==6.2.4
+pytest==7.4.3
     # via
     #   -r requirements_dev.in
     #   pytest-cov
@@ -153,15 +153,15 @@ pytest==6.2.4
     #   pytest-httpx
     #   pytest-randomly
     #   pytest-xdist
-pytest-cov==2.12.1
+pytest-cov==4.1.0
     # via -r requirements_dev.in
 pytest-dependency==0.5.1
     # via -r requirements_dev.in
 pytest-httpx==0.21.3
     # via -r requirements_dev.in
-pytest-randomly==3.12.0
+pytest-randomly==3.15.0
     # via -r requirements_dev.in
-pytest-xdist==3.0.2
+pytest-xdist==3.5.0
     # via -r requirements_dev.in
 python-dateutil==2.8.2
     # via
@@ -171,10 +171,10 @@ pytz==2021.1
     # via
     #   -c requirements.txt
     #   pandas
-pyyaml==5.4.1
-    # via
-    #   -c requirements.txt
-    #   openapi-spec-validator
+# pyyaml==5.4.1
+#     # via
+#     #   -c requirements.txt
+#     #   openapi-spec-validator
 requests==2.28.1
     # via
     #   -c requirements.txt
