@@ -88,6 +88,23 @@ async def test_post_records_successful(dasked_test_app_with_mocked_core_service)
 
 
 @pytest.mark.anyio
+async def test_validation_error_message(dasked_test_app_with_mocked_core_service):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(dir_path, r"Wellbore_unit.json")) as f:
+        wellbore_dict = json.load(f)
+
+    # when record is not compliant with the schema
+    wellbore_dict[0]["data"]["TechnicalAssuranceTypeID"] = 12
+    response = await dasked_test_app_with_mocked_core_service.post(
+        "/ddms/v3/wellbores", data=json.dumps(wellbore_dict), headers={"content-type": "application/json"}
+    )
+
+    # then error contains json path location of the invalid field
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "data.TechnicalAssuranceTypeID" in response.json()["errors"]
+
+
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "method, relative_path",
     [

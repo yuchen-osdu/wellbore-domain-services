@@ -46,7 +46,10 @@ async def json_schema_error_handler(
     """
 
     get_logger().exception(f"json_schema_error_handler - {request.url}")
-    return JSONResponse(content=jsonable_encoder({"errors": exc.message}), status_code=HTTP_422_UNPROCESSABLE_ENTITY)
+    error_with_location = f"Value of {exc.json_path.lstrip('$.')} is invalid: {exc.message}"
+    return JSONResponse(
+        content=jsonable_encoder({"errors": error_with_location}), status_code=HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 # TODO remove this once this fastapi issue is closed https://github.com/tiangolo/fastapi/issues/3790
