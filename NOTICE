@@ -21,7 +21,7 @@ The following software have components provided under the terms of this license:
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
 - google-cloud-core (from https://github.com/googleapis/python-cloud-core)
-- google-cloud-monitoring (from https://github.com/googleapis/python-monitoring)
+- google-cloud-monitoring (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-monitoring, https://github.com/googleapis/python-monitoring)
 - google-cloud-storage (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-storage)
 - google-cloud-trace (from https://github.com/googleapis/python-trace)
 - google-crc32c (from https://github.com/googleapis/python-crc32c)
@@ -223,7 +223,7 @@ The following software have components provided under the terms of this license:
 - deepdiff (from https://github.com/seperman/deepdiff)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/)
-- fastapi (from https://pypi.org/project/fastapi/0.104.1/, https://pypi.org/project/fastapi/0.86.0/)
+- fastapi (from https://pypi.org/project/fastapi/0.105.0/, https://pypi.org/project/fastapi/0.86.0/)
 - h11
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig, https://pypi.org/project/iniconfig/2.0.0/)
 - jmespath (from https://github.com/jmespath/jmespath.py)
