@@ -21,7 +21,7 @@ The following software have components provided under the terms of this license:
 - google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
 - google-auth-oauthlib (from https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib)
 - google-cloud-core (from https://github.com/googleapis/python-cloud-core)
-- google-cloud-monitoring (from https://github.com/googleapis/python-monitoring)
+- google-cloud-monitoring (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-monitoring, https://github.com/googleapis/python-monitoring)
 - google-cloud-storage (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-storage)
 - google-cloud-trace (from https://github.com/googleapis/python-trace)
 - google-crc32c (from https://github.com/googleapis/python-crc32c)
@@ -54,7 +54,7 @@ The following software have components provided under the terms of this license:
 - python-dateutil (from https://github.com/dateutil/dateutil)
 - python-multipart (from https://pypi.org/project/python-multipart/0.0.6/)
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
-- rfc3986 (from https://rfc3986.readthedocs.org)
+- rfc3986 (from http://rfc3986.readthedocs.io, https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
 - s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio)
@@ -65,7 +65,7 @@ The following software have components provided under the terms of this license:
 - tornado (from http://www.tornadoweb.org/)
 - types-jsonschema (from https://github.com/python/typeshed)
 - urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/, https://pypi.org/project/urllib3/2.1.0/)
-- yarl (from https://github.com/aio-libs/yarl/)
+- yarl (from https://github.com/aio-libs/yarl, https://github.com/aio-libs/yarl/)
 
 ========================================================================
 BSD-2-Clause
@@ -100,17 +100,17 @@ The following software have components provided under the terms of this license:
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.11.0/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.12.0/)
 - decorator (from https://github.com/micheles/decorator)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.11.0/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.12.0/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://github.com/fsspec/filesystem_spec)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore, https://pypi.org/project/httpcore/0.18.0/, https://pypi.org/project/httpcore/1.0.2/)
-- httpx (from https://pypi.org/project/httpx/0.23.1/, https://pypi.org/project/httpx/0.25.1/)
-- idna (from https://pypi.org/project/idna/3.4/)
+- httpx (from https://pypi.org/project/httpx/0.23.1/, https://pypi.org/project/httpx/0.25.2/)
+- idna (from https://pypi.org/project/idna/3.4/, https://pypi.org/project/idna/3.6/)
 - isodate (from http://cheeseshop.python.org/pypi/isodate, https://github.com/gweis/isodate/)
 - numpy
 - oauthlib (from https://github.com/oauthlib/oauthlib)
@@ -129,7 +129,7 @@ The following software have components provided under the terms of this license:
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - s3fs (from http://github.com/fsspec/s3fs/)
 - sniffio (from https://github.com/python-trio/sniffio)
-- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.32.0.post1/)
+- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.33.0/)
 - toolz (from https://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.24.0.post1/, https://www.uvicorn.org/)
 - zict (from http://zict.readthedocs.io/en/latest/)
@@ -164,24 +164,8 @@ CC0-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2023.11.0/)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.11.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pyarrow (from https://arrow.apache.org/)
-
-========================================================================
-GPL-1.0-or-later
-========================================================================
-The following software have components provided under the terms of this license:
-
-- grpcio (from https://grpc.io)
-
-========================================================================
-GPL-2.0-only
-========================================================================
-The following software have components provided under the terms of this license:
-
-- grpcio (from https://grpc.io)
 
 ========================================================================
 ISC
@@ -217,14 +201,14 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://aioitertools.omnilib.dev)
 - aioredis (from https://github.com/aio-libs/aioredis-py)
-- anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/4.0.0/)
+- anyio (from https://pypi.org/project/anyio/3.3.0/, https://pypi.org/project/anyio/4.1.0/)
 - asgi-lifespan (from https://pypi.org/project/asgi-lifespan/2.0.0/, https://pypi.org/project/asgi-lifespan/2.1.0/)
 - attrs (from https://attrs.readthedocs.io/, https://pypi.org/project/attrs/23.1.0/, https://www.attrs.org/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
 - azure-core (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core)
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
 - azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity)
-- azure-keyvault (from https://github.com/Azure/azure-sdk-for-python)
+- azure-keyvault (from https://github.com/Azure/azure-sdk-for-python, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault)
 - azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-certificates)
 - azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-keys)
 - azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-secrets)
@@ -237,12 +221,10 @@ The following software have components provided under the terms of this license:
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer)
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.11.0/)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/)
-- fastapi (from https://pypi.org/project/fastapi/0.104.1/, https://pypi.org/project/fastapi/0.86.0/)
+- fastapi (from https://pypi.org/project/fastapi/0.105.0/, https://pypi.org/project/fastapi/0.86.0/)
 - h11
-- hypothesis (from https://hypothesis.works)
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig, https://pypi.org/project/iniconfig/2.0.0/)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jsonschema
@@ -259,7 +241,7 @@ The following software have components provided under the terms of this license:
 - pluggy
 - py (from https://py.readthedocs.io/)
 - pyarrow (from https://arrow.apache.org/)
-- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.4.2/)
+- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.5.2/)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
@@ -402,19 +384,19 @@ The following software have components provided under the terms of this license:
 - pytz (from http://pythonhosted.org/pytz)
 
 ========================================================================
-openssl-nokia-psk-contribution
-========================================================================
-The following software have components provided under the terms of this license:
-
-- grpcio (from https://grpc.io)
-
-========================================================================
 openssl-ssleay
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
 - pyarrow (from https://arrow.apache.org/)
+
+========================================================================
+psf-3.7.2
+========================================================================
+The following software have components provided under the terms of this license:
+
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2023.12.0/)
 
 ========================================================================
 public-domain
