@@ -1,4 +1,4 @@
-pip-tools~=6.11.0 # pip-tools pin pip 22.0.4 because newer pip-compile raises error with newer pip
+pip-tools~=7.3.0
 
 -c requirements.txt
 
