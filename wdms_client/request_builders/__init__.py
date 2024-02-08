@@ -132,6 +132,8 @@ request_path_dict = {
         crud.osdu_welllog.build_request_get_versions_of_osdu_welllog,
     "crud.osdu_welllog.create_osdu_welllog":
         crud.osdu_welllog.build_request_create_osdu_welllog,
+    "crud.unknown_kind_osdu_welllog.create_osdu_welllog":
+        crud.osdu_welllog.build_request_create_osdu_unknown_kind_welllog,
     "crud.osdu_wellboretrajectory.delete_osdu_wellboretrajectory":
         crud.osdu_wellboretrajectory.build_request_delete_osdu_wellboretrajectory,
     "crud.osdu_wellboretrajectory.get_osdu_wellboretrajectory_specific_version":

@@ -77,6 +77,41 @@ def build_request_get_versions_of_osdu_welllog() -> RequestRunner:
     return RequestRunner(rq_proto)
 
 
+def build_request_create_osdu_unknown_kind_welllog():
+    payload = """[
+    {
+        "kind": "osdu:wks:work-product-component--WellLog:99.99.99",
+        "acl": {{record_acl}}, 
+        "legal": {{record_legal}},
+        "data": {
+            "Curves": [
+                {
+                    "CurveID": "A",
+                    "NumberOfColumns": 1
+                },
+                {
+                    "CurveID": "B",
+                    "NumberOfColumns": 1
+                }
+            ]
+        }
+    }]
+    """
+    rq_proto = Request(
+        name="Create OSDU welllog",
+        method="POST",
+        url="{{base_url}}/ddms/v3/welllogs",
+        headers={
+            "accept": "application/json",
+            "Content-Type": 'application/json',
+            "data-partition-id": "{{data_partition}}",
+            "Connection": "{{header_connection}}",
+            "Authorization": "Bearer {{token}}",
+        },
+       payload=payload,
+    )
+    return RequestRunner(rq_proto)
+
 def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: Dict[str, int] = {'Example CurveID': 1}) -> RequestRunner:
     if b_use_fixed_id:
         id_field = '"id": "{{data_partition}}:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",'
