@@ -90,10 +90,14 @@ def test_crud_delete_record(get_env, kind):
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
 def test_schema_service_correctly_initialized(get_env):
-
     result = build_request("crud.unknown_kind_osdu_welllog.create_osdu_welllog").call(get_env)
     result.assert_status_code(404)
     error_response = result.get_response_obj()
+
+    print(f"error_response: {error_response}")
+
     assert error_response.get("origin") == "osdu-data-ecosystem-schema", "Ensure error comes from Schema Service"
+    assert len(error_response.get('errors', [])) > 0, "Check field is not empty"
+    assert type(error_response.get('errors')[0]) is dict, "Ensure error is an object"
     assert "Schema is not present" in error_response.get('errors')[0].get('error', {}).get('message')
 
