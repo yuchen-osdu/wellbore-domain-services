@@ -41,8 +41,21 @@ WORKDIR /
 #(https://medium.com/better-programming/running-a-container-with-a-non-root-user-e35830d1f42a)
 RUN addgroup --system appuser && adduser --system appuser && adduser appuser appuser
 
+
+####################################################################################################
+###### FIX CVEs contained in Debian bookworm, they are fixed with trixie (Debian 13) release. ######
+RUN touch /etc/apt/sources.list.d/trixie.list && \
+    printf "deb https://deb.debian.org/debian trixie main" > /etc/apt/sources.list.d/trixie.list
+RUN apt-get update &&  \
+    # Fix CVE-2023-45853 (https://security-tracker.debian.org/tracker/source-package/zlib)
+    apt-get --only-upgrade install zlib1g=1:1.3.dfsg-3+b1 && \
+    # Fix CVE-2024-0553 && CVE-2024-0567 (https://security-tracker.debian.org/tracker/source-package/gnutls28)
+    apt-get --only-upgrade install libgnutls30=3.8.3-1 -y
+# Prevent CVE-2023-7104 by removing vulnerable libsqlite3 package. To be removed, as soon as this CVE is fixed in official images
+RUN apt-get purge libsqlite3-0 -y
 # Prevent CVE-2023-31484 by removing perl-base. To be removed, as soon as this CVE is fixed in official images
 RUN apt-get purge perl-base -y --allow-remove-essential
+####################################################################################################
 
 USER appuser
 
