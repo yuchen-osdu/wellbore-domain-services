@@ -9,7 +9,6 @@ data:
   LOG_LEVEL: {{ .Values.data.logLevel | quote }}
   {{- if not .Values.global.onPremEnabled }}
   CLOUD_PROVIDER: "gc"
-  OS_WELLBORE_DDMS_DATA_PROJECT_ID: {{ .Values.data.projectId | quote }}
   {{- else }}
   KEYCLOAK_AUTH: "yes"
   BASE_BUCKET: "wellbore"

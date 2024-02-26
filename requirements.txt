@@ -6,6 +6,7 @@
 #
 --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 --extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
+--extra-index-url https://community.opengroup.org/api/v4/projects/224/packages/pypi/simple
 
 adlfs==2022.10.0
     # via
@@ -92,6 +93,7 @@ cachetools==4.2.2
     # via
     #   google-auth
     #   osdu-core-lib-python-azure
+    #   osdu-core-lib-python-gcp
 certifi==2023.7.22
     # via
     #   httpcore
@@ -298,7 +300,7 @@ osdu-core-lib-python-azure==3.0.3
     # via -r requirements.in
 osdu-core-lib-python-baremetal==1.0.4
     # via -r requirements.in
-osdu-core-lib-python-gcp==2.0.0
+osdu-core-lib-python-gcp==2.1.3
     # via -r requirements.in
 osdu-core-lib-python-ibm==3.0.1
     # via -r requirements.in
