@@ -2,6 +2,7 @@ global:
   domain: ""
   onPremEnabled: false
   limitsEnabled: true
+  dataPartitionId: ""
 
 data:
   logLevel: "ERROR"
@@ -12,7 +13,6 @@ data:
   image: ""
   imagePullPolicy: "IfNotPresent"
   serviceAccountName: "wellbore"
-  projectId: ""
 
 conf:
   configmap: "wellbore-config"

@@ -117,7 +117,7 @@ def test_gc_configuration_checker(gc_config_fixture):
     assert gc_config.cloud_provider.value == "gc"
     variables_dict = gc_config.as_printable_dict()
 
-    assert "default_data_tenant_project_id" in variables_dict.keys()
+    assert "partition_url" in variables_dict.keys()
     assert "default_data_tenant_credentials" in variables_dict.keys()
 
     check_environment(gc_config)

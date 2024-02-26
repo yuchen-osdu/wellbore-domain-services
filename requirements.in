@@ -33,6 +33,7 @@ python-ulid
 https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
 
 --extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
+--extra-index-url https://community.opengroup.org/api/v4/projects/224/packages/pypi/simple
 
 osdu-log-recognition-lib~=1.0.0
 
@@ -40,7 +41,7 @@ osdu-data-ecosystem-storage~=2.0.0
 osdu-data-ecosystem-search~=1.0.0
 
 osdu-core-lib-python-ibm==3.0.1
-osdu-core-lib-python-gcp~=2.0.0
+osdu-core-lib-python-gcp==2.1.3
 osdu-core-lib-python-azure==3.0.3
 osdu-core-lib-python-aws==2.1.2
 osdu-core-lib-python-baremetal~=1.0.4

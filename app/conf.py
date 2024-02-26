@@ -380,12 +380,12 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
         )
 
         config.add_from_env(
-            attribute_name="default_data_tenant_project_id",
-            env_var_key="OS_WELLBORE_DDMS_DATA_PROJECT_ID",
+            attribute_name="partition_url",
+            env_var_key="SERVICE_URL_PARTITION",
             description="Google Cloud data tenant ID",
-            default="logstore-dev",
             is_mandatory=True,
             override=True,
+            default="http://partition/api/partition/v1/"
         )
 
         config.add_from_env(

@@ -18,11 +18,13 @@ from osdu.core.api.storage.tenant import Tenant
 async def resolve_tenant(data_partition_id: str) -> Tenant:
     # TODO this is a temporary hardcoded, to be reviewed as we are onboarding different cloud provider
     if Config.cloud_provider.value == 'gc':
+        from osdu_gcp.data_partition.data_partition_info import DataPartitionInfoGetter
+        data_partition_info = await DataPartitionInfoGetter(Config.partition_url.value).get_partition_info(data_partition_id)
         return Tenant(
             data_partition_id=data_partition_id,
-            project_id=Config.default_data_tenant_project_id.value,
+            project_id=data_partition_info.gc_project_id,
             credentials=Config.default_data_tenant_credentials.value,
-            bucket_name=f'{Config.default_data_tenant_project_id.value}-logstore-osdu'
+            bucket_name=data_partition_info.bucket
         )
 
     if Config.cloud_provider.value == 'az':

@@ -164,21 +164,36 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 
 ### Setting the Cloud Provider Environment Variables
 
+#### Google Cloud
+
 - The following environment variables are required when the cloud provider is set to Google Cloud:
-  - OS_WELLBORE_DDMS_DATA_PROJECT_ID: Google Cloud Data Tenant ID
-  - OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS: path to the key file of the SA to access the data tenant
   - SERVICE_HOST_SEARCH: The Search Service host
   - SERVICE_HOST_SCHEMA: The Schema Service host
   - SERVICE_HOST_STORAGE: The Storage Service host
+  - SERVICE_URL_PARTITION: The Partition Service url; default: http://partition/api/partition/v1/
 
   ```bash
   python main.py -e CLOUD_PROVIDER gc \
-  -e OS_WELLBORE_DDMS_DATA_PROJECT_ID projectid \
-  -e OS_WELLBORE_DDMS_DATA_PROJECT_CREDENTIALS pathtokeyfile \
   -e SERVICE_HOST_SEARCH search_host \
   -e SERVICE_HOST_SCHEMA schema_host \
   -e SERVICE_HOST_STORAGE storage_host
+  -e SERVICE_URL_PARTITION partition_url
   ```
+- The following values should be in Partition Service for a data partition:
+  ```json
+  {
+    "projectId": {
+      "sensitive": false,
+      "value": "<gc-project-id>"
+    },
+    "wellbore-dms-bucket": {
+      "sensitive": false,
+      "value": "<gc-bucket-for-the-data-partition>"
+    }
+  }
+  ```
+
+#### Azure
 
 - The following environment variables are required when the cloud provider is set to Azure:
   - AZ_AI_INSTRUMENTATION_KEY: Azure Application Insights instrumentation key
@@ -199,6 +214,8 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
   -e KEYVAULT_URL keyvault_url \
   -e USE_PARTITION_SERVICE disabled
   ```
+
+#### AWS
 
 - The following environment variables are required when the cloud provider is set to AWS:
   - SERVICE_HOST_SEARCH: The Search Service host
