@@ -5,6 +5,8 @@ metadata:
   name: {{ .Values.conf.appName | quote }}
   labels:
     app: {{ .Values.conf.appName | quote }}
+    type: ddms
+    source: python
 spec:
   replicas: {{ .Values.conf.replicas }}
   selector:
