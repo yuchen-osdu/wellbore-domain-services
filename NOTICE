@@ -32,7 +32,7 @@ The following software have components provided under the terms of this license:
 - importlib-metadata
 - importlib-resources (from https://github.com/python/importlib_resources)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
-- msgpack (from https://msgpack.org/, https://pypi.org/project/msgpack/1.0.6/, https://pypi.org/project/msgpack/1.0.7/)
+- msgpack (from https://msgpack.org/, https://pypi.org/project/msgpack/1.0.6/, https://pypi.org/project/msgpack/1.0.8/)
 - multidict (from https://github.com/aio-libs/multidict)
 - numpy
 - openapi-spec-validator (from https://github.com/python-openapi/openapi-spec-validator)
@@ -43,7 +43,7 @@ The following software have components provided under the terms of this license:
 - opencensus-ext-ocagent (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent)
 - opencensus-ext-stackdriver (from https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver)
 - opencensus-proto (from https://github.com/census-instrumentation/opencensus-proto/tree/master/gen-python)
-- packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/23.2/)
+- packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/24.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/pypa/pep517)
 - prometheus-client (from https://github.com/prometheus/client_python)
@@ -77,10 +77,9 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
 - numpy
-- packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/23.2/)
+- packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/24.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - prometheus-client (from https://github.com/prometheus/client_python)
-- pyarrow (from https://arrow.apache.org/)
 - pyasn1 (from https://github.com/etingof/pyasn1, https://github.com/pyasn1/pyasn1)
 - pyasn1-modules (from https://github.com/etingof/pyasn1-modules, https://github.com/pyasn1/pyasn1-modules)
 - tblib (from https://github.com/ionelmc/python-tblib)
@@ -98,15 +97,15 @@ The following software have components provided under the terms of this license:
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2024.2.1/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2024.4.1/)
 - decorator (from https://github.com/micheles/decorator)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.2.1/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.4.0/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://github.com/fsspec/filesystem_spec)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - hiredis (from https://github.com/redis/hiredis-py)
-- httpcore (from https://github.com/encode/httpcore, https://pypi.org/project/httpcore/0.18.0/, https://pypi.org/project/httpcore/1.0.4/)
+- httpcore (from https://github.com/encode/httpcore, https://pypi.org/project/httpcore/0.18.0/, https://pypi.org/project/httpcore/1.0.5/)
 - httpx (from https://pypi.org/project/httpx/0.23.1/, https://pypi.org/project/httpx/0.27.0/)
 - idna (from https://pypi.org/project/idna/3.4/, https://pypi.org/project/idna/3.6/)
 - isodate (from http://cheeseshop.python.org/pypi/isodate, https://github.com/gweis/isodate/)
@@ -115,7 +114,7 @@ The following software have components provided under the terms of this license:
 - openapi-schema-validator (from https://github.com/python-openapi/openapi-schema-validator)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/)
-- pip-tools (from https://pypi.org/project/pip-tools/6.12.0/, https://pypi.org/project/pip-tools/6.12.1/, https://pypi.org/project/pip-tools/7.4.0/)
+- pip-tools (from https://pypi.org/project/pip-tools/6.12.0/, https://pypi.org/project/pip-tools/6.12.1/, https://pypi.org/project/pip-tools/7.4.1/)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
@@ -127,24 +126,17 @@ The following software have components provided under the terms of this license:
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - s3fs (from http://github.com/fsspec/s3fs/)
 - sniffio (from https://pypi.org/project/sniffio/1.3.1/)
-- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.37.1/)
+- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.37.2/)
 - toolz (from https://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.27.1/, https://www.uvicorn.org/)
+- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.29.0/, https://www.uvicorn.org/)
 - zict (from http://zict.readthedocs.io/en/latest/)
-
-========================================================================
-BSL-1.0
-========================================================================
-The following software have components provided under the terms of this license:
-
-- pyarrow (from https://arrow.apache.org/)
 
 ========================================================================
 CC-BY-3.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- pyarrow (from https://arrow.apache.org/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.4.0/)
 - tornado (from http://www.tornadoweb.org/)
 
 ========================================================================
@@ -164,7 +156,6 @@ CC0-1.0
 The following software have components provided under the terms of this license:
 
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
-- pyarrow (from https://arrow.apache.org/)
 
 ========================================================================
 ISC
@@ -214,7 +205,7 @@ The following software have components provided under the terms of this license:
 - azure-storage-blob (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob)
 - backoff
 - botocore (from https://github.com/boto/botocore)
-- build (from https://pypi.org/project/build/0.10.0/, https://pypi.org/project/build/0.9.0/, https://pypi.org/project/build/1.0.3/)
+- build (from https://pypi.org/project/build/0.10.0/, https://pypi.org/project/build/0.9.0/, https://pypi.org/project/build/1.1.1/)
 - cachetools (from https://github.com/tkem/cachetools/)
 - cffi
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer)
@@ -222,7 +213,7 @@ The following software have components provided under the terms of this license:
 - deepdiff (from https://github.com/seperman/deepdiff)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/)
-- fastapi (from https://pypi.org/project/fastapi/0.110.0/, https://pypi.org/project/fastapi/0.86.0/)
+- fastapi (from https://pypi.org/project/fastapi/0.110.1/, https://pypi.org/project/fastapi/0.86.0/)
 - h11
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig, https://pypi.org/project/iniconfig/2.0.0/)
 - jmespath (from https://github.com/jmespath/jmespath.py)
@@ -239,13 +230,12 @@ The following software have components provided under the terms of this license:
 - pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
 - pluggy
 - py (from https://py.readthedocs.io/)
-- pyarrow (from https://arrow.apache.org/)
-- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.6.2/)
+- pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.6.4/)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
-- pytest (from http://pytest.org, https://docs.pytest.org/en/latest/)
+- pytest (from http://pytest.org, https://docs.pytest.org/en/latest/, https://pypi.org/project/pytest/8.1.1/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
-- pytest-httpx (from https://colin-b.github.io/pytest_httpx/)
+- pytest-httpx (from https://pypi.org/project/pytest-httpx/0.30.0/)
 - pytest-randomly (from https://github.com/pytest-dev/pytest-randomly)
 - pytest-xdist (from https://github.com/pytest-dev/pytest-xdist)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
@@ -298,7 +288,13 @@ OpenSSL
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-- pyarrow (from https://arrow.apache.org/)
+
+========================================================================
+PSF-2.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.4.0/)
 
 ========================================================================
 Protobuf
@@ -306,7 +302,6 @@ Protobuf
 The following software have components provided under the terms of this license:
 
 - protobuf (from https://developers.google.com/protocol-buffers/)
-- pyarrow (from https://arrow.apache.org/)
 
 ========================================================================
 Python-2.0
@@ -318,7 +313,6 @@ The following software have components provided under the terms of this license:
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
 - portalocker (from https://github.com/WoLpH/portalocker)
-- python-dateutil (from https://github.com/dateutil/dateutil)
 - typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
 - urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/, https://pypi.org/project/urllib3/2.2.1/)
 
@@ -350,7 +344,6 @@ The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
 - numpy
-- pyarrow (from https://arrow.apache.org/)
 
 ========================================================================
 apache-2.0 WITH llvm-exception
@@ -379,7 +372,6 @@ mit-old-style-no-advert
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-- pyarrow (from https://arrow.apache.org/)
 - pytz (from http://pythonhosted.org/pytz)
 
 ========================================================================
@@ -388,14 +380,6 @@ openssl-ssleay
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-- pyarrow (from https://arrow.apache.org/)
-
-========================================================================
-psf-3.7.2
-========================================================================
-The following software have components provided under the terms of this license:
-
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.2.1/)
 
 ========================================================================
 public-domain
@@ -403,5 +387,4 @@ public-domain
 The following software have components provided under the terms of this license:
 
 - numpy
-- pyarrow (from https://arrow.apache.org/)
 - pytz (from http://pythonhosted.org/pytz)
