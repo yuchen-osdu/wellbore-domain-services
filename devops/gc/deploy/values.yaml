@@ -13,6 +13,7 @@ data:
   image: ""
   imagePullPolicy: "IfNotPresent"
   serviceAccountName: "wellbore"
+  WDMSWorkerHost: "http://wellbore-worker"
 
 conf:
   configmap: "wellbore-config"
