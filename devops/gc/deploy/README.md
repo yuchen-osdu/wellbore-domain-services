@@ -8,7 +8,7 @@ This chart deploys wellbore service on a [Kubernetes](https://kubernetes.io) clu
 
 ## Prerequisites
 
-The code was tested on **Kubernetes cluster** (v1.23.12) with **Istio** (1.15)
+|The code was tested on **Kubernetes cluster** (v1.23.12) with **Istio** (1.15)
 > It is possible to use other versions, but it hasn't been tested
 
 ### Operation system
@@ -30,45 +30,46 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
-**global.domain** | your domain for the external endpoint, ex `example.com` | string | - | yes
-**global.onPremEnabled** | whether on-prem is enabled | boolean | false | yes
-**global.limitsEnabled** | whether CPU and memory limits are enabled | boolean | true | yes
+|**global.domain** | your domain for the external endpoint, ex `example.com` | string | - | yes |
+|**global.onPremEnabled** | whether on-prem is enabled | boolean | false | yes |
+|**global.limitsEnabled** | whether CPU and memory limits are enabled | boolean | true | yes |
 
 ### Configmap variables
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-**data.projectId** | project ID | string | - | yes
+|**data.projectId** | project ID | string | - | yes |
+|**data.WDMSWorkerHost** | wellbore-worker URL | string | `http://wellbore-worker` | yes |
 
 ### Deployment variables
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-**data.requestsCpu** | amount of requested CPU | string | `130m` | yes
-**data.requestsMemory** | amount of requested memory| string | `750Mi` | yes
-**data.limitsCpu** | CPU limit | string | `1` | only if `global.limitsEnabled` is true
-**data.limitsMemory** | memory limit | string | `3G` | only if `global.limitsEnabled` is true
-**data.serviceAccountName** | name of your service account | string | `wellbore` | yes
-**data.imagePullPolicy** | when to pull image | string | `IfNotPresent` | yes
-**data.image** | service image | string | - | yes
+|**data.requestsCpu** | amount of requested CPU | string | `130m` | yes |
+|**data.requestsMemory** | amount of requested memory| string | `750Mi` | yes |
+|**data.limitsCpu** | CPU limit | string | `1` | only if `global.limitsEnabled` is true |
+|**data.limitsMemory** | memory limit | string | `3G` | only if `global.limitsEnabled` is true |
+|**data.serviceAccountName** | name of your service account | string | `wellbore` | yes |
+|**data.imagePullPolicy** | when to pull image | string | `IfNotPresent` | yes |
+|**data.image** | service image | string | - | yes |
 
 ### Configuration variables
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-**conf.appName** | Service name | string | `wellbore` | yes
-**conf.configmap** | configmap to be used | string | `wellbore-config` | yes
-**conf.keycloakSecretName** | Keycloak secret name | string | `wellbore-keycloak-secret` | yes
-**conf.minioSecretName** | MinIO secret name | string | `wellbore-minio-secret` | yes
+|**conf.appName** | Service name | string | `wellbore` | yes |
+|**conf.configmap** | configmap to be used | string | `wellbore-config` | yes |
+|**conf.keycloakSecretName** | Keycloak secret name | string | `wellbore-keycloak-secret` | yes |
+|**conf.minioSecretName** | MinIO secret name | string | `wellbore-minio-secret` | yes |
 
 ### ISTIO variables
 
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
-**istio.proxyCPU** | CPU request for Envoy sidecars | string | 10m | yes
-**istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | 500m | yes
-**istio.proxyMemory** | memory request for Envoy sidecars | string | 100Mi | yes
-**istio.proxyMemoryLimit** | memory limit for Envoy sidecars | string | 512Mi | yes
+|**istio.proxyCPU** | CPU request for Envoy sidecars | string | 10m | yes |
+|**istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | 500m | yes |
+|**istio.proxyMemory** | memory request for Envoy sidecars | string | 100Mi | yes |
+|**istio.proxyMemoryLimit** | memory limit for Envoy sidecars | string | 512Mi | yes |
 
 ## Install the Helm chart
 

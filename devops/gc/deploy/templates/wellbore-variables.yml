@@ -7,6 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
 data:
   LOG_LEVEL: {{ .Values.data.logLevel | quote }}
+  SERVICE_HOST_WDMS_WORKER: {{ printf "%s/api/wdms-worker" .Values.data.WDMSWorkerHost | quote }}
   {{- if not .Values.global.onPremEnabled }}
   CLOUD_PROVIDER: "gc"
   {{- else }}
