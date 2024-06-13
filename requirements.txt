@@ -109,7 +109,7 @@ charset-normalizer==2.0.3
     # via
     #   aiohttp
     #   requests
-click==8.0.1
+click==8.1.7
     # via
     #   -r requirements.in
     #   dask
@@ -129,7 +129,7 @@ cryptography==41.0.5
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
     #   pyjwt
-dask[distributed]==2022.12.1
+dask[distributed]==2024.4.1
     # via
     #   -r requirements.in
     #   dask
@@ -138,7 +138,7 @@ decorator==5.0.9
     # via
     #   gcsfs
     #   jsonpath-ng
-distributed==2022.12.1
+distributed==2024.4.1
     # via dask
 dpath==2.1.5
     # via wellbore-schema-manipulation
@@ -253,7 +253,7 @@ msal==1.25.0
     #   msal-extensions
 msal-extensions==1.0.0
     # via azure-identity
-msgpack==1.0.2
+msgpack==1.0.8 #???
     # via distributed
 msrest==0.6.21
     # via
@@ -474,7 +474,7 @@ xmltodict==0.11.0
     # via osdu-log-recognition-lib
 yarl==1.9.3
     # via aiohttp
-zict==2.0.0
+zict==3.0.0
     # via distributed
 
 # The following packages are considered to be unsafe in a requirements file:

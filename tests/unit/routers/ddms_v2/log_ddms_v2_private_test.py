@@ -20,7 +20,7 @@ from unittest.mock import create_autospec, patch
 import uuid
 
 import pandas as pd
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from odes_storage.models import CreateUpdateRecordsResponse, Record
 

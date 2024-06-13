@@ -21,7 +21,7 @@ opencensus-ext-ocagent
 opencensus-ext-logging
 
 # for chunking feature
-dask[distributed]==2022.12.1
+dask[distributed]==2024.4.1 # Jump to 2024.4.1 to solve Python 3.11.9 incompatibility
 fsspec>=2022.10.0
 adlfs==2022.10.0
 s3fs==2022.10.0
