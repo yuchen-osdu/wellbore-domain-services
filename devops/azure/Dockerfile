@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Using Microsoft Base Image for python 3.8-slim
-FROM mcr.microsoft.com/mirror/docker/library/python:3.8-slim
+# Using Microsoft Base Image for python 3.11-slim
+FROM mcr.microsoft.com/mirror/docker/library/python:3.11-slim
 
 COPY requirements.txt ./
 
