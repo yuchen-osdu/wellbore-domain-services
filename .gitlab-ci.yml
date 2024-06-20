@@ -68,7 +68,7 @@ include:
     file: "cloud-providers/aws-python.yml"
 
   # AZURE it tests "azure_test_py"
-  - local: "/devops/azure/azure-wellbore.yml"
+  - local: "/devops/azure/azure-wellbore.yml" 
 
   # Google Cloud int tests "gc-test-python" & "gc-baremetal-test-python"
   - local: "devops/gc/pipeline/override-stages.yml"
