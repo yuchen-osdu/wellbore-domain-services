@@ -23,6 +23,7 @@ def build_request_about() -> RequestRunner:
         headers={
             'accept': 'application/json',
             'Connection': '{{header_connection}}',
+            'Authorization': 'Bearer {{token}}',
         },
     )
     return RequestRunner(rq_proto)
