@@ -323,6 +323,12 @@ async def complete_session(
                                                                    i_session.session,
                                                                    previous_bulk_uri,
                                                                    reference_curve)
+
+                is_extended_load_completed = i_session.session.meta.get("extendedLoadCompleted", None) \
+                    if i_session.session.meta else None
+                if "IsExtendedLoad" in record.data and is_extended_load_completed is True:
+                    record.data["IsExtendedLoad"] = False
+
                 # ==============>
                 # ==============> UPDATE META DATA HERE (baseDepth, ...) <==============
                 # ==============>
