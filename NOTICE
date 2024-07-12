@@ -98,7 +98,9 @@ The following software have components provided under the terms of this license:
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2024.7.0/)
 - decorator (from https://github.com/micheles/decorator)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.0/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/2024.6.1/)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
@@ -136,6 +138,7 @@ CC-BY-3.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.0/)
 - tornado (from http://www.tornadoweb.org/)
 
 ========================================================================
@@ -162,6 +165,7 @@ ISC
 The following software have components provided under the terms of this license:
 
 - Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/, https://pypi.org/project/Jinja2/3.1.4/)
+- click (from https://palletsprojects.com/p/click/)
 - grpcio (from https://grpc.io)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 
@@ -293,6 +297,7 @@ PSF-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.0/)
 - pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
 
 ========================================================================

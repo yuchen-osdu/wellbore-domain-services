@@ -16,7 +16,7 @@ aiobotocore[boto3]==2.4.0
     # via
     #   -r requirements.in
     #   s3fs
-aiohttp==3.9.1
+aiohttp==3.9.5
     # via
     #   -r requirements.in
     #   adlfs

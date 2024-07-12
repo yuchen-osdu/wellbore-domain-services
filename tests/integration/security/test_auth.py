@@ -19,21 +19,7 @@ import jwt
 
 payload = {}
 
-@pytest.fixture
-def skip_if_gc_environment(base_url):
-    """
-        In Google Cloud environment there is no AuthorizationPolicy set. Certain tests may fail on Google Cloud
-        and this fixture aims to skip a test case when targeted environment is Google Cloud.
-    """
-    response = requests.request("GET", f"{base_url}/about", verify=False)
-    assert response.status_code == 200
-    about_response = response.json()
 
-    if about_response.get("cloudEnvironment") == "gc":
-        pytest.skip('skipped on this cloud provider because no AuthorizationPolicy in place')
-
-
-# Test for expired token
 def test_expired_token_returns_40X(base_url, check_cert, token):
     url = f"{base_url}/about"
     token_expired = jwt.encode({"email":"nobody@example.com", "exp":datetime.datetime.utcnow() - datetime.timedelta(seconds=300)}, key="secret", algorithm="HS256")
@@ -43,27 +29,21 @@ def test_expired_token_returns_40X(base_url, check_cert, token):
     response = requests.request("GET", url, headers=headers, data=payload, verify=check_cert)
     assert response.status_code == 401
     
-# Test for no token on some paths where JWT token is NOT required due to the AuthorizationPolicy. Test to ensure headers are present for docs endpoint
-def test_notoken_paths_returns_20X_docs(base_url, check_cert, token):
+
+def test_content_security_header_docs(base_url, check_cert, token):
     
     url = f"{base_url}/docs"
-    headers = {}
+    headers = {
+        'Authorization': f"Bearer {token}"
+    }
     response = requests.request("GET", url, headers=headers, data=payload, verify=check_cert)
     assert response.status_code == 200
     assert 'content-security-policy' in response.headers
 
-# Test for no token on some paths where JWT token is NOT required due to the AuthorizationPolicy
-@pytest.mark.parametrize("path", ["docs", "openapi.json", "about"])
-def test_notoken_paths_returns_20X(base_url, check_cert, token, path):
-
-    url = f"{base_url}/{path}"
-    headers = {}
-    response = requests.request("GET", url, headers=headers, data=payload, verify=check_cert)
-    assert response.status_code == 200
 
 # Test for no token on some paths where JWT token is required due to the AuthorizationPolicy
-@pytest.mark.parametrize("path", ["version", "nonExistingPath"])
-def test_notoken_returns_40X(base_url, check_cert, token, skip_if_gc_environment, path):
+@pytest.mark.parametrize("path", ["docs", "openapi.json", "about", "version", "nonExistingPath"])
+def test_notoken_returns_403(base_url, check_cert, token, path):
 
     url = f"{base_url}/{path}"
     headers = {}
@@ -72,7 +52,6 @@ def test_notoken_returns_40X(base_url, check_cert, token, skip_if_gc_environment
     assert "access denied" in response.text
 
 
-# Test for invalid token
 def test_invalid_token_returns_40X(base_url, check_cert, token):
     url = f"{base_url}/about"
     blank = {}
