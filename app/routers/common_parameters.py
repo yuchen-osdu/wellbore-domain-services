@@ -176,3 +176,35 @@ successful_get_bulk_data_responses_examples = {
             }
         },
     }}
+
+
+create_sessions_examples = {
+    "update": {
+        "summary": "Start update session",
+        "value": {
+            "mode": "update"
+        }
+    },
+    "overwrite": {
+        "summary": "Start overwrite session",
+        "value": {
+            "mode": "overwrite"
+        }
+    },
+    "full": {
+        "summary": "Start update session at specific record version",
+        "value": {
+            "fromVersion": 123456789,
+            "mode": "update",
+        }
+    },
+    "set session meta": {
+        "summary": "Start update session and session meta attributes",
+        "value": {
+            "mode": "update",
+            "meta": {
+                "extendedLoadCompleted": True
+            }
+        }
+    },
+}
