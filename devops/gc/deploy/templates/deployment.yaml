@@ -57,13 +57,18 @@ spec:
               containerPort: 8080
               protocol: TCP
           livenessProbe:
+            failureThreshold: 3
             httpGet:
               path: /api/os-wellbore-ddms/healthz
-              port: http
+              port: 8080
+            initialDelaySeconds: 190
+            periodSeconds: 60
           readinessProbe:
+            failureThreshold: 3
             httpGet:
-              path: /api/os-wellbore-ddms/healthz
-              port: http
+              path: /api/os-wellbore-ddms/readiness
+              port: 8080
+            periodSeconds: 60
           resources:
             requests:
               cpu: {{ .Values.data.requestsCpu | quote }}
