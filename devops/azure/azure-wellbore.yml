@@ -115,7 +115,7 @@ azure_swagger_test:
     AZURE_SWAGGER_PATH: api/os-wellbore-ddms/docs    
 
 azure_test_py:
-  image: mcr.microsoft.com/mirror/docker/library/python:3.8-slim
+  image: mcr.microsoft.com/mirror/docker/library/python:3.11-slim
   tags: ["osdu-small"]
   stage: integration
   needs: ["azure_deploy"]

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Callable, Any, Dict, List
 import logging
 import os
@@ -28,7 +28,7 @@ __all__ = [
 logger = logging.getLogger("configuration")
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class EnvVar:
     key: str
     description: str = ""
@@ -248,7 +248,7 @@ class ConfigurationContainer:
         factory=lambda x: x.lower() == "true" or x.lower() == "enabled" or x == "1",
     )
 
-    _environment_dict: Dict = os.environ
+    _environment_dict: Dict = field(default_factory=os.environ)
 
     _contextual_loader: Callable = None
 

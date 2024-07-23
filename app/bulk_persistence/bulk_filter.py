@@ -52,8 +52,8 @@ class BulkReadFilters:
 
         for _, operators in column_operators.items():
             if BulkReadFilterOperator.Equal in operators and BulkReadFilterOperator.In in operators:
-                raise FilterError(f"Operator '{BulkReadFilterOperator.Equal}' and '{BulkReadFilterOperator.In}' "
-                                  "can't be applied on the same column")
+                raise FilterError(f"Operator '{str(BulkReadFilterOperator.Equal.value)}' and "
+                                  f"'{BulkReadFilterOperator.In.value}' can't be applied on the same column")
 
     @property
     def columns(self) -> Set[str]:

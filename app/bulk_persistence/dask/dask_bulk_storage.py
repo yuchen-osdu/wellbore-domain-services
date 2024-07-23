@@ -100,7 +100,7 @@ def read_with_dask(path: Union[str, List[str]], **kwargs) -> dd.DataFrame:
         [dd.DataFrame]: the dask dataframe we read
     """
     arguments = {
-        'engine': 'pyarrow-dataset',
+        'engine': 'pyarrow',
         'chunksize': '25M',
         'aggregate_files': True,
     }
@@ -156,7 +156,7 @@ class DaskBulkStorage:
             if parameters.register_fsspec_implementation:
                 parameters.register_fsspec_implementation()
 
-            await DaskBulkStorage.client.register_worker_plugin(
+            await DaskBulkStorage.client.register_plugin(
                 DaskWorkerPlugin(service_name=config.service_name,
                                  logger=get_logger(),
                                  register_fsspec_implementation=parameters.register_fsspec_implementation),

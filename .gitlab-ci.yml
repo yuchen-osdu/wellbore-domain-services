@@ -75,7 +75,7 @@ include:
 
 #Override Python Image defined in python.yml
 .python:
-  image: python:3.8-bullseye
+  image: python:3.11-bookworm
 
 verify_existing_requirements:
   tags: ["osdu-small"]

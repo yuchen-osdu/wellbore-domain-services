@@ -153,8 +153,8 @@ async def startup_event():
 
     logger.init_logger(service_name=service_name, config=Config)
 
-    #check python version >=3.8
-    assert sys.version_info.major == 3 and sys.version_info.minor >= 8, 'Python version required >=3.8'
+    #check python version >=3.11
+    assert sys.version_info.major == 3 and sys.version_info.minor >= 11, 'Python version required >=3.11'
 
     check_environment(Config)
     # build bulk persistence specific configuration

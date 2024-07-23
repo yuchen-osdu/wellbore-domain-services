@@ -28,7 +28,7 @@ gc-containerize-gcr:
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
 gc-baremetal-test-python:
-  image: python:3.8
+  image: python:3.11
   allow_failure: true
 
 # Disable maven job in gc-com-gke pipelines

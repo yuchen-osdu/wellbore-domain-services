@@ -194,7 +194,7 @@ _trajectory_dataframe_example = DataFrame([
                 _trajectory_dataframe_example.shape[0],
                 _trajectory_dataframe_example.shape[1],
                 ', '.join(_trajectory_dataframe_example.columns.tolist())) +
-            ''.join([f'\n* {o}: <br/>`{DataframeSerializerSync.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
+            ''.join([f'\n* {o.value}: <br/>`{DataframeSerializerSync.to_json(_trajectory_dataframe_example, o)}`<br/>&nbsp;'
                      for o in JSONOrient]),
         # put examples here because of bug in swagger UI to properly render multiple examples
         "required": True,

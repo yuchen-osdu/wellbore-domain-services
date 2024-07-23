@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.8-slim-bookworm
+FROM python:3.11-slim-bookworm
 
 WORKDIR /
 COPY requirements.txt ./
-
-# Python 3.8 contains old version of setuptools, upgrade it to prevent CVE-2022-40897. To be deleted with Python 3.9
-RUN pip install setuptools --upgrade
 
 RUN pip install -r requirements.txt --no-cache-dir
 

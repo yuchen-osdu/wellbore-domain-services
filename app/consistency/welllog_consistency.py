@@ -62,11 +62,11 @@ def check_welllog_consistency(wl: Record):
         # There are no Curves or ReferenceCurveID
         return
 
-    curves = wl.data.get(WellLogProperties.CURVES) or {}
-    reference_curve_id = wl.data.get(WellLogProperties.REFERENCE_CURVE_ID)
+    curves = wl.data.get(WellLogProperties.CURVES.value) or {}
+    reference_curve_id = wl.data.get(WellLogProperties.REFERENCE_CURVE_ID.value)
 
     # All curve ids must be unique
-    curve_ids, duplicated_error = get_unique_dict_attr_values(curves, WellLogProperties.CURVE_ID)
+    curve_ids, duplicated_error = get_unique_dict_attr_values(curves, WellLogProperties.CURVE_ID.value)
     if duplicated_error:
         raise DuplicatedCurveIdException()
 
@@ -88,7 +88,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     def get_reference_curve(cls, record: Record) -> Optional[str]:
         if not record.data:
             return None
-        return record.data.get(WellLogProperties.REFERENCE_CURVE_ID)
+        return record.data.get(WellLogProperties.REFERENCE_CURVE_ID.value)
 
     @classmethod
     def check_bulk_consistency(cls, record: Record, bulk_info: BulkInfoForConsistency):
@@ -97,7 +97,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         cls._check_columns_consistency(record.data, bulk_info.curves)
 
-        reference_name = record.data.get(WellLogProperties.REFERENCE_CURVE_ID)
+        reference_name = record.data.get(WellLogProperties.REFERENCE_CURVE_ID.value)
         if reference_name not in bulk_info.curves:
             return
 
@@ -120,7 +120,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not record.data:
             return
 
-        reference_name = record.data.get(WellLogProperties.REFERENCE_CURVE_ID)
+        reference_name = record.data.get(WellLogProperties.REFERENCE_CURVE_ID.value)
         if reference_name not in df.columns:
             reference_name = None
 
@@ -153,7 +153,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if not record.data:
             return
 
-        reference_curve_id = record.data.get(WellLogProperties.REFERENCE_CURVE_ID)
+        reference_curve_id = record.data.get(WellLogProperties.REFERENCE_CURVE_ID.value)
         if not reference_curve_id:
             return
 
@@ -185,18 +185,18 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         curves = wl_data.get(WellLogProperties.CURVES)
         if not curves and len(curve_sizes) > 0:
             raise ColumnDoesNotMatchCurveIdException(
-                f"Column(s) do(es) not match any {WellLogProperties.CURVE_ID} of the WellLog record."
+                f"Column(s) do(es) not match any {WellLogProperties.CURVE_ID.value} of the WellLog record."
             )
 
         curve_sizes_from_meta = {
-            c[WellLogProperties.CURVE_ID]: c.get(WellLogProperties.NUMBER_OF_COLUMNS, 1) for c in curves
+            c[WellLogProperties.CURVE_ID.value]: c.get(WellLogProperties.NUMBER_OF_COLUMNS.value, 1) for c in curves
         }
 
         not_matching_col_name = curve_sizes.keys() - curve_sizes_from_meta.keys()
         if any(not_matching_col_name):
             raise ColumnDoesNotMatchCurveIdException(
-                f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any {WellLogProperties.CURVE_ID} of the"
-                " WellLog record."
+                f"Column(s) {', '.join(not_matching_col_name)} do(es) not match any {WellLogProperties.CURVE_ID.value}"
+                f" of the WellLog record."
             )
 
         not_matching_nb_col_per_name = {
@@ -209,8 +209,8 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
             raise TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(
                 f"The number of columns for curve(s): {expected_nb_of_col_per_name} in the bulk data do(es) not match"
-                f" the '{WellLogProperties.NUMBER_OF_COLUMNS}' property value in the WellLog record for"
-                f" {WellLogProperties.CURVE_ID}: {not_matching_nb_col_per_name} ."
+                f" the '{WellLogProperties.NUMBER_OF_COLUMNS.value}' property value in the WellLog record for"
+                f" {WellLogProperties.CURVE_ID.value}: {not_matching_nb_col_per_name} ."
             )
 
     @staticmethod
@@ -218,7 +218,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         check_reference_is_strictly_monotonic(ref_bulk_info)
         raise_if_dict_value_is_different(
             record_data=wl.data,
-            attr_name=WellLogProperties.SAMPLING_START,
+            attr_name=WellLogProperties.SAMPLING_START.value,
             reference_value=ref_bulk_info.start,
             error_msg=(
                 "Reference top value ({reference_value}) is different from {attr_name} value ({attr_value}) of the"
@@ -228,7 +228,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
 
         raise_if_dict_value_is_different(
             record_data=wl.data,
-            attr_name=WellLogProperties.SAMPLING_STOP,
+            attr_name=WellLogProperties.SAMPLING_STOP.value,
             reference_value=ref_bulk_info.end,
             error_msg=(
                 "Reference bottom value ({reference_value}) is different from {attr_name} value ({attr_value}) of the"
@@ -240,7 +240,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
     def _is_curve_reference_family_measured_depth(data: dict, data_partition: str):
         log_curve_family_id_expected = data_partition + ":reference-data--LogCurveFamily:Measured%20Depth:"
         return any(
-            curve.get(WellLogProperties.LOG_CURVE_FAMILY_ID, None) == log_curve_family_id_expected
-            for curve in data[WellLogProperties.CURVES]
-            if curve[WellLogProperties.CURVE_ID] == data[WellLogProperties.REFERENCE_CURVE_ID]
+            curve.get(WellLogProperties.LOG_CURVE_FAMILY_ID.value, None) == log_curve_family_id_expected
+            for curve in data[WellLogProperties.CURVES.value]
+            if curve[WellLogProperties.CURVE_ID.value] == data[WellLogProperties.REFERENCE_CURVE_ID.value]
         )
