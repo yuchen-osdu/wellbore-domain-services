@@ -37,6 +37,7 @@ phases:
       - wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472.zip
       - unzip -q ./sonar-scanner-cli-4.6.2.2472.zip
       - pip install safety
+      - pip install boto3
       # Install git secrets
       #TODO temporarily adding hotfix, due to https://github.com/awslabs/git-secrets/issues/220
       - export SAY_LOCATION=`ln -s "$(which echo)" say`
