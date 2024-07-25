@@ -324,9 +324,9 @@ async def complete_session(
                                                                    previous_bulk_uri,
                                                                    reference_curve)
 
-                is_extended_load_completed = i_session.session.meta.get("extendedLoadCompleted", None) \
+                is_extended_load_completed = i_session.session.meta.get("extendedLoadCompleted", "").lower() \
                     if i_session.session.meta else None
-                if "IsExtendedLoad" in record.data and is_extended_load_completed is True:
+                if "IsExtendedLoad" in record.data and is_extended_load_completed == "true":
                     record.data["IsExtendedLoad"] = False
 
                 # ==============>

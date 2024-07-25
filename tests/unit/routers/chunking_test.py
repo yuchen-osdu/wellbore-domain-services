@@ -89,7 +89,7 @@ async def _create_record(client: AsyncClient, entity_type, *, return_version=Fal
     entity_def = Definitions[entity_type]
     create_url = entity_def['base_url']
     kind = entity_def['kind']
-    record_data = entity_def['record_data']
+    record_data = dict(entity_def['record_data'])
 
     record = {
         "kind": kind,
@@ -1388,18 +1388,32 @@ async def test_bulk_tracing(dasked_test_app_without_consistency_client, entity_t
         assert_mock_chunk(mock_mock, data_df)
 
 
-@pytest.mark.parametrize("entity_type", EntityTypeParams)
-@pytest.mark.parametrize("add_session_meta_attribute", [True, False])
+@pytest.mark.parametrize("entity_type", [
+    'WellLog',
+    'WellboreTrajectory'
+])
+@pytest.mark.parametrize("add_session_meta_attribute", [
+    True,
+    False
+])
+@pytest.mark.parametrize("extendedLoadCompleted_value", [
+    "",
+    "True",
+    "true",
+    "False",
+    "something-else"
+])
 @pytest.mark.anyio
 async def test_session_meta_extended_load_completed(dasked_test_app_without_consistency_client, entity_type,
-                                                    add_session_meta_attribute):
+                                                    add_session_meta_attribute, extendedLoadCompleted_value):
     """ Create session, append chunking with consecutive index, validate session """
 
-    async def _check_record():
+    async def _check_record(expected_is_extended_load):
         _record_response = await client.get(f'{base_url}/{record_id}')
+
         assert _record_response.status_code == 200
         if add_session_meta_attribute:
-            assert _record_response.json().get("data", {}).get("IsExtendedLoad", None) is True
+            assert _record_response.json().get("data", {}).get("IsExtendedLoad", None) is expected_is_extended_load
         else:
             assert "IsExtendedLoad" not in _record_response.json().get("data", {}), \
                 "'IsExtendedLoad' should be added if record has not the field data.IsExtendedLoad set as True"
@@ -1409,17 +1423,25 @@ async def test_session_meta_extended_load_completed(dasked_test_app_without_cons
     base_url = Definitions[entity_type]['base_url']
     data_format = "parquet"
     session_meta_dict = {
-        "meta": {"extendedLoadCompleted": add_session_meta_attribute}
+        "meta": {"extendedLoadCompleted": extendedLoadCompleted_value}
     }
 
     # field data.IsExtendedLoad exists only for WellLog and WellboreTrajectory
     record_id = await _create_record(client, entity_type, is_extended_load=add_session_meta_attribute)
-    await _check_record()
+
+    # before commit the attribute 'IsExtendedLoad' is set to True
+    await _check_record(expected_is_extended_load=True)
 
     await _create_chunks(client, entity_type, record_id=record_id, data_format=data_format,
-                         json_kwargs=session_meta_dict, cols_ranges=[(['X'], range(10)), (['X'], range(10, 20))])
+                         json_kwargs=session_meta_dict, cols_ranges=[(['X'], range(10))])
 
-    await _check_record()
+    if extendedLoadCompleted_value.lower() == "true":
+        # after commit the attribute 'IsExtendedLoad' is set to False
+        await _check_record(expected_is_extended_load=False)
+    else:
+        # attribute 'IsExtendedLoad' is not changed if is_extended_load_value is correct
+        await _check_record(expected_is_extended_load=True)
+
     bulk_data_response = await client.get(f'{chunking_url}/{record_id}/data')
     assert bulk_data_response.status_code == 200
 
@@ -1428,14 +1450,14 @@ async def test_session_meta_extended_load_completed(dasked_test_app_without_cons
 @pytest.mark.parametrize("add_session_meta_attribute", [True, False])
 @pytest.mark.anyio
 async def test_v2_ignored_session_meta_extended_load_completed(dasked_test_app_without_consistency_client,
-                                                             entity_type, add_session_meta_attribute):
+                                                               entity_type, add_session_meta_attribute):
     """ Log entity type is not compatible with record.data["IsExtendedLoad"], it should be ignored """
 
     async def _check_record():
         _record_response = await client.get(f'{base_url}/{record_id}')
         assert _record_response.status_code == 200
         assert "IsExtendedLoad" not in _record_response.json().get("data", {}), \
-            "'IsExtendedLoad' should be added if record has not the field data.IsExtendedLoad set as True"
+            "'IsExtendedLoad' does not exist for Log kind"
 
     client = dasked_test_app_without_consistency_client
     chunking_url = Definitions[entity_type]['chunking_url']
