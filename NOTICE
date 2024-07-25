@@ -30,7 +30,6 @@ The following software have components provided under the terms of this license:
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - importlib-metadata
-- importlib-resources (from https://github.com/python/importlib_resources)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from https://msgpack.org/, https://pypi.org/project/msgpack/1.0.6/, https://pypi.org/project/msgpack/1.0.8/)
 - multidict (from https://github.com/aio-libs/multidict)
@@ -49,15 +48,15 @@ The following software have components provided under the terms of this license:
 - prometheus-client (from https://github.com/prometheus/client_python)
 - prometheus-fastapi-instrumentator (from https://github.com/trallnag/prometheus-fastapi-instrumentator)
 - proto-plus (from https://github.com/googleapis/proto-plus-python.git)
-- pyarrow (from https://arrow.apache.org/)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/17.0.0/)
 - pytest-dependency (from https://github.com/RKrahl/pytest-dependency)
 - python-dateutil (from https://github.com/dateutil/dateutil)
-- python-multipart (from https://pypi.org/project/python-multipart/0.0.9/)
+- python-multipart (from https://pypi.org/project/python-multipart/0.0.6/, https://pypi.org/project/python-multipart/0.0.9/)
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
 - rfc3986 (from http://rfc3986.readthedocs.io, https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
 - s3transfer (from https://github.com/boto/s3transfer)
-- sniffio (from https://pypi.org/project/sniffio/1.3.1/)
+- sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/1.3.1/)
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
@@ -80,7 +79,7 @@ The following software have components provided under the terms of this license:
 - packaging (from https://pypi.org/project/packaging/22.0/, https://pypi.org/project/packaging/24.1/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - prometheus-client (from https://github.com/prometheus/client_python)
-- pyarrow (from https://arrow.apache.org/)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/17.0.0/)
 - pyasn1 (from https://github.com/etingof/pyasn1, https://github.com/pyasn1/pyasn1)
 - pyasn1-modules (from https://github.com/etingof/pyasn1-modules, https://github.com/pyasn1/pyasn1-modules)
 - tblib (from https://github.com/ionelmc/python-tblib)
@@ -91,16 +90,15 @@ BSD-3-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- HeapDict (from http://stutzbachenterprises.com/)
 - Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/, https://pypi.org/project/Jinja2/3.1.4/)
 - MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
 - adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/2024.4.1/)
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2024.7.0/)
+- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/2024.7.1/)
 - decorator (from https://github.com/micheles/decorator)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.0/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.1/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/2024.6.1/)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
@@ -119,18 +117,18 @@ The following software have components provided under the terms of this license:
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
-- pyarrow (from https://arrow.apache.org/)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/17.0.0/)
 - pycparser (from https://github.com/eliben/pycparser)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - python-dateutil (from https://github.com/dateutil/dateutil)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - s3fs (from http://github.com/fsspec/s3fs/)
-- sniffio (from https://pypi.org/project/sniffio/1.3.1/)
-- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.37.2/)
+- sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/1.3.1/)
+- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.38.0/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - toolz (from https://github.com/pytoolz/toolz/)
-- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.30.1/, https://www.uvicorn.org/)
+- uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.30.3/, https://www.uvicorn.org/)
 - zict (from http://zict.readthedocs.io/en/latest/)
 
 ========================================================================
@@ -138,7 +136,7 @@ CC-BY-3.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.0/)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.1/)
 - tornado (from http://www.tornadoweb.org/)
 
 ========================================================================
@@ -165,7 +163,6 @@ ISC
 The following software have components provided under the terms of this license:
 
 - Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/, https://pypi.org/project/Jinja2/3.1.4/)
-- click (from https://palletsprojects.com/p/click/)
 - grpcio (from https://grpc.io)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 
@@ -215,7 +212,7 @@ The following software have components provided under the terms of this license:
 - deepdiff (from https://github.com/seperman/deepdiff)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/)
-- fastapi (from https://pypi.org/project/fastapi/0.111.0/, https://pypi.org/project/fastapi/0.86.0/)
+- fastapi (from https://pypi.org/project/fastapi/0.111.1/, https://pypi.org/project/fastapi/0.86.0/)
 - h11
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig, https://pypi.org/project/iniconfig/2.0.0/)
 - jmespath (from https://github.com/jmespath/jmespath.py)
@@ -229,25 +226,22 @@ The following software have components provided under the terms of this license:
 - ordered-set (from https://pypi.org/project/ordered-set/4.1.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pep517 (from https://github.com/pypa/pep517)
-- pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
 - pluggy
-- py (from https://py.readthedocs.io/)
-- pyarrow (from https://arrow.apache.org/)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/17.0.0/)
 - pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.8.2/)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
-- pytest (from http://pytest.org, https://docs.pytest.org/en/latest/, https://pypi.org/project/pytest/8.2.2/)
+- pytest (from http://pytest.org, https://docs.pytest.org/en/latest/, https://pypi.org/project/pytest/8.3.1/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
-- pytest-httpx (from https://pypi.org/project/pytest-httpx/0.30.0/)
+- pytest-httpx (from https://colin-b.github.io/pytest_httpx/, https://pypi.org/project/pytest-httpx/0.30.0/)
 - pytest-randomly (from https://github.com/pytest-dev/pytest-randomly)
 - pytest-xdist (from https://github.com/pytest-dev/pytest-xdist, https://pypi.org/project/pytest-xdist/3.6.1/)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
-- python-ulid (from https://pypi.org/project/python-ulid/2.2.0/)
+- python-ulid (from https://github.com/mdomke/python-ulid, https://pypi.org/project/python-ulid/2.2.0/)
 - pytz (from http://pythonhosted.org/pytz)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
-- sniffio (from https://pypi.org/project/sniffio/1.3.1/)
+- sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/1.3.1/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
-- toml (from https://github.com/uiri/toml)
 - tomli (from https://pypi.org/project/tomli/1.2.2/, https://pypi.org/project/tomli/2.0.0/, https://pypi.org/project/tomli/2.0.1/)
 - urllib3 (from https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/, https://pypi.org/project/urllib3/2.2.2/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
@@ -297,8 +291,7 @@ PSF-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.0/)
-- pkgutil_resolve_name (from https://github.com/graingert/pkgutil-resolve-name)
+- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/2024.7.1/)
 
 ========================================================================
 Protobuf
