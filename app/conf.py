@@ -248,6 +248,13 @@ class ConfigurationContainer:
         factory=lambda x: x.lower() == "true" or x.lower() == "enabled" or x == "1",
     )
 
+    swagger_full_url_enabled: EnvVar = EnvVar(
+        key="SWAGGER_FULL_URL_ENABLED",
+        description="enable or not full URL in swagger specification",
+        factory=lambda x: x.lower() == "true" or x.lower() == "enabled" or x == "1",
+        default="false",
+    )
+
     _environment_dict: Dict = field(default_factory=os.environ)
 
     _contextual_loader: Callable = None

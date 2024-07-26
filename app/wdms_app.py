@@ -46,6 +46,7 @@ from app.injector.main_injector import MainInjector
 # ---------- import middlewares ----------------------------------
 from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
 from app.middleware.basic_context_middleware import require_data_partition_id, ServerTimingHdrMiddleware
+from app.middleware.openapi_middleware import OpenAPIMiddleware
 # ---------- import model ----------------------------------
 from app.model.entity_utils import Entity
 
@@ -107,7 +108,6 @@ wdms_app = FastAPI(title=__app_name__,
 wdms_app.router.route_class = TracingRoute
 
 app_injector = AppInjector()
-
 
 def custom_openapi(*args, **kwargs):
     if wdms_app.openapi_schema:
@@ -417,12 +417,14 @@ wdms_app.include_router(
 # The multiple instantiation of bulk_utils router create some duplicated operation_id
 update_operation_ids(wdms_app)
 
-
-# order is last executed first
-wdms_app.add_middleware(TracingMiddleware, skip_for_path_suffix=[r.path for r in probes.router.routes])
+if Config.swagger_full_url_enabled.value:
+    wdms_app.add_middleware(OpenAPIMiddleware)
 
 if Config.enable_header_server_timings.value:
     wdms_app.add_middleware(ServerTimingHdrMiddleware)
+
+# order is last executed first
+wdms_app.add_middleware(TracingMiddleware, skip_for_path_suffix=[r.path for r in probes.router.routes])
 
 # must be added last to be executed first, it's responsible to clean and create WDMS Context
 wdms_app.add_middleware(CreateBasicContextMiddleware, config=Config, injector=app_injector)
