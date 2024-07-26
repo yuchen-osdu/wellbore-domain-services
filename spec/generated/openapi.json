@@ -5671,7 +5671,7 @@
       },
       "post": {
         "deprecated": true,
-        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
+        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. \nInside a session, individual chunk doesn't generate new individual record version.  \n \nA new single version is created only at session completion 'aggregating' all updates.\n A typical workflow is:\n 1. create a session\n 2. send X chunks (can be parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\nIf the session is not completed before, it's automatically dropped. \nThe session duration is specified in the request but cannot exceeds 24 hours.\n\n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted** can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to **False** after completing the session \n(with _PATCH /{record_id}/sessions/{session_id}_ API). See swagger examples for details.",
         "operationId": "post__alpha_ddms_v2_logs__record_id__sessions",
         "parameters": [
           {
@@ -5699,6 +5699,36 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "examples": {
+                "full": {
+                  "summary": "Start update session at specific record version",
+                  "value": {
+                    "fromVersion": 123456789,
+                    "mode": "update"
+                  }
+                },
+                "overwrite": {
+                  "summary": "Start overwrite session",
+                  "value": {
+                    "mode": "overwrite"
+                  }
+                },
+                "set session meta": {
+                  "summary": "Start update session and session meta attributes",
+                  "value": {
+                    "meta": {
+                      "extendedLoadCompleted": true
+                    },
+                    "mode": "update"
+                  }
+                },
+                "update": {
+                  "summary": "Start update session",
+                  "value": {
+                    "mode": "update"
+                  }
+                }
+              },
               "schema": {
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }
@@ -14385,7 +14415,7 @@
         ]
       },
       "post": {
-        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
+        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. \nInside a session, individual chunk doesn't generate new individual record version.  \n \nA new single version is created only at session completion 'aggregating' all updates.\n A typical workflow is:\n 1. create a session\n 2. send X chunks (can be parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\nIf the session is not completed before, it's automatically dropped. \nThe session duration is specified in the request but cannot exceeds 24 hours.\n\n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted** can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to **False** after completing the session \n(with _PATCH /{record_id}/sessions/{session_id}_ API). See swagger examples for details.",
         "operationId": "post__ddms_v3_wellboretrajectories__record_id__sessions",
         "parameters": [
           {
@@ -14413,6 +14443,36 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "examples": {
+                "full": {
+                  "summary": "Start update session at specific record version",
+                  "value": {
+                    "fromVersion": 123456789,
+                    "mode": "update"
+                  }
+                },
+                "overwrite": {
+                  "summary": "Start overwrite session",
+                  "value": {
+                    "mode": "overwrite"
+                  }
+                },
+                "set session meta": {
+                  "summary": "Start update session and session meta attributes",
+                  "value": {
+                    "meta": {
+                      "extendedLoadCompleted": true
+                    },
+                    "mode": "update"
+                  }
+                },
+                "update": {
+                  "summary": "Start update session",
+                  "value": {
+                    "mode": "update"
+                  }
+                }
+              },
               "schema": {
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }
@@ -16123,7 +16183,7 @@
         ]
       },
       "post": {
-        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. Inside a session, individual chunk doesn't generate new individual version. A new single version is created only at session completion 'aggregating' all updates. A typical workflow is:\n1. create a session\n2. send X chunks (can be parallelized)\n3. commit the session\n\nSession has an expiry time. If the session is not completed before, it's automatically dropped. The session duration is specified in the request but cannot exceeds 24 hours.",
+        "description": "Initiate a session based on record version provided. The session is isolated from any other modifications. \nInside a session, individual chunk doesn't generate new individual record version.  \n \nA new single version is created only at session completion 'aggregating' all updates.\n A typical workflow is:\n 1. create a session\n 2. send X chunks (can be parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\nIf the session is not completed before, it's automatically dropped. \nThe session duration is specified in the request but cannot exceeds 24 hours.\n\n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted** can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to **False** after completing the session \n(with _PATCH /{record_id}/sessions/{session_id}_ API). See swagger examples for details.",
         "operationId": "post__ddms_v3_welllogs__record_id__sessions",
         "parameters": [
           {
@@ -16151,6 +16211,36 @@
         "requestBody": {
           "content": {
             "application/json": {
+              "examples": {
+                "full": {
+                  "summary": "Start update session at specific record version",
+                  "value": {
+                    "fromVersion": 123456789,
+                    "mode": "update"
+                  }
+                },
+                "overwrite": {
+                  "summary": "Start overwrite session",
+                  "value": {
+                    "mode": "overwrite"
+                  }
+                },
+                "set session meta": {
+                  "summary": "Start update session and session meta attributes",
+                  "value": {
+                    "meta": {
+                      "extendedLoadCompleted": true
+                    },
+                    "mode": "update"
+                  }
+                },
+                "update": {
+                  "summary": "Start update session",
+                  "value": {
+                    "mode": "update"
+                  }
+                }
+              },
               "schema": {
                 "$ref": "#/components/schemas/CreateDataSessionRequest"
               }

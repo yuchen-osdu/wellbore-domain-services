@@ -6,7 +6,7 @@ from uuid import UUID
 
 from starlette.requests import Request
 
-from app.routers.common_parameters import response_404
+from app.routers.common_parameters import response_404, create_sessions_examples
 from app.tenant import resolve_tenant
 from app.clients import StorageRecordServiceClient
 from app.bulk_persistence import (Session,
@@ -19,7 +19,7 @@ from app.routers.bulk.utils import get_data_consistency_checks
 from app.context import Context
 from app.helper.traces import TracingRoute
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from fastapi.responses import Response
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from pydantic import BaseModel, Field
@@ -111,23 +111,31 @@ async def get_session_dependencies():
 @router.post(
     "/{record_id}/sessions",
     summary="Create a new session on the given record for writing bulk data.",
-    description="Initiate a session based on record version provided. "
-                "The session is isolated from any other modifications. "
-                "Inside a session, individual chunk doesn't generate new individual version. "
-                "A new single version is created only at session completion 'aggregating' all updates."
-                " A typical workflow is:"
-                "\n1. create a session"
-                "\n2. send X chunks (can be parallelized)"
-                "\n3. commit the session"
-                "\n\nSession has an expiry time."
-                " If the session is not completed before, it's automatically dropped. "
-                "The session duration is specified in the request but cannot exceeds 24 hours.",
+    description="""
+Initiate a session based on record version provided. The session is isolated from any other modifications. 
+Inside a session, individual chunk doesn't generate new individual record version.  
+ 
+A new single version is created only at session completion 'aggregating' all updates.
+ A typical workflow is:
+ 1. create a session
+ 2. send X chunks (can be parallelized)
+ 3. commit the session  
+   
+Session has an expiry time.
+If the session is not completed before, it's automatically dropped. 
+The session duration is specified in the request but cannot exceeds 24 hours.
+
+**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted** can be set into session.meta 
+to set "record.data.IsExtendedLoad" to **False** after completing the session 
+(with _PATCH /{record_id}/sessions/{session_id}_ API). See swagger examples for details.  
+""",
+
     responses={**response_404},
     response_model=Session
 )
 async def create_session(record_id: str,
                          request: Request,
-                         create_rq: CreateDataSessionRequest,
+                         create_rq: CreateDataSessionRequest = Body(..., examples=create_sessions_examples),
                          with_storages: WithSessionStorages = Depends(get_session_dependencies),
                          consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks)
                          ) -> Session:
