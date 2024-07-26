@@ -92,6 +92,7 @@ configMap:
     usePartitionService: 'enabled'
     loggerLevel: 'INFO'
     environmentName: gitlab
+    swaggerFullUrlEnabled: 'true'
   name: os-wellbore-ddms-envs
 
 ingress:

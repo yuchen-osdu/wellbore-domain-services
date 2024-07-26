@@ -64,7 +64,8 @@ configuration:
       USE_PARTITION_SERVICE: "enabled"
       AZ_LOGGER_LEVEL: "INFO"
       ENVIRONMENT_NAME: gitlab
-
+      SWAGGER_FULL_URL_ENABLED: "true"
+      
     secrets:
       - name: AZ_AI_INSTRUMENTATION_KEY
         key: appinsight.key
