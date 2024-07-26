@@ -422,7 +422,7 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
             description="Back-end for schema service",
             is_mandatory=False,
             override=True,
-            default="http://schema/api/schema-service",
+            default="http://schema/api/schema-service/v1",
         )
 
     if provider == "baremetal":
@@ -458,7 +458,7 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
             description="Back-end for schema service",
             is_mandatory=False,
             override=True,
-            default="http://schema/api/schema-service",
+            default="http://schema/api/schema-service/v1",
         )
 
     if provider == "ibm":
