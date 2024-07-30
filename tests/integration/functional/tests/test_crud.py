@@ -15,6 +15,7 @@
 import pytest
 from .fixtures import with_wdms_env
 from wdms_client.request_builders import build_request
+from munch import Munch
 
 kind_list = ['well', 'wellbore', 'logset', 'marker', 'trajectory', 'log']
 new_parameters_env = {'authorityKind': 'slb',
@@ -98,6 +99,6 @@ def test_schema_service_correctly_initialized(get_env):
 
     assert error_response.get("origin") == "osdu-data-ecosystem-schema", "Ensure error comes from Schema Service"
     assert len(error_response.get('errors', [])) > 0, "Check field is not empty"
-    assert type(error_response.get('errors')[0]) is dict, "Ensure error is an object"
+    assert type(error_response.get('errors')[0]) is Munch, "Ensure error is a Munch object"
     assert "Schema is not present" in error_response.get('errors')[0].get('error', {}).get('message')
 
