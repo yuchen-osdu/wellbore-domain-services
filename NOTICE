@@ -71,7 +71,7 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/2024.4.1/)
+- adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/2024.7.0/)
 - decorator (from https://github.com/micheles/decorator)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
@@ -92,7 +92,7 @@ The following software have components provided under the terms of this license:
 
 - Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/, https://pypi.org/project/Jinja2/3.1.4/)
 - MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
-- adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/2024.4.1/)
+- adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/2024.7.0/)
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
@@ -125,7 +125,7 @@ The following software have components provided under the terms of this license:
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - s3fs (from http://github.com/fsspec/s3fs/)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/1.3.1/)
-- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.38.0/)
+- starlette (from https://pypi.org/project/starlette/0.22.0/, https://pypi.org/project/starlette/0.38.2/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - toolz (from https://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/0.30.3/, https://www.uvicorn.org/)
@@ -144,7 +144,7 @@ CC-BY-4.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/2024.4.1/)
+- adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/2024.7.0/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/2024.6.1/)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - numpy
@@ -211,7 +211,7 @@ The following software have components provided under the terms of this license:
 - coverage (from https://github.com/nedbat/coveragepy)
 - deepdiff (from https://github.com/seperman/deepdiff)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
-- execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/)
+- execnet (from https://execnet.readthedocs.io/en/latest/, https://pypi.org/project/execnet/2.0.2/, https://pypi.org/project/execnet/2.1.1/)
 - fastapi (from https://pypi.org/project/fastapi/0.111.1/, https://pypi.org/project/fastapi/0.86.0/)
 - h11
 - iniconfig (from http://github.com/RonnyPfannschmidt/iniconfig, https://pypi.org/project/iniconfig/2.0.0/)
@@ -231,13 +231,13 @@ The following software have components provided under the terms of this license:
 - pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/2.8.2/)
 - pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
-- pytest (from http://pytest.org, https://docs.pytest.org/en/latest/, https://pypi.org/project/pytest/8.3.1/)
+- pytest (from http://pytest.org, https://docs.pytest.org/en/latest/, https://pypi.org/project/pytest/8.3.2/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
 - pytest-httpx (from https://colin-b.github.io/pytest_httpx/, https://pypi.org/project/pytest-httpx/0.30.0/)
 - pytest-randomly (from https://github.com/pytest-dev/pytest-randomly)
 - pytest-xdist (from https://github.com/pytest-dev/pytest-xdist, https://pypi.org/project/pytest-xdist/3.6.1/)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
-- python-ulid (from https://github.com/mdomke/python-ulid, https://pypi.org/project/python-ulid/2.2.0/)
+- python-ulid (from https://github.com/mdomke/python-ulid, https://pypi.org/project/python-ulid/2.2.0/, https://pypi.org/project/python-ulid/2.7.0/)
 - pytz (from http://pythonhosted.org/pytz)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/1.3.1/)
