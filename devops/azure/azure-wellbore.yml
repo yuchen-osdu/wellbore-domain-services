@@ -119,7 +119,7 @@ azure_test_py:
   tags: ["osdu-small"]
   stage: integration
   needs: ["azure_deploy"]
-  allow_failure: true
+  allow_failure: false
   extends:
     - .azure_variables
   script:
