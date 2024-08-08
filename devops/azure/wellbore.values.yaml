@@ -58,7 +58,7 @@ configuration:
       KEYVAULT_URL: "https://{{ .Values.azure.keyvault.name }}.vault.azure.net/"
       SERVICE_HOST_STORAGE: "http://storage.osdu/api/storage"
       SERVICE_HOST_SEARCH: "http://search.osdu/api/search"
-      SERVICE_HOST_SCHEMA: "http://schema-service.osdu/api/schema-service/v1"
+      SERVICE_HOST_SCHEMA: "http://schema.osdu/api/schema-service/v1"
       SERVICE_HOST_PARTITION: "http://partition.osdu/api/partition"
       SERVICE_HOST_WDMS_WORKER: "http://wellbore-ddms-worker-service.osdu/api/wdms-worker" 
       USE_PARTITION_SERVICE: "enabled"
