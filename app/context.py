@@ -15,12 +15,12 @@
 import contextvars
 from typing import Optional
 import json
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 from osdu.core.api.storage.tenant import Tenant
 
 from app.model.user import User
 from app.injector.app_injector import AppInjector
-from app.helper import traces
 from app.conf import (
     CORRELATION_ID_HEADER_NAME,
     X_USER_ID_HEADER_NAME,
@@ -337,9 +337,8 @@ def get_headers_from_ctx(ctx: Context):
         X_USER_ID_HEADER_NAME: ctx.x_user_id,
         APP_ID_HEADER_NAME: ctx.x_app_id,
     }
-    if ctx.tracer:
-        # propagate current tracing context to outgoing request's headers
-        tracing_headers = traces.get_trace_propagator().to_headers(ctx.tracer.span_context)
-        headers.update(tracing_headers)
+    tracing_headers = {}
+    TraceContextTextMapPropagator().inject(tracing_headers)
+    headers.update(tracing_headers)
 
     return {k: v for k, v in headers.items() if v is not None}

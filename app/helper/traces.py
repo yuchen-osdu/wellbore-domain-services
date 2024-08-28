@@ -23,8 +23,6 @@ from opencensus.trace.span import SpanKind
 from starlette.requests import Request
 from starlette.responses import Response
 
-from .utils import rename_cloud_role_func, azure_traces_processing, COMPONENT
-
 
 """
 How to add specific span in a method

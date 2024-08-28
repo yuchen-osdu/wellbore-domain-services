@@ -6,14 +6,11 @@ import pandas as pd
 from dask.utils import funcname
 from dask.base import tokenize
 
-from opencensus.trace.span import SpanKind
-from opencensus.trace import tracer as open_tracer
-from opencensus.trace.samplers import AlwaysOnSampler
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 from app.conf import Config
-from app.helper import traces
-from app.context import get_ctx
-from opencensus.trace import execution_context
+from app.helper import traces_ot
+
 from . import dask_worker_write_bulk as bulk_writer
 from .. import BulkInfoForConsistency
 
@@ -29,15 +26,13 @@ def wrap_trace_process(*args, **kwargs):
         raise AttributeError("Keyword arguments should contain 'target_func' and 'tracing_headers'")
 
     if _EXPORTER is None:
-        _EXPORTER = traces.create_exporter(service_name=Config.service_name.value, config=Config)
+        _EXPORTER = traces_ot.initialize_tracer(service_name=Config.service_name.value, config=Config)
 
-    span_context = traces.get_trace_propagator().from_headers(tracing_headers)
-    tracer = open_tracer.Tracer(span_context=span_context,
-                                sampler=AlwaysOnSampler(),
-                                exporter=_EXPORTER)
+    ctx = TraceContextTextMapPropagator().extract(carrier=tracing_headers)
 
-    with tracer.span(name=f"Dask Worker - {funcname(target_func)}") as span:
-        span.span_kind = SpanKind.CLIENT
+    tracer = traces_ot.get_tracer()
+
+    with tracer.start_as_current_span(name=f"Dask Worker - {funcname(target_func)}", context=ctx):
         return target_func(*args, **kwargs)
 
 
@@ -45,7 +40,7 @@ def _create_func_key(func, *args, **kwargs):
     """
      Inspired by Dask code, it returns a hashed key based on function name and given arguments
     """
-    return funcname(func) + "-" + tokenize(func, kwargs, *args)
+    return f"{funcname(func)}-{tokenize(func, kwargs, *args)}"
 
 
 def submit_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
@@ -54,7 +49,9 @@ def submit_with_trace(dask_client: Client, target_func: Callable, *args, **kwarg
     Note: 'dask_task_key' is manually created to easy reading of Dask's running tasks: it will display
         the effective targeted function instead of 'wrap_trace_process' used to enable tracing into Dask workers.
     """
-    tracing_headers = traces.get_trace_propagator().to_headers(get_ctx().tracer.span_context)
+    tracing_headers = {}
+    TraceContextTextMapPropagator().inject(tracing_headers)
+
     kwargs['tracing_headers'] = tracing_headers
     kwargs['target_func'] = target_func
 
@@ -69,7 +66,9 @@ def map_with_trace(dask_client: Client, target_func: Callable, *args, **kwargs):
     Note: 'dask_task_key' is manually created to easy reading of Dask's running tasks: it will display
         the effective targeted function instead of 'wrap_trace_process' used to enable tracing into Dask workers.
     """
-    tracing_headers = traces.get_trace_propagator().to_headers(get_ctx().tracer.span_context)
+    tracing_headers = {}
+    TraceContextTextMapPropagator().inject(tracing_headers)
+
     kwargs['tracing_headers'] = tracing_headers
     kwargs['target_func'] = target_func
 
@@ -89,24 +88,26 @@ def _add_trace_attributes(attributes: dict, tracing_mode: TracingMode):
         If tracer exists, add custom key:value as attributes on root or current span according value of 'tracing_mode'.
         NOTE: if called by a Dask worker, the parent span is the one created by `wrap_trace_process` function above.
     """
-    opencensus_tracer = execution_context.get_opencensus_tracer()
-    if opencensus_tracer is None or not hasattr(opencensus_tracer, 'tracer'):
+    from opentelemetry import trace
+    _tracer = traces_ot.get_tracer()
+
+    if _tracer is None:
         return
 
     span = None
 
     if tracing_mode == TracingMode.CURRENT_SPAN:
-        span = opencensus_tracer.current_span()
+        span = trace.get_current_span()
     elif tracing_mode == TracingMode.ROOT_SPAN:
-        existing_spans = opencensus_tracer.tracer.list_collected_spans()
-        span = existing_spans[0] if existing_spans else None
+        pass
+        # existing_spans = opencensus_tracer.tracer.list_collected_spans()
+        # span = existing_spans[0] if existing_spans else None
 
     if not span:
         return
 
     for k, v in attributes.items():
-        span.add_attribute(attribute_key=k,
-                           attribute_value=v)
+        span.set_attribute(key=k, value=v)
 
 
 def trace_attributes_root_span(attributes):
