@@ -21,7 +21,6 @@ from app.auth.auth import require_opendes_authorized_user
 from app.middleware.basic_context_middleware import require_data_partition_id
 from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client, make_schema_client, \
     SchemaServiceClient
-from app.helper.traces import CombinedExporter
 from app.injector.app_injector import WithLifeTime
 from app.base import base_app
 from app.wdms_app import wdms_app, app_injector

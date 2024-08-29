@@ -17,7 +17,8 @@ from ..json_orient import JSONOrient
 from ..dataframe_serializer import DataframeSerializerAsync
 from ..dataframe_columns import select_columns
 
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
 
 
 class DataFrameRender:
@@ -66,7 +67,7 @@ class DataFrameRender:
         return pd.concat(dataframe_list)
 
     @staticmethod
-    @with_trace('select_range')
+    @_tracer.start_as_current_span('select_range')
     @capture_timings('select_range')
     async def select_range(df: dd.DataFrame, offset, limit, dask_blob_storage: DaskBulkStorage, index=None):
         if offset or limit:
@@ -75,7 +76,7 @@ class DataFrameRender:
         return df
 
     @staticmethod
-    @with_trace('get_matching_column')
+    @_tracer.start_as_current_span('get_matching_column')
     def get_matching_columns(selection: List[str], cols: Set[str]) -> List[str]:
         matching_columns, curves_non_existent = select_columns(selection, cols)
         if curves_non_existent:
@@ -84,7 +85,7 @@ class DataFrameRender:
         return matching_columns
 
     @staticmethod
-    @with_trace('apply_filter')
+    @_tracer.start_as_current_span('apply_filter')
     def apply_filter(dataframe, filters: BulkReadFilters):
         """
         apply the given bulk filter on the dataframe
@@ -135,7 +136,7 @@ class DataFrameRender:
 
     @staticmethod
     @internal_bulk_exceptions
-    @with_trace('process_params')
+    @_tracer.start_as_current_span('process_params')
     async def process_params(df,
                              params: GetDataParams,
                              filters: BulkReadFilters,
@@ -166,7 +167,7 @@ class DataFrameRender:
 
     @staticmethod
     @internal_bulk_exceptions
-    @with_trace('df_render')
+    @_tracer.start_as_current_span('df_render')
     async def df_render(df, dask_blob_storage, params: GetDataParams,
                         render_type: Optional[MimeType] = None,
                         orient: Optional[JSONOrient] = None,

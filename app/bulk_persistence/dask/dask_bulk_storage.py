@@ -34,7 +34,7 @@ import pyarrow.parquet as pa
 from osdu.core.api.storage.dask_storage_parameters import DaskStorageParameters
 
 from app.helper.logger import get_logger
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
 
 from ..bulk_id import new_bulk_id
 from ..bulk_persistence_config import BulkPersistenceConfig
@@ -84,6 +84,7 @@ from .utils import (
     worker_capture_timing_handlers,
 )
 
+_tracer = get_tracer()
 # https://distributed.dask.org/en/latest/priority.html
 # low priority -10 < default priority = 0 < high priority 10
 DASK_BACKGROUND_TASK_PRIORITY = -5
@@ -139,7 +140,7 @@ class DaskBulkStorage:
         return DaskNativeDataIPC(self.client)
 
     @classmethod
-    @with_trace("DaskBulkStorage-create()")
+    @_tracer.start_as_current_span("DaskBulkStorage-create()")
     async def create(cls, parameters: DaskStorageParameters,
                      config: BulkPersistenceConfig,
                      dask_client: DaskDistributedClient) -> 'DaskBulkStorage':
@@ -256,7 +257,7 @@ class DaskBulkStorage:
 
         return self._load_bulk_from_catalog(bulk_catalog, columns)
 
-    @with_trace('read_stat')
+    @_tracer.start_as_current_span('read_stat')
     async def read_stat(self, record_id: str, bulk_id: str):
         """Returns some meta data about the bulk.
         Raises:
@@ -271,7 +272,7 @@ class DaskBulkStorage:
 
     @capture_timings('load_bulk', handlers=worker_capture_timing_handlers)
     @internal_bulk_exceptions
-    @with_trace('load_bulk')
+    @_tracer.start_as_current_span('load_bulk')
     async def load_bulk(
             self, record_id: str, bulk_id: str, bulk_catalog: BulkCatalog, columns: List[str] = None
     ) -> dd.DataFrame:
@@ -322,7 +323,7 @@ class DaskBulkStorage:
                                        engine='pyarrow', schema="infer", compression='snappy')
 
     @capture_timings('get_bulk_catalog')
-    @with_trace('get_bulk_catalog')
+    @_tracer.start_as_current_span('get_bulk_catalog')
     async def get_bulk_catalog(self, record_id: str, bulk_id: str) -> BulkCatalog:
         catalog = await async_load_bulk_catalog_with_blob_storage(record_id, bulk_id)
         if catalog:
@@ -336,7 +337,7 @@ class DaskBulkStorage:
             raise BulkRecordNotFound(record_id, bulk_id) from error
 
     @capture_timings('_build_catalog_from_path')
-    @with_trace('_build_catalog_from_path')
+    @_tracer.start_as_current_span('_build_catalog_from_path')
     async def _build_catalog_from_path(self, path: str, record_id: str) -> BulkCatalog:
         """Build a catalog on the fly for folder that don't have a catalog (legacy bulk bolder or post with session)
         The method will list all parquet file from the specified folder and build the catalog
@@ -401,7 +402,7 @@ class DaskBulkStorage:
         return await future_index
 
     @capture_timings('_build_session_index')
-    @with_trace('_build_session_index')
+    @_tracer.start_as_current_span('_build_session_index')
     async def _build_session_index(self,
                                    chunk_metas: List[session_meta.SessionFileMeta],
                                    record_id: str,
@@ -428,7 +429,7 @@ class DaskBulkStorage:
         return await indexes[0]
 
     @capture_timings('_fill_catalog_columns_info')
-    @with_trace('_fill_catalog_columns_info')
+    @_tracer.start_as_current_span('_fill_catalog_columns_info')
     async def _fill_catalog_columns_info(
         self, catalog: BulkCatalog, session_metas, bulk_id: str
     ) -> Optional[BulkCatalog]:
@@ -459,7 +460,7 @@ class DaskBulkStorage:
         return catalog
 
     @capture_timings('_resolve_conflict_catalog')
-    @with_trace('_resolve_conflict_catalog')
+    @_tracer.start_as_current_span('_resolve_conflict_catalog')
     async def _resolve_conflict_catalog(
         self, catalog: BulkCatalog, bulk_id: str, files: List[str], cols_to_merge: List[str]
     ) -> None:
@@ -488,7 +489,7 @@ class DaskBulkStorage:
         catalog.change_columns_info(chunk_group)
 
     @capture_timings('_save_session_index')
-    @with_trace('_save_session_index')
+    @_tracer.start_as_current_span('_save_session_index')
     async def _save_session_index(self, path: str, index: pd.Index) -> str:
         index_folder = pathBuilder.join(path, '_wdms_index_')
         self._ensure_dir_tree_exists(index_folder)
@@ -504,7 +505,7 @@ class DaskBulkStorage:
 
     @capture_timings('session_commit')
     @internal_bulk_exceptions
-    @with_trace('session_commit')
+    @_tracer.start_as_current_span('session_commit')
     async def session_commit(self, session: Session, from_bulk_id: str = None) -> str:
         """Commit the session
         Args:
@@ -531,7 +532,7 @@ class DaskBulkStorage:
 
         commit_path = pathBuilder.record_bulk_path(self.base_directory, session.recordId, bulk_id, self.protocol)
 
-        @with_trace('build_and_save_index')
+        @_tracer.start_as_current_span('build_and_save_index')
         async def build_and_save_index(bulk_catalog: BulkCatalog):
             index = await self._build_session_index(chunk_metas, session.recordId, from_bulk_id, bulk_catalog)
             index_path = await self._save_session_index(commit_path, index)
@@ -552,7 +553,7 @@ class DaskBulkStorage:
 
     @internal_bulk_exceptions
     @capture_timings('post_data_without_session', handlers=worker_capture_timing_handlers)
-    @with_trace('post_data_without_session')
+    @_tracer.start_as_current_span('post_data_without_session')
     async def post_data_without_session(self,
                                         data: Union[bytes, AsyncGenerator[bytes, None]],
                                         content_type: MimeType,
@@ -592,7 +593,7 @@ class DaskBulkStorage:
 
     @internal_bulk_exceptions
     @capture_timings('post_dataframe_without_session', handlers=worker_capture_timing_handlers)
-    @with_trace('post_dataframe_without_session')
+    @_tracer.start_as_current_span('post_dataframe_without_session')
     async def post_dataframe_without_session(self,
                                              df: pd.DataFrame,
                                              df_validator_func: DataFrameValidationFunc,
@@ -616,7 +617,7 @@ class DaskBulkStorage:
 
     @internal_bulk_exceptions
     @capture_timings('add_chunk_in_session', handlers=worker_capture_timing_handlers)
-    @with_trace('add_chunk_in_session')
+    @_tracer.start_as_current_span('add_chunk_in_session')
     async def add_chunk_in_session(self,
                                    data: Union[bytes, AsyncGenerator[bytes, None]],
                                    content_type: MimeType,

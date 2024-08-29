@@ -23,13 +23,16 @@ from re import compile
 from distributed.worker import get_client
 
 import pandas as pd
+
+from app.helper import traces_ot
 from .utils import share_items
 from app.helper.logger import get_logger
-from app.helper.traces import with_trace
 from ..sessions_storage import Session
 from ..capture_timings import capture_timings
 
 from .storage_path_builder import add_protocol, record_session_path
+
+_tracer = traces_ot.get_tracer()
 
 
 class SessionFileMeta:
@@ -157,7 +160,7 @@ def build_chunk_metadata(dataframe: pd.DataFrame) -> dict:
 
 
 @capture_timings('get_chunks_metadata')
-@with_trace('get_chunks_metadata')
+@_tracer.start_as_current_span('get_chunks_metadata')
 async def get_chunks_metadata(filesystem, protocol: str, base_directory: str, session: Session) -> List[SessionFileMeta]:
     """Return metadata objects for a given session"""
     session_path = record_session_path(base_directory, session.id, session.recordId)

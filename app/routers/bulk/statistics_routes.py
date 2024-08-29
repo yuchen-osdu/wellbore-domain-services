@@ -28,11 +28,12 @@ from app.bulk_persistence import BulkDataStatisticsResponse, exceptions as stati
 from app.bulk_persistence import model_chunking
 from app.bulk_persistence import BulkIO
 
-from app.helper.traces import TracingRoute, with_trace
+from app.helper.traces import TracingRoute
+from app.helper.traces_ot import get_tracer
 from app.model.osdu_record_id import WellLogId
 from app.context import Context, get_ctx
 
-
+_tracer = get_tracer()
 router = APIRouter(route_class=TracingRoute)
 
 responses_404_examples = {
@@ -87,7 +88,7 @@ Data types supported:
 """
 
 
-@with_trace("with_dask_blob_storage")
+@_tracer.start_as_current_span("with_dask_blob_storage")
 async def with_dask_blob_storage() -> DaskBulkStorage:
     return await get_ctx().app_injector.get(DaskBulkStorage)
 

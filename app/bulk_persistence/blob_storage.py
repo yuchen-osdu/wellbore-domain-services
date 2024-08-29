@@ -52,7 +52,8 @@ from .mime_types import MimeType, MimeTypes
 # - using faster format, e.g. hd5
 # - threshold about the busyness of the service (if not busy and not huge data -> direct write)
 # - better proc fork and arg serialization
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
 
 
 def export_to_parquet(
@@ -231,6 +232,6 @@ async def create_and_write_blob(
         raise RuntimeError(f'unexpected type {source} returned by bulk exporter function')
 
 
-@with_trace('read_blob')
+@_tracer.start_as_current_span('read_blob')
 async def read_blob(blob: BlobBulk):
     return await DataframeSerializerAsync().read_parquet(blob.data)

@@ -21,13 +21,14 @@ from app.bulk_persistence.exceptions import BulkStorageVersionNotSupported
 from app.context import Context
 from app.model.log_bulk import LogBulkHelper
 
-from app.helper.traces import with_trace
 from app.helper.logger import get_logger
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
 
 
 class Persistence:
     @classmethod
-    @with_trace("read_bulk")
+    @_tracer.start_as_current_span("read_bulk")
     async def read_bulk(
         cls,
         ctx: Context,
@@ -48,7 +49,7 @@ class Persistence:
         return result_df
 
     @classmethod
-    @with_trace("write_bulk")
+    @_tracer.start_as_current_span("write_bulk")
     async def write_bulk(cls, ctx: Context, dataframe) -> str:
         trace_dataframe_attributes(dataframe)
         try:

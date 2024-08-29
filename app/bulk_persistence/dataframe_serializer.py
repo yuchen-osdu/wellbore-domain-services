@@ -24,7 +24,8 @@ from pydantic import BaseModel
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes, MimeType
 from app.pool_executor import get_pool_executor
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
 
 
 class DataframeSerializerSync:
@@ -162,12 +163,12 @@ class DataframeSerializerAsync:
     def __init__(self, pool_executor=get_pool_executor()):
         self.executor = pool_executor
 
-    @with_trace("Parquet bulk serialization")
+    @_tracer.start_as_current_span("Parquet bulk serialization")
     async def to_parquet(self, df: pd.DataFrame, *, storage_options=None) -> pd.DataFrame:
         func = partial(DataframeSerializerSync.to_parquet, df, storage_options=storage_options)
         return await asyncio.get_event_loop().run_in_executor(self.executor, func)
 
-    @with_trace("JSON bulk serialization")
+    @_tracer.start_as_current_span("JSON bulk serialization")
     async def to_json(self,
                       df: pd.DataFrame,
                       orient: Union[str, JSONOrient] = JSONOrient.split,
@@ -176,13 +177,13 @@ class DataframeSerializerAsync:
         func = partial(DataframeSerializerSync.to_json, df, orient, *args, **kwargs)
         return await asyncio.get_event_loop().run_in_executor(self.executor, func)
 
-    # @with_trace("Parquet bulk deserialization")
+    # @_tracer.start_as_current_span("Parquet bulk deserialization")
     async def read_parquet(self, data, columns=None) -> pd.DataFrame:
         return await asyncio.get_event_loop().run_in_executor(
             self.executor, DataframeSerializerSync.read_parquet, data, columns
         )
 
-    @with_trace("Parquet JSON deserialization")
+    @_tracer.start_as_current_span("Parquet JSON deserialization")
     async def read_json(self, data, orient: Union[str, JSONOrient]) -> pd.DataFrame:
         return await asyncio.get_event_loop().run_in_executor(
             self.executor, DataframeSerializerSync.read_json, data, orient
