@@ -18,11 +18,14 @@ import sys
 import rapidjson
 
 import structlog
+from opentelemetry._logs import set_logger_provider
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk._logs._internal.export import BatchLogRecordProcessor
+from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 from structlog.contextvars import merge_contextvars
-from opencensus.trace import config_integration
 
 from app.context import get_or_create_ctx
-from app.helper.utils import rename_cloud_role_func
+
 
 _LOGGER = None
 
@@ -72,17 +75,27 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
         """
         ctx = get_or_create_ctx()
 
-        properties.setdefault('correlation-id', ctx.correlation_id)
-        properties.setdefault('request-id', ctx.request_id)
-        properties.setdefault('data-partition-id', ctx.partition_id)
-        properties.setdefault('app-key', ctx.app_key)
-        properties.setdefault('api-key', ctx.api_key)
+        if correlation_id := ctx.correlation_id:
+            properties.setdefault('correlation-id', correlation_id)
+
+        if ctx.request_id:
+            properties.setdefault('request-id', ctx.request_id)
+
+        if ctx.partition_id:
+            properties.setdefault('data-partition-id', ctx.partition_id)
+
+        if ctx.app_key:
+            properties.setdefault('app-key', ctx.app_key)
+
+        if ctx.api_key:
+            properties.setdefault('api-key', ctx.api_key)
 
     def process(self, msg, kwargs):
         """ Add custom properties to logger message to be sent to AzureAppInsights """
         custom_properties = dict()
         self._set_extra_attrs(custom_properties)
-        kwargs['extra'] = dict(custom_dimensions=custom_properties)
+        if custom_properties:
+            kwargs['extra'] = dict(custom_dimensions=custom_properties)
 
         return msg, kwargs
 
@@ -121,21 +134,24 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
 
      returns logger configured wrapped into ContextLoggerAdapter
     """
-    from opencensus.ext.azure.log_exporter import AzureLogHandler
-    config_integration.trace_integrations(['logging'])
+    from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter
+
+    resource = Resource(attributes={
+        SERVICE_NAME: service_name
+    })
+
+    logger_provider = LoggerProvider(resource=resource)
+    set_logger_provider(logger_provider)
+    if az_ai_instrumentation_key:
+        exporter = AzureMonitorLogExporter(connection_string=f'InstrumentationKey={az_ai_instrumentation_key}')
+        logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
+
+    az_handler = LoggingHandler()
+    if az_logger_level:
+        az_handler.setLevel(logging.getLevelName(az_logger_level))
 
     # stdout handler for direct logging output to stdout.
     stdout_handler = logging.StreamHandler(sys.stdout)
-
-    #  AzurelogHandler for logging to azure AppInsights
-    key = az_ai_instrumentation_key
-    logger_level = az_logger_level
-    if key:
-        az_handler = AzureLogHandler(connection_string=f'InstrumentationKey={key}')
-        az_handler.setLevel(logging.getLevelName(logger_level))
-        az_handler.add_telemetry_processor(rename_cloud_role_func(service_name))
-    else:
-        az_handler = None
 
     # Acquire the logger for azure library
     _set_logger_handlers(logger_name='azure', log_level=logging.WARNING, handlers=[stdout_handler, az_handler])
@@ -156,7 +172,7 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
     return AzureContextLoggerAdapter(logger, extra=dict())
 
 
-def create_gc_logger(service_name,gc_log_level):
+def create_gc_logger(service_name, gc_log_level):
     """
     Initialize structlog with following configuration:
         - Make logs compatible with Stackdriver
