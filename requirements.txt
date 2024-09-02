@@ -459,7 +459,7 @@ uvicorn==0.23.1
     # via -r requirements.in
 wellbore-schema-manipulation==1.0.1
     # via -r requirements.in
-wrapt==1.12.1
+wrapt==1.14.0
     # via aiobotocore
 xmltodict==0.11.0
     # via osdu-log-recognition-lib
