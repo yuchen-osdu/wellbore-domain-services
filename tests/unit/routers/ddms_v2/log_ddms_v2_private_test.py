@@ -25,7 +25,6 @@ from pandas.testing import assert_frame_equal
 from odes_storage.models import CreateUpdateRecordsResponse, Record
 
 from app.clients.storage_service_client import StorageRecordServiceClient
-from app.helper import traces
 from app.routers.ddms_v2.log_ddms_v2 import (
     _get_log_data,
     _write_log_data,
@@ -110,10 +109,6 @@ def mock_persistence():
     yield mock
 
     wdms_app.dependency_overrides = previous_overrides  # clean up
-
-
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
 
 @pytest.mark.anyio

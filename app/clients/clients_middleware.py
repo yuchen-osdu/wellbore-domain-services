@@ -33,7 +33,7 @@ def _before_tracing_attributes(current_span, ctx, request):
     """
     current_span.set_attribute(SpanAttributes.HTTP_HOST, request.url.host)
     current_span.set_attribute(SpanAttributes.HTTP_METHOD, request.method)
-    current_span.set_attribute(SpanAttributes.HTTP_PATH, str(request.url.path))
+    current_span.set_attribute(SpanAttributes.HTTP_ROUTE, str(request.url.path))
     current_span.set_attribute(SpanAttributes.HTTP_URL, str(request.url))
     current_span.set_attribute(conf.CORRELATION_ID_HEADER_NAME, ctx.correlation_id)
 
@@ -52,9 +52,9 @@ async def backoff_middleware(request, call_next):
 async def client_middleware(request, call_next):
     ctx = Context.current()
     tracer = traces_ot.get_tracer()
-    
-    with tracer.start_as_current_span(name=f'[client_middleware]{request.url}', kind=SpanKind.INTERNAL) as span:
-        _before_tracing_attributes(ctx, request)
+
+    with tracer.start_as_current_span(name=f'[client_middleware]{request.url}', kind=SpanKind.CLIENT) as span:
+        _before_tracing_attributes(span, ctx, request)
 
         # propagate current tracing context to outgoing request's headers
         tracing_headers = {}
@@ -80,4 +80,4 @@ async def client_middleware(request, call_next):
 
         finally:
             status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
-            span.add_attribute(SpanAttributes.HTTP_STATUS_CODE, status)
+            span.set_attribute(SpanAttributes.HTTP_STATUS_CODE, status)

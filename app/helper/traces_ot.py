@@ -45,10 +45,10 @@ def initialize_tracer(*, service_name: str, config):
     exporter = None
 
     if config.cloud_provider.value == 'gc':
-        print("Registering OpenCensus trace Stackdriver")
+        print("Registering OpenTelemetry CloudTraceSpanExporter")
         exporter = _create_gc_exporter()
     elif config.cloud_provider.value == 'az':
-        print("Registering OpenCensus trace AzureExporter")
+        print("Registering OpenCensus zureMonitorTraceExporter")
 
         key = config.get('az_ai_instrumentation_key')
         try:
@@ -63,6 +63,6 @@ def initialize_tracer(*, service_name: str, config):
         processor = BatchSpanProcessor(exporter)
         provider.add_span_processor(processor)
 
-        # Sets the global default tracer provider
-        trace.set_tracer_provider(provider)
-        return provider
+    # Sets the global default tracer provider
+    trace.set_tracer_provider(provider)
+    return provider

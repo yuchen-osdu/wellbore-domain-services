@@ -19,24 +19,13 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
-# from opencensus.trace import tracer as open_tracer
-# from opencensus.trace.samplers import AlwaysOnSampler
-# from opencensus.trace.span import SpanKind
-
-from opentelemetry import trace, baggage
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-from opentelemetry.baggage.propagation import W3CBaggagePropagator
+from opentelemetry import trace
 from opentelemetry.semconv.trace import SpanAttributes
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 from opentelemetry.trace import Status, StatusCode, SpanKind
-from opentelemetry.sdk.trace.export import (
-    BatchSpanProcessor,
-    ConsoleSpanExporter,
-)
-from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
 
-from app.helper import traces, utils
+
+from app.helper import utils
 from app.context import get_or_create_ctx
 from app import conf
 from app.helper.logger import get_logger
@@ -94,10 +83,6 @@ class TracingMiddlewareOT(BaseHTTPMiddleware):
 
         http_route = request.scope['route'].path if "route" in request.scope else request.scope['path']
         current_span.set_attribute(SpanAttributes.HTTP_ROUTE, utils.truncate_long_url(http_route))
-        # if hasattr(request.state, "traced_route"):
-        #     # This is set in Request state by the appropriate TracingRoute instance
-        #     # otherwise the value set in _before_request is used
-        #     current_span.set_attribute(SpanAttributes.HTTP_ROUTE, request.state.traced_route)
 
         if response:
             response_content_type = response.headers.get("Content-type")
@@ -112,17 +97,9 @@ class TracingMiddlewareOT(BaseHTTPMiddleware):
             return await call_next(request)
 
         tracer = traces_ot.get_tracer()
+        tracing_ctx = TraceContextTextMapPropagator().extract(carrier=request.headers)
 
-        # headers = {}
-        # ctx = baggage.set_baggage("hello", "world")
-        # W3CBaggagePropagator().inject(headers, ctx)
-        # TraceContextTextMapPropagator().inject(request.headers)
-        # print(headers)
-
-        # ctx = get_or_create_ctx()
-
-        with tracer.start_as_current_span(name=request.url.path, kind=SpanKind.SERVER) as parent_span:
-
+        with tracer.start_as_current_span(name=request.url.path, kind=SpanKind.SERVER, context=tracing_ctx) as span:
             self._before_request(request)
             get_logger().debug(f'Request start: {request.method} {request.url}')
 
@@ -130,9 +107,9 @@ class TracingMiddlewareOT(BaseHTTPMiddleware):
             try:
                 response = await call_next(request)
                 return response
-            except Exception as ex:
+            except Exception:
                 # parent_span.record_exception(ex)
-                parent_span.set_status(Status(StatusCode.ERROR))
+                span.set_status(Status(StatusCode.ERROR))
                 get_logger().exception(f"Exception occurred when calling: {request.url.path}")
                 raise
             finally:

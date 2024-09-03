@@ -38,7 +38,7 @@ from app.errors.exception_handlers import add_exception_handlers
 
 
 # ---------- import tracing, logging, metrics ----------------------------------
-from app.helper import logger, metric, traces
+from app.helper import logger, metric
 from app.helper.traces import TracingRoute
 # ---------- import DI ----------------------------------
 from app.injector.app_injector import AppInjector

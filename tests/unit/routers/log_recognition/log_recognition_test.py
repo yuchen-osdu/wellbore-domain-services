@@ -36,7 +36,6 @@ def log_recognition_testing_setup(app_configurable_with_testclient):
         mock_storage = mock.create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
         _, client = app_configurable_with_testclient(
                 storage_client_mock=mock_storage,
-                trace_exporter=ExporterInTest(),
                 fake_opendes_authorized_user=True
         )
         yield client, mock_storage, fp_manager

@@ -281,7 +281,6 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
     app, client = app_initialized_with_testclient
 
     # saving app state for reset later on
-    original_trace_exporter = app.trace_exporter
     original_dependency_overrides = copy.copy(app.dependency_overrides)
     
     original_storage_client = await app_injector.get(StorageRecordServiceClient)
@@ -320,7 +319,6 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
         dask_bulk_storage_mock=None,
         blob_storage_base_mock=None,
         sessions_storage_mock=None,
-        trace_exporter=create_autospec(CombinedExporter, spec_set=True, instance=True),
         fake_opendes_authorized_user: bool = True,
         fake_data_partition_id: bool = False,
         disable_bulk_consistency: bool = False,
@@ -356,8 +354,6 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
 
 
         ## configure app -- needs to be reset after fixture execution ##
-        app.trace_exporter = trace_exporter
-
         async def opendes_authorized_user_mock_depend():
             pass
 
@@ -395,8 +391,6 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
     app_injector.register(
         BlobStorageBase, injection_coro_builder(return_value=None),
         WithLifeTime.Singleton())
-
-    app.trace_exporter = original_trace_exporter
 
     app.dependency_overrides = original_dependency_overrides
 
