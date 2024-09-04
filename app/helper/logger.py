@@ -63,7 +63,7 @@ class StackDriverRenderer(object):
 class AzureContextLoggerAdapter(logging.LoggerAdapter):
     """
     This adapter adds contextual information into messages to be logged in Azure monitoring.
-    It aims to add as custom properties contextual fields, following this instructions:
+    It aims to add as custom properties contextual fields, following these instructions:
     https://docs.microsoft.com/en-us/azure/azure-monitor/app/opencensus-python
     """
 
