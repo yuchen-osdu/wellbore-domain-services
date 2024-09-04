@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from fastapi import APIRouter, Depends, Query, Response, status, Body
 from odes_storage.models import *
 
@@ -26,9 +25,9 @@ from app.model.entity_utils import Entity
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+
+router = APIRouter()
 
 @router.post(
     "/dipsets",

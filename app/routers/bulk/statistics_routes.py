@@ -14,8 +14,7 @@
 
 from typing import Optional, List
 from fastapi.encoders import jsonable_encoder
-from fastapi import Query
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import Queryfrom fastapi import APIRouter, Depends, HTTPException, Request, status
 from starlette.responses import JSONResponse
 from odes_storage.models import Record
 
@@ -28,13 +27,13 @@ from app.bulk_persistence import BulkDataStatisticsResponse, exceptions as stati
 from app.bulk_persistence import model_chunking
 from app.bulk_persistence import BulkIO
 
-from app.helper.traces import TracingRoute
+
 from app.helper.traces_ot import get_tracer
 from app.model.osdu_record_id import WellLogId
 from app.context import Context, get_ctx
 
 _tracer = get_tracer()
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 responses_404_examples = {
             "description": "Not found",

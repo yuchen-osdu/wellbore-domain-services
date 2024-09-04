@@ -11,16 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from fastapi import APIRouter
-from app.helper.traces import TracingRoute
 
 # Routes require for the liveliness ('/healthz') and readiness ('/healthz') probes for kubernetes
 # The root route ('/') is needs for the liveliness of the Google loadbalancer
 # which doesn't take into account the ones defined in the yaml deployment file
 
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 
 @router.get("/healthz", include_in_schema=False)

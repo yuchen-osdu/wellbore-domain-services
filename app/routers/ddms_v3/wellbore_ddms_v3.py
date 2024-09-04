@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from fastapi import APIRouter, Body, Depends, Response, status
+from typing import Listfrom fastapi import APIRouter, Body, Depends, Response, status
 from starlette.requests import Request
 
 from odes_storage.models import CreateUpdateRecordsResponse, RecordVersions, Record
@@ -27,9 +26,9 @@ from app.utils import load_schema_example
 from app.schemas import schema_library
 
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+
+router = APIRouter()
 
 
 @router.get(

@@ -14,8 +14,7 @@
 import asyncio
 
 import far.family_processor.model as farmodel
-from far.family_processor.family_processor import FamilyProcessor
-from fastapi import APIRouter, Depends, HTTPException, status
+from far.family_processor.family_processor import FamilyProcessorfrom fastapi import APIRouter, Depends, HTTPException, status
 
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -25,12 +24,12 @@ from . import family_processor_manager as fp_manager
 from app.clients.storage_service_client import get_storage_record_service
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
-from app.helper.traces import TracingRoute
+
 
 from app.helper.traces_ot import get_tracer
 _tracer = get_tracer()
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 router.prefix = '/log-recognition'
 router.tags = ['log-recognition']
 CUSTOM_CATALOG_LIFETIME = 300  # in seconds

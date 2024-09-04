@@ -6,14 +6,14 @@ from pydantic import BaseModel
 from starlette.requests import Request
 
 
-from app.helper.traces import TracingRoute
+
 from app.helper import utils
 
 
 @pytest.mark.anyio
 async def test_tracing_route_add_path_in_request():
 
-    router = APIRouter(route_class=TracingRoute)
+    router = APIRouter()
 
     class TestResponse(BaseModel):
         url_path: str

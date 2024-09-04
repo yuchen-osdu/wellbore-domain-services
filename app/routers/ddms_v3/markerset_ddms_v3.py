@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
-from fastapi import APIRouter, Depends, Response, status, Body
+from typing import Listfrom fastapi import APIRouter, Depends, Response, status, Body
 from odes_storage.models import (
     CreateUpdateRecordsResponse,
     RecordVersions,
@@ -29,9 +28,9 @@ from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
 from app.schemas import schema_library
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+
+router = APIRouter()
 
 @router.get(
     "/wellboremarkersets/{wellboremarkersetid}",

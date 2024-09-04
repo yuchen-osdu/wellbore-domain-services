@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from fastapi import APIRouter, Depends, Query
 from odes_search.models import CursorQueryResponse
 
@@ -31,9 +30,9 @@ from .search_v3 import (
     query_type,
     update_query_with_nested_names_based_search)
 from ..common_parameters import REQUIRED_ROLES_READ
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+
+router = APIRouter()
 
 
 @router.post('/query/wellbores', summary='Query with cursor or offset, get wellbores',

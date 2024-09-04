@@ -11,18 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app import __version__, __app_name__, __build_number__, __release__
 from app.conf import Config
 from typing import Dict
 from app.auth.auth import require_opendes_authorized_user
-from app.helper.traces import TracingRoute
 from app.routers.common_parameters import response_401, response_403
 from app.routers.bulk.bulk_routes_dependencies import BulkIO, get_bulk_io_read, get_bulk_io_write
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 
 class AboutResponse(BaseModel):

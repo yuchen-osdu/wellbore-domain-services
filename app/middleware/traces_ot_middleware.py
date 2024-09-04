@@ -116,22 +116,3 @@ class TracingMiddlewareOT(BaseHTTPMiddleware):
                 status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
                 get_logger().info(utils.process_message(request, status))
                 self._after_request(request, response)
-
-
-
-_tracer = traces_ot.get_tracer()
-
-
-@_tracer.start_as_current_span("do_work")
-def do_work():
-    import time
-    time.sleep(0.5)
-    print("doing some work...")
-
-
-@_tracer.start_as_current_span("async_do_work")
-async def async_do_work():
-    import asyncio
-
-    await asyncio.sleep(0.5)
-    print("doing some work...")
