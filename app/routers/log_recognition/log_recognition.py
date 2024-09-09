@@ -14,7 +14,8 @@
 import asyncio
 
 import far.family_processor.model as farmodel
-from far.family_processor.family_processor import FamilyProcessorfrom fastapi import APIRouter, Depends, HTTPException, status
+from far.family_processor.family_processor import FamilyProcessor
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from typing import Optional, List
 from pydantic import BaseModel, Field

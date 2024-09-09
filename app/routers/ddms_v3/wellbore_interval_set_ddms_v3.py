@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Listfrom fastapi import APIRouter, Depends, Response, status, Body
+from typing import List
+from fastapi import APIRouter, Depends, Response, status, Body
 from starlette.requests import Request
 
 from app.clients.storage_service_client import get_storage_record_service

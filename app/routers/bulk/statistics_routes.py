@@ -14,7 +14,8 @@
 
 from typing import Optional, List
 from fastapi.encoders import jsonable_encoder
-from fastapi import Queryfrom fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import Query
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from starlette.responses import JSONResponse
 from odes_storage.models import Record
 

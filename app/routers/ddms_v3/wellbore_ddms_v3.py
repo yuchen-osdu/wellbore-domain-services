@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Listfrom fastapi import APIRouter, Body, Depends, Response, status
+from typing import List
+from fastapi import APIRouter, Body, Depends, Response, status
 from starlette.requests import Request
 
 from odes_storage.models import CreateUpdateRecordsResponse, RecordVersions, Record
