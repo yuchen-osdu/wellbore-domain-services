@@ -152,6 +152,7 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
 
     # stdout handler for direct logging output to stdout.
     stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 
     # Acquire the logger for azure library
     _set_logger_handlers(logger_name='azure', log_level=logging.WARNING, handlers=[stdout_handler, az_handler])
