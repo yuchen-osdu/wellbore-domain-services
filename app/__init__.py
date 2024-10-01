@@ -14,7 +14,7 @@
 
 # this file will be updated in the build pipeline
 
-__version__ = '0.2'
-__release__ = 'M24'
+__version__ = '0.28'
+__release__ = 'M25'
 __build_number__ = 'local'
 __app_name__ = 'Wellbore DDMS OSDU'
