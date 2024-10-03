@@ -21,7 +21,6 @@ from tests.unit.routers.chunking_test import (
 from app.context import Context
 from unittest.mock import Mock
 
-from opencensus.trace import tracer
 from app.bulk_persistence import BulkIOWdmsWorker, BulkPersistenceConfig
 from app.bulk_persistence.dask.errors import BulkWorkerError
 from app.bulk_persistence.statistics.bulk_statistics import BulkStatistics
@@ -215,7 +214,6 @@ async def test_verify_stats_headers():
         "partition_id": 'my-partition-id',
         "x_user_id": 'my-x-user-id',
         "x_app_id": "my-x-app-id",
-        "tracer": tracer.Tracer()
     })
     expected_headers = ["Authorization", "data-partition-id",  "correlation-id", "x-user-id", "x-app-id", "traceparent"]
 
@@ -271,6 +269,7 @@ async def _trigger_computation_on_record(client, record_id, record_version):
         record_version = record_response.json()['version']
 
     return await client.post(f"/ddms/v3/welllogs/{record_id}/versions/{record_version}/data/statistics")
+
 
 @pytest.mark.anyio
 async def test_double_compute_stats(testing_app_local_chunking_no_consistency):
