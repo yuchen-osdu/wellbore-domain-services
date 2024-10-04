@@ -106,7 +106,7 @@ def init_logger(*, service_name, config):
     if config.cloud_provider.value == 'az':
         _LOGGER = create_azure_logger(
             service_name=service_name,
-            az_ai_instrumentation_key=config.get('az_ai_instrumentation_key'),
+            az_ai_connection_str=config.get('az_ai_connection_str'),
             az_logger_level=config.get('az_logger_level')
         )
     elif config.cloud_provider.value == 'gc':
@@ -126,7 +126,7 @@ def init_logger(*, service_name, config):
     return _LOGGER
 
 
-def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_level):
+def create_azure_logger(*, service_name, az_ai_connection_str, az_logger_level):
     """
     Create logger with two handlers:
      - AzureLogHandler: to see Dependencies, Requests, Traces and Exception into Azure monitoring
@@ -142,8 +142,8 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
 
     logger_provider = LoggerProvider(resource=resource)
     set_logger_provider(logger_provider)
-    if az_ai_instrumentation_key:
-        exporter = AzureMonitorLogExporter(connection_string=f'InstrumentationKey={az_ai_instrumentation_key}')
+    if az_ai_connection_str:
+        exporter = AzureMonitorLogExporter(connection_string=az_ai_connection_str)
         logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
 
     az_handler = LoggingHandler()

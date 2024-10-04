@@ -25,8 +25,8 @@ def get_tracer():
     return trace.get_tracer(__name__)
 
 
-def _create_azure_exporter(key):
-    return AzureMonitorTraceExporter(connection_string=f'InstrumentationKey={key}')
+def _create_azure_exporter(connection_str):
+    return AzureMonitorTraceExporter(connection_string=connection_str)
 
 
 def _create_gc_exporter():
@@ -48,12 +48,12 @@ def initialize_tracer(*, service_name: str, config):
         print("Registering OpenTelemetry CloudTraceSpanExporter")
         exporter = _create_gc_exporter()
     elif config.cloud_provider.value == 'az':
-        print("Registering OpenCensus zureMonitorTraceExporter")
+        print("Registering OpenTelemetry AzureMonitorTraceExporter")
 
-        key = config.get('az_ai_instrumentation_key')
+        connection_str = config.get('az_ai_connection_str')
         try:
-            if type(key) is not None:
-                exporter = _create_azure_exporter(key)
+            if type(connection_str) is not None:
+                exporter = _create_azure_exporter(connection_str)
         except ValueError as e:
             print('Unable to create AzureExporter:', str(e))
     else:
