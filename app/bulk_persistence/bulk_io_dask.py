@@ -31,7 +31,8 @@ from .dask.dataframe_render import DataFrameRender
 from .dask.errors import FilterError, TooManyColumnsRequested, BulkRecordNotFound
 from .dask.dask_bulk_storage import DaskBulkStorage
 
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
 
 
 def _build_describe_response(describe):
@@ -41,7 +42,7 @@ def _build_describe_response(describe):
     return Response(content=json_string, media_type=MimeTypes.JSON.type)
 
 
-@with_trace("_process_request_v1")
+@_tracer.start_as_current_span("_process_request_v1")
 async def _process_request_v1(
         record_id: str,
         bulk_id: str,
@@ -90,7 +91,7 @@ class BulkIODask(BulkIO):
     def name(self) -> str:
         return "Dask"
 
-    @with_trace("dask.read_data")
+    @_tracer.start_as_current_span("dask.read_data")
     async def read_data(
             self,
             ctx,
@@ -218,7 +219,7 @@ class BulkIODask(BulkIO):
         await consistency_checks.check_bulk_consistency_on_commit_session(record, new_bulk_id)
         return new_bulk_id
 
-    @with_trace("dask-get_statistics")
+    @_tracer.start_as_current_span("dask-get_statistics")
     async def get_statistics(
             self,
             ctx,
@@ -240,7 +241,7 @@ class BulkIODask(BulkIO):
         result = BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
         return JSONResponse(content=jsonable_encoder(result))
 
-    @with_trace("dask-post_statistics")
+    @_tracer.start_as_current_span("dask-post_statistics")
     async def post_statistics(
         self,
         ctx,

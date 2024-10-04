@@ -17,7 +17,7 @@ import os
 import uuid
 from unittest import mock
 
-from app.helper.traces import create_exporter
+from app.helper.traces_ot import initialize_tracer
 from app.conf import Config, ConfigurationContainer, check_environment, validator_path_must_exist, \
     cloud_provider_additional_environment
 
@@ -146,7 +146,7 @@ def test_azure_trace_exporter_created(azure_config_fixture):
     mock_exporter = mock.MagicMock(exporter_name=exporter_name)
 
     with mock.patch('app.helper.traces._create_azure_exporter', return_value=mock_exporter):
-        exporter = create_exporter(service_name='test-service', config=azure_config_fixture)
+        exporter = initialize_tracer(service_name='test-service', config=azure_config_fixture)
         assert len(exporter.exporters) == 1
         # ensure called method is azure exporter
         azure_exporter = exporter.exporters[0]
@@ -160,7 +160,7 @@ def test_gc_trace_exporter_created(gc_config_fixture):
     mock_exporter = mock.MagicMock(exporter_name=exporter_name)
 
     with mock.patch('app.helper.traces._create_gc_exporter', return_value=mock_exporter):
-        exporter = create_exporter(service_name='test-service', config=gc_config_fixture)
+        exporter = initialize_tracer(service_name='test-service', config=gc_config_fixture)
         assert len(exporter.exporters) == 1
         # ensure called method is Google Cloud exporter
         gc_exporter = exporter.exporters[0]

@@ -24,10 +24,11 @@ from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
 
-from app.helper.traces import with_trace
-from app.helper.logger import get_logger
-
 from .capture_timings import capture_timings
+from app.helper.logger import get_logger
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
+
 
 class SessionState(str, Enum):
     Open = 'open',
@@ -194,7 +195,7 @@ class SessionsStorage:
     def _build_session_complete_name(record_id: str, session_id: UUID):
         return f'sessions/{record_id}/{str(session_id)}'
 
-    @with_trace('blob_storage_upload_session')
+    @_tracer.start_as_current_span('blob_storage_upload_session')
     async def _store_session(self, tenant: Tenant, session: SessionInternal) -> SessionInternal:
         etag = session.etag
         if etag is not None:  # this differentiate creation (etag is None) versus update (etag not None)
@@ -215,7 +216,7 @@ class SessionsStorage:
                                etag=blob.etag,
                                internal=session.internal)  # returned the updated session
 
-    @with_trace('blob_storage_get_session')
+    @_tracer.start_as_current_span('blob_storage_get_session')
     async def _get_session(self, tenant: Tenant, record_id: str, session_id: UUID) -> SessionInternal:
         object_name = self._build_session_complete_name(record_id, session_id)
 

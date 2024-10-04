@@ -14,21 +14,20 @@
 
 import math
 from typing import List, Optional
-
 from fastapi import APIRouter, Depends, Path, Query, status
 
 import app.routers.dipset.persistence as persistence
 from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.dipset.dip_model import Dip
 from app.context import Context, get_ctx
-from app.helper.traces import TracingRoute
+
 
 # TODO reference: setup reference type  family, unit ...
 # TODO setup dipset channels (family, family_type, unit, format of dip attributs)
 # TODO logger : should log information when retrieving/creating dipset, log, ...
 # TODO dispet should have a wellbore (data.relationships.wellbore)
 
-router = APIRouter(route_class=TracingRoute)
+router = APIRouter()
 
 
 @router.post(

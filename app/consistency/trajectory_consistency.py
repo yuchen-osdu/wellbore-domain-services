@@ -4,7 +4,7 @@ import pandas as pd
 from dask.dataframe.core import DataFrame as DaskDataFrame
 
 from odes_storage.models import Record
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
 from app.bulk_persistence import (
     ConsistencyException,
     DataConsistencyChecks,
@@ -22,6 +22,7 @@ from .reference_check import check_reference_is_strictly_monotonic, raise_if_dic
 
 AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY = "AvailableTrajectoryStationProperties"
 TRAJECTORY_STATION_PROPERTY_TYPE_ID = "TrajectoryStationPropertyTypeID"
+_tracer = get_tracer()
 
 
 class DuplicatedStationProperties(RuntimeError):
@@ -102,7 +103,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
             cls._check_reference(record, bulk_info.reference)
 
     @classmethod
-    @with_trace("bulk_consistency")
+    @_tracer.start_as_current_span("bulk_consistency")
     def check_bulk_consistency_on_post_bulk(cls, record: Record, df: pd.DataFrame):
         """Perform record consistency checks of a bulk  dataframe against welllogTrajectory record called
             when post a whole bulk (not chunking apis)
@@ -125,7 +126,7 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
         cls.check_bulk_consistency(record, bulk_info)
 
     @classmethod
-    @with_trace("bulk_consistency")
+    @_tracer.start_as_current_span("bulk_consistency")
     async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
         # check columns match TrajectoryStationProperties names
         dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)

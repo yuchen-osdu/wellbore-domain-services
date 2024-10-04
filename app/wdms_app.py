@@ -38,13 +38,12 @@ from app.errors.exception_handlers import add_exception_handlers
 
 
 # ---------- import tracing, logging, metrics ----------------------------------
-from app.helper import logger, metric, traces
-from app.helper.traces import TracingRoute
+from app.helper import logger, metric
 # ---------- import DI ----------------------------------
 from app.injector.app_injector import AppInjector
 from app.injector.main_injector import MainInjector
 # ---------- import middlewares ----------------------------------
-from app.middleware import CreateBasicContextMiddleware, TracingMiddleware
+from app.middleware import CreateBasicContextMiddleware, TracingMiddlewareOT
 from app.middleware.basic_context_middleware import require_data_partition_id, ServerTimingHdrMiddleware
 from app.middleware.openapi_middleware import OpenAPIMiddleware
 # ---------- import model ----------------------------------
@@ -98,6 +97,7 @@ from app.routers.record_utils import (
 from app.routers.search import search_v3, search_v3_alpha
 from app.routers.trajectory import trajectory_ddms_v2
 from app.utils import OpenApiHandler, get_http_client_session
+from app.helper import traces_ot
 
 
 # The sub application which contains all the routers
@@ -105,8 +105,6 @@ wdms_app = FastAPI(title=__app_name__,
                    description='build ' + __build_number__,
                    version=__version__,
                    )
-wdms_app.router.route_class = TracingRoute
-
 app_injector = AppInjector()
 
 def custom_openapi(*args, **kwargs):
@@ -150,10 +148,9 @@ def _get_bulk_worker_host() -> Optional[str]:
 @wdms_app.on_event("startup")
 async def startup_event():
     service_name = Config.service_name.value
-
     logger.init_logger(service_name=service_name, config=Config)
 
-    #check python version >=3.11
+    # check python version >=3.11
     assert sys.version_info.major == 3 and sys.version_info.minor >= 11, 'Python version required >=3.11'
 
     check_environment(Config)
@@ -175,7 +172,7 @@ async def startup_event():
     set_config_getter(lambda: wdms_app.state.bulk_config)
 
     MainInjector().configure(app_injector)
-    wdms_app.trace_exporter = traces.create_exporter(service_name=service_name, config=Config)
+    traces_ot.initialize_tracer(service_name=service_name, config=Config)
 
     app_injector.register(dask_client.DaskDistributedClient, partial(dask_client.create, bulk_config))
     asyncio.create_task(dask_client.create(bulk_config))
@@ -423,8 +420,7 @@ if Config.swagger_full_url_enabled.value:
 if Config.enable_header_server_timings.value:
     wdms_app.add_middleware(ServerTimingHdrMiddleware)
 
-# order is last executed first
-wdms_app.add_middleware(TracingMiddleware, skip_for_path_suffix=[r.path for r in probes.router.routes])
+wdms_app.add_middleware(TracingMiddlewareOT, skip_for_path_suffix=[r.path for r in probes.router.routes])
 
 # must be added last to be executed first, it's responsible to clean and create WDMS Context
 wdms_app.add_middleware(CreateBasicContextMiddleware, config=Config, injector=app_injector)

@@ -12,37 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.span import SpanKind
+from opentelemetry.trace import SpanKind
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+from opentelemetry.semconv.trace import SpanAttributes
+
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from app import conf
 from app.context import Context
-from app.helper import utils, traces
+from app.helper import traces_ot
 from app.helper.logger import get_logger
 from .backoff_policy import backoff_policy
 from sys import exc_info
 from traceback import format_exception
 
 
-def _before_tracing_attributes(ctx, request):
+def _before_tracing_attributes(current_span, ctx, request):
     """
-        Add request attributes + correlation id to the the current tracer's span
+        Add request attributes + correlation id to the current tracer's span
     """
-    ctx.tracer.add_attribute_to_current_span(
-        attribute_key=utils.HTTP_HOST,
-        attribute_value=request.url.host)
-    ctx.tracer.add_attribute_to_current_span(
-        attribute_key=utils.HTTP_METHOD,
-        attribute_value=request.method)
-    ctx.tracer.add_attribute_to_current_span(
-        attribute_key=utils.HTTP_PATH,
-        attribute_value=str(request.url.path))
-    ctx.tracer.add_attribute_to_current_span(
-        attribute_key=utils.HTTP_URL,
-        attribute_value=str(request.url))
-    ctx.tracer.add_attribute_to_current_span(
-        attribute_key=conf.CORRELATION_ID_HEADER_NAME,
-        attribute_value=ctx.correlation_id)
+    current_span.set_attribute(SpanAttributes.HTTP_HOST, request.url.host)
+    current_span.set_attribute(SpanAttributes.HTTP_METHOD, request.method)
+    current_span.set_attribute(SpanAttributes.HTTP_ROUTE, str(request.url.path))
+    current_span.set_attribute(SpanAttributes.HTTP_URL, str(request.url))
+    current_span.set_attribute(conf.CORRELATION_ID_HEADER_NAME, ctx.correlation_id)
 
 
 def backoff_handler_log_it(details):
@@ -58,13 +51,14 @@ async def backoff_middleware(request, call_next):
 
 async def client_middleware(request, call_next):
     ctx = Context.current()
+    tracer = traces_ot.get_tracer()
 
-    with ctx.tracer.span(name=f'[client_middleware]{request.url}') as span:
-        span.span_kind = SpanKind.CLIENT
-        _before_tracing_attributes(ctx, request)
+    with tracer.start_as_current_span(name=f'[client_middleware]{request.url}', kind=SpanKind.CLIENT) as span:
+        _before_tracing_attributes(span, ctx, request)
 
         # propagate current tracing context to outgoing request's headers
-        tracing_headers = traces.get_trace_propagator().to_headers(span.context_tracer.span_context)
+        tracing_headers = {}
+        TraceContextTextMapPropagator().inject(tracing_headers)
 
         request.headers.update(tracing_headers)
         get_logger().debug(f"client_middleware - url: {request.url} - tracing_headers: {tracing_headers}")
@@ -86,4 +80,4 @@ async def client_middleware(request, call_next):
 
         finally:
             status = response.status_code if response else HTTP_500_INTERNAL_SERVER_ERROR
-            span.add_attribute(utils.HTTP_STATUS_CODE, status)
+            span.set_attribute(SpanAttributes.HTTP_STATUS_CODE, status)

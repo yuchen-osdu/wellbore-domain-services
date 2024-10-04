@@ -1,4 +1,3 @@
-import logging
 # Copyright 2021 Schlumberger
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +11,11 @@ import logging
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 from typing import Optional
 from unittest import mock
 
 from odes_storage.models import Legal, Record, StorageAcl
-from opencensus.trace.span_context import SpanContext
 from osdu.core.api.storage.tenant import Tenant
 import pytest
 from starlette.routing import Mount, Route, Router
@@ -30,7 +29,6 @@ from app.model.model_utils import record_to_dict
 def ctx_fixture():
     """ Create context with a fake tracer in it """
     mock_mock = mock.MagicMock()
-    mock_mock.span_context = SpanContext(trace_id="trace-id", span_id="span_id")
 
     ctx = get_or_create_ctx()
     fake_tenant = Tenant(data_partition_id=ctx.partition_id or 'test_partition',

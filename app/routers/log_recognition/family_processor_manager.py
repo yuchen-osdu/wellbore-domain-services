@@ -25,7 +25,8 @@ from odes_storage.exceptions import UnexpectedResponse
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import Context
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
 
 
 @dataclass
@@ -52,7 +53,7 @@ class FamilyProcessorManager:
             processor=family_processor.make_family_processor(), creation_date=datetime.now())}
 
     @staticmethod
-    @with_trace('_get_catalogs_from_de')
+    @_tracer.start_as_current_span('_get_catalogs_from_de')
     async def _get_catalogs_from_de(ctx: Context, partition_id: str):
 
         storage_client = await get_storage_record_service(ctx)
@@ -76,7 +77,7 @@ class FamilyProcessorManager:
         return rules_catalog, unit_catalog, main_family_catalog
 
     @staticmethod
-    @with_trace('_create_processor')
+    @_tracer.start_as_current_span('_create_processor')
     async def _create_processor(ctx: Context, client_id: str) -> FamilyProcessor:
         rules_catalog, unit_catalog, main_family_catalog = await FamilyProcessorManager._get_catalogs_from_de(
             ctx, client_id)
@@ -87,7 +88,7 @@ class FamilyProcessorManager:
     def get_default_processor(self):
         return self._processors.get(DEFAULT_CATALOG_NAME).processor
 
-    @with_trace('get_processor')
+    @_tracer.start_as_current_span('get_processor')
     async def get_processor(self, ctx: Context, client_id: str = DEFAULT_CATALOG_NAME):
         processor_item = self._processors.get(client_id, None)
         if processor_item is None:

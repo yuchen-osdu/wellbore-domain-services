@@ -15,8 +15,9 @@ from .bulk_uri import BulkURI
 from .bulk_io import BulkIO
 from .dataframe_validators import DataFrameValidationFunc
 from .consistency_checks import DataConsistencyChecks, BulkInfoForConsistency
-from app.helper.traces import with_trace
 from app.context import get_headers_from_ctx
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
 
 
 class BulkIOWdmsWorker(BulkIO):
@@ -92,7 +93,7 @@ class BulkIOWdmsWorker(BulkIO):
             consistency_checks.check_bulk_consistency(record, describe)
             return bulk_id
 
-    @with_trace("worker.read_data")
+    @_tracer.start_as_current_span("worker.read_data")
     async def read_data(
             self,
             ctx,
@@ -135,7 +136,7 @@ class BulkIOWdmsWorker(BulkIO):
             chunks.append(chunk)
         return b"".join(chunks)
 
-    @with_trace("worker.read_data")
+    @_tracer.start_as_current_span("worker.read_data")
     async def write_bulk(
             self,
             ctx,
@@ -162,7 +163,7 @@ class BulkIOWdmsWorker(BulkIO):
             consistency_checks.check_bulk_consistency(record, describe)
             return bulk_id, describe
 
-    @with_trace("worker-get_statistics")
+    @_tracer.start_as_current_span("worker-get_statistics")
     async def get_statistics(
             self,
             ctx,
@@ -184,7 +185,7 @@ class BulkIOWdmsWorker(BulkIO):
                 media_type=MimeTypes.JSON.type,
             )
 
-    @with_trace("worker-post_statistics")
+    @_tracer.start_as_current_span("worker-post_statistics")
     async def post_statistics(
         self,
         ctx,

@@ -14,11 +14,12 @@ jsonpath-ng # TODO: remove when bulk_path no longer supported
 natsort
 prometheus-fastapi-instrumentator
 
-opencensus
-opencensus-ext-stackdriver
-opencensus-ext-azure
-opencensus-ext-ocagent
-opencensus-ext-logging
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-semantic-conventions
+
+azure-monitor-opentelemetry-exporter #--pre
+opentelemetry-exporter-gcp-trace
 
 # for chunking feature
 dask[distributed]==2024.4.1 # Jump to 2024.4.1 to solve Python 3.11.9 incompatibility
@@ -42,7 +43,7 @@ osdu-data-ecosystem-search~=1.0.0
 
 osdu-core-lib-python-ibm==3.0.1
 osdu-core-lib-python-gcp==2.1.3
-osdu-core-lib-python-azure==3.0.3
+osdu-core-lib-python-azure==3.1.0
 osdu-core-lib-python-aws==2.1.2
 osdu-core-lib-python-baremetal~=1.0.4
 osdu-core-lib-python~=2.0.0

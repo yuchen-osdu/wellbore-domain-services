@@ -1,43 +1,20 @@
 from structlog.contextvars import bind_contextvars
-from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
-
 from fastapi import Request
 import http
 
 
-def rename_cloud_role_func(service_name):
-    """
-        Return a processor function to change 'Cloud Role Name' in AppInsight with given service_name variable.
-        It's used by AzureLogHandler and AzureExporter.
-        https://docs.microsoft.com/en-us/azure/azure-monitor/app/api-filtering-sampling#opencensus-python-telemetry-processors
-    """
-    def callback_func(envelope):
-        envelope.tags['ai.cloud.role'] = service_name
-        return True
-
-    return callback_func
-
-
 _maximum_azure_attribute_length = 2048
+_too_long_url_suffix = '...'
 
 
-def azure_traces_processing(envelope):
-    """
-        Return a function to process trace data, it reduces the size of 'request.url' field whether it is too big
-         to be sent.
+def truncate_long_url(url):
+    """ Reduce too long url string to prevent errors when sending to some exporter backends """
 
-        It's used by AzureLogHandler and AzureExporter.
-        https://docs.microsoft.com/en-us/azure/azure-monitor/app/api-filtering-sampling#opencensus-python-telemetry-processors
-    """
+    if url and len(url) >= _maximum_azure_attribute_length:
+        truncated_url = url[:_maximum_azure_attribute_length - len(_too_long_url_suffix)]
+        return f'{truncated_url}{_too_long_url_suffix}'
 
-    if hasattr(envelope.data, 'baseData'):
-        url = envelope.data.baseData.get('url')
-        if url and len(url) >= _maximum_azure_attribute_length:
-            suffix = '...'
-            truncated_url = url[:_maximum_azure_attribute_length-len(suffix)]
-            envelope.data.baseData['url'] = f'{truncated_url}{suffix}'
-
-    return True
+    return url
 
 
 def add_fields(**kwargs):
@@ -83,19 +60,3 @@ def _get_client_str(client) -> str:
     if not host:
         return ""
     return f'{host}:{port}'
-
-
-"""
-Attributes helper have been used similarly to some examples:
-Ex of other middleware : https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-django/opencensus/ext/django/middleware.py
-https://github.com/census-instrumentation/opencensus-python/blob/master/opencensus/trace/attributes_helper.py
-"""
-HTTP_HOST = COMMON_ATTRIBUTES['HTTP_HOST']
-HTTP_METHOD = COMMON_ATTRIBUTES['HTTP_METHOD']
-HTTP_PATH = COMMON_ATTRIBUTES['HTTP_PATH']
-HTTP_ROUTE = COMMON_ATTRIBUTES['HTTP_ROUTE']
-HTTP_URL = COMMON_ATTRIBUTES['HTTP_URL']
-HTTP_STATUS_CODE = COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
-HTTP_REQUEST_SIZE = COMMON_ATTRIBUTES['HTTP_REQUEST_SIZE']
-HTTP_RESPONSE_SIZE = COMMON_ATTRIBUTES['HTTP_RESPONSE_SIZE']
-COMPONENT = COMMON_ATTRIBUTES['COMPONENT']

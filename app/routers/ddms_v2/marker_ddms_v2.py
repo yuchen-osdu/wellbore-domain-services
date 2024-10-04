@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from fastapi import APIRouter, Depends, Query, Response, status, Body
 
 from app.clients.storage_service_client import get_storage_record_service
@@ -21,9 +20,9 @@ from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
 from app.model.model_utils import to_record, from_record
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+
+router = APIRouter()
 
 
 @router.get('/markers/{markerid}',

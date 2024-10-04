@@ -29,9 +29,9 @@ from app.utils import load_schema_example
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
 from app.schemas import schema_library
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+
+router = APIRouter()
 
 
 @router.get(

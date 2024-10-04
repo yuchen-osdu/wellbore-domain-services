@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from fastapi import APIRouter, Depends, Query, status, Response, Body
 
 from app.clients.storage_service_client import get_storage_record_service
@@ -26,9 +25,9 @@ from app.model.model_utils import to_record, from_record
 from app.model.entity_utils import Entity
 
 import app.routers.ddms_v2.storage_helper as storage_helper
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+
+router = APIRouter()
 
 
 @router.get('/logsets/{logsetid}',

@@ -30,7 +30,8 @@ from .bulk_id import new_bulk_id
 from .dask.errors import internal_bulk_exceptions
 from .mime_types import MimeTypes, MimeType
 from app.tenant import resolve_tenant
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
 
 
 async def create_and_store_dataframe(ctx: Context, df: pd.DataFrame) -> str:
@@ -64,7 +65,7 @@ async def download_bulk(ctx: Context, bulk_id: str) -> Tuple[bytes, MimeType]:
 
 
 @internal_bulk_exceptions
-@with_trace('get_dataframe')
+@_tracer.start_as_current_span('get_dataframe')
 async def get_dataframe(ctx: Context, bulk_id: str) -> pd.DataFrame:
     bytes_data, content_type = await download_bulk(ctx, bulk_id)
     blob = BlobBulk(

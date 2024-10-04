@@ -33,9 +33,9 @@ from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
 from app.schemas import schema_library
-from app.helper.traces import TracingRoute
 
-router = APIRouter(route_class=TracingRoute)
+
+router = APIRouter()
 
 WELL_LOGS_API_BASE_PATH = '/welllogs'
 

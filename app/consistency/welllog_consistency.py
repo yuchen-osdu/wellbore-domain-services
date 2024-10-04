@@ -6,7 +6,8 @@ from dask.dataframe.core import DataFrame as DaskDataFrame
 
 from odes_storage.models import Record
 
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
+
 from app.bulk_persistence import (
     BulkRecordNotFound,
     DaskBulkStorage,
@@ -20,6 +21,8 @@ from app.context import get_ctx
 from .reference_check import check_reference_is_strictly_monotonic, raise_if_dict_value_is_different
 from .unique import get_unique_dict_attr_values
 from ..model.entity_utils import get_data_partition_from_record_id
+
+_tracer = get_tracer()
 
 
 class WellLogProperties(str, Enum):
@@ -48,7 +51,7 @@ class TotalOfColumnsDoesNotMatchFieldNumberOfColumnsException(ConsistencyExcepti
     """raised when total of columns doesn't match NumberOfColumns field"""
 
 
-@with_trace("welllog_consistency")
+@_tracer.start_as_current_span("welllog_consistency")
 def check_welllog_consistency(wl: Record):
     """
     Check wellLog metadata. Curves ids in data.Curves must be unique Welllog must have a curve whose curveID value is
@@ -109,7 +112,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
             cls._check_reference(record, bulk_info.reference)
 
     @classmethod
-    @with_trace("bulk_consistency")
+    @_tracer.start_as_current_span("bulk_consistency")
     def check_bulk_consistency_on_post_bulk(cls, record: Record, df: pd.DataFrame):
         """Perform welllog consistency checks of a bulk  dataframe against a welllog record used by bulk_persistence
             when post a whole bulk (not chunking apis)
@@ -132,7 +135,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         cls.check_bulk_consistency(record, bulk_info)
 
     @classmethod
-    @with_trace("bulk_consistency")
+    @_tracer.start_as_current_span("bulk_consistency")
     async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
         """Perform welllog consistency checks of a bulk  against a welllog record used by bulk_persistence
             when commit a session (chunking apis)

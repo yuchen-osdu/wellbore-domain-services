@@ -530,5 +530,5 @@ For more information: <https://github.com/jazzband/pip-tools/>
 
 ### Tracing
 
-OpenCensus libraries are used to record incoming requests metrics (execution time, result code, etc...).
-At the moment, 100% of the requests are saved.
+OpenTelemetry libraries are used to record incoming requests metrics (execution time, result code, etc...).
+At the moment, 100% of the requests are recorded.

@@ -47,7 +47,8 @@ def expected_headers(headers_data):
 
 @pytest.mark.anyio
 async def test_fwd_headers_to_outgoing_request_to_storage(local_dev_config,
-                                                          context: Context, expected_headers,
+                                                          context: Context,
+                                                          expected_headers,
                                                           httpx_mock: HTTPXMock):
     async with make_storage_record_client(host=local_dev_config.service_host_search.value,
                                           timeout=local_dev_config.de_client_config_timeout.value) as storage_client:
@@ -56,26 +57,16 @@ async def test_fwd_headers_to_outgoing_request_to_storage(local_dev_config,
         response = await storage_client.delete_record(id="123", data_partition_id="test")
         assert response is not None
 
-    # make sure correlation-id is traced when doing a request to storage
-    context.tracer.add_attribute_to_current_span.assert_any_call(
-        attribute_key='correlation-id',
-        attribute_value=expected_headers['correlation-id']
-    )
-
 
 @pytest.mark.anyio
 async def test_fwd_headers_to_outgoing_request_to_search(local_dev_config,
-                                                         context: Context, expected_headers,
+                                                         context: Context,
+                                                         expected_headers,
                                                          httpx_mock: HTTPXMock):
     async with make_search_client(host=local_dev_config.service_host_search.value,
                                   timeout=local_dev_config.de_client_config_timeout.value) as search_client:
+
         httpx_mock.add_response(match_headers=expected_headers)
         # force to use endpoint which does not return a response to skip model validation
         response = await search_client.delete_index(kind="kind", data_partition_id="test")
         assert response is not None
-    
-    # make sure correlation-id is traced when doing a request to search
-    context.tracer.add_attribute_to_current_span.assert_any_call(
-        attribute_key='correlation-id',
-        attribute_value=expected_headers['correlation-id']
-    )

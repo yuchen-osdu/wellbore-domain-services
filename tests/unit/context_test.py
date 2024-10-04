@@ -18,10 +18,6 @@ import pytest
 import time
 import uuid
 from anyio import to_process
-from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
-from opencensus.trace import tracer as open_tracer
-
-from unittest import mock
 
 from app.context import Context, get_headers_from_ctx
 
@@ -137,45 +133,62 @@ async def test_context_current_in_thread_executor_anyio():
 
 
 @pytest.mark.parametrize("params, expected_result", [
-    ({  # some headers are missing
-         "correlation_id": None,
-         "request_id": 'my-request-id',
-         "auth": 'my-auth',
-         "partition_id": 'my-partition-id',
-         "x_user_id": None,
-         "x_app_id": "my-x-app-id"},
-     {
-         "Authorization": "Bearer my-auth",
-         "data-partition-id": "my-partition-id",
-         "x-app-id": "my-x-app-id",
-     }),
-    ({   # all headers are here
-         "correlation_id": 'my-correlation-id',
-         "request_id": 'my-request-id',
-         "auth": 'my-auth',
-         "partition_id": 'my-partition-id',
-         "x_user_id": 'my-x-user-id',
-         "x_app_id": "my-x-app-id",
-         "tracer": open_tracer.Tracer()
-     },
-     {
-         "Authorization": "Bearer my-auth",
-         "correlation-id": "my-correlation-id",
-         "data-partition-id": "my-partition-id",
-         "x-app-id": "my-x-app-id",
-         "x-user-id": "my-x-user-id",
-         "traceparent": "my-traceparent-value"
-     }),
-    ({   # only tracing headers is present
-         "tracer": open_tracer.Tracer()},
-     {
-        'Authorization': 'Bearer None',
-        'traceparent': "my-traceparent-value",
-    }),
+    (
+        {  # some headers are missing
+             "correlation_id": None,
+             "request_id": 'my-request-id',
+             "auth": 'my-auth',
+             "partition_id": 'my-partition-id',
+             "x_user_id": None,
+             "x_app_id": "my-x-app-id"
+        },
+        {
+             "Authorization": "Bearer my-auth",
+             "data-partition-id": "my-partition-id",
+             "x-app-id": "my-x-app-id",
+        }
+    ),
+    (
+        {   # all headers are here
+             "correlation_id": 'my-correlation-id',
+             "request_id": 'my-request-id',
+             "auth": 'my-auth',
+             "partition_id": 'my-partition-id',
+             "x_user_id": 'my-x-user-id',
+             "x_app_id": "my-x-app-id",
+        },
+        {
+             "Authorization": "Bearer my-auth",
+             "correlation-id": "my-correlation-id",
+             "data-partition-id": "my-partition-id",
+             "x-app-id": "my-x-app-id",
+             "x-user-id": "my-x-user-id"
+        },
+    ),
+    (
+        {
+            "enable-trace": None
+        },
+        {
+            "Authorization": "Bearer None"
+        }
+    )
 ])
 def test_get_headers_from_ctx(params, expected_result):
     created_ctx = Context(**params)
 
-    with mock.patch.object(TraceContextPropagator, "to_headers", return_value={"traceparent": "my-traceparent-value"}):
+    from opentelemetry import trace
+    from opentelemetry.sdk.trace import TracerProvider
+
+    if "enable-trace" in params:
+        trace.set_tracer_provider(TracerProvider())
+        with trace.get_tracer("testing-tracer").start_as_current_span("test-test"):
+
+            created_headers = get_headers_from_ctx(created_ctx)
+            assert "traceparent" in created_headers
+            assert len(created_headers.pop("traceparent")) == 55
+            assert created_headers == expected_result
+
+    else:
         created_headers = get_headers_from_ctx(created_ctx)
         assert created_headers == expected_result

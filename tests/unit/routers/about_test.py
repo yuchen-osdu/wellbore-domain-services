@@ -15,12 +15,9 @@
 import pytest
 from app.wdms_app import wdms_app, DDMS_V2_PATH
 from app.auth.auth import require_opendes_authorized_user
-from app.helper import traces
 from app.conf import Config
 from tests.unit.test_utils import ctx_fixture
 
-# Initialize traces exporter in app, like it is in app's startup decorator
-wdms_app.trace_exporter = traces.CombinedExporter(service_name='tested-ddms')
 
 # parametrized for backward compatibility with /ddms/v2 APIs
 PathPrefixParams = [DDMS_V2_PATH, '']

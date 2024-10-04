@@ -9,7 +9,8 @@ from fastapi import Response
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from app.helper.logger import get_logger
-from app.helper.traces import with_trace
+from app.helper.traces_ot import get_tracer
+
 from app.conf import Config
 
 from .mime_types import MimeType, MimeTypes
@@ -22,6 +23,8 @@ from .dataframe_columns import ColumnSelection, select_columns, sort_dataframe_c
 from .dask import storage_path_builder
 from .dask.errors import TooManyValuesRequested
 from .dask.bulk_catalog import BulkCatalog
+
+_tracer = get_tracer()
 
 """
     The purpose of read fast track to speed up read on some specific circumstances
@@ -44,7 +47,7 @@ MAX_VALUES_DIRECT_PARQUET = 1_000_000
 MAX_VALUES_DIRECT_JSON = 500_000
 
 
-@with_trace('get_data_fast_track')
+@_tracer.start_as_current_span('get_data_fast_track')
 @capture_timings('get_data_fast_track')
 async def read_data_fast_track(ctx,
                                bulk_catalog: BulkCatalog,
@@ -273,7 +276,7 @@ def _split_dataframe_iloc(df: pd.DataFrame, offset: Optional[int] = None, limit:
     return df
 
 
-@with_trace('_load_dataframe_from_storage')
+@_tracer.start_as_current_span('_load_dataframe_from_storage')
 @capture_timings('_load_dataframe_from_storage')
 async def _load_dataframe_from_storage(storage: BlobStorageBase,
                                        tenant,
@@ -293,7 +296,7 @@ async def _load_dataframe_from_storage(storage: BlobStorageBase,
     return _split_dataframe_iloc(df, offset, limit)
 
 
-@with_trace('_read_index')
+@_tracer.start_as_current_span('_read_index')
 @capture_timings('_read_index')
 async def _read_index(storage: BlobStorageBase, tenant, bulk_catalog: BulkCatalog) -> pd.DataFrame:
     if not bulk_catalog.index_path:
@@ -323,7 +326,7 @@ async def _build_response_from_single_chunk(storage: BlobStorageBase,
         return await _forward_parquet(storage, tenant, blob_path)
 
 
-@with_trace('_forward_parquet')
+@_tracer.start_as_current_span('_forward_parquet')
 @capture_timings('_forward_parquet')
 async def _forward_parquet(storage: BlobStorageBase, tenant, parquet_path) -> Response:
     content = await storage.download(tenant, parquet_path)

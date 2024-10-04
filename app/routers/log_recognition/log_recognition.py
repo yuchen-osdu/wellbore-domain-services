@@ -25,11 +25,12 @@ from . import family_processor_manager as fp_manager
 from app.clients.storage_service_client import get_storage_record_service
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
-from app.helper.traces import with_trace
-from app.helper.traces import TracingRoute
 
 
-router = APIRouter(route_class=TracingRoute)
+from app.helper.traces_ot import get_tracer
+_tracer = get_tracer()
+
+router = APIRouter()
 router.prefix = '/log-recognition'
 router.tags = ['log-recognition']
 CUSTOM_CATALOG_LIFETIME = 300  # in seconds
@@ -121,7 +122,7 @@ class GuessResponse(BaseModel):
     base_unit: Optional[str] = None  # Unit to convert log
 
 
-@with_trace("processor.guess")
+@_tracer.start_as_current_span("processor.guess")
 async def process_with_trace(processor: FamilyProcessor, log_info: farmodel.GuessRequest):
     """
     Trace guess() method from given Process
