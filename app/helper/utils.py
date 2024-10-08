@@ -56,6 +56,9 @@ def _get_client_str(client) -> str:
     """
         Returns a string container host:port from given starlette client
     """
+    if client is None:
+        return "no_host"
+
     host, port = client.host, client.port
     if not host:
         return ""

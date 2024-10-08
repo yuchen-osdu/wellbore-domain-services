@@ -134,7 +134,7 @@ async def test_partition_client_raise_api_exception(client):
                                                       (502, "bad gateway", True)])
 @pytest.mark.anyio
 async def test_500_exception_handler(client, nope_logger_fixture, status_code, msg, called):
-    with patch("app.routers.about.AboutResponse.construct",
+    with patch("app.routers.about.AboutResponse",
                side_effect=HTTPException(status_code=status_code, detail=msg)):
         response = await client.get('about')
         assert response.status_code == status_code

@@ -25,6 +25,31 @@ def test_empty_catalog():
     assert d["indexPath"] is None
 
 
+def test_describe_catalog():
+    empty_catalog = BulkCatalog("id")
+    df_describe = empty_catalog.describe()
+    assert df_describe.columns == []
+    assert df_describe.numberOfRows == 0
+
+    a_b_catalog = BulkCatalog("id")
+    chunk_group = ChunkGroup({'A', 'B'}, ['path1'], ["Int32", "Int64"])
+    a_b_catalog.add_chunk(chunk_group)
+    a_b_catalog.nb_rows = 100
+
+    df_describe = a_b_catalog.describe()
+    assert df_describe.columns == ["A", "B"]
+    assert df_describe.numberOfRows == 100
+
+    df_describe = a_b_catalog.describe(offset=10)
+    assert df_describe.numberOfRows == 90
+
+    df_describe = a_b_catalog.describe(limit=90)
+    assert df_describe.numberOfRows == 90
+
+    df_describe = a_b_catalog.describe(offset=90, limit=20)
+    assert df_describe.numberOfRows == 10
+
+
 def test_add_multiple_chunk_group_same_schemas():
     catalog = BulkCatalog("id")
     all_paths = [ ['path1'],

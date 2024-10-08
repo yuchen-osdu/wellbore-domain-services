@@ -33,7 +33,7 @@ class AboutResponse(BaseModel):
 
 @router.get("/about", response_model=AboutResponse, include_in_schema=True)
 async def get_about() -> AboutResponse:
-    return AboutResponse.construct(
+    return AboutResponse(
         service=__app_name__,
         version=__version__,
         buildNumber=__build_number__,
@@ -76,7 +76,7 @@ async def get_version(
     if Config.service_host_wdms_worker.value:
         details["enable_wdms_bulk_worker"] = str(True)
 
-    return VersionDetailsResponse.construct(
+    return VersionDetailsResponse(
         service=__app_name__,
         version=__version__,
         buildNumber=__build_number__,

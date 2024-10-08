@@ -117,7 +117,7 @@ cloudpickle==3.0.0
     # via
     #   dask
     #   distributed
-cryptography==41.0.5
+cryptography==43.0.1
     # via
     #   -r requirements.in
     #   azure-identity
@@ -143,7 +143,7 @@ distributed==2024.4.1
     # via dask
 dpath==2.1.5
     # via wellbore-schema-manipulation
-fastapi==0.95.2
+fastapi==0.115.0
     # via
     #   -r requirements.in
     #   osdu-data-ecosystem-schema
@@ -372,7 +372,7 @@ python-dateutil==2.8.2
     # via
     #   botocore
     #   pandas
-python-multipart==0.0.5
+python-multipart==0.0.12
     # via -r requirements.in
 python-rapidjson==1.9
     # via -r requirements.in
@@ -417,7 +417,6 @@ six==1.16.0
     #   isodate
     #   jsonpath-ng
     #   python-dateutil
-    #   python-multipart
     #   tenacity
 sniffio==1.2.0
     # via
@@ -426,7 +425,7 @@ sniffio==1.2.0
     #   httpx
 sortedcontainers==2.4.0
     # via distributed
-starlette==0.27.0
+starlette==0.38.6
     # via fastapi
 structlog==21.1.0
     # via -r requirements.in
@@ -443,9 +442,10 @@ tornado==6.3.2
     # via distributed
 types-jsonschema==4.17.0.7
     # via wellbore-schema-manipulation
-typing-extensions==4.3.0
+typing-extensions==4.12.2
     # via
     #   azure-core
+    #   fastapi
     #   opentelemetry-sdk
     #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search

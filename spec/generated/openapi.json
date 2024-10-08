@@ -5182,7 +5182,7 @@
     "title": "Wellbore DDMS OSDU",
     "version": "0.28"
   },
-  "openapi": "3.0.2",
+  "openapi": "3.1.0",
   "paths": {
     "/about": {
       "get": {
@@ -5231,7 +5231,7 @@
             "required": false,
             "schema": {
               "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             }
@@ -5244,40 +5244,40 @@
             "required": false,
             "schema": {
               "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             }
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-            "examples": {
-              "all": {
-                "summary": "Select all curves",
-                "value": ""
-              },
-              "array-curve": {
-                "summary": "Select one specific curve of an array",
-                "value": "ARR[100]"
-              },
-              "array-slice": {
-                "summary": "Select a slice of array curves",
-                "value": "ARR[10:50]"
-              },
-              "array-slice-plus-curve": {
-                "summary": "Select slice of array + another curve(s)",
-                "value": "MD,ARR[50:55],GR"
-              },
-              "basic": {
-                "summary": "Select specific curves",
-                "value": "MD,GR"
-              }
-            },
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+              "examples": {
+                "all": {
+                  "summary": "Select all curves",
+                  "value": ""
+                },
+                "array-curve": {
+                  "summary": "Select one specific curve of an array",
+                  "value": "ARR[100]"
+                },
+                "array-slice": {
+                  "summary": "Select a slice of array curves",
+                  "value": "ARR[10:50]"
+                },
+                "array-slice-plus-curve": {
+                  "summary": "Select slice of array + another curve(s)",
+                  "value": "MD,ARR[50:55],GR"
+                },
+                "basic": {
+                  "summary": "Select specific curves",
+                  "value": "MD,GR"
+                }
+              },
               "title": "Curves",
               "type": "string"
             }
@@ -5297,32 +5297,32 @@
           },
           {
             "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-            "examples": {
-              "double-md-filter": {
-                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                "value": [
-                  "MD:gt:1000",
-                  "MD:lt:42000"
-                ]
-              },
-              "simple-md-filter": {
-                "summary": "Select rows when column 'MD' values >= 1000",
-                "value": [
-                  "MD:gte:1000"
-                ]
-              },
-              "simple-md-filter-2": {
-                "summary": "Select rows when 'MD' column values <= 1000",
-                "value": [
-                  "MD:lte:1000"
-                ]
-              }
-            },
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
               "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+              "examples": {
+                "double-md-filter": {
+                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                  "value": [
+                    "MD:gt:1000",
+                    "MD:lt:42000"
+                  ]
+                },
+                "simple-md-filter": {
+                  "summary": "Select rows when column 'MD' values >= 1000",
+                  "value": [
+                    "MD:gte:1000"
+                  ]
+                },
+                "simple-md-filter-2": {
+                  "summary": "Select rows when 'MD' column values <= 1000",
+                  "value": [
+                    "MD:lte:1000"
+                  ]
+                }
+              },
               "items": {
                 "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
@@ -5699,38 +5699,43 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "examples": {
-                "full": {
-                  "summary": "Start update session at specific record version",
-                  "value": {
-                    "fromVersion": 123456789,
-                    "mode": "update"
-                  }
-                },
-                "overwrite": {
-                  "summary": "Start overwrite session",
-                  "value": {
-                    "mode": "overwrite"
-                  }
-                },
-                "set session meta": {
-                  "summary": "Start update session and session meta attributes",
-                  "value": {
-                    "meta": {
-                      "extendedLoadCompleted": true
-                    },
-                    "mode": "update"
-                  }
-                },
-                "update": {
-                  "summary": "Start update session",
-                  "value": {
-                    "mode": "update"
-                  }
-                }
-              },
               "schema": {
-                "$ref": "#/components/schemas/CreateDataSessionRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateDataSessionRequest"
+                  }
+                ],
+                "examples": {
+                  "full": {
+                    "summary": "Start update session at specific record version",
+                    "value": {
+                      "fromVersion": 123456789,
+                      "mode": "update"
+                    }
+                  },
+                  "overwrite": {
+                    "summary": "Start overwrite session",
+                    "value": {
+                      "mode": "overwrite"
+                    }
+                  },
+                  "set session meta": {
+                    "summary": "Start update session and session meta attributes",
+                    "value": {
+                      "meta": {
+                        "extendedLoadCompleted": true
+                      },
+                      "mode": "update"
+                    }
+                  },
+                  "update": {
+                    "summary": "Start update session",
+                    "value": {
+                      "mode": "update"
+                    }
+                  }
+                },
+                "title": "Create Rq"
               }
             }
           },
@@ -5902,22 +5907,27 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "examples": {
-                "abandon": {
-                  "summary": "Abandon session data",
-                  "value": {
-                    "state": "abandon"
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSessionState"
+                  }
+                ],
+                "examples": {
+                  "abandon": {
+                    "summary": "Abandon session data",
+                    "value": {
+                      "state": "abandon"
+                    }
+                  },
+                  "commit": {
+                    "summary": "Commit session data",
+                    "value": {
+                      "state": "commit"
+                    }
                   }
                 },
-                "commit": {
-                  "summary": "Commit session data",
-                  "value": {
-                    "state": "commit"
-                  }
-                }
-              },
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSessionState"
+                "title": "Update Request"
               }
             }
           },
@@ -6103,7 +6113,7 @@
             "required": false,
             "schema": {
               "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             }
@@ -6116,40 +6126,40 @@
             "required": false,
             "schema": {
               "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             }
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-            "examples": {
-              "all": {
-                "summary": "Select all curves",
-                "value": ""
-              },
-              "array-curve": {
-                "summary": "Select one specific curve of an array",
-                "value": "ARR[100]"
-              },
-              "array-slice": {
-                "summary": "Select a slice of array curves",
-                "value": "ARR[10:50]"
-              },
-              "array-slice-plus-curve": {
-                "summary": "Select slice of array + another curve(s)",
-                "value": "MD,ARR[50:55],GR"
-              },
-              "basic": {
-                "summary": "Select specific curves",
-                "value": "MD,GR"
-              }
-            },
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+              "examples": {
+                "all": {
+                  "summary": "Select all curves",
+                  "value": ""
+                },
+                "array-curve": {
+                  "summary": "Select one specific curve of an array",
+                  "value": "ARR[100]"
+                },
+                "array-slice": {
+                  "summary": "Select a slice of array curves",
+                  "value": "ARR[10:50]"
+                },
+                "array-slice-plus-curve": {
+                  "summary": "Select slice of array + another curve(s)",
+                  "value": "MD,ARR[50:55],GR"
+                },
+                "basic": {
+                  "summary": "Select specific curves",
+                  "value": "MD,GR"
+                }
+              },
               "title": "Curves",
               "type": "string"
             }
@@ -6169,32 +6179,32 @@
           },
           {
             "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-            "examples": {
-              "double-md-filter": {
-                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                "value": [
-                  "MD:gt:1000",
-                  "MD:lt:42000"
-                ]
-              },
-              "simple-md-filter": {
-                "summary": "Select rows when column 'MD' values >= 1000",
-                "value": [
-                  "MD:gte:1000"
-                ]
-              },
-              "simple-md-filter-2": {
-                "summary": "Select rows when 'MD' column values <= 1000",
-                "value": [
-                  "MD:lte:1000"
-                ]
-              }
-            },
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
               "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+              "examples": {
+                "double-md-filter": {
+                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                  "value": [
+                    "MD:gt:1000",
+                    "MD:lt:42000"
+                  ]
+                },
+                "simple-md-filter": {
+                  "summary": "Select rows when column 'MD' values >= 1000",
+                  "value": [
+                    "MD:gte:1000"
+                  ]
+                },
+                "simple-md-filter-2": {
+                  "summary": "Select rows when 'MD' column values <= 1000",
+                  "value": [
+                    "MD:lte:1000"
+                  ]
+                }
+              },
               "items": {
                 "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
@@ -13978,7 +13988,7 @@
             "required": false,
             "schema": {
               "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             }
@@ -13991,40 +14001,40 @@
             "required": false,
             "schema": {
               "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             }
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-            "examples": {
-              "all": {
-                "summary": "Select all curves",
-                "value": ""
-              },
-              "array-curve": {
-                "summary": "Select one specific curve of an array",
-                "value": "ARR[100]"
-              },
-              "array-slice": {
-                "summary": "Select a slice of array curves",
-                "value": "ARR[10:50]"
-              },
-              "array-slice-plus-curve": {
-                "summary": "Select slice of array + another curve(s)",
-                "value": "MD,ARR[50:55],GR"
-              },
-              "basic": {
-                "summary": "Select specific curves",
-                "value": "MD,GR"
-              }
-            },
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+              "examples": {
+                "all": {
+                  "summary": "Select all curves",
+                  "value": ""
+                },
+                "array-curve": {
+                  "summary": "Select one specific curve of an array",
+                  "value": "ARR[100]"
+                },
+                "array-slice": {
+                  "summary": "Select a slice of array curves",
+                  "value": "ARR[10:50]"
+                },
+                "array-slice-plus-curve": {
+                  "summary": "Select slice of array + another curve(s)",
+                  "value": "MD,ARR[50:55],GR"
+                },
+                "basic": {
+                  "summary": "Select specific curves",
+                  "value": "MD,GR"
+                }
+              },
               "title": "Curves",
               "type": "string"
             }
@@ -14044,32 +14054,32 @@
           },
           {
             "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-            "examples": {
-              "double-md-filter": {
-                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                "value": [
-                  "MD:gt:1000",
-                  "MD:lt:42000"
-                ]
-              },
-              "simple-md-filter": {
-                "summary": "Select rows when column 'MD' values >= 1000",
-                "value": [
-                  "MD:gte:1000"
-                ]
-              },
-              "simple-md-filter-2": {
-                "summary": "Select rows when 'MD' column values <= 1000",
-                "value": [
-                  "MD:lte:1000"
-                ]
-              }
-            },
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
               "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+              "examples": {
+                "double-md-filter": {
+                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                  "value": [
+                    "MD:gt:1000",
+                    "MD:lt:42000"
+                  ]
+                },
+                "simple-md-filter": {
+                  "summary": "Select rows when column 'MD' values >= 1000",
+                  "value": [
+                    "MD:gte:1000"
+                  ]
+                },
+                "simple-md-filter-2": {
+                  "summary": "Select rows when 'MD' column values <= 1000",
+                  "value": [
+                    "MD:lte:1000"
+                  ]
+                }
+              },
               "items": {
                 "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
@@ -14443,38 +14453,43 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "examples": {
-                "full": {
-                  "summary": "Start update session at specific record version",
-                  "value": {
-                    "fromVersion": 123456789,
-                    "mode": "update"
-                  }
-                },
-                "overwrite": {
-                  "summary": "Start overwrite session",
-                  "value": {
-                    "mode": "overwrite"
-                  }
-                },
-                "set session meta": {
-                  "summary": "Start update session and session meta attributes",
-                  "value": {
-                    "meta": {
-                      "extendedLoadCompleted": true
-                    },
-                    "mode": "update"
-                  }
-                },
-                "update": {
-                  "summary": "Start update session",
-                  "value": {
-                    "mode": "update"
-                  }
-                }
-              },
               "schema": {
-                "$ref": "#/components/schemas/CreateDataSessionRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateDataSessionRequest"
+                  }
+                ],
+                "examples": {
+                  "full": {
+                    "summary": "Start update session at specific record version",
+                    "value": {
+                      "fromVersion": 123456789,
+                      "mode": "update"
+                    }
+                  },
+                  "overwrite": {
+                    "summary": "Start overwrite session",
+                    "value": {
+                      "mode": "overwrite"
+                    }
+                  },
+                  "set session meta": {
+                    "summary": "Start update session and session meta attributes",
+                    "value": {
+                      "meta": {
+                        "extendedLoadCompleted": true
+                      },
+                      "mode": "update"
+                    }
+                  },
+                  "update": {
+                    "summary": "Start update session",
+                    "value": {
+                      "mode": "update"
+                    }
+                  }
+                },
+                "title": "Create Rq"
               }
             }
           },
@@ -14644,22 +14659,27 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "examples": {
-                "abandon": {
-                  "summary": "Abandon session data",
-                  "value": {
-                    "state": "abandon"
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSessionState"
+                  }
+                ],
+                "examples": {
+                  "abandon": {
+                    "summary": "Abandon session data",
+                    "value": {
+                      "state": "abandon"
+                    }
+                  },
+                  "commit": {
+                    "summary": "Commit session data",
+                    "value": {
+                      "state": "commit"
+                    }
                   }
                 },
-                "commit": {
-                  "summary": "Commit session data",
-                  "value": {
-                    "state": "commit"
-                  }
-                }
-              },
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSessionState"
+                "title": "Update Request"
               }
             }
           },
@@ -14843,7 +14863,7 @@
             "required": false,
             "schema": {
               "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             }
@@ -14856,40 +14876,40 @@
             "required": false,
             "schema": {
               "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             }
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-            "examples": {
-              "all": {
-                "summary": "Select all curves",
-                "value": ""
-              },
-              "array-curve": {
-                "summary": "Select one specific curve of an array",
-                "value": "ARR[100]"
-              },
-              "array-slice": {
-                "summary": "Select a slice of array curves",
-                "value": "ARR[10:50]"
-              },
-              "array-slice-plus-curve": {
-                "summary": "Select slice of array + another curve(s)",
-                "value": "MD,ARR[50:55],GR"
-              },
-              "basic": {
-                "summary": "Select specific curves",
-                "value": "MD,GR"
-              }
-            },
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+              "examples": {
+                "all": {
+                  "summary": "Select all curves",
+                  "value": ""
+                },
+                "array-curve": {
+                  "summary": "Select one specific curve of an array",
+                  "value": "ARR[100]"
+                },
+                "array-slice": {
+                  "summary": "Select a slice of array curves",
+                  "value": "ARR[10:50]"
+                },
+                "array-slice-plus-curve": {
+                  "summary": "Select slice of array + another curve(s)",
+                  "value": "MD,ARR[50:55],GR"
+                },
+                "basic": {
+                  "summary": "Select specific curves",
+                  "value": "MD,GR"
+                }
+              },
               "title": "Curves",
               "type": "string"
             }
@@ -14909,32 +14929,32 @@
           },
           {
             "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-            "examples": {
-              "double-md-filter": {
-                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                "value": [
-                  "MD:gt:1000",
-                  "MD:lt:42000"
-                ]
-              },
-              "simple-md-filter": {
-                "summary": "Select rows when column 'MD' values >= 1000",
-                "value": [
-                  "MD:gte:1000"
-                ]
-              },
-              "simple-md-filter-2": {
-                "summary": "Select rows when 'MD' column values <= 1000",
-                "value": [
-                  "MD:lte:1000"
-                ]
-              }
-            },
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
               "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+              "examples": {
+                "double-md-filter": {
+                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                  "value": [
+                    "MD:gt:1000",
+                    "MD:lt:42000"
+                  ]
+                },
+                "simple-md-filter": {
+                  "summary": "Select rows when column 'MD' values >= 1000",
+                  "value": [
+                    "MD:gte:1000"
+                  ]
+                },
+                "simple-md-filter-2": {
+                  "summary": "Select rows when 'MD' column values <= 1000",
+                  "value": [
+                    "MD:lte:1000"
+                  ]
+                }
+              },
               "items": {
                 "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
@@ -15608,7 +15628,7 @@
             "required": false,
             "schema": {
               "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             }
@@ -15621,40 +15641,40 @@
             "required": false,
             "schema": {
               "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             }
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-            "examples": {
-              "all": {
-                "summary": "Select all curves",
-                "value": ""
-              },
-              "array-curve": {
-                "summary": "Select one specific curve of an array",
-                "value": "ARR[100]"
-              },
-              "array-slice": {
-                "summary": "Select a slice of array curves",
-                "value": "ARR[10:50]"
-              },
-              "array-slice-plus-curve": {
-                "summary": "Select slice of array + another curve(s)",
-                "value": "MD,ARR[50:55],GR"
-              },
-              "basic": {
-                "summary": "Select specific curves",
-                "value": "MD,GR"
-              }
-            },
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+              "examples": {
+                "all": {
+                  "summary": "Select all curves",
+                  "value": ""
+                },
+                "array-curve": {
+                  "summary": "Select one specific curve of an array",
+                  "value": "ARR[100]"
+                },
+                "array-slice": {
+                  "summary": "Select a slice of array curves",
+                  "value": "ARR[10:50]"
+                },
+                "array-slice-plus-curve": {
+                  "summary": "Select slice of array + another curve(s)",
+                  "value": "MD,ARR[50:55],GR"
+                },
+                "basic": {
+                  "summary": "Select specific curves",
+                  "value": "MD,GR"
+                }
+              },
               "title": "Curves",
               "type": "string"
             }
@@ -15674,32 +15694,32 @@
           },
           {
             "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-            "examples": {
-              "double-md-filter": {
-                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                "value": [
-                  "MD:gt:1000",
-                  "MD:lt:42000"
-                ]
-              },
-              "simple-md-filter": {
-                "summary": "Select rows when column 'MD' values >= 1000",
-                "value": [
-                  "MD:gte:1000"
-                ]
-              },
-              "simple-md-filter-2": {
-                "summary": "Select rows when 'MD' column values <= 1000",
-                "value": [
-                  "MD:lte:1000"
-                ]
-              }
-            },
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
               "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+              "examples": {
+                "double-md-filter": {
+                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                  "value": [
+                    "MD:gt:1000",
+                    "MD:lt:42000"
+                  ]
+                },
+                "simple-md-filter": {
+                  "summary": "Select rows when column 'MD' values >= 1000",
+                  "value": [
+                    "MD:gte:1000"
+                  ]
+                },
+                "simple-md-filter-2": {
+                  "summary": "Select rows when 'MD' column values <= 1000",
+                  "value": [
+                    "MD:lte:1000"
+                  ]
+                }
+              },
               "items": {
                 "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
@@ -15986,33 +16006,33 @@
           },
           {
             "description": "List of curves or array to be returned. All curves if empty",
-            "examples": {
-              "all": {
-                "summary": "Select all curves",
-                "value": ""
-              },
-              "array-curve": {
-                "summary": "Select one specific curve of an array",
-                "value": "ARR[100]"
-              },
-              "array-slice": {
-                "summary": "Select a slice of array curves",
-                "value": "ARR[10:50]"
-              },
-              "array-slice-plus-curve": {
-                "summary": "Select slice of array + another curve(s)",
-                "value": "MD,ARR[50:55],GR"
-              },
-              "basic": {
-                "summary": "Select specific curves",
-                "value": "MD,GR"
-              }
-            },
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
               "description": "List of curves or array to be returned. All curves if empty",
+              "examples": {
+                "all": {
+                  "summary": "Select all curves",
+                  "value": ""
+                },
+                "array-curve": {
+                  "summary": "Select one specific curve of an array",
+                  "value": "ARR[100]"
+                },
+                "array-slice": {
+                  "summary": "Select a slice of array curves",
+                  "value": "ARR[10:50]"
+                },
+                "array-slice-plus-curve": {
+                  "summary": "Select slice of array + another curve(s)",
+                  "value": "MD,ARR[50:55],GR"
+                },
+                "basic": {
+                  "summary": "Select specific curves",
+                  "value": "MD,GR"
+                }
+              },
               "title": "Curves",
               "type": "string"
             }
@@ -16211,38 +16231,43 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "examples": {
-                "full": {
-                  "summary": "Start update session at specific record version",
-                  "value": {
-                    "fromVersion": 123456789,
-                    "mode": "update"
-                  }
-                },
-                "overwrite": {
-                  "summary": "Start overwrite session",
-                  "value": {
-                    "mode": "overwrite"
-                  }
-                },
-                "set session meta": {
-                  "summary": "Start update session and session meta attributes",
-                  "value": {
-                    "meta": {
-                      "extendedLoadCompleted": true
-                    },
-                    "mode": "update"
-                  }
-                },
-                "update": {
-                  "summary": "Start update session",
-                  "value": {
-                    "mode": "update"
-                  }
-                }
-              },
               "schema": {
-                "$ref": "#/components/schemas/CreateDataSessionRequest"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateDataSessionRequest"
+                  }
+                ],
+                "examples": {
+                  "full": {
+                    "summary": "Start update session at specific record version",
+                    "value": {
+                      "fromVersion": 123456789,
+                      "mode": "update"
+                    }
+                  },
+                  "overwrite": {
+                    "summary": "Start overwrite session",
+                    "value": {
+                      "mode": "overwrite"
+                    }
+                  },
+                  "set session meta": {
+                    "summary": "Start update session and session meta attributes",
+                    "value": {
+                      "meta": {
+                        "extendedLoadCompleted": true
+                      },
+                      "mode": "update"
+                    }
+                  },
+                  "update": {
+                    "summary": "Start update session",
+                    "value": {
+                      "mode": "update"
+                    }
+                  }
+                },
+                "title": "Create Rq"
               }
             }
           },
@@ -16412,22 +16437,27 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "examples": {
-                "abandon": {
-                  "summary": "Abandon session data",
-                  "value": {
-                    "state": "abandon"
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateSessionState"
+                  }
+                ],
+                "examples": {
+                  "abandon": {
+                    "summary": "Abandon session data",
+                    "value": {
+                      "state": "abandon"
+                    }
+                  },
+                  "commit": {
+                    "summary": "Commit session data",
+                    "value": {
+                      "state": "commit"
+                    }
                   }
                 },
-                "commit": {
-                  "summary": "Commit session data",
-                  "value": {
-                    "state": "commit"
-                  }
-                }
-              },
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSessionState"
+                "title": "Update Request"
               }
             }
           },
@@ -16611,7 +16641,7 @@
             "required": false,
             "schema": {
               "description": "The number of rows that are to be skipped and not included in the result.",
-              "minimum": 0.0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             }
@@ -16624,40 +16654,40 @@
             "required": false,
             "schema": {
               "description": "The maximum number of rows to be returned.",
-              "minimum": 1.0,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             }
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-            "examples": {
-              "all": {
-                "summary": "Select all curves",
-                "value": ""
-              },
-              "array-curve": {
-                "summary": "Select one specific curve of an array",
-                "value": "ARR[100]"
-              },
-              "array-slice": {
-                "summary": "Select a slice of array curves",
-                "value": "ARR[10:50]"
-              },
-              "array-slice-plus-curve": {
-                "summary": "Select slice of array + another curve(s)",
-                "value": "MD,ARR[50:55],GR"
-              },
-              "basic": {
-                "summary": "Select specific curves",
-                "value": "MD,GR"
-              }
-            },
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+              "examples": {
+                "all": {
+                  "summary": "Select all curves",
+                  "value": ""
+                },
+                "array-curve": {
+                  "summary": "Select one specific curve of an array",
+                  "value": "ARR[100]"
+                },
+                "array-slice": {
+                  "summary": "Select a slice of array curves",
+                  "value": "ARR[10:50]"
+                },
+                "array-slice-plus-curve": {
+                  "summary": "Select slice of array + another curve(s)",
+                  "value": "MD,ARR[50:55],GR"
+                },
+                "basic": {
+                  "summary": "Select specific curves",
+                  "value": "MD,GR"
+                }
+              },
               "title": "Curves",
               "type": "string"
             }
@@ -16677,32 +16707,32 @@
           },
           {
             "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-            "examples": {
-              "double-md-filter": {
-                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                "value": [
-                  "MD:gt:1000",
-                  "MD:lt:42000"
-                ]
-              },
-              "simple-md-filter": {
-                "summary": "Select rows when column 'MD' values >= 1000",
-                "value": [
-                  "MD:gte:1000"
-                ]
-              },
-              "simple-md-filter-2": {
-                "summary": "Select rows when 'MD' column values <= 1000",
-                "value": [
-                  "MD:lte:1000"
-                ]
-              }
-            },
             "in": "query",
             "name": "filter",
             "required": false,
             "schema": {
               "description": "\n            \nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n  \nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+              "examples": {
+                "double-md-filter": {
+                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                  "value": [
+                    "MD:gt:1000",
+                    "MD:lt:42000"
+                  ]
+                },
+                "simple-md-filter": {
+                  "summary": "Select rows when column 'MD' values >= 1000",
+                  "value": [
+                    "MD:gte:1000"
+                  ]
+                },
+                "simple-md-filter-2": {
+                  "summary": "Select rows when 'MD' column values <= 1000",
+                  "value": [
+                    "MD:lte:1000"
+                  ]
+                }
+              },
               "items": {
                 "pattern": "^(\".+\"|[^:]+):(lt|lte|gt|gte|eq|neq|in):.*$",
                 "type": "string"
@@ -16913,33 +16943,33 @@
           },
           {
             "description": "List of curves or array to be returned. All curves if empty",
-            "examples": {
-              "all": {
-                "summary": "Select all curves",
-                "value": ""
-              },
-              "array-curve": {
-                "summary": "Select one specific curve of an array",
-                "value": "ARR[100]"
-              },
-              "array-slice": {
-                "summary": "Select a slice of array curves",
-                "value": "ARR[10:50]"
-              },
-              "array-slice-plus-curve": {
-                "summary": "Select slice of array + another curve(s)",
-                "value": "MD,ARR[50:55],GR"
-              },
-              "basic": {
-                "summary": "Select specific curves",
-                "value": "MD,GR"
-              }
-            },
             "in": "query",
             "name": "curves",
             "required": false,
             "schema": {
               "description": "List of curves or array to be returned. All curves if empty",
+              "examples": {
+                "all": {
+                  "summary": "Select all curves",
+                  "value": ""
+                },
+                "array-curve": {
+                  "summary": "Select one specific curve of an array",
+                  "value": "ARR[100]"
+                },
+                "array-slice": {
+                  "summary": "Select a slice of array curves",
+                  "value": "ARR[10:50]"
+                },
+                "array-slice-plus-curve": {
+                  "summary": "Select slice of array + another curve(s)",
+                  "value": "MD,ARR[50:55],GR"
+                },
+                "basic": {
+                  "summary": "Select specific curves",
+                  "value": "MD,GR"
+                }
+              },
               "title": "Curves",
               "type": "string"
             }

@@ -10,10 +10,8 @@ from contextlib import contextmanager
 
 
 def log_timings(tag, wall, cpu, level=INFO):
-    get_logger().log(
-        level,
-        f"Timings of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s"
-    )
+    if log := get_logger():
+        log.log(level, f"Timings of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
 
 
 default_capture_timing_handlers = [partial(log_timings, level=INFO)]
