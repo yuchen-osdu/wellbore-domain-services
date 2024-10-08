@@ -67,5 +67,5 @@ configuration:
       SWAGGER_FULL_URL_ENABLED: "true"
       
     secrets:
-      - name: AZ_AI_INSTRUMENTATION_KEY
-        key: appinsight.key
+      - name: AZ_AI_CONNECTION_STR
+        key: appinsights-connection-string.key

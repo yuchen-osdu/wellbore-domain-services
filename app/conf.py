@@ -355,9 +355,9 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
     provider = config.cloud_provider.value
     if provider == "az":
         config.add_from_env(
-            attribute_name="az_ai_instrumentation_key",
-            env_var_key="AZ_AI_INSTRUMENTATION_KEY",
-            description="azure app insights instrumentation key",
+            attribute_name="az_ai_connection_str",
+            env_var_key="AZ_AI_CONNECTION_STR",
+            description="Azure AppInsights connection string",
             secret=True,
             is_mandatory=False,
             override=True,

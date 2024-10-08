@@ -196,7 +196,7 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 #### Azure
 
 - The following environment variables are required when the cloud provider is set to Azure:
-  - AZ_AI_INSTRUMENTATION_KEY: Azure Application Insights instrumentation key
+  - AZ_AI_CONNECTION_STR: Azure Application Insights connection string key
   - SERVICE_HOST_SEARCH: The Search Service host
   - SERVICE_HOST_SCHEMA: The Schema Service host 
   - SERVICE_HOST_STORAGE: The Storage Service host
@@ -206,7 +206,7 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 
   ```bash
   python main.py -e CLOUD_PROVIDER az \
-  -e AZ_AI_INSTRUMENTATION_KEY instrumentationkey \
+  -e AZ_AI_CONNECTION_STR connection_str \
   -e SERVICE_HOST_SEARCH search_host \
   -e SERVICE_HOST_SCHEMA schema_host \
   -e SERVICE_HOST_STORAGE storage_host \

@@ -68,15 +68,16 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
     """
 
     @staticmethod
-    def _set_extra_attrs(properties):
+    def _set_extra_attrs():
         """
         Retrieve context created in basic middleware from request info to append them
         in log message as custom attributes
         """
+        properties = {}
         ctx = get_or_create_ctx()
 
-        if correlation_id := ctx.correlation_id:
-            properties.setdefault('correlation-id', correlation_id)
+        if ctx.correlation_id:
+            properties.setdefault('correlation-id', ctx.correlation_id)
 
         if ctx.request_id:
             properties.setdefault('request-id', ctx.request_id)
@@ -90,12 +91,13 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
         if ctx.api_key:
             properties.setdefault('api-key', ctx.api_key)
 
+        return properties
+
     def process(self, msg, kwargs):
         """ Add custom properties to logger message to be sent to AzureAppInsights """
-        custom_properties = dict()
-        self._set_extra_attrs(custom_properties)
+        custom_properties = self._set_extra_attrs()
         if custom_properties:
-            kwargs['extra'] = dict(custom_dimensions=custom_properties)
+            kwargs['extra'] = custom_properties
 
         return msg, kwargs
 
@@ -106,7 +108,7 @@ def init_logger(*, service_name, config):
     if config.cloud_provider.value == 'az':
         _LOGGER = create_azure_logger(
             service_name=service_name,
-            az_ai_instrumentation_key=config.get('az_ai_instrumentation_key'),
+            az_ai_connection_str=config.get('az_ai_connection_str'),
             az_logger_level=config.get('az_logger_level')
         )
     elif config.cloud_provider.value == 'gc':
@@ -126,7 +128,7 @@ def init_logger(*, service_name, config):
     return _LOGGER
 
 
-def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_level):
+def create_azure_logger(*, service_name, az_ai_connection_str, az_logger_level):
     """
     Create logger with two handlers:
      - AzureLogHandler: to see Dependencies, Requests, Traces and Exception into Azure monitoring
@@ -142,8 +144,8 @@ def create_azure_logger(*, service_name, az_ai_instrumentation_key, az_logger_le
 
     logger_provider = LoggerProvider(resource=resource)
     set_logger_provider(logger_provider)
-    if az_ai_instrumentation_key:
-        exporter = AzureMonitorLogExporter(connection_string=f'InstrumentationKey={az_ai_instrumentation_key}')
+    if az_ai_connection_str:
+        exporter = AzureMonitorLogExporter(connection_string=az_ai_connection_str)
         logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
 
     az_handler = LoggingHandler()

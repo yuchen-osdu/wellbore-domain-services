@@ -88,7 +88,10 @@ def azure_config_fixture():
 
     environment_dict = os.environ.copy()
     environment_dict[ConfigurationContainer.cloud_provider.key] = provider_name
-    environment_dict['AZ_AI_INSTRUMENTATION_KEY'] = 'ffffffff-1111-2222-aaaa-ffffffffffff'
+    environment_dict['AZ_AI_CONNECTION_STR'] = ('InstrumentationKey=ffffffff-1111-2222-aaaa-ffffffffffff;'
+                                                    'IngestionEndpoint=https://zone.in.applicationinsights.azure.com/;'
+                                                    'LiveEndpoint=https://zone.livediagnostics.monitor.azure.com/;'
+                                                    'ApplicationId=eeeeeeee-1111-2222-aaaa-eeeeeeeeeeee')
     environment_dict['SERVICE_HOST_STORAGE'] = 'https://test-endpoint/api/storage'
     environment_dict['SERVICE_HOST_SEARCH'] = 'https://test-endpoint/api/search'
     environment_dict['SERVICE_HOST_SCHEMA'] = 'https://test-endpoint/api/schema-service'
