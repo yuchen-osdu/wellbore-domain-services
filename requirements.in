@@ -1,7 +1,7 @@
-fastapi>=0.92.0
+fastapi>=0.115.0
 pydantic>=1.9
 aiohttp>=3.8.0
-cryptography>=41.0.2
+cryptography>=42.0.4
 pyarrow>=14.0.1
 pandas==1.5.3
 uvicorn
@@ -9,7 +9,7 @@ Click
 backoff
 structlog
 python-rapidjson
-python-multipart
+python-multipart>=0.0.7
 jsonpath-ng # TODO: remove when bulk_path no longer supported
 natsort
 prometheus-fastapi-instrumentator

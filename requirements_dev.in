@@ -13,10 +13,10 @@ numpy
 pandas
 pyarrow
 hypothesis
-openapi-spec-validator
+openapi-spec-validator>=0.5.7
 
 requests # used by starlette.TestClient for testing
-cryptography>=41.0.2
+cryptography>=42.0.0
 
 # the following are used in functional integration tests
 pytest-dependency

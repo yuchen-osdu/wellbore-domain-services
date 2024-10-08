@@ -285,7 +285,7 @@ class BulkCatalog:
                 columns = sort_column_labels(self.all_columns)
 
         # use construct to prevent validation of pydantic
-        return DataframeDescribe.construct(
+        return DataframeDescribe(
             numberOfRows=nb_rows,
             columns=columns
         )

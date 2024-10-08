@@ -127,7 +127,7 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         if reference_name not in df.columns:
             reference_name = None
 
-        bulk_info = BulkInfoForConsistency.construct(
+        bulk_info = BulkInfoForConsistency(
             rowCount=len(df.index),
             curves=DataConsistencyChecks._get_curve_name_and_column_count(df.columns),
             reference=ColumnDescribe.from_column(df, reference_name) if reference_name else None,

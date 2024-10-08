@@ -81,3 +81,18 @@ async def test_version_properly_read_details(client_with_authenticated_user, pat
     response_json = response.json()
     assert response_json['details']['key1'] == 'value1'
     assert response_json['details']['key2'] == 'value2'
+
+
+@pytest.mark.anyio
+async def test_version(client_with_authenticated_user):
+    response = await client_with_authenticated_user.get("/version")
+
+    assert response.status_code == 200
+    response_json = response.json()
+
+    assert 'details' in response_json
+    assert 'version' in response_json
+    assert 'release' in response_json
+    assert response_json['service'] == 'Wellbore DDMS OSDU'
+    assert response_json['buildNumber'] == 'local'
+
