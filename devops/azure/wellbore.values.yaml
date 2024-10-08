@@ -12,14 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# referred https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure/-/blob/master/osdu-ddms/standard-ddms/wellbore.osdu.values.yaml  
+# referred https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure/-/blob/master/osdu-ddms/standard-ddms/wellbore.osdu.values.yaml
 # updated the values accordingly
 
 azure:
   keyvault:
     secrets:
-    - key: appinsight.key
-      obj: appinsights-key
+    - key: appinsights-connection-string.key
+      obj: appinsights-connection-string
 deployment:
   replicaCount: 1
 
@@ -60,12 +60,12 @@ configuration:
       SERVICE_HOST_SEARCH: "http://search.osdu/api/search"
       SERVICE_HOST_SCHEMA: "http://schema.osdu/api/schema-service/v1"
       SERVICE_HOST_PARTITION: "http://partition.osdu/api/partition"
-      SERVICE_HOST_WDMS_WORKER: "http://wellbore-ddms-worker-service.osdu/api/wdms-worker" 
+      SERVICE_HOST_WDMS_WORKER: "http://wellbore-ddms-worker-service.osdu/api/wdms-worker"
       USE_PARTITION_SERVICE: "enabled"
       AZ_LOGGER_LEVEL: "INFO"
       ENVIRONMENT_NAME: gitlab
       SWAGGER_FULL_URL_ENABLED: "true"
-      
+
     secrets:
       - name: AZ_AI_CONNECTION_STR
         key: appinsights-connection-string.key
