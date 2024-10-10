@@ -12,14 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.11-slim-bookworm
-ARG PIP_INDEX_URL
+FROM public.ecr.aws/docker/library/alpine:3.19.4 as build
+
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/app/.python/bin:${PATH}"
+
+RUN mkdir app
+RUN apk update && \
+    apk add --no-cache gcc musl-dev linux-headers python3-dev g++ bash build-base cmake \
+            jemalloc-dev boost-dev autoconf zlib-dev flex bison git tzdata lz4-dev \
+	    py3-pip py3-pyarrow py3-numpy py3-six cython py3-pytest py3-cffi py3-cffi-pyc
+
+RUN python3 -m venv "/app/.python/" --system-site-packages
 
 COPY requirements.txt ./
 
+RUN pip install --upgrade setuptools~=75.1.0 pip~=24.2
 RUN pip install -r requirements.txt --no-cache-dir
 
 COPY ./app /app
+ENV PYTHONPATH=./
+
+FROM public.ecr.aws/docker/library/alpine:3.19.4 as service
+
+RUN apk update && \
+    apk add --no-cache bash autoconf flex bison tzdata lz4 py3-pip py3-pyarrow \
+            py3-numpy py3-six cython py3-pytest py3-cffi py3-cffi-pyc
+
+COPY --from=build /app /app
+
+LABEL version="1.0"
+LABEL maintainer="aws"
+
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/app/.python/bin:${PATH}"
+
 COPY provider/os-wellbore-ddms-aws/build-aws/entrypoint.sh .
 COPY provider/os-wellbore-ddms-aws/build-aws/osdu_api.ini .
 COPY provider/os-wellbore-ddms-aws/build-aws/ssl.sh .
@@ -31,8 +58,10 @@ ENV SSL_CERT_PATH "./aws/certs/cert.crt"
 ENV SSL_KEY_PATH "./aws/certs/cert.key"
 ENV SSL_ENABLED "true"
 
-
 EXPOSE ${APPLICATION_PORT}
 WORKDIR ./
+
+RUN addgroup --system appuser && adduser --system appuser && adduser appuser appuser
+USER appuser
 
 ENTRYPOINT ["/bin/sh", "-c", "/entrypoint.sh"]
