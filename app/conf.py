@@ -494,6 +494,15 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
             is_mandatory=True,
             override=True,
         )
+        config.add_from_env(
+            attribute_name="aws_logger_level",
+            env_var_key="LOG_LEVEL",
+            description="aws logger level",
+            default="INFO",
+            secret=False,
+            is_mandatory=False,
+            override=True,
+        )
 
 
 # Global config instance

@@ -96,7 +96,7 @@ BSD-3-Clause
 The following software have components provided under the terms of this license:
 
 - Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/, https://pypi.org/project/Jinja2/)
-- MarkupSafe (from https://palletsprojects.com/p/markupsafe/)
+- MarkupSafe (from https://pypi.org/project/MarkupSafe/)
 - adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/)
 - click (from https://palletsprojects.com/p/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
@@ -112,7 +112,7 @@ The following software have components provided under the terms of this license:
 - httpcore (from https://github.com/encode/httpcore, https://pypi.org/project/httpcore/, https://pypi.org/project/httpcore/0.18.0/)
 - httpx (from https://pypi.org/project/httpx/, https://pypi.org/project/httpx/0.23.1/)
 - idna (from https://pypi.org/project/idna/, https://pypi.org/project/idna/3.4/)
-- isodate (from http://cheeseshop.python.org/pypi/isodate, https://github.com/gweis/isodate/)
+- isodate (from http://cheeseshop.python.org/pypi/isodate, https://github.com/gweis/isodate/, https://pypi.org/project/isodate/)
 - numpy
 - oauthlib (from https://github.com/oauthlib/oauthlib)
 - openapi-schema-validator (from https://github.com/python-openapi/openapi-schema-validator)
