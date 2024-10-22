@@ -1,57 +1,44 @@
-# Copyright 2021 Schlumberger
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+FROM cgr.dev/chainguard/wolfi-base AS builder
 
-FROM python:3.11-slim-bookworm
+ENV LANG=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/wdms/venv/bin:$PATH"
 
-WORKDIR /
-COPY requirements.txt ./
+WORKDIR /wdms
+ARG version=3.11
+RUN apk add python-${version} py${version}-pip --no-cache
 
-RUN pip install -r requirements.txt --no-cache-dir
+RUN python3 -m venv /wdms/venv
 
-COPY ./app /app
-ENV PYTHONPATH=./
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# record some detail of the build, must be passed as --build-arg
+
+FROM cgr.dev/chainguard/wolfi-base AS production
+
+EXPOSE 8080
+WORKDIR /wdms
+
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/wdms/venv/bin:$PATH"
+
 ARG build_date
 ARG build_number
 ARG build_origin="Personal build"
 ARG commit_id
 ARG commit_branch
-ENV OS_WELLBORE_DDMS_BUILD_DETAILS build_date=$build_date;build_number=$build_number;build_origin=$build_origin;commit_id=$commit_id;commit_branch=$commit_branch
+ENV OS_WELLBORE_DDMS_BUILD_DETAILS=build_date=$build_date;build_number=$build_number;build_origin=$build_origin;commit_id=$commit_id;commit_branch=$commit_branch
 
+ARG version=3.11
+RUN apk add python-${version} --no-cache
 
-EXPOSE 8080
-WORKDIR /
+COPY /app ./app
+COPY --from=builder /wdms/venv ./venv
 
-# Make the container run as non-root user
-#(https://medium.com/better-programming/running-a-container-with-a-non-root-user-e35830d1f42a)
-RUN addgroup --system appuser && adduser --system appuser && adduser appuser appuser
+RUN chown -R nonroot:nonroot /wdms/app
 
+USER nonroot
 
-####################################################################################################
-###### FIX CVEs contained in Debian bookworm, they are fixed with trixie (Debian 13) release. ######
-RUN touch /etc/apt/sources.list.d/trixie.list && \
-    printf "deb https://deb.debian.org/debian trixie main" > /etc/apt/sources.list.d/trixie.list
-RUN apt-get update &&  \
-    # Fix CVE-2023-45853 (https://security-tracker.debian.org/tracker/source-package/zlib)
-    apt-get --only-upgrade install zlib1g=1:1.3.dfsg+really1.3.1-1
-# Prevent CVE-2023-7104 by removing vulnerable libsqlite3 package. To be removed, as soon as this CVE is fixed in official images
-RUN apt-get purge libsqlite3-0 -y
-# Prevent CVE-2023-31484 by removing perl-base. To be removed, as soon as this CVE is fixed in official images
-RUN apt-get purge perl-base -y --allow-remove-essential
-####################################################################################################
-
-USER appuser
-
-CMD ["uvicorn", "app.base:base_app", "--host", "0.0.0.0", "--port", "8080"]
+ENTRYPOINT ["uvicorn"]
+CMD ["app.base:base_app", "--host", "0.0.0.0", "--port", "8080"]
