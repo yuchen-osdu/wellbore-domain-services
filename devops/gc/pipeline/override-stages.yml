@@ -2,7 +2,6 @@ variables:
   GC_SERVICE: wellbore
   GC_VENDOR: gc
   GC_INT_TEST_TYPE: python
-  GC_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
   GC_PYTHON_INT_TEST_SUBDIR: tests/gc
 
 gc-containerize-gitlab:
@@ -27,10 +26,6 @@ gc-containerize-gcr:
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
-gc-baremetal-test-python:
-  image: python:3.11
-  allow_failure: true
-
 # Disable maven job in gc-com-gke pipelines
 gc-test:
   extends:
@@ -39,7 +34,3 @@ gc-test:
 gc-dev2-test:
   extends:
     - .gc-dev2-variables
-
-gc-baremetal-test:
-  extends:
-    - .gc-baremetal-variables
