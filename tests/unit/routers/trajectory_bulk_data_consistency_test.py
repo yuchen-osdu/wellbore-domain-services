@@ -300,6 +300,16 @@ inconsistent_test_params = [
             r" name in the WellboreTrajectory record\.$"
         ),
     ),
+    pytest.param(
+        {
+            "WellboreID": "partition-id:master-data--Wellbore:MissingAvailableTrajectoryStationProperties:",
+            "TopDepthMeasuredDepth": 0,
+            "BaseDepthMeasuredDepth": 2,
+            "VerticalMeasurement": {},
+        },
+        {"columns": ["MD"], "data": [[0.0], [2.0]]},
+        "Property 'AvailableTrajectoryStationProperties' is missing while curves are present in the bulk data"
+    ),
 ]
 
 
