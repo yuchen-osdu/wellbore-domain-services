@@ -20,7 +20,7 @@ env:
     DOCKER_PASSWORD: /osdu/devops/docker_credentials:password
     SONAR_USERNAME: /osdu/devops/sonar_credentials:username
     SONAR_PASSWORD: /osdu/devops/sonar_credentials:password
-  
+
   parameter-store:
     SONAR_URL: /osdu/devops/sonar_url
 
@@ -87,18 +87,19 @@ phases:
 
       - GIT_SECRETS_SCAN_RESULT=$(git secrets --scan 2> ${OUTPUT_DIR}/git_secrets.out.txt && echo OK || echo FAILED)
       - if [ "$GIT_SECRETS_SCAN_RESULT" = "FAILED" ]; then echo "Secrets detected!" && exit 1; fi
-      - pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml ./tests/unit/injector/aws_injector_test.py
-      # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
+      - pytest --cov=app/injector --cov-report=xml:unit_tests_report.xml ./tests/unit/injector/aws_injector_test.py
+        # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
       - |
         java -jar sonar-scanner-4.6.2.2472/lib/sonar-scanner-cli-4.6.2.2472.jar -Dsonar.projectKey=wellbore-ddms -Dsonar.host.url=${SONAR_URL} \
-          -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME} -Dsonar.python.coverage.reportPaths=coverage.xml
-      
+        -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME} -Dsonar.python.coverage.reportPaths=unit_tests_report.xml \
+        -Dsonar.sources=app/injector/aws_injector.py
+
       - safety check -r requirements.txt -r requirements_dev.txt -o text > safety_check.txt; EXITCODE=$?
 
       - sed -i "s|__CONTAINER__|$ECR_IMAGE|"  devops/aws/chart/values.yaml
       - echo "--Copying Helm Charts to ${OUTPUT_DIR:-dist}--"
       - rsync -r devops/aws/* "${OUTPUT_DIR:-dist}"
-      
+
       - echo "Logging into Docker Hub..."
       - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 
