@@ -27,6 +27,16 @@ async def resolve_tenant(data_partition_id: str) -> Tenant:
             bucket_name=data_partition_info.bucket
         )
 
+    if Config.cloud_provider.value == 'baremetal':
+        from osdu_baremetal.data_partition.data_partition_info import DataPartitionInfoGetter
+        data_partition_info = await DataPartitionInfoGetter(Config.partition_url.value).get_partition_info(data_partition_id)
+        return Tenant(
+            data_partition_id=data_partition_id,
+            project_id="undefined",
+            credentials="undefined",
+            bucket_name=data_partition_info.bucket
+        )
+
     if Config.cloud_provider.value == 'az':
         return Tenant(
             data_partition_id=data_partition_id,
