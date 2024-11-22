@@ -467,6 +467,14 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
             override=True,
             default="http://schema/api/schema-service/v1",
         )
+        config.add_from_env(
+            attribute_name="partition_url",
+            env_var_key="SERVICE_HOST_PARTITION",
+            description="Baremetal Partition Service URL",
+            is_mandatory=True,
+            override=True,
+            default="http://partition/api/partition"
+        )
 
     if provider == "ibm":
         config.add_from_env(
