@@ -61,7 +61,8 @@ ENV SSL_ENABLED "true"
 EXPOSE ${APPLICATION_PORT}
 WORKDIR ./
 
-RUN addgroup --system appuser && adduser --system appuser && adduser appuser appuser
-USER appuser
+RUN addgroup -S -g 10001 appgroup \
+ && adduser -S -H -u 10001 -G appgroup appuser
 
+USER 10001:10001
 ENTRYPOINT ["/bin/sh", "-c", "/entrypoint.sh"]
