@@ -438,8 +438,10 @@ toolz==0.12.0
     #   dask
     #   distributed
     #   partd
-tornado==6.3.2
-    # via distributed
+tornado==6.4.2
+    # via
+    #   -r requirements.in
+    #   distributed
 types-jsonschema==4.17.0.7
     # via wellbore-schema-manipulation
 typing-extensions==4.12.2
@@ -451,8 +453,9 @@ typing-extensions==4.12.2
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   pydantic
-urllib3==1.26.6
+urllib3==1.26.17
     # via
+    #   -r requirements.in
     #   botocore
     #   distributed
     #   requests
