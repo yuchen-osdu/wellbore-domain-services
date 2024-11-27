@@ -63,6 +63,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |**conf.configmap** | configmap to be used | string | `wellbore-config` | yes |
 |**conf.keycloakSecretName** | Keycloak secret name | string | `wellbore-keycloak-secret` | yes |
 |**conf.minioSecretName** | MinIO secret name | string | `wellbore-minio-secret` | yes |
+|**conf.replicas** | Number of pods for service | integer | 2 | yes |
 
 ### ISTIO variables
 
