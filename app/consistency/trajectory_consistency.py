@@ -33,6 +33,11 @@ class ColumnDoesNotMatchTrajectoryStationException(ConsistencyException):
     """raised when column doesn't match any AvailableTrajectoryStationProperties"""
 
 
+class MissingTrajectoryStationPropertyException(ConsistencyException):
+    """raised if the AvailableTrajectoryStationProperties property is missing when curve data is present in the bulk
+    data."""
+
+
 def check_trajectory_consistency(trajectory: Record):
     """Check if trajectory meta data are consistent.
 
@@ -155,12 +160,16 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
 
     @staticmethod
     def _check_columns_consistency(record_data: dict, curve_sizes: Dict[str, int]):
-        error_msg = "do(es) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record."
+
+        if curve_sizes and AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY not in record_data:
+            raise MissingTrajectoryStationPropertyException(f"Property '{AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY}'"
+                                                            f" is missing while curves are present in the bulk data")
 
         curve_ids, _ = get_unique_dict_attr_values(record_data[AVAILABLE_TRAJECTORY_STATION_PROPERTIES_KEY], "Name")
 
         not_matching_col_name = [col_name for col_name in curve_sizes if col_name not in curve_ids]
         if any(not_matching_col_name):
+            error_msg = "do(es) not match any AvailableTrajectoryStationProperties name in the WellboreTrajectory record."
             raise ColumnDoesNotMatchTrajectoryStationException(
                 f"Column(s) {', '.join(not_matching_col_name)} {error_msg}"
             )

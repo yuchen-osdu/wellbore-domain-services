@@ -136,7 +136,7 @@ class BulkIOWdmsWorker(BulkIO):
             chunks.append(chunk)
         return b"".join(chunks)
 
-    @_tracer.start_as_current_span("worker.read_data")
+    @_tracer.start_as_current_span("worker.write_data")
     async def write_bulk(
             self,
             ctx,
