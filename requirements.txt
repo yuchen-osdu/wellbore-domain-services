@@ -372,7 +372,7 @@ python-dateutil==2.8.2
     # via
     #   botocore
     #   pandas
-python-multipart==0.0.12
+python-multipart==0.0.18
     # via -r requirements.in
 python-rapidjson==1.9
     # via -r requirements.in

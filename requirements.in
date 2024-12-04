@@ -9,7 +9,7 @@ Click
 backoff
 structlog
 python-rapidjson
-python-multipart>=0.0.7
+python-multipart>=0.0.18
 jsonpath-ng # TODO: remove when bulk_path no longer supported
 natsort
 prometheus-fastapi-instrumentator
