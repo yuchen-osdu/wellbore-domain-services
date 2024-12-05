@@ -23,8 +23,7 @@ done
 cd tests/integration
 
 # Setup Google Cloud authentication
-echo $GC_INTEGRATION_TESTER | base64 -d > file.json
-gcloud auth activate-service-account --key-file file.json
+gcloud auth activate-service-account --key-file $GC_INTEGRATION_TESTER_SA_FILE
 gcloud config set project $GC_PROJECT
 
 # Generate Postman environment
