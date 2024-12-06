@@ -101,6 +101,17 @@ class BulkURI:
             return f'urn:{self._storage_version.uri_prefix}:uuid:{self._bulk_id}'
         return uuid.UUID(self._bulk_id).urn
 
+    def encode_for_ddms_datasets(self) -> str:
+        """
+        encode to uri as string
+        If the prefix is not empty returns, uri format = `urn://$prefix/uuid:$bulk_id`
+        If the prefix is empty or None, uri format = `urn://uuid:$bulk_id`
+        :Throw: ValueError
+        """
+        if self._storage_version.uri_prefix:
+            return f'urn://{self._storage_version.uri_prefix}/uuid:{self._bulk_id}'
+        return f'urn://uuid:{self._bulk_id}'
+
     @classmethod
     def _decode_uri(cls, uri: str) -> Tuple[str, Optional[str]]:
         """

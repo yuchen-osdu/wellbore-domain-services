@@ -32,7 +32,6 @@ def test_from_uri_without_prefix():
     # should encode back to the same uri
     assert bulk_uri.encode() == uri_str
 
-
 def test_decode_urn_with_prefix():
     uri_str = f'urn:{BulkStorageVersion_V1.uri_prefix}:uuid:489768d2-eee1-4a8f-ae95-7b0c30b0dcd8'
 
@@ -46,6 +45,17 @@ def test_decode_urn_with_prefix():
     # should encode back to the same uri
     assert bulk_uri.encode() == uri_str
 
+def test_encode_for_ddms_datasets_without_prefix():
+    bulk_id = '489768d2-eee1-4a8f-ae95-7b0c30b0dcd8'
+
+    bulk_uri = BulkURI(bulk_id, BulkStorageVersion_V0)
+    assert bulk_uri.encode_for_ddms_datasets() == 'urn://uuid:489768d2-eee1-4a8f-ae95-7b0c30b0dcd8'
+
+def test_encode_for_ddms_datasets_with_prefix():
+    bulk_id = '489768d2-eee1-4a8f-ae95-7b0c30b0dcd8'
+
+    bulk_uri = BulkURI(bulk_id, BulkStorageVersion_V1)
+    assert bulk_uri.encode_for_ddms_datasets() == f'urn://{BulkStorageVersion_V1.uri_prefix}/uuid:489768d2-eee1-4a8f-ae95-7b0c30b0dcd8'
 
 @pytest.mark.parametrize("bulk_id, version", [
     ('489768d2-eee1-4a8f-ae95-7b0c30b0dcd8', None),

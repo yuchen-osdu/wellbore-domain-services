@@ -3,11 +3,13 @@ from unittest.mock import patch
 
 import pytest
 from odes_storage.models import Record, Legal, StorageAcl
+from packaging.version import Version
+
 from app.routers.bulk.bulk_routes_dependencies import (
     OsduBulkIdAccess,
     get_bulk_io_read,
     get_bulk_io_write,
-    get_bulk_io,
+    get_bulk_io, EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS,
 )
 from app.bulk_persistence import BulkIODask, BulkIOWdmsWorker, BulkPersistenceConfig
 
@@ -53,6 +55,47 @@ def test_set_bulk_uri_merge_extension_properties():
     assert "wdms" in record.data["ExtensionProperties"]
     assert "bulkURI" in record.data["ExtensionProperties"]["wdms"]
 
+@pytest.mark.parametrize("kind", [
+    "osdu:wks:master-data--Well:1.0.0",
+    "osdu:wks:master-data--Well:1.1.0",
+    "osdu:wks:master-data--Well:1.2.0",
+    "osdu:wks:master-data--Well:1.3.0",
+    "osdu:wks:master-data--Wellbore:1.0.0",
+    "osdu:wks:master-data--Wellbore:1.1.0",
+    "osdu:wks:master-data--Wellbore:1.1.1",
+    "osdu:wks:master-data--Wellbore:1.2.0",
+    "osdu:wks:master-data--Wellbore:1.3.0",
+    "osdu:wks:master-data--Wellbore:1.4.0",
+    "osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
+    "osdu:wks:work-product-component--WellboreTrajectory:1.1.0",
+    "osdu:wks:work-product-component--WellboreTrajectory:1.2.0",
+    "osdu:wks:work-product-component--WellboreTrajectory:1.3.0",
+    "osdu:wks:work-product-component--WellboreIntervalSet:1.0.0",
+    "osdu:wks:work-product-component--WellboreIntervalSet:1.1.0",
+    "osdu:wks:work-product-component--WellboreIntervalSet:1.2.0",
+    "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
+    "osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
+    "osdu:wks:work-product-component--WellboreMarkerSet:1.2.0",
+    "osdu:wks:work-product-component--WellboreMarkerSet:1.2.1",
+    "osdu:wks:work-product-component--WellboreMarkerSet:1.3.0",
+    "osdu:wks:work-product-component--WellboreMarkerSet:1.4.0",
+    "osdu:wks:work-product-component--WellLog:1.0.0",
+    "osdu:wks:work-product-component--WellLog:1.1.0",
+    "osdu:wks:work-product-component--WellLog:1.2.0",
+    "osdu:wks:work-product-component--WellLog:1.3.0",
+    "osdu:wks:work-product-component--WellLog:1.4.0",
+    ])
+def test_set_bulk_uri_in_ddmsdatasets(kind):
+    record = Record(id="foo", kind=kind, acl=StorageAcl(viewers=[], owners=[]), legal=Legal(), data={})
+    record.data = {"ExtensionProperties": {"my_extension_property": 3, "wdms": {"wdms_ext": 4, "bulkURI": 12}}}
+    OsduBulkIdAccess.set_bulk_uri(record, str(uuid.uuid4()))
+    kind_version = kind.split("--")[1].split(":")
+
+    if (kind_version[0] in EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS and
+            Version(kind_version[1]) >= Version(EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS[kind_version[0]])):
+        assert "DDMSDatasets" in record.data
+    else:
+        assert "DDMSDatasets" not in record.data
 
 @pytest.mark.anyio
 async def test_get_bulk_io_dependency():

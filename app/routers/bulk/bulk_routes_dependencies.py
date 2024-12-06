@@ -2,6 +2,7 @@ import abc
 from abc import ABC
 from typing import Optional
 from fastapi import Request
+from packaging.version import Version
 
 from app.bulk_persistence import BulkURI, BulkIO, BulkIODask, BulkIOWdmsWorker, get_config as get_config_bulk
 from app.model.log_bulk import LogBulkHelper
@@ -10,6 +11,13 @@ from app.utils import get_http_client_session
 
 
 BULK_URI_FIELD = "bulkURI"
+
+EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS = {
+    "WellboreIntervalSet": "1.1.0",
+    "WellboreTrajectory": "1.2.0",
+    "WellboreMarkerSet": "1.3.0",
+    "WellLog": "1.3.0",
+}
 
 
 class BulkIdAccess(ABC):
@@ -50,7 +58,16 @@ class OsduBulkIdAccess(BulkIdAccess):
             record.data["ExtensionProperties"]["wdms"] = {}
         bulk_uri = BulkURI.from_bulk_storage_V1(bulk_id=bulk_id)
         record.data.setdefault("ExtensionProperties", {}).setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
+        OsduBulkIdAccess._set_bulk_uri_ddms_datasets(record, bulk_uri)
 
+    @staticmethod
+    def _set_bulk_uri_ddms_datasets(record, bulk_uri: BulkURI):
+        kind_parts = record.kind.split("--")
+        kind_version = kind_parts[1] if len(kind_parts) == 2 else None
+        kind_version_parts = kind_version.split(":") if kind_version and len(kind_version.split(":")) == 2 else None
+        if kind_version_parts and kind_version_parts[0] in EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS and \
+                Version(kind_version_parts[1]) >= Version(EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS[kind_version_parts[0]]):
+            record.data.setdefault("DDMSDatasets", []).append(bulk_uri.encode_for_ddms_datasets())
 
 class LogBulkIdAccess(BulkIdAccess):
     @staticmethod
