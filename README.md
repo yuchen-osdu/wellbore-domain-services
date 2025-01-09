@@ -206,7 +206,7 @@ You can run them specifically in sequence in a second step by replacing the prev
 -n 0 -m "serial"
 ```
 
-In addition, to speed up the execution time of a large set of tests, it challenges the isolation of the tests more strongly than randomization.
+In addition to speeding up the execution time of a large set of tests, it challenges the isolation of the tests more strongly than randomization.
 That is, a test that depends on the state left by the execution of another test is much more likely to be detected by parallel execution
 than the sequential execution of tests in a random order.
 In the case of execution of subset of tests, the speed gain can be lower than the overhead.
