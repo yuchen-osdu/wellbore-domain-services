@@ -67,6 +67,9 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-python.yml"
 
+  # AWS overrides
+  - local: "/devops/aws/pipeline/override-stages.yml" 
+
   # AZURE it tests "azure_test_py"
   - local: "/devops/azure/azure-wellbore.yml" 
 
