@@ -190,7 +190,7 @@ to run only perf test:
 -m 'serial'
 ```
 
-#### Distribute tests across multiple CPUs
+### Distribute tests across multiple CPUs
 
 Thanks to plugin [pytest-xdist](https://pypi.org/project/pytest-xdist/) in dependencies,  it is possible to run the tests in parallel which can reduce the execution time.
 to activate it add the following option:
