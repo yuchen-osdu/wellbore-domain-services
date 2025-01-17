@@ -1,13 +1,82 @@
-# Introduction
+# Overview
 
-Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Universe (OSDU) is one of the several backend services that comprise OSDU software ecosystem. It is a single, containerized service written in Python that provides an API for wellbore related data.
+Wellbore Data Management Services (Wellbore-DMS) Open Subsurface Data Universe (OSDU) is one of the several backend services that comprise OSDU software ecosystem.  
+It can be run as a single service WDMS, or divided into 2 services WDMS + [WDMS-worker](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services-worker). They are containerized services written in Python that provides an API for wellbore related data.
+
+Wiki page about [general architecture](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/Architecture-overview).
 
 [[_TOC_]]
 
+## Wellbore DMS bulk data layer
+
+### Bulk data IO interface  
+In order to operate over bulk data, we designed an abstract class  [BulkIO class](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/blob/master/app/bulk_persistence/bulk_io.py)
+This interface is reimplemented by Dask and WDMS-worker detailed below.  
+
+### Dask (legacy)
+To perform data manipulation (read and write) of Wellbore bulk data, Wellbore DMS started with [Dask](https://docs.dask.org/en/stable/index.html), it is a Python library for parallel and distributed computing.  
+But we faced too many problems:
+- high memory consumption (6GiB per pod are required to be production-ready)
+- memory leaks cause pod restarts impacting SLOs
+- complexity to implement robust upscaling strategy due to inconsistent usage of CPU and memory   
+- poor performances when high number of requests
+
+**NOTE**: _It is OK for testing purpose but not recommended for production._
+
+#### Dask configuration - locally
+By default, It will use all memory available and use CPU resources through workers. The number of workers is determined by the quantity of core the current local machine has.
+
+#### Dask configuration - in a cluster
+In a container context, such as Kubernetes we recommend to set container memory limit at 3Gi of RAM and 4-8 CPUs.
+At the minimum 1.2Gi and 1 cpu but performance will be reduced, but enough to handle WellLogs of 10 curves with 1M values each.
+
+Note: container memory is not entirely dedicated to Dask workers, other Python libraries also require ~400MiB.  
+
+### WDMS worker (recommended)
+
+Since M20 (2023 July), we implemented a new dedicated service to operate on bulk data:
+[Wellbore Domain Services Worker](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services-worker).
+This service uses the same technology stack that WDMS, it only provides APIs to manipulate bulk data.  
+This ADR [issue #73](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/issues/73) explains the motivation and the architecture of WDMS worker.
+
+#### WDMS worker configuration - in a cluster
+In order to enable usage of WDMS worker service you need to set environment variable `SERVICE_HOST_WDMS_WORKER` defined [here](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/blob/master/app/conf.py#L129).  If activated, Dask cluster won't be launched and all the bulk data operations will be delegated to WDMS worker service.
+
+To verify that WDMS worker deployment is correctly enabled, you can run:  
+```bash
+OSDU_BASE_URL= ""
+TOKEN= ""
+curl -X 'GET' '$OSDU_BASE_URL/api/os-wellbore-ddms/version' -H 'Authorization: Bearer $TOKEN'
+
+// Response
+{
+  "details": {
+    ... Other properties before  ...
+    "enable_wdms_bulk_worker": "True"  <======== If True, WDMS worker deployment is avaialble
+  }
+}
+```
+
+
+
+## OSDU dependencies
+
+**Wellbore-core libraries** [OSDU Wellbore-core](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-core)
+
+- Wellbore core lib: common parts and interfaces.
+- Wellbore-client-storage
+- Wellbore-client-search
+- Wellbore-client-schema
+- Wellbore-client-wdms: Python client to target WDMS 
+- Wellbore-log-recognition: library to infer logs unit. 
+- Wellbore-schema-manipulation: osdu schema validator
+
+
+# How to contribute
 ## Install Software and Packages
 
 1. Clone the os-wellbore-ddms [repository](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services.git)
-2. Download [Python](https://www.python.org/downloads/) >=3.11
+2. Download [Python](https://www.python.org/downloads/) **>=3.11**
 3. Ensure pip, a pre-installed package manager and installer for Python, is installed and is upgraded to the latest version.
 
       ```bash
@@ -20,64 +89,8 @@ Wellbore Domain Data Management Services (Wellbore-DDMS) Open Subsurface Data Un
       python3 -m pip --version
       ```
 
-4. Using pip, download [FastAPI](https://fastapi.tiangolo.com/), the main framework to build the service APIs. To install fastapi and uvicorn (to work as the server), run the following command:
-
-    ```bash
-    pip install fastapi[all]
-    ```
-
-5. [venv](https://docs.python.org/3/library/venv.html) allows you to manage separate package installations for different projects. They essentially allow you to create a "virtual" isolated Python installation and packages into that virtual environment. venv is already included in the Python standard library and requires no additional installation.
-
-### Fast API Dependencies
-
-- [pydantic](https://pydantic-docs.helpmanual.io/): provides the ability to do data validation using python type annotations. It enforces type hints at runtime provide a more robust data validation option.
-  - [dataclasses](https://pydantic-docs.helpmanual.io/usage/dataclasses/): module in python which provides a decorator and functions for automatically adding generated special methods to user-defined classes.
-- [starlette](https://fastapi.tiangolo.com/features/#starlette-features): lightweight ASGI framework. FastAPI is a sub-class of Starlette and includes features such as websocket support, startup and shutdown events, session and cookie support.
-
-### Additional Dependencies
-
-- [uvicorn](https://www.uvicorn.org/) used as ASGI server to run Wellbore-DDMS app
-- [cachetools](https://pypi.org/project/cachetools/)
-- [pyjwt](https://pypi.org/project/PyJWT/) and [cryptography](https://pypi.org/project/cryptography/) for auth purposes
-- [pandas](https://pandas.pydata.org/) and [numpy](https://numpy.org/) for data manipulation
-- [pyarrow](https://pypi.org/project/pyarrow/) for load and save data into parquet format
-- [opencensus](https://opencensus.io/guides/grpc/python/) for tracing and logging on cloud provider
-- [dask](https://docs.dask.org/en/latest/) to manage huge amount of bulk data
-
-### Library Dependencies
-
-- Common parts and interfaces
-  - osdu-core-lib-python
-
-- Implementation of blob storage on Google Cloud
-  - osdu-core-lib-python-gcp
-
-- Implementation of blob storage and partition service on Azure
-  - osdu-core-lib-python-azure
-
-- Implementation of blob storage and partition service on AWS
-  - osdu-core-lib-python-aws
-
-- Client libraries for OSDU data ecosystem services
-  - osdu-data-ecosystem-search
-  - osdu-data-ecosystem-storage
-
-## Project Startup
-
-### Dask Configuration - Locally
-
-By default, It will use all memory available and use CPU resources through workers. The number of workers is determined by the quantity of core the current local machine has.
-
-### Dask Configuration - In a cluster
-
-In a container context, such as Kubernetes we recommend to set container memory limit at 3Gi of RAM and 4-8 CPUs.
-At the minimum 1.2Gi and 1 cpu but performance will be reduced, but enough to handle WellLogs of 10 curves with 1M values each.
-
-Note: container memory is not entirely dedicated to Dask workers, fastapi service with its process also require some.  
-
-### Run the service locally
-
-1. Create virtual environment in the wellbore project directory. This will create a folder inside of the wellbore project directory. For example: ~/os-wellbore-ddms/nameofvirtualenv
+1. Create virtual environment in the wellbore project directory. This will create a folder inside the wellbore project directory.
+For example: ~/os-wellbore-ddms/nameofvirtualenv
 
     ```bash
     # Windows
@@ -109,32 +122,150 @@ Note: container memory is not entirely dedicated to Dask workers, fastapi servic
     pip install -r requirements.txt -r requirements_dev.txt
     ```
 
-    Note: If you encounter an error, ensure pip is updated to the latest version in the context of the virtual environment and install dependencies again.
+## Unit Tests
+
+```bash
+# Install test dependencies
+pip install -r requirements.txt -r requirements_dev.txt
+
+# run tests
+python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml tests/unit
+```
+
+Coverage reports can be viewed after the command is run. The HMTL reports are saved in the htmlcov directory.
+
+### Control order of the tests
+
+To detect inter-test dependencies and ensure that each test can pass both in isolation and when run in a suite  **test items are randomly shuffled**
+thanks to the dependencies of the [pytest-randomly](https://pypi.org/project/pytest-xdist/) plugin.
+
+The output will start with an extra line that tells you the random seed. For instance:
+
+```
+Using --randomly-seed=256596674
+```
+
+If  tests fail due to ordering, you can  repeat the last ordering:
+
+```
+--randomly-seed=last
+```
+
+or repeat a specific ordering:
+
+```
+--randomly-seed=1234
+```
+
+If necessary you can  make the tests run in order:
+
+```
+-p no:randomly
+```
+
+### Control the tests to be run
+
+Some unit test are flagged with the following marks:
+    - slow: test that take time
+    - serial: tests that fail if run in parallel
+    - perf: performance test
+    - hypothesis: Tests that generates test data using hypothesis
+    - statistics: specific to test the functionality linked to the api of statistic
+
+For instance use the following decorator to mark a test as slow
+
+```
+@pytest.mark.slow
+```
+
+To control the test to run according those mark it is possible to pass to pytest the '-m'  option flag, for instance to disable the serial and slow test:
+
+```
+-m 'not serial and not slow"
+```
+
+to run only perf test:
+
+```
+-m 'serial'
+```
+
+### Distribute tests across multiple CPUs
+
+Thanks to plugin [pytest-xdist](https://pypi.org/project/pytest-xdist/) in dependencies,  it is possible to run the tests in parallel which can reduce the execution time.
+to activate it add the following option:
+
+```
+-n auto -m "not serial"
+```
+
+With the option `-m "not serial` **Tests that do not support distribution can be marked with 'pytest.mark.serial' and will be ignored.**
+You can run them specifically in sequence in a second step by replacing the previous option with the following:
+
+```
+-n 0 -m "serial"
+```
+
+In addition to speeding up the execution time of a large set of tests, it challenges the isolation of the tests more strongly than randomization.
+That is, a test that depends on the state left by the execution of another test is much more likely to be detected by parallel execution
+than the sequential execution of tests in a random order.
+In the case of execution of subset of tests, the speed gain can be lower than the overhead.
+
+## Integration Tests
+
+This example runs basic tests using the local filesystem for blob storage and storage service. There's no search or entilements service, everything runs locally.  
+
+First, create the temp storage folders and run the service.
+
+```bash
+mkdir -p tmpstorage tmpblob
+python main.py -e USE_INTERNAL_STORAGE_SERVICE_WITH_PATH $(pwd)/tmpstorage -e USE_LOCALFS_BLOB_STORAGE_WITH_PATH $(pwd)/tmpblob -e CLOUD_PROVIDER local
+```
+
+In another terminal, generate a minimum configuration file and run the integration tests.
+
+```bash
+cd tests/integration
+python gen_postman_env.py --token $(pyjwt --key=secret encode email=nobody@example.com) --base_url "http://127.0.0.1:8080/api/os-wellbore-ddms" --cloud_provider "local" --data_partition "dummy"
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic -p no:randomly
+```
+
+For more information see the [integration tests README](tests/integration/README.md)
+
+## Performance Tests
+We build a dedicated solution "[Wellbore Domain Services Performance Tests](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services-performance-tests)" to run benchmarks against Wellbore DMS.  
+WDMS Performance Test Client is a client that runs various test scenarios to collect metrics about the Wellbore DDMS service.
+The project is donated as it is. Although the client can be adapted to any service, its primary purpose is to test the
+Wellbore Data Management Service.
+
+## Run the service locally
+1. Run the service
 
     ```bash
-    python -m pip install --upgrade pip
+    # Directly with Python
+    
+   # Run on specific port and enforce dev mode
+    python main.py --port MY_PORT --dev_mode 1
     ```
-
-6. Run the service
-
     ```bash
-    # Run the service which will default to http://127.0.0.1:8080
-    python main.py
-
-    # Run on specific host, port and enforce dev mode
-    python main.py --host MY_HOST --port MY_PORT --dev_mode 1
+    # With Uvicorn (package) into venv already activated
+   
+   # Run on specific port
+    uvicorn app.wdms_app:wdms_app --port LOCAL_PORT
     ```
+
+Then access app on `http://localhost:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
 
     If host is `127.0.0.1` or `localhost`, the dev_mode is automatically set to True.
     The only significant change if dev_mode is on, is that configuration errors at startup are logged but don’t prevent the service to run, and allow to override some implementations.
 
-The hosts for the search and storage services have to be provided as environment variables, or on the command line.
+The hosts for the search, storage and schema services have to be provided as environment variables, or on the command line.
 
 ```bash
 python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVICE_HOST_SEARCH https://api.example.com/search-service -e SERVICE_HOST_SCHEMA https://api.example.com/schema
 ```
 
-### Connect and Run Endpoints
+### How to call APIs
 
 1. Generate bearer token as all APIs but `/about` require authentication.
 
@@ -162,7 +293,25 @@ python main.py -e SERVICE_HOST_STORAGE https://api.example.com/storage -e SERVIC
 
     - The code can be run with specifying environment variables and by setting the cloud provider. The accepted values are `gcp`, `az` or `local`. When a cloud provider is passed as an environment variables, there are certain additional environment variables that become mandatory.
 
-### Setting the Cloud Provider Environment Variables
+## Cloud Providers
+
+**Each cloud provider need to define:**
+- data access layer* (blob storage)
+- helm chart templates* (into [/devops](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/tree/master/devops) directory)
+- observability rules (default is no monitoring)
+- logging exporter (default is container logging)
+
+*: required
+
+Data access layer implementation are available into [Wellbore-cloud libraries](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/lib/wellbore-cloud). Here's an exaustive list:
+- osdu-core-lib-python-gcp
+- osdu-core-lib-python-azure
+- osdu-core-lib-python-aws
+- osdu-core-lib-python-ibm
+- osdu-core-lib-python-baremetal
+
+
+### Cloud Provider Environment Variables
 
 #### Google Cloud
 
@@ -235,112 +384,27 @@ Note: If you're running locally, you may need to provide environmental variables
 
 As default, all Core Services endpoint values are set to `None` in `app/conf.py`, you can update `.env` file for core services endpoints based on your cloud provider.
 
-### Create a log record
+## Wellbore DMS APIs example
 
-To create a `WellLog` record, below is a payload sample for the POST `/ddms/v3/welllogs` API. The response will contain an id you can use to create some bulk data.
+### Tutorials:
+  * [Bulk data APIs presentation](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/Bulk-data-tutorial)
+  * [Bulk data IO efficiency](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/Bulk-data-tutorial)
+  * [Bulk data statistics](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/Bulk-statistics-tutorial)
+  * [Log recognition APIs](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/Log-recognition)
+  * [Geology APIs](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/Geology-APIs)
+  * [OSDU entity examples](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/tree/master/app/model_examples)
 
-```json
-[
-  {
-    "acl": {
-      "viewers": [
-        "data.default.viewers@{{datapartitionid}}.{{domain}}"
-      ],
-      "owners": [
-        "data.default.owners@{{datapartitionid}}.{{domain}}"
-      ]
-    },
-    "data": {
-      "Curves": [
-        {
-          "CurveID": "GR_ID",
-          "Mnemonic": "GR",
-          "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
-          "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:GammaRay:"
-        },
-        {
-          "CurveID": "POR_ID",
-          "Mnemonic": "NPOR",
-          "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
-          "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:NeutronPorosity:"
-        },
-        {
-          "CurveID": "Bulk Density",
-          "Mnemonic": "RHOB",
-          "CurveUnit": "{{datapartitionid}}:reference-data--UnitOfMeasure:m:",
-          "LogCurveFamilyID": "{{datapartitionid}}:reference-data--LogCurveFamily:BulkDensity:"
-        }
-      ],
-      "WellboreID": "{{datapartitionid}}:master-data--Wellbore:{{wellboreId}}:",
-      "CreationDateTime": "2013-03-22T11:16:03Z",
-      "VerticalMeasurement": {
-        "VerticalMeasurement": 2680.5,
-        "VerticalMeasurementPathID": "{{datapartitionid}}:reference-data--VerticalMeasurementPath:MD:",
-        "VerticalMeasurementUnitOfMeasureID": "{{datapartitionid}}:reference-data--UnitOfMeasure:ft:"
-      },
-      "TopMeasuredDepth": 12345.6,
-      "BottomMeasuredDepth": 13856.25,
-      "Name": "{{welllogName}}",
-      "ExtensionProperties": {
-        "step": {
-          "unitKey": "ft",
-          "value": 0.1
-        },
-        "dateModified": "2013-03-22T11:16:03Z"
-      }
-    },
-    "id": "{{datapartitionid}}:work-product-component--WellLog:{{welllogId}}",
-    "kind": "osdu:wks:work-product-component--WellLog:1.0.0",
-    "legal": {
-      "legaltags": [
-        "{{legaltags}}"
-      ],
-      "otherRelevantDataCountries": [
-        "US",
-        "FR"
-      ]
-    },
-    "meta": [
-      {
-        "kind": "Unit",
-        "name": "ft",
-        "persistableReference": "{\"scaleOffset\":{\"scale\":0.3048,\"offset\":0.0},\"symbol\":\"ft\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
-        "propertyNames": [
-          "stop.value",
-          "elevationReference.elevationFromMsl.value",
-          "start.value",
-          "step.value",
-          "reference.unitKey"
-        ],
-        "propertyValues": [
-          "ft"
-        ]
-      },
-      {
-        "kind": "DateTime",
-        "name": "datetime",
-        "persistableReference": "{\"format\":\"yyyy-MM-ddTHH:mm:ssZ\",\"timeZone\":\"UTC\",\"type\":\"DTM\"}",
-        "propertyNames": [
-          "dateModified",
-          "dateCreated"
-        ]
-      }
-    ]
-  }
-]
-```
+### Bulk data consistency rules:
+  * [WellLog consistency rules](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/WellLog-consistency-rules)
+  * [WellboreTrajectory consistency rules](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/WellboreTrajectory-consistency-rules)
+  * [BulkURI consistency check rule](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/BulkURI-consistency-check-rule)
 
-### Run with Uvicorn
+More document is available in the [WDMS wiki](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/home).
 
-```bash
-uvicorn app.wdms_app:wdms_app --port LOCAL_PORT
-```
 
-Then access app on `http://127.0.0.1:<LOCAL_PORT>/api/os-wellbore-ddms/docs`
+## Build WellboreDMS
 
-### Run with Docker
-
-#### Build Image
+### Build Image with Docker
 
 ```bash
 # Set IMAGE_TAG
@@ -350,7 +414,7 @@ IMAGE_TAG="os-wellbore-ddms:dev"
 docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages
 ```
 
-#### Run Image
+### Run Image
 
 1. Run the image
 
@@ -373,117 +437,7 @@ docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DI
     docker logs CONTAINER_ID
     ```
 
-### Run Unit Tests
-
-```bash
-# Install test dependencies
-pip install -r requirements.txt -r requirements_dev.txt
-
-# run tests
-python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml tests/unit
-```
-
-Coverage reports can be viewed after the command is run. The HMTL reports are saved in the htmlcov directory.
-
-#### Control order of the tests
-
-To detect inter-test dependencies and ensure that each test can pass both in isolation and when run in a suite  **test items are randomly shuffled**
-thanks to the dependencies of the [pytest-randomly](https://pypi.org/project/pytest-xdist/) plugin.
-
-The output will start with an extra line that tells you the random seed. For instance:
-
-```
-Using --randomly-seed=256596674
-```
-
-If  tests fail due to ordering, you can  repeat the last ordering:
-
-```
---randomly-seed=last
-```
-
-or repeat a specific ordering:
-
-```
---randomly-seed=1234
-```
-
-If necessary you can  make the tests run in order:
-
-```
--p no:randomly
-```
-
-### Control the tests to be run
-
-Some unit test are flagged with the following marks:
-    - slow: test that take time
-    - serial: tests that fail if run in parallel
-    - perf: performance test
-    - hypothesis: Tests that generates test data using hypothesis
-    - statistics: specific to test the functionality linked to the api of statistic
-
-For instance use the following decorator to mark a test as slow
-
-```
-@pytest.mark.slow
-```
-
-To control the test to run according those mark it is possible to pass to pytest the '-m'  option flag, for instance to disable the serial and slow test:
-
-```
--m 'not serial and not slow"
-```
-
-to run only perf test:
-
-```
--m 'serial'
-```
-
-#### Distribute tests across multiple CPUs
-
-Thanks to plugin [pytest-xdist](https://pypi.org/project/pytest-xdist/) in dependencies,  it is possible to run the tests in parallel which can reduce the execution time.
-to activate it add the following option:
-
-```
--n auto -m "not serial"
-```
-
-With the option `-m "not serial` **Tests that do not support distribution can be marked with 'pytest.mark.serial' and will be ignored.**
-You can run them specifically in sequence in a second step by replacing the previous option with the following:
-
-```
--n 0 -m "serial"
-```
-
-In addition to speeding up the execution time of a large set of tests, it challenges the isolation of the tests more strongly than randomization.
-That is, a test that depends on the state left by the execution of another test is much more likely to be detected by parallel execution
-than the sequential execution of tests in a random order.
-In the case of execution of subset of tests, the speed gain can be lower than the overhead.
-
-### Run Integration Tests locally
-
-This example runs basic tests using the local filesystem for blob storage and storage service. There's no search or entilements service, everything runs locally.  
-
-First, create the temp storage folders and run the service.
-
-```bash
-mkdir -p tmpstorage tmpblob
-python main.py -e USE_INTERNAL_STORAGE_SERVICE_WITH_PATH $(pwd)/tmpstorage -e USE_LOCALFS_BLOB_STORAGE_WITH_PATH $(pwd)/tmpblob -e CLOUD_PROVIDER local
-```
-
-In another terminal, generate a minimum configuration file and run the integration tests.
-
-```bash
-cd tests/integration
-python gen_postman_env.py --token $(pyjwt --key=secret encode email=nobody@example.com) --base_url "http://127.0.0.1:8080/api/os-wellbore-ddms" --cloud_provider "local" --data_partition "dummy"
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag=basic -p no:randomly
-```
-
-For more information see the [integration tests README](tests/integration/README.md)
-
-### Manage package dependencies
+## How to update Python dependencies
 
 Anytime, you may want to ensure your virtual environment is in sync with your requirements specification.
 For this you can use:
