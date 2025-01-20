@@ -58,3 +58,8 @@ spec:
               cpu: {{ .Values.data.limitsCpu | quote }}
               memory: {{ .Values.data.limitsMemory | quote }}
             {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
