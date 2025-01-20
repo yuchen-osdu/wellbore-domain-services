@@ -55,6 +55,9 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/gc-global.yml"
+  
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/core-global.yml"
 
   # IBM it tests "ibm-test"
   - project: "osdu/platform/ci-cd-pipelines"
@@ -75,6 +78,7 @@ include:
 
   # Google Cloud int tests "gc-test-python" & "gc-baremetal-test-python"
   - local: "devops/gc/pipeline/override-stages.yml"
+  - local: "devops/core-plus/pipeline/override-stages.yml"
 
 #Override Python Image defined in python.yml
 .python:

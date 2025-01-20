@@ -1,6 +1,6 @@
 <!--- Deploy -->
 
-# GC Wellbore service
+# CORE Wellbore service
 
 ## Introduction
 
@@ -32,8 +32,6 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |------|-------------|------|---------|---------|
 |**global.domain** | your domain for the external endpoint, ex `example.com` | string | - | yes |
 |**global.limitsEnabled** | whether CPU and memory limits are enabled | boolean | true | yes |
-| **global.tier** | Only PROD must be used to enable autoscaling | string | "" | no |
-| **global.autoscaling** | enables horizontal pod autoscaling, when tier=PROD | boolean | true | yes |
 
 ### Configmap variables
 
@@ -59,6 +57,8 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |------|-------------|------|---------|----------|
 |**conf.appName** | Service name | string | `wellbore` | yes |
 |**conf.configmap** | configmap to be used | string | `wellbore-config` | yes |
+|**conf.keycloakSecretName** | Keycloak secret name | string | `wellbore-keycloak-secret` | yes |
+|**conf.minioSecretName** | MinIO secret name | string | `wellbore-minio-secret` | yes |
 |**conf.replicas** | Number of pods for service | integer | 2 | yes |
 
 ### ISTIO variables
@@ -69,29 +69,6 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |**istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | 500m | yes |
 |**istio.proxyMemory** | memory request for Envoy sidecars | string | 100Mi | yes |
 |**istio.proxyMemoryLimit** | memory limit for Envoy sidecars | string | 512Mi | yes |
-
-### Horizontal Pod Autoscaling (HPA) variables (works only if tier=PROD and autoscaling=true)
-
-| Name | Description | Type | Default |Required |
-|------|-------------|------|---------|---------|
-| **hpa.minReplicas** | minimum number of replicas | integer | 6 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.maxReplicas** | maximum number of replicas | integer | 15 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.targetType** | type of measurements: AverageValue or Value | string | "AverageValue" | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.targetValue** | threshold value to trigger the scaling up | integer | 140 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleUpStabilizationWindowSeconds** | time to start implementing the scale up when it is triggered | integer | 10 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleUpPoliciesValue** | the maximum number of new replicas to create (in percents from current state)| integer | 50 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleUpPoliciesPeriodSeconds** | pause for every new scale up decision | integer | 15 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleDownStabilizationWindowSeconds** | time to start implementing the scale down when it is triggered | integer | 60 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleDownPoliciesValue** | the maximum number of replicas to destroy (in percents from current state) | integer | 25 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleDownPoliciesPeriodSeconds** | pause for every new scale down decision | integer | 60 | only if `global.autoscaling` is true and `global.tier` is PROD |
-
-### Limits variables
-
-| Name | Description | Type | Default |Required |
-|------|-------------|------|---------|---------|
-| **limits.maxTokens** | maximum number of requests per fillInterval | integer | 80 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **limits.tokensPerFill** | number of new tokens allowed every fillInterval | integer | 80 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **limits.fillInterval** | time interval | string | "1s" | only if `global.autoscaling` is true and `global.tier` is PROD |
 
 ## Install the Helm chart
 

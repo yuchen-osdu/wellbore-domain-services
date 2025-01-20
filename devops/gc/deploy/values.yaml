@@ -1,6 +1,5 @@
 global:
   domain: ""
-  onPremEnabled: false
   limitsEnabled: true
   dataPartitionId: ""
   tier: ""
@@ -20,8 +19,6 @@ data:
 conf:
   configmap: "wellbore-config"
   appName: "wellbore"
-  keycloakSecretName: "wellbore-keycloak-secret"
-  minioSecretName: "wellbore-minio-secret"
   replicas: 2
 
 istio:

@@ -8,4 +8,6 @@ metadata:
 data:
   LOG_LEVEL: {{ .Values.data.logLevel | quote }}
   SERVICE_HOST_WDMS_WORKER: {{ printf "%s/api/wdms-worker" .Values.data.WDMSWorkerHost | quote }}
-  CLOUD_PROVIDER: "gc"
+  KEYCLOAK_AUTH: "yes"
+  BASE_BUCKET: "wellbore"
+  CLOUD_PROVIDER: "baremetal"
