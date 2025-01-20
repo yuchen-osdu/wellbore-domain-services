@@ -3,8 +3,6 @@ kind: Service
 metadata:
   name: {{ .Values.conf.appName | quote }}
   namespace: {{ .Release.Namespace | quote }}
-  annotations:
-    cloud.google.com/neg: '{"ingress": true}'
 spec:
   ports:
     - port: 80
