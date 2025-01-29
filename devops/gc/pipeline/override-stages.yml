@@ -3,6 +3,7 @@ variables:
   GC_VENDOR: gc
   GC_INT_TEST_TYPE: python
   GC_PYTHON_INT_TEST_SUBDIR: tests/gc
+  GC_SUPPORTED_PLATFORM: "linux/amd64"
 
 gc-containerize-gitlab:
   variables:

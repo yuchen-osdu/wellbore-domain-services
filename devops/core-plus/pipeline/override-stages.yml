@@ -2,6 +2,7 @@ variables:
   CORE_SERVICE: wellbore
   CORE_INT_TEST_TYPE: python
   CORE_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
+  CORE_SUPPORTED_PLATFORM: "linux/amd64"
 
 core-containerize-gitlab:
   needs:
