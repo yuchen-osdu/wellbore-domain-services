@@ -231,13 +231,6 @@ for v3_api, tag, entity_type in ddms_v3_routes_groups_with_bulk:
 
 # POST and GET v3/welllog/session   (EXCLUDE  PATCH commit/abandon)
 wdms_app.include_router(
-    search_v3.router,
-    prefix=DDMS_V3_PATH,
-    deprecated=True,
-    tags=["DEPRECATED"],
-    dependencies=basic_dependencies,
-    responses={**response_401, **response_403, **response_500}
-)
     sessions.router,
     prefix=DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
     tags=["WellLog"],
@@ -254,13 +247,6 @@ wdms_app.include_router(
 # GET v3/welllogs/{record_id}/data
 # PATCH v3/welllogs/{record_id}/sessions/{session_id}
 wdms_app.include_router(
-    search_v3_alpha.router,
-    prefix=ALPHA_APIS_PREFIX + DDMS_V3_PATH,
-    deprecated=True,
-    tags=["DEPRECATED"],
-    dependencies=basic_dependencies,
-    responses={**response_401, **response_403, **response_500}
-)
     bulk_routes.router,
     prefix=DDMS_V3_PATH + welllog_ddms_v3.WELL_LOGS_API_BASE_PATH,
     tags=["WellLog"],
