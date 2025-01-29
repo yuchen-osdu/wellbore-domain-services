@@ -23,11 +23,6 @@ def load_model_example_file_contents(file_name: str):
 
 
 @pytest.fixture(scope="session")
-def well_v2_file_contents() -> str:
-    return load_model_example_file_contents("well_v2.json")
-
-
-@pytest.fixture(scope="session")
 def well_v3_file_contents() -> str:
     return load_model_example_file_contents("well_v3.json")
 
@@ -40,12 +35,6 @@ def well_v3_110_file_contents() -> str:
 @pytest.fixture(scope="session")
 def well_v3_120_file_contents() -> str:
     return load_model_example_file_contents("well_v3_120.json")
-
-
-@pytest.fixture(scope="session")
-def wellbore_v2_file_contents() -> str:
-    return load_model_example_file_contents("wellbore_v2.json")
-
 
 @pytest.fixture(scope="session")
 def wellbore_v3_file_contents() -> str:
@@ -73,13 +62,9 @@ def wellbore_v3_130_file_contents() -> str:
 
 
 @pytest.fixture(scope="session")
-def marker_v2_file_contents() -> str:
-    return load_model_example_file_contents("marker_v2.json")
-
-
-@pytest.fixture(scope="session")
 def marker_v3_file_contents() -> str:
     return load_model_example_file_contents("marker_v3.json")
+
 
 @pytest.fixture(scope="session")
 def marker_v3_120_file_contents() -> str:
@@ -124,18 +109,6 @@ def data_partition():
 @pytest.fixture
 def legal_tags():
     return 'test-legal-tag1, test-legal-tag2'
-
-
-@pytest.fixture
-def well_v2_record_list(well_v2_file_contents, domain, data_partition, legal_tags) -> List[Record]:
-
-    vars_to_replace = Variables.from_dict({
-        "domain": domain,
-        "datapartitionid": data_partition,
-        "legaltags": legal_tags,
-    })
-
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in well_v2_file_contents]
 
 
 @pytest.fixture
@@ -198,18 +171,6 @@ def well110_v3_list(well_v3_110_record_list) -> List[Well110]:
 def well120_v3_list(well_v3_120_record_list) -> List[Well120]:
     """ provide a list of wellbore v.1.2.0"""
     return [Well120(**record.dict(exclude_unset=True, by_alias=True)) for record in well_v3_120_record_list]
-
-
-@pytest.fixture
-def wellbore_v2_record_list(wellbore_v2_file_contents, domain, data_partition, legal_tags) -> List[Record]:
-
-    vars_to_replace = Variables.from_dict({
-        "domain": domain,
-        "datapartitionid": data_partition,
-        "legaltags": legal_tags,
-    })
-
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in wellbore_v2_file_contents]
 
 
 @pytest.fixture
@@ -320,19 +281,6 @@ def wellbore120_v3_list(wellbore_v3_120_record_list) -> List[Wellbore120]:
 def wellbore130_v3_list(wellbore_v3_130_record_list) -> List[Wellbore130]:
     """ provide a list of wellbore v.1.3.0"""
     return [Wellbore130(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_130_record_list]
-
-
-@pytest.fixture
-def marker_v2_record_list(marker_v2_file_contents, domain, data_partition, legal_tags) -> List[Record]:
-
-    vars_to_replace = Variables.from_dict({
-        "domain": domain,
-        "datapartitionid": data_partition,
-        "legaltags": legal_tags,
-    })
-
-    # single record content
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in marker_v2_file_contents]
 
 
 @pytest.fixture
@@ -459,7 +407,6 @@ def welllog120_v3_record_list(welllog_v3_120_file_contents, domain, data_partiti
             "welllogId": "my-welllog-v3-example",
         })
     return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in welllog_v3_120_file_contents]
-
 
 
 @pytest.fixture

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from wdms_client.request_builders.wdms.about import build_request_about
-from wdms_client.request_builders.wdms.status import build_request_status
 from wdms_client.request_builders.wdms.version import build_request_version
 from .fixtures import with_wdms_env
 import pytest
@@ -42,10 +41,3 @@ def test_version(with_wdms_env):
     print(details)
     assert details["read_bulk_backend"]
     assert details["write_bulk_backend"]
-
-
-@pytest.mark.tag('basic', 'smoke')
-def test_status(with_wdms_env):
-    result = build_request_status().call(with_wdms_env)
-    result.assert_ok()
-    assert result.get_response_obj()

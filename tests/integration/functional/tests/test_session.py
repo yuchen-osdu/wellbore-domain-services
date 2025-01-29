@@ -24,7 +24,7 @@ from wdms_client.request_builders.wdms.session import (
     build_list_session, build_create_session_empty_payload)
 
 
-SESSION_URL_PREFIX = 'alpha/ddms/v3/welllogs'
+SESSION_URL_PREFIX = 'ddms/v3/welllogs'
 
 
 @pytest.fixture

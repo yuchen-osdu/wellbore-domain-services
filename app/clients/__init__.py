@@ -27,7 +27,7 @@ __all__ = ['SearchServiceClient',
            'StorageRecordServiceClient',
            'SchemaServiceClient',
            'make_search_client',
-           'make_storage_record_client'
+           'make_storage_record_client',
            'make_schema_client']
 
 from app.clients.clients_middleware import client_middleware, backoff_middleware

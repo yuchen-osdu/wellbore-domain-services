@@ -17,7 +17,7 @@ from .fixtures import with_wdms_env
 from wdms_client.request_builders import build_request
 from munch import Munch
 
-kind_list = ['well', 'wellbore', 'logset', 'marker', 'trajectory', 'log']
+kind_list = ['log']
 new_parameters_env = {'authorityKind': 'slb',
                       'prefix_data_entity_name': 'wdms_e2e_slb_authority'}
 

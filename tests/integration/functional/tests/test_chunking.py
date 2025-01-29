@@ -38,16 +38,17 @@ from wdms_client.request_builders.wdms.crud.osdu_wellboretrajectory import (
     build_request_delete_osdu_wellboretrajectory)
 
 entity_type_dict = {
-    "well_log": {"entity": "welllogs", "version": "v3"},
-    "wellbore_trajectory": {"entity": "wellboretrajectories", "version": "v3"},
-    "log": {"entity": "logs", "version": "v2"},
+    "well_log": {"entity": "welllogs", "version": "v3", "alpha-prefix": "ddms"},
+    "wellbore_trajectory": {"entity": "wellboretrajectories", "version": "v3", "alpha-prefix": "ddms"},
+    "log": {"entity": "logs", "version": "v2", "alpha-prefix": "alpha/ddms"},
 }
 
-def build_base_url(entity_type: str) -> str:
-    return '{{base_url}}/alpha/ddms/' + entity_type_dict[entity_type]["version"] + '/' + entity_type_dict[entity_type]["entity"]
 
-def build_base_url_without_dask(entity_type: str) -> str:
-    return '{{base_url}}/ddms/' + entity_type_dict[entity_type]["version"] + '/' + entity_type_dict[entity_type]["entity"]
+def build_base_url(entity_type: str) -> str:
+    return ('{{base_url}}/'+ f'{entity_type_dict[entity_type]["alpha-prefix"]}/'
+            f'{entity_type_dict[entity_type]["version"]}/'
+            f'{entity_type_dict[entity_type]["entity"]}')
+
 
 @contextmanager
 def create_record(env, entity_type: str, curves: List[str]):
@@ -155,7 +156,7 @@ class JsonSerializer:
         return df.to_json(orient='split')
 
 
-WELLLOG_URL_PREFIX = 'alpha/ddms/v3/welllogs'
+WELLLOG_URL_PREFIX = 'ddms/v3/welllogs'
 
 
 @pytest.mark.tag('chunking', 'smoke')
@@ -486,72 +487,6 @@ def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_
             pd.testing.assert_frame_equal(
                 expected, serializer.read(result.response.content), check_dtype=False)
             # check type set to false since in Json dType is lost so int32 can become int64
-
-
-@pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', ["log"])
-@pytest.mark.parametrize('serializer', [JsonSerializer()])
-def test_get_data_from_record_data_without_dask(with_wdms_env, entity_type, serializer):
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type, col) as record_id:
-        data = generate_df(col, range(8))
-        data_to_send = serializer.dump(data)
-        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-
-        build_request_post_data_without_dask(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
-
-        result = build_request_get_data(entity_type, record_id).call(with_wdms_env, headers=headers, assert_status=200)
-        pd.testing.assert_frame_equal(data, serializer.read(result.response.content), check_dtype=False)
-        # check type set to false since in Json dType is lost so int32 can become int64
-
-        result = build_request_get_data(entity_type, record_id, filters={'curves': 'MD'}).call(with_wdms_env, headers=headers, assert_status=200)
-        pd.testing.assert_frame_equal(data[['MD']], serializer.read(result.response.content), check_dtype=False)
-
-        result = build_request_get_data(entity_type, record_id, filters={'limit': 5}).call(with_wdms_env, headers=headers, assert_status=200)
-        pd.testing.assert_frame_equal(data[:5], serializer.read(result.response.content), check_dtype=False)
-
-        result = build_request_get_data(entity_type, record_id, filters={'offset': 4}).call(with_wdms_env, headers=headers, assert_status=200)
-        pd.testing.assert_frame_equal(data[4:], serializer.read(result.response.content), check_dtype=False)
-
-        result = build_request_get_data(entity_type, record_id,
-                                        filters={'curves': 'X', 'offset': 2, 'limit': 5}
-                                        ).call(with_wdms_env, headers=headers, assert_status=200)
-        pd.testing.assert_frame_equal(data[['X']][2:7], serializer.read(result.response.content), check_dtype=False)
-
-
-@pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', ["log"])
-@pytest.mark.parametrize('serializer', [JsonSerializer()])
-@pytest.mark.skip(reason="worker not support update on top of previous M9 bulk storage (before Dask)")
-def test_data_without_dask_update_session(with_wdms_env, entity_type, serializer):
-    col = ['MD', 'X']
-    with create_record(with_wdms_env, entity_type, col) as record_id:
-        expected = generate_df(col, range(20))
-        data_to_send = serializer.dump(expected[:10])
-        headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-
-        build_request_post_data_without_dask(entity_type, record_id, data_to_send).call(with_wdms_env, headers=headers).assert_ok()
-
-        # create session
-        session_id = create_session(with_wdms_env, entity_type, record_id, False)  # mode update
-
-        # post chunk
-        data_to_send = serializer.dump(expected[10:20])
-        build_request_post_chunk(
-            entity_type, record_id, session_id, data_to_send
-        ).call(
-            with_wdms_env, headers={'Content-Type': serializer.mime_type},
-        ).assert_ok()
-
-        # commit session
-        complete_session(with_wdms_env, entity_type, record_id, session_id, True)  # commit
-
-         # check full dataframe
-        result = build_request_get_data(
-            entity_type, record_id
-        ).call(with_wdms_env, headers=headers, assert_status=200)
-        result_df = serializer.read(result.response.content)
-        pd.testing.assert_frame_equal(expected, result_df, check_dtype=False)
 
 
 @pytest.mark.tag('chunking', 'smoke')

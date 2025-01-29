@@ -44,13 +44,10 @@ def test_record_should_keep_extra_field(env_with_record_extra_created):
 
 tests_parameters_for_relationship_extra_field = [
     ('logs', "{{logKind}}", {"relationships": {"extra_field": "EXTRA_VALUE"}}),
-    ('logsets', "{{logSetKind}}", {"relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
-    ('markers', "{{markerKind}}", {"name": "foo", "md": {"value": 1, "unitKey": "m"}, "relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
-    ('trajectories', "{{trajectoryKind}}", {"relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
     ('dipsets', "{{dipsetKind}}", {"relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
-    ('wellbores', "{{wellboreKind}}", {"relationships": {"extra_field": "EXTRA_VALUE"}}),
-    ('wells', "{{wellKind}}", {"relationships": {"extra_field": "EXTRA_VALUE"}})
 ]
+
+
 @pytest.mark.parametrize('entities, entities_kind, data_extra_field', tests_parameters_for_relationship_extra_field)
 def test_relationships_extra_field(with_wdms_env, entities, entities_kind, data_extra_field):
     with_wdms_env.set("base_url_entity", entities)

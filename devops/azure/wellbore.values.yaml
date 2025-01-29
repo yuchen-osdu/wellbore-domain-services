@@ -48,7 +48,6 @@ configuration:
       disable:
         - "/api/os-wellbore-ddms/"
         - "/api/os-wellbore-ddms/about"
-        - "/api/os-wellbore-ddms/ddms/v2/about"
         - "/api/os-wellbore-ddms/docs"
         - "/api/os-wellbore-ddms/openapi.json"
     config:

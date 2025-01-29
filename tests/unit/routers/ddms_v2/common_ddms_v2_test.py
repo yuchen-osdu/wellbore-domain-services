@@ -20,7 +20,6 @@ from odes_search.models import CursorQueryResponse
 from odes_storage import UnexpectedResponse
 from odes_storage.models import (
     CreateUpdateRecordsResponse,
-    Record,
     RecordVersions,
 )
 import pytest
@@ -46,16 +45,7 @@ Contains unified common tests for the different kind. Mainly CRUD test cases
 
 tests_parameters = [
     ('/ddms/v2/logs', log(id='123456', data={})),
-    ('/ddms/v2/logsets', logset(id='123456', data={})),
     ('/ddms/v2/dipsets', dipset(id="123456", data={})),
-    ('/ddms/v2/markers', marker(acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-                                kind='opendes:wks:marker:1.0.4',
-                                legal=Legal(),
-                                data=markerData(md=ValueWithUnit(value=1.0, unitKey='m'), name='name'),
-                                id='123456')),
-    ('/ddms/v2/trajectories', trajectory(id='123456', data={})),
-    ('/ddms/v2/wellbores', wellbore(id='123456', data={})),
-    ('/ddms/v2/wells', well(id='123456', data={})),
     ('/ddms/v3/wellbores',         Wellbore(
             id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
             kind="osdu:wks:master-data--Wellbore:1.0.0",
@@ -127,16 +117,8 @@ tests_parameters = [
     ))
 ]
 
-tests_errors_422 = [
-    ('/ddms/v2/wellbores', Record(id='123456', kind='xx', acl={'viewers': [], 'owners': []}, legal={},
-                                  data={"wellborePurpose": "develpment"})),
-]
-
 tests_parameters_for_recursive = [
-    ('/ddms/v2/logsets', logset(id='123456', data={})),
     ('/ddms/v2/dipsets', dipset(id="123456", data={})),
-    ('/ddms/v2/wellbores', wellbore(id='123456', data={})),
-    ('/ddms/v2/wells', well(id='123456', data={}))
 ]
 
 
@@ -177,20 +159,6 @@ async def test_get_record_success(client, base_url, record_obj):
 
         # assert it validates the input object schema
         record_obj.validate(response.json())
-
-
-@pytest.mark.parametrize('base_url, record_obj', tests_errors_422)
-@pytest.mark.anyio
-async def test_get_record_422(client, base_url, record_obj):
-    record_id = record_obj.id
-
-    with patch.object(storage_record_service_client_mock, 'get_record', return_value=record_obj) as moc:
-        # when
-        response = await client.get(f'{base_url}/{record_id}', headers={'data-partition-id': 'testing_partition'})
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-        # then assert storage is called with the proper id and data_partition
-        moc.assert_called_with(id=record_id, data_partition_id='testing_partition')
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
@@ -293,17 +261,7 @@ async def test_delete_recursive_record_with_recursive_true_successful_delete_mul
 
 
 @pytest.mark.parametrize('base_url, sub_entity_list', [
-    ('/ddms/v2/logsets', [Entity.LOG]),
     ('/ddms/v2/dipsets', [Entity.LOG]),
-    ('/ddms/v2/wellbores', [Entity.LOGSET,
-                            Entity.LOG,
-                            Entity.MARKER]),
-    ('/ddms/v2/wells', [Entity.WELLBORE,
-                        Entity.LOGSET,
-                        Entity.LOG,
-                        Entity.MARKER,
-                        Entity.TRAJECTORY,
-                        Entity.DIPSET])
 ])
 @pytest.mark.anyio
 async def test_delete_recursive_check_sub_deleted_type(client, base_url, sub_entity_list):
