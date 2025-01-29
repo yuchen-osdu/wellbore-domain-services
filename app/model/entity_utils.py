@@ -13,15 +13,11 @@
 # limitations under the License.
 
 from enum import Enum
-
 from odes_storage.models import Record
-
 from app.model import schema_version
-
 
 class Entity(Enum):
     LOG = 'log'
-    LOGSET = 'logSet'
     MARKER = 'marker'
     WELLBOREINTERVALSET = 'wellboreintervalset'
     TRAJECTORY = 'trajectory'
@@ -52,7 +48,6 @@ class KindMetaData:
 current_version = \
     {
         Entity.LOG: schema_version.log_version,
-        Entity.LOGSET: schema_version.log_version,
         Entity.MARKER: schema_version.marker_version,
         Entity.WELLBOREINTERVALSET: schema_version.wellboreintervalset_version,
         Entity.TRAJECTORY: schema_version.trajectory_version,
