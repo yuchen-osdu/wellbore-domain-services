@@ -15,7 +15,7 @@
 import pytest
 
 from .test_chunking import ParquetSerializer, JsonSerializer, create_record, build_request_post_data, \
-    build_request, build_base_url_without_dask, create_session, \
+    build_request, build_base_url, create_session, \
     build_request_post_chunk, complete_session
 from ..generate_dataframe import generate_df
 
@@ -24,7 +24,7 @@ from .fixtures import with_wdms_env
 
 
 def build_request_get_data_describe(entity_type: str, record_id: str, filters=None) -> RequestRunner:
-    url = build_base_url_without_dask(entity_type) + f'/{record_id}/data'
+    url = build_base_url(entity_type) + f'/{record_id}/data'
     url = url + '?' + 'describe=true'
     if filters:
         url = url + '?' + '&'.join(f'{k}={v}' for k, v in filters.items())

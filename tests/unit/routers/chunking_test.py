@@ -220,43 +220,6 @@ async def test_send_all_data_once(dasked_test_app_without_consistency_client,
     assert_dataframe_equal(initial_data_df, result_df)
 
 
-@pytest.mark.parametrize("entity_type",
-                         [entity for entity in EntityTypeParams if Definitions[entity]['api_version'] == "v2"])
-@pytest.mark.parametrize("columns", [
-    ['MD', 'X'],
-    ['float_MD', 'float_X'],
-    ['str_MD', 'str_X'],
-    ['date_MD', 'date_X'],
-    ['MD', 'date_X', 'float_X', 'str_X']
-])
-@pytest.mark.anyio
-async def test_send_all_data_once_post_data_v2_get_data_v3(dasked_test_app_without_consistency_client,
-                                                     entity_type,
-                                                     columns):
-    client = dasked_test_app_without_consistency_client
-    record_id = await _create_record(client, entity_type)
-    chunking_url = Definitions[entity_type]['chunking_url']
-    base_url = Definitions[entity_type]['base_url']
-
-    initial_data_df = generate_df(columns, range(5, 13))
-    data_to_send = initial_data_df.to_json(orient='split', date_format='iso')
-    headers = {'content-type': 'application/json'}
-
-    get_response_no_data = await client.get(f'{chunking_url}/{record_id}/data', headers=headers)
-    assert get_response_no_data.status_code == 404
-
-    write_response = await client.post(f'{base_url}/{record_id}/data', data=data_to_send, headers=headers)
-    assert write_response.status_code == 200
-
-    get_response = await client.get(f'{chunking_url}/{record_id}/data', headers={'accept': 'application/json'})
-    assert get_response.status_code == 200
-    result_df = _create_df_from_response(get_response)
-
-    initial_data_df = pd.read_json(data_to_send, orient='split')
-
-    assert_dataframe_equal(initial_data_df, result_df)
-
-
 @pytest.mark.parametrize("entity_type", EntityTypeParams)
 @pytest.mark.parametrize("content_type_header, create_func", [
     ('application/x-parquet', lambda df: df.to_parquet(engine="pyarrow")),
@@ -744,36 +707,6 @@ async def test_session_chunk_int(dasked_test_app_without_consistency_client, ent
                                    data=data_to_send,
                                    headers=headers)
     assert chunk_response_1.status_code == expected_code
-
-
-@pytest.mark.parametrize("columns", [[int(42), float(-42)], []])
-@pytest.mark.anyio
-async def test_legacy_logs_int_columns(dasked_test_app_without_consistency_client, columns):
-    """
-        Ensure legacy v2 Log containing columns name as int type are correctly converted to string
-        to ensure to_parquet is possible.
-    """
-    client = dasked_test_app_without_consistency_client
-    entity_type = "Log"
-
-    record_id = await _create_record(client, entity_type)
-    chunking_url = Definitions[entity_type]['chunking_url']
-    base_url = Definitions[entity_type]['base_url']
-
-    json_data = {t: np.random.rand(10) for t in columns}
-    df_data = pd.DataFrame(json_data)
-    data_to_send = df_data.to_json(orient='split', date_format='iso')
-
-    write_legacy_log_response = await client.post(f'{base_url}/{record_id}/data',
-                                            data=data_to_send,
-                                            headers={'content-type': 'application/json'})
-    assert write_legacy_log_response.status_code == 200
-
-    read_dask_log_response = await client.get(f'{chunking_url}/{record_id}/data',
-                                        headers={'content-type': 'application/parquet'})
-    assert read_dask_log_response.status_code == 200
-    result_df = _create_df_from_response(read_dask_log_response)
-    assert ptypes.is_string_dtype(result_df.columns)
 
 
 @pytest.mark.parametrize("data_format", ['parquet', 'json'])
@@ -1295,46 +1228,6 @@ async def test_write_too_many_columns_session(dasked_test_app_without_consistenc
                            headers={'content-type': 'application/parquet'})
     assert response.status_code == 422
     assert 'Too many columns' in response.text
-
-
-@pytest.mark.anyio
-async def test_session_update_previous_storage_version(dasked_test_app_without_consistency_client):
-    """ create a session update on a previous version, so only for V2 """
-
-    client = dasked_test_app_without_consistency_client
-    record_id = await _create_record(client, 'Log')
-    chunking_url = Definitions['Log']['chunking_url']
-    base_url = Definitions['Log']['base_url']
-
-    df_previous = pd.DataFrame({'MD': [0.5, 1.5], 'X': [10, 11]}, index=[0, 1])
-    df_update = pd.DataFrame({'MD': [2.5, 3.5], 'X': [20, 21]}, index=[2, 3])
-
-    headers = {'Content-Type': 'application/x-parquet'}
-
-    # post bulk with legacy storage version
-    write_response = await client.post(f'{base_url}/{record_id}/data',
-                                 data=df_previous.to_json(orient='split'))
-    assert write_response.status_code == 200
-
-    # update using new (alpha) storage V2
-    response = await client.post(f'{chunking_url}/{record_id}/sessions', json={'mode': 'update'})
-    assert response.status_code == 200
-    session_id = response.json()['id']
-
-    response = await client.post(f'{chunking_url}/{record_id}/sessions/{session_id}/data',
-                           data=df_update.to_parquet(engine="pyarrow"),
-                           headers=headers)
-    assert response.status_code == 200
-
-    response = await client.patch(f'{chunking_url}/{record_id}/sessions/{session_id}', json={'state': 'commit'})
-    assert response.status_code == 200
-
-    # check result
-    get_response = await client.get(f'{chunking_url}/{record_id}/data',
-                              headers={'Accept': 'application/parquet'})
-    df: pd.DataFrame = _create_df_from_response(get_response)
-    assert list(df['X'].values) == [10, 11, 20, 21]
-
 
 def assert_mock_chunk(tracing_mock, chunk_df):
     tracing_mock.assert_called_with({"df rows count": chunk_df.shape[0], "df columns count": chunk_df.shape[1],

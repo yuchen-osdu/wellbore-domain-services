@@ -13,17 +13,9 @@
 # limitations under the License.
 
 import json
-from unittest.mock import AsyncMock, create_autospec, patch
+from unittest.mock import create_autospec, patch
 
-from fastapi import  HTTPException, status
-from odes_storage.exceptions import (
-    ResponseHandlingException as OSDUStorageResponseHandlingException,
-    ResponseValidationError as OSDUStorageResponseValidationError,
-    UnexpectedResponse as OSDUStorageUnexpectedResponse,
-)
-from osdu_az.exceptions.data_access_error import (
-    DataAccessError as OSDUPartitionError,
-)
+from fastapi import HTTPException
 import pytest
 
 from app.clients import StorageRecordServiceClient
@@ -50,82 +42,6 @@ def _error_content(code: int, msg: str) -> str:
             "message": msg
         }
     })
-
-
-# This test should work also for other exceptions
-@pytest.mark.anyio
-async def test_storage_client_raise_api_exception(client):
-    exception = OSDUStorageUnexpectedResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        content=_error_content(status.HTTP_401_UNAUTHORIZED, "Not authorized").encode('utf-8'),
-        headers=header,
-        reason_phrase="An unexpected response")
-
-    with patch.object(storage_record_service_client_mock, 'delete_record', side_effect=exception):
-        # when
-        response = await client.delete("/ddms/v2/logsets/123456")
-        json_res = response.json()
-        assert json_res['origin'] == 'osdu-data-ecosystem-storage'
-        assert json_res['errors'][0] == {'error': {'code': 401, 'message': 'Not authorized'}}
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-@pytest.mark.anyio
-async def test_storage_client_raise_response_handling_exception(client):
-    exception = OSDUStorageResponseHandlingException(KeyError("Exception"))
-
-    with patch.object(storage_record_service_client_mock, 'delete_record', side_effect=exception):
-        response = await client.delete("/ddms/v2/logsets/123456")
-        json_res = response.json()
-
-        assert json_res['origin'] == 'osdu-data-ecosystem-storage'
-        assert json_res['errors'][0] == "Exception"
-        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-
-
-@pytest.mark.anyio
-async def test_storage_client_raise_response_validation_error(client):
-    exception = OSDUStorageResponseValidationError(
-        source=ArithmeticError("Cannot divide by zero"),
-        status_code=403,
-        content="Cannot divide by zero")
-
-    with patch.object(storage_record_service_client_mock, "delete_record", side_effect=exception):
-        response = await client.delete("/ddms/v2/logsets/123456")
-        json_res = response.json()
-
-        assert json_res['origin'] == 'osdu-data-ecosystem-storage'
-        assert json_res['errors'][0] == "Cannot divide by zero"
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-
-
-@pytest.mark.anyio
-async def test_validation_error_exception(client):
-    response = await client.post("/ddms/v2/logsets", data={'test': 'test'})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-
-@patch.object(storage_record_service_client_mock,
-              'delete_record',
-              AsyncMock(side_effect=KeyError("Error")))
-@pytest.mark.anyio
-async def test_unhandled_exception(client):
-    with pytest.raises(KeyError):
-        await client.delete("/ddms/v2/logsets/123456")
-
-
-@pytest.mark.anyio
-async def test_partition_client_raise_api_exception(client):
-    exception = OSDUPartitionError(
-        status_code=status.HTTP_404_NOT_FOUND,
-        message='Failed to retrieve partition. Not found.')
-
-    with patch.object(storage_record_service_client_mock, "get_record", side_effect=exception):
-        response = await client.get("/ddms/v2/logs/123456/data")
-        json_res = response.json()
-
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-        assert json_res['errors'][0] == 'Failed to retrieve partition. Not found.'
 
 
 @pytest.mark.parametrize("status_code, msg, called", [(400, "bad request", False),

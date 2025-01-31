@@ -90,12 +90,6 @@ def test_crud_delete_record(with_wdms_env, kind):
     result.assert_status_code(204)
 
 
-GETAS_PARAMS = [
-    'wellbore',
-    'well'
-]
-
-
 @pytest.fixture()
 def delfi_id(with_wdms_env, kind):
     # Create a delfi well
@@ -112,14 +106,3 @@ def delfi_id(with_wdms_env, kind):
     # Cleanup
     result = build_request(f"crud.{kind}.delete_{kind}").call(with_wdms_env)
     result.assert_ok()
-
-
-@pytest.mark.tag('crud', 'smoke')
-@pytest.mark.parametrize('kind', GETAS_PARAMS)
-def test_crud_get_as_record(delfi_id, kind, with_wdms_env):
-    delfi_record_id = delfi_id
-    with_wdms_env.set(f'osdu_{kind}_record_id', delfi_record_id)
-
-    # Get it as osdu wellbore with delfi id
-    result = build_request(f'crud.osdu_{kind}.get_osdu_{kind}').call(with_wdms_env)
-    result.assert_status_code(422)

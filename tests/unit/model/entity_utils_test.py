@@ -14,31 +14,13 @@
 
 import pytest
 
-from app.model import entity_utils, schema_version
-from app.model.entity_utils import Entity, KindMetaData
+from app.model import entity_utils
+from app.model.entity_utils import KindMetaData
 
 
 @pytest.fixture(params=['authority_data_partition', 'authority_slb'])
 def authority(request):
     return 'test_data_partition' if request.param == "authority_data_partition" else 'slb'
-
-
-def test_get_version():
-    assert entity_utils.get_version(Entity.LOG) == schema_version.log_version
-    assert entity_utils.get_version(Entity.LOGSET) == schema_version.logset_version
-    assert entity_utils.get_version(Entity.MARKER) == schema_version.marker_version
-    assert entity_utils.get_version(Entity.WELLBOREINTERVALSET) == schema_version.wellboreintervalset_version
-    assert entity_utils.get_version(Entity.TRAJECTORY) == schema_version.trajectory_version
-    assert entity_utils.get_version(Entity.WELL) == schema_version.well_version
-    assert entity_utils.get_version(Entity.WELLBORE) == schema_version.wellbore_version
-    assert entity_utils.get_version(Entity.DIP) == schema_version.dip_version
-    assert entity_utils.get_version(Entity.DIPSET) == schema_version.dipset_version
-
-
-def test_get_kind(authority):
-    expected_kind = f'{authority}:source-1:well:1.0.2'
-    actual_kind = entity_utils.get_kind(authority=authority, source='source-1', entity=Entity.WELL)
-    assert actual_kind == expected_kind
 
 
 def test_get_kind_meta(authority):
