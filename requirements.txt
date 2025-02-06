@@ -318,8 +318,9 @@ osdu-data-ecosystem-storage==2.0.0
     # via -r requirements.in
 osdu-log-recognition-lib==1.0.0
     # via -r requirements.in
-packaging==21.0
+packaging==22.0
     # via
+    #   -r requirements.in
     #   dask
     #   distributed
 pandas==1.5.3
@@ -364,8 +365,6 @@ pyjwt[crypto]==2.4.0
     #   msal
     #   osdu-core-lib-python
     #   osdu-core-lib-python-gcp
-pyparsing==2.4.7
-    # via packaging
 pyrsistent==0.19.3
     # via jsonschema
 python-dateutil==2.8.2

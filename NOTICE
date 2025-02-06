@@ -126,7 +126,6 @@ The following software have components provided under the terms of this license:
 - pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 - pyasn1-modules (from https://github.com/etingof/pyasn1-modules, https://github.com/pyasn1/pyasn1-modules)
 - pycparser (from https://github.com/eliben/pycparser)
-- pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - python-dateutil (from https://github.com/dateutil/dateutil)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
@@ -239,7 +238,6 @@ The following software have components provided under the terms of this license:
 - pep517 (from https://github.com/pypa/pep517)
 - pluggy
 - pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/)
-- pyparsing (from http://pyparsing.wikispaces.com/)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - pytest (from http://pytest.org, https://docs.pytest.org/en/latest/, https://pypi.org/project/pytest/)
 - pytest-cov (from https://github.com/pytest-dev/pytest-cov)
@@ -257,13 +255,6 @@ The following software have components provided under the terms of this license:
 - urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://pypi.org/project/zipp/, https://pypi.org/project/zipp/3.19.0/, https://pypi.org/project/zipp/3.19.2/)
-
-========================================================================
-MIT-CMU
-========================================================================
-The following software have components provided under the terms of this license:
-
-- pyparsing (from http://pyparsing.wikispaces.com/)
 
 ========================================================================
 MPL-2.0

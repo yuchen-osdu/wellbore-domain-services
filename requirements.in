@@ -51,3 +51,4 @@ osdu-core-lib-python-baremetal~=2.1.0
 osdu-core-lib-python~=2.0.0
 osdu-data-ecosystem-schema==1.0.0
 wellbore-schema-manipulation==1.0.1
+packaging==22.0

@@ -98,7 +98,7 @@ openapi-spec-validator==0.5.7
     # via -r requirements_dev.in
 ordered-set==4.0.2
     # via deepdiff
-packaging==21.0
+packaging==22.0
     # via
     #   -c requirements.txt
     #   build
@@ -127,10 +127,6 @@ pyjwt[crypto]==2.4.0
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in
-pyparsing==2.4.7
-    # via
-    #   -c requirements.txt
-    #   packaging
 pyrsistent==0.19.3
     # via
     #   -c requirements.txt
