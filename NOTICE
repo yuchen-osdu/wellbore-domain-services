@@ -33,7 +33,7 @@ The following software have components provided under the terms of this license:
 - google-cloud-trace (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-trace, https://github.com/googleapis/python-trace)
 - google-crc32c (from https://github.com/googleapis/python-crc32c)
 - google-resumable-media (from https://github.com/googleapis/google-resumable-media-python)
-- googleapis-common-protos (from https://github.com/googleapis/python-api-common-protos)
+- googleapis-common-protos (from https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - importlib-metadata
