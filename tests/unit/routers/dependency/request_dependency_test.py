@@ -1,4 +1,3 @@
-from anyio import ExceptionGroup
 import pytest
 
 from fastapi import FastAPI, APIRouter, Depends

@@ -8,10 +8,10 @@
 --extra-index-url https://community.opengroup.org/api/v4/projects/148/packages/pypi/simple
 --extra-index-url https://community.opengroup.org/api/v4/projects/224/packages/pypi/simple
 
-anyio==3.6.2
+anyio==4.4.0
     # via
     #   -c requirements.txt
-    #   httpcore
+    #   httpx
 asgi-lifespan==1.0.1
     # via -r requirements_dev.in
 attrs==21.2.0
@@ -50,15 +50,15 @@ deepdiff==5.7.0
     # via -r requirements_dev.in
 execnet==2.1.1
     # via pytest-xdist
-h11==0.12.0
+h11==0.13.0
     # via
     #   -c requirements.txt
     #   httpcore
-httpcore==0.15.0
+httpcore==1.0.0
     # via
     #   -c requirements.txt
     #   httpx
-httpx==0.23.0
+httpx==0.26.0
     # via
     #   -c requirements.txt
     #   -r requirements_dev.in
@@ -69,8 +69,8 @@ idna==3.2
     # via
     #   -c requirements.txt
     #   anyio
+    #   httpx
     #   requests
-    #   rfc3986
 iniconfig==2.0.0
     # via pytest
 jsonschema==4.17.3
@@ -143,7 +143,7 @@ pytest-cov==4.1.0
     # via -r requirements_dev.in
 pytest-dependency==0.5.1
     # via -r requirements_dev.in
-pytest-httpx==0.21.3
+pytest-httpx==0.28.0
     # via -r requirements_dev.in
 pytest-randomly==3.15.0
     # via -r requirements_dev.in
@@ -167,10 +167,6 @@ requests==2.28.1
     #   -r requirements_dev.in
 rfc3339-validator==0.1.4
     # via openapi-schema-validator
-rfc3986[idna2008]==1.5.0
-    # via
-    #   -c requirements.txt
-    #   httpx
 six==1.16.0
     # via
     #   -c requirements.txt
@@ -182,7 +178,6 @@ sniffio==1.2.0
     #   -c requirements.txt
     #   anyio
     #   asgi-lifespan
-    #   httpcore
     #   httpx
 sortedcontainers==2.4.0
     # via
