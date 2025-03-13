@@ -33,7 +33,7 @@ The following software have components provided under the terms of this license:
 - google-cloud-trace (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-trace, https://github.com/googleapis/python-trace)
 - google-crc32c (from https://github.com/googleapis/python-crc32c)
 - google-resumable-media (from https://github.com/googleapis/google-resumable-media-python)
-- googleapis-common-protos (from https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos)
+- googleapis-common-protos (from https://pypi.org/project/googleapis-common-protos/)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
 - importlib-metadata
@@ -58,7 +58,6 @@ The following software have components provided under the terms of this license:
 - python-dateutil (from https://github.com/dateutil/dateutil)
 - python-multipart (from https://pypi.org/project/python-multipart/, https://pypi.org/project/python-multipart/0.0.6/, https://pypi.org/project/python-multipart/0.0.9/)
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
-- rfc3986 (from http://rfc3986.readthedocs.io, https://rfc3986.readthedocs.org)
 - rsa (from https://stuvel.eu/rsa)
 - s3transfer (from https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
@@ -77,7 +76,7 @@ BSD-2-Clause
 The following software have components provided under the terms of this license:
 
 - adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/)
-- decorator (from https://github.com/micheles/decorator)
+- decorator (from https://pypi.org/project/decorator/)
 - grpcio (from https://grpc.io)
 - lazy-object-proxy (from https://github.com/ionelmc/python-lazy-object-proxy)
 - locket (from http://github.com/mwilliamson/locket.py)
@@ -102,7 +101,7 @@ The following software have components provided under the terms of this license:
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from https://github.com/pyca/cryptography)
 - dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/)
-- decorator (from https://github.com/micheles/decorator)
+- decorator (from https://pypi.org/project/decorator/)
 - distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/)
 - gcsfs (from https://github.com/fsspec/gcsfs)
