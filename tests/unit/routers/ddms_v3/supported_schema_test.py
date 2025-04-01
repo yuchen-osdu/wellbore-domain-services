@@ -66,12 +66,18 @@ trajectory_data = {
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.1.0", trajectory_data),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.2.0", trajectory_data),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.3.0", trajectory_data),
+        ("/ddms/v3/welllogacquisition", "master-data--WellLogAcquisition:1.0.0", {}),
     ],
 )
-@patch.object(storage_record_service_client_mock, 'create_or_update_records',
-              AsyncMock(return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=['rec1'])))
 @pytest.mark.anyio
-async def test_check_supported_kind(client, api, record_type, data):
+async def test_check_supported_kind(mocker, client, api, record_type, data):
+    mocker.patch.object(
+        storage_record_service_client_mock,
+        "create_or_update_records",
+        AsyncMock(
+            return_value=CreateUpdateRecordsResponse(recordCount=1, recordIds=["rec1"])
+        ),
+    )
     response = await client.post(
         url=api,
         json=[
@@ -110,17 +116,24 @@ async def test_check_supported_kind(client, api, record_type, data):
         ("/ddms/v3/wellboretrajectories", "work-product-component--foo:1.0.0", trajectory_data, 404),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.0.1", trajectory_data, 404),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:2.0.0", trajectory_data, 404),
+        ("/ddms/v3/welllogacquisition", "master-data--WellLogAcquisition:1.0.1", {}, 404),
     ],
 )
-@patch.object(schema_service_client_mock, 'get_schema',
-              AsyncMock(side_effect=odes_schema.UnexpectedResponse(
+@pytest.mark.anyio
+async def test_check_not_supported_kind(mocker, client, api, record_type, data, code):
+    mocker.patch.object(
+        schema_service_client_mock,
+        "get_schema",
+        AsyncMock(
+            side_effect=odes_schema.UnexpectedResponse(
                 status_code=404,
                 reason_phrase="Item not found",
                 content="".encode(encoding="utf-8"),
                 headers=None,
-            )))
-@pytest.mark.anyio
-async def test_check_not_supported_kind(client, api, record_type, data, code):
+            )
+        ),
+    )
+
     response = await client.post(
         url=api,
         json=[

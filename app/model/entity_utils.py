@@ -20,6 +20,7 @@ class Entity(Enum):
     LOG = 'log'
     MARKER = 'marker'
     WELLBOREINTERVALSET = 'wellboreintervalset'
+    WELLLOGACQUISITION = 'welllogacquisition'
     TRAJECTORY = 'trajectory'
     WELL = 'well'
     WELL_LOG = 'welllog'

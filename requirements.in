@@ -16,6 +16,10 @@ prometheus-fastapi-instrumentator
 tornado>=6.4.2
 urllib3>=1.26.17
 
+httpx
+numpy
+jsonschema
+
 anyio==4.4.0
 
 opentelemetry-api

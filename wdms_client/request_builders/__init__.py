@@ -146,6 +146,17 @@ request_path_dict = {
     "crud.osdu_wellboreintervalset_100.create_osdu_wellboreintervalset_100":
         crud.osdu_wellboreintervalset.build_request_create_osdu_wellboreintervalset_100,
 
+    "crud.osdu_welllogacquisition.delete_osdu_welllogacquisition":
+        crud.osdu_welllogacquisition.build_request_delete_osdu_welllogacquisition,
+    "crud.osdu_welllogacquisition.get_osdu_welllogacquisition_specific_version":
+        crud.osdu_welllogacquisition.build_request_get_osdu_welllogacquisition_specific_version,
+    "crud.osdu_welllogacquisition.get_osdu_welllogacquisition":
+        crud.osdu_welllogacquisition.build_request_get_osdu_welllogacquisition,
+    "crud.osdu_welllogacquisition.get_versions_of_osdu_welllogacquisition":
+        crud.osdu_welllogacquisition.build_request_get_versions_of_osdu_welllogacquisition,
+    "crud.osdu_welllogacquisition.create_osdu_welllogacquisition":
+        crud.osdu_welllogacquisition.build_request_create_osdu_welllogacquisition,
+
     "crud.log.delete_log":
         crud.log.build_request_delete_log,
     "crud.log.get_versions_of_log":
@@ -230,6 +241,8 @@ def get_cleaned_ref_and_res(kind: str) -> dict:
         return crud.osdu_wellboremarkerset.get_cleaned_ref_and_res()
     if kind == "osdu_wellboreintervalset_100":
         return crud.osdu_wellboreintervalset.get_cleaned_ref_and_res()
+    if kind == "osdu_welllogacquisition":
+        return crud.osdu_welllogacquisition.get_cleaned_ref_and_res()
 
 
 def diff_records(ref, res):

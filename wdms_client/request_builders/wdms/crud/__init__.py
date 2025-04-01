@@ -1,5 +1,5 @@
 from ..crud import log, dips, osdu_wellbore, osdu_well, osdu_welllog, \
-    osdu_wellboretrajectory, osdu_wellboremarkerset, osdu_wellboreintervalset
+    osdu_wellboretrajectory, osdu_wellboremarkerset, osdu_wellboreintervalset, osdu_welllogacquisition
 
 __all__ = ["log", "dips", "osdu_wellbore", "osdu_well", "osdu_welllog", "osdu_wellboretrajectory",
-           "osdu_wellboremarkerset", "osdu_wellboreintervalset"]
+           "osdu_wellboremarkerset", "osdu_wellboreintervalset", "osdu_welllogacquisition"]

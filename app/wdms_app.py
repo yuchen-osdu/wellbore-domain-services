@@ -76,6 +76,7 @@ from app.routers.ddms_v3 import (
     wellbore_trajectory_ddms_v3,
     welllog_ddms_v3,
     wellbore_interval_set_ddms_v3,
+    welllog_acquisition_v3,
 )
 from app.routers.dependency import (
     FetchRecordDependency,
@@ -205,7 +206,8 @@ ddms_v3_routes_groups_without_bulk = [
     (wellbore_ddms_v3, "Wellbore", Entity.WELLBORE),
     (well_ddms_v3, "Well", Entity.WELL),
     (markerset_ddms_v3, "Marker", Entity.MARKER),
-    (wellbore_interval_set_ddms_v3, "Wellbore IntervalSet", Entity.WELLBOREINTERVALSET)
+    (wellbore_interval_set_ddms_v3, "Wellbore IntervalSet", Entity.WELLBOREINTERVALSET),
+    (welllog_acquisition_v3, "WellLog Acquisition", Entity.WELLLOGACQUISITION)
 ]
 
 ddms_v3_routes_groups_with_bulk = [

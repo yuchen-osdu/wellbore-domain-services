@@ -215,6 +215,7 @@ httpcore==1.0.0
     # via httpx
 httpx==0.26.0
     # via
+    #   -r requirements.in
     #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
@@ -239,7 +240,9 @@ jmespath==0.10.0
 jsonpath-ng==1.5.3
     # via -r requirements.in
 jsonschema==4.17.3
-    # via wellbore-schema-manipulation
+    # via
+    #   -r requirements.in
+    #   wellbore-schema-manipulation
 locket==1.0.0
     # via
     #   distributed
@@ -270,6 +273,7 @@ natsort==7.1.1
     # via -r requirements.in
 numpy==1.23.2
     # via
+    #   -r requirements.in
     #   pandas
     #   pyarrow
 oauthlib==3.2.2
