@@ -20,7 +20,7 @@ pip install --upgrade pip
 pip install wheel
 
 # Install Python requirements
-for REQ in $PIP_REQUIREMENTS ; do
+for REQ in $PIP_REQUIREMENTS $PIP_REQUIREMENTS_TOOLING_ONLY; do
   pip install -r $REQ
 done
 

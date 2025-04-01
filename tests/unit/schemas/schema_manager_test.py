@@ -50,12 +50,18 @@ def test_create_versions_of_schema():
             assert extra_f == ref_extra_f
 
 
-def test_load_known_schemas():
+@pytest.mark.parametrize("schema_name", [
+    "osdu:wks:master-data--Wellbore:1.3.0",
+    "osdu:wks:master-data--WellLogAcquisition:1.0.0",
+    "osdu:wks:work-product-component--WellLog:1.5.0",
+    # Add more schema names here if needed
+])
+def test_load_known_schemas(schema_name):
     SchemaManager.load_known_schemas()
-    assert "osdu:wks:master-data--Wellbore:1.3.0" in SchemaManager.schema_library
-    assert "osdu:wks:master-data--Wellbore:1.3.0" in SchemaManager.optimised_schema_library
-    assert "osdu:wks:master-data--Wellbore:1.3.0" in SchemaManager.schema_forbid_extra_library
-    assert "osdu:wks:master-data--Wellbore:1.3.0" in SchemaManager.optimised_schema_forbid_extra_library
+    assert schema_name in SchemaManager.schema_library
+    assert schema_name in SchemaManager.optimised_schema_library
+    assert schema_name in SchemaManager.schema_forbid_extra_library
+    assert schema_name in SchemaManager.optimised_schema_forbid_extra_library
 
 
 schema_service_client_mock = create_autospec(SchemaServiceClient, spec_set=True, instance=True)
@@ -95,7 +101,7 @@ async def test_load_unknown_schema_404(ctx_fixture_with_search_client):
     side_effect = odes_schema.UnexpectedResponse(status_code=404, reason_phrase="Not Found", content=None, headers=None)
     with patch.object(schema_service_client_mock, 'get_schema', side_effect=side_effect):
         with pytest.raises(odes_schema.UnexpectedResponse) as e:
-            res = await SchemaManager._load_unknown_schema(kind=kind, ctx=ctx_fixture_with_search_client)
+            await SchemaManager._load_unknown_schema(kind=kind, ctx=ctx_fixture_with_search_client)
         assert e.value.status_code == 404
 
 
@@ -161,7 +167,7 @@ async def test_get_schema_from_service_404(ctx_fixture_with_search_client):
     side_effect = odes_schema.UnexpectedResponse(status_code=404, reason_phrase="Not Found", content=None, headers=None)
     with patch.object(schema_service_client_mock, 'get_schema', side_effect=side_effect):
         with pytest.raises(odes_schema.UnexpectedResponse) as e:
-            res = await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
+            await SchemaManager.get_schema(kind=kind, ctx=ctx_fixture_with_search_client,
                                                  mode=SchemaMode.EXTRA_FORBID)
         assert e.value.status_code == 404
 
@@ -213,7 +219,8 @@ async def test_validate_records_success(ctx_fixture_with_search_client, mode, re
     "wellLog_v3_130",
     "wellLog_v3_140",
     "well_v3_130",
-    "wellbore_v3_140"
+    "wellbore_v3_140",
+    "wellLogacquisition_v3_100",
 ])
 async def test_validate_new_schemas(ctx_fixture_with_search_client, mode, file_name):
     # Test schemas that does not have pydantic models
@@ -226,5 +233,3 @@ async def test_validate_new_schemas(ctx_fixture_with_search_client, mode, file_n
         entities = json.load(f)
 
     await schema_library._validate_entities(entities, ctx_fixture_with_search_client, mode)
-
-

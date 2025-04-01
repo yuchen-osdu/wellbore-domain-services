@@ -38,3 +38,4 @@ WellboreTrajectoryId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-Wellb
 WellboreMarkerSetId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$')
 WellLogId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')
 WellboreIntervalSetId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$')
+WellLogAcquisitionId = constr(regex=r'^[\w\-\.]+:master-data\-\-WellLogAcquisition:[\w\-\.\:\%]+$')

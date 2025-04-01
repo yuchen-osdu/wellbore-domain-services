@@ -29,7 +29,6 @@ from starlette.responses import Response
 
 from app.bulk_persistence import dask_client
 from app.clients import StorageRecordServiceClient
-from app.model.osdu_model import Wellbore
 from app.wdms_app import DDMS_V3_PATH
 
 from tests.unit.fixtures_pkg.testing_app_chunking import create_bulk_mocks
@@ -61,42 +60,56 @@ async def dasked_test_app_with_mocked_core_service(app_configurable_with_testcli
 
 
 @pytest.mark.anyio
-async def test_post_records_successful(dasked_test_app_with_mocked_core_service):
-    base_url = "/ddms/v3/wellbores"
+@pytest.mark.parametrize(
+    "base_url, record_id, json_file",
+    [
+        ("/ddms/v3/wellbores", "namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9", "Wellbore_unit.json"),
+        ("/ddms/v3/welllogacquisition", "namespace:master-data--WellLogAcquisition:9cdfd40a-e3b7-506a-968d-0e327a4660df", "WellLogAcquisition100_unit.json"),
+    ]
+)
+async def test_post_records_successful(mocker, dasked_test_app_with_mocked_core_service,
+                                       base_url, record_id, json_file):
     expected_response = CreateUpdateRecordsResponse(
         recordCount=1,
-        recordIds=[r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9"],
+        recordIds=[record_id],
     )
 
-    with patch.object(
+    mocker.patch.object(
             storage_record_service_client_mock,
             "create_or_update_records",
             return_value=expected_response,
-    ):
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(dir_path, r"Wellbore_unit.json")) as f:
-            test_Wellbores = json.load(f)
+    )
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(dir_path, json_file)) as f:
+        test_Wellbores = json.load(f)
 
-        # when
-        response = await dasked_test_app_with_mocked_core_service.post(
-            base_url, data=json.dumps(test_Wellbores), headers={"content-type": "application/json"}
-        )
+    # when
+    response = await dasked_test_app_with_mocked_core_service.post(
+        base_url, data=json.dumps(test_Wellbores), headers={"content-type": "application/json"}
+    )
 
-        # then
-        assert response.status_code == status.HTTP_200_OK
-        assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
+    # then
+    assert response.status_code == status.HTTP_200_OK
+    assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
 
 
 @pytest.mark.anyio
-async def test_validation_error_message(dasked_test_app_with_mocked_core_service):
+@pytest.mark.parametrize(
+    "base_url, json_file",
+    [
+        ("/ddms/v3/wellbores", "Wellbore_unit.json"),
+        ("/ddms/v3/welllogacquisition", "WellLogAcquisition100_unit.json"),
+    ]
+)
+async def test_validation_error_message(dasked_test_app_with_mocked_core_service, base_url, json_file):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, r"Wellbore_unit.json")) as f:
-        wellbore_dict = json.load(f)
+    with open(os.path.join(dir_path, json_file)) as f:
+        json_data = json.load(f)
 
     # when record is not compliant with the schema
-    wellbore_dict[0]["data"]["TechnicalAssuranceTypeID"] = 12
+    json_data[0]["data"]["TechnicalAssuranceTypeID"] = 12
     response = await dasked_test_app_with_mocked_core_service.post(
-        "/ddms/v3/wellbores", data=json.dumps(wellbore_dict), headers={"content-type": "application/json"}
+        base_url, data=json.dumps(json_data), headers={"content-type": "application/json"}
     )
 
     # then error contains json path location of the invalid field
@@ -193,46 +206,86 @@ async def test_get_delete_v3_routes_success(app_configurable_with_testclient,
     assert response.status_code == 204
 
 
+tests_parameters_restricted_well = (
+    r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9",
+    {
+        "id": "namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
+        "kind": "osdu:wks:master-data--Well:1.0.0",
+        "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+        "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
+        "data": {}
+    },
+    Record(
+        id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
+        kind="osdu:wks:master-data--Well:1.0.0",
+        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+        version=1976,
+        legal={
+            "legaltags": ["string"],
+            "otherRelevantDataCountries": ["FR"],
+        },
+        data={},
+    )
+)
+
+tests_parameters_restricted_welllog_acquisition = (
+    "namespace:master-data--WellLogAcquisition:9cdfd40a-e3b7-506a-968d-0e327a4660df",
+    {
+        "id": "namespace:master-data--WellLogAcquisition:9cdfd40a-e3b7-506a-968d-0e327a4660df:",
+        "kind": "osdu:wks:master-data--WellLogAcquisition:1.0.0",
+        "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+        "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
+        "data": {}
+    },
+    Record(
+        id="namespace:master-data--WellLogAcquisition:9cdfd40a-e3b7-506a-968d-0e327a4660df:",
+        kind="osdu:wks:master-data--WellLogAcquisition:1.0.0",
+        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
+        version=1976,
+        legal={
+            "legaltags": ["string"],
+            "otherRelevantDataCountries": ["FR"],
+        },
+        data={},
+    )
+)
+
 tests_parameters_restricted_record_id = [
-    ("/ddms/v3/wells", r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9"),
-    ("/ddms/v3/wellbores", r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32qwer9"),
-    ("/ddms/v3/welllogs", r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9"),
+    (
+        "/ddms/v3/wells",
+        r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9",
+        tests_parameters_restricted_well[0], tests_parameters_restricted_well[1], tests_parameters_restricted_well[2]
+    ),
+    (
+        "/ddms/v3/wellbores",
+        r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32qwer9",
+        tests_parameters_restricted_well[0], tests_parameters_restricted_well[1], tests_parameters_restricted_well[2]
+    ),
+    (
+        "/ddms/v3/welllogs",
+        r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        tests_parameters_restricted_well[0], tests_parameters_restricted_well[1], tests_parameters_restricted_well[2]
+    ),
     (
         "/ddms/v3/wellboretrajectories",
         r"namespace:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        tests_parameters_restricted_well[0], tests_parameters_restricted_well[1], tests_parameters_restricted_well[2]
     ),
     (
         "/ddms/v3/wellboremarkersets",
         r"namespace:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        tests_parameters_restricted_well[0], tests_parameters_restricted_well[1], tests_parameters_restricted_well[2]
     ),
     (
         "/ddms/v3/wellboreintervalsets",
         r"namespace:work-product-component--WellboreIntervalSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
+        tests_parameters_restricted_well[0], tests_parameters_restricted_well[1], tests_parameters_restricted_well[2]
     ),
-]
-
-tests_parameters_restricted_well = [
     (
-        r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9",
-        {
-            "id": "namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            "kind": "osdu:wks:master-data--Well:1.0.0",
-            "acl": {"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-            "legal": {"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
-            "data": {}
-        },
-        Record(
-            id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-            kind="osdu:wks:master-data--Well:1.0.0",
-            acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-            version=1976,
-            legal={
-                "legaltags": ["string"],
-                "otherRelevantDataCountries": ["FR"],
-            },
-            data={},
-        )
-    )
+        "/ddms/v3/welllogacquisition",
+        "namespace:master-data--WellLogAcquisition:9cdfd40a-e3b7-506a-968d-0e327a4660df",
+        tests_parameters_restricted_welllog_acquisition[0], tests_parameters_restricted_welllog_acquisition[1], tests_parameters_restricted_welllog_acquisition[2]
+    ),
 ]
 
 
@@ -244,10 +297,9 @@ def validation_test_restricted_record_id(record_id, record_id_to_test, response,
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("base_url, id", tests_parameters_restricted_record_id)
-@pytest.mark.parametrize("id_to_test, record_to_test, record_obj_to_test", tests_parameters_restricted_well)
+@pytest.mark.parametrize("base_url, id, id_to_test, record_to_test, record_obj_to_test", tests_parameters_restricted_record_id)
 async def test_restricted_record_id(
-        dasked_test_app_with_mocked_core_service, base_url, id, id_to_test, record_to_test, record_obj_to_test
+        mocker, dasked_test_app_with_mocked_core_service, base_url, id, id_to_test, record_to_test, record_obj_to_test
 ):
     record_id = id
     record_id_to_test = id_to_test
@@ -256,80 +308,81 @@ async def test_restricted_record_id(
     version_obj = RecordVersions(recordId=record_id_to_test, versions=[version])
     create_update_records_obj = CreateUpdateRecordsResponse(record_count=1, record_ids=["1"], skipped_record_ids=["1"])
 
-    with patch.object(storage_record_service_client_mock, "get_record", return_value=record_obj_to_test), \
-         patch.object(storage_record_service_client_mock, "get_record_version", return_value=record_obj_to_test), \
-         patch.object(storage_record_service_client_mock, "get_all_record_versions", return_value=version_obj), \
-         patch.object(storage_record_service_client_mock, "create_or_update_records", return_value=create_update_records_obj), \
-         patch("app.routers.bulk.bulk_routes.set_bulk_field_and_send_record", return_value=create_update_records_obj), \
-         patch.object(storage_record_service_client_mock, "delete_record", return_value=Response()):
-        response = await dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+    mocker.patch.object(storage_record_service_client_mock, "get_record", return_value=record_obj_to_test)
+    mocker.patch.object(storage_record_service_client_mock, "get_record_version", return_value=record_obj_to_test)
+    mocker.patch.object(storage_record_service_client_mock, "get_all_record_versions", return_value=version_obj)
+    mocker.patch.object(storage_record_service_client_mock, "create_or_update_records", return_value=create_update_records_obj)
+    mocker.patch("app.routers.bulk.bulk_routes.set_bulk_field_and_send_record", return_value=create_update_records_obj)
+    mocker.patch.object(storage_record_service_client_mock, "delete_record", return_value=Response())
 
+    response = await dasked_test_app_with_mocked_core_service.post(f"{base_url}", json=[record_to_test])
+
+    validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                         status.HTTP_200_OK, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    if base_url == "/ddms/v3/welllogs" or base_url == "/ddms/v3/wellboretrajectories":
+        # Session
+        response = await dasked_test_app_with_mocked_core_service.post(
+            f"{base_url}/{record_id_to_test}/sessions", json={"fromVersion": 11351351, "mode": "update"}
+        )
         validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                             status.HTTP_200_OK, status.HTTP_422_UNPROCESSABLE_ENTITY)
+                                             status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-        if base_url == "/ddms/v3/welllogs" or base_url == "/ddms/v3/wellboretrajectories":
-            # Session
-            response = await dasked_test_app_with_mocked_core_service.post(
-                f"{base_url}/{record_id_to_test}/sessions", json={"fromVersion": 11351351, "mode": "update"}
-            )
-            validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                                 status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
+        session_id = uuid.uuid4()
+        response = await dasked_test_app_with_mocked_core_service.post(
+            f"{base_url}/{record_id_to_test}/sessions/{session_id}/data",
+            data=chunk.to_json(orient="split"),
+            headers={"Content-Type": "application/json"},
+        )
+        validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                             status.HTTP_200_OK, status.HTTP_404_NOT_FOUND)
 
-            session_id = uuid.uuid4()
-            response = await dasked_test_app_with_mocked_core_service.post(
-                f"{base_url}/{record_id_to_test}/sessions/{session_id}/data",
-                data=chunk.to_json(orient="split"),
-                headers={"Content-Type": "application/json"},
-            )
-            validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                                 status.HTTP_200_OK, status.HTTP_404_NOT_FOUND)
+        response = await dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}/sessions")
+        validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                             status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-            response = await dasked_test_app_with_mocked_core_service.get(f"{base_url}/{record_id_to_test}/sessions")
-            validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                                 status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
+        response = await dasked_test_app_with_mocked_core_service.get(
+            f"{base_url}/{record_id_to_test}/sessions/{session_id}"
+        )
+        validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                             status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-            response = await dasked_test_app_with_mocked_core_service.get(
-                f"{base_url}/{record_id_to_test}/sessions/{session_id}"
-            )
-            validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                                 status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
-
-            # Data
-            moc_record = Record(
-                id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
-                kind="osdu:wks:master-data--Well:1.0.0",
-                acl={"owners": ["test"], "viewers": ["test"]},
-                version=1976,
-                legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
-                data={
-                    "name": "myWell",
-                    "uwi": "00-000-00000-00",
-                    "ExtensionProperties": {
-                        "wdms": {"bulkURI": "urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81"}
-                    },
+        # Data
+        moc_record = Record(
+            id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32gtrfd9:",
+            kind="osdu:wks:master-data--Well:1.0.0",
+            acl={"owners": ["test"], "viewers": ["test"]},
+            version=1976,
+            legal={"legaltags": ["string"], "otherRelevantDataCountries": ["FR"]},
+            data={
+                "name": "myWell",
+                "uwi": "00-000-00000-00",
+                "ExtensionProperties": {
+                    "wdms": {"bulkURI": "urn:wdms-1:uuid:31fbda07-c414-4466-96d4-73a2236bba81"}
                 },
-            )
-            with patch.object(storage_record_service_client_mock, "get_record", return_value=moc_record):
-                data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
-                headers = {"content-type": "application/json"}
+            },
+        )
+        mocker.patch.object(storage_record_service_client_mock, "get_record", return_value=moc_record)
+        data = '{"columns": ["Ref"], "index": [0], "data": [[0]]}'
+        headers = {"content-type": "application/json"}
 
-                response = await dasked_test_app_with_mocked_core_service.post(
-                    f"{base_url}/{record_id_to_test}/data", data=data, headers=headers
-                )
-                validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                                     status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
+        response = await dasked_test_app_with_mocked_core_service.post(
+            f"{base_url}/{record_id_to_test}/data", data=data, headers=headers
+        )
+        validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                             status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-                response = await dasked_test_app_with_mocked_core_service.get(
-                    f"{base_url}/{record_id_to_test}/data?orient=split", headers={"Accept": "application/json"}
-                )
-                validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                                     status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
+        response = await dasked_test_app_with_mocked_core_service.get(
+            f"{base_url}/{record_id_to_test}/data?orient=split", headers={"Accept": "application/json"}
+        )
+        validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                             status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
-                response = await dasked_test_app_with_mocked_core_service.get(
-                    f"{base_url}/{record_id_to_test}/versions/{version}/data"
-                )
-                validation_test_restricted_record_id(record_id, record_id_to_test, response,
-                                                     status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
+        response = await dasked_test_app_with_mocked_core_service.get(
+            f"{base_url}/{record_id_to_test}/versions/{version}/data"
+        )
+        validation_test_restricted_record_id(record_id, record_id_to_test, response,
+                                             status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST)
 
 
 tests_parameters_record_ids = [

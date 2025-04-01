@@ -8430,6 +8430,749 @@
         ]
       }
     },
+    "/ddms/v3/welllogacquisition": {
+      "post": {
+        "description": "From WellLog 1.5.0 new attributes are introduced WellLogAcquisitionDetails.WellLogAcquisitionID\n    to reference a WellLogAcquisition into a WellLog record. (ref. [WellLog 1.5.0 schemas]\n    (https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Examples/work-product-component/WellLog.1.5.0.json#L405))\n    \n      \nRequired roles: 'users.datalake.editors' or 'users.datalake.admins",
+        "operationId": "post_welllogacquisitionid_osdu",
+        "parameters": [
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": [
+                {
+                  "acl": {
+                    "owners": [
+                      "someone@company.com"
+                    ],
+                    "viewers": [
+                      "someone@company.com"
+                    ]
+                  },
+                  "ancestry": {
+                    "parents": []
+                  },
+                  "createTime": "2020-12-16T11:46:20.163Z",
+                  "createUser": "some-user@some-company-cloud.com",
+                  "data": {
+                    "ActivityStates": [
+                      {
+                        "ActivityStatusID": "namespace:reference-data--ActivityStatus:Planned:",
+                        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                        "Remark": "Example Remark",
+                        "TerminationDateTime": "2020-02-13T09:13:15.55Z"
+                      }
+                    ],
+                    "ActivityTemplateID": "namespace:master-data--ActivityTemplate:SomeUniqueActivityTemplateID:",
+                    "ContractIDs": [
+                      "namespace:master-data--Agreement:SomeUniqueAgreementID:"
+                    ],
+                    "Contractors": [
+                      {
+                        "ContractorCrew": "Example ContractorCrew",
+                        "ContractorOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+                        "ContractorTypeID": "namespace:reference-data--ContractorType:Record:"
+                      }
+                    ],
+                    "ExistenceKind": "namespace:reference-data--ExistenceKind:Prototype:",
+                    "ExtensionProperties": {},
+                    "FundsAuthorizations": [
+                      {
+                        "AuthorizationID": "Example AuthorizationID",
+                        "CurrencyID": "namespace:reference-data--Currency:AFN:",
+                        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                        "FundsAmount": 12345.6
+                      }
+                    ],
+                    "GeoContexts": [
+                      {
+                        "GeoPoliticalEntityID": "namespace:master-data--GeoPoliticalEntity:SomeUniqueGeoPoliticalEntityID:",
+                        "GeoTypeID": "namespace:reference-data--GeoPoliticalEntityType:Area:"
+                      },
+                      {
+                        "BasinID": "namespace:master-data--Basin:SomeUniqueBasinID:",
+                        "GeoTypeID": "namespace:reference-data--BasinType:ArcWrenchOceanContinent:"
+                      },
+                      {
+                        "FieldID": "namespace:master-data--Field:SomeUniqueFieldID:",
+                        "GeoTypeID": "Field"
+                      },
+                      {
+                        "GeoTypeID": "namespace:reference-data--PlayType:CarbonCaptureAndStorage:",
+                        "PlayID": "namespace:master-data--Play:SomeUniquePlayID:"
+                      },
+                      {
+                        "GeoTypeID": "namespace:reference-data--ProspectType:Structural.Anticline:",
+                        "ProspectID": "namespace:master-data--Prospect:SomeUniqueProspectID:"
+                      }
+                    ],
+                    "LastActivityState": {
+                      "ActivityStatusID": "namespace:reference-data--ActivityStatus:Planned:",
+                      "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                      "Remark": "Example Remark",
+                      "TerminationDateTime": "2020-02-13T09:13:15.55Z"
+                    },
+                    "LogRuns": [
+                      {
+                        "ContractorCompanyID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+                        "ConveyanceMethodID": "namespace:reference-data--ConveyanceMethod:ElectricWirelineConveyed:",
+                        "GenericToolTypeIDs": [
+                          "namespace:reference-data--WellLogToolClass:Acoustic:"
+                        ],
+                        "LogPasses": [
+                          {
+                            "FlowingConditionID": "namespace:reference-data--WellLogFlowingCondition:NoFLow:",
+                            "HoleTypeIDs": [
+                              "namespace:reference-data--WellLogHoleType:OpenHole:"
+                            ],
+                            "IndexTypeID": "namespace:reference-data--WellLogSamplingDomainType:Depth:",
+                            "IsRegularSamplingInterval": true,
+                            "LogPassID": "Example LogPassID",
+                            "LoggingDirectionID": "namespace:reference-data--WellLogDirection:Ascending:",
+                            "PassTypeID": "namespace:reference-data--WellLogPassType:Main:",
+                            "Remarks": [
+                              {
+                                "Remark": "Example Remark",
+                                "RemarkDate": "2020-02-13",
+                                "RemarkSequenceNumber": 1,
+                                "RemarkSource": "Example Remark Source"
+                              }
+                            ],
+                            "SampleAcquisitionJobIDs": [
+                              "namespace:master-data--SampleAcquisitionJob:SomeUniqueSampleAcquisitionJobID:"
+                            ],
+                            "SamplingInterval": 0.0254,
+                            "SamplingStart": 12345.6,
+                            "SamplingStop": 12345.6,
+                            "WellboreFluidTypeID": "namespace:reference-data--WellboreFluidType:Oil:"
+                          }
+                        ],
+                        "LogRunID": "Example LogRunID",
+                        "Remarks": [
+                          {
+                            "Remark": "Example Remark",
+                            "RemarkDate": "2020-02-13",
+                            "RemarkSequenceNumber": 1,
+                            "RemarkSource": "Example Remark Source"
+                          }
+                        ],
+                        "SamplingStart": 12345.6,
+                        "SamplingStop": 12345.6,
+                        "SensorOffsetDocumentID": "namespace:work-product-component--Document:Document-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+                        "ToolMnemonicIDs": [
+                          "namespace:reference-data--WellLogToolCode:BakerHughesInteq:3DEX:"
+                        ],
+                        "WellboreFluidTypeID": "namespace:reference-data--WellboreFluidType:Oil:"
+                      }
+                    ],
+                    "NameAliases": [
+                      {
+                        "AliasName": "Example AliasName",
+                        "AliasNameTypeID": "namespace:reference-data--AliasNameType:RegulatoryIdentifier:",
+                        "DefinitionOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+                        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                        "TerminationDateTime": "2020-02-13T09:13:15.55Z"
+                      }
+                    ],
+                    "Operator": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+                    "Parameters": [
+                      {
+                        "BooleanParameter": true,
+                        "DataObjectParameter": "namespace:any-group-type--AnyIndividualType:SomeUniqueAnyIndividualTypeID:",
+                        "DataQuantityParameter": 12345.6,
+                        "DataQuantityParameterUOMID": "namespace:reference-data--UnitOfMeasure:m:",
+                        "Index": 2,
+                        "IntegerQuantityParameter": 2,
+                        "Keys": [
+                          {
+                            "IntegerParameterKey": 2,
+                            "ObjectParameterKey": "namespace:any-group-type--AnyIndividualType:SomeUniqueAnyIndividualTypeID:",
+                            "ParameterKey": "Example Internal Parameter Key",
+                            "StringParameterKey": "Example String Parameter Key",
+                            "TimeIndexParameterKey": "11:13:15.55+02:00"
+                          }
+                        ],
+                        "ParameterKindID": "namespace:reference-data--ParameterKind:Integer:",
+                        "ParameterRoleID": "namespace:reference-data--ParameterRole:Input:",
+                        "Selection": "Example Selection",
+                        "StringParameter": "Example String Parameter",
+                        "TimeIndexParameter": "2020-02-13T09:13:15.55Z",
+                        "Title": "Example Title"
+                      }
+                    ],
+                    "ParentProjectID": "namespace:master-data--AnyMasterData:SomeUniqueAnyMasterDataID:",
+                    "Personnel": [
+                      {
+                        "CompanyOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+                        "PersonName": "Example PersonName",
+                        "ProjectRoleID": "namespace:reference-data--ProjectRole:ProjMgr:"
+                      }
+                    ],
+                    "ProjectBeginDate": "2020-02-13T09:13:15.55Z",
+                    "ProjectEndDate": "2020-02-13T09:13:15.55Z",
+                    "ProjectID": "Example External Project Identifier",
+                    "ProjectName": "Example ProjectName",
+                    "ProjectSpecifications": [
+                      {
+                        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                        "ParameterTypeID": "namespace:reference-data--ParameterType:SlotName:",
+                        "ProjectSpecificationDateTime": "2020-02-13T09:13:15.55Z",
+                        "ProjectSpecificationIndicator": true,
+                        "ProjectSpecificationQuantity": 12345.6,
+                        "ProjectSpecificationText": "Example ProjectSpecificationText",
+                        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+                        "UnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:"
+                      }
+                    ],
+                    "ProjectStates": [
+                      {
+                        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                        "ProjectStateTypeID": "namespace:reference-data--ProjectStateType:Prop:",
+                        "TerminationDateTime": "2020-02-13T09:13:15.55Z"
+                      }
+                    ],
+                    "Purpose": "Example Purpose",
+                    "ResourceCurationStatus": "namespace:reference-data--ResourceCurationStatus:Created:",
+                    "ResourceHomeRegionID": "namespace:reference-data--OSDURegion:AWSEastUSA:",
+                    "ResourceHostRegionIDs": [
+                      "namespace:reference-data--OSDURegion:AWSEastUSA:"
+                    ],
+                    "ResourceLifecycleStatus": "namespace:reference-data--ResourceLifecycleStatus:Loading:",
+                    "Source": "Example Data Source",
+                    "SpatialLocation": {
+                      "AppliedOperations": [
+                        "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+                        "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+                      ],
+                      "AsIngestedCoordinates": {
+                        "CoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+                        "VerticalCoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
+                        "VerticalUnitID": "namespace:reference-data--UnitOfMeasure:m:",
+                        "bbox": [
+                          12345.6,
+                          12345.6,
+                          12345.6,
+                          12345.6
+                        ],
+                        "features": [
+                          {
+                            "bbox": [
+                              12345.6,
+                              12345.6,
+                              12345.6,
+                              12345.6
+                            ],
+                            "geometry": {
+                              "bbox": [
+                                12345.6,
+                                12345.6,
+                                12345.6,
+                                12345.6
+                              ],
+                              "coordinates": [
+                                12345.6,
+                                12345.6
+                              ],
+                              "type": "AnyCrsPoint"
+                            },
+                            "properties": {},
+                            "type": "AnyCrsFeature"
+                          }
+                        ],
+                        "persistableReferenceCrs": "{\"authCode\":{\"auth\":\"OSDU\",\"code\":\"32021079\"},\"lateBoundCRS\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.18333333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.48333333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.66666666666666],UNIT[\\\"Foot_US\\\",0.3048006096012192],AUTHORITY[\\\"EPSG\\\",32021]]\"},\"name\":\"NAD27 * OGP-Usa Conus / North Dakota CS27 South zone [32021,15851]\",\"singleCT\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"type\":\"ST\",\"ver\":\"PE_10_9_1\",\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],OPERATIONACCURACY[5.0],AUTHORITY[\\\"EPSG\\\",15851]]\"},\"type\":\"EBC\",\"ver\":\"PE_10_9_1\"}",
+                        "persistableReferenceUnitZ": "{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+                        "persistableReferenceVerticalCrs": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5714\"},\"name\":\"MSL_Height\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"VERTCS[\\\"MSL_Height\\\",VDATUM[\\\"Mean_Sea_Level\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5714]]\"}",
+                        "type": "AnyCrsFeatureCollection"
+                      },
+                      "CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55Z",
+                      "CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
+                      "CoordinateQualityCheckRemarks": [
+                        "Example CoordinateQualityCheckRemarks"
+                      ],
+                      "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Assumed:",
+                      "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
+                      "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:",
+                      "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
+                      "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+                      "Wgs84Coordinates": {
+                        "bbox": [
+                          12345.6,
+                          12345.6,
+                          12345.6,
+                          12345.6
+                        ],
+                        "features": [
+                          {
+                            "bbox": [
+                              12345.6,
+                              12345.6,
+                              12345.6,
+                              12345.6
+                            ],
+                            "geometry": {
+                              "bbox": [
+                                12345.6,
+                                12345.6,
+                                12345.6,
+                                12345.6
+                              ],
+                              "coordinates": [
+                                12345.6,
+                                12345.6
+                              ],
+                              "type": "Point"
+                            },
+                            "properties": {},
+                            "type": "Feature"
+                          }
+                        ],
+                        "type": "FeatureCollection"
+                      }
+                    },
+                    "TechnicalAssuranceTypeID": "namespace:reference-data--TechnicalAssuranceType:Certified:",
+                    "TechnicalAssurances": [
+                      {
+                        "AcceptableUsage": [
+                          {
+                            "DataQualityID": "namespace:work-product-component--DataQuality:6a433d16-07c8-4f4d-9ddc-5608e2ec4234:1562066077849221",
+                            "DataQualityRuleSetID": "namespace:reference-data--DataQualityRuleSet:SeismicProcessingQCRuleSet:",
+                            "ValueChainStatusTypeID": "namespace:reference-data--ValueChainStatusType:Exploration:",
+                            "WorkflowPersonaTypeID": "namespace:reference-data--WorkflowPersonaType:SeismicProcessor:",
+                            "WorkflowUsageTypeID": "namespace:reference-data--WorkflowUsageType:SeismicProcessing:"
+                          }
+                        ],
+                        "Comment": "This is free form text from reviewer, e.g. restrictions on use",
+                        "EffectiveDate": "2020-02-13",
+                        "Reviewers": [
+                          {
+                            "DataGovernanceRoleTypeID": "namespace:reference-data--DataGovernanceRoleType:SME:",
+                            "Name": "John Smith",
+                            "OrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+                            "RoleTypeID": "namespace:reference-data--ContactRoleType:AccountOwner:",
+                            "WorkflowPersonaTypeID": "namespace:reference-data--WorkflowPersonaType:SeismicProcessor:"
+                          }
+                        ],
+                        "TechnicalAssuranceTypeID": "namespace:reference-data--TechnicalAssuranceType:Trusted:",
+                        "UnacceptableUsage": [
+                          {
+                            "DataQualityID": "namespace:work-product-component--DataQuality:d79bf97c-ff7c-4b82-89b5-c88520c15017:1562066009929332",
+                            "DataQualityRuleSetID": "namespace:reference-data--DataQualityRuleSet:SeismicInterpretationQCRuleSet:",
+                            "ValueChainStatusTypeID": "namespace:reference-data--ValueChainStatusType:FieldDevelopment:",
+                            "WorkflowPersonaTypeID": "namespace:reference-data--WorkflowPersonaType:SeismicInterpreter:",
+                            "WorkflowUsageTypeID": "namespace:reference-data--WorkflowUsageType:SeismicInterpretation:"
+                          }
+                        ]
+                      }
+                    ],
+                    "VersionCreationReason": "Example VersionCreationReason",
+                    "VerticalMeasurement": {
+                      "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+                      "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+                      "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+                      "VerticalMeasurement": 12345.6,
+                      "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
+                      "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MeasuredDepth:",
+                      "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
+                      "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:ArbitraryPoint:",
+                      "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+                      "VerticalReferenceEntityID": "namespace:master-data--Rig:SomeUniqueRigID:",
+                      "VerticalReferenceID": "Example VerticalReferenceID",
+                      "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:"
+                    },
+                    "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:"
+                  },
+                  "id": "namespace:master-data--WellLogAcquisition:9cdfd40a-e3b7-506a-968d-0e327a4660df",
+                  "kind": "osdu:wks:master-data--WellLogAcquisition:1.0.0",
+                  "legal": {
+                    "legaltags": [
+                      "Example legaltags"
+                    ],
+                    "otherRelevantDataCountries": [
+                      "US"
+                    ],
+                    "status": "compliant"
+                  },
+                  "meta": [
+                    {
+                      "kind": "Unit",
+                      "name": "m",
+                      "persistableReference": "{\"abcd\":{\"a\":0.0,\"b\":1.0,\"c\":1.0,\"d\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"L\",\"type\":\"UM\"},\"type\":\"UAD\"}",
+                      "propertyNames": [
+                        "ProjectSpecifications[0].ProjectSpecificationQuantity",
+                        "Parameters[0].DataQuantityParameter",
+                        "VerticalMeasurement.VerticalMeasurement"
+                      ],
+                      "unitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:"
+                    }
+                  ],
+                  "modifyTime": "2020-12-16T11:52:24.477Z",
+                  "modifyUser": "some-user@some-company-cloud.com",
+                  "tags": {
+                    "NameOfKey": "String value"
+                  },
+                  "version": 1562066009929332
+                }
+              ],
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/Record"
+                },
+                "title": "Welllogacquisitions",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUpdateRecordsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Missing mandatory parameter or unknown parameter"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create or update the WellLogAcquisition using osdu schema",
+        "tags": [
+          "WellLog Acquisition"
+        ]
+      }
+    },
+    "/ddms/v3/welllogacquisition/{welllogacquisitionid}": {
+      "delete": {
+        "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins",
+        "operationId": "del_osdu_welllogacquisitionid",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "welllogacquisitionid",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
+              "title": "Welllogacquisitionid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Record deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellLogAcquisition not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete the WellLogAcquisitionId. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
+        "tags": [
+          "WellLog Acquisition"
+        ]
+      },
+      "get": {
+        "description": "Get the WellLogAcquisition object using its **id**.   \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_welllogacquisitionid_osdu",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "welllogacquisitionid",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
+              "title": "Welllogacquisitionid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellLogAcquisition not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the WellLogAcquisition using osdu schema",
+        "tags": [
+          "WellLog Acquisition"
+        ]
+      }
+    },
+    "/ddms/v3/welllogacquisition/{welllogacquisitionid}/versions": {
+      "get": {
+        "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_osdu_welllogacquisitionid_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "welllogacquisitionid",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
+              "title": "Welllogacquisitionid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordVersions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellLogAcquisition not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get all versions of the WellLogAcquisition",
+        "tags": [
+          "WellLog Acquisition"
+        ]
+      }
+    },
+    "/ddms/v3/welllogacquisition/{welllogacquisitionid}/versions/{version}": {
+      "get": {
+        "description": "Get the WellLogAcquisition object using its **id**.   \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_osdu_welllogacquisitionid_version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "welllogacquisitionid",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
+              "title": "Welllogacquisitionid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellLogAcquisition not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the given version of the WellLogAcquisition using OSDU WellLogAcquisitionId schema",
+        "tags": [
+          "WellLog Acquisition"
+        ]
+      }
+    },
     "/ddms/v3/welllogs": {
       "post": {
         "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins",

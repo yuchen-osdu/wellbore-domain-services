@@ -8,13 +8,9 @@ pytest-cov
 pytest-httpx
 pytest-xdist
 pytest-randomly
-httpx
-numpy
-pandas
-pyarrow
+pytest-mock
 hypothesis
 openapi-spec-validator>=0.5.7
-urllib3>=1.26.17
 
 requests # used by starlette.TestClient for testing
 cryptography>=42.0.0
@@ -22,9 +18,10 @@ cryptography>=42.0.0
 # the following are used in functional integration tests
 pytest-dependency
 munch
-jsonschema
 
 # Generates fake token for local integration tests runs
 pyjwt[crypto]
 
 deepdiff
+
+pylint
