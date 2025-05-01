@@ -17,6 +17,8 @@ tornado>=6.4.2
 urllib3>=1.26.17
 
 httpx
+httpcore==1.0.9
+h11==0.16.0
 numpy
 jsonschema
 
