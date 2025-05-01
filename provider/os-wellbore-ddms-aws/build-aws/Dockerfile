@@ -19,9 +19,9 @@ ENV PATH="/app/.python/bin:${PATH}"
 
 RUN mkdir app
 RUN apk update && \
-    apk add --no-cache gcc musl-dev linux-headers python3-dev g++ bash build-base cmake \
+    apk add --no-cache gcc musl-dev linux-headers libexpat=2.7.0-r0 perl=5.38.3-r1 python3-dev g++ bash build-base cmake \
             jemalloc-dev boost-dev autoconf zlib-dev flex bison git tzdata lz4-dev \
-	    py3-pip py3-pyarrow py3-numpy py3-six cython py3-pytest py3-cffi py3-cffi-pyc
+	    py3-pip py3-pyarrow py3-numpy py3-six cython py3-pytest py3-cffi py3-cffi-pyc xz-libs=5.4.5-r1
 
 RUN python3 -m venv "/app/.python/" --system-site-packages
 
