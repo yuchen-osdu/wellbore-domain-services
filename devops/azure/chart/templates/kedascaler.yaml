@@ -1,4 +1,4 @@
-# Copyright 2023 Schlumberger
+# Copyright 2025 Schlumberger
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ .Values.deployment.name }}{{ $nameSuffix }}
-  pollingInterval: 30
+  pollingInterval: 15
   cooldownPeriod: 30
   minReplicaCount: {{ .Values.minReplicaCount }}
   maxReplicaCount: {{ .Values.maxReplicaCount }}
@@ -42,12 +42,11 @@ spec:
       query: |
         let ServiceName = "{{ .Values.kedaconfig.servicepath }}{{ $nameSuffix }}/ddms";
         let AvgDuration = ago({{ .Values.kedaconfig.duration }});
-        let ThresholdCoefficient = {{ .Values.kedaconfig.thresholdcoefficient }};
         AzureDiagnostics 
         | where Category == "ApplicationGatewayAccessLog" and requestUri_s hasprefix_cs ServiceName
         | where TimeGenerated > AvgDuration
         | summarize MetricValue = count()
-        | project MetricValue, Threshold = MetricValue * ThresholdCoefficient    
+        | project MetricValue
       threshold: "{{ .Values.kedaconfig.threshold }}"
   - type: cpu
     metricType: "{{ .Values.kedaconfig.metricType }}"
@@ -57,17 +56,17 @@ spec:
     horizontalPodAutoscalerConfig:
       behavior:
         scaleDown:
-          stabilizationWindowSeconds: 30
+          stabilizationWindowSeconds: 300
           policies:
             - type: Pods
               value: 1
-              periodSeconds: 30
+              periodSeconds: 120
         scaleUp:
-          stabilizationWindowSeconds: 10
+          stabilizationWindowSeconds: 0
           selectPolicy: Max
           policies:
             - type: Pods
-              value: 2
+              value: 3
               periodSeconds: 30
             - type: Percent
               value: 20
