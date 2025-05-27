@@ -9,7 +9,7 @@ chmod +x /usr/local/bin/jq
 export TOKEN=$(curl --location --request POST "$TEST_OPENID_PROVIDER_URL/protocol/openid-connect/token" \
 --header "Content-Type: application/x-www-form-urlencoded" \
 --data-urlencode "client_id=$TEST_OPENID_PROVIDER_CLIENT_ID" \
---data-urlencode "client_secret=$CORE_OPENID_PROVIDER_CLIENT_SECRET" \
+--data-urlencode "client_secret=$CIMPL_OPENID_PROVIDER_CLIENT_SECRET" \
 --data-urlencode "scope=openid" \
 --data-urlencode "grant_type=client_credentials" | jq -r ".id_token")
 
@@ -30,9 +30,9 @@ cd tests/integration
 # Generate Postman environment
 python gen_postman_env.py \
 --token $TOKEN \
---base_url $GC_WELLBORE_BASE_URL \
+--base_url $CIMPL_WELLBORE_BASE_URL \
 --cloud_provider "baremetal" \
---data_partition $CORE_TENANT \
+--data_partition $CIMPL_TENANT \
 --acl_domain $GROUP_ID \
 --legal_tag $LEGAL_TAG
 

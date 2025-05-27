@@ -60,7 +60,7 @@ The following software have components provided under the terms of this license:
 - tblib (from https://github.com/ionelmc/python-tblib)
 - tenacity (from https://github.com/jd/tenacity)
 - tornado (from http://www.tornadoweb.org/)
-- types-jsonschema (from https://github.com/python/typeshed)
+- types-jsonschema (from https://pypi.org/project/types-jsonschema/)
 - urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 - yarl (from https://github.com/aio-libs/yarl, https://github.com/aio-libs/yarl/)
 
