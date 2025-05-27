@@ -1,15 +1,15 @@
 variables:
-  CORE_SERVICE: wellbore
-  CORE_INT_TEST_TYPE: python
-  CORE_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
-  CORE_SUPPORTED_PLATFORM: "linux/amd64"
+  CIMPL_SERVICE: wellbore
+  CIMPL_INT_TEST_TYPE: python
+  CIMPL_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
+  CIMPL_SUPPORTED_PLATFORM: "linux/amd64"
 
-core-containerize-gitlab:
+cimpl-containerize-gitlab:
   needs:
     - "compile-and-unit-test"
   variables:
-    CORE_BUILD_PATH: "./build/Dockerfile"
-    CORE_BUILD_ARGS: >
+    CIMPL_BUILD_PATH: "./build/Dockerfile"
+    CIMPL_BUILD_ARGS: >
       --build-arg PIP_WHEEL_DIR=python-packages
       --build-arg build_date="$CI_JOB_STARTED_AT"
       --build-arg build_number=$CI_COMMIT_SHORT_SHA
@@ -17,6 +17,8 @@ core-containerize-gitlab:
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
-core-test-python:
+cimpl-test-python:
+  image: python:3.11
   variables:
-    GC_WELLBORE_BASE_URL: https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com/api/os-wellbore-ddms
+    CIMPL_WELLBORE_BASE_URL: https://osdu.dev1.osdu-cimpl.opengroup.org/api/os-wellbore-ddms
+
