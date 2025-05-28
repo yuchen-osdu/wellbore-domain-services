@@ -57,10 +57,22 @@ Definitions = {
         'record_data': {
             "name": "myLog_name"
         }
-    }
+    },
+    'PPFGDataset': {
+        'api_version': 'v3',
+        'base_url': '/ddms/v3/ppfgdataset',
+        'chunking_url': '/ddms/v3/ppfgdataset',
+        'kind': 'osdu:wks:work-product-component--PPFGDataset:1.2.0',
+        'record_data': {
+            "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
+            "ReferenceWellTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+            "ContextTypeID": "namespace:reference-data--PPFGContextType:InterpretationPreDrill:",
+            "Curves": [{"CurveID": "MD"}, {"CurveID": "X"}]
+        }
+    },
 }
 
-EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log']
+EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log', 'PPFGDataset']
 
 
 def _create_df_from_response(response):

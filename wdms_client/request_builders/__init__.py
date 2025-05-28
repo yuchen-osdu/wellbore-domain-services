@@ -157,6 +157,17 @@ request_path_dict = {
     "crud.osdu_welllogacquisition.create_osdu_welllogacquisition":
         crud.osdu_welllogacquisition.build_request_create_osdu_welllogacquisition,
 
+    "crud.osdu_ppfgdataset.delete_osdu_ppfgdataset":
+        crud.osdu_ppfgdataset.build_request_delete_osdu_ppfgdataset,
+    "crud.osdu_ppfgdataset.get_osdu_ppfgdataset_specific_version":
+        crud.osdu_ppfgdataset.build_request_get_osdu_ppfgdataset_specific_version,
+    "crud.osdu_ppfgdataset.get_osdu_ppfgdataset":
+        crud.osdu_ppfgdataset.build_request_get_osdu_ppfgdataset,
+    "crud.osdu_ppfgdataset.get_versions_of_osdu_ppfgdataset":
+        crud.osdu_ppfgdataset.build_request_get_versions_of_osdu_ppfgdataset,
+    "crud.osdu_ppfgdataset.create_osdu_ppfgdataset":
+        crud.osdu_ppfgdataset.build_request_create_osdu_ppfgdataset,
+
     "crud.log.delete_log":
         crud.log.build_request_delete_log,
     "crud.log.get_versions_of_log":
@@ -243,6 +254,8 @@ def get_cleaned_ref_and_res(kind: str) -> dict:
         return crud.osdu_wellboreintervalset.get_cleaned_ref_and_res()
     if kind == "osdu_welllogacquisition":
         return crud.osdu_welllogacquisition.get_cleaned_ref_and_res()
+    if kind == "osdu_ppfgdataset":
+        return crud.osdu_ppfgdataset.get_cleaned_ref_and_res()
 
 
 def diff_records(ref, res):

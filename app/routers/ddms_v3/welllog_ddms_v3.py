@@ -20,7 +20,6 @@ from odes_storage.models import CreateUpdateRecordsResponse, RecordVersions, Rec
 
 from app.clients.storage_service_client import get_storage_record_service
 from app.consistency import (
-    DuplicatedCurveIdException,
     ReferenceCurveIdNotFoundException,
     check_welllog_consistency
 )
@@ -33,6 +32,7 @@ from app.routers.record_utils import fetch_record
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
 from app.schemas import schema_library
+from app.consistency.welllog_consistency import DuplicatedCurveIdException
 
 
 router = APIRouter()

@@ -24,7 +24,8 @@ from app.clients import SearchServiceClient, StorageRecordServiceClient, make_st
 from app.injector.app_injector import WithLifeTime
 from app.base import base_app
 from app.wdms_app import wdms_app, app_injector
-from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check
+from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check, \
+    set_ppfgdataset_consistency_check
 from app.bulk_persistence import BulkPersistenceConfig
 from app.bulk_persistence import DaskBulkStorage
 from app.bulk_persistence import SessionsStorage
@@ -371,6 +372,7 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
         if disable_bulk_consistency:
             app.dependency_overrides[set_welllog_data_consistency_check] = lambda: None
             app.dependency_overrides[set_trajectory_data_consistency_check] = lambda: None
+            app.dependency_overrides[set_ppfgdataset_consistency_check] = lambda: None
 
         # return the app, ready to be started along with the client
         return app, client

@@ -17,6 +17,7 @@ EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS = {
     "WellboreTrajectory": "1.2.0",
     "WellboreMarkerSet": "1.3.0",
     "WellLog": "1.3.0",
+    "PPFGDataset" : "1.1.0"
 }
 
 

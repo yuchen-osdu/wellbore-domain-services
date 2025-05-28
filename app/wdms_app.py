@@ -62,6 +62,7 @@ from app.routers.bulk.utils import (
     set_v3_input_dataframe_check,
     set_welllog_data_consistency_check,
     update_operation_ids,
+    set_ppfgdataset_consistency_check,
 )
 from app.routers.common_parameters import (
     response_401,
@@ -76,7 +77,7 @@ from app.routers.ddms_v3 import (
     wellbore_trajectory_ddms_v3,
     welllog_ddms_v3,
     wellbore_interval_set_ddms_v3,
-    welllog_acquisition_v3,
+    welllog_acquisition_v3, ppfgdataset_ddms_v3,
 )
 from app.routers.dependency import (
     FetchRecordDependency,
@@ -212,7 +213,8 @@ ddms_v3_routes_groups_without_bulk = [
 
 ddms_v3_routes_groups_with_bulk = [
     (welllog_ddms_v3, "WellLog", Entity.WELL_LOG),
-    (wellbore_trajectory_ddms_v3, "Trajectory v3", Entity.TRAJECTORY)
+    (wellbore_trajectory_ddms_v3, "Trajectory v3", Entity.TRAJECTORY),
+    (ppfgdataset_ddms_v3, "PPFGDataset v3", Entity.PPFGDATASET)
 ]
 
 for v3_api, tag, entity_type in ddms_v3_routes_groups_without_bulk:
@@ -305,6 +307,37 @@ wdms_app.include_router(
     ],
     responses={**response_401, **response_403, **response_500},
     include_in_schema=True)
+
+
+# POST and GET v3/ppfgdataset/session   (EXCLUDE  PATCH commit/abandon)
+wdms_app.include_router(
+    sessions.router,
+    prefix=DDMS_V3_PATH + ppfgdataset_ddms_v3.PPFGDATASET_API_BASE_PATH,
+    tags=["PPFGDataset v3"],
+    dependencies=[
+        *basic_dependencies,
+        Depends(set_ppfgdataset_consistency_check),
+        Depends(make_entity_type_dependency(Entity.PPFGDATASET, "V3")),
+    ],
+    responses={**response_401, **response_403, **response_500})
+
+# POST v3/ppfgdataset/{record_id}/data
+# POST v3/ppfgdataset/{record_id}/sessions/{session_id}/data
+# GET v3/ppfgdataset/{record_id}/versions/{version}/data
+# GET v3/ppfgdataset/{record_id}/data
+# PATCH v3/{ppfgdataset}/{record_id}/sessions/{session_id}
+wdms_app.include_router(
+    bulk_routes.router,
+    prefix=DDMS_V3_PATH + ppfgdataset_ddms_v3.PPFGDATASET_API_BASE_PATH,
+    tags=["PPFGDataset v3"],
+    dependencies=[
+        *v3_bulk_dependencies,
+        Depends(make_entity_type_dependency(Entity.PPFGDATASET, "V3")),
+        Depends(set_ppfgdataset_consistency_check),
+        Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
+        Depends(FetchRecordPartialDependency.with_value(fetch_record_partial_with_wdms_extension))
+    ],
+    responses={**response_401, **response_403, **response_500})
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
