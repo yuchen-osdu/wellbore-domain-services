@@ -37,9 +37,13 @@ from wdms_client.request_builders.wdms.crud.osdu_wellboretrajectory import (
     build_request_create_osdu_wellboretrajectory,
     build_request_delete_osdu_wellboretrajectory)
 
+from wdms_client.request_builders.wdms.crud.osdu_ppfgdataset import (
+    build_request_create_osdu_ppfgdataset, build_request_delete_osdu_ppfgdataset)
+
 entity_type_dict = {
     "well_log": {"entity": "welllogs", "version": "v3", "alpha-prefix": "ddms"},
     "wellbore_trajectory": {"entity": "wellboretrajectories", "version": "v3", "alpha-prefix": "ddms"},
+    "ppfgdataset": {"entity": "ppfgdataset", "version": "v3", "alpha-prefix": "ddms"},
     "log": {"entity": "logs", "version": "v2", "alpha-prefix": "alpha/ddms"},
 }
 
@@ -56,6 +60,8 @@ def create_record(env, entity_type: str, curves: List[str]):
         result = build_request_create_osdu_welllog(False, curves).call(env)
     elif entity_type == "wellbore_trajectory":
         result = build_request_create_osdu_wellboretrajectory(False, curves).call(env)
+    elif entity_type == "ppfgdataset":
+        result = build_request_create_osdu_ppfgdataset(False, curves).call(env)
     elif entity_type == "log":
         result = build_request_create_log().call(env)
     else:
@@ -75,6 +81,8 @@ def create_record(env, entity_type: str, curves: List[str]):
         build_request_delete_osdu_welllog(record_id).call(env)
     elif entity_type == "wellbore_trajectory":
         build_request_delete_osdu_wellboretrajectory(record_id).call(env)
+    elif entity_type == "ppfgdataset":
+        build_request_delete_osdu_ppfgdataset(record_id).call(env)
     elif entity_type == "log":
         env.set('log_record_id', record_id)
         build_request_delete_log().call(env)
@@ -160,7 +168,7 @@ WELLLOG_URL_PREFIX = 'ddms/v3/welllogs'
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log", "ppfgdataset"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
     col_and_nb_col = {'MD': 1, 'X': 1}
@@ -180,7 +188,7 @@ def test_send_one_chunk_without_session(with_wdms_env, entity_type, serializer):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log", "ppfgdataset"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_one_chunk_with_session_commit(with_wdms_env, entity_type, serializer):
 
@@ -377,7 +385,7 @@ def test_get_data_with_limit_filter(with_wdms_env):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log", "ppfgdataset"])
 def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
     serializer = ParquetSerializer()
     col_and_nb_col = {'MD': 1, 'X': 1}
@@ -405,7 +413,7 @@ def test_get_data_with_limit_and_offset_filter(with_wdms_env, entity_type):
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log", "ppfgdataset"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
     col_and_nb_col = {'MD': 1, 'X': 1}
@@ -446,7 +454,7 @@ def test_multiple_overwrite_sessions_in_parallel_then_commit(with_wdms_env, enti
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log"])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "log", "ppfgdataset"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_type, serializer):
 
@@ -490,7 +498,7 @@ def test_multiple_update_sessions_in_parallel_then_commit(with_wdms_env, entity_
 
 
 @pytest.mark.tag('chunking', 'smoke')
-@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory"])
+@pytest.mark.parametrize('entity_type', ["well_log", "wellbore_trajectory", "ppfgdataset"])
 @pytest.mark.parametrize('serializer', [ParquetSerializer(), JsonSerializer()])
 def test_send_arrayd_without_session(with_wdms_env, entity_type, serializer):
     col_and_nb_col = {'MD': 1, 'array_10_A': 1}

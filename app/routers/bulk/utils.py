@@ -14,7 +14,12 @@ from app.context import Context
 from app.utils import OpenApiHandler
 from app.routers.bulk.bulk_routes_dependencies import BulkIdAccess
 
-from app.consistency import NoConsistencyChecks, WelllogDataConsistencyChecks, TrajectoryDataConsistencyChecks
+from app.consistency import (
+    NoConsistencyChecks,
+    WelllogDataConsistencyChecks,
+    TrajectoryDataConsistencyChecks,
+    PPFGDatasetConsistencyChecks,
+)
 
 
 def update_operation_ids(wdms_app):
@@ -84,6 +89,9 @@ def set_welllog_data_consistency_check(request: Request):
 
 def set_trajectory_data_consistency_check(request: Request):
     request.state.data_consistency_checks = TrajectoryDataConsistencyChecks()
+
+def set_ppfgdataset_consistency_check(request: Request):
+    request.state.data_consistency_checks = PPFGDatasetConsistencyChecks()
 
 
 def get_data_consistency_checks(request: Request):

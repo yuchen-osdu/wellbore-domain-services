@@ -132,7 +132,7 @@ pip install -r requirements.txt -r requirements_dev.txt
 python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml tests/unit
 ```
 
-Coverage reports can be viewed after the command is run. The HMTL reports are saved in the htmlcov directory.
+Coverage reports can be viewed after the command is run. The HTML reports are saved in the htmlcov directory.
 
 ### Control order of the tests
 

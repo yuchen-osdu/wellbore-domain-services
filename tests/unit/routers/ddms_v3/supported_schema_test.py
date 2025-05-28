@@ -67,6 +67,7 @@ trajectory_data = {
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.2.0", trajectory_data),
         ("/ddms/v3/wellboretrajectories", "work-product-component--WellboreTrajectory:1.3.0", trajectory_data),
         ("/ddms/v3/welllogacquisition", "master-data--WellLogAcquisition:1.0.0", {}),
+        ("/ddms/v3/ppfgdataset", "work-product-component--PPFGDataset:1.2.0", {}),
     ],
 )
 @pytest.mark.anyio

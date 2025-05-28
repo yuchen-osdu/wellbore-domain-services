@@ -12,3 +12,9 @@ from .trajectory_consistency import (
     TrajectoryDataConsistencyChecks,
     DuplicatedStationProperties,
 )
+
+from .ppfgdataset_consistency import (
+    check_ppfgdataset_consistency, PPFGDatasetConsistencyChecks,
+    ContextTypeIdMissingException, ReferenceWellTrajectoryIdMissingException,
+ ColumnDoesNotMatchCurveIdException, PrimaryReferenceCurveIdNotFoundException
+)
