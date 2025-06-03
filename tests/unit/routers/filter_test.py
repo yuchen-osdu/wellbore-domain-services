@@ -14,7 +14,7 @@ from app.bulk_persistence import GetDataParams, \
     (['A:lt:5', 'A:gt:3'], [('A', BulkReadFilterOperator.Less, '5'), ('A', BulkReadFilterOperator.Greater, '3')]),
 ])
 def test_parse_filter_without_exception(filters, expected):
-    assert list(GetDataParams(bulk_filter=filters).get_bulk_filters()) == expected
+    assert list(GetDataParams(filter=filters).get_bulk_filters()) == expected
 
 
 @pytest.mark.parametrize("filters, exec_info", [
@@ -26,19 +26,19 @@ def test_parse_filter_without_exception(filters, expected):
 ])
 def test_parse_filter_with_exception(filters, exec_info):
     with pytest.raises(FilterError) as execinfo:
-        list(GetDataParams(bulk_filter=[filters]).get_bulk_filters())
+        list(GetDataParams(filter=[filters]).get_bulk_filters())
     assert exec_info in str(execinfo.value)
 
 
 def test_bulk_filter_duplicate_operation():
-    params = GetDataParams(bulk_filter=['A:eq:2', 'A:eq:3'])
+    params = GetDataParams(filter=['A:eq:2', 'A:eq:3'])
     with pytest.raises(FilterError) as exec_info:
         BulkReadFilters(params.get_bulk_filters())
     assert 'Same operator on the same column' in str(exec_info.value)
 
 
 def test_bulk_filter_conflicting_operation():
-    params = GetDataParams(bulk_filter=['A:eq:3', 'A:in:1,2,3'])
+    params = GetDataParams(filter=['A:eq:3', 'A:in:1,2,3'])
     with pytest.raises(FilterError) as exec_info:
         BulkReadFilters(params.get_bulk_filters())
 
@@ -46,7 +46,7 @@ def test_bulk_filter_conflicting_operation():
 
 
 def test_bulk_filter_no_filter():
-    params = GetDataParams(bulk_filter=None)
+    params = GetDataParams(filter=None)
     filters = BulkReadFilters(params.get_bulk_filters())
     assert not filters.has_filter()
     assert list(filters.all_filters()) == []

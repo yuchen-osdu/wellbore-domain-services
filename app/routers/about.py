@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app import __version__, __app_name__, __build_number__, __release__
 from app.conf import Config
-from typing import Dict
 from app.auth.auth import require_opendes_authorized_user
 from app.routers.common_parameters import response_401, response_403
 from app.routers.bulk.bulk_routes_dependencies import BulkIO, get_bulk_io_read, get_bulk_io_write
@@ -24,11 +24,11 @@ router = APIRouter()
 
 
 class AboutResponse(BaseModel):
-    service: str = None
-    version: str = None
-    buildNumber: str = None
-    cloudEnvironment: str = None
-    release: str = None
+    service: str | None = None
+    version: str | None = None
+    buildNumber: str | None = None
+    cloudEnvironment: str | None = None
+    release: str | None = None
 
 
 @router.get("/about", response_model=AboutResponse, include_in_schema=True)
@@ -43,11 +43,11 @@ async def get_about() -> AboutResponse:
 
 
 class VersionDetailsResponse(BaseModel):
-    service: str = None
-    version: str = None
-    buildNumber: str = None
-    release: str = None
-    details: Dict[str, str] = None
+    service: str | None = None
+    version: str | None = None
+    buildNumber: str | None = None
+    release: str | None = None
+    details: Dict[str, str] | None = None
 
 
 @router.get("/version", response_model=VersionDetailsResponse, include_in_schema=True,
@@ -83,4 +83,3 @@ async def get_version(
         release=__release__,
         details=details
     )
-

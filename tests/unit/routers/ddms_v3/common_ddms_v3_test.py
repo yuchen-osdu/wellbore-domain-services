@@ -90,7 +90,7 @@ async def test_post_records_successful(mocker, dasked_test_app_with_mocked_core_
 
     # then
     assert response.status_code == status.HTTP_200_OK
-    assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
+    assert CreateUpdateRecordsResponse.model_validate_json(response.text) == expected_response
 
 
 @pytest.mark.anyio
@@ -142,7 +142,7 @@ async def test_get_delete_routes_refuse_incorrect_record_id(
 
     response = await client.request(method=method, url=f'{DDMS_V3_PATH}/{url_entity_base_path}/{relative_path}')
     assert response.status_code == 422
-    assert "string does not match regex" in response.json()["detail"][0]["msg"]
+    assert "String should match pattern" in response.json()["detail"][0]["msg"]
 
 
 def records_with_version(records):
@@ -156,20 +156,20 @@ def records_with_version(records):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("url_entity_base_path, record_list_fixture", [
-    ("wells", "well100_v3_list"),
-    ("wells", "well110_v3_list"),
-    ("wells", "well120_v3_list"),
-    ("wellbores", "wellbore100_v3_list"),
-    ("wellbores", "wellbore110_v3_list"),
-    ("wellbores", "wellbore111_v3_list"),
-    ("wellbores", "wellbore120_v3_list"),
-    ("wellbores", "wellbore130_v3_list"),
-    ("wellboremarkersets", "marker110_v3_list"),
-    ("wellboremarkersets", "marker120_v3_list"),
-    ("wellboremarkersets", "marker121_v3_list"),
-    ("wellboreintervalsets", "wellboreintervalset100_v3_list"),
-    ("wellboretrajectories", "trajectory110_v3_list"),
-    ("welllogs", "welllog120_v3_list")
+    ("wells", "well_v3_record_list"),
+    ("wells", "well_v3_110_record_list"),
+    ("wells", "well_v3_120_record_list"),
+    ("wellbores", "wellbore_v3_record_list"),
+    ("wellbores", "wellbore_v3_110_record_list"),
+    ("wellbores", "wellbore_v3_111_record_list"),
+    ("wellbores", "wellbore_v3_120_record_list"),
+    ("wellbores", "wellbore_v3_130_record_list"),
+    ("wellboremarkersets", "marker_v3_record_list"),
+    ("wellboremarkersets", "marker_v3_120_record_list"),
+    ("wellboremarkersets", "marker_v3_121_record_list"),
+    ("wellboreintervalsets", "wellboreintervalset_v3_100_record_list"),
+    ("wellboretrajectories", "trajectory_v3_record_list"),
+    ("welllogs", "welllog120_v3_record_list")
 ])
 async def test_get_delete_v3_routes_success(app_configurable_with_testclient,
                                             mock_storage_client_holding_data,
@@ -187,7 +187,7 @@ async def test_get_delete_v3_routes_success(app_configurable_with_testclient,
     response = await client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}")
     assert response.status_code == 200
     record_data = response.json()
-    retrieved_wr = model_cls.parse_obj(record_data)
+    retrieved_wr = model_cls.model_validate(record_data)
     assert retrieved_wr == record
 
     # get all versions
@@ -198,7 +198,7 @@ async def test_get_delete_v3_routes_success(app_configurable_with_testclient,
     # get first version
     response = await client.get(DDMS_V3_PATH + f"/{url_entity_base_path}/{record.id}/versions/{first_version}")
     assert response.status_code == 200
-    retrieved_wr = model_cls.parse_obj(response.json())
+    retrieved_wr = model_cls.model_validate(response.json())
     assert retrieved_wr == record
 
     # delete

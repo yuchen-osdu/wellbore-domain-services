@@ -347,7 +347,7 @@ async def test_disaster_case_recovery(sessions_storage, commit, final_state):
 
     # change the state to committing
     # here a hackish trick to change the state which is forbidden be pydantic validation rules
-    dict_session = session_internal.dict()
+    dict_session = session_internal.model_dump()
     dict_session["session"]["state"] = SessionState.Committing
     updated_session = SessionInternal(**dict_session)
     await sessions_storage.update_session(tenant, updated_session)

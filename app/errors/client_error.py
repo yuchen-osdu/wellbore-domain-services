@@ -38,7 +38,6 @@ from osdu_az.exceptions.data_access_error import (DataAccessError as OSDUPartiti
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
-from app.context import get_ctx
 from app.helper.logger import get_logger
 
 OSDU_DATA_ECOSYSTEM_SEARCH = "osdu-data-ecosystem-search"
@@ -83,7 +82,7 @@ async def http_storage_error_handler(request: Request, exc: OSDUStorageException
     Catches and handles Exceptions raised by os-python-client
     """
     get_logger().exception(f"http_storage_error_handler - url: '{request.url}'")
-    if isinstance(exc, OSDUStorageUnexpectedResponse) or isinstance(exc, OSDUStorageResponseValidationError):
+    if isinstance(exc, (OSDUStorageUnexpectedResponse, OSDUStorageResponseValidationError)):
         status = exc.status_code
         errors = [load_content(exc.content)]
     elif isinstance(exc, OSDUStorageResponseHandlingException):
@@ -102,8 +101,7 @@ async def http_partition_error_handler(request: Request, exc: OSDUPartitionExcep
     """
     get_logger().exception(f"http_partition_error_handler - url: '{request.url}'")
 
-    return JSONResponse({"origin": OSDU_DATA_ECOSYSTEM_PARTITION, "errors": [exc.message]}, 
-                        status_code=exc.status_code)
+    return JSONResponse({"origin": OSDU_DATA_ECOSYSTEM_PARTITION, "errors": [exc.message]}, status_code=exc.status_code)
 
 
 async def http_schema_error_handler(request: Request, exc: OSDUSchemaException) -> JSONResponse:
@@ -111,7 +109,7 @@ async def http_schema_error_handler(request: Request, exc: OSDUSchemaException) 
     Catches and handles Exceptions raised by os-python-client
     """
     get_logger().exception(f"http_schema_error_handler - url: '{request.url}'")
-    if isinstance(exc, OSDUSchemaUnexpectedResponse) or isinstance(exc, OSDUSchemaResponseValidationError):
+    if isinstance(exc, (OSDUSchemaUnexpectedResponse, OSDUSchemaResponseValidationError)):
         status = exc.status_code
         errors = [load_content(exc.content)]
     elif isinstance(exc, OSDUSchemaResponseHandlingException):

@@ -35,8 +35,7 @@ router = APIRouter()
     summary="Define the dips of the dipset",
     response_model=List[Dip],
     response_model_exclude_none=True,
-    description="""Replace previous dips by provided dips. Sort dips by reference and azimuth. {}"""
-    .format(REQUIRED_ROLES_WRITE),
+    description=f"""Replace previous dips by provided dips. Sort dips by reference and azimuth. {REQUIRED_ROLES_WRITE}""",
     operation_id="post_dips",
 )
 async def post_dips(
@@ -52,10 +51,10 @@ async def post_dips(
     summary="insert dip in  a dipset",
     response_model=List[Dip],
     response_model_exclude_none=True,
-    description="""Insert dips in dipset. 
+    description=f"""Insert dips in dipset.
     Existing dips are not replaced. 
     Several dip can have same reference. 
-    Operation will sort by reference all dips in dipset (may modify dip indexes). {}""".format(REQUIRED_ROLES_WRITE),
+    Operation will sort by reference all dips in dipset (may modify dip indexes). {REQUIRED_ROLES_WRITE}""",
     operation_id="insert_dips",
 )
 async def insert_dips(
@@ -71,8 +70,8 @@ async def insert_dips(
     summary="Get dips",
     response_model=Optional[List[Dip]],
     response_model_exclude_none=True,
-    description="""Return dips from dipset from the given index until the given number of dips specifed in query parameters. 
-    If not specified returns all dips from dipset. {}""".format(REQUIRED_ROLES_READ),
+    description=f"""Return dips from dipset from the given index until the given number of dips specifed in query parameters.
+    If not specified returns all dips from dipset. {REQUIRED_ROLES_READ}""",
     operation_id="get_dips",
     responses={status.HTTP_404_NOT_FOUND: {"description": "DipSet not found"}},
 )
@@ -102,7 +101,7 @@ async def get_dips(
     summary="Query dip from dipset",
     response_model=List[Dip],
     response_model_exclude_none=True,
-    description="""Search dip within reference interval and specific classification. {}""".format(REQUIRED_ROLES_READ),
+    description=f"""Search dip within reference interval and specific classification. {REQUIRED_ROLES_READ}""",
     operation_id="query_dip",
 )
 async def query_dip(
@@ -134,7 +133,7 @@ async def query_dip(
     summary="Get a dip at index",
     response_model=Dip,
     response_model_exclude_none=True,
-    description=""""Return dip from dipset at the given index. {}""".format(REQUIRED_ROLES_READ),
+    description=f""""Return dip from dipset at the given index. {REQUIRED_ROLES_READ}""",
     operation_id="get_dip_by_index",
     responses={status.HTTP_404_NOT_FOUND: {"description": "DipSet or index not found"}},
 )
@@ -148,7 +147,7 @@ async def get_dip_by_index(dipsetid: str, index: int, ctx: Context = Depends(get
     summary="Update dip",
     response_model=List[Dip],
     response_model_exclude_none=True,
-    description=""""Update dip at index     
+    description=""""Update dip at index
     Operation will sort by reference all dips in dipset (may modify dip indexes).""",
     operation_id="patch_dip",
     responses={status.HTTP_404_NOT_FOUND: {"description": "DipSet not found"}},
@@ -168,7 +167,7 @@ async def patch_dip(dip: Dip, dipsetid: str, index: int, ctx: Context = Depends(
     summary="Delete a dip",
     response_model=List[Dip],
     response_model_exclude_none=True,
-    description="Removes the dip at index. {}".format(REQUIRED_ROLES_WRITE),
+    description=f"Removes the dip at index. {REQUIRED_ROLES_WRITE}",
     operation_id="delete_dip_by_index",
     responses={status.HTTP_404_NOT_FOUND: {"description": "DipSet or index not found"}},
 )

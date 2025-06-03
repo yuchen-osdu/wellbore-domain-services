@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
+from typing import Optional, List
+from pydantic import ConfigDict, BaseModel, Field
 
 import far.family_processor.model as farmodel
 from far.family_processor.family_processor import FamilyProcessor
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from typing import Optional, List
-from pydantic import BaseModel, Field
 import odes_storage.models as model
 
-from . import family_processor_manager as fp_manager
 from app.clients.storage_service_client import get_storage_record_service
 from app.routers.common_parameters import REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 
+from . import family_processor_manager as fp_manager
 
 from app.helper.traces_ot import get_tracer
 _tracer = get_tracer()
@@ -57,44 +57,42 @@ class CatalogRecord(BaseModel):
     acl: "model.StorageAcl" = Field(..., alias="acl")
     legal: "model.Legal" = Field(..., alias="legal")
     data: "Catalog" = Field(..., alias="data")
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "acl": {
-                    "viewers": [
-                        "abc@domain.com, cde@domain.com"
-                    ],
-                    "owners": [
-                        "abc@domain.com, cde@domain.com"
-                    ]
-                },
-                "legal": {
-                    "legaltags": [
-                        "opendes-public-usa-dataset-1"
-                    ],
-                    "otherRelevantDataCountries": [
-                        "US"
-                    ]
-                },
-                "data": {
-                    "family_catalog": [
-                        {
-                            "unit": "ohm.m",
-                            "family": "Medium Resistivity",
-                            "rule": "MEDR"
-                        }
-                    ],
-                    "main_family_catalog": [
-                        {
-                            "MainFamily": "Resistivity",
-                            "Family": "Medium Resistivity",
-                            "Unit": "OHMM"
-                        }
-                    ]
-                }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "acl": {
+                "viewers": [
+                    "abc@domain.com, cde@domain.com"
+                ],
+                "owners": [
+                    "abc@domain.com, cde@domain.com"
+                ]
+            },
+            "legal": {
+                "legaltags": [
+                    "opendes-public-usa-dataset-1"
+                ],
+                "otherRelevantDataCountries": [
+                    "US"
+                ]
+            },
+            "data": {
+                "family_catalog": [
+                    {
+                        "unit": "ohm.m",
+                        "family": "Medium Resistivity",
+                        "rule": "MEDR"
+                    }
+                ],
+                "main_family_catalog": [
+                    {
+                        "MainFamily": "Resistivity",
+                        "Family": "Medium Resistivity",
+                        "Unit": "OHMM"
+                    }
+                ]
             }
         }
+    })
 
 
 family_processor_manager = fp_manager.FamilyProcessorManager(CUSTOM_CATALOG_LIFETIME)
@@ -104,15 +102,13 @@ class GuessRequest(BaseModel):
     label: str  # Channel name, as defined in LAS or DLIS
     log_unit: Optional[str] = None  # Channel unit, as defined in LAS or DLIS
     description: Optional[str] = None  # Channel description, as defined in LAS or DLIS
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "label": "GRD",
-                "log_unit": "GAPI",
-                "description": "LDTD Gamma Ray",
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "label": "GRD",
+            "log_unit": "GAPI",
+            "description": "LDTD Gamma Ray",
         }
+    })
 
 
 class GuessResponse(BaseModel):
@@ -144,12 +140,12 @@ async def post_recognize_custom(body: GuessRequest,
                                 ctx: Context = Depends(get_ctx)) -> GuessResponse:
     processor = await family_processor_manager.get_processor(ctx, ctx.partition_id)
 
-    result = await process_with_trace(processor, farmodel.GuessRequest(**body.dict()))
+    result = await process_with_trace(processor, farmodel.GuessRequest(**body.model_dump()))
     if result.error is not None:
         # Try with the default catalog
         default_processor = family_processor_manager.get_default_processor()
 
-        result = await process_with_trace(default_processor, farmodel.GuessRequest(**body.dict()))
+        result = await process_with_trace(default_processor, farmodel.GuessRequest(**body.model_dump()))
         if result.error:
             if result.error == 'Cannot find family name':
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=result.error)
@@ -169,16 +165,15 @@ async def post_recognize_custom(body: GuessRequest,
 @router.put('/upload-catalog',
             response_model=model.CreateUpdateRecordsResponse,
             summary="Upload user-defined catalog with family assignment rules",
-            description="""Upload user-defined catalog with family assignment rules for specific partition ID. 
+            description=f"""Upload user-defined catalog with family assignment rules for specific partition ID.
             If there is an existing catalog, it will be replaced. It takes maximum of 5 mins to replace the existing catalog. 
-            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog. {}""".format(
-                REQUIRED_ROLES_WRITE),
+            Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog. {REQUIRED_ROLES_WRITE}""",
             operation_id="upload-catalog")
 async def upload_catalog(body: CatalogRecord,
                          ctx: Context = Depends(get_ctx)) -> model.CreateUpdateRecordsResponse:
     storage_client = await get_storage_record_service(ctx)
     # force the id
-    record = model.Record(**body.dict(by_alias=True),
+    record = model.Record(**body.model_dump(by_alias=True),
                           id=f"{ctx.partition_id}{fp_manager.FIXED_RECORD_ID}",
                           kind=f"{ctx.partition_id}:wdms:familycatalog:1.0.0"
                           )

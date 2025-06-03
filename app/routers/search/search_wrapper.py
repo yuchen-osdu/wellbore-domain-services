@@ -32,8 +32,8 @@ class SearchWrapper:
         # Convert the query string into query object
         cursor = None
 
-        test_dict = query_request.dict(by_alias=True)
-        request_with_cursor = CursorQueryRequest.parse_obj(test_dict)
+        test_dict = query_request.model_dump(by_alias=True)
+        request_with_cursor = CursorQueryRequest.model_validate(test_dict)
         request_with_cursor.limit = 100
         request_with_cursor.cursor = cursor
 

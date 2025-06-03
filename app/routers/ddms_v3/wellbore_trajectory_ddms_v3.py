@@ -41,7 +41,7 @@ WELLBORE_TRAJECTORIES_API_BASE_PATH = '/wellboretrajectories'
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellboreTrajectory using osdu schema",
-    description="""Get the WellboreTrajectory object using its **id**. {}""".format(REQUIRED_ROLES_READ),
+    description=f"""Get the WellboreTrajectory object using its **id**. {REQUIRED_ROLES_READ}""",
     operation_id="get_wellbore_trajectory_osdu",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Wellbore Trajectory not found"}
@@ -54,20 +54,20 @@ async def get_wellbore_trajectory_osdu(
     # Note: version is dropped here
     wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
 
-    wellboreTrajectory_record = await storage_client.get_record(
+    wellboretrajectory_record = await storage_client.get_record(
         id=wellboretrajectoryid, data_partition_id=ctx.partition_id
     )
-    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreTrajectory_record, request.state)
-    await schema_library.validate_records([wellboreTrajectory_record], ctx)
-    return wellboreTrajectory_record
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboretrajectory_record, request.state)
+    await schema_library.validate_records([wellboretrajectory_record], ctx)
+    return wellboretrajectory_record
 
 
 @router.delete(
     WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}",
     summary="Delete the wellboreTrajectory. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
-    description="{}".format(REQUIRED_ROLES_WRITE),
-    operation_id="del_osdu_wellboreTrajectory",
+    description=f"{REQUIRED_ROLES_WRITE}",
+    operation_id="del_osdu_wellboretrajectory",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
     responses={
@@ -75,7 +75,7 @@ async def get_wellbore_trajectory_osdu(
         status.HTTP_204_NO_CONTENT: {"description": "Record deleted successfully"},
     },
 )
-async def del_osdu_wellboreTrajectory(
+async def del_osdu_wellboretrajectory(
     wellboretrajectoryid: WellboreTrajectoryId,
     purge: bool = False,
     ctx: Context = Depends(get_ctx),
@@ -89,13 +89,13 @@ async def del_osdu_wellboreTrajectory(
     WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the WellboreTrajectory",
-    description="{}".format(REQUIRED_ROLES_READ),
-    operation_id="get_osdu_wellboreTrajectory_versions",
+    description=f"{REQUIRED_ROLES_READ}",
+    operation_id="get_osdu_wellboretrajectory_versions",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "WellboreTrajectory not found"}
     },
 )
-async def get_osdu_wellboreTrajectory_versions(
+async def get_osdu_wellboretrajectory_versions(
     wellboretrajectoryid: WellboreTrajectoryId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
     record = await fetch_record(ctx, wellboretrajectoryid)
@@ -112,39 +112,39 @@ async def get_osdu_wellboreTrajectory_versions(
     WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory schema",
-    description=""""Get the WellboreTrajectory object using its **id**. {}""".format(REQUIRED_ROLES_READ),
-    operation_id="get_osdu_wellboreTrajectory_version",
+    description=f""""Get the WellboreTrajectory object using its **id**. {REQUIRED_ROLES_READ}""",
+    operation_id="get_osdu_wellboretrajectory_version",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "WellboreTrajectory not found"}
     },
     response_model_exclude_unset=True,
 )
-async def get_osdu_wellboreTrajectory_version(
+async def get_osdu_wellboretrajectory_version(
     wellboretrajectoryid: WellboreTrajectoryId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
     storage_client = await get_storage_record_service(ctx)
     wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
-    wellboreTrajectory_record = await storage_client.get_record_version(
+    wellboretrajectory_record = await storage_client.get_record_version(
         id=wellboretrajectoryid, version=version, data_partition_id=ctx.partition_id
     )
-    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreTrajectory_record, request.state)
-    await schema_library.validate_records([wellboreTrajectory_record], ctx)
-    return wellboreTrajectory_record
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboretrajectory_record, request.state)
+    await schema_library.validate_records([wellboretrajectory_record], ctx)
+    return wellboretrajectory_record
 
 
 @router.post(
     WELLBORE_TRAJECTORIES_API_BASE_PATH,
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the WellboreTrajectories using osdu schema",
-    description="{}".format(REQUIRED_ROLES_WRITE),
-    operation_id="post_wellboreTrajectory_osdu",
+    description=f"{REQUIRED_ROLES_WRITE}",
+    operation_id="post_wellboretrajectory_osdu",
     responses={
         status.HTTP_400_BAD_REQUEST: {
             "description": "Missing mandatory parameter or unknown parameter"
         }
     },
 )
-async def post_wellboreTrajectory_osdu(
+async def post_wellboretrajectory_osdu(
     request: Request,
     wellboretrajectories: List[Record] = Body(..., example=load_schema_example("trajectory_v3.json")),
     ctx: Context = Depends(get_ctx), bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)

@@ -33,7 +33,7 @@ async def test_get_welllogacquisitionid_osdu_success(mocker, app_configurable_wi
     with open(os.path.join(dir_path, WELLLOG_ACQUISITION_SAMPLE_FILE), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
 
-    expected_response = Record.parse_obj(record_json)
+    expected_response = Record.model_validate(record_json)
 
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
     mocked_storage_client.get_record.return_value = expected_response
@@ -81,9 +81,9 @@ async def test_get_osdu_welllogacquisitionid_versions_success(mocker, app_config
         "recordId": WELLLOG_ACQUISITION_ID,
         "versions": [WELLLOG_ACQUISITION_VERSION]
     }
-    expected_response = RecordVersions.parse_obj(record_versions_data)
+    expected_response = RecordVersions.model_validate(record_versions_data)
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
-    mocked_storage_client.get_record.return_value = Record.parse_obj(record_json)
+    mocked_storage_client.get_record.return_value = Record.model_validate(record_json)
     mocked_storage_client.get_all_record_versions.return_value = expected_response
 
     _, client = app_configurable_with_testclient(
@@ -105,7 +105,7 @@ async def test_get_osdu_welllogacquisitionid_version_success(mocker, app_configu
     with open(os.path.join(dir_path, WELLLOG_ACQUISITION_SAMPLE_FILE), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
 
-    expected_response = Record.parse_obj(record_json)
+    expected_response = Record.model_validate(record_json)
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
     mocked_storage_client.get_record_version.return_value = expected_response
 

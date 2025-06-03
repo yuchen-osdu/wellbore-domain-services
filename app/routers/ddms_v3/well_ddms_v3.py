@@ -16,19 +16,18 @@ from typing import List
 from fastapi import APIRouter, Depends, Response, status, Body
 from starlette.requests import Request
 
-from app.clients.storage_service_client import get_storage_record_service
 from odes_storage.models import (
     CreateUpdateRecordsResponse,
     RecordVersions, Record,
 )
+from app.clients.storage_service_client import get_storage_record_service
 from app.model.osdu_record_id import split_record_id_version, WellId
-from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.context import Context, get_ctx
 from app.utils import load_schema_example
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.record_utils import fetch_record
-
 from app.schemas import schema_library
+from ..common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 
 router = APIRouter()
 
@@ -38,7 +37,7 @@ router = APIRouter()
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the Well using osdu schema",
-    description="""Get the Well object using its **id**. {}""".format(REQUIRED_ROLES_READ),
+    description=f"""Get the Well object using its **id**. {REQUIRED_ROLES_READ}""",
     operation_id="get_well_osdu",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Well not found"}
@@ -57,7 +56,7 @@ async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Reco
     "/wells/{wellid}",
     summary="Delete the well. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
-    description="{}".format(REQUIRED_ROLES_WRITE),
+    description=f"{REQUIRED_ROLES_WRITE}",
     operation_id="del_osdu_well",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
@@ -77,7 +76,7 @@ async def del_osdu_well(wellid: WellId, ctx: Context = Depends(get_ctx)):
     "/wells/{wellid}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the Well",
-    description="{}".format(REQUIRED_ROLES_READ),
+    description=f"{REQUIRED_ROLES_READ}",
     operation_id="get_osdu_well_versions",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Well not found"}
@@ -94,7 +93,7 @@ async def get_osdu_well_versions(wellid: WellId, request: Request, ctx: Context 
     "/wells/{wellid}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the Well using OSDU well schema",
-    description=""""Get the Well object using its **id**. {}""".format(REQUIRED_ROLES_READ),
+    description=f""""Get the Well object using its **id**. {REQUIRED_ROLES_READ}""",
     operation_id="get_osdu_well_version",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Well not found"}
@@ -117,7 +116,7 @@ async def get_osdu_well_version(
     "/wells",
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the Wells using osdu schema",
-    description="{}".format(REQUIRED_ROLES_WRITE),
+    description=f"{REQUIRED_ROLES_WRITE}",
     operation_id="post_well_osdu",
     responses={
         status.HTTP_400_BAD_REQUEST: {

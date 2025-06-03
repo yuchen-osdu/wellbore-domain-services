@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import concurrent.futures
-from functools import lru_cache, wraps, partial
+from functools import partial
 import asyncio
 
 POOL_EXECUTOR_MAX_WORKER = 4
@@ -32,4 +32,3 @@ async def run_in_pool_executor(func, *args, **kwargs):
     loop = asyncio.get_running_loop()
     func = partial(func, *args, **kwargs)
     return await loop.run_in_executor(pool, func=func)
-

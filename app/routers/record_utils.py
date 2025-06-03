@@ -51,12 +51,11 @@ async def fetch_record(ctx: Context,
             data_partition_id=ctx.partition_id,
             attribute=attribute
         )
-    else:
-        return await storage_client.get_record(
-            id=record_id,
-            data_partition_id=ctx.partition_id,
-            attribute=attribute
-        )
+    return await storage_client.get_record(
+        id=record_id,
+        data_partition_id=ctx.partition_id,
+        attribute=attribute
+    )
 
 Attribute_record_wdms_extension_properties = [
     f"data.{ExtensionProperties_field}.{ExtensionProperties_WDMS_field}"

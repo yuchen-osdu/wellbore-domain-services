@@ -5,6 +5,11 @@ from asyncio import gather
 from uuid import UUID
 
 from starlette.requests import Request
+from fastapi import APIRouter, Depends, Body
+from fastapi.responses import Response
+from pydantic import RootModel, BaseModel, Field
+
+from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
 from app.routers.common_parameters import response_404, create_sessions_examples
 from app.tenant import resolve_tenant
@@ -17,11 +22,6 @@ from app.bulk_persistence import (Session,
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.bulk.utils import get_data_consistency_checks
 from app.context import Context
-
-from fastapi import APIRouter, Depends, Body
-from fastapi.responses import Response
-from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-from pydantic import BaseModel, Field
 
 router = APIRouter()
 
@@ -56,7 +56,7 @@ class CreateDataSessionRequest(BaseModel):
 
 
 class UpdateSessionStateValue(str, Enum):
-    Commit = 'commit',
+    Commit = 'commit'
     Abandon = 'abandon'
 
 
@@ -76,8 +76,8 @@ class UpdateSessionTimeToLive(BaseModel):
         description='NOT SUPPORTED: time to live in minutes from now, updating session lifetime')
 
 
-class UpdateSessionRequest(BaseModel):
-    __root__: Union[UpdateSessionState, UpdateSessionExpiry, UpdateSessionTimeToLive]
+class UpdateSessionRequest(RootModel):
+    root: Union[UpdateSessionState, UpdateSessionExpiry, UpdateSessionTimeToLive]
 
 
 class WithSessionStorages:

@@ -1,10 +1,13 @@
 import abc
 from abc import ABC
-from typing import Optional
-from fastapi import Request
+from typing import Optional, Annotated
+from fastapi import Request, Query
 from packaging.version import Version
 
-from app.bulk_persistence import BulkURI, BulkIO, BulkIODask, BulkIOWdmsWorker, get_config as get_config_bulk
+from app.bulk_persistence import BulkURI, BulkIO, BulkIODask, BulkIOWdmsWorker, get_config as get_config_bulk, \
+    GetDataParams
+from app.bulk_persistence.model_chunking import CURVES_EXAMPLES, BULK_FILTER_DESCRIPTION, \
+    BULK_FILTER_EXAMPLES
 from app.model.log_bulk import LogBulkHelper
 from app.conf import Config
 from app.utils import get_http_client_session
@@ -86,6 +89,40 @@ async def set_log_bulk_id_access(request: Request):
 
 async def set_osdu_bulk_id_access(request: Request):
     request.state.bulk_id_access = OsduBulkIdAccess
+
+def get_data_parameters(
+        offset: Annotated[
+            int | None,
+            Query(ge=0,
+                description='The number of rows that are to be skipped and not included in the result.',
+                examples=[5])
+        ] = None,
+        limit: Annotated[
+            int | None,
+            Query(ge=1,
+                description='The maximum number of rows to be returned.',
+                examples=[100])
+        ] = None,
+        curves: Annotated[
+            str | None,
+            Query(description='Filters curves. List of curves to be returned. '
+                            'The curves are returned in the same order as it is given.',
+                examples=CURVES_EXAMPLES)
+        ] = None,
+        describe: Annotated[
+            bool | None,
+            Query(description='The "describe" query option allows clients to request a description of the matching result. '
+                    '(number of rows, columns name)',
+                examples=['false'])
+        ] = False,
+        bulk_filter: Annotated[
+            list[str] | None,
+            Query(alias='filter',
+                description=BULK_FILTER_DESCRIPTION,
+                examples=BULK_FILTER_EXAMPLES)
+        ] = None,
+        ) -> GetDataParams:
+    return GetDataParams(offset=offset, limit=limit, curves=curves, describe=describe, filter=bulk_filter)
 
 
 def get_bulk_id_access(request: Request) -> BulkIdAccess:

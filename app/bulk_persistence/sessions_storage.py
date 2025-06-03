@@ -17,7 +17,7 @@ from enum import Enum
 from asyncio import gather
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 from fastapi import status, HTTPException
 from datetime import datetime, timedelta
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -47,45 +47,42 @@ class Session(BaseModel):
     """ model of session exposed  """
 
     id: UUID = Field(..., description="identifier of the current session.",
-                          allow_mutation=False)
+                          frozen=True)
     recordId: str = Field(..., description="identifier of the record of which the session is attached to.",
-                          allow_mutation=False)
+                          frozen=True)
     fromVersion: int = Field(..., description="record version on top of which the session is based.",
-                             allow_mutation=False)
+                             frozen=True)
     mode: SessionUpdateMode = Field(
         ...,
         description="merge mode at commit."
                     " If 'update', existing data will be merged with the data sent during the session."
                     " If 'overrride', existing data will be ignored, the final result will only contains "
                     "data sent within the session.",
-        allow_mutation=False)
+        frozen=True)
     expiry: datetime = Field(
         ...,
         description="If the session is not committed before this dead line, session is automatically abandoned.")
-    createdTime: datetime = Field(..., description="creation date", allow_mutation=False)
+    createdTime: datetime = Field(..., description="creation date", frozen=True)
     updatedTime: datetime = Field(..., description="updated date")
-    state: SessionState = Field(..., allow_mutation=False)
+    state: SessionState = Field(..., frozen=True)
     meta: Optional[Dict[str, str]] = Field(
         None,
         description="miscellaneous metadata associated to the session. The session creator can set some data here.")
-
-    class Config:
-        validate_assignment = True
-        schema_extra = {
-            "example": {
-                "id": "xx1234",
-                "recordId": "opendes:log:991234",
-                "fromVersion": 25686567113,
-                "mode": "update",
-                "createdTime": "2021-03-07T15:49:01+00:00",
-                "updatedTime": "2021-03-07T15:58:01+00:00",
-                "expiry": "2021-03-08T15:49:01+00:00",
-                "state": "open",
-                "meta": {
-                    "creatorCustom": "someValue"
-                }
+    model_config = ConfigDict(validate_assignment=True, json_schema_extra={
+        "example": {
+            "id": "xx1234",
+            "recordId": "opendes:log:991234",
+            "fromVersion": 25686567113,
+            "mode": "update",
+            "createdTime": "2021-03-07T15:49:01+00:00",
+            "updatedTime": "2021-03-07T15:58:01+00:00",
+            "expiry": "2021-03-08T15:49:01+00:00",
+            "state": "open",
+            "meta": {
+                "creatorCustom": "someValue"
             }
         }
+    })
 
     @property
     def is_expired(self) -> bool:
@@ -112,35 +109,31 @@ class Session(BaseModel):
 
 
 class CommitSessionResponse(Session):
-    class Config:
-        validate_assignment = True
-        schema_extra = {
-            "example": {
-                **Session.Config.schema_extra["example"],
-                "version": 123456789,
-            }
+    model_config = ConfigDict(validate_assignment=True, json_schema_extra={
+        "example": {
+            **Session.model_config["json_schema_extra"]["example"],
+            "version": 123456789,
         }
+    })
 
     version: Optional[int] = Field(
         None,
         description='Record version in case of successful commit',
-        example=1562066009929332,
+        examples=[1562066009929332],
         title='Version Number',
     )
 
 
 class SessionInternal(BaseModel):
     session: Session
-    etag: Optional[str] = Field(None, allow_mutation=False)  # internal only, read only
+    etag: Optional[str] = Field(None, frozen=True)  # internal only, read only
     internal: Optional[Any] = Field(
         None,
         description="contains internal not expected to be exposed."
                     "TODO see if it's needed, a potential usage could be to keep track to chunk details,"
                     " for 'quick' check validation. If not needed to be remove, this is mainly to support "
                     "our current exploratory work.")
-
-    class Config:
-        validate_assignment = True
+    model_config = ConfigDict(validate_assignment=True)
 
 
 class SessionException(Exception):
@@ -200,7 +193,7 @@ class SessionsStorage:
         etag = session.etag
         if etag is not None:  # this differentiate creation (etag is None) versus update (etag not None)
             session.session.updatedTime = datetime.utcnow()
-        content = session.json(exclude={'etag'})  # etag must not be persisted
+        content = session.model_dump_json(exclude={'etag'})  # etag must not be persisted
 
         try:
             blob = await self._storage.upload(
@@ -226,7 +219,7 @@ class SessionsStorage:
                 self._storage.download(tenant, object_name)
             )
 
-            session_without_etag = SessionInternal.parse_raw(blob_content)
+            session_without_etag = SessionInternal.model_validate_json(blob_content)
 
             return SessionInternal(session=session_without_etag.session,
                                    etag=blob_meta.etag,
@@ -391,7 +384,7 @@ class SessionsStorage:
                     f" State update allowed, will be {new_state}"
                 )
 
-        dict_session = i_session.dict()
+        dict_session = i_session.model_dump()
         dict_session["session"]["state"] = new_state
         updated = SessionInternal(**dict_session)
         # if session has been updated meanwhile, this call will fail and raise SessionUpdatedEtagUnmatched

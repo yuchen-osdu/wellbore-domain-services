@@ -1090,8 +1090,8 @@ async def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app
 @pytest.mark.parametrize("params, content, failure_status", [
     (['M:lt:5'], "filter error: The columns:['M'] to be filtered do not exist", 400),
     (['A:lt:5', 'A:lt:7'], 'filter error: Same operator on the same column', 400),
-    (['A:xx:5'], '', 422),  # 422 since handled by regex at query param declaration,
-    (['A:lt'], '', 422)
+    (['A:xx:5'], 'filter error: Invalid filter expression', 400),
+    (['A:lt'], 'filter error: Invalid filter expression', 400)
 ])
 @pytest.mark.anyio
 async def test_get_bulk_data_with_filters_fail(dasked_test_app_without_consistency_client, entity_type, params, content,
@@ -1352,7 +1352,7 @@ async def test_session_meta_extended_load_completed(dasked_test_app_without_cons
 
 
 @pytest.mark.parametrize("entity_type", ['Log'])
-@pytest.mark.parametrize("add_session_meta_attribute", [True, False])
+@pytest.mark.parametrize("add_session_meta_attribute", ["true", "false"])
 @pytest.mark.anyio
 async def test_v2_ignored_session_meta_extended_load_completed(dasked_test_app_without_consistency_client,
                                                                entity_type, add_session_meta_attribute):

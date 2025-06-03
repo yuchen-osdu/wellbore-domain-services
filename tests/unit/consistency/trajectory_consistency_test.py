@@ -1,50 +1,52 @@
 import pytest
+from pydantic import BaseModel
+
 from app.consistency import TrajectoryDataConsistencyChecks
-
-
-from app.model.osdu_model import (
-    AbstractAccessControlList100,
-    AbstractLegalTags100,
-    AvailableTrajectoryStationProperty,
-    WellboreTrajectory110,
-    WellboreTrajectoryData110,
-)
+from odes_storage.models import Record
 from tests.unit.test_utils import make_record
 
 KIND = "osdu:wks:work-product-component--WellboreTrajectory:1.0.0"
-LEGAL = AbstractLegalTags100(legaltags=["legal_tag"], otherRelevantDataCountries=["FR"], status="compliant")
-ACL = AbstractAccessControlList100(
-    owners=["data.default.owners@opendes.slb.com"], viewers=["data.default.viewers@opendes.slb.com"]
-)
+LEGAL = {"legaltags": ["legal_tag"], "otherRelevantDataCountries":["FR"], "status":"compliant"}
+ACL = {"owners": ["data.default.owners@opendes.slb.com"], "viewers": ["data.default.viewers@opendes.slb.com"]}
 
 
 @pytest.fixture
 def trajectory():
-    return WellboreTrajectory110(kind=KIND, legal=LEGAL, acl=ACL)
+    return Record(kind=KIND, legal=LEGAL, acl=ACL)
 
 
 mini_traj_data = {
     "WellboreID": "data_partition:master-data--Wellbore:72e872c3f86848cd860689ae48d3b6b1:",
     "TopDepthMeasuredDepth": 0.0,
     "BaseDepthMeasuredDepth": 1.0,
-    "VerticalMeasurement": [],
+    "VerticalMeasurement": {},
 }
 
+class AvailableTrajectoryStationProperty(BaseModel):
+    Name: str | None = None
+    TrajectoryStationPropertyTypeID: str | None = None
+
+class WellboreTrajectoryData(BaseModel):
+    WellboreID: str
+    TopDepthMeasuredDepth: float
+    BaseDepthMeasuredDepth: float
+    VerticalMeasurement: dict
+    AvailableTrajectoryStationProperties: list[AvailableTrajectoryStationProperty] | None = None
 
 @pytest.mark.parametrize(
     "trajectory_data, expected",
     [
-        (WellboreTrajectoryData110(**mini_traj_data), None),
-        (WellboreTrajectoryData110(**mini_traj_data, AvailableTrajectoryStationProperties=None), None),
-        (WellboreTrajectoryData110(**mini_traj_data, AvailableTrajectoryStationProperties=[]), None),
+        (WellboreTrajectoryData(**mini_traj_data), None),
+        (WellboreTrajectoryData(**mini_traj_data, AvailableTrajectoryStationProperties=None), None),
+        (WellboreTrajectoryData(**mini_traj_data, AvailableTrajectoryStationProperties=[]), None),
         (
-            WellboreTrajectoryData110(
+            WellboreTrajectoryData(
                 **mini_traj_data, AvailableTrajectoryStationProperties=[AvailableTrajectoryStationProperty()]
             ),
             None,
         ),
         (
-            WellboreTrajectoryData110(
+            WellboreTrajectoryData(
                 **mini_traj_data,
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
@@ -58,7 +60,7 @@ mini_traj_data = {
             None,
         ),
         (
-            WellboreTrajectoryData110(
+            WellboreTrajectoryData(
                 **mini_traj_data,
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
@@ -72,7 +74,7 @@ mini_traj_data = {
             None,
         ),
         (
-            WellboreTrajectoryData110(
+            WellboreTrajectoryData(
                 **mini_traj_data,
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
@@ -86,7 +88,7 @@ mini_traj_data = {
             None,
         ),
         (
-            WellboreTrajectoryData110(
+            WellboreTrajectoryData(
                 **mini_traj_data,
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
@@ -100,7 +102,7 @@ mini_traj_data = {
             "MD",
         ),
         (
-            WellboreTrajectoryData110(
+            WellboreTrajectoryData(
                 **mini_traj_data,
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
@@ -114,7 +116,7 @@ mini_traj_data = {
             None,
         ),
         (
-            WellboreTrajectoryData110(
+            WellboreTrajectoryData(
                 **mini_traj_data,
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
@@ -128,7 +130,7 @@ mini_traj_data = {
             None,
         ),
         (
-            WellboreTrajectoryData110(
+            WellboreTrajectoryData(
                 **mini_traj_data,
                 AvailableTrajectoryStationProperties=[
                     AvailableTrajectoryStationProperty(
@@ -150,6 +152,6 @@ mini_traj_data = {
     ],
 )
 def test_get_reference_name(trajectory_data, expected):
-    record = make_record(data=trajectory_data.dict())
+    record = make_record(data=trajectory_data.model_dump())
     computed = TrajectoryDataConsistencyChecks.get_reference_curve(record)
     assert computed == expected

@@ -17,7 +17,6 @@ import json
 import pydantic
 import pytest
 from odes_storage.models import Record
-from pydantic import Extra
 
 import app.model.model_curated as models
 import app.model.model_utils as utils
@@ -29,14 +28,13 @@ def test_list_record_models(ddms_model):
     # the main goal here is to spot any new record model
     # If OK and a valid 'record' kind model, add it to the expected list
     # otherwise the list function must be reviewed
-    assert 'data' in ddms_model.__fields__.keys()
-    assert Extra.forbid == ddms_model.Config.extra
-    assert Extra.allow == ddms_model.__fields__['data'].type_.__config__.extra
+    assert 'data' in ddms_model.model_fields.keys()
+    assert 'forbid' == ddms_model.model_config['extra']
 
 
 def test_check_record_model_base_config():
     # this the base config make sure that this has not changed
-    assert Record.__config__.extra == Extra.ignore
+    assert Record.model_config == {}
 
 
 wellbore_str = """
@@ -147,8 +145,8 @@ def test_record_should_not_serialize_known_meta(ddms_model):
     expected_keys = ["kind", "name", "persistableReference", "propertyNames", "propertyValues", "uncertainty"]
     expected_values = ["CRS", "Some name", "ref", ["name"], ["value"], 0.9]
 
-    parsed = ddms_model.parse_raw(wellbore_str_with_meta_valid_ddms)
-    parsed_meta_dict = parsed.meta[0].dict()
+    parsed = ddms_model.model_validate_json(wellbore_str_with_meta_valid_ddms)
+    parsed_meta_dict = parsed.meta[0].model_dump()
 
     for index in range(len(expected_keys)):
         key = expected_keys[index]
@@ -156,7 +154,7 @@ def test_record_should_not_serialize_known_meta(ddms_model):
         assert parsed_meta_dict[key] == value
 
     record = utils.to_record(parsed)
-    assert "meta" in record.__fields__.keys()
+    assert "meta" in record.model_fields.keys()
 
     for index in range(len(expected_keys)):
         key = expected_keys[index]
@@ -167,7 +165,7 @@ def test_record_should_not_serialize_known_meta(ddms_model):
 @pytest.mark.parametrize("ddms_model", [models.log, models.dipset])
 def test_record_should_not_serialize_unknown_meta(ddms_model):
     # Record model should handle unknown meta fields
-    record = Record.parse_raw(wellbore_str_with_meta_not_valid_ddms)
+    record = Record.model_validate_json(wellbore_str_with_meta_not_valid_ddms)
     meta_obj_keys = record.meta[0].keys()
 
     assert "notValidMetaKey" in meta_obj_keys
@@ -175,14 +173,14 @@ def test_record_should_not_serialize_unknown_meta(ddms_model):
 
     # But wellbore ddms model should not handle unknown meta fields
     with pytest.raises(pydantic.ValidationError) as execinfo:
-        ddms_model.parse_obj(record)
+        ddms_model.model_validate(record)
         assert "extra fields not permitted" in str(execinfo)
 
 
 @pytest.mark.parametrize('model_cls, data_content',
                          [
                              (models.log, {"relationships": {}}),
-                             (models.dipset, {"relationships": {"wellbore": ""}})
+                             (models.dipset, {"relationships": {"wellbore": {}}})
                          ])
 def test_model_allow_extra_field_in_relationship_success(model_cls, data_content):
     data_content["relationships"]["extra_field_in_relationship"] = "extra_value"
@@ -193,11 +191,11 @@ def test_model_allow_extra_field_in_relationship_success(model_cls, data_content
         "kind": "opened:osdu:dummy",
         "data": data_content
     }
-    parsed_obj = model_cls.parse_raw(json.dumps(raw_base_dict))
+    parsed_obj = model_cls.model_validate(raw_base_dict)
     # deserialized should keep it extra field
     assert parsed_obj.data.relationships.extra_field_in_relationship == "extra_value"
     # serialized should keep it
-    assert parsed_obj.dict()['data']['relationships']['extra_field_in_relationship'] == "extra_value"
+    assert parsed_obj.model_dump()['data']['relationships']['extra_field_in_relationship'] == "extra_value"
     # using utils from/to record
     record_obj = utils.to_record(parsed_obj)
     assert record_obj.data['relationships']['extra_field_in_relationship'] == "extra_value"
@@ -219,6 +217,6 @@ def test_meta_item_should_allow_extra():
             "dateSpudded"
         ]
     }
-    parsed = models.MetaItem.parse_obj(example)
-    assert 'format' in parsed.dict().keys()
+    parsed = models.MetaItem.model_validate(example)
+    assert 'format' in parsed.model_dump().keys()
     assert parsed.format == 'yyyy-MM-ddTHH:mm:ssZ'

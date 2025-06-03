@@ -161,7 +161,7 @@ class StorageRecordServiceBlobStorage:
                 record_dict["data"] = restricted_data_dict
                 return Record(**record_dict)
 
-            return Record.parse_raw(bin_data)
+            return Record.model_validate_json(bin_data)
         except (FileNotFoundError, ResourceNotFoundException):
             raise UnexpectedResponse(
                 status_code=404,
@@ -209,6 +209,14 @@ class StorageRecordServiceBlobStorage:
                     content="".encode(encoding="utf-8"),
                     headers=httpx.Headers(),
                 )
+
+    async def purge_record(self,
+                            id: str,
+                            data_partition_id: str = None,
+                            appkey: str = None,
+                            token: str = None) -> None:
+        await self.delete_record(id, data_partition_id, appkey, token)
+
 
     async def delete_records(self, data_partition_id: str, request_body: List[str]) -> None:
         await gather(*[

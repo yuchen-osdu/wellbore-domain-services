@@ -45,7 +45,7 @@ WELL_LOGS_API_BASE_PATH = '/welllogs'
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellLog using osdu schema",
-    description="""Get the WellLog object using its **id**. {}""".format(REQUIRED_ROLES_READ),
+    description=f"""Get the WellLog object using its **id**. {REQUIRED_ROLES_READ}""",
     operation_id="get_welllog_osdu",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "WellLog not found"}
@@ -70,7 +70,7 @@ async def get_welllog_osdu(
     WELL_LOGS_API_BASE_PATH + "/{welllogid}",
     summary="Delete the welllog. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
-    description="{}".format(REQUIRED_ROLES_WRITE),
+    description=f"{REQUIRED_ROLES_WRITE}",
     operation_id="del_osdu_welllog",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
@@ -95,7 +95,7 @@ async def del_osdu_welllog(
     WELL_LOGS_API_BASE_PATH + "/{welllogid}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the WellLog",
-    description="{}".format(REQUIRED_ROLES_READ),
+    description=f"{REQUIRED_ROLES_READ}",
     operation_id="get_osdu_welllog_versions",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "WellLog not found"}
@@ -118,7 +118,7 @@ async def get_osdu_welllog_versions(
     WELL_LOGS_API_BASE_PATH + "/{welllogid}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the WellLog using OSDU welllog schema",
-    description=""""Get the WellLog object using its **id**. {}""".format(REQUIRED_ROLES_READ),
+    description=f""""Get the WellLog object using its **id**. {REQUIRED_ROLES_READ}""",
     operation_id="get_osdu_welllog_version",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "WellLog not found"}
@@ -142,7 +142,7 @@ async def get_osdu_welllog_version(
     WELL_LOGS_API_BASE_PATH,
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the WellLogs using osdu schema",
-    description="{}".format(REQUIRED_ROLES_WRITE),
+    description=f"{REQUIRED_ROLES_WRITE}",
     operation_id="post_welllog_osdu",
     responses={
         status.HTTP_400_BAD_REQUEST: {

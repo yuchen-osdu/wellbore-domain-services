@@ -29,12 +29,7 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            BULK_READ_NOTE,
                                            BULK_WRITE_NOTE)
 
-from ..record_utils import fetch_record
-from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
-
-from ..common_parameters import sessions_body_examples, successful_get_bulk_data_responses_examples
-
-from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess
+from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess, get_data_parameters
 from app.routers.bulk.utils import get_df_validation_func, set_bulk_field_and_send_record, get_data_consistency_checks
 
 # imports for session manipulation
@@ -65,6 +60,9 @@ from app.bulk_persistence import (DataFrameValidationFunc,
                                   MAX_COLUMNS_RETURN,
                                   )
 
+from ..record_utils import fetch_record
+from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
+from ..common_parameters import sessions_body_examples, successful_get_bulk_data_responses_examples
 from .bulk_routes_dependencies import BulkIO, get_bulk_io_read, get_bulk_io_write
 
 
@@ -184,7 +182,7 @@ async def post_chunk_data(record_id: str,
 
 
 # TODO: set bulk config when configuration is reloaded from environment
-GET_DATA_DESCRIPTION = f"""  
+GET_DATA_DESCRIPTION = f"""
 Multiple media types response are available ("application/json", "application/x-parquet").  
 The desired format can be specify in the "Accept" header, default is Parquet.  
 
@@ -210,7 +208,7 @@ The query parameter __curves__ can be use to limit the number of columns.
 async def get_data_version(
     record_id: str, version: int,
     request: Request,
-    data_param: GetDataParams = Depends(),
+    data_param: GetDataParams = Depends(get_data_parameters),
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
     bulk_io: BulkIO = Depends(get_bulk_io_read),
@@ -222,9 +220,9 @@ async def get_data_version(
         DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
         bulk_uri = bulk_uri_access.get_bulk_uri(record=record)  # TODO PATH logv2
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail='Record contains an invalid bulk URI') from e
+                            detail='Record contains an invalid bulk URI')
 
     try:
         if not bulk_uri.is_valid():
@@ -252,7 +250,7 @@ async def get_data_version(
 async def get_data(
     record_id: str,
     request: Request,
-    ctrl_p: GetDataParams = Depends(),
+    ctrl_p: GetDataParams = Depends(get_data_parameters),
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
     bulk_io: BulkIO = Depends(get_bulk_io_read),
@@ -273,7 +271,7 @@ async def get_data(
 @router.patch(
     "/{record_id}/sessions/{session_id}",
     summary='Update a session, either commit or abandon.',
-    description="""Either validates the session' bulk data, a new version of record will be created with data sent 
+    description="""Either validates the session' bulk data, a new version of record will be created with data sent
                 within the session. Either abandon the session, and let record unchanged.  
                 Note: bulk data consistency check will be run when committing bulk data.""",
     responses={**response_404},
@@ -341,7 +339,7 @@ async def complete_session(
                 raise RuntimeError(f"{new_record.record_id_versions[0]} is not valid.")
 
             response = CommitSessionResponse(
-                **i_session.session.dict(exclude_unset=True, by_alias=True),
+                **i_session.session.model_dump(exclude_unset=True, by_alias=True),
                 version=updated_version
             )
 
@@ -359,7 +357,7 @@ async def complete_session(
                 # ==============>
 
             return CommitSessionResponse(
-                **abandon_guard.session.session.dict(exclude_unset=True, by_alias=True)
+                **abandon_guard.session.session.model_dump(exclude_unset=True, by_alias=True)
             )
 
     except SessionException as ex:

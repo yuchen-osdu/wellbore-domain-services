@@ -19,7 +19,7 @@ from typing import Union, Optional, List, Dict
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import RootModel, BaseModel
 
 from .json_orient import JSONOrient
 from .mime_types import MimeTypes, MimeType
@@ -45,12 +45,12 @@ class DataframeSerializerSync:
             columns: List[Union[str, int, float]] = None
             index: List[Union[str, int, float]] = None
 
-        class ColumnFormat(BaseModel):
-            __root__: Dict[str, Dict[Union[str, int, float], Union[str, int, float]]]
+        class ColumnFormat(RootModel):
+            root: Dict[str, Dict[Union[str, int, float], Union[str, int, float]]]
 
         schema_dict = {
-            JSONOrient.split: SplitFormat.schema(),
-            JSONOrient.columns: ColumnFormat.schema()
+            JSONOrient.split: SplitFormat.model_json_schema(),
+            JSONOrient.columns: ColumnFormat.model_json_schema()
         }
 
         return schema_dict[JSONOrient.get(orient)]

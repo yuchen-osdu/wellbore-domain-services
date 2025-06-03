@@ -1,7 +1,8 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Annotated
 import re
 
-from pydantic import constr
+from pydantic import StringConstraints
+from typing_extensions import Annotated
 
 
 OSDU_RECORD_ID_WITH_VERSION_REGEX = re.compile(r"^(?P<record_id>[\w\-\.]+:[^\:]+:[\w\-\.\:\%]+):(?P<version>([0-9])*)$")
@@ -32,11 +33,11 @@ def split_record_id_version(record_id: str) -> Tuple[Optional[str], Optional[int
 
 
 # specific record_id model, type const str with regex
-WellId = constr(regex=r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')
-WellboreId = constr(regex=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')
-WellboreTrajectoryId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$')
-WellboreMarkerSetId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$')
-WellLogId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')
-WellboreIntervalSetId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$')
-WellLogAcquisitionId = constr(regex=r'^[\w\-\.]+:master-data\-\-WellLogAcquisition:[\w\-\.\:\%]+$')
-PPFGDatasetId = constr(regex=r'^[\w\-\.]+:work-product-component\-\-PPFGDataset:[\w\-\.\:\%]+$')
+WellId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$')]
+WellboreId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$')]
+WellboreTrajectoryId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$')]
+WellboreMarkerSetId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$')]
+WellLogId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$')]
+WellboreIntervalSetId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$')]
+WellLogAcquisitionId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:master-data\-\-WellLogAcquisition:[\w\-\.\:\%]+$')]
+PPFGDatasetId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-component\-\-PPFGDataset:[\w\-\.\:\%]+$')]

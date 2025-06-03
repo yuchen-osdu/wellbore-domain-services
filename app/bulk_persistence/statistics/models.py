@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict
 
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 from datetime import datetime
 
 
@@ -45,7 +45,7 @@ class BulkDataStatisticsResponse(StatisticsComputationMeta):
     """ Response for bulk data statistics and its meta-data """
 
     data: Dict[str, CurveStatistics] = Field(title="Curves statistics' values",
-                                             example={'CurveName': CurveStatistics(**{
+                                             examples=[{'CurveName': CurveStatistics(**{
                                                  'mean': '450.8438',
                                                  'std': '318.27778186518816',
                                                  'min': '-100.0',
@@ -55,50 +55,48 @@ class BulkDataStatisticsResponse(StatisticsComputationMeta):
                                                  'max': '999.0',
                                                  'totalCount': '100000',
                                                  'nonAbsentValuesCount': '100000.0'})
-                                                      })
-
-    class Config:
-        schema_extra = {
-            "example": {'computationStartDatetime': '2022-05-18T16:22:16.010582',
-                        'recordId': 'osdu:work-product-component--WellLog:6d9c95c972254bbbaeaecbfa67fd1cf3',
-                        'recordVersion': '1998222529528913770053504387865218642',
-                        'computationStatus': 'complete',
-                        'data': {'ARR[0]': {'mean': '450.8438',
-                                            'std': '318.27778186518816',
-                                            'min': '-100.0',
-                                            '10%': '9.0',
-                                            '50%': '451.0',
-                                            '90%': '893.0',
-                                            'max': '999.0',
-                                            'totalCount': '100000',
-                                            'nonAbsentValuesCount': '100000.0'},
-                                 'ARR[1]': {'mean': '448.06855',
-                                            'std': '316.8023859891449',
-                                            'min': '-100.0',
-                                            '10%': '10.0',
-                                            '50%': '446.0',
-                                            '90%': '889.0',
-                                            'max': '999.0',
-                                            'totalCount': '100000',
-                                            'nonAbsentValuesCount': '100000.0'},
-                                 'ARR[2]': {'mean': '451.01309',
-                                            'std': '317.40833668820653',
-                                            'min': '-100.0',
-                                            '10%': '11.0',
-                                            '50%': '453.0',
-                                            '90%': '890.0',
-                                            'max': '999.0',
-                                            'totalCount': '100000',
-                                            'nonAbsentValuesCount': '100000.0'},
-                                 'ARR[3]': {'mean': '449.16661',
-                                            'std': '317.7767589547625',
-                                            'min': '-100.0',
-                                            '10%': '8.900000000001455',
-                                            '50%': '450.0',
-                                            '90%': '890.0',
-                                            'max': '999.0',
-                                            'totalCount': '100000',
-                                            'nonAbsentValuesCount': '100000.0'}
-                                 }
-                        }
-        }
+                                                      }])
+    model_config = ConfigDict(json_schema_extra={
+        "example": {'computationStartDatetime': '2022-05-18T16:22:16.010582',
+                    'recordId': 'osdu:work-product-component--WellLog:6d9c95c972254bbbaeaecbfa67fd1cf3',
+                    'recordVersion': '1998222529528913770053504387865218642',
+                    'computationStatus': 'complete',
+                    'data': {'ARR[0]': {'mean': '450.8438',
+                                        'std': '318.27778186518816',
+                                        'min': '-100.0',
+                                        '10%': '9.0',
+                                        '50%': '451.0',
+                                        '90%': '893.0',
+                                        'max': '999.0',
+                                        'totalCount': '100000',
+                                        'nonAbsentValuesCount': '100000.0'},
+                             'ARR[1]': {'mean': '448.06855',
+                                        'std': '316.8023859891449',
+                                        'min': '-100.0',
+                                        '10%': '10.0',
+                                        '50%': '446.0',
+                                        '90%': '889.0',
+                                        'max': '999.0',
+                                        'totalCount': '100000',
+                                        'nonAbsentValuesCount': '100000.0'},
+                             'ARR[2]': {'mean': '451.01309',
+                                        'std': '317.40833668820653',
+                                        'min': '-100.0',
+                                        '10%': '11.0',
+                                        '50%': '453.0',
+                                        '90%': '890.0',
+                                        'max': '999.0',
+                                        'totalCount': '100000',
+                                        'nonAbsentValuesCount': '100000.0'},
+                             'ARR[3]': {'mean': '449.16661',
+                                        'std': '317.7767589547625',
+                                        'min': '-100.0',
+                                        '10%': '8.900000000001455',
+                                        '50%': '450.0',
+                                        '90%': '890.0',
+                                        'max': '999.0',
+                                        'totalCount': '100000',
+                                        'nonAbsentValuesCount': '100000.0'}
+                             }
+                    }
+    })

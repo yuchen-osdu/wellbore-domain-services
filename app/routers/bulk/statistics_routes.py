@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, List
+from typing import Optional
 from fastapi.encoders import jsonable_encoder
 from fastapi import Query
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -71,16 +71,16 @@ responses_404_examples = {
             }
         }
 
-api_description_text = """
+API_DESCRIPTION_TEXT = """
 If wanted curves is an array:  
     - requests "ARRAY" retrieves all dimensions of the array  
     - requests "ARRAY[M:N]", retrieves all dimensions between M and N.
 """
 
-api_unit_conversion_text = "No unit conversion is supported. Statistics will be returned using the same units" \
+API_UNIT_CONVERSION_TEXT = "No unit conversion is supported. Statistics will be returned using the same units" \
                            " as recorded in Curves[].CurveUnit"
 
-api_supported_types_txt = """
+API_SUPPORTED_TYPES_TXT = """
 Data types supported:  
             - int  
             - float  
@@ -96,13 +96,13 @@ async def with_dask_blob_storage() -> DaskBulkStorage:
 @router.get(
     '/{record_id}/data/statistics',
     summary="Returns statistics of record's data for selected curves",
-    description=f"""Returns the statistics on bulk data identified by the record in its last version. 
+    description=f"""Returns the statistics on bulk data identified by the record in its last version.
 
-    {api_description_text}  
+    {API_DESCRIPTION_TEXT}  
     
-    {api_supported_types_txt}  
+    {API_SUPPORTED_TYPES_TXT}  
       
-    {api_unit_conversion_text}
+    {API_UNIT_CONVERSION_TEXT}
     """,
     response_model=BulkDataStatisticsResponse,
     responses={
@@ -115,7 +115,7 @@ async def get_bulk_statistics(
         record: Record = Depends(fetch_latest_version_record_dependency),
         curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
-                                      examples=model_chunking.curves_examples),
+                                      examples=model_chunking.CURVES_EXAMPLES),
         bulk_io: BulkIO = Depends(get_bulk_io_read),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         ctx: Context = Depends(get_ctx),
@@ -155,12 +155,12 @@ async def http_stats_error_handler(request, e: BulkStatisticsHTTPException) -> J
     '/{record_id}/versions/{version}/data/statistics',
     summary="Returns statistics of record's data for selected curves at requested version",
     response_model=BulkDataStatisticsResponse,
-    description=f"""Returns the statistics on bulk data identified by the record and given version.  
-    {api_description_text}  
+    description=f"""Returns the statistics on bulk data identified by the record and given version.
+    {API_DESCRIPTION_TEXT}  
       
-    {api_supported_types_txt}  
+    {API_SUPPORTED_TYPES_TXT}  
     
-    {api_unit_conversion_text}
+    {API_UNIT_CONVERSION_TEXT}
     """,
     responses={
         404: responses_404_examples
@@ -173,7 +173,7 @@ async def get_bulk_statistics_version(
         record: Record = Depends(fetch_record_dependency),
         curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
-                                      examples=model_chunking.curves_examples),
+                                      examples=model_chunking.CURVES_EXAMPLES),
         bulk_io: BulkIO = Depends(get_bulk_io_read),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         ctx: Context = Depends(get_ctx),
@@ -210,12 +210,11 @@ async def get_bulk_statistics_version(
 @router.post(
     '/{record_id}/versions/{version}/data/statistics',
     summary="Trigger computations of record's data statistics of record's data",
-    description=f"""Trigger the computation of statistics on bulk data for 
+    description=f"""Trigger the computation of statistics on bulk data for
     the record identified by the record_id at its last version   
 
-    {api_unit_conversion_text}
+    {API_UNIT_CONVERSION_TEXT}
     """,
-    
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Statistics or record not found"},
         status.HTTP_409_CONFLICT: {"description": "Statistics computation already running or complete"},
