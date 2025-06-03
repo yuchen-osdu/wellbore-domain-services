@@ -26,18 +26,18 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra, Field, confloat, StrictFloat, StrictStr, StrictInt
+from pydantic import ConfigDict, RootModel, BaseModel, Field, StrictFloat, StrictStr, StrictInt
+from typing_extensions import Annotated
 
 # TMP: added import only to expose pydantic bug with non-deterministic coercion
 # https://github.com/samuelcolvin/pydantic/issues/2835
 # import requests
 
 
-class Tags(BaseModel):
-    class Config:
-        extra = Extra.allow
+class Tags(RootModel):
+    #model_config = ConfigDict(extra="allow")
 
-    __root__: str
+    root: str
 
 
 # forbid unknown field in the root of the models
@@ -45,10 +45,7 @@ class DDMSBaseModel(BaseModel):
     """
     The base model forbids fields which are not declared initially in the pydantic model
     """
-
-    class Config:
-        extra = Extra.forbid
-        smart_union = True
+    model_config = ConfigDict(extra="forbid")
 
 
 # only allow unknown field in the data
@@ -56,10 +53,7 @@ class DDMSBaseModelWithExtra(BaseModel):
     """
     Used for data model allows extra fields which are not declared initially in the pydantic model
     """
-
-    class Config:
-        extra = Extra.allow
-        smart_union = True
+    model_config = ConfigDict(extra="allow")
 
 
 class LinkList(DDMSBaseModelWithExtra):
@@ -127,40 +121,40 @@ class DDMSBaseRecord(BaseModel):
     tags: Optional[Dict[str, Tags]] = Field(
         None,
         description='A generic dictionary of string keys mapping to string value. Only strings are permitted as keys and values.',
-        example={'NameOfKey': 'String value'},
+        examples=[{'NameOfKey': 'String value'}],
         title='Tag Dictionary',
     )
     createTime: Optional[datetime] = Field(
         None,
         description='Timestamp of the time at which initial version of this OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
-        example='2020-12-16T11:46:20.163Z',
+        examples=['2020-12-16T11:46:20.163Z'],
         title='Resource Object Creation DateTime',
     )
     createUser: Optional[str] = Field(
         None,
         description='The user reference, which created the first version of this resource object. Set by the System.',
-        example='some-user@some-company-cloud.com',
+        examples=['some-user@some-company-cloud.com'],
         title='Resource Object Creation User Reference',
     )
     modifyTime: Optional[datetime] = Field(
         None,
         description='Timestamp of the time at which this version of the OSDU resource object was created. Set by the System. The value is a combined date-time string in ISO-8601 given in UTC.',
-        example='2020-12-16T11:52:24.477Z',
+        examples=['2020-12-16T11:52:24.477Z'],
         title='Resource Object Version Creation DateTime',
     )
     modifyUser: Optional[str] = Field(
         None,
         description='The user reference, which created this version of this resource object. Set by the System.',
-        example='some-user@some-company-cloud.com',
+        examples=['some-user@some-company-cloud.com'],
         title='Resource Object Version Creation User Reference',
     )
 
 
 class Point(DDMSBaseModel):
-    latitude: Optional[confloat(ge=-90.0, le=90.0)] = Field(
+    latitude: Optional[Annotated[float, Field(ge=-90.0, le=90.0)]] = Field(
         None, description='Latitude of point.'
     )
-    longitude: Optional[confloat(ge=-180.0, le=180.0)] = Field(
+    longitude: Optional[Annotated[float, Field(ge=-180.0, le=180.0)]] = Field(
         None, description='Longitude of point.'
     )
 

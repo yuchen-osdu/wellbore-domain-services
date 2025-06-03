@@ -14,7 +14,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import field_validator, ConfigDict, BaseModel, Field, validator
 
 from app.model.model_curated import ValueWithUnit
 
@@ -70,24 +70,23 @@ class Dip(BaseModel):
     _azimuth_unit_validator = validator("azimuth", allow_reuse=True)(value_must_be_in_dega)
     _inclination_unit_validator = validator("inclination", allow_reuse=True)(value_must_be_in_dega)
 
-    @validator("quality")
+    @field_validator("quality")
+    @classmethod
     def quality_validator(cls, v):
         if v is not None and (v.value < 0 or v.value > 1):
             raise ValueError("value must be greater or egal to 0 and less or egal to 1")
         if v is not None and v.unitKey not in unitless_alias:
             raise ValueError("unit must be unitless")
         return v
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "reference": {"unitKey": "meter", "value": 1000.5},
-                "azimuth": {"unitKey": "dega", "value": 42},
-                "inclination": {"unitKey": "dega", "value": 9},
-                "quality": {"unitKey": "unitless", "value": 0.5},
-                "xCoordinate": {"unitKey": "meter", "value": 2},
-                "yCoordinate": {"unitKey": "meter", "value": 45},
-                "zCoordinate": {"unitKey": "meter", "value": 7},
-                "classification": "fracture",
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "reference": {"unitKey": "meter", "value": 1000.5},
+            "azimuth": {"unitKey": "dega", "value": 42},
+            "inclination": {"unitKey": "dega", "value": 9},
+            "quality": {"unitKey": "unitless", "value": 0.5},
+            "xCoordinate": {"unitKey": "meter", "value": 2},
+            "yCoordinate": {"unitKey": "meter", "value": 45},
+            "zCoordinate": {"unitKey": "meter", "value": 7},
+            "classification": "fracture",
         }
+    })

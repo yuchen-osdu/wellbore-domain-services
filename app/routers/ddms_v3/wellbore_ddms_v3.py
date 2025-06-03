@@ -37,9 +37,7 @@ router = APIRouter()
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the Wellbore using osdu schema",
-    description="""Get the Wellbore object using its **id**.{}""".format(
-        REQUIRED_ROLES_READ
-    ),
+    description=f"""Get the Wellbore object using its **id**.{REQUIRED_ROLES_READ}""",
     operation_id="get_wellbore_osdu",
     responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
 )
@@ -60,7 +58,7 @@ async def get_wellbore_osdu(
     "/wellbores/{wellboreid}",
     summary="Delete the wellbore. The API performs a logical deletion of the given record. "
     "No recursive delete for OSDU kinds",
-    description="{}".format(REQUIRED_ROLES_WRITE),
+    description=f"{REQUIRED_ROLES_WRITE}",
     operation_id="del_osdu_wellbore",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
@@ -80,7 +78,7 @@ async def del_osdu_wellbore(wellboreid: WellboreId, ctx: Context = Depends(get_c
     "/wellbores/{wellboreid}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the Wellbore",
-    description="{}".format(REQUIRED_ROLES_READ),
+    description=f"{REQUIRED_ROLES_READ}",
     operation_id="get_osdu_wellbore_versions",
     responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
 )
@@ -99,9 +97,7 @@ async def get_osdu_wellbore_versions(
     "/wellbores/{wellboreid}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the Wellbore using OSDU wellbore schema",
-    description=""""Get the Wellbore object using its **id**. {}""".format(
-        REQUIRED_ROLES_READ
-    ),
+    description=f""""Get the Wellbore object using its **id**. {REQUIRED_ROLES_READ}""",
     operation_id="get_osdu_wellbore_version",
     responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
     response_model_exclude_unset=True,
@@ -125,7 +121,7 @@ async def get_osdu_wellbore_version(
     "/wellbores",
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the Wellbores using osdu schema",
-    description="{}".format(REQUIRED_ROLES_WRITE),
+    description=f"{REQUIRED_ROLES_WRITE}",
     operation_id="post_wellbore_osdu",
     responses={
         status.HTTP_400_BAD_REQUEST: {

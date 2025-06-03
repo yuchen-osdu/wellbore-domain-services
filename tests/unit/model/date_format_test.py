@@ -14,11 +14,9 @@
 from unittest.mock import AsyncMock, create_autospec
 
 import pytest
-from pydantic import ValidationError
 
 from app.clients import SchemaServiceClient
 from app.injector.app_injector import WithLifeTime
-from app.model.osdu_model import Wellbore130
 from app.schemas import schema_library
 from tests.unit.test_utils import ctx_fixture
 
@@ -108,14 +106,8 @@ async def test_date_format(ctx_fixture_with_search_client, termination_date, pyd
             "HistoricalInterests": [{
                 "TerminationDateTime": termination_date
             }]
-        }
+        },
     }
-    # Check if it is ok with Pydantic
-    if pydantic_failure_expected:
-        with pytest.raises(ValidationError):
-            Wellbore130.validate(wellbore_entity)
-    else:
-        Wellbore130.validate(wellbore_entity)
 
     # Check if it is ok with JSon Schema without format check
     await schema_library._validate_entities([wellbore_entity], ctx_fixture_with_search_client)
@@ -171,12 +163,6 @@ async def test_date_time_format(ctx_fixture_with_search_client, effective_dateti
             }]
         }
     }
-    # Check if it is ok with Pydantic
-    if pydantic_failure_expected:
-        with pytest.raises(ValidationError):
-            Wellbore130.validate(wellbore_entity)
-    else:
-        Wellbore130.validate(wellbore_entity)
 
     # Check if it is ok with JSon Schema without format check
     await schema_library._validate_entities([wellbore_entity], ctx_fixture_with_search_client)

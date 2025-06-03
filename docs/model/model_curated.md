@@ -119,7 +119,7 @@ value accepts a float
 >>> named_property = namedProperty(**{
 ...     "value": 42.0
 ... })
->>> pprint(named_property.dict())
+>>> pprint(named_property.model_dump())
 {'associations': None,
  'description': None,
  'format': None,
@@ -138,7 +138,7 @@ value accepts an int
 >>> named_property = namedProperty(**{
 ...     "value": 42
 ... })
->>> pprint(named_property.dict())
+>>> pprint(named_property.model_dump())
 {'associations': None,
  'description': None,
  'format': None,
@@ -155,7 +155,7 @@ value also accepts a string
 >>> named_property = namedProperty(**{
 ...     "value": "Lorem Ipsum"
 ... })
->>> pprint(named_property.dict())
+>>> pprint(named_property.model_dump())
 {'associations': None,
  'description': None,
  'format': None,
@@ -166,26 +166,7 @@ value also accepts a string
  
 ```
 
-Note different types of values for other fields are accepted, and coerced to string
-
-```
->>> named_property = namedProperty(**{
-...     "associations": [1,2,3],
-...     "description": 51,
-...     "format": 33,
-...     "name": 42,
-...     "unitKey": 5
-... })
->>> pprint(named_property.dict())
-{'associations': ['1', '2', '3'],
- 'description': '51',
- 'format': '33',
- 'name': '42',
- 'unitKey': '5',
- 'value': None,
- 'values': None}
- 
-```
+Note: different types of values for other fields are not accepted, and are not coerced to string
 
 
 logchannel

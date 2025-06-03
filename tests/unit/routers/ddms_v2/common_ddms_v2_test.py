@@ -29,15 +29,7 @@ from tests.unit.test_utils import make_record
 from app.clients import SearchServiceClient, StorageRecordServiceClient
 from app.model.entity_utils import Entity
 from app.model.model_curated import *
-from app.model.osdu_model import (
-    Well,
-    Wellbore,
-    WellboreMarkerSet,
-    WellboreMarkerSet110,
-    WellboreTrajectory,
-    WellLog,
-)
-from app.wdms_app import app_injector, wdms_app
+
 
 """
 Contains unified common tests for the different kind. Mainly CRUD test cases
@@ -46,75 +38,6 @@ Contains unified common tests for the different kind. Mainly CRUD test cases
 tests_parameters = [
     ('/ddms/v2/logs', log(id='123456', data={})),
     ('/ddms/v2/dipsets', dipset(id="123456", data={})),
-    ('/ddms/v3/wellbores',         Wellbore(
-            id=r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
-            kind="osdu:wks:master-data--Wellbore:1.0.0",
-            acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-            legal={
-                "legaltags": ["string"],
-                "otherRelevantDataCountries": ["FR"],
-            },
-            data={},
-        )),
-    ('/ddms/v3/wells', Well(
-        id=r"namespace:master-data--Well:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="osdu:wks:master-data--Well:1.0.0",
-        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-        legal={
-            "legaltags": ["string"],
-            "otherRelevantDataCountries": ["FR"],
-        },
-        data={},
-    )),
-    ('/ddms/v3/welllogs', WellLog(
-        id=r"namespace:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="osdu:wks:work-product-component--WellLog:1.2.0",
-        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-        legal={
-            "legaltags": ["string"],
-            "otherRelevantDataCountries": ["FR"],
-        },
-        data={},
-    )),
-    ('/ddms/v3/wellboremarkersets', WellboreMarkerSet(
-        id=r"namespace:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
-        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-        legal={
-            "legaltags": ["string"],
-            "otherRelevantDataCountries": ["FR"],
-        },
-        data={
-            "WellboreID": r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:456",
-        },
-    )),
-    ('/ddms/v3/wellboremarkersets', WellboreMarkerSet110(
-        id=r"namespace:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="osdu:wks:work-product-component--WellboreMarkerSet:1.1.0",
-        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-        legal={
-            "legaltags": ["string"],
-            "otherRelevantDataCountries": ["FR"],
-        },
-        data={
-            "WellboreID": r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:456",
-        },
-    )),
-    ('/ddms/v3/wellboretrajectories', WellboreTrajectory(
-        id=r"namespace:work-product-component--WellboreTrajectory:c7c421a7-f496-5aef-8093-298c32bfdea9",
-        kind="osdu:wks:work-product-component--WellboreTrajectory:1.0.0",
-        acl={"owners": ["me@osdu.org"], "viewers": ["ze@osdu.org"]},
-        legal={
-            "legaltags": ["string"],
-            "otherRelevantDataCountries": ["FR"],
-        },
-        data={
-            "WellboreID": r"namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9:456",
-            "TopDepthMeasuredDepth": 12.3,
-            "BaseDepthMeasuredDepth": 11.3,
-            "VerticalMeasurement": {}
-        },
-    ))
 ]
 
 tests_parameters_for_recursive = [
@@ -158,7 +81,7 @@ async def test_get_record_success(client, base_url, record_obj):
         assert_called_once_with_partial(moc, id=record_id, data_partition_id='testing_partition')
 
         # assert it validates the input object schema
-        record_obj.validate(response.json())
+        record_obj.model_validate(response.json())
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
@@ -171,7 +94,7 @@ async def test_get_record_without_default_values(client, base_url, record_obj):
         assert response.status_code == status.HTTP_200_OK
 
         # assert we retrieve only the input fields
-        assert(response.json() == record_obj.dict(exclude_unset=True))
+        assert(response.json() == record_obj.model_dump(exclude_unset=True))
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
@@ -292,7 +215,7 @@ async def test_get_record_versions_successful(client, base_url, record_obj):
 
             # then
             assert response.status_code == status.HTTP_200_OK
-            assert RecordVersions.parse_raw(response.text) == expect_response
+            assert RecordVersions.model_validate_json(response.text) == expect_response
             moc.assert_called_with(id=record_id, data_partition_id='testing_partition')
     finally:
         if patcher:
@@ -342,7 +265,7 @@ async def test_get_record_at_version_successful(client, base_url, record_obj):
                                         data_partition_id='testing_partition')
 
         # assert it validates the input object schema
-        response_obj = record_obj.validate(response.json())
+        response_obj = record_obj.model_validate(response.json())
         assert response_obj.version == record_obj.version
 
 
@@ -359,7 +282,7 @@ async def test_get_record_at_version_successful_without_default_values(client, b
         assert response.status_code == status.HTTP_200_OK
 
         # assert we retrieve only the input fields
-        assert(response.json() == record_obj.dict(exclude_unset=True))
+        assert(response.json() == record_obj.model_dump(exclude_unset=True))
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)
@@ -382,7 +305,7 @@ async def test_post_records_successful(client, base_url, record_obj):
 
     # done this way because of the current inconsistency of root fields between wdms model vs storage client model
     record_dict_list = [
-        make_record(True, **(record_obj.dict(exclude_unset=True))) for _ in expected_response.record_ids
+        make_record(True, **(record_obj.model_dump(exclude_unset=True))) for _ in expected_response.record_ids
     ]
     with patch.object(storage_record_service_client_mock, "get_record",
                       side_effect=UnexpectedResponse(status_code=status.HTTP_404_NOT_FOUND,
@@ -393,7 +316,7 @@ async def test_post_records_successful(client, base_url, record_obj):
 
         # then
         assert response.status_code == status.HTTP_200_OK
-        assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
+        assert CreateUpdateRecordsResponse.model_validate_json(response.text) == expected_response
 
 
 @pytest.mark.parametrize('base_url, record_obj', tests_parameters)

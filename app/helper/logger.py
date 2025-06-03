@@ -34,7 +34,7 @@ def get_logger():
     return _LOGGER
 
 
-class StackDriverRenderer(object):
+class StackDriverRenderer():
     def __init__(self, service_name=None):
         self.service_name = service_name
 
@@ -50,7 +50,7 @@ class StackDriverRenderer(object):
         # Required by stackdriver to display level of error accordingly
         event_dict.setdefault("severity", method)
 
-        if method == 'error' or method == 'critical':
+        if method in ('error', 'critical'):
             # Enable display of this error in 'Error reporting' in Google Cloud
             event_dict['@type'] = 'type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent'
             if sys.exc_info()[0]:
@@ -114,7 +114,7 @@ def init_logger(*, service_name, config):
     elif config.cloud_provider.value == 'gc':
         _LOGGER = create_gc_logger(
             service_name=service_name,
-            gc_log_level=config.get('gc_log_level') 
+            gc_log_level=config.get('gc_log_level')
         )
     elif config.cloud_provider.value == 'aws':
         aws_log_level = config.get('aws_logger_level')
@@ -177,7 +177,7 @@ def create_azure_logger(*, service_name, az_ai_connection_str, az_logger_level):
     logger = _set_logger_handlers(logger_name=__name__, log_level=logging.DEBUG, handlers=[stdout_handler, az_handler])
 
     # return wdms logger with Context adapter
-    return AzureContextLoggerAdapter(logger, extra=dict())
+    return AzureContextLoggerAdapter(logger, extra={})
 
 
 def create_gc_logger(service_name, gc_log_level):

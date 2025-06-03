@@ -115,7 +115,7 @@ async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_
 async def test_invalid_session_id(dask_storage: DaskBulkStorage, mode=SessionUpdateMode.Overwrite):
     invalid_session_id = "test_1234-abcd"
     utc_now = datetime.utcnow()
-    with pytest.raises(ValueError, match=r".* value is not a valid uuid .*") as ex:
+    with pytest.raises(ValueError, match=r".* Input should be a valid UUID, .*") as ex:
         Session(id=invalid_session_id, recordId='fake_record_id', fromVersion=0,
                 mode=mode, createdTime=utc_now, updatedTime=utc_now,
                 expiry=utc_now + timedelta(minutes=5),

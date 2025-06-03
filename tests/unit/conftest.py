@@ -37,11 +37,7 @@ from .data import (
     wellbore_v3_record_list, wellbore_v3_110_record_list, wellbore_v3_111_record_list,
     wellbore_v3_120_record_list, wellbore_v3_130_record_list,
     marker_v3_record_list, marker_v3_120_record_list, marker_v3_121_record_list, wellboreintervalset_v3_100_record_list,
-    trajectory_v3_record_list, welllog110_v3_record_list, welllog120_v3_record_list, well100_v3_list, well110_v3_list,
-    well120_v3_list,
-    wellbore100_v3_list, wellbore110_v3_list, wellbore111_v3_list, wellbore120_v3_list, wellbore130_v3_list,
-    welllog110_v3_list, welllog120_v3_list, marker110_v3_list, marker120_v3_list, marker121_v3_list,
-    wellboreintervalset100_v3_list, trajectory110_v3_list, well_wks_record, well_wks_mini_record,
+    trajectory_v3_record_list, welllog110_v3_record_list, welllog120_v3_record_list, well_wks_record, well_wks_mini_record,
     wellbore_wks_record, wellbore_wks_mini_record
 )
 

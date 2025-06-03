@@ -120,4 +120,3 @@ class RequestDependencyBase:
 
 
 # TODO migrate other dependencies ValidateKindRecordDependency, BulkURIAccessDependency, EnableStatisticDependency ...
-

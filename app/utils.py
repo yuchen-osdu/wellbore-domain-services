@@ -107,8 +107,8 @@ class __OpenApiHandler:
 
     @classmethod
     def operation_from_id(cls, openapi_schema: dict, operation_id: str) -> Optional[dict]:
-        for path, path_node in openapi_schema['paths'].items():
-            for method, method_node in path_node.items():
+        for _, path_node in openapi_schema['paths'].items():
+            for _, method_node in path_node.items():
                 if method_node.get('operationId', '') == operation_id:
                     return method_node
         return None
@@ -127,9 +127,8 @@ class __OpenApiHandler:
     @classmethod
     def _append_schemas(cls, openapi_schema: dict, schemas: Union[dict, List[Tuple[str, dict]]]):
         openapi_schema['components'].setdefault('schemas', {}).update(
-            schemas if isinstance(schemas, dict) else {name: schema for name, schema in schemas}
+            schemas if isinstance(schemas, dict) else dict(schemas)
         )
 
 
 OpenApiHandler = __OpenApiHandler()
-

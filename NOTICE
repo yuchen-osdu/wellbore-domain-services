@@ -189,6 +189,7 @@ The following software have components provided under the terms of this license:
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://aioitertools.omnilib.dev, https://pypi.org/project/aioitertools/)
 - aioredis (from https://github.com/aio-libs/aioredis-py)
+- annotated-types (from https://pypi.org/project/annotated-types/, https://pypi.org/project/annotated-types/0.5.0/, https://pypi.org/project/annotated-types/0.6.0/)
 - anyio (from https://pypi.org/project/anyio/, https://pypi.org/project/anyio/3.3.0/)
 - attrs (from https://attrs.readthedocs.io/, https://pypi.org/project/attrs/, https://www.attrs.org/)
 - azure-common (from https://github.com/Azure/azure-sdk-for-python)
@@ -219,6 +220,7 @@ The following software have components provided under the terms of this license:
 - numpy
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/)
+- pydantic-core (from https://github.com/pydantic/pydantic-core)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - python-ulid (from https://github.com/mdomke/python-ulid, https://pypi.org/project/python-ulid/, https://pypi.org/project/python-ulid/2.2.0/)
@@ -226,6 +228,7 @@ The following software have components provided under the terms of this license:
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
+- typing-inspection (from https://pypi.org/project/typing-inspection/)
 - urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
 - zipp (from https://pypi.org/project/zipp/, https://pypi.org/project/zipp/3.19.0/, https://pypi.org/project/zipp/3.19.2/)

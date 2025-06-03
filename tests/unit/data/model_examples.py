@@ -5,9 +5,6 @@ import os
 import json
 
 from odes_storage.models import Record
-from app.model.osdu_model import Well, Well110, Well120, Wellbore, Wellbore110, Wellbore120, Wellbore130, \
-    WellboreMarkerSet110, WellboreMarkerSet120, WellboreTrajectory110, WellLog110, WellLog120, Wellbore111, \
-    WellboreMarkerSet121, WellboreIntervalSet100
 
 from wdms_client.variables import Variables
 
@@ -123,7 +120,7 @@ def well_v3_record_list(well_v3_file_contents, domain, data_partition, legal_tag
         "wellId": "my-well-v3-example",
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in well_v3_file_contents]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in well_v3_file_contents]
 
 
 @pytest.fixture
@@ -138,7 +135,7 @@ def well_v3_110_record_list(well_v3_110_file_contents, domain, data_partition, l
         "wellId": "my-well-v3-example",
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in well_v3_110_file_contents]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in well_v3_110_file_contents]
 
 
 @pytest.fixture
@@ -152,25 +149,7 @@ def well_v3_120_record_list(well_v3_120_file_contents, domain, data_partition, l
         "wellId": "my-well-v3-example",
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in well_v3_120_file_contents]
-
-
-@pytest.fixture
-def well100_v3_list(well_v3_record_list) -> List[Well]:
-    """ provide a list of wellbore v.1.0.0"""
-    return [Well(**record.dict(exclude_unset=True, by_alias=True)) for record in well_v3_record_list]
-
-
-@pytest.fixture
-def well110_v3_list(well_v3_110_record_list) -> List[Well110]:
-    """ provide a list of wellbore v.1.1.0"""
-    return [Well110(**record.dict(exclude_unset=True, by_alias=True)) for record in well_v3_110_record_list]
-
-
-@pytest.fixture
-def well120_v3_list(well_v3_120_record_list) -> List[Well120]:
-    """ provide a list of wellbore v.1.2.0"""
-    return [Well120(**record.dict(exclude_unset=True, by_alias=True)) for record in well_v3_120_record_list]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in well_v3_120_file_contents]
 
 
 @pytest.fixture
@@ -186,7 +165,7 @@ def wellbore_v3_record_list(wellbore_v3_file_contents, domain, data_partition, l
         "wellId": "my-well-v3-example"
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_file_contents]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_file_contents]
 
 
 @pytest.fixture
@@ -202,7 +181,7 @@ def wellbore_v3_110_record_list(wellbore_v3_110_file_contents, domain, data_part
         "wellId": "my-well-v3-example"
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_110_file_contents]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_110_file_contents]
 
 
 @pytest.fixture
@@ -218,7 +197,7 @@ def wellbore_v3_111_record_list(wellbore_v3_111_file_contents, domain, data_part
         "wellId": "my-well-v3-example"
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_111_file_contents]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_111_file_contents]
 
 
 @pytest.fixture
@@ -234,7 +213,7 @@ def wellbore_v3_120_record_list(wellbore_v3_120_file_contents, domain, data_part
         "wellId": "my-well-v3-example"
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_120_file_contents]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_120_file_contents]
 
 
 @pytest.fixture
@@ -250,37 +229,7 @@ def wellbore_v3_130_record_list(wellbore_v3_130_file_contents, domain, data_part
         "wellId": "my-well-v3-example"
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_130_file_contents]
-
-
-@pytest.fixture
-def wellbore100_v3_list(wellbore_v3_record_list) -> List[Wellbore]:
-    """ provide a list of wellbore v.1.0.0"""
-    return [Wellbore(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_record_list]
-
-
-@pytest.fixture
-def wellbore110_v3_list(wellbore_v3_110_record_list) -> List[Wellbore110]:
-    """ provide a list of wellbore v.1.1.0"""
-    return [Wellbore110(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_110_record_list]
-
-
-@pytest.fixture
-def wellbore111_v3_list(wellbore_v3_111_record_list) -> List[Wellbore111]:
-    """ provide a list of wellbore v.1.1.1"""
-    return [Wellbore111(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_111_record_list]
-
-
-@pytest.fixture
-def wellbore120_v3_list(wellbore_v3_120_record_list) -> List[Wellbore120]:
-    """ provide a list of wellbore v.1.2.0"""
-    return [Wellbore120(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_120_record_list]
-
-
-@pytest.fixture
-def wellbore130_v3_list(wellbore_v3_130_record_list) -> List[Wellbore130]:
-    """ provide a list of wellbore v.1.3.0"""
-    return [Wellbore130(**record.dict(exclude_unset=True, by_alias=True)) for record in wellbore_v3_130_record_list]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in wellbore_v3_130_file_contents]
 
 
 @pytest.fixture
@@ -293,7 +242,7 @@ def marker_v3_record_list(marker_v3_file_contents, domain, data_partition, legal
     })
 
     # single record content
-    return [Record.parse_obj(vars_to_replace.resolve(marker_v3_file_contents))]
+    return [Record.model_validate(vars_to_replace.resolve(marker_v3_file_contents))]
 
 
 @pytest.fixture
@@ -306,7 +255,7 @@ def marker_v3_120_record_list(marker_v3_120_file_contents, domain, data_partitio
     })
 
     # single record content
-    return [Record.parse_obj(vars_to_replace.resolve(marker_v3_120_file_contents))]
+    return [Record.model_validate(vars_to_replace.resolve(marker_v3_120_file_contents))]
 
 
 @pytest.fixture
@@ -319,7 +268,7 @@ def marker_v3_121_record_list(marker_v3_121_file_contents, domain, data_partitio
     })
 
     # single record content
-    return [Record.parse_obj(vars_to_replace.resolve(marker_v3_121_file_contents))]
+    return [Record.model_validate(vars_to_replace.resolve(marker_v3_121_file_contents))]
 
 
 @pytest.fixture
@@ -332,35 +281,8 @@ def wellboreintervalset_v3_100_record_list(wellboreintervalset_v3_100_file_conte
         "legaltags": legal_tags,
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content))
+    return [Record.model_validate(vars_to_replace.resolve(file_content))
             for file_content in wellboreintervalset_v3_100_file_contents]
-
-
-@pytest.fixture
-def marker110_v3_list(marker_v3_record_list) -> List[WellboreMarkerSet110]:
-    """ provide a list of wellbore marker set v.1.1.0"""
-    return [WellboreMarkerSet110(**record.dict(exclude_unset=True, by_alias=True)) for record in marker_v3_record_list]
-
-
-@pytest.fixture
-def marker120_v3_list(marker_v3_120_record_list) -> List[WellboreMarkerSet120]:
-    """ provide a list of wellbore marker set v.1.1.0"""
-    return [WellboreMarkerSet120(**record.dict(exclude_unset=True, by_alias=True))
-            for record in marker_v3_120_record_list]
-
-
-@pytest.fixture
-def marker121_v3_list(marker_v3_121_record_list) -> List[WellboreMarkerSet121]:
-    """ provide a list of wellbore marker set v.1.1.0"""
-    return [WellboreMarkerSet121(**record.dict(exclude_unset=True, by_alias=True))
-            for record in marker_v3_121_record_list]
-
-
-@pytest.fixture
-def wellboreintervalset100_v3_list(wellboreintervalset_v3_100_record_list) -> List[WellboreIntervalSet100]:
-    """ provide a list of wellbore marker set v.1.1.0"""
-    return [WellboreIntervalSet100(**record.dict(exclude_unset=True, by_alias=True))
-            for record in wellboreintervalset_v3_100_record_list]
 
 
 @pytest.fixture
@@ -372,13 +294,7 @@ def trajectory_v3_record_list(trajectory_v3_file_contents, domain, data_partitio
         "legaltags": legal_tags,
     })
 
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in trajectory_v3_file_contents]
-
-
-@pytest.fixture
-def trajectory110_v3_list(trajectory_v3_record_list) -> List[WellboreTrajectory110]:
-    """ provide a list of wellbore trajectory v.1.1.0"""
-    return [WellboreTrajectory110(**record.dict(exclude_unset=True, by_alias=True)) for record in trajectory_v3_record_list]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in trajectory_v3_file_contents]
 
 
 @pytest.fixture
@@ -392,7 +308,7 @@ def welllog110_v3_record_list(welllog_v3_110_file_contents, domain, data_partiti
             "welllogName": "my-example-welllog",
             "welllogId": "my-welllog-v3-example",
         })
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in welllog_v3_110_file_contents]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in welllog_v3_110_file_contents]
 
 
 @pytest.fixture
@@ -406,16 +322,4 @@ def welllog120_v3_record_list(welllog_v3_120_file_contents, domain, data_partiti
             "welllogName": "my-example-welllog",
             "welllogId": "my-welllog-v3-example",
         })
-    return [Record.parse_obj(vars_to_replace.resolve(file_content)) for file_content in welllog_v3_120_file_contents]
-
-
-@pytest.fixture
-def welllog110_v3_list(welllog110_v3_record_list) -> List[WellLog110]:
-    """ provide a list of wellLog v.1.1.0"""
-    return [WellLog110(**record.dict(exclude_unset=True, by_alias=True)) for record in welllog110_v3_record_list]
-
-
-@pytest.fixture
-def welllog120_v3_list(welllog120_v3_record_list) -> List[WellLog120]:
-    """ provide a list of wellLog v.1.2.0"""
-    return [WellLog120(**record.dict(exclude_unset=True, by_alias=True)) for record in welllog120_v3_record_list]
+    return [Record.model_validate(vars_to_replace.resolve(file_content)) for file_content in welllog_v3_120_file_contents]

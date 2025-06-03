@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, List
+from typing import ClassVar
 import re
 
-from fastapi import Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from .bulk_filter import BulkReadFilterOperator, BulkFilter
 from .dask.errors import FilterError
 
-curves_examples = {
+CURVES_EXAMPLES = {
     "all": {
         "summary": "Select all curves",
         "value": ""
@@ -44,67 +43,82 @@ curves_examples = {
     },
 }
 
+BULK_FILTER_DESCRIPTION = f"""
 
-class GetDataParams:
-    """ All parameters to query welllog data. """
-
-    def __init__(
-        self,
-        offset: Optional[int] = Query(
-            default=None,
-            ge=0,
-            description='The number of rows that are to be skipped and not included in the result.',
-            example=5),
-        limit: Optional[int] = Query(
-            default=None,
-            ge=1,
-            description='The maximum number of rows to be returned.',
-            example=100),
-        curves: Optional[str] = Query(
-            default=None,
-            description='Filters curves. List of curves to be returned. '
-                        'The curves are returned in the same order as it is given.',
-            examples=curves_examples
-        ),
-        describe: Optional[bool] = Query(
-            default=False,
-            description='The "describe" query option allows clients to request a description of the matching result. '
-            '(number of rows, columns name)',
-            example='false'),
-        bulk_filter: Optional[List[str]] = Query(
-            default=None,
-            alias='filter',
-            regex='^(".+"|[^:]+):(' + '|'.join(BulkReadFilterOperator.values()) + '):.*$',
-            description=f"""
-            
 The "filter" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  
 The supported operators are : {', '.join(BulkReadFilterOperator.values())}.  
-  
-Note: If the column name contains ':', enclose it in double quotation marks (").
-""",
-            examples={
-                "simple-md-filter": {
-                    "summary": "Select rows when column 'MD' values >= 1000",
-                    "value": ["MD:gte:1000"]
-                },
-                "simple-md-filter-2": {
-                    "summary": "Select rows when 'MD' column values <= 1000",
-                    "value": ["MD:lte:1000"]
-                },
-                "double-md-filter": {
-                    "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                    "value": ["MD:gt:1000", "MD:lt:42000"]
-                },
-}
-        )
-    ) -> None:
-        self.offset = offset
-        self.limit = limit
-        self.curves = curves
-        self.describe = describe
-        self.bulk_filter = bulk_filter
 
-    def get_curves_list(self) -> List[str]:
+Note: If the column name contains ':', enclose it in double quotation marks (").
+"""
+
+
+BULK_FILTER_EXAMPLES = {
+    "simple-md-filter": {
+        "summary": "Select rows when column 'MD' values >= 1000",
+        "value": ["MD:gte:1000"]
+    },
+    "simple-md-filter-2": {
+        "summary": "Select rows when 'MD' column values <= 1000",
+        "value": ["MD:lte:1000"]
+    },
+    "double-md-filter": {
+        "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+        "value": ["MD:gt:1000", "MD:lt:42000"]
+    },
+}
+
+BULK_FILTER_PATTERN = r'^(".+"|[^:]+):(' + '|'.join(BulkReadFilterOperator.values()) + '):.*$'
+
+
+class GetDataParams(BaseModel):
+    """All parameters to query welllog data."""
+
+    offset: int | None = Field(
+        default=None,
+        ge=0,
+        description="The number of rows that are to be skipped and not included in the result.",
+        examples=[5]
+    )
+    limit: int | None = Field(
+        default=None,
+        ge=1,
+        description="The maximum number of rows to be returned.",
+        examples=[100]
+    )
+    curves: str | None = Field(
+        default=None,
+        description="Filters curves. List of curves to be returned. "
+                    "The curves are returned in the same order as it is given.",
+        examples=[CURVES_EXAMPLES]
+    )
+    describe: bool | None = Field(
+        default=False,
+        description="The 'describe' query option allows clients to request a description of the matching result. "
+                    "(number of rows, columns name)",
+        examples=["false"]
+    )
+    bulk_filter: list[str] | None = Field(
+        default=None,
+        alias="filter",
+        description=BULK_FILTER_DESCRIPTION,
+        examples=[BULK_FILTER_EXAMPLES]
+    )
+
+    re_bulk_filter: ClassVar[re.Pattern] = re.compile(
+        r'^("(?P<enclosed_col>.+)"|(?P<col>[^:]+)):(?P<op>' + '|'.join(BulkReadFilterOperator.values()) + '):(?P<value>.*)$')
+
+    @classmethod
+    @field_validator("bulk_filter", mode="before")
+    def validate_bulk_filter(cls, filters):
+        if filters is None:
+            return None
+        pattern = BULK_FILTER_PATTERN
+        for filter_str in filters:
+            if not re.match(pattern, filter_str):
+                raise ValueError(f"Invalid filter expression: {filter_str}")
+        return filters
+
+    def get_curves_list(self) -> list[str]:
         """parse the curves query parameter and return the list of requested curves"""
         if self.curves:
             # split and remove empty
@@ -113,10 +127,7 @@ Note: If the column name contains ':', enclose it in double quotation marks (").
             return list(dict.fromkeys(curves))
         return []
 
-    re_bulk_filter = re.compile(
-        r'^("(?P<enclosed_col>.+)"|(?P<col>[^:]+)):(?P<op>' + '|'.join(BulkReadFilterOperator.values()) + '):(?P<value>.*)$')
-
-    def get_bulk_filters(self) -> List[BulkFilter]:
+    def get_bulk_filters(self) -> list[BulkFilter]:
         """
         returns an iterator over all filters, each iterator provide tuple [column name, operator, value]
         """
@@ -138,7 +149,7 @@ class DataframeBasicDescribe(BaseModel):
 
     row_count: int = Field(alias="rowCount")
     column_count: int = Field(alias="columnCount")
-    columns: List[str] = Field(
+    columns: list[str] = Field(
         alias="columns",
         description="list of column. May be truncated if too many columns, then contains the firsts and lasts once")
     index_start: str = Field(alias="indexStart")
@@ -148,4 +159,4 @@ class DataframeBasicDescribe(BaseModel):
 
 class DataframeDescribe(BaseModel):
     numberOfRows: int = Field(description="total number of rows")
-    columns: List[str] = Field(description="list of columns")
+    columns: list[str] = Field(description="list of columns")

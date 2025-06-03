@@ -28,13 +28,13 @@ def test_column_describe_monotonicity():
     assert ColumnDescribe(
         name="", monotonicity=Monotonicity.Decreasing, hasDuplicate=False, hasNan=False, startEnd={}
     ).is_monotonic_decreasing
-    assert ColumnDescribe.parse_raw(
+    assert ColumnDescribe.model_validate_json(
         '{"name": "ref","monotonicity": "increasing", "hasDuplicate": false, "hasNan": false, "startEnd": {}}'
     ).is_monotonic_increasing
-    assert ColumnDescribe.parse_raw(
+    assert ColumnDescribe.model_validate_json(
         '{"name": "ref","monotonicity": "decreasing", "hasDuplicate": false, "hasNan": false, "startEnd":{}}'
     ).is_monotonic_decreasing
-    assert not ColumnDescribe.parse_raw(
+    assert not ColumnDescribe.model_validate_json(
         '{"name": "ref", "hasDuplicate": false, "hasNan": false, "startEnd":{}}'
     ).is_monotonic_increasing
     assert ColumnDescribe.from_column(pd.DataFrame(), "MD").is_monotonic_increasing

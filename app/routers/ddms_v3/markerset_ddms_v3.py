@@ -38,7 +38,7 @@ router = APIRouter()
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellboreMarkerSet using osdu schema",
-    description="""Get the WellboreMarkerSet object using its **id**. {}""".format(REQUIRED_ROLES_READ),
+    description=f"""Get the WellboreMarkerSet object using its **id**. {REQUIRED_ROLES_READ}""",
     operation_id="get_wellbore_markerset_osdu",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Wellbore Marker Set not found"}
@@ -51,18 +51,18 @@ async def get_wellbore_markerset_osdu(
     record_id, _ = split_record_id_version(wellboremarkersetid)
     storage_client = await get_storage_record_service(ctx)
 
-    wellboreMarkerset_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
-    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreMarkerset_record, request.state)
-    await schema_library.validate_records([wellboreMarkerset_record], ctx)
-    return wellboreMarkerset_record
+    wellboremarkerset_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboremarkerset_record, request.state)
+    await schema_library.validate_records([wellboremarkerset_record], ctx)
+    return wellboremarkerset_record
 
 
 @router.delete(
     "/wellboremarkersets/{wellboremarkersetid}",
     summary="Delete the wellboreMarkerset. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
-    description="{}".format(REQUIRED_ROLES_WRITE),
-    operation_id="del_osdu_wellboreMarkerset",
+    description=f"{REQUIRED_ROLES_WRITE}",
+    operation_id="del_osdu_wellboremarkerset",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
     responses={
@@ -72,7 +72,7 @@ async def get_wellbore_markerset_osdu(
         },
     },
 )
-async def del_osdu_wellboreMarkerset(wellboremarkersetid: WellboreMarkerSetId, ctx: Context = Depends(get_ctx)):
+async def del_osdu_wellboremarkerset(wellboremarkersetid: WellboreMarkerSetId, ctx: Context = Depends(get_ctx)):
     storage_client = await get_storage_record_service(ctx)
     wellboremarkersetid, _ = split_record_id_version(wellboremarkersetid)
     await storage_client.delete_record(
@@ -84,13 +84,13 @@ async def del_osdu_wellboreMarkerset(wellboremarkersetid: WellboreMarkerSetId, c
     "/wellboremarkersets/{wellboremarkersetid}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the WellboreMarkerSet",
-    description="{}".format(REQUIRED_ROLES_READ),
-    operation_id="get_osdu_wellboreMarkerset_versions",
+    description=f"{REQUIRED_ROLES_READ}",
+    operation_id="get_osdu_wellboremarkerset_versions",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "WellboreMarkerSet not found"}
     },
 )
-async def get_osdu_wellboreMarkerset_versions(
+async def get_osdu_wellboremarkerset_versions(
         wellboremarkersetid: WellboreMarkerSetId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
     record = await fetch_record(ctx, wellboremarkersetid)
@@ -105,40 +105,40 @@ async def get_osdu_wellboreMarkerset_versions(
     "/wellboremarkersets/{wellboremarkersetid}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the WellboreMarkerSet using OSDU WellboreMarkerset schema",
-    description=""""Get the WellboreMarkerSet object using its **id**. {}""".format(REQUIRED_ROLES_READ),
-    operation_id="get_osdu_wellboreMarkerset_version",
+    description=f""""Get the WellboreMarkerSet object using its **id**. {REQUIRED_ROLES_READ}""",
+    operation_id="get_osdu_wellboremarkerset_version",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "WellboreMarkerSet not found"}
     },
     response_model_exclude_unset=True,
 )
-async def get_osdu_wellboreMarkerset_version(
+async def get_osdu_wellboremarkerset_version(
         wellboremarkersetid: WellboreMarkerSetId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
     storage_client = await get_storage_record_service(ctx)
     wellboremarkersetid, _ = split_record_id_version(wellboremarkersetid)
 
-    wellboreMarkerset_record = await storage_client.get_record_version(
+    wellboremarkerset_record = await storage_client.get_record_version(
         id=wellboremarkersetid, version=version, data_partition_id=ctx.partition_id
     )
-    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreMarkerset_record, request.state)
-    await schema_library.validate_records([wellboreMarkerset_record], ctx)
-    return wellboreMarkerset_record
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboremarkerset_record, request.state)
+    await schema_library.validate_records([wellboremarkerset_record], ctx)
+    return wellboremarkerset_record
 
 
 @router.post(
     "/wellboremarkersets",
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the Wellbore Markerset using osdu schema",
-    description="{}".format(REQUIRED_ROLES_WRITE),
-    operation_id="post_wellboreMarkerset_osdu",
+    description=f"{REQUIRED_ROLES_WRITE}",
+    operation_id="post_wellboremarkerset_osdu",
     responses={
         status.HTTP_400_BAD_REQUEST: {
             "description": "Missing mandatory parameter or unknown parameter"
         }
     },
 )
-async def post_wellboreMarkerset_osdu(
+async def post_wellboremarkerset_osdu(
         request: Request,
         wellboremarkersets: List[Record] = Body(..., example= load_schema_example("marker_v3_121.json")),
         ctx: Context = Depends(get_ctx)

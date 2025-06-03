@@ -44,7 +44,7 @@ def test_record_should_keep_extra_field(env_with_record_extra_created):
 
 tests_parameters_for_relationship_extra_field = [
     ('logs', "{{logKind}}", {"relationships": {"extra_field": "EXTRA_VALUE"}}),
-    ('dipsets', "{{dipsetKind}}", {"relationships": {"wellbore": "", "extra_field": "EXTRA_VALUE"}}),
+    ('dipsets', "{{dipsetKind}}", {"relationships": {"wellbore": {}, "extra_field": "EXTRA_VALUE"}}),
 ]
 
 

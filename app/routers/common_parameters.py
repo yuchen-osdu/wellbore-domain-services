@@ -46,19 +46,17 @@ _dataframe_sample = DataFrame(
 )
 
 
-body_description = """
+BODY_DESCRIPTION = """
 Contains the data corresponding to the dataframe. The header "Content-Type" must be set accordingly to the format sent:
 <br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).
 <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient "split"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
 """
-body_description += '.\n Examples in JSON for data with {} rows and {} columns: '.format(
-                _dataframe_sample.shape[0],
-                _dataframe_sample.shape[1])
-body_description += f'\n<br/>`{_dataframe_sample.to_json(None, orient="split")}`<br/>&nbsp;'
+BODY_DESCRIPTION += f'.\n Examples in JSON for data with {_dataframe_sample.shape[0]} rows and {_dataframe_sample.shape[1]} columns: '
+BODY_DESCRIPTION += f'\n<br/>`{_dataframe_sample.to_json(None, orient="split")}`<br/>&nbsp;'
 
 
 REQUEST_DATA_BODY_SCHEMA = {
-    'description': body_description,
+    'description': BODY_DESCRIPTION,
     # put examples here because of bug in swagger UI to properly render multiple examples
     'required': True,
     'content': {
@@ -74,16 +72,16 @@ REQUEST_DATA_BODY_SCHEMA = {
     }
 }
 
-REQUIRED_ROLES_READ = """  
+REQUIRED_ROLES_READ = """
 Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.
 In addition, users must be a member of data groups to access the data.
 """
 
-REQUIRED_ROLES_WRITE = """  
+REQUIRED_ROLES_WRITE = """
 Required roles: 'users.datalake.editors' or 'users.datalake.admins
 """
 
-BULK_READ_NOTE = """  
+BULK_READ_NOTE = """
 **Important**: In order to minimize reading time.
 
 1. Partial reading
@@ -100,7 +98,7 @@ Note: using curves filtering has a cost, use it only if it reduces significantly
        - Each request should fetch as many as columns it is possible until upper limits are reached (> 10 millions values or > 500 columns)
 """
 
-BULK_WRITE_NOTE = """  
+BULK_WRITE_NOTE = """
 **Important**: In order to minimize writing time, it's necessary to:  
 - Double check whether bulk data is big enough to be sent with chunking APIs: meaning > 10 millions values or > 500 columns
     - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data API

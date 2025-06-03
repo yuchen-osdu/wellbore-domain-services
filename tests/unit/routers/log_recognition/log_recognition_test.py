@@ -115,7 +115,7 @@ async def test_upload_good_catalog(log_recognition_testing_setup):
 
     response = await client.put("/log-recognition/upload-catalog", json=good_catalog)
     assert response.status_code == status.HTTP_200_OK
-    assert CreateUpdateRecordsResponse.parse_raw(response.text) == expected_response
+    assert CreateUpdateRecordsResponse.model_validate_json(response.text) == expected_response
 
 
 @pytest.mark.parametrize("label, unit, code, expected", [

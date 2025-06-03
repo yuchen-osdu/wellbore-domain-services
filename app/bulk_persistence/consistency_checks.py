@@ -68,6 +68,26 @@ class ColumnDescribe(BaseModel):
                 self._start, self._end = values[0], values[0]
         self._start_end_df = df
 
+    # Override equality operator to compare Dataframe field _start_end_df
+    def __eq__(self, other):
+        if not isinstance(other, ColumnDescribe):
+            return NotImplemented
+
+        if isinstance(self._start_end_df, pd.DataFrame) and isinstance(other._start_end_df, pd.DataFrame):
+            if not self._start_end_df.equals(other._start_end_df):
+                return False
+        else:
+            if self._start_end_df != other._start_end_df:
+                return False
+
+        return (
+            self.name == other.name and
+            self.monotonicity == other.monotonicity and
+            self.hasDuplicate == other.hasDuplicate and
+            self.hasNan == other.hasNan and
+            self.dataType == other.dataType
+        )
+
     @classmethod
     def from_column(cls, df: pd.DataFrame, reference_name: Optional[str]) -> "ColumnDescribe":
         if df.empty:
@@ -133,7 +153,7 @@ class BulkInfoForConsistency(BaseModel):
 
     curves: Dict[str, int]
 
-    reference: Optional[ColumnDescribe]
+    reference: Optional[ColumnDescribe] = None
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame, reference_curve: Optional[str] = None) -> "BulkInfoForConsistency":

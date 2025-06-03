@@ -25,7 +25,7 @@ def to_record(obj: BaseModel) -> Record:
     :param obj: input model instance, expected to be 'compatible' with Record model
     :return: record object
     """
-    return Record(**obj.dict(exclude_unset=True, by_alias=True))
+    return Record(**obj.model_dump(exclude_unset=True, by_alias=True))
 
 
 def from_record(cls: Type[BaseModel], record: Record):
@@ -35,14 +35,14 @@ def from_record(cls: Type[BaseModel], record: Record):
     :param record: input record object
     :return: object instantiate (of class 'cls')
     """
-    return cls(**record.dict(exclude_unset=True, by_alias=True))
+    return cls(**record.model_dump(exclude_unset=True, by_alias=True))
 
 
 def record_to_dict(record: BaseModel) -> dict:
     """ Generate a dictionary representation of the model, use exclude_unset=True and by_alias=True"""
-    return record.dict(exclude_unset=True, by_alias=True)
+    return record.model_dump(exclude_unset=True, by_alias=True)
 
 
 def record_to_json(record: BaseModel) -> str:
     """ Generate a JSON representation of the model, use exclude_unset=True and by_alias=True"""
-    return record.json(exclude_unset=True, by_alias=True)
+    return record.model_dump_json(exclude_unset=True, by_alias=True)

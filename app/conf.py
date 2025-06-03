@@ -144,21 +144,21 @@ class ConfigurationContainer:
         key="DE_CLIENT_CFG_TIMEOUT",
         description="set connect, read, write, and pool timeouts (in seconds) for all DE client.",
         default="10",
-        factory=lambda x: int(x),
+        factory=int,
     )
 
     de_client_config_max_connection: EnvVar = EnvVar(
         key="DE_CLIENT_CFG_MAX_CONNECTION",
         description="maximum number of allowable connections, 0 to always allow.",
         default="1000",
-        factory=lambda x: int(x),
+        factory=int,
     )
 
     de_client_config_max_keepalive: EnvVar = EnvVar(
         key="DE_CLIENT_CFG_MAX_KEEPALIVE",
         description="number of allowable keep-alive connections, 0 to always allow.",
         default="500",
-        factory=lambda x: int(x),
+        factory=int,
     )
 
     de_client_backoff_max_tries: EnvVar = EnvVar(
@@ -168,14 +168,14 @@ class ConfigurationContainer:
             The default value of None means their is no limit to the
             number of tries.""",
         default="4",
-        factory=lambda x: int(x),
+        factory=int,
     )
 
     de_client_backoff_max_wait: EnvVar = EnvVar(
         key="DE_CLIENT_BACKOFF_MAX_WAIT",
         description="""The maximum wait in second between retry. """,
         default="5",
-        factory=lambda x: int(x),
+        factory=int,
     )
 
     build_details: EnvVar = EnvVar(
@@ -203,7 +203,7 @@ class ConfigurationContainer:
         key="CUSTOM_CATALOG_TIMEOUT",
         description="Timeout to invalidate custom catalog in seconds",
         default="300",
-        factory=lambda x: int(x),
+        factory=int,
     )
 
     modules: EnvVar = EnvVar(key="MODULES", description="""Comma separated list of module names to load.""", default="")
@@ -223,14 +223,14 @@ class ConfigurationContainer:
         key="READ_FAST_TRACK_MAX_VALUE",
         description="Maximum number of values, in millions, allowed in one call",
         default="10",
-        factory=lambda x: int(x),
+        factory=int,
     )
 
     max_working_read_fast_track: EnvVar = EnvVar(
         key="READ_FAST_TRACK_MAX_WORKING_VALUE",
         description="Maximum number of values, in millions, required to manipulate without filtering",
         default="100",
-        factory=lambda x: int(x),
+        factory=int,
     )
 
     dask_data_ipc: EnvVar = EnvVar(
@@ -263,7 +263,7 @@ class ConfigurationContainer:
         """add a custom"""
         if not override and name in self.__dict__:
             raise KeyError(name + " already exists")
-        self.__setattr__(name, value)
+        setattr(self, name, value)
 
     def add_from_env(
         self,
@@ -326,13 +326,13 @@ class ConfigurationContainer:
 
     def get_env_or_attribute(self, name) -> Optional[EnvVar]:
         if name in self.__dict__:
-            return self.__getattribute__(name)
+            return getattr(self, name)
         return next((v for v in self.env_vars() if v.key == name), None)
 
     def __contains__(self, name) -> bool:
         if name in self.__dict__:
             return True
-        return any([v.key == name for v in self.env_vars()])
+        return any(v.key == name for v in self.env_vars())
 
     def __repr__(self):
         return ", ".join([f"{k}={v}" for k, v in self.as_printable_dict().items()])
@@ -346,7 +346,7 @@ class ConfigurationContainer:
 
     def env_vars(self):
         """generator of all env vars only"""
-        for name, attribute in self.__dict__.items():
+        for _, attribute in self.__dict__.items():
             if isinstance(attribute, EnvVar):
                 yield attribute
 
@@ -528,7 +528,7 @@ def check_environment(configuration):
     """
     logger.info("Environment configuration:")
     for k, v in configuration.as_printable_dict().items():
-        logger.info(f"   - {k} = {v}")
+        logger.info("   - %s = %s", k, v)
 
     mandatory_variables = [v for v in configuration.env_vars() if v.is_mandatory and not v]
     errors = [

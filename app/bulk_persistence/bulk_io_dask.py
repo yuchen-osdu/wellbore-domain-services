@@ -238,7 +238,7 @@ class BulkIODask(BulkIO):
             stats_df['std'].fillna(value=str("NaN"), inplace=True)
 
         # only orient: 'index' or 'columns' cam be read with pd.DataFrame.from_dict().
-        result = BulkDataStatisticsResponse(**stats_meta.dict(by_alias=True), data=stats_df.to_dict(orient='index'))
+        result = BulkDataStatisticsResponse(**stats_meta.model_dump(by_alias=True), data=stats_df.to_dict(orient='index'))
         return JSONResponse(content=jsonable_encoder(result))
 
     @_tracer.start_as_current_span("dask-post_statistics")

@@ -19,8 +19,8 @@ from datetime import datetime
 from fastapi import status
 import far.catalogs as catalogs
 
-from far import family_processor as family_processor
-from far.family_processor.family_processor import FamilyProcessor as FamilyProcessor
+from far import family_processor
+from far.family_processor.family_processor import FamilyProcessor
 from odes_storage.exceptions import UnexpectedResponse
 
 from app.clients.storage_service_client import get_storage_record_service

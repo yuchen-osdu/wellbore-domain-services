@@ -151,7 +151,7 @@ async def create_missing_logs(ctx, my_dipset: dipset):
             acl=my_dipset.acl,
             legal=my_dipset.legal,
             kind=log_kind,
-            data=logData(name=f"name", operation="wddms_dipset", log=log_channel,
+            data=logData(name="name", operation="wddms_dipset", log=log_channel,
                          relationships=logRelationships(logSet=ToOneRelationship(id=my_dipset.id))),
         )
 
@@ -161,7 +161,7 @@ async def create_missing_logs(ctx, my_dipset: dipset):
         # where as data.relationships.wellbore is mandatory
         # since we will add relationships to the log we must set a relationships.wellbore
         # TODO force the client to set a wellbore.
-        my_dipset.data.relationships = dipsetrelationships(wellbore="")
+        my_dipset.data.relationships = dipsetrelationships(wellbore=ToOneRelationship())
 
     # Find missing logs to be created
     records = [
@@ -192,7 +192,7 @@ async def create_missing_logs(ctx, my_dipset: dipset):
 def dip_to_series(dip: Dip) -> pd.Series:
     # TODO performance and code duplication with dips_to_df
     data = {}
-    for member, _ in dip.__fields__.items():
+    for member, _ in dip.model_fields.items():
         data[member] = None
         if getattr(dip, member, None) is not None:
             if isinstance(getattr(dip, member), ValueWithUnit):
@@ -227,7 +227,7 @@ def dips_to_df(dips: List[Dip]) -> pd.DataFrame:
     # TODO performance and code duplication with dip_to_series
 
     data = {}
-    for member, _ in dips[0].__fields__.items():
+    for member, _ in dips[0].model_fields.items():
         data[member] = []
         for dip in dips:
             v = None
@@ -296,7 +296,7 @@ async def read_dipset_data(ctx, ds: Union[dipset, str]) -> Tuple[dipset, pd.Data
 
     # Fetch data
     bulk_uri = BulkURI.decode(my_dipset.data.bulkURI)
-    # TODO use prefix to know how to read the bulk 
+    # TODO use prefix to know how to read the bulk
     df = await get_dataframe(ctx, bulk_uri.bulk_id)
 
     return my_dipset, df
