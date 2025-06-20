@@ -2,6 +2,8 @@ global:
   domain: ""
   limitsEnabled: true
   dataPartitionId: ""
+  wdms_workers:
+    enabled: false # Disable WDMS worker deployment for e2e tests for stability reason
 
 data:
   logLevel: "ERROR"
