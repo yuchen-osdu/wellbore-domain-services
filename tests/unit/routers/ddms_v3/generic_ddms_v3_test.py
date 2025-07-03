@@ -1,16 +1,3 @@
-# Copyright 2021 Schlumberger
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import json
 import os
 
@@ -21,20 +8,25 @@ from starlette.responses import Response
 
 from app.clients import StorageRecordServiceClient
 
-PPFGDATASET_SAMPLE_FILE = "PPFGDataset120_unit.json"
-PPFGDATASET_ID = "namespace:work-product-component--PPFGDataset:bb2f4d26-6446-508a-b137-7239ee1bbea1"
-PPFGDATASET_VERSION = 1562066009929332
-
+# Example parameter set, add more as needed
+TEST_PARAMS = [
+    # (sample_file, record_id, record_version, base_url)
+    (
+        "PPFGDataset120_unit.json",
+        "namespace:work-product-component--PPFGDataset:bb2f4d26-6446-508a-b137-7239ee1bbea1",
+        1562066009929332,
+        "/ddms/v3/ppfgdataset"
+    ),
+]
 
 @pytest.mark.anyio
-async def test_get_ppfgdataset_osdu_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for GET /ddms/v3/ppfgdataset/{ppfgdatasetid}"""
+@pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
+async def test_get_entity_success(mocker, app_configurable_with_testclient, sample_file, record_id, record_version, base_url):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, PPFGDATASET_SAMPLE_FILE), "r", encoding="utf-8") as f:
+    with open(os.path.join(dir_path, sample_file), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
 
     expected_response = Record.parse_obj(record_json)
-
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
     mocked_storage_client.get_record.return_value = expected_response
 
@@ -43,19 +35,16 @@ async def test_get_ppfgdataset_osdu_success(mocker, app_configurable_with_testcl
         fake_data_partition_id=True,
         storage_client_mock=mocked_storage_client
     )
-
-    response = await client.get(url=f"/ddms/v3/ppfgdataset/{PPFGDATASET_ID}",
+    response = await client.get(url=f"{base_url}/{record_id}",
                                 headers={"content-type": "application/json"})
 
     assert response.status_code == 200
-    assert mocked_storage_client.get_record.called_once_with(id=PPFGDATASET_ID)
-
+    assert mocked_storage_client.get_record.called_once_with(id=record_id)
 
 @pytest.mark.anyio
-async def test_del_osdu_ppfgdatasetid_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for DELETE /ddms/v3/ppfgdataset/{ppfgdatasetid}"""
+@pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
+async def test_del_entity_success(mocker, app_configurable_with_testclient, sample_file, record_id, record_version, base_url):
     expected_response = Response()
-
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
     mocked_storage_client.delete_record.return_value = expected_response
 
@@ -64,24 +53,22 @@ async def test_del_osdu_ppfgdatasetid_success(mocker, app_configurable_with_test
         fake_data_partition_id=True,
         storage_client_mock=mocked_storage_client
     )
-
-    response = await client.delete(url=f"/ddms/v3/ppfgdataset/{PPFGDATASET_ID}"
-                                   , headers={"content-type": "application/json"})
+    response = await client.delete(url=f"{base_url}/{record_id}",
+                                   headers={"content-type": "application/json"})
 
     assert response.status_code == 204
-    assert mocked_storage_client.delete_record.called_once_with(id=PPFGDATASET_ID)
-
+    assert mocked_storage_client.delete_record.called_once_with(id=record_id)
 
 @pytest.mark.anyio
-async def test_get_osdu_ppfgdatasetid_versions_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for GET /ddms/v3/ppfgdataset/{ppfgdatasetid}/versions"""
+@pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
+async def test_get_entity_versions_success(mocker, app_configurable_with_testclient, sample_file, record_id, record_version, base_url):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, PPFGDATASET_SAMPLE_FILE), "r", encoding="utf-8") as f:
+    with open(os.path.join(dir_path, sample_file), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
 
     record_versions_data = {
-        "recordId": PPFGDATASET_ID,
-        "versions": [PPFGDATASET_VERSION]
+        "recordId": record_id,
+        "versions": [record_version]
     }
     expected_response = RecordVersions.parse_obj(record_versions_data)
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
@@ -93,18 +80,17 @@ async def test_get_osdu_ppfgdatasetid_versions_success(mocker, app_configurable_
         fake_data_partition_id=True,
         storage_client_mock=mocked_storage_client
     )
-
-    response = await client.get(url=f"/ddms/v3/ppfgdataset/{PPFGDATASET_ID}/versions", headers={"content-type": "application/json"})
+    response = await client.get(url=f"{base_url}/{record_id}/versions", headers={"content-type": "application/json"})
 
     assert response.status_code == 200
     assert response.json() == record_versions_data
-    assert mocked_storage_client.get_all_record_versions.called_once_with(id=PPFGDATASET_ID)
+    assert mocked_storage_client.get_all_record_versions.called_once_with(id=record_id)
 
-
-async def test_get_osdu_ppfgdatasetid_version_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for GET /ddms/v3/ppfgdataset/{ppfgdatasetid}/versions/{version}"""
+@pytest.mark.anyio
+@pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
+async def test_get_entity_version_success(mocker, app_configurable_with_testclient, sample_file, record_id, record_version, base_url):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, PPFGDATASET_SAMPLE_FILE), "r", encoding="utf-8") as f:
+    with open(os.path.join(dir_path, sample_file), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
 
     expected_response = Record.parse_obj(record_json)
@@ -116,26 +102,26 @@ async def test_get_osdu_ppfgdatasetid_version_success(mocker, app_configurable_w
         fake_data_partition_id=True,
         storage_client_mock=mocked_storage_client
     )
-
-    response = await client.get(url=f"/ddms/v3/ppfgdataset/{PPFGDATASET_ID}/versions/{PPFGDATASET_VERSION}", headers={"content-type": "application/json"})
-
-    assert response.status_code == 200
-    assert mocked_storage_client.get_record_version.called_once_with(id=PPFGDATASET_ID, version=PPFGDATASET_VERSION)
-
-
-@pytest.mark.anyio
-async def test_post_ppfgdataset_osdu_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for POST /ddms/v3/ppfgdataset"""
-    expected_response = CreateUpdateRecordsResponse(
-        recordCount=1,
-        recordIds=[PPFGDATASET_ID],
+    response = await client.get(
+        url=f"{base_url}/{record_id}/versions/{record_version}",
+        headers={"content-type": "application/json"}
     )
 
+    assert response.status_code == 200
+    assert mocked_storage_client.get_record_version.called_once_with(id=record_id, version=record_version)
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
+async def test_post_entity_success(mocker, app_configurable_with_testclient, sample_file, record_id, record_version, base_url):
+    expected_response = CreateUpdateRecordsResponse(
+        recordCount=1,
+        recordIds=[record_id],
+    )
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
     mocked_storage_client.create_or_update_records.return_value = expected_response
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, PPFGDATASET_SAMPLE_FILE), "r", encoding="utf-8") as f:
+    with open(os.path.join(dir_path, sample_file), "r", encoding="utf-8") as f:
         record_data = f.read()
 
     _, client = app_configurable_with_testclient(
@@ -143,36 +129,28 @@ async def test_post_ppfgdataset_osdu_success(mocker, app_configurable_with_testc
         fake_data_partition_id=True,
         storage_client_mock=mocked_storage_client
     )
-
-    response = await client.post(url="/ddms/v3/ppfgdataset", data=record_data, headers={"content-type": "application/json"})
+    response = await client.post(url=base_url, data=record_data, headers={"content-type": "application/json"})
 
     assert response.status_code == 200
     assert mocked_storage_client.create_or_update_records.call_count == 1
 
-
-
 @pytest.mark.anyio
-async def test_post_ppfgdataset_osdu_bad_request_on_validation_error(mocker, app_configurable_with_testclient):
-    """Validation error test case for POST /ddms/v3/ppfgdataset"""
+@pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
+async def test_post_entity_bad_request_on_validation_error(mocker, app_configurable_with_testclient, sample_file, record_id, record_version, base_url):
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
-    mocked_schema_library = mocker.patch("app.routers.ddms_v3.ppfgdataset_ddms_v3.schema_library")
+    mocked_schema_library = mocker.patch("app.routers.ddms_v3.generic_ddms_v3.schema_library")
     mocked_schema_library.validate_records.side_effect = ValidationError("Validation Error")
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, PPFGDATASET_SAMPLE_FILE), "r", encoding="utf-8") as f:
+    with open(os.path.join(dir_path, sample_file), "r", encoding="utf-8") as f:
         record_data = f.read()
 
     _, client = app_configurable_with_testclient(
         fake_opendes_authorized_user=True,
         fake_data_partition_id=True,
-        storage_client_mock=mocked_storage_client
+        storage_client_mock=mocked_storage_client,
     )
-
-    response = await client.post(url="/ddms/v3/ppfgdataset", data=record_data, headers={"content-type": "application/json"})
+    response = await client.post(url=base_url, data=record_data, headers={"content-type": "application/json"})
 
     assert response.status_code == 422
     assert mocked_storage_client.create_or_update_records.call_count == 0
-
-
-
-
