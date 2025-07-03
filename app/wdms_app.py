@@ -46,6 +46,7 @@ from app.injector.main_injector import MainInjector
 from app.middleware import CreateBasicContextMiddleware, TracingMiddlewareOT
 from app.middleware.basic_context_middleware import require_data_partition_id, ServerTimingHdrMiddleware
 from app.middleware.openapi_middleware import OpenAPIMiddleware
+from app.model.api_configuration import APIConfiguration, PPFGDatasetAPI
 # ---------- import model ----------------------------------
 from app.model.entity_utils import Entity
 
@@ -77,7 +78,8 @@ from app.routers.ddms_v3 import (
     wellbore_trajectory_ddms_v3,
     welllog_ddms_v3,
     wellbore_interval_set_ddms_v3,
-    welllog_acquisition_v3, ppfgdataset_ddms_v3,
+    welllog_acquisition_v3,
+    generic_ddms_v3
 )
 from app.routers.dependency import (
     FetchRecordDependency,
@@ -133,6 +135,10 @@ def make_entity_type_dependency(entity_type: Entity, version: str):
         request.state.version = version
     return _set_entity_type
 
+def make_api_config(api_config: APIConfiguration):
+    def set_api_config(request: Request):
+        request.state.api_config = api_config
+    return set_api_config
 
 def _get_bulk_worker_host() -> Optional[str]:
     return Config.service_host_wdms_worker.value
@@ -214,7 +220,6 @@ ddms_v3_routes_groups_without_bulk = [
 ddms_v3_routes_groups_with_bulk = [
     (welllog_ddms_v3, "WellLog", Entity.WELL_LOG),
     (wellbore_trajectory_ddms_v3, "Trajectory v3", Entity.TRAJECTORY),
-    (ppfgdataset_ddms_v3, "PPFGDataset v3", Entity.PPFGDATASET)
 ]
 
 for v3_api, tag, entity_type in ddms_v3_routes_groups_without_bulk:
@@ -312,7 +317,7 @@ wdms_app.include_router(
 # POST and GET v3/ppfgdataset/session   (EXCLUDE  PATCH commit/abandon)
 wdms_app.include_router(
     sessions.router,
-    prefix=DDMS_V3_PATH + ppfgdataset_ddms_v3.PPFGDATASET_API_BASE_PATH,
+    prefix=DDMS_V3_PATH + PPFGDatasetAPI.entity_uri,
     tags=["PPFGDataset v3"],
     dependencies=[
         *basic_dependencies,
@@ -328,7 +333,7 @@ wdms_app.include_router(
 # PATCH v3/{ppfgdataset}/{record_id}/sessions/{session_id}
 wdms_app.include_router(
     bulk_routes.router,
-    prefix=DDMS_V3_PATH + ppfgdataset_ddms_v3.PPFGDATASET_API_BASE_PATH,
+    prefix=DDMS_V3_PATH + PPFGDatasetAPI.entity_uri,
     tags=["PPFGDataset v3"],
     dependencies=[
         *v3_bulk_dependencies,
@@ -338,6 +343,24 @@ wdms_app.include_router(
         Depends(FetchRecordPartialDependency.with_value(fetch_record_partial_with_wdms_extension))
     ],
     responses={**response_401, **response_403, **response_500})
+
+# Expose the Following APIs
+# POST v3/{entityName}
+# GET v3/{entityName}/{record_id}
+# GET v3/{entityName}/{record_id}/versions
+# GET v3/{entityName}/{record_id}/versions/{version_id}
+# DELETE v3/{entityName}/{record_id}
+ddms_v3_routes_crud_api: list[APIConfiguration] = [PPFGDatasetAPI]
+
+for crud_api_config in ddms_v3_routes_crud_api:
+    wdms_app.include_router(generic_ddms_v3.router,
+                            prefix=DDMS_V3_PATH + crud_api_config.entity_uri,
+                            tags=[crud_api_config.tag],
+                            responses={**response_401, **response_403, **response_500},
+                            dependencies=[*basic_dependencies, *v3_bulk_dependencies,
+                                            Depends(make_entity_type_dependency(crud_api_config.entity, "V3")),
+                                            Depends(make_api_config(crud_api_config))
+                            ])
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------

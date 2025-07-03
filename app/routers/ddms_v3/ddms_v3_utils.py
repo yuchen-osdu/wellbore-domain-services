@@ -1,7 +1,7 @@
 import asyncio
 from typing import List
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from odes_storage import UnexpectedResponse
 from odes_storage.models import Record
 from starlette import status
@@ -137,3 +137,8 @@ class DMSV3RouterUtils:
 
         await asyncio.gather(
             *[DMSV3RouterUtils._raise_if_invalid_bulk_uri_task(index_record, record, bulk_uri_access) for index_record, record in enumerate(records)])
+
+def get_api_config(request: Request):
+    if not getattr(request.state, "api_config", None):
+        raise RuntimeError("api_config dependency is not defined")
+    return request.state.api_config
