@@ -51,6 +51,7 @@ kedaconfig:
   thresholdcoefficient: "0.8"
   threshold: "1600"
   metricType: "Utilization"
+  pollingInterval: 30
   utilization:
     cpu: 70
 

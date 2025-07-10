@@ -28,8 +28,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ .Values.deployment.name }}{{ $nameSuffix }}
-  pollingInterval: 15
-  cooldownPeriod: 30
+  pollingInterval: {{ .Values.kedaconfig.pollingInterval }}
   minReplicaCount: {{ .Values.minReplicaCount }}
   maxReplicaCount: {{ .Values.maxReplicaCount }}
   triggers:
