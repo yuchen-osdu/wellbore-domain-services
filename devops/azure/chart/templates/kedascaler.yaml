@@ -39,7 +39,7 @@ spec:
       tenantIdFromEnv: TENANT_ID
       clientSecretFromEnv: CLIENT_SECRET
       query: |
-        let ServiceName = "{{ .Values.kedaconfig.servicepath }}{{ $nameSuffix }}/ddms";
+        let ServiceName = "{{ .Values.kedaconfig.servicepath }}{{ $nameSuffix }}";
         let AvgDuration = ago({{ .Values.kedaconfig.duration }});
         AzureDiagnostics 
         | where Category == "ApplicationGatewayAccessLog" and requestUri_s hasprefix_cs ServiceName
