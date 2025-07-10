@@ -471,7 +471,7 @@ urllib3==1.26.17
     #   botocore
     #   distributed
     #   requests
-uvicorn==0.23.2
+uvicorn==0.35.0
     # via -r requirements.in
 wellbore-schema-manipulation==1.0.1
     # via -r requirements.in

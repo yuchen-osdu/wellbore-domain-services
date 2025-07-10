@@ -4,7 +4,7 @@ aiohttp>=3.8.0
 cryptography>=42.0.4
 pyarrow>=14.0.1
 pandas==1.5.3
-uvicorn
+uvicorn>=0.35.0
 Click
 backoff
 structlog
