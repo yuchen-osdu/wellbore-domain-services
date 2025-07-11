@@ -29,6 +29,10 @@ maxReplicaCount: 2
 minReplicaCount: 2
 replicaCount: 2
 
+node_selector_labels:
+  - kubernetes.azure.com/agentpool
+  - agentpool
+
 # undefined by default, but you can specify it if needed
 # nodepool: services
 
@@ -47,6 +51,7 @@ kedaconfig:
   thresholdcoefficient: "0.8"
   threshold: "1600"
   metricType: "Utilization"
+  pollingInterval: 30
   utilization:
     cpu: 70
 
