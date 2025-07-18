@@ -13,26 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-apiVersion: networking.istio.io/v1
-kind: VirtualService
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: {{ .Values.conf.appName | quote }}
+  labels:
+    app: {{ .Values.conf.appName | quote }}
+  name: {{ .Values.conf.configmap | quote }}
   namespace: {{ .Release.Namespace | quote }}
-spec:
-  hosts:
-    {{- if .Values.global.domain }}
-    - {{ .Values.global.domain | quote }}
-    {{- else }}
-    - "*"
-    {{- end }}
-  gateways:
-    - service-gateway
-  http:
-    - match:
-        - uri:
-            prefix: /api/os-wellbore-ddms
-      route:
-        - destination:
-            host: {{ .Values.conf.appName | quote }}
-            port:
-              number: 80
+data:
+  LOG_LEVEL: {{ .Values.data.logLevel | default .Values.global.logLevel | quote }}
+  SERVICE_HOST_WDMS_WORKER: {{ printf "%s/api/wdms-worker" .Values.data.WDMSWorkerHost | quote }}
+  CLOUD_PROVIDER: "gc"

@@ -32,8 +32,8 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |------|-------------|------|---------|---------|
 |**global.domain** | your domain for the external endpoint, ex `example.com` | string | - | yes |
 |**global.limitsEnabled** | whether CPU and memory limits are enabled | boolean | true | yes |
-| **global.tier** | Only PROD must be used to enable autoscaling | string | "" | no |
-| **global.autoscaling** | enables horizontal pod autoscaling, when tier=PROD | boolean | true | yes |
+| **global.tier**            | tier defines the number of replicas for the service to ensure the service HA           | string  | ""      | no       |
+| **global.autoscalingMode**     | enables horizontal pod autoscaling on cluster spot nodes; values are `none`, `cpu`, `requests`      | boolean | true    | yes      |
 
 ### Configmap variables
 
@@ -52,6 +52,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |**data.serviceAccountName** | name of your service account | string | `wellbore` | yes |
 |**data.imagePullPolicy** | when to pull image | string | `IfNotPresent` | yes |
 |**data.image** | service image | string | - | yes |
+| **data.affinityLabelsSpot** | labels with possible values, used to correctly setup the node affinities for spot deployment | object | cloud.google.com/gke-provisioning: [spot] | only if global.autoscaling is true
 
 ### Configuration variables
 
@@ -59,7 +60,6 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |------|-------------|------|---------|----------|
 |**conf.appName** | Service name | string | `wellbore` | yes |
 |**conf.configmap** | configmap to be used | string | `wellbore-config` | yes |
-|**conf.replicas** | Number of pods for service | integer | 2 | yes |
 
 ### ISTIO variables
 
@@ -72,26 +72,65 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 ### Horizontal Pod Autoscaling (HPA) variables (works only if tier=PROD and autoscaling=true)
 
-| Name | Description | Type | Default |Required |
-|------|-------------|------|---------|---------|
-| **hpa.minReplicas** | minimum number of replicas | integer | 6 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.maxReplicas** | maximum number of replicas | integer | 15 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.targetType** | type of measurements: AverageValue or Value | string | "AverageValue" | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.targetValue** | threshold value to trigger the scaling up | integer | 140 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleUpStabilizationWindowSeconds** | time to start implementing the scale up when it is triggered | integer | 10 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleUpPoliciesValue** | the maximum number of new replicas to create (in percents from current state)| integer | 50 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleUpPoliciesPeriodSeconds** | pause for every new scale up decision | integer | 15 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleDownStabilizationWindowSeconds** | time to start implementing the scale down when it is triggered | integer | 60 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleDownPoliciesValue** | the maximum number of replicas to destroy (in percents from current state) | integer | 25 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **hpa.behaviorScaleDownPoliciesPeriodSeconds** | pause for every new scale down decision | integer | 60 | only if `global.autoscaling` is true and `global.tier` is PROD |
+| Name                                                 | Description                                                                   | Type    | Default          | Required                                                                          |
+|------------------------------------------------------|-------------------------------------------------------------------------------|---------|------------------|-----------------------------------------------------------------------------------|
+| **hpa.minReplicas**                                  | minimum number of replicas                                                    | integer | `1`              | used only if `global.autoscalingMode` is not `none` and `global.tier` is "" (nil) |
+| **hpa.maxReplicas**                                  | maximum number of replicas                                                    | integer | `6`              | used only if `global.autoscalingMode` is not `none` and `global.tier` is "" (nil) |
+| **CPU based scaling**                                | **Enabled when `global.autoscalingMode` is cpu**                              |         |                  |     |
+| **hpa.cpu.utilization**                              | the maximum number of new replicas to create (in percents from current state) | integer | `200`            | yes |
+| **hpa.cpu.scaleUpStabilizationWindowSeconds**        | time to start implementing the scale up when it is triggered                  | integer | `30`             | yes |
+| **hpa.cpu.scaleUpValue**                             | the maximum number of new replicas to create (in percents from current state) | integer | `200`            | yes |
+| **hpa.cpu.scaleUpPeriod**                            | pause for every new scale up decision                                         | integer | `15`             | yes |
+| **hpa.cpu.scaleDownStabilizationWindowSeconds**      | time to start implementing the scale down when it is triggered                | integer | `150`            | yes |
+| **hpa.cpu.scaleDownValue**                           | the maximum number of replicas to destroy (in percents from current state)    | integer | `100`            | yes |
+| **hpa.cpu.scaleDownPeriod**                          | pause for every new scale down decision                                       | integer | `15`             | yes |
+| **REQUESTS based scaling**                           |  **Enabled when `global.autoscalingMode` is requests**                        |         |                  | **Requests based autoscaling uses Prometheus metrics. Prometheus should be installed in your cluster!**    |
+| **hpa.requests.targetType**                          | type of measurements: AverageValue or Value                                   | string  | `"AverageValue"` | yes |
+| **hpa.requests.targetValue**                         | threshold value to trigger the scaling up                                     | integer | `40`             | yes |
+| **hpa.requests.scaleUpStabilizationWindowSeconds**   | time to start implementing the scale up when it is triggered                  | integer | `10`             | yes |
+| **hpa.requests.scaleUpValue**                        | the maximum number of new replicas to create (in percents from current state) | integer | `50`             | yes |
+| **hpa.requests.scaleUpPeriod**                       | pause for every new scale up decision                                         | integer | `15`             | yes |
+| **hpa.requests.scaleDownStabilizationWindowSeconds** | time to start implementing the scale down when it is triggered                | integer | `60`             | yes |
+| **hpa.requests.scaleDownValue**                      | the maximum number of replicas to destroy (in percents from current state)    | integer | `25`             | yes |
+| **hpa.requests.scaleDownPeriod**                     | pause for every new scale down decision                                       | integer | `60`             | yes |
 
 ### Limits variables
 
-| Name | Description | Type | Default |Required |
-|------|-------------|------|---------|---------|
-| **limits.maxTokens** | maximum number of requests per fillInterval | integer | 80 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **limits.tokensPerFill** | number of new tokens allowed every fillInterval | integer | 80 | only if `global.autoscaling` is true and `global.tier` is PROD |
-| **limits.fillInterval** | time interval | string | "1s" | only if `global.autoscaling` is true and `global.tier` is PROD |
+| Name                     | Description                                     | Type    | Default | Required                                       |
+|--------------------------|-------------------------------------------------|---------|---------|------------------------------------------------|
+| **limits.maxTokens**     | maximum number of requests per fillInterval     | integer | `30`    | only if `global.autoscalingMode` is `requests` |
+| **limits.tokensPerFill** | number of new tokens allowed every fillInterval | integer | `30`    | only if `global.autoscalingMode` is `requests` |
+| **limits.fillInterval**  | time interval                                   | string  | `"1s"`  | only if `global.autoscalingMode` is `requests` |
+
+### Autoscaling
+
+By default, autoscaling configured for deployments targeting spot nodes. Pods will attempt to schedule on nodes with specific labels indicating they are spot instances. To adjust how pods are scheduled, you can update the data.affinityLabelsSpot for your spot deployments and data.affinityLabelsStandard for your standard deployments in your values.yaml file
+Example:
+
+```yml
+data:
+  affinityLabelsSpot:
+    mylabel:
+      - value1
+      - test
+    newLabel:
+      - newValue
+  affinityLabelsStandard:
+    standardLabel:
+      - labelValue
+```
+
+Each label, along with its values, will be translated into a separate `- matchExpressions` block within the `nodeAffinity` section of your deployment. This configuration operates with OR logic, meaning pods will be scheduled on any node that possesses at least one of the specified labels with one of its defined values.
+
+The chart uses the global.autoscaling parameter in your `values.yaml` to control how autoscaling behaves. This parameter accepts three possible string values:
+
+- **cpu** (default): Autoscaling is enabled and is based on CPU utilization. This is the default setting.
+- **requests**: Autoscaling is enabled and is based on resource requests (custom metrics). To enable this, you must also set your global.tier to PROD. **NOTE**: Prometheus should be installed in your cluster, custom metrics used for this type of autoscaling.
+- **none**: Autoscaling is entirely disabled for the application. Setting `global.autoscaling` to **none** also prevents the creation of the spot deployment.
+
+### Methodology for Parameter Calculation variables: **hpa.requests.targetValue**, **limits.maxTokens** and **limits.tokensPerFill**
+
+The parameters **hpa.requests.targetValue**, **limits.maxTokens** and **limits.tokensPerFill** were determined through empirical testing during load testing. These tests were conducted using the N2D machine series, which can run on either AMD EPYC Milan or AMD EPYC Rome processors. The values were fine-tuned to ensure optimal performance under typical workloads.
 
 ## Install the Helm chart
 
