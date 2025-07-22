@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-{{ include "wellbore.getAutoscaling" . }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -98,4 +97,3 @@ spec:
     rollingUpdate:
       maxUnavailable: 1
       maxSurge: 0
-{{- end }}

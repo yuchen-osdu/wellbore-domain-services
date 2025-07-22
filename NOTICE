@@ -21,7 +21,7 @@ The following software have components provided under the terms of this license:
 - async-timeout (from https://github.com/aio-libs/async-timeout, https://github.com/aio-libs/async_timeout/)
 - boto3 (from <https://github.com/boto/boto3>, https://github.com/boto/boto3)
 - botocore (from <https://github.com/boto/botocore>, https://github.com/boto/botocore)
-- cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography, https://pypi.org/project/cryptography/)
+- cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
 - fastapi (from https://pypi.org/project/fastapi/, https://pypi.org/project/fastapi/0.86.0/)
 - frozenlist (from <https://github.com/aio-libs/frozenlist>, https://github.com/aio-libs/frozenlist)
 - google-api-core (from https://github.com/googleapis/python-api-core, https://pypi.org/project/google-api-core/)
@@ -45,8 +45,8 @@ The following software have components provided under the terms of this license:
 - opentelemetry-sdk (from https://pypi.org/project/opentelemetry-sdk/)
 - opentelemetry-semantic-conventions (from https://pypi.org/project/opentelemetry-semantic-conventions/)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
-- pandas (from http://pandas.pydata.org, https://pandas.pydata.org, https://pypi.org/project/pandas/)
-- prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python, https://pypi.org/project/prometheus-client/)
+- pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
+- prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python)
 - prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator)
 - pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 - python-dateutil (from <https://github.com/dateutil/dateutil>, https://github.com/dateutil/dateutil)
@@ -56,7 +56,7 @@ The following software have components provided under the terms of this license:
 - s3transfer (from <https://github.com/boto/s3transfer>, https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
-- structlog (from https://pypi.org/project/structlog/, https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
+- structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - tblib (from https://github.com/ionelmc/python-tblib)
 - tenacity (from <https://github.com/jd/tenacity>, https://github.com/jd/tenacity)
 - tornado (from http://www.tornadoweb.org/)
@@ -75,8 +75,8 @@ The following software have components provided under the terms of this license:
 - locket (from http://github.com/mwilliamson/locket.py)
 - numpy (from https://pypi.org/project/numpy/)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
-- pandas (from http://pandas.pydata.org, https://pandas.pydata.org, https://pypi.org/project/pandas/)
-- prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python, https://pypi.org/project/prometheus-client/)
+- pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
+- prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python)
 - pyasn1 (from https://github.com/etingof/pyasn1, https://github.com/pyasn1/pyasn1)
 - pyasn1-modules (from https://github.com/etingof/pyasn1-modules, https://github.com/pyasn1/pyasn1-modules)
 - tblib (from https://github.com/ionelmc/python-tblib)
@@ -92,7 +92,7 @@ The following software have components provided under the terms of this license:
 - adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/)
 - click (from https://palletsprojects.com/p/click/, https://pypi.org/project/click/)
 - cloudpickle (from https://github.com/cloudpipe/cloudpickle)
-- cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography, https://pypi.org/project/cryptography/)
+- cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
 - dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/)
 - decorator (from https://github.com/micheles/decorator, https://pypi.org/project/decorator/)
 - distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/)
@@ -108,7 +108,7 @@ The following software have components provided under the terms of this license:
 - numpy (from https://pypi.org/project/numpy/)
 - oauthlib (from https://github.com/oauthlib/oauthlib)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
-- pandas (from http://pandas.pydata.org, https://pandas.pydata.org, https://pypi.org/project/pandas/)
+- pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/, https://pypi.org/project/partd/, https://pypi.org/project/partd/1.4.2/)
 - ply (from http://www.dabeaz.com/ply/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
@@ -122,7 +122,7 @@ The following software have components provided under the terms of this license:
 - s3fs (from http://github.com/fsspec/s3fs/)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - starlette (from https://pypi.org/project/starlette/, https://pypi.org/project/starlette/0.22.0/)
-- structlog (from https://pypi.org/project/structlog/, https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
+- structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - toolz (from https://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/, https://www.uvicorn.org/)
 - wrapt (from <https://github.com/GrahamDumpleton/wrapt>, https://github.com/GrahamDumpleton/wrapt)
@@ -152,7 +152,7 @@ CC0-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- pandas (from http://pandas.pydata.org, https://pandas.pydata.org, https://pypi.org/project/pandas/)
+- pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 
 ========================================================================
 ISC
@@ -214,11 +214,11 @@ The following software have components provided under the terms of this license:
 - jmespath (from <https://github.com/jmespath/jmespath.py>, https://github.com/jmespath/jmespath.py)
 - jsonschema (from https://pypi.org/project/jsonschema/)
 - msal (from <https://github.com/AzureAD/microsoft-authentication-library-for-python>, https://github.com/AzureAD/microsoft-authentication-library-for-python)
-- msal-extensions (from https://pypi.org/project/msal-extensions/, https://pypi.org/project/msal-extensions/1.0.0/)
+- msal-extensions (from https://pypi.org/project/msal-extensions/1.0.0/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - natsort (from https://github.com/SethMMorton/natsort)
 - numpy (from https://pypi.org/project/numpy/)
-- pandas (from http://pandas.pydata.org, https://pandas.pydata.org, https://pypi.org/project/pandas/)
+- pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/)
 - pydantic_core (from https://github.com/pydantic/pydantic-core)
 - pyrsistent (from https://github.com/tobgu/pyrsistent/)
@@ -227,7 +227,7 @@ The following software have components provided under the terms of this license:
 - pytz (from <http://pythonhosted.org/pytz>, http://pythonhosted.org/pytz)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
-- structlog (from https://pypi.org/project/structlog/, https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
+- structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - typing-inspection (from https://pypi.org/project/typing-inspection/)
 - urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
@@ -284,11 +284,11 @@ Python-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography, https://pypi.org/project/cryptography/)
+- cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
 - fixedint (from https://github.com/nneonneo/fixedint)
 - numpy (from https://pypi.org/project/numpy/)
-- pandas (from http://pandas.pydata.org, https://pandas.pydata.org, https://pypi.org/project/pandas/)
-- portalocker (from <https://github.com/WoLpH/portalocker>, https://github.com/WoLpH/portalocker, https://pypi.org/project/portalocker/)
+- pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
+- portalocker (from <https://github.com/WoLpH/portalocker>, https://github.com/WoLpH/portalocker)
 - typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
 
 ========================================================================
@@ -303,7 +303,7 @@ TCL
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- pandas (from http://pandas.pydata.org, https://pandas.pydata.org, https://pypi.org/project/pandas/)
+- pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 
 ========================================================================
 WTFPL
