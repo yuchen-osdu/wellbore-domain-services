@@ -17,6 +17,12 @@ TEST_PARAMS = [
         1562066009929332,
         "/ddms/v3/ppfgdataset"
     ),
+    (
+        "WellPressureTestRawMeasurement_110.json",
+        "namespace:work-product-component--WellPressureTestRawMeasurement:0c4b5c5b-32cd-57d2-b6a7-bbff6801fb09",
+        1562066009929332,
+        "/ddms/v3/wellpressuretestrawmeasurement"
+    )
 ]
 
 @pytest.mark.anyio

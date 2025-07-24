@@ -1,6 +1,6 @@
 [{
-  "id": "namespace:work-product-component--PPFGDataset:bb2f4d26-6446-508a-b137-7239ee1bbea1",
-  "kind": "osdu:wks:work-product-component--PPFGDataset:1.2.0",
+  "id": "namespace:work-product-component--WellPressureTestRawMeasurement:0c4b5c5b-32cd-57d2-b6a7-bbff6801fb09",
+  "kind": "osdu:wks:work-product-component--WellPressureTestRawMeasurement:1.1.0",
   "version": 1562066009929332,
   "acl": {
     "owners": [
@@ -36,7 +36,10 @@
       "persistableReference": "{\"abcd\":{\"a\":0.0,\"b\":1.0,\"c\":1.0,\"d\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"L\",\"type\":\"UM\"},\"type\":\"UAD\"}",
       "unitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
       "propertyNames": [
-        "VerticalMeasurement.VerticalMeasurement"
+        "Measurements[].PressurePointMeasuredDepth",
+        "Measurements[].PressureTestTopMeasuredDepth",
+        "Measurements[].PressureTestBottomMeasuredDepth",
+        "Measurements[0].DepthReference.VerticalMeasurement"
       ]
     }
   ],
@@ -329,49 +332,139 @@
         "LineageRelationshipType": "namespace:reference-data--LineageRelationshipType:Direct:"
       }
     ],
-    "WellID": "namespace:master-data--Well:SomeUniqueWellID:",
-    "WellboreID": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
-    "RecordDate": "2020-02-13T09:13:15.55Z",
-    "ContextTypeID": "namespace:reference-data--PPFGContextType:InterpretationPreDrill:",
-    "ServiceCompanyID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
-    "Comment": "Example Comment",
-    "ReferenceWellTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
-    "OffsetWellboreIDs": [
-      "namespace:master-data--Wellbore:SomeUniqueWellboreID:"
+    "WellPressureTestAcquisitionJobID": "namespace:master-data--WellPressureTestAcquisitionJob:SomeUniqueWellPressureTestAcquisitionJobID:",
+    "WellPressureTestAcquisitionRunIdentifier": 2,
+    "AcquisitionStringToolFace": 12345.6,
+    "PressureTestStartDate": "2020-02-13T09:13:15.55Z",
+    "ClosedInDate": "2020-02-13T09:13:15.55Z",
+    "Measurements": [
+      {
+        "WellPressureTestAcquisitionStationIdentifier": 2,
+        "IsStationary": true,
+        "PressurePointMeasuredDepth": 12345.6,
+        "PressureTestTopMeasuredDepth": 12345.6,
+        "PressureTestBottomMeasuredDepth": 12345.6,
+        "TestNumber": 2,
+        "ActiveProbeTypeID": "namespace:reference-data--WellPressureTestProbeType:chdt:",
+        "ActiveGaugeID": "namespace:reference-data--WellPressureTestGaugeType:StandardQuartz:",
+        "IsTubular": true,
+        "DetailedTestTypeID": "namespace:reference-data--WellPressureDetailedTestCategory:DrillStem_Tests:",
+        "DepthReference": {
+          "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+          "VerticalMeasurement": 12345.6,
+          "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+          "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:ArbitraryPoint:",
+          "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MeasuredDepth:",
+          "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
+          "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+          "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+          "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+          "VerticalReferenceID": "Example VerticalReferenceID",
+          "VerticalReferenceEntityID": "namespace:master-data--Rig:SomeUniqueRigID:",
+          "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+        },
+        "TestReliabilityID": "namespace:reference-data--WellPressureTestValidityStatus:Failed:",
+        "MeasurementPeriods": [
+          {
+            "PeriodNumber": 2,
+            "PeriodStartTime": 12345.6,
+            "PeriodEndTime": 12345.6,
+            "MeasurementPeriodKind": "namespace:reference-data--WellPressureTestMeasurementPeriodKind:BuildUp:",
+            "MeasurementPeriodMeasurements": {
+              "KeyColumns": [
+                {
+                  "ValueType": "string",
+                  "ValueCount": 1,
+                  "UnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:dega:",
+                  "UnitQuantityID": "namespace:reference-data--UnitQuantity:plane%20angle:",
+                  "PropertyType": {
+                    "PropertyTypeID": "namespace:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:",
+                    "Name": "dip azimuth"
+                  },
+                  "RelationshipTargetKind": "osdu:wks:reference-data--UnitOfMeasure:",
+                  "FacetIDs": [
+                    {
+                      "FacetTypeID": "namespace:reference-data--FacetType:conditions:",
+                      "FacetRoleID": "namespace:reference-data--FacetRole:I:"
+                    }
+                  ],
+                  "ColumnName": "Dip"
+                }
+              ],
+              "Columns": [
+                {
+                  "ValueType": "string",
+                  "ValueCount": 1,
+                  "UnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:dega:",
+                  "UnitQuantityID": "namespace:reference-data--UnitQuantity:plane%20angle:",
+                  "PropertyType": {
+                    "PropertyTypeID": "namespace:reference-data--PropertyType:ace68d4c-7400-431d-9a33-0541b8bfc4b4:",
+                    "Name": "dip azimuth"
+                  },
+                  "RelationshipTargetKind": "osdu:wks:reference-data--UnitOfMeasure:",
+                  "FacetIDs": [
+                    {
+                      "FacetTypeID": "namespace:reference-data--FacetType:conditions:",
+                      "FacetRoleID": "namespace:reference-data--FacetRole:I:"
+                    }
+                  ],
+                  "ColumnName": "Dip"
+                }
+              ],
+              "ColumnSize": 5,
+              "ColumnValues": [
+                {
+                  "BooleanColumn": [
+                    true,
+                    false,
+                    true,
+                    true,
+                    false
+                  ],
+                  "IntegerColumn": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "NumberColumn": [
+                    0.1,
+                    2.3,
+                    4.5,
+                    6.7,
+                    8.9
+                  ],
+                  "StringColumn": [
+                    "foo",
+                    "bar",
+                    "foo again",
+                    "bar again",
+                    "foo bar"
+                  ],
+                  "UndefinedValueRows": [
+                    3,
+                    4
+                  ]
+                }
+              ],
+              "ColumnBasedTableType": "namespace:reference-data--ColumnBasedTableType:Facies:",
+              "ColumnBasedTableTemplateID": "namespace:master-data--ColumnBasedTableTemplate:SomeUniqueColumnBasedTableTemplateID:"
+            }
+          }
+        ]
+      }
     ],
-    "PrimaryReferenceCurveID": "Example PrimaryReferenceCurveID",
-    "PrimaryReferenceType": "Example PrimaryReferenceType",
-    "AbsentValueCharacters": "Example AbsentValueCharacters",
-    "TectonicSetting": "namespace:reference-data--TectonicSettingType:Compressional:",
-    "GaugeType": "Example GaugeType",
-    "VerticalMeasurement": {
-      "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
-      "VerticalMeasurement": 12345.6,
-      "TerminationDateTime": "2020-02-13T09:13:15.55Z",
-      "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:ArbitraryPoint:",
-      "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MeasuredDepth:",
-      "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
-      "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
-      "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
-      "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
-      "VerticalReferenceID": "Example VerticalReferenceID",
-      "VerticalReferenceEntityID": "namespace:master-data--Rig:SomeUniqueRigID:",
-      "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
-    },
     "Curves": [
       {
-        "CurveID": "Example CurveID",
-        "CurveName": "Example CurveName",
-        "CurveMainFamilyID": "namespace:reference-data--PPFGCurveMainFamily:PorePressure:",
-        "CurveFamilyID": "namespace:reference-data--PPFGCurveFamily:TrueVerticalDepth:",
-        "CurveFamilyMnemonicID": "namespace:reference-data--PPFGCurveMnemonic:TVD:",
-        "CurveProbabilityID": "namespace:reference-data--PPFGCurveProbability:Most%20Likely:",
-        "CurveDataProcessingTypeIDs": [
-          "namespace:reference-data--PPFGCurveProcessingType:Filtered:"
-        ],
-        "CurveLithologyID": "namespace:reference-data--PPFGCurveLithoType:Sand:",
-        "CurveTransformModelTypeID": "namespace:reference-data--PPFGCurveTransformModelType:Eaton:",
-        "CurveUOM": "namespace:reference-data--UnitOfMeasure:m:"
+        "CurveID": "Example Curve ID",
+        "NullValue": true,
+        "TimeUnitID": "namespace:reference-data--UnitOfMeasure:m:",
+        "CurveUnitID": "namespace:reference-data--UnitOfMeasure:m:",
+        "Mnemonic": "PRES_HDRB.BAR",
+        "NumberOfColumns": 192,
+        "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:",
+        "CurveDescription": "CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant"
       }
     ],
     "ExtensionProperties": {}
