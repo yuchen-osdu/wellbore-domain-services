@@ -7,6 +7,7 @@ from odes_storage.models import (
 from pydantic import TypeAdapter, ValidationError
 from starlette.requests import Request
 
+from app.bulk_persistence import ConsistencyException
 from app.clients.storage_service_client import get_storage_record_service
 from app.context import Context, get_ctx
 from app.model.api_configuration import APIConfiguration
@@ -145,7 +146,13 @@ async def create_or_update_osdu_record(
 
     consistency_check_function: ConsistencyCheckFunction = api_config.record_consistency_check_function
     for idx, w in enumerate(input_records):
-        consistency_check_function(w) # checking record level consistency
+        try:
+            consistency_check_function(w) # checking record level consistency
+        except ConsistencyException as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail= str(e)
+            )
 
     storage_client = await get_storage_record_service(ctx)
 

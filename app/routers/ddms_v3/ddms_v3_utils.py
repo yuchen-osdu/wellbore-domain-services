@@ -20,6 +20,7 @@ entity_names = {
     "marker": "work-product-component--WellboreMarkerSet",
     "wellboreintervalset": "work-product-component--WellboreIntervalSet",
     "ppfgdatset" : "work-product-component--PPFGDataset",
+    "wellpressuretestrawmeasurement" : "work-product-component--WellPressureTestRawMeasurement"
 }
 
 

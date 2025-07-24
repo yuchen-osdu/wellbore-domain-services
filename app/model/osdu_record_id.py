@@ -41,3 +41,4 @@ WellLogId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-c
 WellboreIntervalSetId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$')]
 WellLogAcquisitionId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:master-data\-\-WellLogAcquisition:[\w\-\.\:\%]+$')]
 PPFGDatasetId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-component\-\-PPFGDataset:[\w\-\.\:\%]+$')]
+WellPressureTestRawMeasurementId = Annotated[str, StringConstraints(pattern=r'^[\w\-\.]+:work-product-component\-\-WellPressureTestRawMeasurement:[\w\-\.\:\%]+$')]

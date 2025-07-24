@@ -28,6 +28,7 @@ class Entity(Enum):
     DIP = 'dip'
     DIPSET = 'dipSet'
     PPFGDATASET = 'ppfgdataset'
+    WELLPRESSURETESTRAWMEASUREMENT = 'wellpressuretestrawmeasurement'
 
 
 class KindMetaData:

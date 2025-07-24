@@ -46,7 +46,7 @@ from app.injector.main_injector import MainInjector
 from app.middleware import CreateBasicContextMiddleware, TracingMiddlewareOT
 from app.middleware.basic_context_middleware import require_data_partition_id, ServerTimingHdrMiddleware
 from app.middleware.openapi_middleware import OpenAPIMiddleware
-from app.model.api_configuration import APIConfiguration, PPFGDatasetAPI
+from app.model.api_configuration import APIConfiguration, PPFGDatasetAPI, WellPressureTestRawMeasurementAPI
 # ---------- import model ----------------------------------
 from app.model.entity_utils import Entity
 
@@ -350,7 +350,9 @@ wdms_app.include_router(
 # GET v3/{entityName}/{record_id}/versions
 # GET v3/{entityName}/{record_id}/versions/{version_id}
 # DELETE v3/{entityName}/{record_id}
-ddms_v3_routes_crud_api: list[APIConfiguration] = [PPFGDatasetAPI]
+ddms_v3_routes_crud_api: list[APIConfiguration] = [
+    PPFGDatasetAPI, WellPressureTestRawMeasurementAPI
+]
 
 for crud_api_config in ddms_v3_routes_crud_api:
     wdms_app.include_router(generic_ddms_v3.router,

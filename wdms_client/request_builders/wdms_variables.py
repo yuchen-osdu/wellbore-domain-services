@@ -36,6 +36,7 @@ variables_dict = {
   "osduWellboreIntervalSetKind": "osdu:wks:work-product-component--WellboreIntervalSet:1.0.0",
   "osduWellLogAcquisitionKind": "osdu:wks:master-data--WellLogAcquisition:1.0.0",
   "osduPPFGDatasetKind" : "osdu:wks:work-product-component--PPFGDataset:1.2.0",
+  "osduWellPressureTestRawMeasurementKind" : "osdu:wks:work-product-component--WellPressureTestRawMeasurement:1.1.0",
   "acl_domain": "p4d.cloud.slb-ds.com",
   "acl_owner": "data.default.owners@{{data_partition}}.{{acl_domain}}",
   "acl_viewer": "data.default.viewers@{{data_partition}}.{{acl_domain}}",
