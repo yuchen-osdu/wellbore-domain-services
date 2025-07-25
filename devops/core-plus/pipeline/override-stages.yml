@@ -22,3 +22,9 @@ cimpl-test-python:
   variables:
     CIMPL_WELLBORE_BASE_URL: https://osdu.dev1.osdu-cimpl.opengroup.org/api/os-wellbore-ddms
 
+#dev2 jobs
+
+cimpl-dev2-test-python:
+  image: python:3.11
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.dev2.osdu-cimpl.opengroup.org/api/os-wellbore-ddms
