@@ -35,11 +35,11 @@ The following software have components provided under the terms of this license:
 - googleapis-common-protos (from https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos, https://github.com/googleapis/python-api-common-protos, https://pypi.org/project/googleapis-common-protos/)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
-- importlib-metadata
+- importlib-metadata (from https://pypi.org/project/importlib-metadata/)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - msgpack (from https://msgpack.org/, https://pypi.org/project/msgpack/, https://pypi.org/project/msgpack/1.0.6/)
 - multidict (from https://github.com/aio-libs/multidict)
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 - opentelemetry-api (from https://pypi.org/project/opentelemetry-api/)
 - opentelemetry-exporter-gcp-trace (from https://github.com/GoogleCloudPlatform/opentelemetry-operations-python/tree/main/opentelemetry-exporter-gcp-trace)
 - opentelemetry-sdk (from https://pypi.org/project/opentelemetry-sdk/)
@@ -73,7 +73,7 @@ The following software have components provided under the terms of this license:
 - decorator (from https://github.com/micheles/decorator, https://pypi.org/project/decorator/)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python)
@@ -105,7 +105,7 @@ The following software have components provided under the terms of this license:
 - httpx (from https://pypi.org/project/httpx/, https://pypi.org/project/httpx/0.23.1/)
 - idna (from https://pypi.org/project/idna/, https://pypi.org/project/idna/3.4/)
 - isodate (from http://cheeseshop.python.org/pypi/isodate, https://github.com/gweis/isodate/, https://pypi.org/project/isodate/)
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 - oauthlib (from https://github.com/oauthlib/oauthlib)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
@@ -144,7 +144,7 @@ The following software have components provided under the terms of this license:
 - adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/)
 - gcsfs (from https://github.com/fsspec/gcsfs)
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 - s3fs (from http://github.com/fsspec/s3fs/)
 
 ========================================================================
@@ -185,7 +185,7 @@ The following software have components provided under the terms of this license:
 
 - Deprecated (from https://github.com/laurent-laporte-pro/deprecated, https://github.com/tantale/deprecated)
 - PyJWT (from http://github.com/jpadilla/pyjwt, https://pypi.org/project/PyJWT/)
-- PyYAML (from http://pyyaml.org/wiki/PyYAML)
+- PyYAML (from http://pyyaml.org/wiki/PyYAML, https://pyyaml.org/)
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://aioitertools.omnilib.dev, https://pypi.org/project/aioitertools/)
 - aioredis (from https://github.com/aio-libs/aioredis-py)
@@ -202,22 +202,22 @@ The following software have components provided under the terms of this license:
 - azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-secrets)
 - azure-monitor-opentelemetry-exporter (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/monitor/azure-monitor-opentelemetry-exporter)
 - azure-storage-blob (from <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob>, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob)
-- backoff
+- backoff (from https://github.com/litl/backoff)
 - botocore (from <https://github.com/boto/botocore>, https://github.com/boto/botocore)
 - cachetools (from https://github.com/tkem/cachetools/)
-- cffi
+- cffi (from http://cffi.readthedocs.org)
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer, https://pypi.org/project/charset-normalizer/)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - fastapi (from https://pypi.org/project/fastapi/, https://pypi.org/project/fastapi/0.86.0/)
-- h11
+- h11 (from https://github.com/python-hyper/h11)
 - hiredis (from https://github.com/redis/hiredis-py)
 - jmespath (from <https://github.com/jmespath/jmespath.py>, https://github.com/jmespath/jmespath.py)
-- jsonschema
+- jsonschema (from https://pypi.org/project/jsonschema/)
 - msal (from <https://github.com/AzureAD/microsoft-authentication-library-for-python>, https://github.com/AzureAD/microsoft-authentication-library-for-python)
 - msal-extensions (from https://pypi.org/project/msal-extensions/1.0.0/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - natsort (from https://github.com/SethMMorton/natsort)
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/)
 - pydantic_core (from https://github.com/pydantic/pydantic-core)
@@ -248,14 +248,14 @@ NCSA
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 
 ========================================================================
 OPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 
 ========================================================================
 OpenSSL
@@ -286,7 +286,7 @@ The following software have components provided under the terms of this license:
 
 - cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
 - fixedint (from https://github.com/nneonneo/fixedint)
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - portalocker (from <https://github.com/WoLpH/portalocker>, https://github.com/WoLpH/portalocker)
 - typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
@@ -296,7 +296,7 @@ SunPro
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 
 ========================================================================
 TCL
@@ -313,12 +313,19 @@ The following software have components provided under the terms of this license:
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 
 ========================================================================
+X11
+========================================================================
+The following software have components provided under the terms of this license:
+
+- numpy (from https://pypi.org/project/numpy/)
+
+========================================================================
 Zlib
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 
 ========================================================================
 apache-2.0 WITH llvm-exception
@@ -361,5 +368,5 @@ public-domain
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- numpy
+- numpy (from https://pypi.org/project/numpy/)
 - pytz (from <http://pythonhosted.org/pytz>, http://pythonhosted.org/pytz)
