@@ -20,10 +20,12 @@ from app.bulk_persistence import (
     ConsistencyException,
     DataConsistencyChecks,
     BulkInfoForConsistency,
-    ColumnDescribe,
+    ColumnDescribe, 
+    DaskBulkStorage,
 )
 from app.helper.traces_ot import get_tracer
 from .unique import get_unique_dict_attr_values
+from ..context import get_ctx
 
 _tracer = get_tracer()
 DEFAULT_NUMBER_OF_COLUMNS = 1
@@ -108,8 +110,14 @@ class PPFGDatasetConsistencyChecks(DataConsistencyChecks):
 
     @classmethod
     @_tracer.start_as_current_span("bulk_consistency")
-    async def check_bulk_consistency_on_commit_session(cls, record: Record, new_bulk_id):
-        pass
+    async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id):
+        # check col match record.curves
+        dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)
+        stats = await dask_blob_storage.read_stat(record.id, bulk_id)
+        schema = stats.get("schema")
+
+        curve_sizes = DataConsistencyChecks._get_curve_name_and_column_count(schema.keys())
+        cls._check_columns_consistency(record.data, curve_sizes)
 
     @classmethod
     @_tracer.start_as_current_span("bulk_consistency")

@@ -63,7 +63,8 @@ from app.routers.bulk.utils import (
     set_v3_input_dataframe_check,
     set_welllog_data_consistency_check,
     update_operation_ids,
-    set_ppfgdataset_consistency_check,
+    set_ppfgdataset_consistency_check, 
+    set_wellpressuretestrawmeasurement_consistency_check,
 )
 from app.routers.common_parameters import (
     response_401,
@@ -343,6 +344,37 @@ wdms_app.include_router(
         Depends(FetchRecordPartialDependency.with_value(fetch_record_partial_with_wdms_extension))
     ],
     responses={**response_401, **response_403, **response_500})
+
+# POST and GET v3/wellpressuretestrawmeasurement/session   (EXCLUDE  PATCH commit/abandon)
+wdms_app.include_router(
+    sessions.router,
+    prefix=DDMS_V3_PATH + WellPressureTestRawMeasurementAPI.entity_uri,
+    tags=[WellPressureTestRawMeasurementAPI.tag],
+    dependencies=[
+        *basic_dependencies,
+        Depends(set_wellpressuretestrawmeasurement_consistency_check),
+        Depends(make_entity_type_dependency(Entity.WELLPRESSURETESTRAWMEASUREMENT, "V3")),
+    ],
+    responses={**response_401, **response_403, **response_500})
+
+# POST v3/wellpressuretestrawmeasurement/{record_id}/data
+# POST v3/wellpressuretestrawmeasurement/{record_id}/sessions/{session_id}/data
+# GET v3/wellpressuretestrawmeasurement/{record_id}/versions/{version}/data
+# GET v3/wellpressuretestrawmeasurement/{record_id}/data
+# PATCH v3/{wellpressuretestrawmeasurement}/{record_id}/sessions/{session_id}
+wdms_app.include_router(
+    bulk_routes.router,
+    prefix=DDMS_V3_PATH + WellPressureTestRawMeasurementAPI.entity_uri,
+    tags=[WellPressureTestRawMeasurementAPI.tag],
+    dependencies=[
+        *v3_bulk_dependencies,
+        Depends(make_entity_type_dependency(Entity.WELLPRESSURETESTRAWMEASUREMENT, "V3")),
+        Depends(set_wellpressuretestrawmeasurement_consistency_check),
+        Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
+        Depends(FetchRecordPartialDependency.with_value(fetch_record_partial_with_wdms_extension))
+    ],
+    responses={**response_401, **response_403, **response_500})
+
 
 # Expose the Following APIs
 # POST v3/{entityName}

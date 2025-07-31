@@ -70,9 +70,20 @@ Definitions = {
             "Curves": [{"CurveID": "MD"}, {"CurveID": "X"}]
         }
     },
+    'WellPressureTestRawMeasurement': {
+        'api_version': 'v3',
+        'base_url': '/ddms/v3/wellpressuretestrawmeasurement',
+        'chunking_url': '/ddms/v3/wellpressuretestrawmeasurement',
+        'kind': 'osdu:wks:work-product-component--WellPressureTestRawMeasurement:1.1.0',
+        'record_data': {
+            "WellPressureTestAcquisitionJobID" : "namespace:master-data--WellPressureTestAcquisitionJob:SomeUniqueWellPressureTestAcquisitionJobID:",
+            "WellPressureTestAcquisitionRunIdentifier": 2,
+            "Curves": [{"CurveID": "MD"}, {"CurveID": "X"}]
+        }
+    }
 }
 
-EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log', 'PPFGDataset']
+EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log', 'PPFGDataset','WellPressureTestRawMeasurement']
 
 
 def _create_df_from_response(response):
