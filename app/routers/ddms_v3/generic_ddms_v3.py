@@ -153,7 +153,6 @@ async def create_or_update_osdu_record(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail= str(e)
             )
-
     storage_client = await get_storage_record_service(ctx)
 
     return await storage_client.create_or_update_records(
