@@ -32,6 +32,24 @@ gc-test:
   extends:
     - .gc-variables
 
+gc-acceptance-test-python:
+  script:
+    - curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz
+    - tar -xf google-cloud-cli-linux-x86_64.tar.gz
+    - ./google-cloud-sdk/install.sh -q
+    - source $(pwd)/google-cloud-sdk/path.bash.inc
+    - gcloud auth login --cred-file=$GC_INTEGRATION_TESTER_SA_FILE
+    - export PRIVILEGED_USER_TOKEN=$(gcloud auth print-identity-token)
+    - gcloud auth login --cred-file=$GC_R3_ADMIN_TESTER_FILE
+    - export DE_ADMIN_USER_TOKEN=$(gcloud auth print-identity-token)
+    - gcloud auth login --cred-file=$GC_R3_EDITOR_TESTER_FILE
+    - export DE_EDITOR_USER_TOKEN=$(gcloud auth print-identity-token)
+    - gcloud auth login --cred-file=$GC_R3_OPS_TESTER_FILE
+    - export DE_OPS_USER_TOKEN=$(gcloud auth print-identity-token)
+    - cd $GC_PYTHON_INT_TEST_SUBDIR
+    - chmod +x ./run-integration-tests.sh
+    - ./run-integration-tests.sh
+
 gc-dev2-test:
   extends:
     - .gc-dev2-variables
