@@ -110,7 +110,7 @@ class DataframeSerializerSync:
 
         df = pd.read_json(
             path_or_buf=data, orient=orient.value, convert_axes=False
-        ).replace("NaN", np.NaN)
+        ).replace("NaN", np.nan)
 
         # this is a conner case, orient 'columns' implies to have all columns and index values to be passed as string
         # in JSON content.

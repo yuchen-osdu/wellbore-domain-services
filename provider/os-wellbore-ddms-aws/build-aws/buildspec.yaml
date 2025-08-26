@@ -28,7 +28,7 @@ phases:
   install:
     runtime-versions:
       java: corretto17
-      python: 3.11
+      python: 3.13
     commands:
       # fix error noted here: https://github.com/yarnpkg/yarn/issues/7866
       - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
@@ -85,9 +85,7 @@ phases:
       - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain "${CODEARTIFACT_DOMAIN}" --domain-owner "${AWS_ACCOUNT_ID}" --query authorizationToken --duration-seconds 3600 --output text )
       - export PIP_INDEX_URL="https://aws:${CODEARTIFACT_AUTH_TOKEN}@${CODEARTIFACT_DOMAIN}-${AWS_ACCOUNT_ID}.d.codeartifact.${AWS_REGION}.amazonaws.com/pypi/${CODEARTIFACT_REPO}/simple/"
       - aws codeartifact login --tool pip --domain $CODEARTIFACT_DOMAIN --domain-owner $AWS_ACCOUNT_ID --repository $CODEARTIFACT_REPO
-      - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/
-
-      - pip install -r ./requirements.txt
+      - pip config set global.extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple
       - pip install -r ./requirements_dev.txt
 
       - GIT_SECRETS_SCAN_RESULT=$(git secrets --scan 2> ${OUTPUT_DIR}/git_secrets.out.txt && echo OK || echo FAILED)

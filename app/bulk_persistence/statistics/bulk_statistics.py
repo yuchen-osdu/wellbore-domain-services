@@ -2,7 +2,7 @@ import asyncio
 import functools
 from typing import List, Callable, Iterable, Iterator
 import itertools
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.bulk_persistence.dask.storage_path_builder import join
 import pandas as pd
 
@@ -120,13 +120,13 @@ class BulkStatistics:
         computations_status = statistics_meta.meta.computation_status
         expire_date = statistics_meta.last_computation_date + self._duration_before_recompute
         if computations_status == BulkStatisticsStatus.Running or computations_status == BulkStatisticsStatus.Started \
-                and expire_date > datetime.utcnow():
+                and expire_date > datetime.now(timezone.utc):
             raise ComputationRunningError(f"Statistics computation is already running for less than"
                                           f" {self._duration_before_recompute}. Please retry after {expire_date}")
 
         statistics_meta.meta.computation_status = BulkStatisticsStatus.Started
         statistics_meta.computation_attempt += 1
-        statistics_meta.last_computation_date = datetime.utcnow()
+        statistics_meta.last_computation_date = datetime.now(timezone.utc)
         return True
 
     def _fetch_bulk_batch(self, catalog: BulkCatalog, columns: List[str]) -> pd.DataFrame:
@@ -161,7 +161,6 @@ class BulkStatistics:
 
         try:
             computed_stats = bulk_df.describe(
-                datetime_is_numeric=True,
                 percentiles=BulkStatistics._percentiles,
                 exclude=[object, bool]
             )
@@ -270,10 +269,10 @@ class BulkStatistics:
             internal_statistics_meta = await self._fetch_statistics_meta_file(bulk_statistics_path)
             self._check_recomputation_allowed(internal_statistics_meta)
         except (osdu_storage_exception.ResourceNotFoundException, FileNotFoundError):
-            public_meta = StatisticsComputationMeta(computationStartDatetime=datetime.utcnow(), recordId=record_id,
+            public_meta = StatisticsComputationMeta(computationStartDatetime=datetime.now(timezone.utc), recordId=record_id,
                                                     recordVersion=record_version,
                                                     computationStatus=BulkStatisticsStatus.Started)
-            internal_statistics_meta = InternalStatisticsComputationMeta(lastComputationDate=datetime.utcnow(),
+            internal_statistics_meta = InternalStatisticsComputationMeta(lastComputationDate=datetime.now(timezone.utc),
                                                                          computationAttempt=1, meta=public_meta)
 
         await self._push_statistics_meta_file(bulk_statistics_path, internal_statistics_meta, overwrite_meta_file=True)

@@ -2,7 +2,7 @@ from typing import Dict, Optional
 from enum import Enum
 
 import pandas as pd
-from dask.dataframe.core import DataFrame as DaskDataFrame
+from dask.dataframe import DataFrame as DaskDataFrame
 
 from odes_storage.models import Record
 

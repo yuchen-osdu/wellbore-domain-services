@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
-import sys
-from functools import partial
-from typing import Optional
+import logging
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
@@ -24,24 +21,16 @@ from app import __app_name__, __build_number__, __version__
 from app.auth.auth import require_opendes_authorized_user
 
 # ---------- import Bulk persistence ----------------------------------
-from app.bulk_persistence import (
-    BulkPersistenceConfig,
-    dask_client,
-    set_config_getter,
-)
 # ---------- import Core services clients ----------------------------------
-from app.clients import SearchServiceClient, StorageRecordServiceClient
 
 # ----------
-from app.conf import Config, check_environment
+from app.conf import Config
 from app.errors.exception_handlers import add_exception_handlers
 
 
 # ---------- import tracing, logging, metrics ----------------------------------
-from app.helper import logger, metric
 # ---------- import DI ----------------------------------
-from app.injector.app_injector import AppInjector
-from app.injector.main_injector import MainInjector
+
 # ---------- import middlewares ----------------------------------
 from app.middleware import CreateBasicContextMiddleware, TracingMiddlewareOT
 from app.middleware.basic_context_middleware import require_data_partition_id, ServerTimingHdrMiddleware
@@ -92,16 +81,20 @@ from app.routers.record_utils import (
     fetch_record_dependency,
     fetch_record_partial_with_wdms_extension,
 )
-from app.utils import OpenApiHandler, get_http_client_session
-from app.helper import traces_ot
+from app.utils import OpenApiHandler
+from app.lifespan import lifespan, app_injector
 
+
+# create module logger
+logger = logging.getLogger(__name__)
 
 # The sub application which contains all the routers
-wdms_app = FastAPI(title=__app_name__,
+wdms_app = FastAPI(root_path=Config.openapi_prefix.value,
+                   title=__app_name__,
                    description='build ' + __build_number__,
                    version=__version__,
-                   )
-app_injector = AppInjector()
+                   lifespan=lifespan)
+
 
 def custom_openapi(*args, **kwargs):
     if wdms_app.openapi_schema:
@@ -141,58 +134,7 @@ def make_api_config(api_config: APIConfiguration):
         request.state.api_config = api_config
     return set_api_config
 
-def _get_bulk_worker_host() -> Optional[str]:
-    return Config.service_host_wdms_worker.value
 
-
-@wdms_app.on_event("startup")
-async def startup_event():
-    service_name = Config.service_name.value
-    logger.init_logger(service_name=service_name, config=Config)
-
-    # check python version >=3.11
-    assert sys.version_info.major == 3 and sys.version_info.minor >= 11, 'Python version required >=3.11'
-
-    check_environment(Config)
-    # build bulk persistence specific configuration
-
-    # figure out bulk persistence backend: Dask or worker service
-    worker_service_host = _get_bulk_worker_host()
-    is_dask_backend = not bool(worker_service_host)
-
-    bulk_config = BulkPersistenceConfig(
-        min_worker_memory=Config.min_worker_memory.value,
-        dask_data_ipc=Config.dask_data_ipc.value,
-        service_name=Config.service_name.value,
-        dask_enabled_on_read=is_dask_backend,
-        dask_enabled_on_write=is_dask_backend,
-        bulk_worker_host=worker_service_host
-    )
-    wdms_app.state.bulk_config = bulk_config
-    set_config_getter(lambda: wdms_app.state.bulk_config)
-
-    MainInjector().configure(app_injector)
-    traces_ot.initialize_tracer(service_name=service_name, config=Config)
-
-    app_injector.register(dask_client.DaskDistributedClient, partial(dask_client.create, bulk_config))
-    asyncio.create_task(dask_client.create(bulk_config))
-
-    metric.init_metric(wdms_app)
-
-
-@wdms_app.on_event('shutdown')
-async def shutdown_event():
-    # clients close
-    storage_client = await app_injector.get(StorageRecordServiceClient)
-    if storage_client is not None and hasattr(storage_client, 'api_client'):
-        await storage_client.api_client.close()
-
-    search_client = await app_injector.get(SearchServiceClient)
-    if search_client is not None and hasattr(search_client, 'api_client'):
-        await search_client.api_client.close()
-
-    await get_http_client_session().close()
-    await dask_client.close()
 
 
 DDMS_V2_PATH = '/ddms/v2'

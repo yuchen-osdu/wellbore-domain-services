@@ -44,7 +44,6 @@ from .data import (
 from .fixtures import (
     local_dev_config,
     local_bulk_persistence_config,
-    base_app_initialized_with_testclient,
     app_initialized_with_testclient,
     app_configurable_with_testclient,
     mock_storage_client_holding_data,

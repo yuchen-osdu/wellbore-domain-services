@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import math
+import pandas as pd
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Path, Query, status
 
@@ -60,7 +61,7 @@ async def post_dips(
 async def insert_dips(
         dips: List[Dip], dipsetid: str, ctx: Context = Depends(get_ctx)) -> List[Dip]:
     my_dipset, df = await persistence.read_dipset_data(ctx, ds=dipsetid)
-    df = df.append(persistence.dips_to_df(dips))
+    df = pd.concat([df, persistence.dips_to_df(dips)], ignore_index=True)
     await persistence.write_dipset_data(ctx, dataframe=df, ds=my_dipset)
     return persistence.df_to_dips(df)
 

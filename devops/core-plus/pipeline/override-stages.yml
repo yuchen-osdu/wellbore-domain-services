@@ -18,7 +18,7 @@ cimpl-containerize-gitlab:
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
 cimpl-test-python:
-  image: python:3.11
+  image: python:3.13
   variables:
     CIMPL_WELLBORE_BASE_URL: https://osdu.dev1.osdu-cimpl.opengroup.org/api/os-wellbore-ddms
 

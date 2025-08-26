@@ -48,7 +48,7 @@ spec:
           command:
             - uvicorn
           args:
-            - 'app.base:base_app'
+            - 'app.wdms_app:wdms_app'
             - '--host'
             - '0.0.0.0'
             - '--port'

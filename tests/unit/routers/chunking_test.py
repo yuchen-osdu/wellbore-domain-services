@@ -1,4 +1,4 @@
-import io
+from io import BytesIO, StringIO
 import math
 import uuid
 from unittest import mock
@@ -6,7 +6,7 @@ from unittest import mock
 from httpx import AsyncClient
 import numpy as np
 import pandas as pd
-import pandas.api.types as ptypes
+from numpy.random import default_rng
 from pandas.testing import assert_frame_equal
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -87,14 +87,11 @@ EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log', 'PPFGDataset','WellP
 
 
 def _create_df_from_response(response):
-    f = io.BytesIO(response.content)
-    f.seek(0)
-
     content_type = response.headers.get('content-type')
     if content_type == 'application/x-parquet':
-        return pd.read_parquet(f)
+        return pd.read_parquet(BytesIO(response.content))
     elif content_type == 'application/json':
-        return pd.read_json(f, dtype=True, orient='split', convert_axes=False).replace("NaN", np.NaN)
+        return pd.read_json(BytesIO(response.content), dtype=True, orient='split', convert_axes=False).replace("NaN", np.nan)
     else:
         raise ValueError(f"Unknown content-type: '{content_type}'")
 
@@ -238,7 +235,7 @@ async def test_send_all_data_once(dasked_test_app_without_consistency_client,
         result_df = _cast_datetime_to_datetime64_ns(result_df)
 
     if content_type_header.endswith('json'):
-        initial_data_df = pd.read_json(data_to_send, orient='split')
+        initial_data_df = pd.read_json(StringIO(data_to_send), orient='split')
 
     assert_dataframe_equal(initial_data_df, result_df)
 
@@ -704,7 +701,8 @@ async def test_session_chunk_int(dasked_test_app_without_consistency_client, ent
     record_id = await _create_record(client, entity_type)
     chunking_url = Definitions[entity_type]['chunking_url']
 
-    json_data = {t: np.random.rand(10) for t in columns_type}
+    rng = default_rng()
+    json_data = {t: rng.random(10) for t in columns_type}
     df_data = pd.DataFrame(json_data)
     data_to_send = create_func(df_data)
 
@@ -981,40 +979,41 @@ def dataframe_for_filters():
         "C": [str(i) for i in range(20)],
         "D": [i % 2 == 0 for i in range(20)]
     }
-    return pd.DataFrame(dic, index=range(20))
+    df = pd.DataFrame(dic, index=range(20))
+    return df
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
 @pytest.mark.parametrize("params, expected", [
-    (['A:lt:5'], lambda df: df.loc[df['A'] < 5]),
-    (['A:lte:5'], lambda df: df.loc[df['A'] <= 5]),
-    (['A:eq:5'], lambda df: df.loc[df['A'] == 5]),
-    (['A:neq:5'], lambda df: df.loc[df['A'] != 5]),
-    (['A:gt:5'], lambda df: df.loc[df['A'] > 5]),
-    (['A:gte:5'], lambda df: df.loc[df['A'] >= 5]),
-    (['A:in:5,6,7'], lambda df: df.loc[df['A'].isin([5, 6, 7])]),
-    (['B:lt:5.0'], lambda df: df.loc[df['B'] < 5.0]),
-    (['B:lte:5.0'], lambda df: df.loc[df['B'] <= 5.0]),
-    (['B:eq:5.0'], lambda df: df.loc[df['B'] == 5.0]),
-    (['B:neq:5.0'], lambda df: df.loc[df['B'] != 5.0]),
-    (['B:gt:5.0'], lambda df: df.loc[df['B'] > 5.0]),
-    (['B:gte:5.0'], lambda df: df.loc[df['B'] >= 5.0]),
-    (['B:in:5.0,6.0,7.0'], lambda df: df.loc[df['B'].isin([5.0, 6.0, 7.0])]),
-    (['C:gt:5'], lambda df: df.loc[df['C'] > '5']),
-    (['C:gte:5'], lambda df: df.loc[df['C'] >= '5']),
-    (['C:gte:5s+++'], lambda df: df.loc[df['C'] >= '5s+++']),
-    (['C:eq:sss'], lambda df: df.loc[df['C'] >= 'sss']),
-    (['C:lt:5'], lambda df: df.loc[df['C'] < '5']),
-    (['C:lte:5'], lambda df: df.loc[df['C'] <= '5']),
-    (['C:eq:5'], lambda df: df.loc[df['C'] == '5']),
-    (['C:neq:5'], lambda df: df.loc[df['C'] != '5']),
-    (['C:in:5,6,7'], lambda df: df.loc[df['C'].isin(['5', '6', '7'])]),
-    (['C:eq:abc:def'], lambda df: df.loc[df['C'] == 'abc:def']),
-    (['D:eq:True'], lambda df: df.loc[df['D'] == True]),
-    (['D:neq:True'], lambda df: df.loc[df['D'] != True]),
-    (['D:eq:False'], lambda df: df.loc[df['D'] == False]),
-    (['A:lt:5', 'B:gte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] >= 5.0) & (df['D'] == True)]),
-    (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], lambda df: df.loc[(df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])
+    (["A:lt:5"], lambda df: df.loc[df["A"] < 5]),
+    (["A:lte:5"], lambda df: df.loc[df["A"] <= 5]),
+    (["A:eq:5"], lambda df: df.loc[df["A"] == 5]),
+    (["A:neq:5"], lambda df: df.loc[df["A"] != 5]),
+    (["A:gt:5"], lambda df: df.loc[df["A"] > 5]),
+    (["A:gte:5"], lambda df: df.loc[df["A"] >= 5]),
+    (["A:in:5,6,7"], lambda df: df.loc[df["A"].isin([5, 6, 7])]),
+    (["B:lt:5.0"], lambda df: df.loc[df["B"] < 5.0]),
+    (["B:lte:5.0"], lambda df: df.loc[df["B"] <= 5.0]),
+    (["B:eq:5.0"], lambda df: df.loc[df["B"] == 5.0]),
+    (["B:neq:5.0"], lambda df: df.loc[df["B"] != 5.0]),
+    (["B:gt:5.0"], lambda df: df.loc[df["B"] > 5.0]),
+    (["B:gte:5.0"], lambda df: df.loc[df["B"] >= 5.0]),
+    (["B:in:5.0,6.0,7.0"], lambda df: df.loc[df["B"].isin([5.0, 6.0, 7.0])]),
+    (["C:gt:'5'"], lambda df: df.loc[df["C"] > "5"]),
+    (["C:gte:'5'"], lambda df: df.loc[df["C"] >= "5"]),
+    (["C:gte:5s+++"], lambda df: df.loc[df["C"] >= "5s+++"]),
+    (["C:eq:sss"], lambda df: df.loc[df["C"] == "sss"]),
+    (["C:lt:'5'"], lambda df: df.loc[df["C"] < "5"]),
+    (["C:lte:'5'"], lambda df: df.loc[df["C"] <= "5"]),
+    (["C:eq:'5'"], lambda df: df.loc[df["C"] == "5"]),
+    (["C:neq:'5'"], lambda df: df.loc[df["C"] != "5"]),
+    (["C:in:'5','6','7'"], lambda df: df.loc[df["C"].isin(["5", "6", "7"])]),
+    (["C:eq:abc:def"], lambda df: df.loc[df["C"] == "abc:def"]),
+    (["D:eq:True"], lambda df: df.loc[df["D"] == True]),
+    (["D:neq:True"], lambda df: df.loc[df["D"] != True]),
+    (["D:eq:False"], lambda df: df.loc[df["D"] == False]),
+    (["A:lt:5", "B:gte:5.0", "D:eq:True"], lambda df: df.loc[(df["A"] < 5) & (df["B"] >= 5.0) & (df["D"] == True)]),
+    (["A:lt:5", "B:lte:5.0", "D:eq:True"], lambda df: df.loc[(df["A"] < 5) & (df["B"] <= 5.0) & (df["D"] == True)])
 ])
 @pytest.mark.anyio
 async def test_get_bulk_data_with_filters(dasked_test_app_without_consistency_client, entity_type, params, expected,
@@ -1032,15 +1031,18 @@ async def test_get_bulk_data_with_filters(dasked_test_app_without_consistency_cl
     response_get_data = await client.get(f'{chunking_url}/{record_id}/data', headers=header_get_data,
                                    params={'filter': params})
     df = _create_df_from_response(response_get_data)
-    assert_frame_equal(df, expected(dataframe_for_filters))
+
+    expected_df = expected(dataframe_for_filters)
+    expected_df["C"] = expected_df["C"].astype("string")
+    assert_frame_equal(df, expected(expected_df), check_dtype=False)
 
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
-@pytest.mark.parametrize("filter, limit, expected", [(['A:gt:5'], 5, lambda df: df.loc[df['A'] > 5]),
-                                                     (['A:lt:5'], 5, lambda df: df.loc[df['A'] < 5]),
-                                                     (['C:eq:5'], 5, lambda df: df.loc[df['A'] == 5]),
-                                                     (['A:lt:5', 'B:lte:5.0', 'D:eq:True'], 5, lambda df: df.loc[
-                                                         (df['A'] < 5) & (df['B'] <= 5.0) & (df['D'] == True)])])
+@pytest.mark.parametrize("filter, limit, expected", [(["A:gt:5"], 5, lambda df: df.loc[df["A"] > 5]),
+                                                     (["A:lt:5"], 5, lambda df: df.loc[df["A"] < 5]),
+                                                     (["C:eq:'5'"], 5, lambda df: df.loc[df["A"] == 5]),
+                                                     (["A:lt:5", "B:lte:5.0", "D:eq:True"], 5, lambda df: df.loc[
+                                                         (df["A"] < 5) & (df["B"] <= 5.0) & (df["D"] == True)])])
 @pytest.mark.anyio
 async def test_get_bulk_data_with_filters_curves_offset(dasked_test_app_without_consistency_client, entity_type, filter,
                                                   limit, expected, dataframe_for_filters):
@@ -1064,10 +1066,10 @@ async def test_get_bulk_data_with_filters_curves_offset(dasked_test_app_without_
 
 @pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
 @pytest.mark.parametrize("filter, limit, curves, expected", [
-    (['A:gt:5'], 5, ['A,B'], [5, 5, 4, 0]),
-    (['A:lt:5'], 5, ['A,C'], [5, 0, 0, 0]),
-    (['D:eq:True'], 5, ['C,D'], [5, 5, 0, 0]),
-    (['C:in:5,6,7'], 5, ['B,D'], [3, 0, 0, 0]),
+    (["A:gt:5"], 5, ["A,B"], [5, 5, 4, 0]),
+    (["A:lt:5"], 5, ["A,C"], [5, 0, 0, 0]),
+    (["D:eq:True"], 5, ["C,D"], [5, 5, 0, 0]),
+    (["C:in:'5','6','7'"], 5, ["B,D"], [3, 0, 0, 0]),
 
     # without filter
     ([], 7, ['B,D'], [7, 7, 6, 0]),

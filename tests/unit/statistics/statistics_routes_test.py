@@ -2,7 +2,7 @@ import anyio
 from typing import List
 from httpx import AsyncClient
 from aiohttp import ClientSession
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import numpy as np
 import pandas as pd
@@ -245,12 +245,12 @@ async def test_with_bulk_stats_not_complete(testing_app_local_chunking_no_consis
         _, client = testing_app_local_chunking_no_consistency
         valid_record_id = await _create_record(client, 'WellLog')
 
-        meta_data = StatisticsComputationMeta(computationStartDatetime=datetime.utcnow(),
+        meta_data = StatisticsComputationMeta(computationStartDatetime=datetime.now(timezone.utc),
                                               recordId=valid_record_id,
                                               recordVersion=str(123456789),
                                               computationStatus=BulkStatisticsStatus.Started)
         bob.return_value = InternalStatisticsComputationMeta(computationAttempt=1, meta=meta_data,
-                                                             lastComputationDate=datetime.utcnow())
+                                                             lastComputationDate=datetime.now(timezone.utc))
 
         await post_record_data(client, valid_record_id, 'WellLog', ['int-A'], range(10))
 
@@ -411,7 +411,7 @@ async def test_get_stats_meta_data(testing_app_local_chunking_no_consistency, mo
     assert response_data['recordVersion'] == version
     assert response_data['computationStatus'] == BulkStatisticsStatus.Complete
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     retrieved_datetime = datetime.fromisoformat(response_data['computationStartDatetime'])
     assert now - timedelta(seconds=3) < retrieved_datetime < now + timedelta(seconds=3)
 

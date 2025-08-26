@@ -8,7 +8,10 @@ This software includes the following software and licenses:
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
+- aiohappyeyeballs (from https://pypi.org/project/aiohappyeyeballs/)
+- multidict (from https://github.com/aio-libs/multidict)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
+- typing-extensions (from https://pypi.org/project/typing-extensions/, https://pypi.org/project/typing-extensions/4.4.0/)
 
 ========================================================================
 Apache-2.0
@@ -18,7 +21,6 @@ The following software have components provided under the terms of this license:
 - aiobotocore (from https://github.com/aio-libs/aiobotocore, https://pypi.org/project/aiobotocore/)
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aiosignal (from <https://github.com/aio-libs/aiosignal>, https://github.com/aio-libs/aiosignal)
-- async-timeout (from https://github.com/aio-libs/async-timeout, https://github.com/aio-libs/async_timeout/)
 - boto3 (from <https://github.com/boto/boto3>, https://github.com/boto/boto3)
 - botocore (from <https://github.com/boto/botocore>, https://github.com/boto/botocore)
 - cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
@@ -42,26 +44,27 @@ The following software have components provided under the terms of this license:
 - numpy (from https://pypi.org/project/numpy/)
 - opentelemetry-api (from https://pypi.org/project/opentelemetry-api/)
 - opentelemetry-exporter-gcp-trace (from https://github.com/GoogleCloudPlatform/opentelemetry-operations-python/tree/main/opentelemetry-exporter-gcp-trace)
+- opentelemetry-resourcedetector-gcp (from https://github.com/GoogleCloudPlatform/opentelemetry-operations-python/tree/main/opentelemetry-resourcedetector-gcp)
 - opentelemetry-sdk (from https://pypi.org/project/opentelemetry-sdk/)
 - opentelemetry-semantic-conventions (from https://pypi.org/project/opentelemetry-semantic-conventions/)
+- osdu-api (from https://pypi.org/project/osdu-api/)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python)
-- prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator)
+- propcache (from https://github.com/aio-libs/propcache)
+- proto-plus (from https://github.com/googleapis/proto-plus-python.git, https://pypi.org/project/proto-plus/)
 - pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 - python-dateutil (from <https://github.com/dateutil/dateutil>, https://github.com/dateutil/dateutil)
-- python-multipart (from https://pypi.org/project/python-multipart/, https://pypi.org/project/python-multipart/0.0.6/, https://pypi.org/project/python-multipart/0.0.9/)
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
 - rsa (from https://pypi.org/project/rsa/, https://stuvel.eu/rsa)
 - s3transfer (from <https://github.com/boto/s3transfer>, https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
-- tblib (from https://github.com/ionelmc/python-tblib)
 - tenacity (from <https://github.com/jd/tenacity>, https://github.com/jd/tenacity)
 - tornado (from http://www.tornadoweb.org/)
 - types-jsonschema (from https://github.com/python/typeshed, https://pypi.org/project/types-jsonschema/)
-- urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
+- tzdata (from <https://github.com/python/tzdata>, https://github.com/python/tzdata)
 - yarl (from https://github.com/aio-libs/yarl, https://github.com/aio-libs/yarl/)
 
 ========================================================================
@@ -69,7 +72,6 @@ BSD-2-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/)
 - decorator (from https://github.com/micheles/decorator, https://pypi.org/project/decorator/)
 - grpcio (from https://grpc.io)
 - locket (from http://github.com/mwilliamson/locket.py)
@@ -100,7 +102,6 @@ The following software have components provided under the terms of this license:
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
-- hiredis (from https://github.com/redis/hiredis-py)
 - httpcore (from https://github.com/encode/httpcore, https://pypi.org/project/httpcore/, https://pypi.org/project/httpcore/0.18.0/)
 - httpx (from https://pypi.org/project/httpx/, https://pypi.org/project/httpx/0.23.1/)
 - idna (from https://pypi.org/project/idna/, https://pypi.org/project/idna/3.4/)
@@ -111,12 +112,12 @@ The following software have components provided under the terms of this license:
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - partd (from http://github.com/dask/partd/, https://pypi.org/project/partd/, https://pypi.org/project/partd/1.4.2/)
 - ply (from http://www.dabeaz.com/ply/)
+- prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
 - pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 - pyasn1-modules (from https://github.com/etingof/pyasn1-modules, https://github.com/pyasn1/pyasn1-modules)
 - pycparser (from <https://github.com/eliben/pycparser>, https://github.com/eliben/pycparser)
-- pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - python-dateutil (from <https://github.com/dateutil/dateutil>, https://github.com/dateutil/dateutil)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - s3fs (from http://github.com/fsspec/s3fs/)
@@ -141,11 +142,7 @@ CC-BY-4.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/)
-- fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/)
-- gcsfs (from https://github.com/fsspec/gcsfs)
 - numpy (from https://pypi.org/project/numpy/)
-- s3fs (from http://github.com/fsspec/s3fs/)
 
 ========================================================================
 CC0-1.0
@@ -159,7 +156,6 @@ ISC
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/, https://pypi.org/project/Jinja2/)
 - grpcio (from https://grpc.io)
 - prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
@@ -183,16 +179,13 @@ MIT
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Deprecated (from https://github.com/laurent-laporte-pro/deprecated, https://github.com/tantale/deprecated)
 - PyJWT (from http://github.com/jpadilla/pyjwt, https://pypi.org/project/PyJWT/)
 - PyYAML (from http://pyyaml.org/wiki/PyYAML, https://pyyaml.org/)
 - aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
 - aioitertools (from https://aioitertools.omnilib.dev, https://pypi.org/project/aioitertools/)
-- aioredis (from https://github.com/aio-libs/aioredis-py)
 - annotated-types (from https://pypi.org/project/annotated-types/, https://pypi.org/project/annotated-types/0.5.0/, https://pypi.org/project/annotated-types/0.6.0/)
 - anyio (from https://pypi.org/project/anyio/, https://pypi.org/project/anyio/3.3.0/)
 - attrs (from https://attrs.readthedocs.io/, https://pypi.org/project/attrs/, https://www.attrs.org/)
-- azure-common (from https://github.com/Azure/azure-sdk-for-python)
 - azure-core (from <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core>, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core)
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
 - azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity)
@@ -210,24 +203,28 @@ The following software have components provided under the terms of this license:
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - fastapi (from https://pypi.org/project/fastapi/, https://pypi.org/project/fastapi/0.86.0/)
 - h11 (from https://github.com/python-hyper/h11)
-- hiredis (from https://github.com/redis/hiredis-py)
 - jmespath (from <https://github.com/jmespath/jmespath.py>, https://github.com/jmespath/jmespath.py)
 - jsonschema (from https://pypi.org/project/jsonschema/)
+- jsonschema-specifications (from https://pypi.org/project/jsonschema-specifications/, https://pypi.org/project/jsonschema-specifications/2023.11.2/, https://pypi.org/project/jsonschema-specifications/2023.7.1/)
 - msal (from <https://github.com/AzureAD/microsoft-authentication-library-for-python>, https://github.com/AzureAD/microsoft-authentication-library-for-python)
 - msal-extensions (from https://pypi.org/project/msal-extensions/1.0.0/)
 - msrest (from https://github.com/Azure/msrest-for-python)
 - natsort (from https://github.com/SethMMorton/natsort)
 - numpy (from https://pypi.org/project/numpy/)
+- packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
+- protobuf (from https://developers.google.com/protocol-buffers/)
 - pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/)
 - pydantic_core (from https://github.com/pydantic/pydantic-core)
-- pyrsistent (from https://github.com/tobgu/pyrsistent/)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - python-ulid (from https://github.com/mdomke/python-ulid, https://pypi.org/project/python-ulid/, https://pypi.org/project/python-ulid/2.2.0/)
 - pytz (from <http://pythonhosted.org/pytz>, http://pythonhosted.org/pytz)
+- referencing (from https://pypi.org/project/referencing/, https://pypi.org/project/referencing/0.30.2/, https://pypi.org/project/referencing/0.31.1/)
+- rpds-py (from <https://pypi.org/project/rpds-py/0.10.6/>, https://pypi.org/project/rpds-py/0.10.6/)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
+- types-jsonschema (from https://github.com/python/typeshed, https://pypi.org/project/types-jsonschema/)
 - typing-inspection (from https://pypi.org/project/typing-inspection/)
 - urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 - xmltodict (from https://github.com/martinblech/xmltodict)
@@ -242,6 +239,7 @@ The following software have components provided under the terms of this license:
 - certifi (from <https://github.com/certifi/python-certifi>, https://github.com/certifi/python-certifi)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://grpc.io)
+- urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 
 ========================================================================
 NCSA
@@ -269,6 +267,7 @@ PSF-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- aiohappyeyeballs (from https://pypi.org/project/aiohappyeyeballs/)
 - distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/)
 - fixedint (from https://github.com/nneonneo/fixedint)
 
@@ -284,12 +283,12 @@ Python-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- aiohappyeyeballs (from https://pypi.org/project/aiohappyeyeballs/)
 - cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
 - fixedint (from https://github.com/nneonneo/fixedint)
 - numpy (from https://pypi.org/project/numpy/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
-- portalocker (from <https://github.com/WoLpH/portalocker>, https://github.com/WoLpH/portalocker)
-- typing-extensions (from https://pypi.org/project/typing-extensions/4.2.0/, https://pypi.org/project/typing-extensions/4.4.0/)
+- typing-extensions (from https://pypi.org/project/typing-extensions/, https://pypi.org/project/typing-extensions/4.4.0/)
 
 ========================================================================
 SunPro
@@ -304,6 +303,14 @@ TCL
 The following software have components provided under the terms of this license:
 
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
+
+========================================================================
+Unlicense
+========================================================================
+The following software have components provided under the terms of this license:
+
+- gcsfs (from https://github.com/fsspec/gcsfs)
+- s3fs (from http://github.com/fsspec/s3fs/)
 
 ========================================================================
 WTFPL
@@ -370,3 +377,4 @@ The following software have components provided under the terms of this license:
 
 - numpy (from https://pypi.org/project/numpy/)
 - pytz (from <http://pythonhosted.org/pytz>, http://pythonhosted.org/pytz)
+- tzdata (from <https://github.com/python/tzdata>, https://github.com/python/tzdata)
