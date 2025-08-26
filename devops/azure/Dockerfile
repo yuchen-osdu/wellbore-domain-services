@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Using Microsoft Base Image for python 3.11-slim
-FROM mcr.microsoft.com/mirror/docker/library/python:3.11-slim
+FROM python:3.13-slim
 
 COPY requirements.txt ./
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
 
 COPY ./app /app
 ENV PYTHONPATH=./
@@ -40,4 +39,4 @@ RUN addgroup --system appuser && adduser --system appuser && adduser appuser app
 
 USER appuser
 
-CMD ["uvicorn", "app.base:base_app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.wdms_app:wdms_app", "--host", "0.0.0.0", "--port", "8080"]

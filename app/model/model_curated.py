@@ -651,7 +651,7 @@ class log(DDMSBaseModel, DDMSBaseRecord):
     status: Optional[str] = Field(
         'compliant', description='The status of this log', title='Entity Status'
     )
-    version: Optional[float] = Field(
+    version: Optional[int] = Field(
         None,
         description='The version number of this log; set by the framework.',
         title='Entity Version Number',
@@ -728,7 +728,7 @@ class dipset(DDMSBaseModel, DDMSBaseRecord):
     legal: Optional[Legal] = Field(
         None, description="The dip-set's legal tags", title='Legal Tags'
     )
-    version: Optional[float] = Field(
+    version: Optional[int] = Field(
         None,
         description='The version number of this dip set; set by the framework.',
         title='Entity Version Number',

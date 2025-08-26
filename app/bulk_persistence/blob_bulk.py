@@ -26,5 +26,5 @@ class BlobBulk:
     """ identifier """
     data: Any = None
     """ data as file-like object """
-    content_type: str = None
-    metadata: dict = None
+    content_type: str | None = None
+    metadata: dict | None = None

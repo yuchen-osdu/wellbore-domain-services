@@ -76,8 +76,28 @@ curl -X 'GET' '$OSDU_BASE_URL/api/os-wellbore-ddms/version' -H 'Authorization: B
 ## Install Software and Packages
 
 1. Clone the os-wellbore-ddms [repository](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services.git)
-2. Download [Python](https://www.python.org/downloads/) **>=3.11**
-3. Ensure pip, a pre-installed package manager and installer for Python, is installed and is upgraded to the latest version.
+2. Download [Python](https://www.python.org/downloads/) **>=3.13**
+3. Create virtual environment in the wellbore project directory. This will create a folder inside the wellbore project directory. Typically a hidden folder  will be created, for example: ~/os-wellbore-ddms/.venv
+
+    ```bash
+    # Windows
+    python -m venv .venv
+
+    # macOS/Linux
+    python3 -m venv .venv
+    ```
+   
+4. Activate the virtual environment
+
+    ```bash
+    # Windows
+    .\.venv\Scripts\activate
+
+    # macOS/Linux
+    source .venv/bin/activate
+    ```
+   
+5. Ensure pip, a pre-installed package manager and installer for Python, is installed and is upgraded to the latest version.
 
       ```bash
       # Windows
@@ -89,44 +109,27 @@ curl -X 'GET' '$OSDU_BASE_URL/api/os-wellbore-ddms/version' -H 'Authorization: B
       python3 -m pip --version
       ```
 
-1. Create virtual environment in the wellbore project directory. This will create a folder inside the wellbore project directory.
-For example: ~/os-wellbore-ddms/nameofvirtualenv
-
-    ```bash
-    # Windows
-    python -m venv env
-
-    # macOS/Linux
-    python3 -m venv env
-    ```
-
-2. Activate the virtual environment
-
-    ```bash
-    # Windows
-    .\env\Scripts\activate
-
-    # macOS/Linux
-    source env/bin/activate
-    ```
-
 5. Install dependencies
 
     ```bash
-    pip install -r requirements.txt
+    pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
+
     ```
 
     Or, for a developer setup, this will install tools to help you work with the code.
 
     ```bash
-    pip install -r requirements.txt -r requirements_dev.txt
+    pip install -r requirements_dev.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
+
     ```
+    *Note*: The `requirements_dev.txt` includes the dependencies from `requirements.txt` as well so you only need to run one of the above commands.
 
 ## Unit Tests
 
 ```bash
 # Install test dependencies
-pip install -r requirements.txt -r requirements_dev.txt
+pip install -r requirements_dev.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
+
 
 # run tests
 python -m pytest --junit-xml=unit_tests_report.xml --cov=app --cov-report=html --cov-report=xml tests/unit
@@ -443,31 +446,37 @@ Anytime, you may want to ensure your virtual environment is in sync with your re
 For this you can use:
 
 ```bash
-pip-sync
+pip-sync requirements.txt
 ```
 
 If you want to work with other requirements file, you can specify them
 
 ```bash
-pip-sync requirements.txt requirements_dev.txt
+pip-sync requirements_dev.txt
 ```
 
 **Note:** On a Windows workstation, platform-specific modules such as `pywin32` are also needed. In this case don't use `pip-sync` but `pip install` instead.
 
 ```bash
-pip install -r requirements.txt -r requirements_dev.txt
+pip install -r requirements_dev.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
 ```
 
-If you want to update `requirements.txt` to retrieve the most recent version, respecting bounds set in `requirements.in`, you can use:
+If you want to update `requirements.txt` and/or `requirements_dev.txt` to retrieve the most recent version, respecting bounds set in `pyproject.toml`, you can use:
 
 ```bash
-pip-compile
+pip-compile --output-file requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
+pip-compile --extra dev --output-file requirements_dev.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
 ```
 
 If you want to update the version of only one dependency, for instance fastapi:
 
 ```bash
-pip-compile --upgrade-package fastapi
+pip install --upgrade fastapi
+```
+Then to add the new version to the requirements file, you can use:
+
+```bash
+pip freeze > requirements.txt
 ```
 
 **Note:** On a Windows workstation, **don't** commit the `pywin32` back to the `requirements.txt` file, that will cause CICD to fail.

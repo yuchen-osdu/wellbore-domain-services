@@ -2335,7 +2335,7 @@
           "version": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -2536,7 +2536,7 @@
           "version": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -2929,7 +2929,7 @@
           "version": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -3143,7 +3143,7 @@
           "version": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "integer"
               },
               {
                 "type": "null"

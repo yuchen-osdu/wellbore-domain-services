@@ -38,8 +38,8 @@ class ServerTimingHdrMiddleware(BaseHTTPMiddleware):
 
 
 class CreateBasicContextMiddleware(BaseHTTPMiddleware):
-    def __init__(self, *, config: conf.ConfigurationContainer, injector: Optional[AppInjector], **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, app, *, config: conf.ConfigurationContainer, injector: Optional[AppInjector], **kwargs):
+        super().__init__(app, **kwargs)
         self._config = config
         self._app_injector = injector
 

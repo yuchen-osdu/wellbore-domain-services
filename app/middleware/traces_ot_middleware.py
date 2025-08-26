@@ -33,8 +33,8 @@ from app.helper import traces_ot
 
 
 class TracingMiddlewareOT(BaseHTTPMiddleware):
-    def __init__(self, *, skip_for_path_suffix: List[str], **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, app, *, skip_for_path_suffix: List[str], **kwargs):
+        super().__init__(app, **kwargs)
         self._skip_for_path_suffix = skip_for_path_suffix
 
     @staticmethod

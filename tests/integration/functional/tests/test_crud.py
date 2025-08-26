@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import pytest
 from .fixtures import with_wdms_env
 from wdms_client.request_builders import build_request
@@ -89,6 +90,8 @@ def test_crud_delete_record(get_env, kind):
     result = build_request(f'crud.{kind}.delete_{kind}').call(get_env)
     result.assert_status_code(204)
 
+
+@pytest.mark.skipif(os.getenv('CLOUD_PROVIDER') == 'local', reason="No schema service in local env")
 @pytest.mark.tag('basic', 'crud', 'smoke')
 def test_schema_service_correctly_initialized(get_env):
     result = build_request("crud.unknown_kind_osdu_welllog.create_osdu_welllog").call(get_env)

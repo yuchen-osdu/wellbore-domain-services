@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 import pandas as pd
-from dask.dataframe.core import DataFrame as DaskDataFrame
+from dask.dataframe import DataFrame as DaskDataFrame
 
 from odes_storage.models import Record
 from app.helper.traces_ot import get_tracer

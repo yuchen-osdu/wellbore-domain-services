@@ -17,55 +17,20 @@ This test ensures the API spec committed with the sources stays accurate.
 If the test fails, it replaces the saved spec with the current version.
 The updated spec file must then be committed with the latest changes.
 """
-import logging
 
 OPENAPI_PATH = 'spec/generated/openapi.json'
 
-import os
 import pytest
 import rapidjson as json
-from openapi_spec_validator import validate_spec
-
-
-# Format selected routes for spec generation
-def format_routes(app, prefix, tags, strip_prefix=True):
-    for route in app.routes:
-        # non selected routes are hidden
-        route.include_in_schema = False
-        # route path must start with prefix
-        if route.path.startswith(prefix):
-            # use all tags if no tag filter is provided
-            if not tags:
-                route.include_in_schema = True
-            # otherwise route must have one of the selected tags
-            elif hasattr(route,"tags"):
-                if any(tag in tags for tag in route.tags):
-                    # add route to the spec
-                    route.include_in_schema = True
-            if strip_prefix and route.include_in_schema:
-                # strip prefix from the formatted route path
-                route.path_format = route.path[len(prefix):]
-
+from openapi_spec_validator import validate
 
 @pytest.fixture
 async def openapi_json(app_configurable_with_testclient):
-    app, client = app_configurable_with_testclient()
-
-    # Initialize route filters for documentation
-    keep_prefix = os.environ.get('OPENAPI_KEEP_PREFIX')
-    prefix = os.environ.get('OPENAPI_FILTER_PREFIX')
-    tags = os.environ.get('OPENAPI_FILTER_TAGS')
-    # Filter and reformat routes only if a prefix is provided
-    if prefix:
-        # Make a tags list from the comma separated env var if needed
-        if tags:
-            tags = tags.split(',')
-        format_routes(app, prefix, tags, not keep_prefix)
+    app, _ = app_configurable_with_testclient()
 
     # get the openapi spec
-    response = await client.get("/openapi.json")
-    assert response.status_code == 200
-    yield response.json()
+    openapi_spec = app.openapi()
+    yield openapi_spec
 
 
 @pytest.mark.anyio
@@ -105,4 +70,4 @@ async def test_api_spec_for_duplicates(openapi_json):
 
 @pytest.mark.anyio
 async def test_open_api_validity(openapi_json):
-    validate_spec(openapi_json)
+    validate(openapi_json)

@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 from typing import List
 
@@ -227,7 +227,7 @@ async def test_bulk_statistics_get_bulk_statistics(bulk_stats_fixture, cols_name
     assert stats_meta.record_version == fake_record_id
     assert stats_meta.computation_status == BulkStatisticsStatus.Complete
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     assert now - timedelta(seconds=3) < stats_meta.computation_start_datetime < now + timedelta(seconds=3)
 
 
@@ -374,7 +374,7 @@ async def test_trigger_computations_after_error(bulk_stats_fixture):
             result: InternalStatisticsComputationMeta = await future
             assert result.meta.computation_status == BulkStatisticsStatus.Error
             assert result.computation_attempt == i
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             assert now - timedelta(seconds=1) < result.last_computation_date < now + timedelta(seconds=1)
 
         with pytest.raises(ComputationRunningError, match="Statistics computation has already failed 3 times. ABORT"):
@@ -420,7 +420,7 @@ async def test_computations_values(bulk_stats_fixture):
         catalog = await dask_storage.get_bulk_catalog(record_id, bulk_id)
         stats_df, stats_meta = await bulk_statistics.get_bulk_statistics(catalog, record_id, bulk_id, columns=None)
 
-        expected_stats_df = bulk_df.describe(datetime_is_numeric=True, percentiles=[.10, .5, .90])
+        expected_stats_df = bulk_df.describe(percentiles=[.10, .5, .90])
         expected_stats_df = expected_stats_df.astype('string').transpose()
         expected_stats_df['totalCount'] = str(values_count)
         expected_stats_df.rename(columns={'count': 'nonAbsentValuesCount'}, inplace=True)

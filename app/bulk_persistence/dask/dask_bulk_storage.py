@@ -220,7 +220,7 @@ class DaskBulkStorage:
         # read all chunk for requested columns
         def read_parquet_files(f):
             """ read all chunk for requested columns """
-            return read_with_dask(f.paths, columns=f.labels, storage_options=self._parameters.storage_options)
+            return read_with_dask(f.paths, columns=list(f.labels), storage_options=self._parameters.storage_options)
 
         dfs = self._map_with_trace(read_parquet_files, files_to_load)
 
@@ -451,7 +451,7 @@ class DaskBulkStorage:
                 labels = set(labels_dtypes.keys())
                 dtypes = list(labels_dtypes.values())
                 # pb here, wait -> cannot resolve conflict in parallel!
-                await self._resolve_conflict_catalog(catalog, bulk_id, files, conflicting_col)
+                await self._resolve_conflict_catalog(catalog, bulk_id, files, list(conflicting_col))
 
             if labels: # if all columns conflicts
                 catalog.add_chunk(ChunkGroup(labels, relative_paths, dtypes))

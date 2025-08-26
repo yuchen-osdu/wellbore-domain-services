@@ -162,14 +162,15 @@ class StorageRecordServiceBlobStorage:
                 return Record(**record_dict)
 
             return Record.model_validate_json(bin_data)
-        except (FileNotFoundError, ResourceNotFoundException):
+
+        except (FileNotFoundError, ResourceNotFoundException) as e:
             raise UnexpectedResponse(
                 status_code=404,
                 reason_phrase="Item not found",
                 # not sure what to put here at this time
                 content="".encode(encoding="utf-8"),
                 headers=httpx.Headers(),
-            )
+            ) from e
 
     async def get_all_record_versions(self,
                                       id: str,

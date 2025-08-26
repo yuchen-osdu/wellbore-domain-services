@@ -2,6 +2,7 @@ from typing import Tuple, Callable, Iterable, List
 import re
 
 import pandas as pd
+from pandas.core.dtypes.common import is_any_real_numeric_dtype
 
 from .dask.utils import WDMS_INDEX_NAME
 from .dask.errors import BulkNotProcessable
@@ -58,7 +59,7 @@ def validate_index(df: pd.DataFrame) -> ValidationResult:
     """ Ensure index """
     if len(df.index) == 0:
         return False, "Empty data"
-    if not df.index.is_numeric() and not isinstance(df.index, pd.DatetimeIndex):
+    if not is_any_real_numeric_dtype(df.index) and not isinstance(df.index, pd.DatetimeIndex):
         return False, "Index should be numeric or datetime"
     if not df.index.is_unique:
         return False, "Duplicated index found"

@@ -32,7 +32,7 @@ async def test_get_entity_success(mocker, app_configurable_with_testclient, samp
     with open(os.path.join(dir_path, sample_file), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
 
-    expected_response = Record.parse_obj(record_json)
+    expected_response = Record.model_validate(record_json)
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
     mocked_storage_client.get_record.return_value = expected_response
 
@@ -45,7 +45,7 @@ async def test_get_entity_success(mocker, app_configurable_with_testclient, samp
                                 headers={"content-type": "application/json"})
 
     assert response.status_code == 200
-    assert mocked_storage_client.get_record.called_once_with(id=record_id)
+    mocked_storage_client.get_record.assert_called_once_with(id=record_id, data_partition_id=None)
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
@@ -63,7 +63,7 @@ async def test_del_entity_success(mocker, app_configurable_with_testclient, samp
                                    headers={"content-type": "application/json"})
 
     assert response.status_code == 204
-    assert mocked_storage_client.delete_record.called_once_with(id=record_id)
+    mocked_storage_client.delete_record.assert_called_once_with(id=record_id, data_partition_id=None)
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
@@ -76,7 +76,7 @@ async def test_get_entity_versions_success(mocker, app_configurable_with_testcli
         "recordId": record_id,
         "versions": [record_version]
     }
-    expected_response = RecordVersions.parse_obj(record_versions_data)
+    expected_response = RecordVersions.model_validate(record_versions_data)
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
     mocked_storage_client.get_record.return_value = Record.parse_obj(record_json)
     mocked_storage_client.get_all_record_versions.return_value = expected_response
@@ -90,7 +90,7 @@ async def test_get_entity_versions_success(mocker, app_configurable_with_testcli
 
     assert response.status_code == 200
     assert response.json() == record_versions_data
-    assert mocked_storage_client.get_all_record_versions.called_once_with(id=record_id)
+    mocked_storage_client.get_all_record_versions.assert_called_once_with(id=record_id, data_partition_id=None)
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)
@@ -99,7 +99,7 @@ async def test_get_entity_version_success(mocker, app_configurable_with_testclie
     with open(os.path.join(dir_path, sample_file), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
 
-    expected_response = Record.parse_obj(record_json)
+    expected_response = Record.model_validate(record_json)
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
     mocked_storage_client.get_record_version.return_value = expected_response
 
@@ -114,7 +114,7 @@ async def test_get_entity_version_success(mocker, app_configurable_with_testclie
     )
 
     assert response.status_code == 200
-    assert mocked_storage_client.get_record_version.called_once_with(id=record_id, version=record_version)
+    mocked_storage_client.get_record_version.assert_called_once_with(id=record_id, version=record_version, data_partition_id=None)
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("sample_file,record_id,record_version,base_url", TEST_PARAMS)

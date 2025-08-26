@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime, timezone, timedelta
 import requests
 import pytest
-import datetime
 import jwt
 
 payload = {}
@@ -22,7 +22,7 @@ payload = {}
 
 def test_expired_token_returns_40X(base_url, check_cert, token):
     url = f"{base_url}/about"
-    token_expired = jwt.encode({"email":"nobody@example.com", "exp":datetime.datetime.utcnow() - datetime.timedelta(seconds=300)}, key="secret", algorithm="HS256")
+    token_expired = jwt.encode({"email":"nobody@example.com", "exp": datetime.now(timezone.utc) - timedelta(seconds=300)}, key="secret", algorithm="HS256")
     headers = {
         'Authorization': f"Bearer {token_expired}"
     }
