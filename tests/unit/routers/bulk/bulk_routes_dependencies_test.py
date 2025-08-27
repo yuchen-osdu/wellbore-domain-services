@@ -97,6 +97,22 @@ def test_set_bulk_uri_in_ddmsdatasets(kind):
     else:
         assert "DDMSDatasets" not in record.data
 
+def test_set_bulk_uri_handles_null_ddmsdatasets():
+    """Test that when customer sets DDMSDatasets to null, it gets converted to empty list"""
+    record = Record(id="foo", kind="osdu:wks:work-product-component--WellLog:1.3.0", 
+                   acl=StorageAcl(viewers=[], owners=[]), legal=Legal(), data={})
+    record.data = {
+        "ExtensionProperties": {"wdms": {"wdms_ext": 4}},
+        "DDMSDatasets": None  # Customer set this to null
+    }
+    OsduBulkIdAccess.set_bulk_uri(record, str(uuid.uuid4()))
+    
+    # After setting bulk URI, DDMSDatasets should be an empty list, not None
+    assert "DDMSDatasets" in record.data
+    assert record.data["DDMSDatasets"] == []
+    assert isinstance(record.data["DDMSDatasets"], list)
+
+
 @pytest.mark.anyio
 async def test_get_bulk_io_dependency():
     mock_config = BulkPersistenceConfig()
