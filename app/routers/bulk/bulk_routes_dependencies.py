@@ -72,6 +72,8 @@ class OsduBulkIdAccess(BulkIdAccess):
         kind_version_parts = kind_version.split(":") if kind_version and len(kind_version.split(":")) == 2 else None
         if kind_version_parts and kind_version_parts[0] in EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS and \
                 Version(kind_version_parts[1]) >= Version(EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS[kind_version_parts[0]]):
+            if not record.data.get("DDMSDatasets", None):
+                record.data["DDMSDatasets"] = []
             record.data.setdefault("DDMSDatasets", []).append(bulk_uri.encode_for_ddms_datasets())
 
 class LogBulkIdAccess(BulkIdAccess):
