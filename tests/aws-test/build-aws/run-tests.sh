@@ -22,9 +22,9 @@ echo "$SCRIPT_SOURCE_DIR"
 
 pushd "$SCRIPT_SOURCE_DIR"/../../../
 echo $(pwd)
-python3 -m venv env
+python3.13 -m venv env
 source env/bin/activate
-python3 -m pip install -r ./tests/aws-test/build-aws/requirements.txt
+python3 -m pip install -r ./tests/aws-test/build-aws/requirements.txt --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple
 python3 -m pip install -r ./tests/aws-test/build-aws/requirements_dev.txt
 rm -rf test-reports/
 mkdir test-reports
