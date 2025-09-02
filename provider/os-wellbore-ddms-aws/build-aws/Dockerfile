@@ -12,54 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM cgr.dev/chainguard/wolfi-base AS builder
 
-FROM public.ecr.aws/docker/library/python:3.13-alpine3.22 as build
+ENV LANG=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/wdms/venv/bin:$PATH"
 
+WORKDIR /wdms
+ARG version=3.13
+RUN apk add python-${version} py${version}-pip --no-cache
+
+RUN python3 -m venv /wdms/venv
+
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
+
+FROM cgr.dev/chainguard/wolfi-base AS production
+
+EXPOSE 8080
+WORKDIR /wdms
 
 ENV PYTHONUNBUFFERED=1
-ENV PATH="/app/.python/bin:${PATH}"
+ENV PATH="/wdms/venv/bin:$PATH"
 
-RUN mkdir app
-RUN apk update && apk upgrade
+ARG version=3.13
+RUN apk add python-${version} --no-cache
 
-RUN apk add gcc musl-dev linux-headers libexpat perl python3-dev g++ bash build-base cmake jemalloc-dev boost-dev autoconf zlib-dev flex bison git tzdata lz4-dev
-RUN apk add py3-pip py3-pyarrow py3-numpy py3-six cython py3-pytest py3-cffi py3-cffi-pyc xz-libs
-
-RUN python3 -m venv "/app/.python/" --system-site-packages
-
-COPY requirements.txt ./
-
-RUN pip install --upgrade setuptools~=78.1.1 pip~=24.2
-RUN pip install -r requirements.txt --no-cache-dir --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
-
-
-COPY ./app /app
-ENV PYTHONPATH=./
-
-FROM public.ecr.aws/docker/library/python:3.13-alpine3.22 as service
-
-RUN apk update && apk upgrade
-
-COPY --from=build /app /app
-
-RUN apk add bash autoconf flex bison tzdata lz4
-RUN apk add py3-pip py3-pyarrow py3-numpy py3-six cython py3-pytest py3-cffi py3-cffi-pyc
-
-LABEL version="1.0"
-LABEL maintainer="aws"
-
-ENV PYTHONUNBUFFERED=1
-ENV PATH="/app/.python/bin:${PATH}"
-
+COPY /app ./app
+COPY --from=builder /wdms/venv ./venv
 COPY provider/os-wellbore-ddms-aws/build-aws/osdu_api.ini .
-ENV PYTHONPATH=./
 
+RUN chown -R nonroot:nonroot /wdms/app
 
-EXPOSE ${APPLICATION_PORT}
-WORKDIR ./
+USER nonroot
 
-RUN addgroup -S -g 10001 appgroup \
- && adduser -S -H -u 10001 -G appgroup appuser
-
-USER 10001:10001
-CMD ["sh", "-c", "uvicorn app.wdms_app:wdms_app --host 0.0.0.0 --port ${APPLICATION_PORT:-8080}"]
+ENTRYPOINT ["uvicorn"]
+CMD ["app.wdms_app:wdms_app", "--host", "0.0.0.0", "--port", "8080"]

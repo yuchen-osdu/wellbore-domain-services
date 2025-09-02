@@ -69,10 +69,6 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
 
-  # AWS it tests "aws-test-python" will run local test/aws-test/buid-aws/run-integration-tests.sh
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws-python.yml"
-
   # AWS overrides
   - local: "/devops/aws/pipeline/override-stages.yml" 
 
