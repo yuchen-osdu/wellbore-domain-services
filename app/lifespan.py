@@ -10,7 +10,7 @@ from app.injector.app_injector import AppInjector
 from app.bulk_persistence import dask_client, BulkPersistenceConfig, set_config_getter
 from app.clients import StorageRecordServiceClient, SearchServiceClient
 from app.conf import Config, check_environment
-from app.helper import logger, traces_ot, metric
+from app.helper import logger, traces_ot
 from app.injector.main_injector import MainInjector
 from app.utils import get_http_client_session
 
@@ -53,8 +53,6 @@ def startup_event(app: FastAPI):
 
     app_injector.register(dask_client.DaskDistributedClient, partial(dask_client.create, bulk_config))
     asyncio.create_task(dask_client.create(bulk_config))
-
-    metric.init_metric(app)
 
 
 async def shutdown_event():

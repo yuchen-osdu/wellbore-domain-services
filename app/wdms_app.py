@@ -52,7 +52,7 @@ from app.routers.bulk.utils import (
     set_v3_input_dataframe_check,
     set_welllog_data_consistency_check,
     update_operation_ids,
-    set_ppfgdataset_consistency_check, 
+    set_ppfgdataset_consistency_check,
     set_wellpressuretestrawmeasurement_consistency_check,
 )
 from app.routers.common_parameters import (
@@ -83,6 +83,7 @@ from app.routers.record_utils import (
 )
 from app.utils import OpenApiHandler
 from app.lifespan import lifespan, app_injector
+from app.helper import metric
 
 
 # create module logger
@@ -95,6 +96,8 @@ wdms_app = FastAPI(root_path=Config.openapi_prefix.value,
                    version=__version__,
                    lifespan=lifespan)
 
+# Add Prometheus metrics middleware before app startup for Azure
+metric.init_metric(wdms_app, logger)
 
 def custom_openapi(*args, **kwargs):
     if wdms_app.openapi_schema:
