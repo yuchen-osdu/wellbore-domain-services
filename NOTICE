@@ -198,7 +198,7 @@ The following software have components provided under the terms of this license:
 - backoff (from https://github.com/litl/backoff)
 - botocore (from <https://github.com/boto/botocore>, https://github.com/boto/botocore)
 - cachetools (from https://github.com/tkem/cachetools/)
-- cffi (from http://cffi.readthedocs.org)
+- cffi (from https://pypi.org/project/cffi/)
 - charset-normalizer (from https://github.com/Ousret/charset_normalizer, https://pypi.org/project/charset-normalizer/)
 - dpath (from https://github.com/dpath-maintainers/dpath-python)
 - fastapi (from https://pypi.org/project/fastapi/, https://pypi.org/project/fastapi/0.86.0/)
