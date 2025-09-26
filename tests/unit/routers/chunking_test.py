@@ -49,15 +49,6 @@ Definitions = {
             "VerticalMeasurement": {"VerticalMeasurement": 12345.6}
         }
     },
-    'Log': {
-        'api_version': 'v2',
-        'base_url': '/ddms/v2/logs',
-        'chunking_url': '/alpha/ddms/v2/logs',
-        'kind': 'osdu:wks:log:1.0.5',
-        'record_data': {
-            "name": "myLog_name"
-        }
-    },
     'PPFGDataset': {
         'api_version': 'v3',
         'base_url': '/ddms/v3/ppfgdataset',
@@ -83,7 +74,7 @@ Definitions = {
     }
 }
 
-EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'Log', 'PPFGDataset','WellPressureTestRawMeasurement']
+EntityTypeParams = ['WellLog', 'WellboreTrajectory', 'PPFGDataset','WellPressureTestRawMeasurement']
 
 
 def _create_df_from_response(response):
@@ -713,10 +704,6 @@ async def test_session_chunk_int(dasked_test_app_without_consistency_client, ent
     if content_type_header.endswith('parquet') and any((type(c) is str for c in columns_type)):
         expected_code = 200
 
-    # for legacy Log entity, column type as int are automatically casted to string to ensure backward compatibility
-    if content_type_header.endswith('json') and entity_type == 'Log':
-        expected_code = 200
-
     write_response = await client.post(f'{chunking_url}/{record_id}/data', data=data_to_send, headers=headers)
     assert write_response.status_code == expected_code
 
@@ -756,7 +743,7 @@ async def test_nat_sort_columns(dasked_test_app_without_consistency_client, data
     assert list(response_df.columns) == columns_name
 
 
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("entity_type", ['WellLog'])
 @pytest.mark.anyio
 async def test_session_update_previous_version(dasked_test_app_without_consistency_client, entity_type):
     """ create a session update on a previous version """
@@ -812,7 +799,7 @@ async def test_session_update_previous_version(dasked_test_app_without_consisten
         pd.testing.assert_frame_equal(expected_df, res_df)
 
 
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("entity_type", ['WellLog'])
 @pytest.mark.anyio
 async def test_parquet_maintain_float_type(dasked_test_app_without_consistency_client, entity_type):
     """ send float32 and float64 columns and check if the type is maintain """
@@ -983,7 +970,7 @@ def dataframe_for_filters():
     return df
 
 
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("entity_type", ['WellLog'])
 @pytest.mark.parametrize("params, expected", [
     (["A:lt:5"], lambda df: df.loc[df["A"] < 5]),
     (["A:lte:5"], lambda df: df.loc[df["A"] <= 5]),
@@ -1037,7 +1024,7 @@ async def test_get_bulk_data_with_filters(dasked_test_app_without_consistency_cl
     assert_frame_equal(df, expected(expected_df), check_dtype=False)
 
 
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("entity_type", ['WellLog'])
 @pytest.mark.parametrize("filter, limit, expected", [(["A:gt:5"], 5, lambda df: df.loc[df["A"] > 5]),
                                                      (["A:lt:5"], 5, lambda df: df.loc[df["A"] < 5]),
                                                      (["C:eq:'5'"], 5, lambda df: df.loc[df["A"] == 5]),
@@ -1064,7 +1051,7 @@ async def test_get_bulk_data_with_filters_curves_offset(dasked_test_app_without_
         assert_frame_equal(df, df_expected)
 
 
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("entity_type", ['WellLog'])
 @pytest.mark.parametrize("filter, limit, curves, expected", [
     (["A:gt:5"], 5, ["A,B"], [5, 5, 4, 0]),
     (["A:lt:5"], 5, ["A,C"], [5, 0, 0, 0]),
@@ -1099,7 +1086,7 @@ async def test_get_bulk_data_with_filters_curves_offset_describe(dasked_test_app
         assert response_get_data.json()['columns'] == expected_columns
 
 
-@pytest.mark.parametrize("entity_type", ['WellLog', 'Log'])
+@pytest.mark.parametrize("entity_type", ['WellLog'])
 @pytest.mark.parametrize("params, content, failure_status", [
     (['M:lt:5'], "filter error: The columns:['M'] to be filtered do not exist", 400),
     (['A:lt:5', 'A:lt:7'], 'filter error: Same operator on the same column', 400),
@@ -1359,38 +1346,6 @@ async def test_session_meta_extended_load_completed(dasked_test_app_without_cons
     else:
         # attribute 'IsExtendedLoad' is not changed if is_extended_load_value is correct
         await _check_record(expected_is_extended_load=True)
-
-    bulk_data_response = await client.get(f'{chunking_url}/{record_id}/data')
-    assert bulk_data_response.status_code == 200
-
-
-@pytest.mark.parametrize("entity_type", ['Log'])
-@pytest.mark.parametrize("add_session_meta_attribute", ["true", "false"])
-@pytest.mark.anyio
-async def test_v2_ignored_session_meta_extended_load_completed(dasked_test_app_without_consistency_client,
-                                                               entity_type, add_session_meta_attribute):
-    """ Log entity type is not compatible with record.data["IsExtendedLoad"], it should be ignored """
-
-    async def _check_record():
-        _record_response = await client.get(f'{base_url}/{record_id}')
-        assert _record_response.status_code == 200
-        assert "IsExtendedLoad" not in _record_response.json().get("data", {}), \
-            "'IsExtendedLoad' does not exist for Log kind"
-
-    client = dasked_test_app_without_consistency_client
-    chunking_url = Definitions[entity_type]['chunking_url']
-    base_url = Definitions[entity_type]['base_url']
-    data_format = "parquet"
-    session_meta_dict = {
-        "meta": {"extendedLoadCompleted": add_session_meta_attribute}
-    }
-
-    record_id = await _create_record(client, entity_type)
-    await _check_record()
-
-    await _create_chunks(client, entity_type, record_id=record_id, data_format=data_format,
-                         json_kwargs=session_meta_dict, cols_ranges=[(['X'], range(5)), (['X'], range(5, 20))])
-    await _check_record()
 
     bulk_data_response = await client.get(f'{chunking_url}/{record_id}/data')
     assert bulk_data_response.status_code == 200

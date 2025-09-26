@@ -14,7 +14,7 @@ export default function () {
     const params = getParams();
     const payload = generateMarker();
 
-    let response = http.post(`${baseUrl}/ddms/v2/wellbores`, JSON.stringify(payload), params);
+    let response = http.post(`${baseUrl}/ddms/v3/wellbores`, JSON.stringify(payload), params);
     
     if (!is2xx(response.status)) {
         logError(params, response, baseUrl);

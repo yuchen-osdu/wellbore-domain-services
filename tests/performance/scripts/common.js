@@ -6,44 +6,11 @@ export const ACL_DOMAIN = __ENV.ACL_DOMAIN;
 export const DL_GROUP_DOMAIN = `${DATA_PARTITION_ID}.${ACL_DOMAIN}`;
 export const LEGAL_TAG = __ENV.LEGAL_TAG;
 
-export const logsRecordIds = JSON.parse(open('../data/log.json'));
 export const wellLogsRecordIds = JSON.parse(open('../data/welllog.json'));
 export const markersRecordIds = JSON.parse(open('../data/marker.json'));
 export const wellboresRecordIds = JSON.parse(open('../data/wellbore.json'));
 
 ////////// Data generation functions ////////// 
-/**
- * Generate a valid wks log metadata
- * API : /ddms/v2/log
- */
-export function generateLogMetadata() {
-    return [
-        {
-            'acl': {
-                'owners': [`data.default.owners@${DL_GROUP_DOMAIN}`],
-                'viewers': [`data.default.viewers@${DL_GROUP_DOMAIN}`]
-            },
-            "kind": `${DATA_PARTITION_ID}:wks:log:2.0.0`,
-            "legal": {
-                "legaltags": [
-                    LEGAL_TAG,
-                ],
-                "otherRelevantDataCountries": [
-                    "US",
-                    "FR"
-                ]
-            },
-            "data": {
-                "md": {
-                    "unitKey": "ft",
-                    "value": 0
-                },
-                'name': `log-${flatUUID4()}`
-            },
-        }
-    ];
-};
-
 /**
  * Generate a valid wks Well Log metadata
  * API : ddms/v3/welllogs
@@ -102,31 +69,6 @@ export function generateWellLogMetadata() {
 };
 
 /**
- * Generates a valid wks log bulkdata
- * API : /ddms/v2/log/{logid}/data
- */
-export function generateLogData() {
-    let values = [];
-    let columns = [];
-    let index = [];
-
-    for (var i = 0; i < 200; i++) {
-        columns.push(i == 0 ? 'Ref' : `col_${i}`);
-        index.push(i);
-        let columnValue = [];
-        for (var j = 0; j < 200; j++) {
-            columnValue.push(getRandomFloat(0, 150));
-        }
-        values.push(columnValue);
-    }
-    return {
-        'columns': columns,
-        'index': index,
-        'data': [values]
-    };
-}
-
-/**
  * Generates a valid wks Well Log
  * API : ddms/v3/welllogs/{{WellLogID}}/data
  */
@@ -147,74 +89,7 @@ export function generateLogData() {
     };
 }
 
-/**
- * Generates a valid wks marker
- * API : /ddms/v2/markers
- */
-export function generateMarker() {
-    return [
-        {
-            "acl": {
-                "owners": [
-                    `data.default.owners@${DL_GROUP_DOMAIN}`
-                ],
-                "viewers": [
-                    `data.default.viewers@${DL_GROUP_DOMAIN}`
-                ]
-            },
-            "data": {
-                "name": `marker-${flatUUID4()}`,
-                "md": {
-                    "unitKey": "ft",
-                    "value": 0
-                }
-            },
-            "id": `${DATA_PARTITION_ID}:marker:${flatUUID4()}`,
-            "kind": `${DATA_PARTITION_ID}:osdu:marker:1.0.4`,
-            "legal": {
-                "legaltags": [
-                    LEGAL_TAG
-                ],
-                "otherRelevantDataCountries": ["US", "FR"]
-            }
-        }
-    ];
-}
-/**
- * Generates a valid wks wellbore
- * API : /ddms/v2/wellbores
- */
-export function generateWellboresOSDU() {
-    return [
-        {
-            "acl": {
-                "owners": [
-                    `data.default.owners@${DL_GROUP_DOMAIN}`
-                ],
-                "viewers": [
-                    `data.default.viewers@${DL_GROUP_DOMAIN}`
-                ]
-            },
-            "data": {
-                "name": `wellbore-${flatUUID4()}`,
-                "md": {
-                    "unitKey": "ft",
-                    "value": 0
-                }
-            },
-            "id": `${DATA_PARTITION_ID}:wellbore:${flatUUID4()}`,
-            "kind": `${DATA_PARTITION_ID}:osdu:wellbore:2.0.0`,
-            "legal": {
-                "legaltags": [
-                    LEGAL_TAG
-                ],
-                "otherRelevantDataCountries": ["US", "FR"]
-            }
-        }
-    ];
-}
-
-////////// Helper functions ////////// 
+////////// Helper functions //////////
 
 /**
  * This function will either call a local server that refreshes a token
@@ -297,10 +172,9 @@ export function flatUUID4() {
 
 /**
  * 
- * @param {string} recordType either 'log' or 'marker' or 'wellbore'
+ * @param {string} recordType either 'welllog' or 'marker' or 'wellbore'
  */
 export function randomRecordId(recordType) {
-    if (recordType == 'log') return logsRecordIds[Math.floor(Math.random() * logsRecordIds.length)];
     if (recordType == 'welllog') return wellLogsRecordIds[Math.floor(Math.random() * wellLogsRecordIds.length)];
     if (recordType == 'marker') return markersRecordIds[Math.floor(Math.random() * markersRecordIds.length)];
     if (recordType == 'wellbore') return wellboresRecordIds[Math.floor(Math.random() * wellboresRecordIds.length)];

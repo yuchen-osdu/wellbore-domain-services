@@ -188,7 +188,7 @@ The following software have components provided under the terms of this license:
 - attrs (from https://attrs.readthedocs.io/, https://pypi.org/project/attrs/, https://www.attrs.org/)
 - azure-core (from <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core>, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core)
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
-- azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity)
+- azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity, https://pypi.org/project/azure-identity/)
 - azure-keyvault (from https://github.com/Azure/azure-sdk-for-python, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault)
 - azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-certificates)
 - azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-keys)
@@ -227,7 +227,7 @@ The following software have components provided under the terms of this license:
 - types-jsonschema (from https://github.com/python/typeshed, https://pypi.org/project/types-jsonschema/)
 - typing-inspection (from https://pypi.org/project/typing-inspection/)
 - urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
-- xmltodict (from https://github.com/martinblech/xmltodict)
+- xmltodict (from https://pypi.org/project/xmltodict/)
 - zipp (from https://pypi.org/project/zipp/, https://pypi.org/project/zipp/3.19.0/, https://pypi.org/project/zipp/3.19.2/)
 
 ========================================================================

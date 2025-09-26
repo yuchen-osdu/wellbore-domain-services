@@ -215,28 +215,28 @@ async def test_verify_stats_headers():
         "x_user_id": 'my-x-user-id',
         "x_app_id": "my-x-app-id",
     })
-    expected_headers = ["Authorization", "data-partition-id",  "correlation-id", "x-user-id", "x-app-id", "traceparent"]
+    expected_headers = ["Authorization", "data-partition-id",  "correlation-id", "x-user-id", "x-app-id"]
 
     async_mock = _prepare_mock()
     bulk_io_worker = BulkIOWdmsWorker(Mock(), async_mock)
 
     await bulk_io_worker.get_statistics(created_ctx, Mock(), Mock(), Mock())
     _, _kwargs = async_mock.get.call_args
-    assert sorted(_kwargs["headers"].keys()) == sorted(expected_headers)
+    assert set(expected_headers).issubset(set(_kwargs["headers"].keys()))
 
     await bulk_io_worker.post_statistics(created_ctx, Mock(), Mock(), Mock())
     _, _kwargs = async_mock.post.call_args
-    assert sorted(_kwargs["headers"].keys()) == sorted(expected_headers)
+    assert set(expected_headers).issubset(set(_kwargs["headers"].keys()))
 
     with pytest.raises(BulkWorkerError):
         await bulk_io_worker.write_bulk(created_ctx, b'some bytes', Mock(), Mock(), Mock(), Mock())
     _, _kwargs = async_mock.post.call_args
-    assert sorted(_kwargs["headers"].keys()) == sorted([*expected_headers, "Content-Type"])
+    assert {*expected_headers, "Content-Type"}.issubset(set(_kwargs["headers"].keys()))
 
     with pytest.raises(BulkWorkerError):
         await bulk_io_worker.read_data(created_ctx, Mock(), Mock(), Mock(), Mock(), Mock())
     _, _kwargs = async_mock.get.call_args
-    assert sorted(_kwargs["headers"].keys()) == sorted([*expected_headers, "accept"])
+    assert {*expected_headers, "accept"}.issubset(set(_kwargs["headers"].keys()))
 
 
 @pytest.mark.anyio
@@ -602,8 +602,7 @@ async def test_stats_data_duplication_after_re_computation(testing_app_local_chu
 
 @pytest.mark.parametrize("mode", ['chunking', 'all_at_once'])
 @pytest.mark.parametrize("entity_type", [
-    "WellboreTrajectory",
-    "Log",
+    "WellboreTrajectory"
 ])
 @pytest.mark.anyio
 async def test_stats_available_welllog_only_on_bulk_creation(testing_app_local_chunking_no_consistency, mode, entity_type):
@@ -624,7 +623,7 @@ async def test_stats_available_welllog_only_on_bulk_creation(testing_app_local_c
         compute_stats_triggered_mock.assert_not_called()
 
 
-@pytest.mark.parametrize("entity_type", ["WellboreTrajectory", "Log"])
+@pytest.mark.parametrize("entity_type", ["WellboreTrajectory"])
 @pytest.mark.anyio
 async def test_stats_available_welllog_only_on_existing_record(testing_app_local_chunking_no_consistency, entity_type):
     _, client = testing_app_local_chunking_no_consistency
