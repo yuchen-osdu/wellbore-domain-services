@@ -55,7 +55,7 @@ async def test_api_spec_for_duplicates(openapi_json):
     # structure is
     # root
     #   + paths
-    #       + url for instance "/alpha/ddms/v2/logs/{record_id}/data"
+    #       + url for instance "/alpha/ddms/v3/welllogs/{record_id}/data"
     #           + method for instance get, post, ...
     #               + operationId
     path_dict = openapi_json.get("paths", None)

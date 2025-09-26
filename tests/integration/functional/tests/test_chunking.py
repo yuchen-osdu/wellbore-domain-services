@@ -27,7 +27,6 @@ from wdms_client.request_builders.wdms.crud.osdu_wellpressuretestrawmeasurement 
 from ..generate_dataframe import generate_df
 
 from .fixtures import with_wdms_env
-from wdms_client.request_builders.wdms.crud.log import build_request_create_log, build_request_delete_log
 from wdms_client.request_builders.wdms.session import build_delete_session
 from wdms_client.request_runner import RequestRunner, Request
 
@@ -47,9 +46,8 @@ entity_type_dict = {
     "wellbore_trajectory": {"entity": "wellboretrajectories", "version": "v3", "alpha-prefix": "ddms"},
     "ppfgdataset": {"entity": "ppfgdataset", "version": "v3", "alpha-prefix": "ddms"},
     "wellpressuretestrawmeasurement": {"entity": "wellpressuretestrawmeasurement", "version": "v3", "alpha-prefix": "ddms"},
-    "log": {"entity": "logs", "version": "v2", "alpha-prefix": "alpha/ddms"},
 }
-ENTITY_TYPE_VALUE_LIST = ["log", "well_log", "wellbore_trajectory", "ppfgdataset", "wellpressuretestrawmeasurement"]
+ENTITY_TYPE_VALUE_LIST = ["well_log", "wellbore_trajectory", "ppfgdataset", "wellpressuretestrawmeasurement"]
 
 def build_base_url(entity_type: str) -> str:
     return ('{{base_url}}/'+ f'{entity_type_dict[entity_type]["alpha-prefix"]}/'
@@ -67,8 +65,6 @@ def create_record(env, entity_type: str, curves: List[str]):
         result = build_request_create_osdu_ppfgdataset(False, curves).call(env)
     elif entity_type == "wellpressuretestrawmeasurement":
         result = build_request_create_osdu_wellpressuretestrawmeasurement(False, curves).call(env)
-    elif entity_type == "log":
-        result = build_request_create_log().call(env)
     else:
         raise RuntimeError()
 
@@ -90,9 +86,6 @@ def create_record(env, entity_type: str, curves: List[str]):
         build_request_delete_osdu_ppfgdataset(record_id).call(env)
     elif entity_type == "wellpressuretestrawmeasurement":
         build_request_delete_osdu_wellpressuretestrawmeasurement(record_id).call(env)
-    elif entity_type == "log":
-        env.set('log_record_id', record_id)
-        build_request_delete_log().call(env)
 
 
 def build_request(name, method, url, *, payload=None, headers=None) -> RequestRunner:

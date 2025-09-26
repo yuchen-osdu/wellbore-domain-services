@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..wdms import about, version, crud, error_cases, model_extensibility, recursive_delete
+from ..wdms import about, version, crud
 
-__all__ = ["about", "version", "crud", "error_cases", "model_extensibility", "recursive_delete",]
+__all__ = ["about", "version", "crud"]

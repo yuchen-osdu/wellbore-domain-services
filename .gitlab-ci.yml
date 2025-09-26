@@ -112,15 +112,6 @@ compile-and-unit-test:
       - ./**/python-*-output.txt
       - spec/generated/openapi.json
 
-verify_models:
-  tags: ["osdu-small"]
-  extends:
-    - .python
-    - .skipForTriggeringMergeRequests
-  stage: build
-  script:
-    - python -m doctest docs/model/model_curated.md
-
 pylint:
   tags: ["osdu-small"]
   extends:

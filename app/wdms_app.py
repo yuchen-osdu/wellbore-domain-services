@@ -60,7 +60,6 @@ from app.routers.common_parameters import (
     response_403,
     response_500,
 )
-from app.routers.ddms_v2 import log_ddms_v2
 from app.routers.ddms_v3 import (
     markerset_ddms_v3,
     well_ddms_v3,
@@ -75,7 +74,6 @@ from app.routers.dependency import (
     FetchRecordDependency,
     FetchRecordPartialDependency,
 )
-from app.routers.dipset import dip_ddms_v2, dipset_ddms_v2
 from app.routers.log_recognition import log_recognition
 from app.routers.record_utils import (
     fetch_record_dependency,
@@ -140,7 +138,6 @@ def make_api_config(api_config: APIConfiguration):
 
 
 
-DDMS_V2_PATH = '/ddms/v2'
 DDMS_V3_PATH = '/ddms/v3'
 ALPHA_APIS_PREFIX = '/alpha'
 basic_dependencies = [
@@ -150,10 +147,6 @@ basic_dependencies = [
 
 wdms_app.include_router(probes.router)
 wdms_app.include_router(about.router, tags=["Wellbore DDMS"], responses={**response_500})
-
-# hidden from swagger but maintained for backward compatibility with /ddms/v2 APIs
-wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False,
-                        responses={**response_500})
 
 ddms_v3_routes_groups_without_bulk = [
     (wellbore_ddms_v3, "Wellbore", Entity.WELLBORE),
@@ -350,50 +343,6 @@ wdms_app.include_router(log_recognition.router,
                         dependencies=[Depends(require_data_partition_id, use_cache=False),
                                       Depends(require_opendes_authorized_user, use_cache=False)],
                         responses={**response_401, **response_403, **response_500},)
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------- Deprecated API set ---------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-
-ddms_v2_routes_groups = [
-    (log_ddms_v2, "Log", Entity.LOG),
-    (dipset_ddms_v2, "Dipset", Entity.DIPSET),
-    (dip_ddms_v2, "Dips", Entity.DIP),
-]
-for v2_api, tag, entity_type in ddms_v2_routes_groups:
-    wdms_app.include_router(v2_api.router,
-                            deprecated=True,
-                            prefix=DDMS_V2_PATH,
-                            tags=[tag],
-                            responses={**response_401, **response_403, **response_500},
-                            dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V2"))])
-
-# log bulk v2 APIs
-wdms_app.include_router(
-    sessions.router,
-    deprecated=True,
-    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
-    tags=["DEPRECATED"],
-    responses={**response_401, **response_403, **response_500},
-    dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
-
-wdms_app.include_router(
-    bulk_routes.router,
-    deprecated=True,
-    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
-    tags=["DEPRECATED"],
-    responses={**response_401, **response_403, **response_500},
-    dependencies=[*basic_dependencies,
-                  Depends(set_legacy_input_dataframe_check),
-                  Depends(set_log_bulk_id_access),
-                  Depends(make_entity_type_dependency(Entity.LOG, "V2")),
-                  Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
-                  # As V2 is deprecated, simply fetch the whole record in all cases
-                  Depends(FetchRecordPartialDependency.with_value(fetch_record_dependency))
-                  ])
 
 
 # ---------------------------------------------------------------------------------------------------------------------

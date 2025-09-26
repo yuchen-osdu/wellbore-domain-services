@@ -10,15 +10,16 @@ Callable apis can be listed using command `list`:
 
 ```
 :$ python -m wdms_client list
-
 available apis:
-  - crud.well.get_well
-  - crud.well.delete_well
-  - crud.well.get_well_specific_version
-  - crud.well.get_versions_of_well
-  - crud.well.create_well
-  - crud.wellbore.delete_wellbore
-  - crud.wellbore.get_wellbore_specific_version
+  - crud.osdu_wellbore.delete_osdu_wellbore
+  - crud.osdu_wellbore.get_osdu_wellbore_specific_version
+  - crud.osdu_wellbore.get_osdu_wellbore
+  - crud.osdu_wellbore.get_versions_of_osdu_wellbore
+  - crud.osdu_wellbore.create_osdu_wellbore
+  - crud.osdu_wellbore_100.delete_osdu_wellbore_100
+  - crud.osdu_wellbore_100.get_osdu_wellbore_100_specific_version
+  - crud.osdu_wellbore_100.get_osdu_wellbore_100
+  - crud.osdu_wellbore_100.get_versions_of_osdu_wellbore_100
 ...
 ```
 
@@ -27,16 +28,19 @@ available apis:
 Describe environment variables using command `show-env`. Can pass an environment file:
 
 ```
-:$ python -m wdms_client show-env "..\..\my_environment.json"
+:$ python -m wdms_client show-env --environment "tests/integration/functional/local_environment.json"
 
-environments variables given environment C:\SRC\opengroup\wellbore-domain-services\tests\integration\functional\my_environment.json
-  - base_url = http://127.0.0.1:8080/api/os-wellbore-ddms
+environments variables given environment tests/integration/functional/local_environment.json
+  - base_url = http://localhost:8080/api/os-wellbore-ddms
   - token = MY_TOKEN
   - cloud_provider = local
-  - base_url_entity = logs
-  - entity_kind = osdu:wks:log:1.0.5
-  - dipsetKind = osdu:wks:dipSet:1.0.0
   - wellKind = osdu:wks:well:1.0.2
+  - wellboreKind = osdu:wks:wellbore:1.0.6
+  - trajectoryKind = osdu:wks:trajectory:1.0.5
+  - trajectory_data = {'name': 'wdms_e2e_trajectory'}
+  - authorityKind = osdu
+  - osduWellboreKind = osdu:wks:master-data--Wellbore:1.3.0
+  - osduWellKind = osdu:wks:master-data--Well:1.2.0
 ...
 ```
 
@@ -46,31 +50,29 @@ Use command `describe` with an `api` and optionally an environment file. It will
 
 
 ```
-python -m wdms_client describe crud.well.create_well --environment="..\..\my_environment.json"
-
-
-============ REQUEST ===============
-URL: [POST] http://127.0.0.1:8080/api/os-wellbore-ddms/ddms/v2/wells)
+python -m wdms_client describe crud.osdu_wellbore.create_osdu_wellbore --environment "tests/integration/functional/local_environment.json"
+using environment file tests/integration/functional/local_environment.json
+URL: [POST] http://localhost:8080/api/os-wellbore-ddms/ddms/v3/wellbores)
 headers:
     - accept: application/json
     - Content-Type: application/json
-    - data-partition-id: part
+    - data-partition-id: local-partition
     - Connection: close
-    - Authorization: Bearer 123******r 123
-    - correlation-id: wdms_e2e__30319cb0-fcc6-463b-9929-d204514d7701
+    - Authorization: Bearer R4nd0******Tr1nG
+    - correlation-id: wdms_e2e/3585c399-1bde-4966-8d79-53064f4661c1
 body: -------------------------------------------
-
-[
-{
+[{
   "acl": {
 "owners": [
-"data.default.owners@part.acl"
+"data.default.owners@local-partition.p4d.cloud.slb-ds.com"
 ],
 "viewers": [
-"data.default.viewers@part.acl"
+"data.default.viewers@local-partition.p4d.cloud.slb-ds.com"
 ]
 }, "legal": {
 "legaltags": [
+"opendes-public-usa-dataset-1"
+],
 ...
 ```
 
@@ -121,4 +123,3 @@ python -m wdms_client gen-env new_environment.json
 ## Default environment file
 
 If no environment file is provided, it will try to use `local_environment.json` from the working directory if exists.
-

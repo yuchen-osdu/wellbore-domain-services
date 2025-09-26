@@ -16,9 +16,6 @@ from typing import Union, List
 from .wdms import about
 from .wdms import version
 from .wdms import crud
-from .wdms import error_cases
-from .wdms import model_extensibility
-from .wdms import recursive_delete
 from ..request_runner import Request
 from deepdiff import DeepDiff
 
@@ -178,51 +175,6 @@ request_path_dict = {
         crud.osdu_wellpressuretestrawmeasurement.build_request_get_versions_of_osdu_wellpressuretestrawmeasurement,
     "crud.osdu_wellpressuretestrawmeasurement.create_osdu_wellpressuretestrawmeasurement":
         crud.osdu_wellpressuretestrawmeasurement.build_request_create_osdu_wellpressuretestrawmeasurement,
-
-    "crud.log.delete_log":
-        crud.log.build_request_delete_log,
-    "crud.log.get_versions_of_log":
-        crud.log.build_request_get_versions_of_log,
-    "crud.log.get_log":
-        crud.log.build_request_get_log,
-    "crud.log.get_log_specific_version":
-        crud.log.build_request_get_log_specific_version,
-    "crud.log.create_log":
-        crud.log.build_request_create_log,
-
-    "crud.dips.get_dipset":
-        crud.dips.build_request_get_dipset,
-    "crud.dips.query_dips":
-        crud.dips.build_request_query_dips,
-    "crud.dips.delete_dip":
-        crud.dips.build_request_delete_dip,
-    "crud.dips.create_dips":
-        crud.dips.build_request_create_dips,
-    "crud.dips.create__dipset":
-        crud.dips.build_request_create__dipset,
-    "crud.dips.insert_dips":
-        crud.dips.build_request_insert_dips,
-    "crud.dips.get_dip_from_index":
-        crud.dips.build_request_get_dip_from_index,
-    "crud.dips.delete_dipset":
-        crud.dips.build_request_delete_dipset,
-    "crud.dips.patch_dip":
-        crud.dips.build_request_patch_dip,
-    "crud.dips.get_dips":
-        crud.dips.build_request_get_dips,
-
-    "error_cases.create_log_with_invalid_data_should_422":
-        error_cases.build_request_create_log_with_invalid_data_should_422,
-    "model_extensibility.clean_up_delete_log":
-        model_extensibility.build_request_clean_up_delete_log,
-    "model_extensibility.create_log_with_extra_fields":
-        model_extensibility.build_request_create_log_with_extra_fields,
-    "recursive_delete.setup.recusive_del_setup_check_state_start":
-        recursive_delete.setup.build_request_recursive_del_setup_check_state_start,
-    "recursive_delete.setup.recusive_del_setup_create_logs":
-        recursive_delete.setup.build_request_recursive_del_setup_create_logs,
-    "recursive_delete.delete_well.check_log_is_deleted":
-        recursive_delete.delete_well.build_request_check_log_is_deleted,
 
     "about":
         about.build_request_about,

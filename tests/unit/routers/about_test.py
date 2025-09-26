@@ -13,14 +13,11 @@
 # limitations under the License.
 
 import pytest
-from app.wdms_app import wdms_app, DDMS_V2_PATH
+from app.wdms_app import wdms_app
 from app.auth.auth import require_opendes_authorized_user
 from app.conf import Config
 from tests.unit.test_utils import ctx_fixture
 
-
-# parametrized for backward compatibility with /ddms/v2 APIs
-PathPrefixParams = [DDMS_V2_PATH, '']
 
 
 @pytest.fixture
@@ -35,14 +32,9 @@ def client_with_authenticated_user(ctx_fixture, nope_logger_fixture, app_configu
     return client
 
 
-def build_url(prefix: str, path: str):
-    return prefix + path
-
-
-@pytest.mark.parametrize("path_prefix", PathPrefixParams)
 @pytest.mark.anyio
-async def test_about_contains_build_n_version(client, path_prefix):
-    response = await client.get(build_url(path_prefix, "/about"))
+async def test_about_contains_build_n_version(client):
+    response = await client.get("/about")
     assert response.status_code == 200
 
     response_json = response.json()
@@ -51,32 +43,29 @@ async def test_about_contains_build_n_version(client, path_prefix):
 
 
 @pytest.mark.skip("global app.conf.Config corruption")
-@pytest.mark.parametrize("path_prefix", PathPrefixParams)
 @pytest.mark.anyio
-async def test_about_with_cloud_provider(client, path_prefix):
+async def test_about_with_cloud_provider(client):
     Config.cloud_provider.value = 'my_cloud_provider'
-    response = await client.get(build_url(path_prefix, "/about"))
+    response = await client.get("/about")
     assert response.status_code == 200
     json_response = response.json()
     assert json_response['cloudEnvironment'] == 'my_cloud_provider'
 
 
-@pytest.mark.parametrize("path_prefix", PathPrefixParams)
 @pytest.mark.anyio
-async def test_version_requires_authentication(client, path_prefix):
-    response = await client.get(build_url(path_prefix, "/version"))
+async def test_version_requires_authentication(client):
+    response = await client.get("/version")
     assert response.status_code == 403
 
 
 @pytest.mark.skip("global app.conf.Config corruption")
-@pytest.mark.parametrize("path_prefix", PathPrefixParams)
 @pytest.mark.anyio
-async def test_version_properly_read_details(client_with_authenticated_user, path_prefix):
+async def test_version_properly_read_details(client_with_authenticated_user):
 
     # override value of build details
     Config.build_details.value = 'key1=value1; key2=value2'
 
-    response = await client_with_authenticated_user.get(build_url(path_prefix, "/version"))
+    response = await client_with_authenticated_user.get("/version")
     assert response.status_code == 200
     response_json = response.json()
     assert response_json['details']['key1'] == 'value1'
@@ -95,4 +84,3 @@ async def test_version(client_with_authenticated_user):
     assert 'release' in response_json
     assert response_json['service'] == 'Wellbore DDMS OSDU'
     assert response_json['buildNumber'] == 'local'
-
