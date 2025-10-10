@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
-import sys
-from functools import partial
-from typing import Optional
+import logging
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
@@ -24,24 +21,16 @@ from app import __app_name__, __build_number__, __version__
 from app.auth.auth import require_opendes_authorized_user
 
 # ---------- import Bulk persistence ----------------------------------
-from app.bulk_persistence import (
-    BulkPersistenceConfig,
-    dask_client,
-    set_config_getter,
-)
 # ---------- import Core services clients ----------------------------------
-from app.clients import SearchServiceClient, StorageRecordServiceClient
 
 # ----------
-from app.conf import Config, check_environment
+from app.conf import Config
 from app.errors.exception_handlers import add_exception_handlers
 
 
 # ---------- import tracing, logging, metrics ----------------------------------
-from app.helper import logger, metric
 # ---------- import DI ----------------------------------
-from app.injector.app_injector import AppInjector
-from app.injector.main_injector import MainInjector
+
 # ---------- import middlewares ----------------------------------
 from app.middleware import CreateBasicContextMiddleware, TracingMiddlewareOT
 from app.middleware.basic_context_middleware import require_data_partition_id, ServerTimingHdrMiddleware
@@ -64,13 +53,13 @@ from app.routers.bulk.utils import (
     set_welllog_data_consistency_check,
     update_operation_ids,
     set_ppfgdataset_consistency_check,
+    set_wellpressuretestrawmeasurement_consistency_check,
 )
 from app.routers.common_parameters import (
     response_401,
     response_403,
     response_500,
 )
-from app.routers.ddms_v2 import log_ddms_v2
 from app.routers.ddms_v3 import (
     markerset_ddms_v3,
     well_ddms_v3,
@@ -85,22 +74,28 @@ from app.routers.dependency import (
     FetchRecordDependency,
     FetchRecordPartialDependency,
 )
-from app.routers.dipset import dip_ddms_v2, dipset_ddms_v2
 from app.routers.log_recognition import log_recognition
 from app.routers.record_utils import (
     fetch_record_dependency,
     fetch_record_partial_with_wdms_extension,
 )
-from app.utils import OpenApiHandler, get_http_client_session
-from app.helper import traces_ot
+from app.utils import OpenApiHandler
+from app.lifespan import lifespan, app_injector
+from app.helper import metric
 
+
+# create module logger
+logger = logging.getLogger(__name__)
 
 # The sub application which contains all the routers
-wdms_app = FastAPI(title=__app_name__,
+wdms_app = FastAPI(root_path=Config.openapi_prefix.value,
+                   title=__app_name__,
                    description='build ' + __build_number__,
                    version=__version__,
-                   )
-app_injector = AppInjector()
+                   lifespan=lifespan)
+
+# Add Prometheus metrics middleware before app startup for Azure
+metric.init_metric(wdms_app, logger)
 
 def custom_openapi(*args, **kwargs):
     if wdms_app.openapi_schema:
@@ -140,61 +135,9 @@ def make_api_config(api_config: APIConfiguration):
         request.state.api_config = api_config
     return set_api_config
 
-def _get_bulk_worker_host() -> Optional[str]:
-    return Config.service_host_wdms_worker.value
 
 
-@wdms_app.on_event("startup")
-async def startup_event():
-    service_name = Config.service_name.value
-    logger.init_logger(service_name=service_name, config=Config)
 
-    # check python version >=3.11
-    assert sys.version_info.major == 3 and sys.version_info.minor >= 11, 'Python version required >=3.11'
-
-    check_environment(Config)
-    # build bulk persistence specific configuration
-
-    # figure out bulk persistence backend: Dask or worker service
-    worker_service_host = _get_bulk_worker_host()
-    is_dask_backend = not bool(worker_service_host)
-
-    bulk_config = BulkPersistenceConfig(
-        min_worker_memory=Config.min_worker_memory.value,
-        dask_data_ipc=Config.dask_data_ipc.value,
-        service_name=Config.service_name.value,
-        dask_enabled_on_read=is_dask_backend,
-        dask_enabled_on_write=is_dask_backend,
-        bulk_worker_host=worker_service_host
-    )
-    wdms_app.state.bulk_config = bulk_config
-    set_config_getter(lambda: wdms_app.state.bulk_config)
-
-    MainInjector().configure(app_injector)
-    traces_ot.initialize_tracer(service_name=service_name, config=Config)
-
-    app_injector.register(dask_client.DaskDistributedClient, partial(dask_client.create, bulk_config))
-    asyncio.create_task(dask_client.create(bulk_config))
-
-    metric.init_metric(wdms_app)
-
-
-@wdms_app.on_event('shutdown')
-async def shutdown_event():
-    # clients close
-    storage_client = await app_injector.get(StorageRecordServiceClient)
-    if storage_client is not None and hasattr(storage_client, 'api_client'):
-        await storage_client.api_client.close()
-
-    search_client = await app_injector.get(SearchServiceClient)
-    if search_client is not None and hasattr(search_client, 'api_client'):
-        await search_client.api_client.close()
-
-    await get_http_client_session().close()
-    await dask_client.close()
-
-
-DDMS_V2_PATH = '/ddms/v2'
 DDMS_V3_PATH = '/ddms/v3'
 ALPHA_APIS_PREFIX = '/alpha'
 basic_dependencies = [
@@ -204,10 +147,6 @@ basic_dependencies = [
 
 wdms_app.include_router(probes.router)
 wdms_app.include_router(about.router, tags=["Wellbore DDMS"], responses={**response_500})
-
-# hidden from swagger but maintained for backward compatibility with /ddms/v2 APIs
-wdms_app.include_router(about.router, prefix=DDMS_V2_PATH, tags=["Wellbore DDMS"], include_in_schema=False,
-                        responses={**response_500})
 
 ddms_v3_routes_groups_without_bulk = [
     (wellbore_ddms_v3, "Wellbore", Entity.WELLBORE),
@@ -344,6 +283,37 @@ wdms_app.include_router(
     ],
     responses={**response_401, **response_403, **response_500})
 
+# POST and GET v3/wellpressuretestrawmeasurement/session   (EXCLUDE  PATCH commit/abandon)
+wdms_app.include_router(
+    sessions.router,
+    prefix=DDMS_V3_PATH + WellPressureTestRawMeasurementAPI.entity_uri,
+    tags=[WellPressureTestRawMeasurementAPI.tag],
+    dependencies=[
+        *basic_dependencies,
+        Depends(set_wellpressuretestrawmeasurement_consistency_check),
+        Depends(make_entity_type_dependency(Entity.WELLPRESSURETESTRAWMEASUREMENT, "V3")),
+    ],
+    responses={**response_401, **response_403, **response_500})
+
+# POST v3/wellpressuretestrawmeasurement/{record_id}/data
+# POST v3/wellpressuretestrawmeasurement/{record_id}/sessions/{session_id}/data
+# GET v3/wellpressuretestrawmeasurement/{record_id}/versions/{version}/data
+# GET v3/wellpressuretestrawmeasurement/{record_id}/data
+# PATCH v3/{wellpressuretestrawmeasurement}/{record_id}/sessions/{session_id}
+wdms_app.include_router(
+    bulk_routes.router,
+    prefix=DDMS_V3_PATH + WellPressureTestRawMeasurementAPI.entity_uri,
+    tags=[WellPressureTestRawMeasurementAPI.tag],
+    dependencies=[
+        *v3_bulk_dependencies,
+        Depends(make_entity_type_dependency(Entity.WELLPRESSURETESTRAWMEASUREMENT, "V3")),
+        Depends(set_wellpressuretestrawmeasurement_consistency_check),
+        Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
+        Depends(FetchRecordPartialDependency.with_value(fetch_record_partial_with_wdms_extension))
+    ],
+    responses={**response_401, **response_403, **response_500})
+
+
 # Expose the Following APIs
 # POST v3/{entityName}
 # GET v3/{entityName}/{record_id}
@@ -373,50 +343,6 @@ wdms_app.include_router(log_recognition.router,
                         dependencies=[Depends(require_data_partition_id, use_cache=False),
                                       Depends(require_opendes_authorized_user, use_cache=False)],
                         responses={**response_401, **response_403, **response_500},)
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------- Deprecated API set ---------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------------------------
-
-ddms_v2_routes_groups = [
-    (log_ddms_v2, "Log", Entity.LOG),
-    (dipset_ddms_v2, "Dipset", Entity.DIPSET),
-    (dip_ddms_v2, "Dips", Entity.DIP),
-]
-for v2_api, tag, entity_type in ddms_v2_routes_groups:
-    wdms_app.include_router(v2_api.router,
-                            deprecated=True,
-                            prefix=DDMS_V2_PATH,
-                            tags=[tag],
-                            responses={**response_401, **response_403, **response_500},
-                            dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(entity_type, "V2"))])
-
-# log bulk v2 APIs
-wdms_app.include_router(
-    sessions.router,
-    deprecated=True,
-    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
-    tags=["DEPRECATED"],
-    responses={**response_401, **response_403, **response_500},
-    dependencies=[*basic_dependencies, Depends(make_entity_type_dependency(Entity.LOG, "V2"))])
-
-wdms_app.include_router(
-    bulk_routes.router,
-    deprecated=True,
-    prefix=ALPHA_APIS_PREFIX + DDMS_V2_PATH + log_ddms_v2.LOGS_API_BASE_PATH,
-    tags=["DEPRECATED"],
-    responses={**response_401, **response_403, **response_500},
-    dependencies=[*basic_dependencies,
-                  Depends(set_legacy_input_dataframe_check),
-                  Depends(set_log_bulk_id_access),
-                  Depends(make_entity_type_dependency(Entity.LOG, "V2")),
-                  Depends(FetchRecordDependency.with_value(fetch_record_dependency)),
-                  # As V2 is deprecated, simply fetch the whole record in all cases
-                  Depends(FetchRecordPartialDependency.with_value(fetch_record_dependency))
-                  ])
 
 
 # ---------------------------------------------------------------------------------------------------------------------

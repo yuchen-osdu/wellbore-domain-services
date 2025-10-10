@@ -216,10 +216,9 @@ async def get_data_version(
     get_record: GetRecordFunction = Depends(FetchRecordPartialDependency())
 ):
     record = await get_record(record_id, version)
-    if hasattr(request.state, 'version') and request.state.version != "V2":
-        DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     try:
-        bulk_uri = bulk_uri_access.get_bulk_uri(record=record)  # TODO PATH logv2
+        bulk_uri = bulk_uri_access.get_bulk_uri(record=record)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Record contains an invalid bulk URI')
@@ -307,7 +306,7 @@ async def complete_session(
 
                 if i_session.session.mode == SessionUpdateMode.Update:
                     try:
-                        previous_bulk_uri = bulk_uri_access.get_bulk_uri(record)  # TODO PATH logv2
+                        previous_bulk_uri = bulk_uri_access.get_bulk_uri(record)
                     except ValueError:
                         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                                             detail=f'Record with version {i_session.session.fromVersion} from which '

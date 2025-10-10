@@ -47,7 +47,7 @@ async def test_get_welllogacquisitionid_osdu_success(mocker, app_configurable_wi
     response = await client.get(url=f"/ddms/v3/welllogacquisition/{WELLLOG_ACQUISITION_ID}", headers={"content-type": "application/json"})
 
     assert response.status_code == 200
-    assert mocked_storage_client.get_record.called_once_with(id=WELLLOG_ACQUISITION_ID)
+    mocked_storage_client.get_record.assert_called_once_with(id=WELLLOG_ACQUISITION_ID, data_partition_id=None)
 
 
 @pytest.mark.anyio
@@ -67,7 +67,7 @@ async def test_del_osdu_welllogacquisitionid_success(mocker, app_configurable_wi
     response = await client.delete(url=f"/ddms/v3/welllogacquisition/{WELLLOG_ACQUISITION_ID}", headers={"content-type": "application/json"})
 
     assert response.status_code == 204
-    assert mocked_storage_client.delete_record.called_once_with(id=WELLLOG_ACQUISITION_ID)
+    mocked_storage_client.delete_record.assert_called_once_with(id=WELLLOG_ACQUISITION_ID, data_partition_id=None)
 
 
 @pytest.mark.anyio
@@ -96,7 +96,7 @@ async def test_get_osdu_welllogacquisitionid_versions_success(mocker, app_config
 
     assert response.status_code == 200
     assert response.json() == record_versions_data
-    assert mocked_storage_client.get_all_record_versions.called_once_with(id=WELLLOG_ACQUISITION_ID)
+    mocked_storage_client.get_all_record_versions.assert_called_once_with(id=WELLLOG_ACQUISITION_ID, data_partition_id=None)
 
 
 async def test_get_osdu_welllogacquisitionid_version_success(mocker, app_configurable_with_testclient):
@@ -118,7 +118,7 @@ async def test_get_osdu_welllogacquisitionid_version_success(mocker, app_configu
     response = await client.get(url=f"/ddms/v3/welllogacquisition/{WELLLOG_ACQUISITION_ID}/versions/{WELLLOG_ACQUISITION_VERSION}", headers={"content-type": "application/json"})
 
     assert response.status_code == 200
-    assert mocked_storage_client.get_record_version.called_once_with(id=WELLLOG_ACQUISITION_ID, version=WELLLOG_ACQUISITION_VERSION)
+    mocked_storage_client.get_record_version.assert_called_once_with(id=WELLLOG_ACQUISITION_ID, version=WELLLOG_ACQUISITION_VERSION, data_partition_id=None)
 
 
 @pytest.mark.anyio
@@ -145,7 +145,7 @@ async def test_post_welllogacquisitionid_osdu_success(mocker, app_configurable_w
     response = await client.post(url="/ddms/v3/welllogacquisition", data=record_data, headers={"content-type": "application/json"})
 
     assert response.status_code == 200
-    assert mocked_storage_client.create_or_update_records.call_count == 1
+    mocked_storage_client.create_or_update_records.assert_called_once()
 
 
 @pytest.mark.anyio
@@ -168,4 +168,4 @@ async def test_post_welllogacquisitionid_osdu_bad_request_on_validation_error(mo
     response = await client.post(url="/ddms/v3/welllogacquisition", data=record_data, headers={"content-type": "application/json"})
 
     assert response.status_code == 422
-    assert mocked_storage_client.create_or_update_records.call_count == 0
+    mocked_storage_client.create_or_update_records.assert_not_called()

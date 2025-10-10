@@ -514,7 +514,7 @@ def build_request_create_osdu_wellpressuretestrawmeasurement(b_use_fixed_id=True
                 "TimeUnitID": "namespace:reference-data--UnitOfMeasure:m:",
                 "CurveUnitID": "namespace:reference-data--UnitOfMeasure:m:",
                 "Mnemonic": "PRES_HDRB.BAR",
-                "NumberOfColumns": 192,
+                "NumberOfColumns": 1,
                 "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:",
                 "CurveDescription": "CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant"
               },"""
@@ -528,7 +528,7 @@ def build_request_create_osdu_wellpressuretestrawmeasurement(b_use_fixed_id=True
         "TimeUnitID": "namespace:reference-data--UnitOfMeasure:m:",
         "CurveUnitID": "namespace:reference-data--UnitOfMeasure:m:",
         "Mnemonic": "PRES_HDRB.BAR",
-        "NumberOfColumns": 192,
+        "NumberOfColumns": 1,
         "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:",
         "CurveDescription": "CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant"
       }"""
@@ -1011,7 +1011,7 @@ def get_cleaned_ref_and_res() -> dict:
                 "TimeUnitID": "namespace:reference-data--UnitOfMeasure:m:",
                 "CurveUnitID": "namespace:reference-data--UnitOfMeasure:m:",
                 "Mnemonic": "PRES_HDRB.BAR",
-                "NumberOfColumns": 192,
+                "NumberOfColumns": 1,
                 "CurveSampleTypeID": "namespace:reference-data--CurveSampleType:float:",
                 "CurveDescription": "CBL Adjustment Factor, Resistivity Inversion Selection, Detector 1 Barite Constant"
               }

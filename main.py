@@ -14,7 +14,7 @@
 
 import uvicorn
 import click
-from app.base import base_app
+from app.wdms_app import wdms_app
 from app.conf import Config
 import os
 
@@ -51,9 +51,8 @@ def run_wdms_app(port: int, host: str, dev_mode, env):
     Config.add('port', port)
     Config.add('host', host)
 
-    uvicorn.run(base_app, port=port, host=host)
+    uvicorn.run(wdms_app, port=port, host=host)
 
 
 if __name__ == "__main__":
     run_wdms_app()
-

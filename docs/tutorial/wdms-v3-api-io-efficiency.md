@@ -547,37 +547,58 @@ if total_read_response.status_code == 200:
     total_read_df = create_df_from_response(total_read_response)
     
 elif total_read_response.status_code == 413:
-    print("\nBulk data is too big to be read in one go.")
-    describe_read_response = client.get(f'{welllog_dms_url}/{record_id}/data', params={"describe":True})
-    print_response(describe_read_response)
-    
-    describe_read_data = describe_read_response.json()
-    columns = describe_read_data["columns"]
-    rows_count = describe_read_data["numberOfRows"]
-    print(f"Bulk data contains {len(columns)} curves of {rows_count:,} rows. It represent {len(describe_read_data['columns']) * describe_read_data['numberOfRows']:,} values.")
-    
-    columns_per_chunk = min(COLUMNS_LIMIT, int(VALUES_LIMIT / rows_count))
-    print(f"Each read request will ask for {columns_per_chunk} curves.")
-    curves_selection = [columns[i : i + columns_per_chunk] 
-                       for i in range(0, len(columns), columns_per_chunk)]
-    print(f"\nGroup of curves to be requested:\n{curves_selection}\n")
-    
-    read_chunks_routines = [async_client.get(f'{welllog_dms_url}/{record_id}/data', params={"curves" : ','.join(_curves)}, headers=parquet_headers)
-                           for _curves in curves_selection]
-    
-    print("Reading bulk data by chunks asynchronously...")
-    total_read_responses = await asyncio.gather(*read_chunks_routines)
-    print("All chunks have been received!\n")
-    
-    # Create pandas dataframe from responses' body
-    total_read_dfs = [create_df_from_response(_read_response) for _read_response in total_read_responses]
-    
-    # Merge all together retrieved chunks' dataframe into one dataframe
-    total_read_df = pd.concat(total_read_dfs, axis=1)
+    # verify if WDMS worker is enabled, "bulkDescription" attribut exists only in WDMS worker service.
+    bulk_data_partitions = total_read_response.json().get("bulkDescription", {}).get("partitions")
+```
+#### Option 1: WDMS worker is enabled: the response contains extra useful information to retrieve efficiently all the bulk data.
+```python
+# Use response from WDMS to create chunking request automatically to retrieve all the bulk data
+    if bulk_data_partitions:
+        for _partition in bulk_data_partitions:
+            read_chunks_routines = [async_client.get(f'{welllog_dms_url}/{record_id}/data', 
+                                                     params={"curves": ','.join(_partition["curves"])}, 
+                                                     headers=parquet_headers)]
+```
+#### Option 2: WDMS worker is NOT enabled: computation of manual request's chunking is necessary  
+```python
+# Manually create chunking requests to retrieve all the bulk data
+    else:        
+        print("\nBulk data is too big to be read in one go.")
+        describe_read_response = client.get(f'{welllog_dms_url}/{record_id}/data', params={"describe":True})
+        print_response(describe_read_response)
+        
+        describe_read_data = describe_read_response.json()
+        columns = describe_read_data["columns"]
+        rows_count = describe_read_data["numberOfRows"]
+        print(f"Bulk data contains {len(columns)} curves of {rows_count:,} rows. It represent {len(describe_read_data['columns']) * describe_read_data['numberOfRows']:,} values.")
+        
+        columns_per_chunk = min(COLUMNS_LIMIT, int(VALUES_LIMIT / rows_count))
+        print(f"Each read request will ask for {columns_per_chunk} curves.")
+        curves_selection = [columns[i : i + columns_per_chunk] 
+                           for i in range(0, len(columns), columns_per_chunk)]
+        print(f"\nGroup of curves to be requested:\n{curves_selection}\n")
+        
+        read_chunks_routines = [
+            async_client.get(f'{welllog_dms_url}/{record_id}/data',
+                             params={"curves" : ','.join(_curves)},
+                             headers=parquet_headers) for _curves in curves_selection
+        ]
+```
+#### Finally read everything
+```python
+print("Reading bulk data by chunks asynchronously...")
+total_read_responses = await asyncio.gather(*read_chunks_routines)
+print("All chunks have been received!\n")
+
+# Create pandas dataframe from responses' body
+total_read_dfs = [create_df_from_response(_read_response) for _read_response in total_read_responses]
+
+# Merge all together retrieved chunks' dataframe into one dataframe
+total_read_df = pd.concat(total_read_dfs, axis=1)
     
 total_read_df
 ```
-
+    Option 2:
     GET : https://OSDU_BASE_URL/api/os-wellbore-ddms/ddms/v3/welllogs/MY_RECORD_ID/data -> 413
 
     b'{"detail":"{\\"message\\": \\"Too many values requested: 83000000. The maximum allowed is 10000000.\\", \\"requested\\": 83000000, \\"limit\\": 10000000}"}'

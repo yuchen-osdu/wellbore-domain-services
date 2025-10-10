@@ -118,7 +118,7 @@ class DMSV3RouterUtils:
     @staticmethod
     async def raise_if_invalid_bulk_uri(records, bulk_uri_access: BulkIdAccess):
         """
-        Check of BulkURIs in the given records on create/update welllog, trajectory and PPFGDataset APIs.
+        Check of BulkURIs in the given records on create/update APIs
 
         The property ExtensionProperties.wdms.bulkURI is "internal" to the wdms service.
         User can't be allowed to "set" incorrect value, which could lead to invalid records.

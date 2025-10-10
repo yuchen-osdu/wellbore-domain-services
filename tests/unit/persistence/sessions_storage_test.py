@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from asyncio import sleep
@@ -79,7 +79,7 @@ async def test_session_create_get(sessions_storage, testing_tenant):
     assert session.mode == SessionUpdateMode.Update
     assert session.recordId == '123'
     assert session.state == SessionState.Open
-    assert datetime.utcnow() + timedelta(minutes=6) > session.expiry > datetime.utcnow() + timedelta(minutes=4)
+    assert datetime.now(timezone.utc) + timedelta(minutes=6) > session.expiry > datetime.now(timezone.utc) + timedelta(minutes=4)
     assert internal_session.internal == internal_details
     assert session.meta["custom_key"] == "custom_value"
 

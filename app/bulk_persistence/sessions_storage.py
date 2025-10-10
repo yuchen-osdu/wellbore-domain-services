@@ -19,7 +19,7 @@ from uuid import UUID
 
 from pydantic import ConfigDict, BaseModel, Field
 from fastapi import status, HTTPException
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
@@ -86,7 +86,7 @@ class Session(BaseModel):
 
     @property
     def is_expired(self) -> bool:
-        return datetime.utcnow() > self.expiry
+        return datetime.now(timezone.utc) > self.expiry
 
     @property
     def is_closed(self) -> bool:
@@ -94,7 +94,7 @@ class Session(BaseModel):
 
     @property
     def elapsed_since_update(self) -> float:
-        return (datetime.utcnow() - self.updatedTime).total_seconds()
+        return (datetime.now(timezone.utc) - self.updatedTime).total_seconds()
 
     def set_meta_value(self, key: str, value: str):
         if self.meta is None:
@@ -192,7 +192,7 @@ class SessionsStorage:
     async def _store_session(self, tenant: Tenant, session: SessionInternal) -> SessionInternal:
         etag = session.etag
         if etag is not None:  # this differentiate creation (etag is None) versus update (etag not None)
-            session.session.updatedTime = datetime.utcnow()
+            session.session.updatedTime = datetime.now(timezone.utc)
         content = session.model_dump_json(exclude={'etag'})  # etag must not be persisted
 
         try:
@@ -242,7 +242,7 @@ class SessionsStorage:
     async def create_session(self, tenant: Tenant, record_id: str, from_version: int, ttl: int, mode: SessionUpdateMode,
                              *,
                              meta: Optional[Dict[str, str]] = None, internal: Optional[Any] = None) -> SessionInternal:
-        utc_now = datetime.utcnow()
+        utc_now = datetime.now(timezone.utc)
         session = Session(id=uuid.uuid4(), fromVersion=from_version, recordId=record_id, mode=mode,
                           createdTime=utc_now, updatedTime=utc_now, expiry=utc_now + timedelta(minutes=ttl),
                           state=SessionState.Open, meta=meta)

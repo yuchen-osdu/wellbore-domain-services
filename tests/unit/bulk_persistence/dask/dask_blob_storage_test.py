@@ -13,7 +13,7 @@
 # limitations under the License.
 import asyncio
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -59,7 +59,7 @@ async def dask_storage(nope_logger_fixture, ctx_fixture, tmp_path,
 
 @pytest.fixture()
 def test_session(mode=SessionUpdateMode.Overwrite) -> Session:
-    utc_now = datetime.utcnow()
+    utc_now = datetime.now(timezone.utc)
     fake_session_id = uuid.uuid4()
     return Session(id=fake_session_id, recordId='fake_record_id', fromVersion=0,
                    mode=mode, createdTime=utc_now, updatedTime=utc_now,
@@ -68,7 +68,7 @@ def test_session(mode=SessionUpdateMode.Overwrite) -> Session:
 
 
 def get_update_session() -> Session:
-    utc_now = datetime.utcnow()
+    utc_now = datetime.now(timezone.utc)
     fake_session_id_update = uuid.uuid4()
     return Session(id=fake_session_id_update, recordId='fake_record_id', fromVersion=0,
                    mode=SessionUpdateMode.Update, createdTime=utc_now, updatedTime=utc_now,
@@ -84,6 +84,16 @@ async def compare_frame(pdf: pd.DataFrame, ddf: dd.DataFrame):
     df.index.name = None
     pdf.index.name = None
     check_freq = True
+
+    # Align dtypes
+    for col in pdf.columns:
+        if pdf[col].dtype != df[col].dtype:
+            if pd.api.types.is_string_dtype(pdf[col]) or pd.api.types.is_string_dtype(df[col]):
+                df[col] = df[col].astype("string[pyarrow]")
+                pdf[col] = pdf[col].astype("string[pyarrow]")
+            else:
+                df[col] = df[col].astype(pdf[col].dtype)
+
     if isinstance(df.index, pd.DatetimeIndex):
         check_freq = False
     pd.testing.assert_frame_equal(pdf, df, check_freq=check_freq)
@@ -114,7 +124,7 @@ async def save_bulk(storage: DaskBulkStorage, df: pd.DataFrame, record_id, bulk_
 @pytest.mark.anyio
 async def test_invalid_session_id(dask_storage: DaskBulkStorage, mode=SessionUpdateMode.Overwrite):
     invalid_session_id = "test_1234-abcd"
-    utc_now = datetime.utcnow()
+    utc_now = datetime.now(timezone.utc)
     with pytest.raises(ValueError, match=r".* Input should be a valid UUID, .*") as ex:
         Session(id=invalid_session_id, recordId='fake_record_id', fromVersion=0,
                 mode=mode, createdTime=utc_now, updatedTime=utc_now,

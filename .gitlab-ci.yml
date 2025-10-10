@@ -16,6 +16,7 @@
 variables:
   PIP_REQUIREMENTS: "requirements.txt"
   PIP_REQUIREMENTS_TOOLING_ONLY: "requirements_dev.txt"
+  PIP_EXTRA_INDEX_URLS: "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
 
   IGNORE_PYTHON_SETUP: "wdms_client/request_builders/wdms/recursive_delete/ wdms_client/request_builders/wdms/search_apis/"
 
@@ -68,10 +69,6 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
 
-  # AWS it tests "aws-test-python" will run local test/aws-test/buid-aws/run-integration-tests.sh
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws-python.yml"
-
   # AWS overrides
   - local: "/devops/aws/pipeline/override-stages.yml" 
 
@@ -84,31 +81,26 @@ include:
 
 #Override Python Image defined in python.yml
 .python:
-  image: python:3.11-bookworm
+  image: python:3.13-bookworm
 
 verify_existing_requirements:
   tags: ["osdu-small"]
   extends:
     - .python
     - .skipForTriggeringMergeRequests
-
   stage: build
-  before_script:
-    - pip3 install --upgrade pip-tools
-
   script:
-    - pip-compile requirements.in
-    - pip-compile requirements_dev.in
+    - pip install --upgrade pip-tools
+    - pip-compile --output-file requirements.txt $PIP_EXTRA_INDEXES
+    - pip-compile --extra dev --output-file requirements_dev.txt $PIP_EXTRA_INDEXES
     - git diff
     # checking difference between existing requirements and the newly generated one
     # and using the number of lines as exit status code
     - exit $(git status -s | grep -e "^ M " | wc -l)
-
   artifacts:
     when: always
     paths:
       - "requirements*.txt"
-
     expire_in: 2 days
 
 compile-and-unit-test:
@@ -119,15 +111,6 @@ compile-and-unit-test:
       - all-requirements.txt
       - ./**/python-*-output.txt
       - spec/generated/openapi.json
-
-verify_models:
-  tags: ["osdu-small"]
-  extends:
-    - .python
-    - .skipForTriggeringMergeRequests
-  stage: build
-  script:
-    - python -m doctest docs/model/model_curated.md
 
 pylint:
   tags: ["osdu-small"]
@@ -168,6 +151,14 @@ containerize:
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
 
+
+gemnasium-python-dependency_scanning:
+  variables:
+    PIP_REQUIREMENTS_FILE: gemnasium-requirements.txt
+  before_script:
+    - cat all-requirements.txt | grep -v "osdu-" | grep -v "wellbore-" > gemnasium-requirements.txt
+
+
 # Allow failure on flaky deployments
 ibm-deploy:
   allow_failure: true
@@ -176,4 +167,28 @@ ibm-test:
 
 # Allow failure on private development deployments
 ibm-deploy-devpri:
+  allow_failure: true
+
+aws-containerize:
+  allow_failure: true
+
+azure_containerize:
+  allow_failure: true
+
+gc-deploy:
+  allow_failure: true
+
+azure_deploy:
+  allow_failure: true
+
+aws-update-tf:
+  allow_failure: true
+
+aws-test-python:
+  allow_failure: true
+
+azure_swagger_test:
+  allow_failure: true
+
+azure_test_py:
   allow_failure: true

@@ -7,14 +7,13 @@ from typing import List
 
 import odes_schema
 from asgi_lifespan import LifespanManager
-from httpx import AsyncClient, Headers
+from httpx import AsyncClient, Headers, ASGITransport
 
 import odes_storage
 import pytest
+import pytest_asyncio
 from unittest import mock
 from unittest.mock import AsyncMock, create_autospec, patch
-
-from fastapi.testclient import TestClient
 
 from app.conf import ConfigurationContainer, cloud_provider_additional_environment
 from app.auth.auth import require_opendes_authorized_user
@@ -22,10 +21,9 @@ from app.middleware.basic_context_middleware import require_data_partition_id
 from app.clients import SearchServiceClient, StorageRecordServiceClient, make_storage_record_client, make_schema_client, \
     SchemaServiceClient
 from app.injector.app_injector import WithLifeTime
-from app.base import base_app
 from app.wdms_app import wdms_app, app_injector
 from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check, \
-    set_ppfgdataset_consistency_check
+    set_ppfgdataset_consistency_check, set_wellpressuretestrawmeasurement_consistency_check
 from app.bulk_persistence import BulkPersistenceConfig
 from app.bulk_persistence import DaskBulkStorage
 from app.bulk_persistence import SessionsStorage
@@ -231,20 +229,6 @@ def mock_schema_client_holding_data(local_dev_config, nope_logger_fixture):
     return setup_data_for_mock
 
 
-@pytest.fixture(scope="module")
-def base_app_initialized_with_testclient(local_dev_config, dask_custom_config, anyio_backend):
-    """
-    Fixture providing a base_app test client
-    """
-
-    # setup the dask_config with default values
-    with dask_custom_config():
-        with TestClient(app=base_app) as base_client: # TODO TestClient
-            yield base_app, base_client
-
-    # slb_app shutdown event should call DaskClient.close()
-
-
 TEST_CLIENT_HOST = "test_wdms_app"
 
 
@@ -261,8 +245,8 @@ async def app_initialized_with_testclient(local_dev_config, dask_custom_config, 
     # setup the dask_config with default values
     with dask_custom_config():
         async with LifespanManager(wdms_app):
-            async with AsyncClient(app=wdms_app, base_url=f"http://{TEST_CLIENT_HOST}") as ac:
-                yield wdms_app, ac
+            async with AsyncClient(transport=ASGITransport(app=wdms_app), base_url=f"http://{TEST_CLIENT_HOST}") as client:
+                yield wdms_app, client
 
         # wdms_app shutdown event should call DaskClient.close() via app shutdown
 
@@ -373,6 +357,7 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
             app.dependency_overrides[set_welllog_data_consistency_check] = lambda: None
             app.dependency_overrides[set_trajectory_data_consistency_check] = lambda: None
             app.dependency_overrides[set_ppfgdataset_consistency_check] = lambda: None
+            app.dependency_overrides[set_wellpressuretestrawmeasurement_consistency_check] = lambda: None
 
         # return the app, ready to be started along with the client
         return app, client

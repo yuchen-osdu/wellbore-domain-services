@@ -12,57 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM public.ecr.aws/docker/library/alpine:3.19.4 as build
+FROM cgr.dev/chainguard/wolfi-base AS builder
+
+ENV LANG=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/wdms/venv/bin:$PATH"
+
+WORKDIR /wdms
+ARG version=3.13
+RUN apk add python-${version} py${version}-pip --no-cache
+
+RUN python3 -m venv /wdms/venv
+
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
+
+FROM cgr.dev/chainguard/wolfi-base AS production
+
+EXPOSE 8080
+WORKDIR /wdms
 
 ENV PYTHONUNBUFFERED=1
-ENV PATH="/app/.python/bin:${PATH}"
+ENV PATH="/wdms/venv/bin:$PATH"
 
-RUN mkdir app
-RUN apk update && \
-    apk add --no-cache gcc musl-dev linux-headers libexpat=2.7.0-r0 perl=5.38.3-r1 python3-dev g++ bash build-base cmake \
-            jemalloc-dev boost-dev autoconf zlib-dev flex bison git tzdata lz4-dev \
-	    py3-pip py3-pyarrow py3-numpy py3-six cython py3-pytest py3-cffi py3-cffi-pyc xz-libs=5.4.5-r1
+ARG version=3.13
+RUN apk add python-${version} --no-cache
 
-RUN python3 -m venv "/app/.python/" --system-site-packages
-
-COPY requirements.txt ./
-
-RUN pip install --upgrade setuptools~=75.1.0 pip~=24.2
-RUN pip install -r requirements.txt --no-cache-dir
-
-COPY ./app /app
-ENV PYTHONPATH=./
-
-FROM public.ecr.aws/docker/library/alpine:3.19.4 as service
-
-RUN apk update && \
-    apk add --no-cache bash autoconf flex bison tzdata lz4 py3-pip py3-pyarrow \
-            py3-numpy py3-six cython py3-pytest py3-cffi py3-cffi-pyc
-
-COPY --from=build /app /app
-
-LABEL version="1.0"
-LABEL maintainer="aws"
-
-ENV PYTHONUNBUFFERED=1
-ENV PATH="/app/.python/bin:${PATH}"
-
-COPY provider/os-wellbore-ddms-aws/build-aws/entrypoint.sh .
+COPY /app ./app
+COPY --from=builder /wdms/venv ./venv
 COPY provider/os-wellbore-ddms-aws/build-aws/osdu_api.ini .
-COPY provider/os-wellbore-ddms-aws/build-aws/ssl.sh .
-ENV PYTHONPATH=./
 
-#Default to using self signed generated TLS cert
-ENV USE_SELF_SIGNED_SSL_CERT "true"
-ENV SSL_CERT_PATH "./aws/certs/cert.crt" 
-ENV SSL_KEY_PATH "./aws/certs/cert.key"
-ENV SSL_ENABLED "true"
+RUN chown -R nonroot:nonroot /wdms/app
 
-EXPOSE ${APPLICATION_PORT}
-WORKDIR ./
+USER nonroot
 
-RUN addgroup -S -g 10001 appgroup \
- && adduser -S -H -u 10001 -G appgroup appuser
-
-USER 10001:10001
-ENTRYPOINT ["/bin/sh", "-c", "/entrypoint.sh"]
+ENTRYPOINT ["uvicorn"]
+CMD ["app.wdms_app:wdms_app", "--host", "0.0.0.0", "--port", "8080"]

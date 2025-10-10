@@ -112,10 +112,10 @@ azure_deploy:
 
 azure_swagger_test:
   variables:
-    AZURE_SWAGGER_PATH: api/os-wellbore-ddms/docs    
+    AZURE_SWAGGER_PATH: api/os-wellbore-ddms/docs
 
 azure_test_py:
-  image: mcr.microsoft.com/mirror/docker/library/python:3.11-slim
+  image: python:3.13-slim
   tags: ["osdu-small"]
   stage: integration
   needs: ["azure_deploy"]
@@ -141,5 +141,3 @@ azure_test_py:
   except:
     variables:
       - $AZURE_SKIP_TEST == 'true'
-
-

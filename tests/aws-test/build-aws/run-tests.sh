@@ -18,13 +18,42 @@
 echo '********* Running Wellbore DDMS integration tests  *********'
 
 SCRIPT_SOURCE_DIR=$(dirname "$0")
-echo "$SCRIPT_SOURCE_DIR"
+echo "Script source directory: $SCRIPT_SOURCE_DIR"
 
 pushd "$SCRIPT_SOURCE_DIR"/../../../
-echo $(pwd)
-python3 -m venv env
+echo "Current working directory: $(pwd)"
+
+# Debug Python environment
+echo "=== Python Environment Debug ==="
+echo "PYENV_VERSION (global): $PYENV_VERSION"
+echo "PYTHON_313_VERSION: $PYTHON_313_VERSION"
+echo "Available Python versions:"
+pyenv versions
+
+# Use the CodeBuild provided PYTHON_313_VERSION or find one
+if [ -z "$PYTHON_313_VERSION" ]; then
+    echo "PYTHON_313_VERSION not set, finding Python 3.13 version..."
+    PYTHON_313_VERSION=$(pyenv versions | grep "3\.13\." | head -1 | xargs)
+    if [ -z "$PYTHON_313_VERSION" ]; then
+        echo "ERROR: No Python 3.13 version found"
+        exit 1
+    fi
+    echo "Found Python 3.13 version: $PYTHON_313_VERSION"
+else
+    echo "Using CodeBuild provided Python 3.13 version: $PYTHON_313_VERSION"
+fi
+
+echo "Creating virtual environment with Python $PYTHON_313_VERSION..."
+
+# Create venv using specific Python 3.13 version
+PYENV_VERSION=$PYTHON_313_VERSION pyenv exec python -m venv env
+
+if [ ! -d "env" ]; then
+    echo "ERROR: Virtual environment creation failed"
+    exit 1
+fi
 source env/bin/activate
-python3 -m pip install -r ./tests/aws-test/build-aws/requirements.txt
+python3 -m pip install -r ./tests/aws-test/build-aws/requirements.txt --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple
 python3 -m pip install -r ./tests/aws-test/build-aws/requirements_dev.txt
 rm -rf test-reports/
 mkdir test-reports

@@ -16,14 +16,9 @@
 # from tests/aws-test/build-aws/ goes up to the tests dir.
 cd ../../../
 
-# Install venv for python3
-apt-get install -y python3 python3-pip python3-venv
-
 python3 -m venv env
 source env/bin/activate
-pip install --upgrade pip
-pip install wheel
-pip install -r requirements.txt
+pip install -r requirements.txt --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple
 pip install -r requirements_dev.txt
 
 svc_url=$WELLBORE_DDMS_URL

@@ -33,7 +33,7 @@ from typing import (
 
 import pandas as pd
 import pyarrow as pa
-import pyarrow.feather as feather
+from pyarrow import feather
 import pyarrow.parquet as pq
 
 from app.pool_executor import get_pool_executor
@@ -90,7 +90,7 @@ def export_to_feather(
 def load_from_feather(data) -> pd.DataFrame:
     """ data = bytes, str, pyarrow.NativeFile, or file-like object """
     if isinstance(data, bytes):
-        data = feather.BufferReader(data)
+        data = pa.BufferReader(data)
     return feather.read_table(data).to_pandas()
 
 
@@ -120,7 +120,7 @@ class BlobFileExporters:
 class BlobFileImporter(NamedTuple):
     mime_type: MimeType
     reader_fn: Union[
-        Callable[[str, pd.DataFrame], Any], Coroutine[str, pd.DataFrame, Any]
+        Callable[[Any], pd.DataFrame], Coroutine[str, pd.DataFrame, Any]
     ]
 
     def match(self, str_value: str) -> bool:

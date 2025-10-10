@@ -13,7 +13,7 @@ export default function () {
     const baseUrl = `${__ENV.API_BASE_URL}`;
     const params = getParams();
 
-    const response = http.get(`${baseUrl}/ddms/v2/wellbores/${randomRecordId('wellbore')}`, params);
+    const response = http.get(`${baseUrl}/ddms/v3/wellbores/${randomRecordId('wellbore')}`, params);
 
     if (!is2xx(response.status)) {
         logError(params, response, baseUrl);

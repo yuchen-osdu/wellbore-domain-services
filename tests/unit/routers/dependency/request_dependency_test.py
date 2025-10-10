@@ -1,7 +1,7 @@
 import pytest
 
 from fastapi import FastAPI, APIRouter, Depends
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.routers.dependency.request_dependency import RequestDependencyBase, RequestDependencyMetaClass
@@ -54,7 +54,7 @@ def test_client():
     local_app.include_router(router, prefix='/path-default')
     local_app.add_middleware(AddRequestStateDependencyMiddleware)
 
-    ac = AsyncClient(app=local_app, base_url=BASE_URL)
+    ac = AsyncClient(transport=ASGITransport(local_app), base_url=BASE_URL)
     yield ac
 
 

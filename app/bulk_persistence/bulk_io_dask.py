@@ -78,6 +78,8 @@ async def _process_request_v1(
         df = pd.DataFrame(index=index)
     else:
         # loading the dataframe with filter on columns is faster than filtering columns on df
+        if columns_to_load is not None:
+            columns_to_load = list(columns_to_load)
         df = await dask_blob_storage.load_bulk(record_id, bulk_id, bulk_catalog, columns=columns_to_load)
     return df, filters, columns
 

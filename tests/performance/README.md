@@ -6,20 +6,14 @@ Before running the tests, make sure you have the K6 CLI installed locally you ca
 If you don't have the K6 CLI installed, you can install it by going to [K6 Getting Started / Installation](https://k6.io/docs/getting-started/installation).
 
 ### Test scripts :
-| Script name | Description | API |
-| - | - | - |
-| `readLogMetadata.js`      | Retrieves a log metadata      | **GET**  /ddms/v2/log                     |
-| `writeLogMetadata.js`     | Creates a log metadata        | **POST** /ddms/v2/log                     |
-| `readLogData.js`          | Retrieves a log bulkdata      | **GET**  /ddms/v2/log/{logid}/data        |
-| `writeLogData.js`         | Creates a log bulkdata        | **POST** /ddms/v2/log/{logid}/data        |
-| `readWellLogMetadata.js`  | Retrieves well log metadata   | **GET**  /ddms/v3/welllogs                |
-| `writeWellLogMetadata.js` | Creates well log metadata     | **POST** /ddms/v3/welllogs                |
-| `readWellLogData.js`      | Retrieves well log data       | **GET**  /ddms/v3/welllogs/{logid}/data   |
-| `writeWellLogData.js`     | Creates well log data         | **POST** /ddms/v3/welllogs/{logid}/data   |
-| `readMarkers.js`          | Retrieves a marker            | **GET**  /ddms/v2/markers/{markerid}      |
-| `writeMarkers.js`         | Creates a marker              | **POST** /ddms/v2/markers                 |
-| `readWellbores.js`        | Retrieves a wellbore          | **GET**  /ddms/v2/wellbores/{wellboreid}  |
-| `writeWellbores.js`       | Creates a wellbore            | **POST** /ddms/v2/wellbores               |
+| Script name | Description | API                                      |
+| - | - |------------------------------------------|
+| `readWellLogMetadata.js`  | Retrieves well log metadata   | **GET**  /ddms/v3/welllogs               |
+| `writeWellLogMetadata.js` | Creates well log metadata     | **POST** /ddms/v3/welllogs               |
+| `readWellLogData.js`      | Retrieves well log data       | **GET**  /ddms/v3/welllogs/{logid}/data  |
+| `writeWellLogData.js`     | Creates well log data         | **POST** /ddms/v3/welllogs/{logid}/data  |
+| `readWellbores.js`        | Retrieves a wellbore          | **GET**  /ddms/v3/wellbores/{wellboreid} |
+| `writeWellbores.js`       | Creates a wellbore            | **POST** /ddms/v3/wellbores              |
 
 The `common.js` file contains functions to help with tests
 
@@ -41,7 +35,6 @@ In the folder `data` you might have noticed some JSON files. These JSON files co
 
 | File name | Description |
 | - | - |
-| `log.json` | A JSON file contains an array of valid log records |
 | `welllog.json` | A JSON file contains an array of valid well log records |
 | `marker.json` | A JSON file contains an array of valid markers records |
 | `wellbore.json` | A JSON file contains an array of valid wellbores records |
@@ -63,5 +56,5 @@ k6 run \
     -e TOKEN="" \
     --vus 100 \
     --iterations 100 \
-    ./scripts/writeLogMetadata.js
+    ./scripts/writeWellLogMetadata.js
 ```

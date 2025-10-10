@@ -48,3 +48,35 @@ aws-containerize:
   only:
     variables:
       - $AWS == '1'
+
+aws-test-python:
+  extends:
+    - .aws
+    - .aws_common_variables
+    - .aws_variables
+  stage: integration
+  needs: [{ job: 'aws-update-tf', optional: true }, { job: 'aws-update-helm', optional: true }, { job: 'aws-update-eks', optional: true }]
+  retry: 1
+  image: python:3.13
+  before_script:
+    - apt-get update
+    - apt-get install -y python3-pip curl apt-transport-https ca-certificates gnupg jq
+    - pip3 install --no-cache-dir awscli==1.32.106
+    - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+    - apt-get update && apt-get install -y kubectl
+    - !reference [.aws, before_script]
+    - !reference [.aws_variables, before_script]
+  script:
+    - echo "*** Running aws-test-python from override-stages.yml ***"
+    - cd $INTEGRATION_TEST_DIR
+    - chmod +x ./run-integration-tests.sh
+    - ./run-integration-tests.sh
+  only:
+    variables:
+      - $AWS_SKIP_DEPLOY != 'true' && $AWS_SKIP_TESTS != 'true' && $AWS == '1' && $AWS_INT_TEST_TYPE == 'python'
+  artifacts:
+    when: on_failure
+    paths:
+      - $INTEGRATION_TEST_DIR
+    expire_in: 2 days

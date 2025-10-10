@@ -116,11 +116,13 @@ class DataFrameRender:
             BulkReadFilterOperator.In:
                 lambda df, col, val: df[col].isin(val)
         }
+
         for col_name, operator, value in filters.all_filters():
             try:
                 new_value = ast.literal_eval(value)
             except (ValueError, SyntaxError):
                 new_value = value
+
             if dataframe[col_name].dtype == object:
                 if isinstance(new_value, tuple):
                     new_value = [str(v) for v in new_value]
@@ -129,10 +131,14 @@ class DataFrameRender:
 
             filter_function = operator_to_function[operator]
             try:
-                dataframe = dataframe.loc[filter_function(dataframe, col_name, new_value)]
+                dataframe = dataframe[filter_function(dataframe, col_name, new_value)]
             except ValueError:
                 raise FilterError('the value is not valid for this operation')
+            except TypeError:
+                raise FilterError('Incompatible types in filtering')
+
         return dataframe
+
 
     @staticmethod
     @internal_bulk_exceptions

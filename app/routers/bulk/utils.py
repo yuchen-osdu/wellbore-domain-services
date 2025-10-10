@@ -10,6 +10,7 @@ from app.bulk_persistence import (
     DataFrameValidationFunc,
 )
 from app.clients.storage_service_client import get_storage_record_service
+from app.consistency.wellpressuretestrawmeasurement_consistency import WellPressureTestRawMeasurementConsistencyChecks
 from app.context import Context
 from app.utils import OpenApiHandler
 from app.routers.bulk.bulk_routes_dependencies import BulkIdAccess
@@ -92,6 +93,9 @@ def set_trajectory_data_consistency_check(request: Request):
 
 def set_ppfgdataset_consistency_check(request: Request):
     request.state.data_consistency_checks = PPFGDatasetConsistencyChecks()
+
+def set_wellpressuretestrawmeasurement_consistency_check(request: Request):
+    request.state.data_consistency_checks = WellPressureTestRawMeasurementConsistencyChecks()
 
 
 def get_data_consistency_checks(request: Request):
