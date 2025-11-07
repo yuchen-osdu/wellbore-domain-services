@@ -19,7 +19,7 @@ Apache-2.0
 The following software have components provided under the terms of this license:
 
 - aiobotocore (from https://github.com/aio-libs/aiobotocore, https://pypi.org/project/aiobotocore/)
-- aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
+- aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/, https://pypi.org/project/aiohttp/)
 - aiosignal (from <https://github.com/aio-libs/aiosignal>, https://github.com/aio-libs/aiosignal)
 - boto3 (from <https://github.com/boto/boto3>, https://github.com/boto/boto3)
 - botocore (from <https://github.com/boto/botocore>, https://github.com/boto/botocore)
@@ -39,7 +39,6 @@ The following software have components provided under the terms of this license:
 - grpcio-status (from https://grpc.io)
 - importlib-metadata (from https://pypi.org/project/importlib-metadata/)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
-- msgpack (from https://msgpack.org/, https://pypi.org/project/msgpack/, https://pypi.org/project/msgpack/1.0.6/)
 - multidict (from https://github.com/aio-libs/multidict)
 - numpy (from https://pypi.org/project/numpy/)
 - opentelemetry-api (from https://pypi.org/project/opentelemetry-api/)
@@ -59,10 +58,8 @@ The following software have components provided under the terms of this license:
 - rsa (from https://pypi.org/project/rsa/, https://stuvel.eu/rsa)
 - s3transfer (from <https://github.com/boto/s3transfer>, https://github.com/boto/s3transfer)
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
-- sortedcontainers (from http://www.grantjenks.com/docs/sortedcontainers/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - tenacity (from <https://github.com/jd/tenacity>, https://github.com/jd/tenacity)
-- tornado (from http://www.tornadoweb.org/)
 - types-jsonschema (from https://github.com/python/typeshed, https://pypi.org/project/types-jsonschema/)
 - tzdata (from <https://github.com/python/tzdata>, https://github.com/python/tzdata)
 - yarl (from https://github.com/aio-libs/yarl, https://github.com/aio-libs/yarl/)
@@ -74,14 +71,12 @@ The following software have components provided under the terms of this license:
 
 - decorator (from https://github.com/micheles/decorator, https://pypi.org/project/decorator/)
 - grpcio (from https://grpc.io)
-- locket (from http://github.com/mwilliamson/locket.py)
 - numpy (from https://pypi.org/project/numpy/)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python)
 - pyasn1 (from https://github.com/etingof/pyasn1, https://github.com/pyasn1/pyasn1)
 - pyasn1-modules (from https://github.com/etingof/pyasn1-modules, https://github.com/pyasn1/pyasn1-modules)
-- tblib (from https://github.com/ionelmc/python-tblib)
 - wrapt (from <https://github.com/GrahamDumpleton/wrapt>, https://github.com/GrahamDumpleton/wrapt)
 
 ========================================================================
@@ -89,15 +84,10 @@ BSD-3-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Jinja2 (from http://jinja.pocoo.org/, https://palletsprojects.com/p/jinja/, https://pypi.org/project/Jinja2/)
-- MarkupSafe (from https://palletsprojects.com/p/markupsafe/, https://pypi.org/project/MarkupSafe/)
 - adlfs (from https://github.com/dask/adlfs/, https://pypi.org/project/adlfs/)
 - click (from https://palletsprojects.com/p/click/, https://pypi.org/project/click/)
-- cloudpickle (from https://github.com/cloudpipe/cloudpickle)
 - cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
-- dask (from https://github.com/dask/dask/, https://pypi.org/project/dask/)
 - decorator (from https://github.com/micheles/decorator, https://pypi.org/project/decorator/)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
@@ -110,7 +100,6 @@ The following software have components provided under the terms of this license:
 - oauthlib (from https://github.com/oauthlib/oauthlib)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
-- partd (from http://github.com/dask/partd/, https://pypi.org/project/partd/, https://pypi.org/project/partd/1.4.2/)
 - ply (from http://www.dabeaz.com/ply/)
 - prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator)
 - protobuf (from https://developers.google.com/protocol-buffers/)
@@ -124,18 +113,8 @@ The following software have components provided under the terms of this license:
 - sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - starlette (from https://pypi.org/project/starlette/, https://pypi.org/project/starlette/0.22.0/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
-- toolz (from https://github.com/pytoolz/toolz/)
 - uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/, https://www.uvicorn.org/)
 - wrapt (from <https://github.com/GrahamDumpleton/wrapt>, https://github.com/GrahamDumpleton/wrapt)
-- zict (from http://zict.readthedocs.io/en/latest/)
-
-========================================================================
-CC-BY-3.0
-========================================================================
-The following software have components provided under the terms of this license:
-
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/)
-- tornado (from http://www.tornadoweb.org/)
 
 ========================================================================
 CC-BY-4.0
@@ -180,8 +159,7 @@ MIT
 The following software have components provided under the terms of this license:
 
 - PyJWT (from http://github.com/jpadilla/pyjwt, https://pypi.org/project/PyJWT/)
-- PyYAML (from http://pyyaml.org/wiki/PyYAML, https://pyyaml.org/)
-- aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/)
+- aiohttp (from https://github.com/aio-libs/aiohttp, https://github.com/aio-libs/aiohttp/, https://pypi.org/project/aiohttp/)
 - aioitertools (from https://aioitertools.omnilib.dev, https://pypi.org/project/aioitertools/)
 - annotated-types (from https://pypi.org/project/annotated-types/, https://pypi.org/project/annotated-types/0.5.0/, https://pypi.org/project/annotated-types/0.6.0/)
 - anyio (from https://pypi.org/project/anyio/, https://pypi.org/project/anyio/3.3.0/)
@@ -268,7 +246,6 @@ PSF-2.0
 The following software have components provided under the terms of this license:
 
 - aiohappyeyeballs (from https://pypi.org/project/aiohappyeyeballs/)
-- distributed (from https://distributed.dask.org, https://pypi.org/project/distributed/)
 - fixedint (from https://github.com/nneonneo/fixedint)
 
 ========================================================================

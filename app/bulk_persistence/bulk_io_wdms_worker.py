@@ -1,13 +1,13 @@
 from typing import Union, AsyncGenerator, Tuple, List, Optional, Any
 from uuid import UUID
 
-from aiohttp import ClientSession
+from httpx import AsyncClient
 from fastapi import Response, status
 
 from odes_storage.models import Record
 
 from .sessions_storage import Session
-from .dask.errors import BulkWorkerError
+from .errors import BulkWorkerError
 from .model_chunking import GetDataParams, DataframeBasicDescribe
 from .mime_types import MimeTypes, MimeType
 from .json_orient import JSONOrient
@@ -23,19 +23,21 @@ _tracer = get_tracer()
 class BulkIOWdmsWorker(BulkIO):
     """implementation of bulk I/O using WDMS worker service"""
 
-    def __init__(self, host: str, http_session: ClientSession):
-        self._host = host
-        self._http_session = http_session
+    def __init__(self, client: AsyncClient):
+        self._http_client = client
 
     def name(self) -> str:
         return "Bulk worker service"
 
-    @staticmethod
-    async def _response_as_json(response, expected_status: int = status.HTTP_200_OK) -> Any:
-        if response.status != expected_status:
-            raise BulkWorkerError(await response.text(), response.status)
+    def close(self):
+        self._http_client.aclose()
 
-        return await response.json()
+    @staticmethod
+    def _response_as_json(response, expected_status: int = status.HTTP_200_OK) -> Any:
+        if response.status_code != expected_status:
+            raise BulkWorkerError(response.text, response.status_code)
+
+        return response.json()
 
     async def write_chunk(
             self,
@@ -54,19 +56,19 @@ class BulkIOWdmsWorker(BulkIO):
 
         content = await self._prepare_content(data)
 
-        async with self._http_session.post(
-                f"{self._host}/data/{record_id}/session/{session_id}", headers=headers, data=content, params=params
-        ) as resp:
-            response_obj = await self._response_as_json(resp)
-            bulk_info = BulkInfoForConsistency(**response_obj)
-            return DataframeBasicDescribe(
-                rowCount=bulk_info.row_count,
-                columnCount=bulk_info.column_count,
-                columns=[],
-                indexStart=bulk_info.index_start,
-                indexEnd=bulk_info.index_end,
-                indexType=bulk_info.index_type
-            )
+        resp = await self._http_client.post(
+            f"/data/{record_id}/session/{session_id}", headers=headers, data=content, params=params
+        )
+        response_obj = self._response_as_json(resp)
+        bulk_info = BulkInfoForConsistency(**response_obj)
+        return DataframeBasicDescribe(
+            rowCount=bulk_info.row_count,
+            columnCount=bulk_info.column_count,
+            columns=[],
+            indexStart=bulk_info.index_start,
+            indexEnd=bulk_info.index_end,
+            indexType=bulk_info.index_type,
+        )
 
     async def write_complete_session(
             self,
@@ -85,13 +87,13 @@ class BulkIOWdmsWorker(BulkIO):
         if update_from_bulk_uri is not None:
             params["from_bulk"] = update_from_bulk_uri.bulk_id
 
-        async with self._http_session.patch(
-                f"{self._host}/data/{record.id}/session/{session.id}", headers=headers, params=params
-        ) as resp:
-            response_obj = await self._response_as_json(resp)
-            bulk_id, describe = response_obj["bulkid"], BulkInfoForConsistency(**response_obj["describe"])
-            consistency_checks.check_bulk_consistency(record, describe)
-            return bulk_id
+        resp = await self._http_client.patch(
+            f"/data/{record.id}/session/{session.id}", headers=headers, params=params
+        )
+        response_obj = self._response_as_json(resp)
+        bulk_id, describe = response_obj["bulkid"], BulkInfoForConsistency(**response_obj["describe"])
+        consistency_checks.check_bulk_consistency(record, describe)
+        return bulk_id
 
     @_tracer.start_as_current_span("worker.read_data")
     async def read_data(
@@ -120,13 +122,13 @@ class BulkIOWdmsWorker(BulkIO):
         headers = get_headers_from_ctx(ctx)
         headers.update({"accept": accept_type.type})
 
-        async with self._http_session.get(
-                f"{self._host}/data/{record_id}/{bulk_uri.bulk_id}", headers=headers, params=params
-        ) as resp:
-            if resp.status != 200:
-                raise BulkWorkerError(await resp.text(), resp.status)
+        resp = await self._http_client.get(
+            f"/data/{record_id}/{bulk_uri.bulk_id}", headers=headers, params=params
+        )
+        if resp.status_code != 200:
+            raise BulkWorkerError(resp.text, resp.status_code)
 
-            return Response(content=await resp.read(), media_type=accept_type.type)
+        return Response(content=resp.content, media_type=accept_type.type)
 
     async def _prepare_content(self, data):
         if isinstance(data, bytes):
@@ -155,13 +157,13 @@ class BulkIOWdmsWorker(BulkIO):
 
         content = await self._prepare_content(data)
 
-        async with self._http_session.post(
-                f"{self._host}/data/{record.id}", headers=headers, data=content, params=params
-        ) as resp:
-            response_obj = await self._response_as_json(resp)
-            bulk_id, describe = response_obj["bulkid"], BulkInfoForConsistency(**response_obj["describe"])
-            consistency_checks.check_bulk_consistency(record, describe)
-            return bulk_id, describe
+        resp = await self._http_client.post(
+            f"/data/{record.id}", headers=headers, data=content, params=params
+        )
+        response_obj = self._response_as_json(resp)
+        bulk_id, describe = response_obj["bulkid"], BulkInfoForConsistency(**response_obj["describe"])
+        consistency_checks.check_bulk_consistency(record, describe)
+        return bulk_id, describe
 
     @_tracer.start_as_current_span("worker-get_statistics")
     async def get_statistics(
@@ -174,16 +176,16 @@ class BulkIOWdmsWorker(BulkIO):
 
         headers = get_headers_from_ctx(ctx)
 
-        async with self._http_session.get(
-                f"{self._host}/data/{record_id}/{bulk_uri}/statistics",
-                headers=headers,
-                params={"curves_selection": curves_selection},
-        ) as response:
-            return Response(
-                content=await response.read(),
-                status_code=response.status,
-                media_type=MimeTypes.JSON.type,
-            )
+        response = await self._http_client.get(
+            f"/data/{record_id}/{bulk_uri}/statistics",
+            headers=headers,
+            params={"curves_selection": curves_selection},
+        )
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            media_type=MimeTypes.JSON.type,
+        )
 
     @_tracer.start_as_current_span("worker-post_statistics")
     async def post_statistics(
@@ -205,13 +207,13 @@ class BulkIOWdmsWorker(BulkIO):
 
         headers = get_headers_from_ctx(ctx)
 
-        async with self._http_session.post(
-                f"{self._host}/data/{record_id}/{bulk_uri}/statistics",
-                headers=headers,
-                params={"record_version": record_version},
-        ) as response:
-            return Response(
-                content=await response.read(),
-                status_code=response.status,
-                media_type=MimeTypes.JSON.type,
-            )
+        response = await self._http_client.post(
+            f"/data/{record_id}/{bulk_uri}/statistics",
+            headers=headers,
+            params={"record_version": record_version},
+        )
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            media_type=MimeTypes.JSON.type,
+        )

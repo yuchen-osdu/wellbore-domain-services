@@ -1,16 +1,12 @@
 from typing import Dict, Optional
 
 import pandas as pd
-from dask.dataframe import DataFrame as DaskDataFrame
 
 from odes_storage.models import Record
 from app.helper.traces_ot import get_tracer
 from app.bulk_persistence import (
     ConsistencyException,
     DataConsistencyChecks,
-    BulkRecordNotFound,
-    DaskBulkStorage,
-    submit_with_trace,
     ColumnDescribe,
     BulkInfoForConsistency,
 )
@@ -129,34 +125,6 @@ class TrajectoryDataConsistencyChecks(DataConsistencyChecks):
             reference=ColumnDescribe.from_column(df, reference_name) if reference_name else None,
         )
         cls.check_bulk_consistency(record, bulk_info)
-
-    @classmethod
-    @_tracer.start_as_current_span("bulk_consistency")
-    async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
-        # check columns match TrajectoryStationProperties names
-        dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)
-        stats = await dask_blob_storage.read_stat(record.id, bulk_id)
-        schema = stats.get("schema")
-
-        curve_sizes = DataConsistencyChecks._get_curve_name_and_column_count(schema.keys())
-        cls._check_columns_consistency(record.data, curve_sizes)
-
-        reference_name = TrajectoryDataConsistencyChecks.get_reference_curve(record)
-        if not reference_name:
-            return
-
-        try:
-            ref_ddf, _ = await dask_blob_storage.load_bulk_and_catalog(record.id, bulk_id, columns=[reference_name])
-        except BulkRecordNotFound:
-            return
-
-        # wrap what should be called in dask workers
-        def check_reference(record: Record, ref_ddf_: DaskDataFrame):
-            ref = ref_ddf_[[reference_name]].compute()
-            ref_bulk_info = ColumnDescribe.from_column(ref, reference_name)
-            cls._check_reference(record, ref_bulk_info)
-
-        await submit_with_trace(dask_blob_storage.client, check_reference, record, ref_ddf)
 
     @staticmethod
     def _check_columns_consistency(record_data: dict, curve_sizes: Dict[str, int]):

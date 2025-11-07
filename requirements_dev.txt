@@ -113,15 +113,9 @@ charset-normalizer==3.4.3
     # via requests
 click==8.2.1
     # via
-    #   dask
-    #   distributed
     #   pip-tools
     #   uvicorn
     #   wellbore-domain-services (pyproject.toml)
-cloudpickle==3.1.1
-    # via
-    #   dask
-    #   distributed
 coverage[toml]==7.10.4
     # via pytest-cov
 cryptography==45.0.6
@@ -132,20 +126,12 @@ cryptography==45.0.6
     #   msal
     #   osdu-core-lib-python-gcp
     #   pyjwt
-dask[array,dataframe,distributed]==2025.7.0
-    # via
-    #   distributed
-    #   wellbore-domain-services (pyproject.toml)
 decorator==5.2.1
     # via gcsfs
 deepdiff==8.6.0
     # via wellbore-domain-services (pyproject.toml)
 dill==0.4.0
     # via pylint
-distributed==2025.7.0
-    # via
-    #   dask
-    #   wellbore-domain-services (pyproject.toml)
 dpath==2.2.0
     # via wellbore-schema-manipulation
 execnet==2.1.1
@@ -155,6 +141,7 @@ fastapi==0.116.1
     #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
+    #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
 fixedint==0.1.6
     # via azure-monitor-opentelemetry-exporter
@@ -165,7 +152,6 @@ frozenlist==1.7.0
 fsspec==2025.7.0
     # via
     #   adlfs
-    #   dask
     #   gcsfs
     #   osdu-core-lib-python-azure
     #   s3fs
@@ -214,7 +200,9 @@ h11==0.16.0
     #   httpcore
     #   uvicorn
 httpcore==1.0.9
-    # via httpx
+    # via
+    #   httpx
+    #   osdu-wbddms-worker
 httpx==0.28.1
     # via
     #   osdu-api
@@ -244,8 +232,6 @@ isodate==0.7.2
     #   msrest
 isort==6.0.1
     # via pylint
-jinja2==3.1.6
-    # via distributed
 jmespath==1.0.1
     # via
     #   aiobotocore
@@ -267,12 +253,6 @@ jsonschema-specifications==2025.4.1
     #   openapi-schema-validator
 lazy-object-proxy==1.11.0
     # via openapi-spec-validator
-locket==1.0.0
-    # via
-    #   distributed
-    #   partd
-markupsafe==3.0.2
-    # via jinja2
 mccabe==0.7.0
     # via pylint
 msal==1.33.0
@@ -282,8 +262,6 @@ msal==1.33.0
     #   msal-extensions
 msal-extensions==1.3.1
     # via azure-identity
-msgpack==1.1.1
-    # via distributed
 msrest==0.7.1
     # via azure-monitor-opentelemetry-exporter
 multidict==6.6.4
@@ -295,10 +273,12 @@ multidict==6.6.4
 munch==4.0.0
     # via wellbore-domain-services (pyproject.toml)
 natsort==8.4.0
-    # via wellbore-domain-services (pyproject.toml)
+    # via
+    #   osdu-wbddms-worker
+    #   wellbore-domain-services (pyproject.toml)
 numpy==2.3.2
     # via
-    #   dask
+    #   osdu-wbddms-worker
     #   pandas
     #   wellbore-domain-services (pyproject.toml)
 oauthlib==3.3.1
@@ -315,6 +295,7 @@ opentelemetry-api==1.36.0
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
     #   osdu-core-lib-python-azure
+    #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
 opentelemetry-exporter-gcp-trace==1.9.0
     # via wellbore-domain-services (pyproject.toml)
@@ -326,11 +307,13 @@ opentelemetry-sdk==1.36.0
     #   opentelemetry-exporter-gcp-trace
     #   opentelemetry-resourcedetector-gcp
     #   osdu-core-lib-python-azure
+    #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
 opentelemetry-semantic-conventions==0.57b0
     # via
     #   opentelemetry-sdk
     #   osdu-core-lib-python-azure
+    #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
 orderly-set==5.5.0
     # via deepdiff
@@ -346,6 +329,7 @@ osdu-core-lib-python==0.29.0
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-gcp
     #   osdu-core-lib-python-ibm
+    #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
 osdu-core-lib-python-aws==0.29.0
     # via wellbore-domain-services (pyproject.toml)
@@ -365,22 +349,20 @@ osdu-data-ecosystem-storage==0.29.0
     # via wellbore-domain-services (pyproject.toml)
 osdu-log-recognition-lib==0.29.0
     # via wellbore-domain-services (pyproject.toml)
+osdu-wbddms-worker==0.2.0
+    # via wellbore-domain-services (pyproject.toml)
 packaging==25.0
     # via
     #   build
-    #   dask
-    #   distributed
     #   pytest
     #   wellbore-domain-services (pyproject.toml)
-pandas==2.3.1
+pandas==2.3.3
     # via
-    #   dask
+    #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
-partd==1.4.2
-    # via dask
 pathable==0.4.4
     # via jsonschema-path
-pip-tools==7.5.0
+pip-tools==7.5.1
     # via wellbore-domain-services (pyproject.toml)
 platformdirs==4.3.8
     # via pylint
@@ -410,12 +392,10 @@ protobuf==6.32.0
     #   grpcio-status
     #   proto-plus
 psutil==7.0.0
-    # via
-    #   azure-monitor-opentelemetry-exporter
-    #   distributed
+    # via azure-monitor-opentelemetry-exporter
 pyarrow==21.0.0
     # via
-    #   dask
+    #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
 pyasn1==0.6.1
     # via
@@ -431,6 +411,7 @@ pydantic==2.11.7
     #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
+    #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
 pydantic-core==2.33.2
     # via pydantic
@@ -483,10 +464,7 @@ python-ulid==3.1.0
 pytz==2025.2
     # via pandas
 pyyaml==6.0.2
-    # via
-    #   dask
-    #   distributed
-    #   jsonschema-path
+    # via jsonschema-path
 referencing==0.36.2
     # via
     #   jsonschema
@@ -507,6 +485,7 @@ requests==2.32.5
     #   osdu-api
     #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-baremetal
+    #   osdu-wbddms-worker
     #   requests-oauthlib
     #   wellbore-domain-services (pyproject.toml)
 requests-oauthlib==2.0.0
@@ -535,9 +514,7 @@ sniffio==1.3.1
     #   anyio
     #   asgi-lifespan
 sortedcontainers==2.4.0
-    # via
-    #   distributed
-    #   hypothesis
+    # via hypothesis
 starlette==0.47.2
     # via
     #   fastapi
@@ -545,21 +522,12 @@ starlette==0.47.2
     #   wellbore-domain-services (pyproject.toml)
 structlog==25.4.0
     # via wellbore-domain-services (pyproject.toml)
-tblib==3.1.0
-    # via distributed
 tenacity==9.1.2
     # via
     #   osdu-api
     #   wellbore-domain-services (pyproject.toml)
 tomlkit==0.13.3
     # via pylint
-toolz==1.0.0
-    # via
-    #   dask
-    #   distributed
-    #   partd
-tornado==6.5.2
-    # via distributed
 types-jsonschema==4.25.0.20250809
     # via wellbore-schema-manipulation
 typing-extensions==4.14.1
@@ -589,10 +557,11 @@ tzdata==2025.2
 urllib3==2.5.0
     # via
     #   botocore
-    #   distributed
     #   requests
 uvicorn==0.35.0
-    # via wellbore-domain-services (pyproject.toml)
+    # via
+    #   osdu-wbddms-worker
+    #   wellbore-domain-services (pyproject.toml)
 wellbore-schema-manipulation==0.29.0
     # via wellbore-domain-services (pyproject.toml)
 wheel==0.45.1
@@ -603,8 +572,6 @@ xmltodict==0.14.2
     # via osdu-log-recognition-lib
 yarl==1.20.1
     # via aiohttp
-zict==3.0.0
-    # via distributed
 zipp==3.23.0
     # via importlib-metadata
 

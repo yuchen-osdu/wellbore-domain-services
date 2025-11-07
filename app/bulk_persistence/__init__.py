@@ -14,13 +14,6 @@
 
 
 from .bulk_filter import BulkFilter, BulkReadFilterOperator, BulkReadFilters
-from .bulk_persistence_config import (
-    MAX_COLUMNS_RETURN,
-    MAX_COLUMNS_WRITE_CHUNK,
-    BulkPersistenceConfig,
-    get_config,
-    set_config_getter,
-)
 from .bulk_uri import BulkURI
 from .capture_timings import capture_timings
 from .consistency_checks import (
@@ -29,25 +22,12 @@ from .consistency_checks import (
     BulkInfoForConsistency,
     ColumnDescribe,
 )
-from .dask import client as dask_client
-from .dask.bulk_catalog import (
-    BulkCatalog,
-    async_load_bulk_catalog_with_blob_storage,
-    async_save_bulk_catalog_with_blob_storage,
-)
-from .dask.client import DaskDistributedClient
-from .dask.dask_bulk_storage import DaskBulkStorage
-from .dask.dask_bulk_storage_local import (
-    make_local_dask_bulk_storage,
-    make_local_dask_storage_parameters,
-)
 
 # bulk IO
 from .bulk_io import BulkIO
-from .bulk_io_dask import BulkIODask
 from .bulk_io_wdms_worker import BulkIOWdmsWorker
 
-from .dask.errors import (
+from .errors import (
     BulkCurvesNotFound,
     BulkError,
     BulkRecordNotFound,
@@ -55,10 +35,8 @@ from .dask.errors import (
     TooManyColumnsRequested,
     internal_bulk_exceptions,
 )
-from .dask.localcluster import DaskException
-from .dask.storage_path_builder import hash_record_id
-from .dask.traces import (
-    submit_with_trace,
+from .storage_path_builder import hash_record_id
+from .traces import (
     trace_attributes_root_span,
     trace_dataframe_attributes,
 )
@@ -103,8 +81,6 @@ from .sessions_storage import (
     SessionUpdatedEtagUnmatched,
     SessionUpdateMode,
 )
-from .statistics import BulkStatistics, exceptions
-from .statistics.models import BulkDataStatisticsResponse
 
 # TMP: this should probably not be exposed outside the bulk_persistence package
 from .temp_dir import get_temp_dir

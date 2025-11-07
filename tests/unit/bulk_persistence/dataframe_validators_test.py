@@ -15,7 +15,7 @@ from app.bulk_persistence.dataframe_validators import (
     validate_number_of_columns
 )
 
-from app.bulk_persistence.dask.errors import BulkNotProcessable
+from app.bulk_persistence.errors import BulkNotProcessable
 
 
 def test_no_validation_always_success():
@@ -146,12 +146,12 @@ def test_any_reserved_column_name(columns, expected):
     assert any_reserved_column_name(columns) == expected
 
 
-@pytest.mark.parametrize("limit,nb_col,expected", [
-    (500, 50, True),
-    (500, 500, True),
-    (500, 501, False)
+@pytest.mark.parametrize("nb_col,expected", [
+    (50, True),
+    (500, True),
+    (3001, False)
 ])
-def test_validate_number_of_columns(limit, nb_col, expected, local_bulk_persistence_config):
+def test_validate_number_of_columns(nb_col, expected):
     columns = [f'col_{i}' for i in range(nb_col)]
     result, _info = validate_number_of_columns(pd.DataFrame(columns=columns))
     assert result == expected

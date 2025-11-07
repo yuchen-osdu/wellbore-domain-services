@@ -95,15 +95,15 @@ Note: using curves filtering has a cost, use it only if it reduces significantly
         - HTTP 400 "Too many values requested"
         - HTTP 413 "the resource requested exceeds the limit" (When WDDMS worker are enabled)
     - Get curve names and number of rows per curve by using describe parameter
-       - Each request should fetch as many as columns it is possible until upper limits are reached (> 10 millions values or > 500 columns)
+       - Each request should fetch as many as columns it is possible until upper limits are reached (> 10 millions values or > 3000 columns)
 """
 
 BULK_WRITE_NOTE = """
 **Important**: In order to minimize writing time, it's necessary to:  
-- Double check whether bulk data is big enough to be sent with chunking APIs: meaning > 10 millions values or > 500 columns
+- Double check whether bulk data is big enough to be sent with chunking APIs: meaning > 10 millions values or > 3000 columns
     - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data API
 - Ensure all curve's values are in the same chunk to be sent
-- Each chunk should contain as many as columns it is possible until upper limits are reached (> 10 millions values or > 500 columns)
+- Each chunk should contain as many as columns it is possible until upper limits are reached (> 10 millions values or > 3000 columns)
 """
 
 

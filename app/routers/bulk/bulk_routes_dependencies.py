@@ -4,14 +4,11 @@ from typing import Optional, Annotated
 from fastapi import Request, Query
 from packaging.version import Version
 
-from app.bulk_persistence import BulkURI, BulkIO, BulkIODask, BulkIOWdmsWorker, get_config as get_config_bulk, \
-    GetDataParams
+from app.bulk_persistence import BulkURI, BulkIO, GetDataParams
 from app.bulk_persistence.model_chunking import CURVES_EXAMPLES, BULK_FILTER_DESCRIPTION, \
     BULK_FILTER_EXAMPLES
 from app.model.log_bulk import LogBulkHelper
-from app.conf import Config
-from app.utils import get_http_client_session
-
+from app.context import get_ctx
 
 BULK_URI_FIELD = "bulkURI"
 
@@ -133,20 +130,5 @@ def get_bulk_id_access(request: Request) -> BulkIdAccess:
         raise RuntimeError("bulk_id_access dependency is not defined")
     return request.state.bulk_id_access
 
-
-async def get_bulk_io(is_write_operation: bool = False) -> BulkIO:
-    bulk_config = get_config_bulk()
-    if (not is_write_operation and bulk_config.dask_enabled_on_read) or (
-        is_write_operation and bulk_config.dask_enabled_on_write
-    ):
-        return BulkIODask(Config.enable_read_fast_track.value)
-    return BulkIOWdmsWorker(bulk_config.bulk_worker_host, get_http_client_session("wdms_bulk_worker"))
-
-
-# still WIP so explicitly distinguish read and write
-async def get_bulk_io_read() -> BulkIO:
-    return await get_bulk_io(is_write_operation=False)
-
-
-async def get_bulk_io_write() -> BulkIO:
-    return await get_bulk_io(is_write_operation=True)
+async def get_bulk_io() -> BulkIO:
+    return await get_ctx().app_injector.get(BulkIO)

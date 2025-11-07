@@ -218,11 +218,21 @@ In the case of execution of subset of tests, the speed gain can be lower than th
 
 This example runs basic tests using the local filesystem for blob storage and storage service. There's no search or entilements service, everything runs locally.  
 
-First, create the temp storage folders and run the service.
-
+First create the temp storage folders and set necessary environment variables:
 ```bash
 mkdir -p tmpstorage tmpblob
-python main.py -e USE_INTERNAL_STORAGE_SERVICE_WITH_PATH $(pwd)/tmpstorage -e USE_LOCALFS_BLOB_STORAGE_WITH_PATH $(pwd)/tmpblob -e CLOUD_PROVIDER local
+
+export CLOUD_PROVIDER=local
+export USE_INTERNAL_STORAGE_SERVICE_WITH_PATH=$(pwd)/tmpstorage
+export USE_LOCALFS_BLOB_STORAGE_WITH_PATH=$(pwd)/tmpblob
+```
+second, run the worker service in background:
+```bash
+uvicorn wdmsworker.app:app --port 8081 &
+```
+third, run the WDMS service and point to the worker service:
+```bash
+python main.py -e SERVICE_HOST_WDMS_WORKER http://localhost:8081
 ```
 
 In another terminal, generate a minimum configuration file and run the integration tests.

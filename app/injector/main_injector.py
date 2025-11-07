@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from httpx import AsyncClient
 
 from app.bulk_persistence import (
-    DaskBulkStorage,
     SessionsStorage,
-    dask_client,
-    get_config,
-    make_local_dask_bulk_storage,
+    BulkIO,
+    BulkIOWdmsWorker,
 )
 from app.clients import (
     StorageRecordServiceClient,
@@ -30,6 +29,7 @@ from app.clients.wellbore_schema_client import SchemaServiceClient
 from app.clients.storage_service_blob_storage import (
     StorageRecordServiceBlobStorage,
 )
+from app.clients.http_client_factory import get_http_client_with_logging
 from app.conf import Config
 from app.helper.logger import get_logger
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
@@ -61,6 +61,12 @@ class MainInjector(AppInjectorModule):
         app_injector.register(
             SchemaServiceClient,
             self.build_schema_service_client,
+            WithLifeTime.Singleton()
+        )
+
+        app_injector.register(
+            BulkIO,
+            self.build_bulk_io,
             WithLifeTime.Singleton()
         )
 
@@ -117,15 +123,6 @@ class MainInjector(AppInjectorModule):
 
                 logger.warning(f'overriding blob storage to use local fs on path ' + blob_storage_localfs)
                 app_injector.register(BlobStorageBase, _blob_storage_builder)
-
-                async def _dask_blob_storage_builder() -> DaskBulkStorage:
-                    return await make_local_dask_bulk_storage(
-                        base_directory=blob_storage_localfs,
-                        bulk_config=get_config(),
-                        dask_client=await app_injector.get(dask_client.DaskDistributedClient))
-
-                app_injector.register(DaskBulkStorage, _dask_blob_storage_builder)
-                logger.warning(f'overriding DASK blob storage to use local fs on path ' + blob_storage_localfs)
 
 
     @staticmethod
@@ -185,3 +182,9 @@ class MainInjector(AppInjectorModule):
             max_connections=Config.de_client_config_max_connection.value,
             max_keepalive_connections=Config.de_client_config_max_keepalive.value
         )
+
+    @staticmethod
+    async def build_bulk_io() -> BulkIO:
+        worker_service_host = Config.service_host_wdms_worker.value
+        http_client = get_http_client_with_logging(base_url=worker_service_host)
+        return BulkIOWdmsWorker(client=http_client)

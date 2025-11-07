@@ -1,5 +1,5 @@
 import pytest
-from fastapi import Depends
+from fastapi import Depends, FastAPI
 from unittest.mock import AsyncMock
 
 from app.clients.search_service_client import get_search_service
@@ -208,3 +208,35 @@ async def test_app_configurable_with_client_and_mocks(
     finally:
         # remove the route we added to not mess with other tests
         app.router.routes = [r for r in app.routes if r.name != inside_out_handler.__name__]
+
+@pytest.mark.anyio
+async def test_app_can_be_mounted(worker_app_initialized_with_testclient):
+    _, client = worker_app_initialized_with_testclient
+    response = await client.get("/api/wdms-worker/healthz")
+    assert response.status_code == 200
+
+
+@pytest.mark.anyio
+async def test_worker_fixture_health_and_routes(worker_app_initialized_with_testclient):
+    """
+    Validates the worker fixture:
+    - returns a FastAPI app and an AsyncClient
+    - the health endpoint responds 200
+    - the health route is registered on the app
+    - the client base_url matches the test host
+    """
+    worker_app, client = worker_app_initialized_with_testclient
+
+    # basic type check
+    assert isinstance(worker_app, FastAPI)
+
+    # health endpoint reachable
+    resp = await client.get("/api/wdms-worker/healthz")
+    assert resp.status_code == 200
+
+    # route registered on the app
+    paths = {route.path for route in worker_app.routes}
+    assert "/healthz" in paths
+
+    # client base_url points to the test worker host configured in fixtures
+    assert str(client.base_url).startswith("http://test_wdms_worker")

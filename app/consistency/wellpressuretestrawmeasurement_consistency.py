@@ -4,7 +4,7 @@ from typing import Optional, Dict
 import pandas as pd
 from odes_storage.models import Record
 
-from app.bulk_persistence import DataConsistencyChecks, BulkInfoForConsistency, ConsistencyException, DaskBulkStorage
+from app.bulk_persistence import DataConsistencyChecks, BulkInfoForConsistency, ConsistencyException
 from app.consistency.unique import get_unique_dict_attr_values
 from app.context import get_ctx
 from app.helper.traces_ot import get_tracer
@@ -54,17 +54,6 @@ class WellPressureTestRawMeasurementConsistencyChecks(DataConsistencyChecks):
             return
 
         cls._check_columns_consistency(record.data, bulk_info.curves)
-
-    @classmethod
-    @_tracer.start_as_current_span("bulk_consistency")
-    async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
-        # check col match record.curves
-        dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)
-        stats = await dask_blob_storage.read_stat(record.id, bulk_id)
-        schema = stats.get("schema")
-
-        curve_sizes = DataConsistencyChecks._get_curve_name_and_column_count(schema.keys())
-        cls._check_columns_consistency(record.data, curve_sizes)
 
     @classmethod
     @_tracer.start_as_current_span("bulk_consistency")

@@ -4,9 +4,9 @@ import re
 import pandas as pd
 from pandas.core.dtypes.common import is_any_real_numeric_dtype
 
-from .dask.utils import WDMS_INDEX_NAME
-from .dask.errors import BulkNotProcessable
-from .bulk_persistence_config import MAX_COLUMNS_WRITE_CHUNK
+from .utils import WDMS_INDEX_NAME
+from .errors import BulkNotProcessable
+from app.bulk_persistence.constants import WRITE_MAX_COLUMNS_COUNT
 
 
 ValidationResult = Tuple[bool, str]  # Tuple (is_dataframe_valid, failure_reason)
@@ -68,8 +68,8 @@ def validate_index(df: pd.DataFrame) -> ValidationResult:
 
 def validate_number_of_columns(df: pd.DataFrame) -> ValidationResult:
     """ Verify max number of columns """
-    if len(df.columns) > MAX_COLUMNS_WRITE_CHUNK:
-        return False, f"Too many columns : maximum allowed '{MAX_COLUMNS_WRITE_CHUNK}'"
+    if len(df.columns) > WRITE_MAX_COLUMNS_COUNT:
+        return False, f"Too many columns : maximum allowed '{WRITE_MAX_COLUMNS_COUNT}'"
     return ValidationSuccess
 
 

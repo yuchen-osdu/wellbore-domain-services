@@ -2,18 +2,14 @@ from typing import Dict, Optional
 from enum import Enum
 
 import pandas as pd
-from dask.dataframe import DataFrame as DaskDataFrame
 
 from odes_storage.models import Record
 
 from app.helper.traces_ot import get_tracer
 
 from app.bulk_persistence import (
-    BulkRecordNotFound,
-    DaskBulkStorage,
     ConsistencyException,
     DataConsistencyChecks,
-    submit_with_trace,
     BulkInfoForConsistency,
     ColumnDescribe,
 )
@@ -134,48 +130,6 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
         )
         cls.check_bulk_consistency(record, bulk_info)
 
-    @classmethod
-    @_tracer.start_as_current_span("bulk_consistency")
-    async def check_bulk_consistency_on_commit_session(cls, record: Record, bulk_id: str):
-        """Perform welllog consistency checks of a bulk  against a welllog record used by bulk_persistence
-            when commit a session (chunking apis)
-        :param: record (Record): welllog record to check
-        :param: bulk_id (str): id of the bulk  to check against the record
-        :raise: ConsistencyException
-        """
-
-        # check col match record.curves
-        dask_blob_storage = await get_ctx().app_injector.get(DaskBulkStorage)
-        stats = await dask_blob_storage.read_stat(record.id, bulk_id)
-        schema = stats.get("schema")
-
-        curve_sizes = DataConsistencyChecks._get_curve_name_and_column_count(schema.keys())
-        cls._check_columns_consistency(record.data, curve_sizes)
-
-        # check reference
-        if not record.data:
-            return
-
-        reference_curve_id = record.data.get(WellLogProperties.REFERENCE_CURVE_ID.value)
-        if not reference_curve_id:
-            return
-
-        data_partition = get_data_partition_from_record_id(record)
-        if not cls._is_curve_reference_family_measured_depth(record.data, data_partition):
-            return
-
-        try:
-            ref_ddf, _ = await dask_blob_storage.load_bulk_and_catalog(record.id, bulk_id, columns=[reference_curve_id])
-        except BulkRecordNotFound:
-            return
-
-        # wrap what should be called in dask workers
-        def check_welllog_reference(wl_record: Record, df: DaskDataFrame):
-            ref = df[[reference_curve_id]].compute()
-            ref_bulk_info = ColumnDescribe.from_column(ref, reference_curve_id)
-            cls._check_reference(wl_record, ref_bulk_info)
-
-        await submit_with_trace(dask_blob_storage.client, check_welllog_reference, record, ref_ddf)
 
     @staticmethod
     def _check_columns_consistency(wl_data: dict, curve_sizes: Dict[str, int]):

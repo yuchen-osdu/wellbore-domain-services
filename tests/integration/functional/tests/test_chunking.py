@@ -27,7 +27,6 @@ from wdms_client.request_builders.wdms.crud.osdu_wellpressuretestrawmeasurement 
 from ..generate_dataframe import generate_df
 
 from .fixtures import with_wdms_env
-from wdms_client.request_builders.wdms.session import build_delete_session
 from wdms_client.request_runner import RequestRunner, Request
 
 from wdms_client.request_builders.wdms.crud.osdu_welllog import (
@@ -109,10 +108,6 @@ def build_request(name, method, url, *, payload=None, headers=None) -> RequestRu
 
 def build_request_post_data(entity_type: str, record_id: str, payload) -> RequestRunner:
     url = build_base_url(entity_type) + f'/{record_id}/data'
-    return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
-
-def build_request_post_data_without_dask(entity_type: str, record_id: str, payload) -> RequestRunner:
-    url = build_base_url_without_dask(entity_type) + f'/{record_id}/data'
     return build_request(f'{entity_type} post data', 'POST', url, payload=payload)
 
 def build_request_post_chunk(entity_type: str, record_id: str, session_id: UUID, payload) -> RequestRunner:

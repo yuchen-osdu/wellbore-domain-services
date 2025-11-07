@@ -20,11 +20,11 @@ from starlette.responses import JSONResponse
 from odes_storage.models import Record
 
 from app.routers.record_utils import fetch_record_dependency, fetch_latest_version_record_dependency
-from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess, get_bulk_io_read
+from app.routers.bulk.bulk_routes_dependencies import get_bulk_id_access, BulkIdAccess, get_bulk_io
 
-from app.bulk_persistence.dask.dask_bulk_storage import DaskBulkStorage
-from app.bulk_persistence.dask.errors import BulkRecordNotFound, BulkCurvesNotFound
-from app.bulk_persistence import BulkDataStatisticsResponse, exceptions as statistics_exceptions
+from app.bulk_persistence.statistics_models import BulkDataStatisticsResponse
+from app.bulk_persistence import statistics_exceptions
+from app.bulk_persistence.errors import BulkRecordNotFound, BulkCurvesNotFound
 from app.bulk_persistence import model_chunking
 from app.bulk_persistence import BulkIO
 
@@ -87,12 +87,6 @@ Data types supported:
             - date  
 """
 
-
-@_tracer.start_as_current_span("with_dask_blob_storage")
-async def with_dask_blob_storage() -> DaskBulkStorage:
-    return await get_ctx().app_injector.get(DaskBulkStorage)
-
-
 @router.get(
     '/{record_id}/data/statistics',
     summary="Returns statistics of record's data for selected curves",
@@ -116,7 +110,7 @@ async def get_bulk_statistics(
         curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
                                       examples=model_chunking.CURVES_EXAMPLES),
-        bulk_io: BulkIO = Depends(get_bulk_io_read),
+        bulk_io: BulkIO = Depends(get_bulk_io),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         ctx: Context = Depends(get_ctx),
 ):
@@ -174,7 +168,7 @@ async def get_bulk_statistics_version(
         curves: Optional[str] = Query(default=None,
                                       description='List of curves or array to be returned. All curves if empty',
                                       examples=model_chunking.CURVES_EXAMPLES),
-        bulk_io: BulkIO = Depends(get_bulk_io_read),
+        bulk_io: BulkIO = Depends(get_bulk_io),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         ctx: Context = Depends(get_ctx),
 ):
@@ -226,7 +220,7 @@ async def compute_bulk_statistics(
         record_id: WellLogId,
         version: int,
         record: Record = Depends(fetch_record_dependency),
-        bulk_io: BulkIO = Depends(get_bulk_io_read),
+        bulk_io: BulkIO = Depends(get_bulk_io),
         bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
         ctx: Context = Depends(get_ctx),
 ):

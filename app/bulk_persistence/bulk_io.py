@@ -22,6 +22,10 @@ class BulkIO(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    def close(self):
+        raise NotImplementedError()
+
+    @abstractmethod
     async def write_bulk(
         self,
         ctx,

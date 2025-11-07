@@ -18,7 +18,7 @@ import re
 from pydantic import BaseModel, Field, field_validator
 
 from .bulk_filter import BulkReadFilterOperator, BulkFilter
-from .dask.errors import FilterError
+from .errors import FilterError
 
 CURVES_EXAMPLES = {
     "all": {

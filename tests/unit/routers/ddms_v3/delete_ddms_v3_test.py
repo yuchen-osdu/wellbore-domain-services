@@ -19,7 +19,6 @@ from odes_storage.models import RecordVersions
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import pytest
 
-from app.bulk_persistence import DaskBulkStorage
 from app.clients import StorageRecordServiceClient
 from app.routers.delete import delete_bulk_data
 
@@ -32,7 +31,6 @@ blob_storage_mock = create_autospec(BlobStorageBase, spec_set=True, instance=Tru
 def client_delete(app_configurable_with_testclient, nope_logger_fixture):
     _, client = app_configurable_with_testclient(
         storage_client_mock=storage_record_service_client_mock,
-        dask_bulk_storage_mock=create_autospec(DaskBulkStorage, spec_set=True, instance=True),
         blob_storage_base_mock=blob_storage_mock,
     )
     return client

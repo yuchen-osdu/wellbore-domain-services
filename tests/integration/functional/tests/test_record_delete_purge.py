@@ -57,7 +57,7 @@ def create_record_with_data(with_wdms_env, entity_type, serializer, nb_version):
                       resobj.recordIds[0])  # stored the record id for the following tests
 
 
-@pytest.mark.tag('basic', 'smoke')
+@pytest.mark.tag('basic', 'bulk', 'smoke')
 @pytest.mark.parametrize('entity_type', [entity_type for entity_type in entity_type_dict.keys()])
 def test_hard_delete_purge_record(with_wdms_env, entity_type):
     create_record_with_data(with_wdms_env, entity_type, ParquetSerializer(), 3)
@@ -72,7 +72,7 @@ def test_hard_delete_purge_record(with_wdms_env, entity_type):
     result.assert_status_code(404)
 
 
-@pytest.mark.tag('basic', 'smoke')
+@pytest.mark.tag('basic', 'bulk', 'smoke')
 @pytest.mark.parametrize('entity_type', [entity_type for entity_type in entity_type_dict.keys()])
 def test_soft_delete_purge_record(with_wdms_env, entity_type):
     create_record_with_data(with_wdms_env, entity_type, ParquetSerializer(), 3)

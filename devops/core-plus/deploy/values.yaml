@@ -3,10 +3,10 @@ global:
   limitsEnabled: true
   dataPartitionId: ""
   wdms_workers:
-    enabled: false # Disable WDMS worker deployment for e2e tests for stability reason
+    enabled: true # Disable WDMS worker deployment for e2e tests for stability reason
 
 data:
-  logLevel: "ERROR"
+  logLevel: "INFO"
   requestsCpu: "370m"
   requestsMemory: "710Mi"
   limitsCpu: "1"
