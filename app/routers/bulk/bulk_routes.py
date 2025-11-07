@@ -57,14 +57,14 @@ from app.bulk_persistence import (DataFrameValidationFunc,
                                   DataConsistencyChecks,
                                   GetDataParams,
                                   DataframeBasicDescribe,
-                                  MAX_COLUMNS_RETURN,
                                   )
 
 from ..record_utils import fetch_record
 from ..dependency import FetchRecordPartialDependency, FetchRecordDependency, GetRecordFunction
 from ..common_parameters import sessions_body_examples, successful_get_bulk_data_responses_examples
-from .bulk_routes_dependencies import BulkIO, get_bulk_io_read, get_bulk_io_write
-
+from .bulk_routes_dependencies import BulkIO, get_bulk_io
+from app.bulk_persistence.constants import READ_MAX_COLUMNS_COUNT
+from app.helper.logger import get_logger
 
 router = APIRouter()  # router dedicated to bulk APIs
 
@@ -94,7 +94,7 @@ async def post_data(record_id: str,
                     request: Request,
                     content_type: MimeType = Depends(write_bulk_content_type),
                     ctx: Context = Depends(get_ctx),
-                    bulk_io: BulkIO = Depends(get_bulk_io_write),
+                    bulk_io: BulkIO = Depends(get_bulk_io),
                     df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
                     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
@@ -114,6 +114,7 @@ async def post_data(record_id: str,
             consistency_checks=consistency_checks,
             record=record)
     except BulkError as ex:
+        get_logger().exception(f"Bulk write failed: {ex}")
         ex.raise_as_http()
 
     trace_dataframe_attributes(basic_describe)
@@ -150,7 +151,7 @@ async def post_chunk_data(record_id: str,
                           request: Request,
                           content_type: MimeType = Depends(write_bulk_content_type),
                           with_session: WithSessionStorages = Depends(get_session_dependencies),
-                          bulk_io: BulkIO = Depends(get_bulk_io_write),
+                          bulk_io: BulkIO = Depends(get_bulk_io),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                           ) -> DataframeBasicDescribe:
     # fetch the session
@@ -178,6 +179,7 @@ async def post_chunk_data(record_id: str,
         return basic_describe
 
     except BulkError as ex:
+        get_logger().exception(f"Bulk write chunk failed: {ex}")
         ex.raise_as_http()
 
 
@@ -187,7 +189,7 @@ Multiple media types response are available ("application/json", "application/x-
 The desired format can be specify in the "Accept" header, default is Parquet.  
 
 When bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  
-The requested columns must not exceed {MAX_COLUMNS_RETURN}. 
+The requested columns must not exceed {READ_MAX_COLUMNS_COUNT}. 
 The query parameter __curves__ can be use to limit the number of columns.  
 """
 
@@ -211,7 +213,7 @@ async def get_data_version(
     data_param: GetDataParams = Depends(get_data_parameters),
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
-    bulk_io: BulkIO = Depends(get_bulk_io_read),
+    bulk_io: BulkIO = Depends(get_bulk_io),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     get_record: GetRecordFunction = Depends(FetchRecordPartialDependency())
 ):
@@ -230,6 +232,7 @@ async def get_data_version(
         return await bulk_io.read_data(get_ctx(), record_id, bulk_uri, data_param, accept_type, orient)
 
     except BulkError as ex:
+        get_logger().exception(f"Bulk read failed: {ex}")
         ex.raise_as_http()
 
 
@@ -252,7 +255,7 @@ async def get_data(
     ctrl_p: GetDataParams = Depends(get_data_parameters),
     accept_type: MimeType = Depends(read_bulk_accept_type),
     orient: JSONOrient = Depends(json_orient_parameter),
-    bulk_io: BulkIO = Depends(get_bulk_io_read),
+    bulk_io: BulkIO = Depends(get_bulk_io),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     get_record: GetRecordFunction = Depends(FetchRecordPartialDependency())
 ):
@@ -283,7 +286,7 @@ async def complete_session(
     ctx: Context = Depends(get_ctx),
     update_request: UpdateSessionState = Body(..., examples=sessions_body_examples),
     with_session: WithSessionStorages = Depends(get_session_dependencies),
-    bulk_io: BulkIO = Depends(get_bulk_io_write),
+    bulk_io: BulkIO = Depends(get_bulk_io),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
     consistency_checks: DataConsistencyChecks = Depends(get_data_consistency_checks),
 ) -> CommitSessionResponse:
@@ -362,4 +365,5 @@ async def complete_session(
     except SessionException as ex:
         ex.raise_as_http()
     except BulkError as ex:
+        get_logger().exception(f"Bulk complete session failed: {ex}")
         ex.raise_as_http()

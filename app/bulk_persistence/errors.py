@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from fastapi import status, HTTPException
-from dask.distributed import scheduler
 from pyarrow.lib import ArrowException, ArrowInvalid
 from functools import wraps
 
@@ -131,9 +130,6 @@ def internal_bulk_exceptions(target):
         except ArrowException:
             get_logger().exception(f"Pyarrow exception raised when running {target.__name__}")
             raise BulkNotProcessable("Unable to process bulk - Arrow")
-        except scheduler.KilledWorker:
-            get_logger().exception(f"Dask worker has been killed when running '{target.__name__}'")
-            raise InternalBulkError("Out of memory")
         except Exception:
             get_logger().exception(f"Unexpected exception raised when running '{target.__name__}'")
             raise

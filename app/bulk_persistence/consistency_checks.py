@@ -8,8 +8,8 @@ from fastapi import status
 from pydantic import BaseModel, Field, PrivateAttr
 from odes_storage.models import Record
 
-from .dask.errors import BulkError
-from .dask.utils import WDMS_INDEX_NAME
+from .errors import BulkError
+from .utils import WDMS_INDEX_NAME
 from .dataframe_columns import group_curve_columns
 
 
@@ -204,11 +204,6 @@ class DataConsistencyChecks(ABC):
     @classmethod
     @abstractmethod
     def check_bulk_consistency(cls, record: Record, bulk_info: BulkInfoForConsistency):
-        pass
-
-    @classmethod
-    @abstractmethod
-    async def check_bulk_consistency_on_commit_session(cls, record: Record, new_bulk_id):
         pass
 
     @classmethod

@@ -43,15 +43,15 @@ from .data import (
 
 from .fixtures import (
     local_dev_config,
-    local_bulk_persistence_config,
+    local_partition_header,
     app_initialized_with_testclient,
     app_configurable_with_testclient,
+    worker_app_initialized_with_testclient,
     mock_storage_client_holding_data,
     mock_schema_client_holding_data
 )
 
 from .fixtures_pkg import (
-    dask_custom_config,
     testing_app_local_chunking_no_consistency,
     testing_app_local_chunking_with_consistency
 )

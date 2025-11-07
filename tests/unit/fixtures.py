@@ -1,6 +1,3 @@
-
-
-import contextlib
 import copy
 import types
 from typing import List
@@ -11,8 +8,6 @@ from httpx import AsyncClient, Headers, ASGITransport
 
 import odes_storage
 import pytest
-import pytest_asyncio
-from unittest import mock
 from unittest.mock import AsyncMock, create_autospec, patch
 
 from app.conf import ConfigurationContainer, cloud_provider_additional_environment
@@ -24,24 +19,10 @@ from app.injector.app_injector import WithLifeTime
 from app.wdms_app import wdms_app, app_injector
 from app.routers.bulk.utils import set_welllog_data_consistency_check, set_trajectory_data_consistency_check, \
     set_ppfgdataset_consistency_check, set_wellpressuretestrawmeasurement_consistency_check
-from app.bulk_persistence import BulkPersistenceConfig
-from app.bulk_persistence import DaskBulkStorage
+from app.bulk_persistence import BulkIO, BulkIOWdmsWorker
 from app.bulk_persistence import SessionsStorage
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
-
-
-@pytest.fixture(scope="module")
-def local_bulk_persistence_config(local_dev_config):
-    """
-    Creates a new instance of BulkPersistenceConfig with default inits
-    """
-    bulk_config = BulkPersistenceConfig(
-        min_worker_memory=local_dev_config.min_worker_memory.value,
-        dask_data_ipc=local_dev_config.dask_data_ipc.value,
-        service_name=local_dev_config.service_name.value
-    )
-
-    yield bulk_config
+from wdmsworker.app import app as worker_app
 
 
 @pytest.fixture(scope="module")
@@ -49,8 +30,7 @@ def local_dev_config(tmp_path_factory):
     """
         # WARNING: global app.conf.Config corruption
     """
-
-    config = ConfigurationContainer.with_load_all(environment_dict={
+    env_dict = {
         # set config to a local dev config (assumption for running unit tests)
         "OS_WELLBORE_DDMS_DEV_MODE": "True",
         "CLOUD_PROVIDER": "local",
@@ -61,16 +41,25 @@ def local_dev_config(tmp_path_factory):
         'USE_LOCALFS_BLOB_STORAGE_WITH_PATH': str(tmp_path_factory.mktemp(basename="blob-")),
         'USE_INTERNAL_STORAGE_SERVICE_WITH_PATH': str(tmp_path_factory.mktemp(basename="storage-")),
         # This one is necessary as long as we have can_run() in modules depending on it
-        "ENVIRONMENT_NAME": "evd"
-    }, contextual_loader=cloud_provider_additional_environment)
+        "ENVIRONMENT_NAME": "evd",
+        "PARTITION_ID": "test-partition",
+    }
+
+    config = ConfigurationContainer.with_load_all(environment_dict=env_dict,
+                                                  contextual_loader=cloud_provider_additional_environment)
 
     # patching Config in app.conf module, so it is found by other modules
-    with patch('app.conf.Config', config):
+    with patch('app.conf.Config', config), patch.dict("os.environ", env_dict, clear=False):
         # returning the config for explicit use in tests.
         yield config
 
     # WARNING mock.patch will restore original Config after fixture use but original Config might be corrupted
     # because write access to a Config instance modifies other config instances
+
+@pytest.fixture
+async def local_partition_header(local_dev_config):
+    partition_id = local_dev_config.get("PARTITION_ID")
+    return {"data-partition-id": partition_id}
 
 @pytest.fixture
 def mock_storage_client_holding_data(local_dev_config, nope_logger_fixture):
@@ -229,11 +218,21 @@ def mock_schema_client_holding_data(local_dev_config, nope_logger_fixture):
     return setup_data_for_mock
 
 
+@pytest.fixture(scope="module")
+async def worker_app_initialized_with_testclient(local_dev_config):
+    """
+    Fixture providing wdms_worker started, along with a AsyncClient
+    """
+    async with LifespanManager(worker_app):
+        async with AsyncClient(transport=ASGITransport(app=worker_app), base_url="http://test_wdms_worker") as worker_client:
+            yield worker_app, worker_client
+
+
 TEST_CLIENT_HOST = "test_wdms_app"
 
 
 @pytest.fixture(scope="module")
-async def app_initialized_with_testclient(local_dev_config, dask_custom_config, anyio_backend):
+async def app_initialized_with_testclient(local_dev_config, anyio_backend):
     """
     Fixture providing wdms_app started, along with a AsyncClient
     CAREFUL: we do not want to depend on base_app_initialized fixture,
@@ -241,18 +240,13 @@ async def app_initialized_with_testclient(local_dev_config, dask_custom_config, 
     This is consistent with normal operation because the base app events are not doing anything,
      except calling the wdms_app events
     """
-
-    # setup the dask_config with default values
-    with dask_custom_config():
-        async with LifespanManager(wdms_app):
-            async with AsyncClient(transport=ASGITransport(app=wdms_app), base_url=f"http://{TEST_CLIENT_HOST}") as client:
-                yield wdms_app, client
-
-        # wdms_app shutdown event should call DaskClient.close() via app shutdown
+    async with LifespanManager(wdms_app):
+        async with AsyncClient(transport=ASGITransport(app=wdms_app), base_url=f"http://{TEST_CLIENT_HOST}") as client:
+            yield wdms_app, client
 
 
 @pytest.fixture
-async def app_configurable_with_testclient(app_initialized_with_testclient, anyio_backend):
+async def app_configurable_with_testclient(app_initialized_with_testclient, worker_app_initialized_with_testclient, anyio_backend):
     """
     Fixture to configure wdms_app after it has been started.
     It returns a function to be called from the test to configure the app,
@@ -262,6 +256,8 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
 
     For example usage, check fixtures_test.py
     """
+
+    _, worker_client = worker_app_initialized_with_testclient
 
     app, client = app_initialized_with_testclient
 
@@ -288,6 +284,9 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
     # override api_client to use an async mock (needed on shutdown when we call api_client.close())
     default_schema_mock.api_client = AsyncMock()
 
+    # override bulkio backend to use the worker client to perform operations
+    default_bulkio_mock = BulkIOWdmsWorker(worker_client)
+
     def injection_coro_builder(*, return_value):
         # because of our app_injector design
         async def injection_coro(
@@ -301,9 +300,9 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
         search_client_mock=default_search_mock,
         storage_client_mock=default_storage_mock,
         schema_client_mock=default_schema_mock,
-        dask_bulk_storage_mock=None,
         blob_storage_base_mock=None,
         sessions_storage_mock=None,
+        bulkio_mock=default_bulkio_mock,
         fake_opendes_authorized_user: bool = True,
         fake_data_partition_id: bool = False,
         disable_bulk_consistency: bool = False,
@@ -328,8 +327,8 @@ async def app_configurable_with_testclient(app_initialized_with_testclient, anyi
             app_injector.register(SchemaServiceClient, injection_coro_builder(return_value=schema_client_mock),
         WithLifeTime.Singleton())
 
-        if dask_bulk_storage_mock is not None:
-            app_injector.register(DaskBulkStorage, injection_coro_builder(return_value=dask_bulk_storage_mock))
+        if bulkio_mock is not None:
+            app_injector.register(BulkIO, injection_coro_builder(return_value=bulkio_mock)),
 
         if blob_storage_base_mock is not None:
             app_injector.register(BlobStorageBase, injection_coro_builder(return_value=blob_storage_base_mock))

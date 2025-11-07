@@ -90,7 +90,7 @@ verify_existing_requirements:
     - .skipForTriggeringMergeRequests
   stage: build
   script:
-    - pip install --upgrade pip-tools
+    - python -m pip install --upgrade pip==25.2 pip-tools
     - pip-compile --output-file requirements.txt $PIP_EXTRA_INDEXES
     - pip-compile --extra dev --output-file requirements_dev.txt $PIP_EXTRA_INDEXES
     - git diff

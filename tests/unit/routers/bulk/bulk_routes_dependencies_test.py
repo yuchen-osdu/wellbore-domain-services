@@ -1,5 +1,4 @@
 import uuid
-from unittest.mock import patch
 
 import pytest
 from odes_storage.models import Record, Legal, StorageAcl
@@ -7,11 +6,8 @@ from packaging.version import Version
 
 from app.routers.bulk.bulk_routes_dependencies import (
     OsduBulkIdAccess,
-    get_bulk_io_read,
-    get_bulk_io_write,
-    get_bulk_io, EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS,
+    EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS,
 )
-from app.bulk_persistence import BulkIODask, BulkIOWdmsWorker, BulkPersistenceConfig
 
 
 def test_set_bulk_uri_merge_extension_properties():
@@ -112,34 +108,3 @@ def test_set_bulk_uri_handles_null_ddmsdatasets():
     assert isinstance(record.data["DDMSDatasets"], list)
     assert len(record.data["DDMSDatasets"]) == 1
     assert record.data["DDMSDatasets"][0].startswith("urn://wdms-")
-
-
-@pytest.mark.anyio
-async def test_get_bulk_io_dependency():
-    mock_config = BulkPersistenceConfig()
-    mock_config.bulk_worker_host = "mock_host"
-    with patch("app.routers.bulk.bulk_routes_dependencies.get_config_bulk", return_value=mock_config):
-        # by default
-        assert isinstance(await get_bulk_io(True), BulkIODask)
-        assert isinstance(await get_bulk_io(False), BulkIODask)
-        assert isinstance(await get_bulk_io_write(), BulkIODask)
-        assert isinstance(await get_bulk_io_read(), BulkIODask)
-
-        # all worker
-        mock_config.dask_enabled_on_read = False
-        mock_config.dask_enabled_on_write = False
-        inst = await get_bulk_io(True)
-        assert isinstance(inst, BulkIOWdmsWorker)
-        assert inst._host == "mock_host"
-        inst = await get_bulk_io(False)
-        assert isinstance(inst, BulkIOWdmsWorker)
-        assert inst._host == "mock_host"
-        assert isinstance(await get_bulk_io_read(), BulkIOWdmsWorker)
-        assert isinstance(await get_bulk_io_write(), BulkIOWdmsWorker)
-
-        mock_config.dask_enabled_on_write = True
-        # when is wdms_worker_write_disable return true
-        assert isinstance(await get_bulk_io_read(), BulkIOWdmsWorker)
-        assert isinstance(await get_bulk_io_write(), BulkIODask)
-
-

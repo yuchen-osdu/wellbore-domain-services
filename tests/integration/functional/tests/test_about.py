@@ -39,5 +39,4 @@ def test_version(with_wdms_env):
     assert result.get_response_obj()
     details = result.get_response_obj()["details"]
     print(details)
-    assert details["read_bulk_backend"]
-    assert details["write_bulk_backend"]
+    assert details["bulk_backend"]

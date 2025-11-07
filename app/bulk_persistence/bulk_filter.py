@@ -1,7 +1,7 @@
 from typing import Iterable, NamedTuple, Set, List
 from enum import Enum
 
-from .dask.errors import FilterError
+from .errors import FilterError
 
 
 class BulkReadFilterOperator(str, Enum):

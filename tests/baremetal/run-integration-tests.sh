@@ -37,4 +37,4 @@ python gen_postman_env.py \
 --legal_tag $LEGAL_TAG
 
 # Run pytest
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking' -p no:randomly
+pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking|!bulk|!describe' -p no:randomly

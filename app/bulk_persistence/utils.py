@@ -14,14 +14,13 @@
 
 from itertools import zip_longest
 from logging import INFO
-from typing import List, Optional
+from typing import Optional
 
-import dask.dataframe as dd
 import pandas as pd
 import pyarrow.parquet as pa
 
 from app.helper.logger import get_logger
-from ..capture_timings import capture_timings
+from .capture_timings import capture_timings
 
 
 WDMS_INDEX_NAME = '_wdms_index_'
@@ -51,42 +50,10 @@ def by_pairs(iterable):
     return zip_longest(*[iter(iterable)] * 2, fillvalue=None)
 
 
-@capture_timings("set_index", handlers=worker_capture_timing_handlers)
-def set_index(ddf: dd.DataFrame):
-    """Set index of the dask dataFrame only if needed."""
-    if not ddf.known_divisions:
-        return ddf.set_index(ddf.index, sorted=True)
-    return ddf
-
-
-@capture_timings("join_dataframes", handlers=worker_capture_timing_handlers)
-def join_dataframes(dfs: List[dd.DataFrame]):
-    if len(dfs) > 1:
-        return dfs[0].join(dfs[1:], how='outer')
-    return dfs[0] if dfs else None
-
-
 def rename_index(dataframe: pd.DataFrame, name):
     """Rename the dataframe index"""
     dataframe.index.name = name
     return dataframe
-
-
-@capture_timings("do_merge", handlers=worker_capture_timing_handlers)
-def do_merge(df1: dd.DataFrame, df2: Optional[dd.DataFrame]):
-    """Combine the 2 dask dataframe. Updates df1 with df2 values if overlap."""
-    if df2 is None:
-        return df1
-
-    df1 = set_index(df1)
-    df2 = set_index(df2)
-
-    df1 = df1.map_partitions(rename_index, WDMS_INDEX_NAME)
-    df2 = df2.map_partitions(rename_index, WDMS_INDEX_NAME)
-
-    if share_items(df1.columns, df2.columns):
-        return df2.combine_first(df1)
-    return df1.join(df2, how='outer')  # join seems faster when there no columns in common
 
 
 @capture_timings("get_num_rows", handlers=worker_capture_timing_handlers)
