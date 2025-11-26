@@ -14,6 +14,7 @@
 
 import asyncio
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
+from odes_storage.exceptions import UnexpectedResponse
 
 from app.tenant import resolve_tenant
 from app.bulk_persistence import hash_record_id
@@ -29,7 +30,15 @@ from app.helper.logger import get_logger
 async def _get_bulk_uri_from_version(ctx: Context, bulk_uri_access: BulkIdAccess, record_id: str, index: int,
                                      record_versions):
     version = record_versions.versions[index]
-    record_from_version = await fetch_record(ctx, record_id, version)
+
+    try:
+        record_from_version = await fetch_record(ctx, record_id, version)
+    except UnexpectedResponse as response:
+        if response.status_code == 404:
+            get_logger().warning(f"Record ID '{record_id}' not found from storage service: {str(response)}")
+            return None
+        raise # Really Unexpected
+
     obj_bulk_uri = bulk_uri_access.get_bulk_uri(record=record_from_version)
     if obj_bulk_uri.is_valid():
         return obj_bulk_uri.encode()
@@ -43,7 +52,7 @@ async def _get_bulk_uris_of_versions_from_record_id(ctx: Context,
     record_bulk_uris = [bulk_uri for bulk_uri in await asyncio.gather(*[
         _get_bulk_uri_from_version(ctx, bulk_uri_access, record_id, i, record_versions)
         for i in range(len(record_versions.versions))
-    ], return_exceptions=True) if bulk_uri is not None]
+    ], return_exceptions=False) if bulk_uri is not None]
 
     return record_bulk_uris
 

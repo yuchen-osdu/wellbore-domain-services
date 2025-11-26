@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import List
 from unittest.mock import create_autospec, patch
 
 from fastapi import HTTPException, status
 from odes_storage.models import RecordVersions
+from odes_storage.exceptions import UnexpectedResponse
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 import pytest
 
@@ -38,6 +39,7 @@ def client_delete(app_configurable_with_testclient, nope_logger_fixture):
 
 record_bulk_uris = ['59c1ab7b-3bc9-4963-976d-815952bc8ddc', None, None, '87be6134-1b8f-43c0-a7f6-384a6a323f60', None,
                     '356eb799-ba19-49ea-814c-cdd8cf87553b', None, 'a764776c-a389-415b-a92c-af8366ce6901']
+
 list_objects = ['bulk/59c1ab7b-3bc9-4963-976d-815952bc8ddc/data/part.0.parquet',
                 'bulk/87be6134-1b8f-43c0-a7f6-384a6a323f60/data/part.0.parquet',
                 'bulk/356eb799-ba19-49ea-814c-cdd8cf87553b/data/part.0.parquet',
@@ -79,3 +81,38 @@ async def test_delete_purge_record(client_delete, nope_logger_fixture, url_base_
         for i in range(4):
             logger_exception = nope_logger_fixture.exception.mock_calls[i].args[0]
             assert logger_exception == "Exception on bulk versions deletion: Error 404 not found"
+
+
+@pytest.mark.parametrize("url_base_path, record_id", [
+    ("/ddms/v3/welllogs", "opendes:work-product-component--WellLog:00001234"),
+])
+@pytest.mark.anyio
+async def test_delete_purge_record_fetch(client_delete, nope_logger_fixture, url_base_path, record_id):
+    record_versions = RecordVersions(record_id=record_id, versions=versions)
+
+    def fake_get_record_version(id: str, version: int, data_partition_id: str, attribute: List[str] = None):
+        if version == versions[0]:
+            raise UnexpectedResponse(status_code=404, reason_phrase="fake 404 response", content=b'', headers={})
+        if version == versions[1]:
+            raise UnexpectedResponse(status_code=500, reason_phrase="fake 500 response", content=b'', headers={})
+
+    with patch.object(storage_record_service_client_mock, "delete_record",
+                      side_effect=status.HTTP_204_NO_CONTENT), \
+        patch.object(storage_record_service_client_mock, "get_all_record_versions",
+                        return_value=record_versions), \
+        patch.object(blob_storage_mock, "list_objects",
+                        return_value=list_objects), \
+        patch.object(blob_storage_mock, "delete",
+                        side_effect=None), \
+        patch.object(storage_record_service_client_mock, "get_record_version",
+                        side_effect=fake_get_record_version):
+
+        response = await client_delete.delete(
+            f"{url_base_path}/{record_id}?purge=true",
+            headers={"data-partition-id": "testing_partition"},
+        )
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+
+        for i in range(1):
+            logger_exception: str = nope_logger_fixture.warning.mock_calls[i].args[0]
+            assert logger_exception.startswith(f"Record ID '{record_id}' not found from storage service: Unexpected Response: 404")
