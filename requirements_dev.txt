@@ -12,7 +12,7 @@ aiobotocore==2.24.1
     # via s3fs
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.12.15
+aiohttp==3.13.3
     # via
     #   adlfs
     #   aiobotocore
@@ -554,10 +554,11 @@ typing-inspection==0.4.1
     # via pydantic
 tzdata==2025.2
     # via pandas
-urllib3==2.5.0
+urllib3==2.6.0
     # via
     #   botocore
     #   requests
+    #   wellbore-domain-services (pyproject.toml)
 uvicorn==0.35.0
     # via
     #   osdu-wbddms-worker
