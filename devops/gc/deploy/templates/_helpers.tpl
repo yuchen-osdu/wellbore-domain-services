@@ -62,11 +62,11 @@
 
 {{- if eq $tier "DEV" -}} 1
 {{- else if eq $tier "STAGE" -}}
-  {{- if (ne .Values.global.autoscalingMode "none") }} 2
+  {{- if (ne .Values.global.autoscalingMode "none") -}} 2
   {{- else -}} 3
   {{- end -}}
 {{- else if eq $tier "PROD" -}}
-  {{- if (ne .Values.global.autoscalingMode "none") }} 3
+  {{- if (ne .Values.global.autoscalingMode "none") -}} 3
   {{- else -}} 5
   {{- end -}}
 {{- else if eq $tier "" -}} 1
