@@ -36,7 +36,7 @@ The following software have components provided under the terms of this license:
 - google-resumable-media (from https://github.com/googleapis/google-resumable-media-python)
 - googleapis-common-protos (from https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos, https://github.com/googleapis/python-api-common-protos, https://pypi.org/project/googleapis-common-protos/)
 - grpcio (from https://grpc.io)
-- grpcio-status (from https://grpc.io)
+- grpcio-status (from https://pypi.org/project/grpcio-status/)
 - importlib-metadata (from https://pypi.org/project/importlib-metadata/)
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - multidict (from https://github.com/aio-libs/multidict)
@@ -77,7 +77,7 @@ The following software have components provided under the terms of this license:
 - prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python, https://pypi.org/project/prometheus-client/)
 - pyasn1 (from https://github.com/etingof/pyasn1, https://pypi.org/project/pyasn1/)
 - pyasn1-modules (from https://github.com/etingof/pyasn1-modules, https://github.com/pyasn1/pyasn1-modules)
-- wrapt (from <https://github.com/GrahamDumpleton/wrapt>, https://github.com/GrahamDumpleton/wrapt)
+- wrapt (from <https://github.com/GrahamDumpleton/wrapt>, https://github.com/GrahamDumpleton/wrapt, https://pypi.org/project/wrapt/)
 
 ========================================================================
 BSD-3-Clause
@@ -91,7 +91,7 @@ The following software have components provided under the terms of this license:
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/)
 - gcsfs (from https://github.com/fsspec/gcsfs)
 - grpcio (from https://grpc.io)
-- grpcio-status (from https://grpc.io)
+- grpcio-status (from https://pypi.org/project/grpcio-status/)
 - httpcore (from https://github.com/encode/httpcore, https://pypi.org/project/httpcore/, https://pypi.org/project/httpcore/0.18.0/)
 - httpx (from https://pypi.org/project/httpx/, https://pypi.org/project/httpx/0.23.1/)
 - idna (from https://pypi.org/project/idna/, https://pypi.org/project/idna/3.4/)
@@ -216,7 +216,7 @@ The following software have components provided under the terms of this license:
 - botocore (from <https://github.com/boto/botocore>, https://github.com/boto/botocore)
 - certifi (from <https://github.com/certifi/python-certifi>, https://github.com/certifi/python-certifi)
 - grpcio (from https://grpc.io)
-- grpcio-status (from https://grpc.io)
+- grpcio-status (from https://pypi.org/project/grpcio-status/)
 - urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 
 ========================================================================

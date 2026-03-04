@@ -93,6 +93,7 @@ async def del_osdu_wellboremarkerset(wellboremarkersetid: WellboreMarkerSetId, c
 async def get_osdu_wellboremarkerset_versions(
         wellboremarkersetid: WellboreMarkerSetId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
+    wellboremarkersetid, _ = split_record_id_version(wellboremarkersetid)
     record = await fetch_record(ctx, wellboremarkersetid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)

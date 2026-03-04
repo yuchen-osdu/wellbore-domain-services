@@ -71,8 +71,9 @@ async def get_welllogacquisitionid_osdu(welllogacquisitionid: WellLogAcquisition
     },
 )
 async def del_osdu_welllogacquisitionid(welllogacquisitionid: WellLogAcquisitionId, ctx: Context = Depends(get_ctx)):
+    record_id, _ = split_record_id_version(welllogacquisitionid)
     storage_client = await get_storage_record_service(ctx)
-    await storage_client.delete_record(id=welllogacquisitionid, data_partition_id=ctx.partition_id)
+    await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
 
 
 @router.get("/welllogacquisition/{welllogacquisitionid}/versions",
@@ -86,10 +87,11 @@ async def del_osdu_welllogacquisitionid(welllogacquisitionid: WellLogAcquisition
 )
 async def get_osdu_welllogacquisitionid_versions(welllogacquisitionid: WellLogAcquisitionId, request: Request,
                                                   ctx: Context = Depends(get_ctx)) -> RecordVersions:
-    record = await fetch_record(ctx, welllogacquisitionid)
+    record_id, _ = split_record_id_version(welllogacquisitionid)
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
-    return await storage_client.get_all_record_versions(id=welllogacquisitionid, data_partition_id=ctx.partition_id)
+    return await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
 
 
 @router.get("/welllogacquisition/{welllogacquisitionid}/versions/{version}",
@@ -105,9 +107,10 @@ async def get_osdu_welllogacquisitionid_versions(welllogacquisitionid: WellLogAc
 async def get_osdu_welllogacquisitionid_version(
         welllogacquisitionid: WellLogAcquisitionId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
+    record_id, _ = split_record_id_version(welllogacquisitionid)
     storage_client = await get_storage_record_service(ctx)
     welllogacquisitionid_record = await storage_client.get_record_version(
-        id=welllogacquisitionid, version=version, data_partition_id=ctx.partition_id
+        id=record_id, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(welllogacquisitionid_record, request.state)
     await schema_library.validate_records([welllogacquisitionid_record], ctx)

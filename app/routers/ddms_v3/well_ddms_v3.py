@@ -68,6 +68,7 @@ async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Reco
     },
 )
 async def del_osdu_well(wellid: WellId, ctx: Context = Depends(get_ctx)):
+    wellid, _ = split_record_id_version(wellid)
     storage_client = await get_storage_record_service(ctx)
     await storage_client.delete_record(id=wellid, data_partition_id=ctx.partition_id)
 
@@ -83,6 +84,7 @@ async def del_osdu_well(wellid: WellId, ctx: Context = Depends(get_ctx)):
     },
 )
 async def get_osdu_well_versions(wellid: WellId, request: Request, ctx: Context = Depends(get_ctx)) -> RecordVersions:
+    wellid, _ = split_record_id_version(wellid)
     record = await fetch_record(ctx, wellid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
@@ -103,6 +105,7 @@ async def get_osdu_well_versions(wellid: WellId, request: Request, ctx: Context 
 async def get_osdu_well_version(
     wellid: WellId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
+    wellid, _ = split_record_id_version(wellid)
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record_version(
         id=wellid, version=version, data_partition_id=ctx.partition_id

@@ -24,6 +24,7 @@ from app.clients import StorageRecordServiceClient
 WELLLOG_ACQUISITION_SAMPLE_FILE = "WellLogAcquisition100_unit.json"
 WELLLOG_ACQUISITION_ID = "namespace:master-data--WellLogAcquisition:9cdfd40a-e3b7-506a-968d-0e327a4660df"
 WELLLOG_ACQUISITION_VERSION = 1562066009929332
+WELLLOG_ACQUISITION_ID_WITH_VERSION = f"{WELLLOG_ACQUISITION_ID}:{WELLLOG_ACQUISITION_VERSION}"
 
 
 @pytest.mark.anyio
@@ -47,7 +48,10 @@ async def test_get_welllogacquisitionid_osdu_success(mocker, app_configurable_wi
     response = await client.get(url=f"/ddms/v3/welllogacquisition/{WELLLOG_ACQUISITION_ID}", headers={"content-type": "application/json"})
 
     assert response.status_code == 200
-    mocked_storage_client.get_record.assert_called_once_with(id=WELLLOG_ACQUISITION_ID, data_partition_id=None)
+    mocked_storage_client.get_record.assert_called_once()
+    get_record_kwargs = mocked_storage_client.get_record.call_args.kwargs
+    assert get_record_kwargs["id"] == WELLLOG_ACQUISITION_ID
+    assert get_record_kwargs["data_partition_id"] is None
 
 
 @pytest.mark.anyio
@@ -97,6 +101,46 @@ async def test_get_osdu_welllogacquisitionid_versions_success(mocker, app_config
     assert response.status_code == 200
     assert response.json() == record_versions_data
     mocked_storage_client.get_all_record_versions.assert_called_once_with(id=WELLLOG_ACQUISITION_ID, data_partition_id=None)
+
+
+@pytest.mark.anyio
+async def test_get_osdu_welllogacquisitionid_versions_with_version_suffix_success(
+        mocker, app_configurable_with_testclient):
+    """Regression test for GET /ddms/v3/welllogacquisition/{welllogacquisitionid}/versions with id including version."""
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(dir_path, WELLLOG_ACQUISITION_SAMPLE_FILE), "r", encoding="utf-8") as f:
+        record_json = json.load(f)[0]
+
+    record_versions_data = {
+        "recordId": WELLLOG_ACQUISITION_ID_WITH_VERSION,
+        "versions": [WELLLOG_ACQUISITION_VERSION]
+    }
+    expected_response = RecordVersions.model_validate(record_versions_data)
+    mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
+    mocked_storage_client.get_record.return_value = Record.model_validate(record_json)
+    mocked_storage_client.get_all_record_versions.return_value = expected_response
+
+    _, client = app_configurable_with_testclient(
+        fake_opendes_authorized_user=True,
+        fake_data_partition_id=True,
+        storage_client_mock=mocked_storage_client
+    )
+
+    response = await client.get(
+        url=f"/ddms/v3/welllogacquisition/{WELLLOG_ACQUISITION_ID_WITH_VERSION}/versions",
+        headers={"content-type": "application/json"}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == record_versions_data
+    mocked_storage_client.get_record.assert_called_once()
+    get_record_kwargs = mocked_storage_client.get_record.call_args.kwargs
+    assert get_record_kwargs["id"] == WELLLOG_ACQUISITION_ID
+    assert get_record_kwargs["data_partition_id"] is None
+    mocked_storage_client.get_all_record_versions.assert_called_once_with(
+        id=WELLLOG_ACQUISITION_ID,
+        data_partition_id=None
+    )
 
 
 async def test_get_osdu_welllogacquisitionid_version_success(mocker, app_configurable_with_testclient):

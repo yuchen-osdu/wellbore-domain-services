@@ -40,6 +40,11 @@ param_kind_depend_on_create = [
     pytest.param(k, marks=pytest.mark.dependency(depends=[f'test_create_record_{k}'])) for k in kind_list
 ]
 
+param_kind_depend_on_create_for_id_with_version = [
+    pytest.param(k, marks=pytest.mark.dependency(depends=[f'test_create_record_{k}']))
+    for k in ['osdu_welllogacquisition', 'osdu_ppfgdataset']
+]
+
 
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize(
@@ -71,6 +76,27 @@ def test_crud_record_versions(with_wdms_env, kind):
     # get all version of the record
     result = build_request(f'crud.{kind}.get_versions_of_{kind}').call(with_wdms_env)
     result.assert_ok()
+
+
+@pytest.mark.tag('basic', 'crud')
+@pytest.mark.parametrize('kind', param_kind_depend_on_create_for_id_with_version)
+def test_crud_with_versioned_record_id_path(with_wdms_env, kind):
+    original_record_id = with_wdms_env.get(f'{kind}_record_id')
+
+    result = build_request(f'crud.{kind}.get_versions_of_{kind}').call(with_wdms_env)
+    result.assert_ok()
+    latest_record_version = result.get_response_obj().versions[-1]
+
+    with_wdms_env.set(f'{kind}_record_id', f'{original_record_id}:{latest_record_version}')
+    try:
+        build_request(f'crud.{kind}.get_{kind}').call(with_wdms_env).assert_ok()
+        build_request(f'crud.{kind}.get_versions_of_{kind}').call(with_wdms_env).assert_ok()
+        build_request(f'crud.{kind}.get_{kind}_specific_version').call(
+            with_wdms_env,
+            **{f'{kind}_record_version': latest_record_version}
+        ).assert_ok()
+    finally:
+        with_wdms_env.set(f'{kind}_record_id', original_record_id)
     resobj = result.get_response_obj()
 
     record_id = with_wdms_env.get(f'{kind}_record_id')
