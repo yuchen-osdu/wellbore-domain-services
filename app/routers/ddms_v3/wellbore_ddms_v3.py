@@ -68,6 +68,7 @@ async def get_wellbore_osdu(
     },
 )
 async def del_osdu_wellbore(wellboreid: WellboreId, ctx: Context = Depends(get_ctx)):
+    wellboreid, _ = split_record_id_version(wellboreid)
     storage_client = await get_storage_record_service(ctx)
     await storage_client.delete_record(
         id=wellboreid, data_partition_id=ctx.partition_id
@@ -85,6 +86,7 @@ async def del_osdu_wellbore(wellboreid: WellboreId, ctx: Context = Depends(get_c
 async def get_osdu_wellbore_versions(
     wellboreid: WellboreId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
+    wellboreid, _ = split_record_id_version(wellboreid)
     record = await fetch_record(ctx, wellboreid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
@@ -108,6 +110,7 @@ async def get_osdu_wellbore_version(
     request: Request,
     ctx: Context = Depends(get_ctx),
 ) -> Record:
+    wellboreid, _ = split_record_id_version(wellboreid)
     storage_client = await get_storage_record_service(ctx)
     wellbore_record = await storage_client.get_record_version(
         id=wellboreid, version=version, data_partition_id=ctx.partition_id

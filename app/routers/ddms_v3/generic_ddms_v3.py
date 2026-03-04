@@ -79,8 +79,8 @@ async def get_osdu_record(request: Request, osdu_record_id: str = Depends(valida
 )
 async def delete_osdu_record(osdu_record_id: str = Depends(validate_record_id), ctx: Context = Depends(get_ctx),
                              purge: bool = False, bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
-
-    await delete_record(record_id=osdu_record_id, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
+    record_id, _ = split_record_id_version(osdu_record_id)
+    await delete_record(record_id=record_id, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
 
 
 @router.get("/{osdu_record_id}/versions",
@@ -93,10 +93,11 @@ async def delete_osdu_record(osdu_record_id: str = Depends(validate_record_id), 
             )
 async def get_record_versions(request: Request, osdu_record_id: str = Depends(validate_record_id),
                               ctx: Context = Depends(get_ctx)) -> RecordVersions:
-    record = await fetch_record(ctx, osdu_record_id)
+    record_id, _ = split_record_id_version(osdu_record_id)
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
-    return await storage_client.get_all_record_versions(id=osdu_record_id, data_partition_id=ctx.partition_id)
+    return await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
 
 @router.get("/{osdu_record_id}/versions/{version}",
             response_model=Record,
@@ -111,9 +112,10 @@ async def get_record_versions(request: Request, osdu_record_id: str = Depends(va
 async def get_specific_record_version(version: int, request: Request, osdu_record_id: str = Depends(validate_record_id),
                                       ctx: Context = Depends(get_ctx)
 ) -> Record:
+    record_id, _ = split_record_id_version(osdu_record_id)
     storage_client = await get_storage_record_service(ctx)
     osdu_record = await storage_client.get_record_version(
-        id=osdu_record_id, version=version, data_partition_id=ctx.partition_id
+        id=record_id, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(osdu_record, request.state)
     await schema_library.validate_records([osdu_record], ctx)

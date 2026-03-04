@@ -70,6 +70,7 @@ async def get_wellboreintervalsetid_osdu(wellboreintervalsetsid: WellboreInterva
     },
 )
 async def del_osdu_wellboreintervalsetid(wellboreintervalsetsid: WellboreIntervalSetId, ctx: Context = Depends(get_ctx)):
+    wellboreintervalsetsid, _ = split_record_id_version(wellboreintervalsetsid)
     storage_client = await get_storage_record_service(ctx)
     await storage_client.delete_record(id=wellboreintervalsetsid, data_partition_id=ctx.partition_id)
 
@@ -86,6 +87,7 @@ async def del_osdu_wellboreintervalsetid(wellboreintervalsetsid: WellboreInterva
 )
 async def get_osdu_wellboreintervalsetid_versions(wellboreintervalsetsid: WellboreIntervalSetId, request: Request,
                                                   ctx: Context = Depends(get_ctx)) -> RecordVersions:
+    wellboreintervalsetsid, _ = split_record_id_version(wellboreintervalsetsid)
     record = await fetch_record(ctx, wellboreintervalsetsid)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
@@ -106,6 +108,7 @@ async def get_osdu_wellboreintervalsetid_versions(wellboreintervalsetsid: Wellbo
 async def get_osdu_wellboreintervalsetid_version(
         wellboreintervalsetsid: WellboreIntervalSetId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
+    wellboreintervalsetsid, _ = split_record_id_version(wellboreintervalsetsid)
     storage_client = await get_storage_record_service(ctx)
     wellboreintervalsetid_record = await storage_client.get_record_version(
         id=wellboreintervalsetsid, version=version, data_partition_id=ctx.partition_id
