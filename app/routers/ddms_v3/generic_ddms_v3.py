@@ -14,6 +14,7 @@ from app.model.api_configuration import APIConfiguration
 from app.model.osdu_record_id import split_record_id_version
 from app.routers.bulk.bulk_routes_dependencies import BulkIdAccess, get_bulk_id_access
 from app.routers.ddms_v3.ddms_v3_utils import get_api_config, DMSV3RouterUtils
+from app.routers.common_parameters import BULK_URI_RULES, REQUIRED_ROLES_WRITE
 from app.routers.delete.delete_bulk_data import delete_record
 from app.routers.record_utils import fetch_record
 from app.schemas import schema_library
@@ -126,6 +127,7 @@ async def get_specific_record_version(version: int, request: Request, osdu_recor
 @router.post("",
              response_model=CreateUpdateRecordsResponse,
              summary="Create or update record using osdu schema",
+             description=f"{REQUIRED_ROLES_WRITE}{BULK_URI_RULES}",
              operation_id="create_or_update_osdu_record",
              responses={
                  status.HTTP_400_BAD_REQUEST: {

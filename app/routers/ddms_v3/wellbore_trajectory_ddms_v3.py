@@ -22,7 +22,7 @@ from app.clients.storage_service_client import get_storage_record_service
 from app.consistency import DuplicatedStationProperties, check_trajectory_consistency
 from app.model.osdu_record_id import split_record_id_version, WellboreTrajectoryId
 from app.routers.bulk.bulk_routes_dependencies import BulkIdAccess, get_bulk_id_access
-from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from app.routers.common_parameters import BULK_URI_RULES, REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.delete.delete_bulk_data import delete_record
 from app.routers.record_utils import fetch_record
@@ -136,7 +136,7 @@ async def get_osdu_wellboretrajectory_version(
     WELLBORE_TRAJECTORIES_API_BASE_PATH,
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the WellboreTrajectories using osdu schema",
-    description=f"{REQUIRED_ROLES_WRITE}",
+    description=f"{REQUIRED_ROLES_WRITE}{BULK_URI_RULES}",
     operation_id="post_wellboretrajectory_osdu",
     responses={
         status.HTTP_400_BAD_REQUEST: {

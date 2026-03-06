@@ -78,7 +78,7 @@ In addition, users must be a member of data groups to access the data.
 """
 
 REQUIRED_ROLES_WRITE = """
-Required roles: 'users.datalake.editors' or 'users.datalake.admins
+Required roles: 'users.datalake.editors' or 'users.datalake.admins'.
 """
 
 BULK_READ_NOTE = """
@@ -93,7 +93,7 @@ Note: using curves filtering has a cost, use it only if it reduces significantly
     - Try to read all the curves, if those errors are returned go to next steps:
         - HTTP 400 "Too many columns requested"
         - HTTP 400 "Too many values requested"
-        - HTTP 413 "the resource requested exceeds the limit" (When WDDMS worker are enabled)
+        - HTTP 413 "the resource requested exceeds the limit" (When WBDDMS worker are enabled)
     - Get curve names and number of rows per curve by using describe parameter
        - Each request should fetch as many as columns it is possible until upper limits are reached (> 10 millions values or > 3000 columns)
 """
@@ -104,6 +104,13 @@ BULK_WRITE_NOTE = """
     - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data API
 - Ensure all curve's values are in the same chunk to be sent
 - Each chunk should contain as many as columns it is possible until upper limits are reached (> 10 millions values or > 3000 columns)
+"""
+
+BULK_URI_RULES = """
+BulkURI consistency:
+- ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set when creating a new record.
+- When updating an existing record, bulkURI must match the previous version exactly.
+Requests that violate these rules are rejected with HTTP 400.
 """
 
 

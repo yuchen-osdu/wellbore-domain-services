@@ -25,7 +25,7 @@ from app.consistency import (
 )
 from app.model.osdu_record_id import split_record_id_version, WellLogId
 from app.routers.bulk.bulk_routes_dependencies import BulkIdAccess, get_bulk_id_access
-from app.routers.common_parameters import REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
+from app.routers.common_parameters import BULK_URI_RULES, REQUIRED_ROLES_READ, REQUIRED_ROLES_WRITE
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
 from app.routers.delete.delete_bulk_data import delete_record
 from app.routers.record_utils import fetch_record
@@ -142,7 +142,7 @@ async def get_osdu_welllog_version(
     WELL_LOGS_API_BASE_PATH,
     response_model=CreateUpdateRecordsResponse,
     summary="Create or update the WellLogs using osdu schema",
-    description=f"{REQUIRED_ROLES_WRITE}",
+    description=f"{REQUIRED_ROLES_WRITE}{BULK_URI_RULES}",
     operation_id="post_welllog_osdu",
     responses={
         status.HTTP_400_BAD_REQUEST: {
