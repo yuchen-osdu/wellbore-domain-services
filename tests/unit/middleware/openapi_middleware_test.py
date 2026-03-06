@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch
 import pytest
 from app.conf import Config, ConfigurationContainer, cloud_provider_additional_environment
-from app.middleware.openapi_middleware import OpenAPIMiddleware
+from app.middleware.openapi_middleware import OpenAPIMiddleware, _build_full_server_url
 
 # Dummy router to simulate the openapi.json endpoint
 router = APIRouter()
@@ -32,6 +32,16 @@ def test_openapi_middleware_loaded_by_env(swagger_full_url_enabled_config):
 
     reloaded_app = reload(wdms_app)
     assert reloaded_app.wdms_app.user_middleware[-1].cls is OpenAPIMiddleware
+
+
+def test_build_full_server_url_appends_prefix_when_missing():
+    full_url = _build_full_server_url("https://example.org", "/api/os-wellbore-ddms")
+    assert full_url == "https://example.org/api/os-wellbore-ddms"
+
+
+def test_build_full_server_url_does_not_duplicate_prefix():
+    full_url = _build_full_server_url("https://example.org/api/os-wellbore-ddms/", "/api/os-wellbore-ddms")
+    assert full_url == "https://example.org/api/os-wellbore-ddms"
 
 
 @pytest.mark.skip("Flaky test, it does not work as expected because of global variable conf.Config. TODO: local config")
