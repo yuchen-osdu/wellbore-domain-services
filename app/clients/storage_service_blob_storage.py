@@ -110,10 +110,10 @@ class StorageRecordServiceBlobStorage:
         await gather(*[
             self._storage.upload(
                 Tenant(project_id=self._project, bucket_name=self._container, data_partition_id=data_partition_id),
-                await self._build_record_path(record.id, data_partition_id, version=rec.version),
-                model_utils.record_to_json(record),
+                await self._build_record_path(rec.id, data_partition_id, version=rec.version),
+                model_utils.record_to_json(rec),
                 content_type='application/json')
-            for record in record_list
+            for rec in record_list
         ], return_exceptions=False)  # return_exceptions False means will throw if a single error occurs
 
         # manual for now
