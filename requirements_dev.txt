@@ -26,6 +26,12 @@ aioitertools==0.12.0
     # via aiobotocore
 aiosignal==1.4.0
     # via aiohttp
+allure-pytest==2.15.3
+    # via wellbore-domain-services (pyproject.toml)
+allure-python-commons==2.15.3
+    # via
+    #   allure-pytest
+    #   wellbore-domain-services (pyproject.toml)
 annotated-types==0.7.0
     # via pydantic
 anyio==4.10.0
@@ -40,6 +46,7 @@ astroid==3.3.11
 attrs==25.3.0
     # via
     #   aiohttp
+    #   allure-python-commons
     #   hypothesis
     #   jsonschema
     #   referencing
@@ -368,6 +375,7 @@ platformdirs==4.3.8
     # via pylint
 pluggy==1.6.0
     # via
+    #   allure-python-commons
     #   pytest
     #   pytest-cov
 ply==3.11
@@ -430,6 +438,7 @@ pyproject-hooks==1.2.0
     #   pip-tools
 pytest==8.4.1
     # via
+    #   allure-pytest
     #   pytest-asyncio
     #   pytest-cov
     #   pytest-dependency

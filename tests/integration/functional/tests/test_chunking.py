@@ -20,6 +20,7 @@ from uuid import UUID
 import numpy.testing as npt
 import pandas as pd
 import pytest
+import allure
 from typing import List
 
 from wdms_client.request_builders.wdms.crud.osdu_wellpressuretestrawmeasurement import \

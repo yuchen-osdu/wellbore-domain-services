@@ -79,6 +79,9 @@ include:
   - local: "devops/gc/pipeline/override-stages.yml"
   - local: "devops/core-plus/pipeline/override-stages.yml"
 
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "reporting/reporting.yml"
+
 #Override Python Image defined in python.yml
 .python:
   image: python:3.13-bookworm

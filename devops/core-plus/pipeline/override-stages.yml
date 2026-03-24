@@ -1,4 +1,5 @@
 variables:
+  ACCEPTANCE_TEST_DIR: tests/baremetal
   CIMPL_SERVICE: wellbore
   CIMPL_INT_TEST_TYPE: python
   CIMPL_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
@@ -28,3 +29,13 @@ cimpl-dev2-test-python:
   image: python:3.13
   variables:
     CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+
+cimpl-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'

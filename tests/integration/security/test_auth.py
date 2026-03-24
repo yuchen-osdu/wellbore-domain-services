@@ -16,10 +16,14 @@ from datetime import datetime, timezone, timedelta
 import requests
 import pytest
 import jwt
+import allure
 
 payload = {}
 
 
+@allure.feature('Wellbore DMS Security')
+@allure.story('Authentication')
+@allure.severity(allure.severity_level.CRITICAL)
 def test_expired_token_returns_40X(base_url, check_cert, token):
     url = f"{base_url}/about"
     token_expired = jwt.encode({"email":"nobody@example.com", "exp": datetime.now(timezone.utc) - timedelta(seconds=300)}, key="secret", algorithm="HS256")
