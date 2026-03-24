@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import pytest
+import allure
 
 from wdms_client.request_builders.wdms.crud.osdu_wellboretrajectory import build_request_create_osdu_wellboretrajectory
 from wdms_client.request_builders.wdms.crud.osdu_welllog import build_request_create_osdu_welllog

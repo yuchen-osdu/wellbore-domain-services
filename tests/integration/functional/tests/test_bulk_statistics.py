@@ -14,6 +14,7 @@
 
 from time import sleep
 import pytest
+import allure
 import pandas as pd
 
 from wdms_client.request_runner import RequestRunner, make_basic_wdms_request_proto

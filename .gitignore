@@ -26,6 +26,9 @@ htmlcov
 .coverage*
 coverage.xml
 unit_tests_report.xml
+allure-results/
+allure-report/
+generated/
 
 # Ignore files cached by Hypothesis...
 .hypothesis/*

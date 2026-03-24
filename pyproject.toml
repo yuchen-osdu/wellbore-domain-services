@@ -77,6 +77,8 @@ dev = [
     "deepdiff",
     "pylint",
     "uvicorn",
+    "allure-pytest>=2.13.0",
+    "allure-python-commons>=2.13.0",
 ]
 
 [tool.setuptools.packages.find]

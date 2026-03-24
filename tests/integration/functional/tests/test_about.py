@@ -16,8 +16,12 @@ from wdms_client.request_builders.wdms.about import build_request_about
 from wdms_client.request_builders.wdms.version import build_request_version
 from .fixtures import with_wdms_env
 import pytest
+import allure
 
 
+@allure.feature('Wellbore DMS API')
+@allure.story('Service Info')
+@allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.tag('basic', 'smoke', 'about')
 def test_about(with_wdms_env):
     result = build_request_about().call(with_wdms_env)

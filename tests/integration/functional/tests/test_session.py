@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import pytest
+import allure
 from .fixtures import with_wdms_env
 from wdms_client.request_builders.wdms.crud.osdu_welllog import (
     build_request_create_osdu_welllog,
@@ -49,6 +50,9 @@ def create_session(env, record_id, meta=None):
     return result.get_response_obj()
 
 
+@allure.feature('Wellbore DMS API')
+@allure.story('Session Management')
+@allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.parametrize('payload', [(None), ({})])
 @pytest.mark.tag('session', 'smoke', 'chunking')
 def test_create_session_empty_payload(with_wdms_env, with_welllog, payload):

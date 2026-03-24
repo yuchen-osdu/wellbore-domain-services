@@ -14,6 +14,7 @@
 import json
 
 import pytest
+import allure
 
 from .fixtures import with_wdms_env
 from wdms_client.request_builders import build_request, diff_record_against_ref
@@ -46,6 +47,9 @@ param_kind_depend_on_create_for_id_with_version = [
 ]
 
 
+@allure.feature('Wellbore DMS API')
+@allure.story('CRUD v3')
+@allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.tag('basic', 'crud', 'smoke')
 @pytest.mark.parametrize(
     'kind', [pytest.param(k, marks=pytest.mark.dependency(name=f'test_create_record_{k}')) for k in kind_list])
