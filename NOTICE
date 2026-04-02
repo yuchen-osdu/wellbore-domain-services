@@ -164,7 +164,7 @@ The following software have components provided under the terms of this license:
 - annotated-types (from https://pypi.org/project/annotated-types/, https://pypi.org/project/annotated-types/0.5.0/, https://pypi.org/project/annotated-types/0.6.0/)
 - anyio (from https://pypi.org/project/anyio/, https://pypi.org/project/anyio/3.3.0/)
 - attrs (from https://attrs.readthedocs.io/, https://pypi.org/project/attrs/, https://www.attrs.org/)
-- azure-core (from <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core>, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core)
+- azure-core (from <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core>, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core, https://pypi.org/project/azure-core/)
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
 - azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity, https://pypi.org/project/azure-identity/)
 - azure-keyvault (from https://github.com/Azure/azure-sdk-for-python, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault)
