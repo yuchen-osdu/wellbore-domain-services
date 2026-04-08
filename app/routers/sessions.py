@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional, Union, List
+from typing import Union, List
 from asyncio import gather
 from uuid import UUID
 
@@ -11,6 +11,7 @@ from pydantic import RootModel, BaseModel, Field
 
 from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 
+from app.model.model_utils import SessionMeta
 from app.routers.common_parameters import response_404, create_sessions_examples
 from app.tenant import resolve_tenant
 from app.clients import StorageRecordServiceClient
@@ -26,7 +27,7 @@ from app.context import Context
 router = APIRouter()
 
 
-class CreateDataSessionRequest(BaseModel):
+class CreateDataSessionRequest(SessionMeta, BaseModel):
     """
     Note:
     if fromVersion is provided, should we:
@@ -48,11 +49,6 @@ class CreateDataSessionRequest(BaseModel):
                     " If 'update', existing data will be merged with the data sent during the session."
                     " If 'overwrite', existing data will be ignored, the final result will only contains "
                     "data sent within the session.")
-
-    meta: Optional[Dict[str, str]] = Field(
-        None,
-        description="dictionary all values, stored in the session"
-    )
 
 
 class UpdateSessionStateValue(str, Enum):

@@ -12,10 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Type
+from typing import Dict, Optional, Type
 
 from odes_storage.models import Record
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+
+
+class SessionMeta(BaseModel):
+    meta: Optional[Dict[str, str]] = Field(
+        None,
+        description="miscellaneous metadata associated to the session. The session creator can set some data here."
+    )
+     
+    @field_validator("meta", mode="before")
+    def coerce_meta_values_to_str(cls, v):
+        if v is None:
+            return v
+        return {k: str(val) for k, val in v.items()}
 
 # translate any model to a record
 

@@ -413,7 +413,7 @@
                 "type": "null"
               }
             ],
-            "description": "dictionary all values, stored in the session",
+            "description": "miscellaneous metadata associated to the session. The session creator can set some data here.",
             "title": "Meta"
           },
           "mode": {

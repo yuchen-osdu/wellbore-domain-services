@@ -1437,7 +1437,8 @@ async def test_bulk_tracing(test_app_without_consistency_client,
     "True",
     "true",
     "False",
-    "something-else"
+    "something-else",
+    True, 11 # Typing validation
 ])
 @pytest.mark.anyio
 async def test_session_meta_extended_load_completed(test_app_without_consistency_client,
@@ -1473,7 +1474,7 @@ async def test_session_meta_extended_load_completed(test_app_without_consistency
     await _create_chunks(client, local_partition_header, entity_type, record_id=record_id, data_format=data_format,
                          json_kwargs=session_meta_dict, cols_ranges=[(['X'], range(10))])
 
-    if extendedLoadCompleted_value.lower() == "true":
+    if str(extendedLoadCompleted_value).lower() == "true":
         # after commit the attribute 'IsExtendedLoad' is set to False
         await _check_record(expected_is_extended_load=False)
     else:

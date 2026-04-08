@@ -30,6 +30,7 @@ from app.bulk_persistence import (Session,
 from osdu.core.api.storage.blob_storage_local_fs import LocalFSBlobStorage
 from app.context import Context
 
+from app.routers.sessions import CreateDataSessionRequest
 from tests.unit.test_utils import ctx_fixture
 
 
@@ -66,6 +67,16 @@ async def test_create_session(sessions_storage, mode, meta, internal):
     assert new_session.session.mode == mode
     assert new_session.internal == internal
 
+@pytest.mark.parametrize("meta", [
+    ({'custom1': 123, 'custom2': True, 'custom3': {'test1': 34, "test2": False}})
+])
+def test_session_meta(meta):
+    expected_meta = {k: str(v) for k, v in meta.items()}
+    cdsr = CreateDataSessionRequest(fromVersion=0, timeToLive=1000, mode='overwrite', meta=meta)
+    assert cdsr.meta == expected_meta
+
+    session = Session(meta=meta, id="478e35dd-d814-4825-9805-d32b472116ac", recordId="fakeid", fromVersion=0, mode='overwrite', expiry=datetime.now(), createdTime=datetime.now(), updatedTime=datetime.now(), state='open')
+    assert session.meta == expected_meta
 
 @pytest.mark.anyio
 async def test_session_create_get(sessions_storage, testing_tenant):

@@ -24,6 +24,8 @@ from osdu.core.api.storage.blob_storage_base import BlobStorageBase
 from osdu.core.api.storage.tenant import Tenant
 from osdu.core.api.storage.exceptions import PreconditionFailedException, ResourceNotFoundException
 
+from app.model.model_utils import SessionMeta
+
 from .capture_timings import capture_timings
 from app.helper.logger import get_logger
 from app.helper.traces_ot import get_tracer
@@ -43,7 +45,7 @@ class SessionUpdateMode(str, Enum):
     Update = 'update'
 
 
-class Session(BaseModel):
+class Session(SessionMeta, BaseModel):
     """ model of session exposed  """
 
     id: UUID = Field(..., description="identifier of the current session.",
@@ -65,9 +67,6 @@ class Session(BaseModel):
     createdTime: datetime = Field(..., description="creation date", frozen=True)
     updatedTime: datetime = Field(..., description="updated date")
     state: SessionState = Field(..., frozen=True)
-    meta: Optional[Dict[str, str]] = Field(
-        None,
-        description="miscellaneous metadata associated to the session. The session creator can set some data here.")
     model_config = ConfigDict(validate_assignment=True, json_schema_extra={
         "example": {
             "id": "xx1234",
