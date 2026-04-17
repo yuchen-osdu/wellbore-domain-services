@@ -6,23 +6,23 @@
 #
 --extra-index-url https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple
 
-adlfs==2024.12.0
+adlfs==2026.4.0
     # via osdu-core-lib-python-azure
-aiobotocore==2.24.1
+aiobotocore==3.4.0
     # via s3fs
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.13.3
+aiohttp==3.13.5
     # via
-    #   adlfs
     #   aiobotocore
+    #   azure-core
     #   gcsfs
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-gcp
     #   osdu-core-lib-python-ibm
     #   s3fs
     #   wellbore-domain-services (pyproject.toml)
-aioitertools==0.12.0
+aioitertools==0.13.0
     # via aiobotocore
 aiosignal==1.4.0
     # via aiohttp
@@ -30,17 +30,17 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.10.0
+anyio==4.13.0
     # via
     #   httpx
     #   starlette
     #   wellbore-domain-services (pyproject.toml)
-attrs==25.3.0
+attrs==26.1.0
     # via
     #   aiohttp
     #   jsonschema
     #   referencing
-azure-core==1.35.0
+azure-core[aio]==1.39.0
     # via
     #   adlfs
     #   azure-identity
@@ -50,9 +50,10 @@ azure-core==1.35.0
     #   azure-monitor-opentelemetry-exporter
     #   azure-storage-blob
     #   msrest
+    #   wellbore-domain-services (pyproject.toml)
 azure-datalake-store==0.0.53
     # via adlfs
-azure-identity==1.24.0
+azure-identity==1.25.3
     # via
     #   adlfs
     #   azure-monitor-opentelemetry-exporter
@@ -65,9 +66,9 @@ azure-keyvault-keys==4.11.0
     # via azure-keyvault
 azure-keyvault-secrets==4.10.0
     # via azure-keyvault
-azure-monitor-opentelemetry-exporter==1.0.0b41
+azure-monitor-opentelemetry-exporter==1.0.0b45
     # via wellbore-domain-services (pyproject.toml)
-azure-storage-blob==12.26.0
+azure-storage-blob[aio]==12.28.0
     # via
     #   adlfs
     #   osdu-core-lib-python-azure
@@ -75,12 +76,12 @@ backoff==2.2.1
     # via
     #   osdu-core-lib-python-azure
     #   wellbore-domain-services (pyproject.toml)
-boto3==1.39.11
+boto3==1.42.84
     # via
     #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-ibm
-botocore==1.39.11
+botocore==1.42.84
     # via
     #   aiobotocore
     #   boto3
@@ -88,97 +89,107 @@ botocore==1.39.11
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-ibm
     #   s3transfer
-cachetools==5.5.2
+cachetools==7.0.5
     # via
-    #   google-auth
     #   osdu-core-lib-python-azure
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-gcp
-certifi==2025.8.3
+certifi==2026.2.25
     # via
     #   httpcore
     #   httpx
     #   msrest
     #   requests
-cffi==1.17.1
+cffi==2.0.0
     # via
     #   azure-datalake-store
     #   cryptography
-charset-normalizer==3.4.3
+charset-normalizer==3.4.7
     # via requests
-click==8.2.1
+click==8.3.2
     # via
     #   uvicorn
     #   wellbore-domain-services (pyproject.toml)
-cryptography==45.0.6
+cryptography==46.0.7
     # via
     #   azure-identity
     #   azure-keyvault-keys
     #   azure-storage-blob
+    #   google-auth
     #   msal
     #   osdu-core-lib-python-gcp
     #   pyjwt
+    #   wellbore-domain-services (pyproject.toml)
 decorator==5.2.1
     # via gcsfs
 dpath==2.2.0
     # via wellbore-schema-manipulation
-fastapi==0.121.0
+fastapi==0.121.3
     # via
     #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   wellbore-domain-services (pyproject.toml)
-fixedint==0.1.6
-    # via azure-monitor-opentelemetry-exporter
-frozenlist==1.7.0
+frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
-fsspec==2025.7.0
+fsspec==2026.3.0
     # via
     #   adlfs
     #   gcsfs
     #   osdu-core-lib-python-azure
     #   s3fs
     #   wellbore-domain-services (pyproject.toml)
-gcsfs==2025.7.0
+gcsfs==2026.3.0
     # via osdu-core-lib-python-gcp
-google-api-core[grpc]==2.25.1
+google-api-core[grpc]==2.30.3
     # via
     #   google-cloud-core
     #   google-cloud-storage
+    #   google-cloud-storage-control
     #   google-cloud-trace
-google-auth==2.40.3
+google-auth==2.49.2
     # via
     #   gcsfs
     #   google-api-core
     #   google-auth-oauthlib
     #   google-cloud-core
     #   google-cloud-storage
+    #   google-cloud-storage-control
     #   google-cloud-trace
-google-auth-oauthlib==1.2.2
+google-auth-oauthlib==1.3.1
     # via gcsfs
-google-cloud-core==2.4.3
+google-cloud-core==2.5.1
     # via google-cloud-storage
-google-cloud-storage==3.3.0
+google-cloud-storage==3.10.1
     # via gcsfs
-google-cloud-trace==1.16.2
+google-cloud-storage-control==1.11.0
+    # via gcsfs
+google-cloud-trace==1.19.0
     # via opentelemetry-exporter-gcp-trace
-google-crc32c==1.7.1
+google-crc32c==1.8.0
     # via
     #   google-cloud-storage
     #   google-resumable-media
-google-resumable-media==2.7.2
+google-resumable-media==2.8.2
     # via google-cloud-storage
-googleapis-common-protos==1.70.0
+googleapis-common-protos[grpc]==1.74.0
     # via
     #   google-api-core
+    #   grpc-google-iam-v1
     #   grpcio-status
-grpcio==1.74.0
+grpc-google-iam-v1==0.14.4
+    # via google-cloud-storage-control
+grpcio==1.80.0
     # via
     #   google-api-core
+    #   google-cloud-storage-control
+    #   google-cloud-trace
+    #   googleapis-common-protos
+    #   grpc-google-iam-v1
     #   grpcio-status
-grpcio-status==1.74.0
+grpcio-status==1.80.0
     # via google-api-core
 h11==0.16.0
     # via
@@ -193,13 +204,13 @@ httpx==0.28.1
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   wellbore-domain-services (pyproject.toml)
-idna==3.10
+idna==3.11
     # via
     #   anyio
     #   httpx
     #   requests
     #   yarl
-importlib-metadata==8.7.0
+importlib-metadata==8.7.1
     # via opentelemetry-api
 isodate==0.7.2
     # via
@@ -208,20 +219,20 @@ isodate==0.7.2
     #   azure-keyvault-secrets
     #   azure-storage-blob
     #   msrest
-jmespath==1.0.1
+jmespath==1.1.0
     # via
     #   aiobotocore
     #   boto3
     #   botocore
-jsonpath-ng==1.7.0
+jsonpath-ng==1.8.0
     # via wellbore-domain-services (pyproject.toml)
-jsonschema==4.25.1
+jsonschema==4.26.0
     # via
     #   wellbore-domain-services (pyproject.toml)
     #   wellbore-schema-manipulation
-jsonschema-specifications==2025.4.1
+jsonschema-specifications==2025.9.1
     # via jsonschema
-msal==1.33.0
+msal==1.36.0
     # via
     #   azure-datalake-store
     #   azure-identity
@@ -230,7 +241,7 @@ msal-extensions==1.3.1
     # via azure-identity
 msrest==0.7.1
     # via azure-monitor-opentelemetry-exporter
-multidict==6.6.4
+multidict==6.7.1
     # via
     #   aiobotocore
     #   aiohttp
@@ -238,7 +249,7 @@ multidict==6.6.4
     #   yarl
 natsort==8.4.0
     # via wellbore-domain-services (pyproject.toml)
-numpy==2.3.2
+numpy==2.4.4
     # via
     #   pandas
     #   wellbore-domain-services (pyproject.toml)
@@ -253,9 +264,9 @@ opentelemetry-api==1.36.0
     #   opentelemetry-semantic-conventions
     #   osdu-core-lib-python-azure
     #   wellbore-domain-services (pyproject.toml)
-opentelemetry-exporter-gcp-trace==1.9.0
+opentelemetry-exporter-gcp-trace==1.11.0
     # via wellbore-domain-services (pyproject.toml)
-opentelemetry-resourcedetector-gcp==1.9.0a0
+opentelemetry-resourcedetector-gcp==1.11.0a0
     # via opentelemetry-exporter-gcp-trace
 opentelemetry-sdk==1.36.0
     # via
@@ -300,73 +311,74 @@ osdu-data-ecosystem-storage==0.29.0
     # via wellbore-domain-services (pyproject.toml)
 osdu-log-recognition-lib==0.29.0
     # via wellbore-domain-services (pyproject.toml)
-packaging==25.0
+packaging==26.1
     # via wellbore-domain-services (pyproject.toml)
-pandas==2.3.3
+pandas==3.0.2
     # via wellbore-domain-services (pyproject.toml)
-ply==3.11
-    # via jsonpath-ng
-prometheus-client==0.22.1
+prometheus-client==0.25.0
     # via prometheus-fastapi-instrumentator
 prometheus-fastapi-instrumentator==7.1.0
     # via wellbore-domain-services (pyproject.toml)
-propcache==0.3.2
+propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
-proto-plus==1.26.1
+proto-plus==1.27.2
     # via
     #   google-api-core
+    #   google-cloud-storage-control
     #   google-cloud-trace
-protobuf==6.32.0
+protobuf==6.33.6
     # via
     #   google-api-core
+    #   google-cloud-storage-control
     #   google-cloud-trace
     #   googleapis-common-protos
+    #   grpc-google-iam-v1
     #   grpcio-status
     #   proto-plus
-psutil==7.0.0
+    #   wellbore-domain-services (pyproject.toml)
+psutil==7.2.2
     # via azure-monitor-opentelemetry-exporter
-pyarrow==21.0.0
+pyarrow==23.0.1
     # via wellbore-domain-services (pyproject.toml)
-pyasn1==0.6.1
+pyasn1==0.6.3
     # via
     #   pyasn1-modules
-    #   rsa
+    #   wellbore-domain-services (pyproject.toml)
 pyasn1-modules==0.4.2
     # via google-auth
-pycparser==2.22
+pycparser==3.0
     # via cffi
-pydantic==2.11.7
+pydantic==2.13.1
     # via
     #   fastapi
     #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
     #   osdu-data-ecosystem-storage
     #   wellbore-domain-services (pyproject.toml)
-pydantic-core==2.33.2
+pydantic-core==2.46.1
     # via pydantic
-pyjwt[crypto]==2.10.1
+pyjwt[crypto]==2.12.1
     # via
     #   msal
     #   osdu-core-lib-python-gcp
+    #   wellbore-domain-services (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
     #   aiobotocore
     #   botocore
     #   pandas
-python-rapidjson==1.21
+python-rapidjson==1.23
     # via wellbore-domain-services (pyproject.toml)
 python-ulid==3.1.0
     # via wellbore-domain-services (pyproject.toml)
-pytz==2025.2
-    # via pandas
-referencing==0.36.2
+referencing==0.37.0
     # via
     #   jsonschema
     #   jsonschema-specifications
     #   types-jsonschema
-requests==2.32.5
+requests==2.33.1
     # via
     #   azure-core
     #   azure-datalake-store
@@ -384,36 +396,30 @@ requests-oauthlib==2.0.0
     # via
     #   google-auth-oauthlib
     #   msrest
-rpds-py==0.27.0
+rpds-py==0.30.0
     # via
     #   jsonschema
     #   referencing
-rsa==4.9.1
-    # via google-auth
-s3fs==2025.7.0
+s3fs==2026.3.0
     # via wellbore-domain-services (pyproject.toml)
-s3transfer==0.13.1
+s3transfer==0.16.0
     # via boto3
 six==1.17.0
-    # via
-    #   azure-core
-    #   python-dateutil
-sniffio==1.3.1
-    # via anyio
-starlette==0.49.1
+    # via python-dateutil
+starlette==0.50.0
     # via
     #   fastapi
     #   prometheus-fastapi-instrumentator
     #   wellbore-domain-services (pyproject.toml)
-structlog==25.4.0
+structlog==25.5.0
     # via wellbore-domain-services (pyproject.toml)
-tenacity==9.1.2
+tenacity==9.1.4
     # via
     #   osdu-api
     #   wellbore-domain-services (pyproject.toml)
-types-jsonschema==4.25.0.20250809
+types-jsonschema==4.26.0.20260408
     # via wellbore-schema-manipulation
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   azure-core
     #   azure-identity
@@ -422,6 +428,7 @@ typing-extensions==4.14.1
     #   azure-keyvault-secrets
     #   azure-storage-blob
     #   fastapi
+    #   grpcio
     #   opentelemetry-api
     #   opentelemetry-resourcedetector-gcp
     #   opentelemetry-sdk
@@ -433,24 +440,22 @@ typing-extensions==4.14.1
     #   pydantic-core
     #   typing-inspection
     #   wellbore-domain-services (pyproject.toml)
-typing-inspection==0.4.1
+typing-inspection==0.4.2
     # via pydantic
-tzdata==2025.2
-    # via pandas
-urllib3==2.6.0
+urllib3==2.6.3
     # via
     #   botocore
     #   requests
     #   wellbore-domain-services (pyproject.toml)
-uvicorn==0.35.0
+uvicorn==0.44.0
     # via wellbore-domain-services (pyproject.toml)
 wellbore-schema-manipulation==0.29.0
     # via wellbore-domain-services (pyproject.toml)
-wrapt==1.17.3
+wrapt==2.1.2
     # via aiobotocore
-xmltodict==0.14.2
+xmltodict==1.0.4
     # via osdu-log-recognition-lib
-yarl==1.20.1
+yarl==1.23.0
     # via aiohttp
-zipp==3.23.0
+zipp==3.23.1
     # via importlib-metadata

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM cgr.dev/chainguard/wolfi-base AS builder
+FROM public.ecr.aws/chainguard/wolfi-base:latest AS builder
 
 ENV LANG=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -28,7 +28,7 @@ RUN python3 -m venv /wdms/venv
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
 
-FROM cgr.dev/chainguard/wolfi-base AS production
+FROM public.ecr.aws/chainguard/wolfi-base:latest AS production
 
 EXPOSE 8080
 WORKDIR /wdms

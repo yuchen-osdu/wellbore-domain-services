@@ -31,10 +31,12 @@ The following software have components provided under the terms of this license:
 - google-auth-oauthlib (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth-oauthlib)
 - google-cloud-core (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-core, https://github.com/googleapis/python-cloud-core)
 - google-cloud-storage (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-storage)
+- google-cloud-storage-control (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-storage-control)
 - google-cloud-trace (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-trace, https://github.com/googleapis/python-trace)
 - google-crc32c (from https://github.com/googleapis/python-crc32c)
 - google-resumable-media (from https://github.com/googleapis/google-resumable-media-python)
 - googleapis-common-protos (from https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos, https://github.com/googleapis/python-api-common-protos, https://pypi.org/project/googleapis-common-protos/)
+- grpc-google-iam-v1 (from https://pypi.org/project/grpc-google-iam-v1/)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://pypi.org/project/grpcio-status/)
 - importlib-metadata (from https://pypi.org/project/importlib-metadata/)
@@ -49,19 +51,16 @@ The following software have components provided under the terms of this license:
 - osdu-api (from https://pypi.org/project/osdu-api/)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
-- prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python, https://pypi.org/project/prometheus-client/)
+- prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python)
 - propcache (from https://github.com/aio-libs/propcache)
 - proto-plus (from https://github.com/googleapis/proto-plus-python.git, https://pypi.org/project/proto-plus/)
 - pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 - python-dateutil (from <https://github.com/dateutil/dateutil>, https://github.com/dateutil/dateutil)
 - requests (from http://python-requests.org, https://requests.readthedocs.io)
-- rsa (from https://pypi.org/project/rsa/, https://stuvel.eu/rsa)
 - s3transfer (from <https://github.com/boto/s3transfer>, https://github.com/boto/s3transfer)
-- sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - tenacity (from <https://github.com/jd/tenacity>, https://github.com/jd/tenacity)
 - types-jsonschema (from https://github.com/python/typeshed, https://pypi.org/project/types-jsonschema/)
-- tzdata (from <https://github.com/python/tzdata>, https://github.com/python/tzdata)
 - yarl (from https://github.com/aio-libs/yarl, https://github.com/aio-libs/yarl/)
 
 ========================================================================
@@ -74,7 +73,8 @@ The following software have components provided under the terms of this license:
 - numpy (from https://pypi.org/project/numpy/)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
-- prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python, https://pypi.org/project/prometheus-client/)
+- prometheus-client (from <https://github.com/prometheus/client_python>, https://github.com/prometheus/client_python)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 - pyasn1 (from https://github.com/etingof/pyasn1, https://pypi.org/project/pyasn1/)
 - pyasn1-modules (from https://github.com/etingof/pyasn1-modules, https://github.com/pyasn1/pyasn1-modules)
 - wrapt (from <https://github.com/GrahamDumpleton/wrapt>, https://github.com/GrahamDumpleton/wrapt, https://pypi.org/project/wrapt/)
@@ -96,11 +96,11 @@ The following software have components provided under the terms of this license:
 - httpx (from https://pypi.org/project/httpx/, https://pypi.org/project/httpx/0.23.1/)
 - idna (from https://pypi.org/project/idna/, https://pypi.org/project/idna/3.4/)
 - isodate (from http://cheeseshop.python.org/pypi/isodate, https://github.com/gweis/isodate/, https://pypi.org/project/isodate/)
+- jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
 - numpy (from https://pypi.org/project/numpy/)
 - oauthlib (from https://github.com/oauthlib/oauthlib)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
-- ply (from http://www.dabeaz.com/ply/)
 - prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
@@ -110,10 +110,16 @@ The following software have components provided under the terms of this license:
 - python-dateutil (from <https://github.com/dateutil/dateutil>, https://github.com/dateutil/dateutil)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - s3fs (from http://github.com/fsspec/s3fs/)
-- sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - starlette (from https://pypi.org/project/starlette/, https://pypi.org/project/starlette/0.22.0/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - uvicorn (from https://github.com/tomchristie/uvicorn, https://pypi.org/project/uvicorn/, https://www.uvicorn.org/)
+
+========================================================================
+BSL-1.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 CC-BY-4.0
@@ -128,6 +134,7 @@ CC0-1.0
 The following software have components provided under the terms of this license:
 
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 ISC
@@ -192,15 +199,14 @@ The following software have components provided under the terms of this license:
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - protobuf (from https://developers.google.com/protocol-buffers/)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 - pydantic (from https://github.com/samuelcolvin/pydantic, https://pypi.org/project/pydantic/)
-- pydantic_core (from https://github.com/pydantic/pydantic-core)
+- pydantic_core (from https://github.com/pydantic/pydantic, https://github.com/pydantic/pydantic-core)
 - python-rapidjson (from https://github.com/python-rapidjson/python-rapidjson)
 - python-ulid (from https://github.com/mdomke/python-ulid, https://pypi.org/project/python-ulid/, https://pypi.org/project/python-ulid/2.2.0/)
-- pytz (from <http://pythonhosted.org/pytz>, http://pythonhosted.org/pytz)
 - referencing (from https://pypi.org/project/referencing/, https://pypi.org/project/referencing/0.30.2/, https://pypi.org/project/referencing/0.31.1/)
 - rpds-py (from <https://pypi.org/project/rpds-py/0.10.6/>, https://pypi.org/project/rpds-py/0.10.6/)
 - six (from http://pypi.python.org/pypi/six/, https://github.com/benjaminp/six)
-- sniffio (from https://github.com/python-trio/sniffio, https://pypi.org/project/sniffio/, https://pypi.org/project/sniffio/1.3.1/)
 - structlog (from https://pypi.org/project/structlog/22.1.0/, https://pypi.org/project/structlog/24.1.0/)
 - types-jsonschema (from https://github.com/python/typeshed, https://pypi.org/project/types-jsonschema/)
 - typing-inspection (from https://pypi.org/project/typing-inspection/)
@@ -239,6 +245,7 @@ OpenSSL
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 PSF-2.0
@@ -246,7 +253,6 @@ PSF-2.0
 The following software have components provided under the terms of this license:
 
 - aiohappyeyeballs (from https://pypi.org/project/aiohappyeyeballs/)
-- fixedint (from https://github.com/nneonneo/fixedint)
 
 ========================================================================
 Protobuf
@@ -254,6 +260,7 @@ Protobuf
 The following software have components provided under the terms of this license:
 
 - protobuf (from https://developers.google.com/protocol-buffers/)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 Python-2.0
@@ -262,7 +269,6 @@ The following software have components provided under the terms of this license:
 
 - aiohappyeyeballs (from https://pypi.org/project/aiohappyeyeballs/)
 - cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
-- fixedint (from https://github.com/nneonneo/fixedint)
 - numpy (from https://pypi.org/project/numpy/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
 - typing-extensions (from https://pypi.org/project/typing-extensions/, https://pypi.org/project/typing-extensions/4.4.0/)
@@ -295,6 +301,7 @@ WTFPL
 The following software have components provided under the terms of this license:
 
 - jsonpath-ng (from https://github.com/h2non/jsonpath-ng)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 X11
@@ -310,6 +317,7 @@ The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
 - numpy (from https://pypi.org/project/numpy/)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 apache-2.0 WITH llvm-exception
@@ -317,13 +325,7 @@ apache-2.0 WITH llvm-exception
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-
-========================================================================
-cc-pd
-========================================================================
-The following software have components provided under the terms of this license:
-
-- ply (from http://www.dabeaz.com/ply/)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 mit-old-style
@@ -338,7 +340,7 @@ mit-old-style-no-advert
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-- pytz (from <http://pythonhosted.org/pytz>, http://pythonhosted.org/pytz)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 openssl-ssleay
@@ -346,6 +348,7 @@ openssl-ssleay
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 
 ========================================================================
 public-domain
@@ -353,5 +356,4 @@ public-domain
 The following software have components provided under the terms of this license:
 
 - numpy (from https://pypi.org/project/numpy/)
-- pytz (from <http://pythonhosted.org/pytz>, http://pythonhosted.org/pytz)
-- tzdata (from <https://github.com/python/tzdata>, https://github.com/python/tzdata)
+- pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
