@@ -50,7 +50,7 @@ attrs==25.3.0
     #   hypothesis
     #   jsonschema
     #   referencing
-azure-core==1.35.0
+azure-core==1.39.0
     # via
     #   adlfs
     #   azure-identity
@@ -60,6 +60,7 @@ azure-core==1.35.0
     #   azure-monitor-opentelemetry-exporter
     #   azure-storage-blob
     #   msrest
+    #   wellbore-domain-services (pyproject.toml)
 azure-datalake-store==0.0.53
     # via adlfs
 azure-identity==1.24.0
@@ -112,7 +113,7 @@ certifi==2025.8.3
     #   httpx
     #   msrest
     #   requests
-cffi==1.17.1
+cffi==2.0.0
     # via
     #   azure-datalake-store
     #   cryptography
@@ -125,7 +126,7 @@ click==8.2.1
     #   wellbore-domain-services (pyproject.toml)
 coverage[toml]==7.10.4
     # via pytest-cov
-cryptography==45.0.6
+cryptography==46.0.7
     # via
     #   azure-identity
     #   azure-keyvault-keys
@@ -133,6 +134,7 @@ cryptography==45.0.6
     #   msal
     #   osdu-core-lib-python-gcp
     #   pyjwt
+    #   wellbore-domain-services (pyproject.toml)
 decorator==5.2.1
     # via gcsfs
 deepdiff==8.6.0
@@ -392,23 +394,25 @@ proto-plus==1.26.1
     # via
     #   google-api-core
     #   google-cloud-trace
-protobuf==6.32.0
+protobuf==6.33.6
     # via
     #   google-api-core
     #   google-cloud-trace
     #   googleapis-common-protos
     #   grpcio-status
     #   proto-plus
+    #   wellbore-domain-services (pyproject.toml)
 psutil==7.0.0
     # via azure-monitor-opentelemetry-exporter
 pyarrow==21.0.0
     # via
     #   osdu-wbddms-worker
     #   wellbore-domain-services (pyproject.toml)
-pyasn1==0.6.1
+pyasn1==0.6.3
     # via
     #   pyasn1-modules
     #   rsa
+    #   wellbore-domain-services (pyproject.toml)
 pyasn1-modules==0.4.2
     # via google-auth
 pycparser==2.22
@@ -425,7 +429,7 @@ pydantic-core==2.33.2
     # via pydantic
 pygments==2.19.2
     # via pytest
-pyjwt[crypto]==2.10.1
+pyjwt[crypto]==2.12.1
     # via
     #   msal
     #   osdu-core-lib-python-gcp
@@ -515,7 +519,6 @@ s3transfer==0.13.1
     # via boto3
 six==1.17.0
     # via
-    #   azure-core
     #   python-dateutil
     #   rfc3339-validator
 sniffio==1.3.1
