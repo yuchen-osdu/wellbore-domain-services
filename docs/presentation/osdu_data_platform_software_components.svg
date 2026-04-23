@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1278" height="671" viewBox="0 0 1278 671">
+  <defs>
+    <linearGradient id="gradBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fb0bf"/>
+      <stop offset="100%" stop-color="#8fb0bf"/>
+    </linearGradient>
+    <linearGradient id="gradTeal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cbe0eb"/>
+      <stop offset="65%" stop-color="#6db2cf"/>
+      <stop offset="100%" stop-color="#007aa6"/>
+    </linearGradient>
+    <linearGradient id="gradGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a6e60"/>
+      <stop offset="100%" stop-color="#055247"/>
+    </linearGradient>
+    <linearGradient id="gradHighlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f79c1d"/>
+      <stop offset="100%" stop-color="#e07b00"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="160%" height="160%">
+      <feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#888" flood-opacity="0.45"/>
+    </filter>
+    <marker id="arrowDown" markerWidth="14" markerHeight="14" viewBox="0 0 14 14" markerUnits="userSpaceOnUse" refX="14" refY="7" orient="auto" overflow="visible">
+      <path d="M0,0 L0,14 L14,7 Z" fill="#64b7d8" stroke="#0e6f8e" stroke-width="0.6"/>
+    </marker>
+    <marker id="arrowUp" markerWidth="14" markerHeight="14" viewBox="0 0 14 14" markerUnits="userSpaceOnUse" refX="14" refY="7" orient="auto" overflow="visible">
+      <path d="M0,0 L0,14 L14,7 Z" fill="#64b7d8" stroke="#0e6f8e" stroke-width="0.6"/>
+    </marker>
+    <style>
+      .title { font: 700 58px Arial, Helvetica, sans-serif; fill:#0b6f8a; }
+      .label { font: 700 16px Arial, Helvetica, sans-serif; fill:#fff; text-anchor:middle; dominant-baseline:middle; }
+      .boxtext { font: 700 19px Arial, Helvetica, sans-serif; fill:#fff; text-anchor:middle; dominant-baseline:middle; }
+      .smallbox { font: 700 17px Arial, Helvetica, sans-serif; fill:#fff; text-anchor:middle; dominant-baseline:middle; }
+      .caption { font: 400 20px Arial, Helvetica, sans-serif; fill:#222; }
+      .captionSmall { font: 400 19px Arial, Helvetica, sans-serif; fill:#222; }
+      .brace { fill:none; stroke:#0b6f8a; stroke-width:4; stroke-linecap:round; stroke-linejoin:round; }
+      .lightbg { fill:#efefef; }
+    </style>
+  </defs>
+
+  <rect width="1278" height="671" fill="#ffffff"/>
+
+  <text x="21" y="69" class="title">OSDU Software Components</text>
+
+  <!-- Left descriptive text -->
+  <text x="191" y="186" class="captionSmall">
+    <tspan x="191" dy="0">Can be provided</tspan>
+    <tspan x="191" dy="22">as BPaaS or</tspan>
+    <tspan x="191" dy="22">SaaS by ISVs</tspan>
+  </text>
+
+  <text x="122" y="494" class="captionSmall">
+    <tspan x="122" dy="0">Can be provided</tspan>
+    <tspan x="122" dy="22">as PaaS by</tspan>
+    <tspan x="122" dy="22">Cloud providers</tspan>
+    <tspan x="122" dy="22">to end users or</tspan>
+    <tspan x="122" dy="22">to ISVs</tspan>
+  </text>
+
+  <!-- Outer left brace -->
+  <path class="brace" d="M358 179 h-8 v447 h8 M350 179 h8 M350 626 h8"/>
+  <!-- Mid left brace -->
+  <path class="brace" d="M273 297 h-8 v334 h8 M265 297 h8 M265 631 h8"/>
+
+  <!-- Applications -->
+  <rect x="386" y="170" width="512" height="76" fill="url(#gradBlue)" stroke="#0b6f8a" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="642" y="208" class="boxtext">Applications</text>
+
+  <!-- arrows between Applications (bottom=246) and Domain APIs (top=294) -->
+  <line x1="441" y1="246" x2="441" y2="294" stroke="#64b7d8" stroke-width="8" marker-end="url(#arrowDown)"/>
+  <line x1="481" y1="294" x2="481" y2="246" stroke="#64b7d8" stroke-width="8" marker-end="url(#arrowUp)"/>
+  <line x1="598" y1="246" x2="598" y2="294" stroke="#64b7d8" stroke-width="8" marker-end="url(#arrowDown)"/>
+  <line x1="626" y1="294" x2="626" y2="246" stroke="#64b7d8" stroke-width="8" marker-end="url(#arrowUp)"/>
+
+  <!-- vertical arrows between Applications (bottom=246) and Generic APIs (top=401) -->
+  <line x1="774" y1="246" x2="774" y2="401" stroke="#64b7d8" stroke-width="8" marker-end="url(#arrowDown)"/>
+  <line x1="814" y1="401" x2="814" y2="246" stroke="#64b7d8" stroke-width="8" marker-end="url(#arrowUp)"/>
+
+  <!-- Domain APIs -->
+  <rect x="386" y="294" width="131" height="25" fill="#5a5a5a" stroke="#3a3a3a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="451.5" y="306.5" class="label">Domain APIs</text>
+
+  <rect x="534" y="294" width="131" height="25" fill="#5a5a5a" stroke="#3a3a3a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="599.5" y="306.5" class="label">Domain APIs</text>
+
+  <!-- DDMS boxes -->
+  <rect x="386" y="329" width="127" height="62" fill="url(#gradHighlight)" stroke="#c06a00" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="449.5" y="352" class="smallbox">
+    <tspan x="449.5" dy="0">OSDU Wellbore</tspan>
+    <tspan x="449.5" dy="25">DDMS</tspan>
+  </text>
+
+  <rect x="538" y="329" width="127" height="62" fill="url(#gradTeal)" stroke="#64a6c6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="601.5" y="352" class="smallbox">
+    <tspan x="601.5" dy="0">OSDU Seismic</tspan>
+    <tspan x="601.5" dy="25">DDMS</tspan>
+  </text>
+
+  <!-- Core API -->
+  <rect x="386" y="401" width="512" height="20" fill="#5a5a5a" stroke="#3a3a3a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="642" y="411" class="label" style="font-size:14px;">Core APIs</text>
+
+  <!-- core -->
+  <rect x="386" y="429" width="512" height="103" fill="url(#gradTeal)" stroke="#64a6c6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="642" y="481" class="boxtext" style="font-size:22px;">OSDU Data Platform core code</text>
+
+  <!-- service provider -->
+  <rect x="386" y="541" width="512" height="39" fill="#5a5a5a" stroke="#3a3a3a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="642" y="560.5" class="label">Service Provider Interface</text>
+
+  <!-- csp implementations -->
+  <rect x="386" y="589" width="167" height="56" fill="url(#gradGreen)" stroke="#0b6f8a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="469.5" y="617" class="smallbox">CSP Implementation</text>
+
+  <rect x="558" y="589" width="167" height="56" fill="url(#gradGreen)" stroke="#0b6f8a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="641.5" y="617" class="smallbox">CSP Implementation</text>
+
+  <rect x="730" y="589" width="168" height="56" fill="url(#gradGreen)" stroke="#0b6f8a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="814" y="617" class="smallbox">CSP Implementation</text>
+
+  <!-- Right side braces and notes -->
+  <path class="brace" d="M936 170 h8 v84 h-8 M944 170 h-8 M944 254 h-8"/>
+  <text x="964" y="193" class="captionSmall">
+    <tspan x="964" dy="0">If Open Source &amp; managed</tspan>
+    <tspan x="964" dy="22">by OSDU, embedded apps</tspan>
+    <tspan x="964" dy="22">Otherwise, 3<tspan baseline-shift="super" font-size="12">rd</tspan> party apps</tspan>
+  </text>
+
+  <path class="brace" d="M936 280 h8 v122 h-8 M944 280 h-8 M944 402 h-8"/>
+  <text x="964" y="314" class="captionSmall">
+    <tspan x="964" dy="0">Open Source OSDU</tspan>
+    <tspan x="964" dy="22">embedded applications</tspan>
+  </text>
+
+  <path class="brace" d="M936 410 h8 v172 h-8 M944 410 h-8 M944 582 h-8"/>
+  <text x="964" y="464" class="captionSmall">Open Source core platform</text>
+
+  <path class="brace" d="M936 590 h8 v61 h-8 M944 590 h-8 M944 651 h-8"/>
+  <text x="969" y="607" class="captionSmall">CSP specific code</text>
+</svg>
