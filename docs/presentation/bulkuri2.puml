@@ -1,0 +1,28 @@
+@startuml
+  autonumber
+  actor Client as C
+  participant "WDMS API\n(WellLog bulk routes)" as API
+  participant "Storage Service" as SR
+  participant "BulkIO" as BIO
+  participant "WellLog Record" as REC
+
+  group Flow B: Chunk upload + commit
+  loop Repeatable chunk uploads (same sid)
+    C -> API: POST /welllogs/{id}/sessions/{sid}/data (chunk)
+    API -> BIO: write_chunk(...)
+    BIO --> API: chunk accepted
+    API --> C: 200 OK
+  end
+
+  C -> API: PATCH /welllogs/{id}/sessions/{sid} (Commit)
+  API -> SR: fetch record {id} (fromVersion)
+  SR --> API: record
+  API -> BIO: write_complete_session(...)
+  BIO --> API: bulk_id
+  API -> REC: set ExtensionProperties.wdms.bulkURI= urn:...bulk_id...
+  API -> SR: write_records(record)
+  SR --> API: new version saved
+  API --> C: 200 OK
+  end
+
+@enduml

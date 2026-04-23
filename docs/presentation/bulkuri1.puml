@@ -1,0 +1,21 @@
+@startuml
+  autonumber
+  actor Client as C
+  participant "WDMS API\n(WellLog bulk routes)" as API
+  participant "Storage Service" as SR
+  participant "BulkIO" as BIO
+  participant "WellLog Record" as REC
+
+  group Flow A: Direct bulk write (POST /welllogs/{id}/data)
+  C -> API: POST /welllogs/{id}/data (bulk payload)
+  API -> SR: fetch record {id}
+  SR --> API: record
+  API -> BIO: write_bulk(data, record)
+  BIO --> API: bulk_id
+  API -> REC: set ExtensionProperties.wdms.bulkURI= urn:...bulk_id...
+  API -> SR: write_records(record)
+  SR --> API: new version saved
+  API --> C: 200 OK
+  end
+
+@enduml
