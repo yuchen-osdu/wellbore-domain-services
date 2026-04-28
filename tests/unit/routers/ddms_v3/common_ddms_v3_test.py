@@ -136,7 +136,7 @@ async def test_get_delete_routes_refuse_incorrect_record_id(
 
     response = await client.request(method=method, url=f'{DDMS_V3_PATH}/{url_entity_base_path}/{relative_path}')
     assert response.status_code == 422
-    assert "String should match pattern" in response.json()["detail"][0]["msg"]
+    assert "String should match pattern" in response.json()["errors"][0]["msg"]
 
 
 def records_with_version(records):

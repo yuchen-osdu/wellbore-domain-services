@@ -52,7 +52,7 @@ Contains the data corresponding to the dataframe. The header "Content-Type" must
 <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient "split"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).
 """
 BODY_DESCRIPTION += f'.\n Examples in JSON for data with {_dataframe_sample.shape[0]} rows and {_dataframe_sample.shape[1]} columns: '
-BODY_DESCRIPTION += f'\n<br/>`{_dataframe_sample.to_json(None, orient="split")}`<br/>&nbsp;'
+BODY_DESCRIPTION += f"\n<br/>`{_dataframe_sample.to_json(None, orient='split')}`<br/>&nbsp;"
 
 
 REQUEST_DATA_BODY_SCHEMA = {
@@ -116,7 +116,9 @@ Requests that violate these rules are rejected with HTTP 400.
 
 response_401 = {status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"}}
 response_403 = {status.HTTP_403_FORBIDDEN: {"description": "Forbidden"}}
-response_404 = {status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
+response_404 = {status.HTTP_404_NOT_FOUND: {"description": "Not Found"}}
+response_409 = {status.HTTP_409_CONFLICT: {"description": "Conflict"}}
+response_412 = {status.HTTP_412_PRECONDITION_FAILED: {"description": "Precondition failed"}}
 response_500 = {status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Internal server error"}}
 
 # Session commit - body - examples

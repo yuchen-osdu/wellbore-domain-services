@@ -31,6 +31,7 @@ from .client_error import (
 )
 from fastapi import HTTPException
 from fastapi.exception_handlers import http_exception_handler
+from fastapi.exceptions import RequestValidationError
 
 
 async def _log_internal_error_handler(request, exc: HTTPException):
@@ -46,6 +47,7 @@ async def _log_internal_error_handler(request, exc: HTTPException):
 
 def add_exception_handlers(app):
     app.add_exception_handler(BulkStatisticsHTTPException, http_stats_error_handler)
+    app.add_exception_handler(RequestValidationError, http422_error_handler)
     app.add_exception_handler(ValidationError, http422_error_handler)
     app.add_exception_handler(OSDUSearchException, http_search_error_handler)
     app.add_exception_handler(OSDUStorageException, http_storage_error_handler)

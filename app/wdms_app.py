@@ -97,6 +97,56 @@ wdms_app = FastAPI(root_path=Config.openapi_prefix.value,
 # Add Prometheus metrics middleware before app startup for Azure
 metric.init_metric(wdms_app, logger)
 
+
+def _patch_openapi_schema(schema: dict) -> None:
+    """Post-process the generated OpenAPI schema to fix known FastAPI output issues.
+
+    1. Add "format": "int64" to every bare {"type": "integer"} node, matching
+       the OSDU Wellbore DDMS reference spec.
+    2. For query/path parameters whose schema.examples is a dict (named examples
+       object), move it up to the parameter-level "examples" field where it is
+       valid in both OpenAPI 3.0 and 3.1.  A plain list stays in schema.examples
+       as a JSON-Schema examples array.
+    """
+
+    def _patch_node(node: dict) -> None:
+        if not isinstance(node, dict):
+            return
+        # Rule 1: add format:int64 to bare integer type nodes
+        if node.get("type") == "integer" and "format" not in node:
+            node["format"] = "int64"
+        for v in node.values():
+            if isinstance(v, dict):
+                _patch_node(v)
+            elif isinstance(v, list):
+                for item in v:
+                    _patch_node(item)
+
+    def _fix_parameter_examples(param: dict) -> None:
+        """If param.schema.examples is a dict (named-examples map), hoist it to
+        the parameter level and remove it from the schema."""
+        if not isinstance(param, dict):
+            return
+        param_schema = param.get("schema")
+        if not isinstance(param_schema, dict):
+            return
+        schema_examples = param_schema.get("examples")
+        if isinstance(schema_examples, dict):
+            param["examples"] = schema_examples
+            del param_schema["examples"]
+
+    # Patch all schema nodes for int64
+    _patch_node(schema.get("components", {}))
+
+    # Patch path parameter nodes for int64 and hoist dict examples
+    for _path, path_item in schema.get("paths", {}).items():
+        for _method, operation in path_item.items():
+            if not isinstance(operation, dict):
+                continue
+            for param in operation.get("parameters", []):
+                _patch_node(param.get("schema", {}))
+                _fix_parameter_examples(param)
+
 def custom_openapi(*args, **kwargs):
     if wdms_app.openapi_schema:
         return wdms_app.openapi_schema
@@ -110,6 +160,8 @@ def custom_openapi(*args, **kwargs):
 
     routes_in_schemas = [route for route in wdms_app.routes if getattr(route, 'include_in_schema', True)]
     OpenApiHandler(openapi_schema, [getattr(route, 'operation_id', None) for route in routes_in_schemas])
+
+    _patch_openapi_schema(openapi_schema)
 
     wdms_app.openapi_schema = openapi_schema
     return wdms_app.openapi_schema
