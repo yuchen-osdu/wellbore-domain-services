@@ -26,6 +26,8 @@ from app.routers.common_parameters import (REQUEST_DATA_BODY_SCHEMA,
                                            read_bulk_accept_type,
                                            write_bulk_content_type,
                                            response_404,
+                                           response_409,
+                                           response_412,
                                            BULK_READ_NOTE,
                                            BULK_WRITE_NOTE)
 
@@ -276,7 +278,7 @@ async def get_data(
     description="""Either validates the session' bulk data, a new version of record will be created with data sent
                 within the session. Either abandon the session, and let record unchanged.  
                 Note: bulk data consistency check will be run when committing bulk data.""",
-    responses={**response_404},
+    responses={**response_404, **response_409, **response_412},
     response_model=CommitSessionResponse
 )
 async def complete_session(

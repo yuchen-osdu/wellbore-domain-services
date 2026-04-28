@@ -37,7 +37,7 @@ _tracer = get_tracer()
 router = APIRouter()
 
 responses_404_examples = {
-            "description": "Not found",
+            "description": "Not Found",
             "content": {
                 "application/json": {
                     "examples": {

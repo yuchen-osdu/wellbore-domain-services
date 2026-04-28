@@ -152,6 +152,7 @@
             "type": "string"
           },
           "recordVersion": {
+            "format": "int64",
             "title": "Recordversion",
             "type": "integer"
           }
@@ -321,6 +322,7 @@
           },
           "fromVersion": {
             "description": "record version on top of which the session is based.",
+            "format": "int64",
             "title": "Fromversion",
             "type": "integer"
           },
@@ -366,6 +368,7 @@
           "version": {
             "anyOf": [
               {
+                "format": "int64",
                 "type": "integer"
               },
               {
@@ -398,6 +401,7 @@
           "fromVersion": {
             "default": 0,
             "description": "specify the version on top of which update will be applied. By default use the latest one (0). Not relevant if overwrite is set to True.",
+            "format": "int64",
             "title": "Fromversion",
             "type": "integer"
           },
@@ -423,6 +427,7 @@
           "timeToLive": {
             "default": 1440,
             "description": "optional - time to live in minutes.",
+            "format": "int64",
             "title": "Timetolive",
             "type": "integer"
           }
@@ -438,6 +443,7 @@
           "recordCount": {
             "anyOf": [
               {
+                "format": "int64",
                 "type": "integer"
               },
               {
@@ -548,6 +554,7 @@
       "DataframeBasicDescribe": {
         "properties": {
           "columnCount": {
+            "format": "int64",
             "title": "Columncount",
             "type": "integer"
           },
@@ -572,6 +579,7 @@
             "type": "string"
           },
           "rowCount": {
+            "format": "int64",
             "title": "Rowcount",
             "type": "integer"
           }
@@ -874,6 +882,7 @@
           "version": {
             "anyOf": [
               {
+                "format": "int64",
                 "type": "integer"
               },
               {
@@ -929,6 +938,7 @@
             "anyOf": [
               {
                 "items": {
+                  "format": "int64",
                   "type": "integer"
                 },
                 "type": "array"
@@ -973,6 +983,7 @@
           },
           "fromVersion": {
             "description": "record version on top of which the session is based.",
+            "format": "int64",
             "title": "Fromversion",
             "type": "integer"
           },
@@ -1102,6 +1113,7 @@
                   "type": "string"
                 },
                 {
+                  "format": "int64",
                   "type": "integer"
                 }
               ]
@@ -1530,6 +1542,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -1623,6 +1636,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -1645,6 +1659,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 1,
                   "type": "integer"
                 },
@@ -1661,6 +1676,28 @@
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -1674,28 +1711,6 @@
                 }
               ],
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -1723,6 +1738,27 @@
           },
           {
             "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+            "examples": {
+              "double-md-filter": {
+                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                "value": [
+                  "MD:gt:1000",
+                  "MD:lt:42000"
+                ]
+              },
+              "simple-md-filter": {
+                "summary": "Select rows when column 'MD' values >= 1000",
+                "value": [
+                  "MD:gte:1000"
+                ]
+              },
+              "simple-md-filter-2": {
+                "summary": "Select rows when 'MD' column values <= 1000",
+                "value": [
+                  "MD:lte:1000"
+                ]
+              }
+            },
             "in": "query",
             "name": "filter",
             "required": false,
@@ -1739,27 +1775,6 @@
                 }
               ],
               "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-              "examples": {
-                "double-md-filter": {
-                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                  "value": [
-                    "MD:gt:1000",
-                    "MD:lt:42000"
-                  ]
-                },
-                "simple-md-filter": {
-                  "summary": "Select rows when column 'MD' values >= 1000",
-                  "value": [
-                    "MD:gte:1000"
-                  ]
-                },
-                "simple-md-filter-2": {
-                  "summary": "Select rows when 'MD' column values <= 1000",
-                  "value": [
-                    "MD:lte:1000"
-                  ]
-                }
-              },
               "title": "Filter"
             }
           },
@@ -2068,7 +2083,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -2178,7 +2193,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -2259,7 +2274,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -2363,7 +2378,13 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "412": {
+            "description": "Precondition failed"
           },
           "422": {
             "content": {
@@ -2465,7 +2486,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -2511,6 +2532,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -2523,6 +2545,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -2545,6 +2568,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 1,
                   "type": "integer"
                 },
@@ -2561,6 +2585,28 @@
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -2574,28 +2620,6 @@
                 }
               ],
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -2623,6 +2647,27 @@
           },
           {
             "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+            "examples": {
+              "double-md-filter": {
+                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                "value": [
+                  "MD:gt:1000",
+                  "MD:lt:42000"
+                ]
+              },
+              "simple-md-filter": {
+                "summary": "Select rows when column 'MD' values >= 1000",
+                "value": [
+                  "MD:gte:1000"
+                ]
+              },
+              "simple-md-filter-2": {
+                "summary": "Select rows when 'MD' column values <= 1000",
+                "value": [
+                  "MD:lte:1000"
+                ]
+              }
+            },
             "in": "query",
             "name": "filter",
             "required": false,
@@ -2639,27 +2684,6 @@
                 }
               ],
               "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-              "examples": {
-                "double-md-filter": {
-                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                  "value": [
-                    "MD:gt:1000",
-                    "MD:lt:42000"
-                  ]
-                },
-                "simple-md-filter": {
-                  "summary": "Select rows when column 'MD' values >= 1000",
-                  "value": [
-                    "MD:gte:1000"
-                  ]
-                },
-                "simple-md-filter-2": {
-                  "summary": "Select rows when 'MD' column values <= 1000",
-                  "value": [
-                    "MD:lte:1000"
-                  ]
-                }
-              },
               "title": "Filter"
             }
           },
@@ -3220,6 +3244,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -3943,6 +3968,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -4464,6 +4490,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -4942,6 +4969,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -4964,6 +4992,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 1,
                   "type": "integer"
                 },
@@ -4980,6 +5009,28 @@
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -4993,28 +5044,6 @@
                 }
               ],
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -5042,6 +5071,27 @@
           },
           {
             "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+            "examples": {
+              "double-md-filter": {
+                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                "value": [
+                  "MD:gt:1000",
+                  "MD:lt:42000"
+                ]
+              },
+              "simple-md-filter": {
+                "summary": "Select rows when column 'MD' values >= 1000",
+                "value": [
+                  "MD:gte:1000"
+                ]
+              },
+              "simple-md-filter-2": {
+                "summary": "Select rows when 'MD' column values <= 1000",
+                "value": [
+                  "MD:lte:1000"
+                ]
+              }
+            },
             "in": "query",
             "name": "filter",
             "required": false,
@@ -5058,27 +5108,6 @@
                 }
               ],
               "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-              "examples": {
-                "double-md-filter": {
-                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                  "value": [
-                    "MD:gt:1000",
-                    "MD:lt:42000"
-                  ]
-                },
-                "simple-md-filter": {
-                  "summary": "Select rows when column 'MD' values >= 1000",
-                  "value": [
-                    "MD:gte:1000"
-                  ]
-                },
-                "simple-md-filter-2": {
-                  "summary": "Select rows when 'MD' column values <= 1000",
-                  "value": [
-                    "MD:lte:1000"
-                  ]
-                }
-              },
               "title": "Filter"
             }
           },
@@ -5387,7 +5416,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -5497,7 +5526,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -5578,7 +5607,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -5682,7 +5711,13 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "412": {
+            "description": "Precondition failed"
           },
           "422": {
             "content": {
@@ -5784,7 +5819,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -5830,6 +5865,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -5842,6 +5878,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -5864,6 +5901,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 1,
                   "type": "integer"
                 },
@@ -5880,6 +5918,28 @@
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -5893,28 +5953,6 @@
                 }
               ],
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -5942,6 +5980,27 @@
           },
           {
             "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+            "examples": {
+              "double-md-filter": {
+                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                "value": [
+                  "MD:gt:1000",
+                  "MD:lt:42000"
+                ]
+              },
+              "simple-md-filter": {
+                "summary": "Select rows when column 'MD' values >= 1000",
+                "value": [
+                  "MD:gte:1000"
+                ]
+              },
+              "simple-md-filter-2": {
+                "summary": "Select rows when 'MD' column values <= 1000",
+                "value": [
+                  "MD:lte:1000"
+                ]
+              }
+            },
             "in": "query",
             "name": "filter",
             "required": false,
@@ -5958,27 +6017,6 @@
                 }
               ],
               "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-              "examples": {
-                "double-md-filter": {
-                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                  "value": [
-                    "MD:gt:1000",
-                    "MD:lt:42000"
-                  ]
-                },
-                "simple-md-filter": {
-                  "summary": "Select rows when column 'MD' values >= 1000",
-                  "value": [
-                    "MD:gte:1000"
-                  ]
-                },
-                "simple-md-filter-2": {
-                  "summary": "Select rows when 'MD' column values <= 1000",
-                  "value": [
-                    "MD:lte:1000"
-                  ]
-                }
-              },
               "title": "Filter"
             }
           },
@@ -6394,6 +6432,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -7137,6 +7176,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -7385,6 +7425,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -7407,6 +7448,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 1,
                   "type": "integer"
                 },
@@ -7423,6 +7465,28 @@
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -7436,28 +7500,6 @@
                 }
               ],
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -7485,6 +7527,27 @@
           },
           {
             "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+            "examples": {
+              "double-md-filter": {
+                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                "value": [
+                  "MD:gt:1000",
+                  "MD:lt:42000"
+                ]
+              },
+              "simple-md-filter": {
+                "summary": "Select rows when column 'MD' values >= 1000",
+                "value": [
+                  "MD:gte:1000"
+                ]
+              },
+              "simple-md-filter-2": {
+                "summary": "Select rows when 'MD' column values <= 1000",
+                "value": [
+                  "MD:lte:1000"
+                ]
+              }
+            },
             "in": "query",
             "name": "filter",
             "required": false,
@@ -7501,27 +7564,6 @@
                 }
               ],
               "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-              "examples": {
-                "double-md-filter": {
-                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                  "value": [
-                    "MD:gt:1000",
-                    "MD:lt:42000"
-                  ]
-                },
-                "simple-md-filter": {
-                  "summary": "Select rows when column 'MD' values >= 1000",
-                  "value": [
-                    "MD:gte:1000"
-                  ]
-                },
-                "simple-md-filter-2": {
-                  "summary": "Select rows when 'MD' column values <= 1000",
-                  "value": [
-                    "MD:lte:1000"
-                  ]
-                }
-              },
               "title": "Filter"
             }
           },
@@ -7798,6 +7840,28 @@
           },
           {
             "description": "List of curves or array to be returned. All curves if empty",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -7811,28 +7875,6 @@
                 }
               ],
               "description": "List of curves or array to be returned. All curves if empty",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -7900,7 +7942,7 @@
                 }
               }
             },
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -7975,7 +8017,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -8085,7 +8127,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -8166,7 +8208,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -8270,7 +8312,13 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "412": {
+            "description": "Precondition failed"
           },
           "422": {
             "content": {
@@ -8372,7 +8420,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -8418,6 +8466,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -8430,6 +8479,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -8452,6 +8502,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 1,
                   "type": "integer"
                 },
@@ -8468,6 +8519,28 @@
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -8481,28 +8554,6 @@
                 }
               ],
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -8530,6 +8581,27 @@
           },
           {
             "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+            "examples": {
+              "double-md-filter": {
+                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                "value": [
+                  "MD:gt:1000",
+                  "MD:lt:42000"
+                ]
+              },
+              "simple-md-filter": {
+                "summary": "Select rows when column 'MD' values >= 1000",
+                "value": [
+                  "MD:gte:1000"
+                ]
+              },
+              "simple-md-filter-2": {
+                "summary": "Select rows when 'MD' column values <= 1000",
+                "value": [
+                  "MD:lte:1000"
+                ]
+              }
+            },
             "in": "query",
             "name": "filter",
             "required": false,
@@ -8546,27 +8618,6 @@
                 }
               ],
               "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-              "examples": {
-                "double-md-filter": {
-                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                  "value": [
-                    "MD:gt:1000",
-                    "MD:lt:42000"
-                  ]
-                },
-                "simple-md-filter": {
-                  "summary": "Select rows when column 'MD' values >= 1000",
-                  "value": [
-                    "MD:gte:1000"
-                  ]
-                },
-                "simple-md-filter-2": {
-                  "summary": "Select rows when 'MD' column values <= 1000",
-                  "value": [
-                    "MD:lte:1000"
-                  ]
-                }
-              },
               "title": "Filter"
             }
           },
@@ -8763,6 +8814,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "type": "integer"
                 },
                 {
@@ -8774,6 +8826,28 @@
           },
           {
             "description": "List of curves or array to be returned. All curves if empty",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -8787,28 +8861,6 @@
                 }
               ],
               "description": "List of curves or array to be returned. All curves if empty",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -8876,7 +8928,7 @@
                 }
               }
             },
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -8922,6 +8974,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "type": "integer"
                 },
                 {
@@ -9230,6 +9283,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -9593,6 +9647,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -9686,6 +9741,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -9708,6 +9764,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 1,
                   "type": "integer"
                 },
@@ -9724,6 +9781,28 @@
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -9737,28 +9816,6 @@
                 }
               ],
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -9786,6 +9843,27 @@
           },
           {
             "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+            "examples": {
+              "double-md-filter": {
+                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                "value": [
+                  "MD:gt:1000",
+                  "MD:lt:42000"
+                ]
+              },
+              "simple-md-filter": {
+                "summary": "Select rows when column 'MD' values >= 1000",
+                "value": [
+                  "MD:gte:1000"
+                ]
+              },
+              "simple-md-filter-2": {
+                "summary": "Select rows when 'MD' column values <= 1000",
+                "value": [
+                  "MD:lte:1000"
+                ]
+              }
+            },
             "in": "query",
             "name": "filter",
             "required": false,
@@ -9802,27 +9880,6 @@
                 }
               ],
               "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-              "examples": {
-                "double-md-filter": {
-                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                  "value": [
-                    "MD:gt:1000",
-                    "MD:lt:42000"
-                  ]
-                },
-                "simple-md-filter": {
-                  "summary": "Select rows when column 'MD' values >= 1000",
-                  "value": [
-                    "MD:gte:1000"
-                  ]
-                },
-                "simple-md-filter-2": {
-                  "summary": "Select rows when 'MD' column values <= 1000",
-                  "value": [
-                    "MD:lte:1000"
-                  ]
-                }
-              },
               "title": "Filter"
             }
           },
@@ -10131,7 +10188,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -10241,7 +10298,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -10322,7 +10379,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -10426,7 +10483,13 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "412": {
+            "description": "Precondition failed"
           },
           "422": {
             "content": {
@@ -10528,7 +10591,7 @@
             "description": "Forbidden"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -10574,6 +10637,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
@@ -10586,6 +10650,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 0,
                   "type": "integer"
                 },
@@ -10608,6 +10673,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "format": "int64",
                   "minimum": 1,
                   "type": "integer"
                 },
@@ -10624,6 +10690,28 @@
           },
           {
             "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
+            "examples": {
+              "all": {
+                "summary": "Select all curves",
+                "value": ""
+              },
+              "array-curve": {
+                "summary": "Select one specific curve of an array",
+                "value": "ARR[100]"
+              },
+              "array-slice": {
+                "summary": "Select a slice of array curves",
+                "value": "ARR[10:50]"
+              },
+              "array-slice-plus-curve": {
+                "summary": "Select slice of array + another curve(s)",
+                "value": "MD,ARR[50:55],GR"
+              },
+              "basic": {
+                "summary": "Select specific curves",
+                "value": "MD,GR"
+              }
+            },
             "in": "query",
             "name": "curves",
             "required": false,
@@ -10637,28 +10725,6 @@
                 }
               ],
               "description": "Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.",
-              "examples": {
-                "all": {
-                  "summary": "Select all curves",
-                  "value": ""
-                },
-                "array-curve": {
-                  "summary": "Select one specific curve of an array",
-                  "value": "ARR[100]"
-                },
-                "array-slice": {
-                  "summary": "Select a slice of array curves",
-                  "value": "ARR[10:50]"
-                },
-                "array-slice-plus-curve": {
-                  "summary": "Select slice of array + another curve(s)",
-                  "value": "MD,ARR[50:55],GR"
-                },
-                "basic": {
-                  "summary": "Select specific curves",
-                  "value": "MD,GR"
-                }
-              },
               "title": "Curves"
             }
           },
@@ -10686,6 +10752,27 @@
           },
           {
             "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
+            "examples": {
+              "double-md-filter": {
+                "summary": "Select 'MD' > 1000 and 'MD' < 42000",
+                "value": [
+                  "MD:gt:1000",
+                  "MD:lt:42000"
+                ]
+              },
+              "simple-md-filter": {
+                "summary": "Select rows when column 'MD' values >= 1000",
+                "value": [
+                  "MD:gte:1000"
+                ]
+              },
+              "simple-md-filter-2": {
+                "summary": "Select rows when 'MD' column values <= 1000",
+                "value": [
+                  "MD:lte:1000"
+                ]
+              }
+            },
             "in": "query",
             "name": "filter",
             "required": false,
@@ -10702,27 +10789,6 @@
                 }
               ],
               "description": "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n",
-              "examples": {
-                "double-md-filter": {
-                  "summary": "Select 'MD' > 1000 and 'MD' < 42000",
-                  "value": [
-                    "MD:gt:1000",
-                    "MD:lt:42000"
-                  ]
-                },
-                "simple-md-filter": {
-                  "summary": "Select rows when column 'MD' values >= 1000",
-                  "value": [
-                    "MD:gte:1000"
-                  ]
-                },
-                "simple-md-filter-2": {
-                  "summary": "Select rows when 'MD' column values <= 1000",
-                  "value": [
-                    "MD:lte:1000"
-                  ]
-                }
-              },
               "title": "Filter"
             }
           },
@@ -11274,6 +11340,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "format": "int64",
               "title": "Version",
               "type": "integer"
             }
