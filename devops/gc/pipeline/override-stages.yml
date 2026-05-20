@@ -50,6 +50,3 @@ gc-acceptance-test-python:
     - chmod +x ./run-integration-tests.sh
     - ./run-integration-tests.sh
 
-gc-dev2-test:
-  extends:
-    - .gc-dev2-variables
