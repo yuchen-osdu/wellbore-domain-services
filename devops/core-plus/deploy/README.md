@@ -58,7 +58,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |**conf.appName** | Service name | string | `wellbore` | yes |
 |**conf.configmap** | configmap to be used | string | `wellbore-config` | yes |
 |**conf.keycloakSecretName** | Keycloak secret name | string | `wellbore-keycloak-secret` | yes |
-|**conf.minioSecretName** | MinIO secret name | string | `wellbore-minio-secret` | yes |
+|**conf.s3SecretName** | secret for S3/SeaweedFS storage(prefixed with `global.dataPartitionId`) | string | `wellbore-seaweedfs-secret` | yes |
 |**conf.replicas** | Number of pods for service | integer | 2 | yes |
 
 ### ISTIO variables

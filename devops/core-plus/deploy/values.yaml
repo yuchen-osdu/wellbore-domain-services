@@ -20,7 +20,7 @@ conf:
   configmap: "wellbore-config"
   appName: "wellbore"
   keycloakSecretName: "wellbore-keycloak-secret"
-  minioSecretName: "wellbore-minio-secret"
+  s3SecretName: "wellbore-seaweedfs-secret"
   replicas: 1
 
 istio:
