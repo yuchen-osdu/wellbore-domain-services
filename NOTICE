@@ -89,7 +89,7 @@ The following software have components provided under the terms of this license:
 - cryptography (from <https://github.com/pyca/cryptography>, https://github.com/pyca/cryptography)
 - decorator (from https://github.com/micheles/decorator, https://pypi.org/project/decorator/)
 - fsspec (from http://github.com/fsspec/filesystem_spec, https://pypi.org/project/fsspec/)
-- gcsfs (from https://github.com/fsspec/gcsfs)
+- gcsfs (from https://github.com/fsspec/gcsfs, https://pypi.org/project/gcsfs/)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://pypi.org/project/grpcio-status/)
 - httpcore (from https://github.com/encode/httpcore, https://pypi.org/project/httpcore/, https://pypi.org/project/httpcore/0.18.0/)
@@ -175,8 +175,8 @@ The following software have components provided under the terms of this license:
 - azure-datalake-store (from https://github.com/Azure/azure-data-lake-store-python)
 - azure-identity (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity, https://pypi.org/project/azure-identity/)
 - azure-keyvault (from https://github.com/Azure/azure-sdk-for-python, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault)
-- azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-certificates)
-- azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-keys)
+- azure-keyvault-certificates (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-certificates, https://pypi.org/project/azure-keyvault-certificates/)
+- azure-keyvault-keys (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-keys, https://pypi.org/project/azure-keyvault-keys/)
 - azure-keyvault-secrets (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/keyvault/azure-keyvault-secrets, https://pypi.org/project/azure-keyvault-secrets/)
 - azure-monitor-opentelemetry-exporter (from https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/monitor/azure-monitor-opentelemetry-exporter)
 - azure-storage-blob (from <https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob>, https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob)
@@ -292,7 +292,7 @@ Unlicense
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- gcsfs (from https://github.com/fsspec/gcsfs)
+- gcsfs (from https://github.com/fsspec/gcsfs, https://pypi.org/project/gcsfs/)
 - s3fs (from http://github.com/fsspec/s3fs/)
 
 ========================================================================
