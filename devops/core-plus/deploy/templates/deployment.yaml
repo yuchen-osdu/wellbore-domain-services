@@ -39,17 +39,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ printf "%s-%s" .Values.global.dataPartitionId .Values.conf.s3SecretName | quote }}
-                  key: {{ printf "SEAWEEDFS_ACCESS_KEY_%s" .Values.global.dataPartitionId | quote }}
+                  key: {{ printf "SEAWEEDFS_ACCESS_KEY_%s" .Values.global.dataPartitionId | upper | quote }}
             - name: S3_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ printf "%s-%s" .Values.global.dataPartitionId .Values.conf.s3SecretName | quote }}
-                  key: {{ printf "SEAWEEDFS_SECRET_KEY_%s" .Values.global.dataPartitionId | quote }}
+                  key: {{ printf "SEAWEEDFS_SECRET_KEY_%s" .Values.global.dataPartitionId | upper | quote }}
             - name: S3_ENDPOINT
               valueFrom:
                 secretKeyRef:
                   name: {{ printf "%s-%s" .Values.global.dataPartitionId .Values.conf.s3SecretName | quote }}
-                  key: {{ printf "SEAWEEDFS_ENDPOINT_%s" .Values.global.dataPartitionId | quote }}
+                  key: {{ printf "SEAWEEDFS_ENDPOINT_%s" .Values.global.dataPartitionId | upper | quote }}
           ports:
             - name: http
               containerPort: 8080

@@ -1,7 +1,7 @@
 global:
   domain: ""
   limitsEnabled: true
-  dataPartitionId: ""
+  dataPartitionId: "osdu"
   wdms_workers:
     enabled: true # Disable WDMS worker deployment for e2e tests for stability reason
 
