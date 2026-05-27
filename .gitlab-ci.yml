@@ -36,9 +36,6 @@ variables:
   AWS_DEPLOY_TARGET: TF
   AWS_EKS_DEPLOYMENT_NAME: os-wellbore-ddms
 
-  IBM_HELM_CONFIG_PATH: devops/ibm/ibm-wellbore-domain-services-config
-  IBM_HELM_DEPLOY_PATH: devops/ibm/ibm-wellbore-domain-services-deploy
-
   # ignore model_curated_test.py workaround because ci/cd hang-out when test are long.
   PYTEST_OPTIONS: "--ignore=tests/unit/model/model_curated_test.py --durations=25 --strict-markers"
 
@@ -63,9 +60,6 @@ include:
     file: "cloud-providers/cimpl-global.yml"  
 
   # IBM it tests "ibm-test"
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/ibm-wellbore-git.yml"
-
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
 
@@ -154,24 +148,13 @@ containerize:
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
 
-
 gemnasium-python-dependency_scanning:
   variables:
     PIP_REQUIREMENTS_FILE: gemnasium-requirements.txt
   before_script:
     - cat all-requirements.txt | grep -v "osdu-" | grep -v "wellbore-" > gemnasium-requirements.txt
 
-
 # Allow failure on flaky deployments
-ibm-deploy:
-  allow_failure: true
-ibm-test:
-  allow_failure: true
-
-# Allow failure on private development deployments
-ibm-deploy-devpri:
-  allow_failure: true
-
 aws-containerize:
   allow_failure: true
 
