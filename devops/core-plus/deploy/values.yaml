@@ -1,7 +1,7 @@
 global:
   domain: ""
   limitsEnabled: true
-  dataPartitionId: ""
+  dataPartitionId: "osdu"
   wdms_workers:
     enabled: true # Disable WDMS worker deployment for e2e tests for stability reason
 
@@ -20,7 +20,7 @@ conf:
   configmap: "wellbore-config"
   appName: "wellbore"
   keycloakSecretName: "wellbore-keycloak-secret"
-  minioSecretName: "wellbore-minio-secret"
+  s3SecretName: "wellbore-seaweedfs-secret"
   replicas: 1
 
 istio:
