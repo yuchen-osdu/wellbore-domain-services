@@ -27,11 +27,6 @@ gc-containerize-gcr:
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
-# Disable maven job in gc-com-gke pipelines
-gc-test:
-  extends:
-    - .gc-variables
-
 gc-acceptance-test-python:
   script:
     - curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz
@@ -49,4 +44,3 @@ gc-acceptance-test-python:
     - cd $GC_PYTHON_INT_TEST_SUBDIR
     - chmod +x ./run-integration-tests.sh
     - ./run-integration-tests.sh
-
