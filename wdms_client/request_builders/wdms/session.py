@@ -26,6 +26,7 @@ def build_create_session(record_id, prefix, *, meta: Dict[str, str] = None) -> R
             "data-partition-id": "{{data_partition}}",
             "Connection": "{{header_connection}}",
             "Authorization": "Bearer {{token}}",
+            "Content-Type": "application/json"
         },
         payload=
         {
@@ -51,6 +52,7 @@ def build_create_session_empty_payload(record_id, prefix, payload: dict) -> Requ
             "data-partition-id": "{{data_partition}}",
             "Connection": "{{header_connection}}",
             "Authorization": "Bearer {{token}}",
+            "Content-Type": "application/json"
         },
         payload=payload,
     )

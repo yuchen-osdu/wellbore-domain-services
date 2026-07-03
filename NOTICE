@@ -27,14 +27,14 @@ The following software have components provided under the terms of this license:
 - fastapi (from https://pypi.org/project/fastapi/, https://pypi.org/project/fastapi/0.86.0/)
 - frozenlist (from <https://github.com/aio-libs/frozenlist>, https://github.com/aio-libs/frozenlist)
 - google-api-core (from https://github.com/googleapis/python-api-core, https://pypi.org/project/google-api-core/)
-- google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python)
+- google-auth (from https://github.com/GoogleCloudPlatform/google-auth-library-python, https://github.com/googleapis/google-auth-library-python, https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth)
 - google-auth-oauthlib (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth-oauthlib)
 - google-cloud-core (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-core, https://github.com/googleapis/python-cloud-core)
-- google-cloud-storage (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/python-storage)
+- google-cloud-storage (from https://github.com/GoogleCloudPlatform/google-cloud-python, https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-storage)
 - google-cloud-storage-control (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-storage-control)
 - google-cloud-trace (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-trace, https://github.com/googleapis/python-trace)
 - google-crc32c (from https://github.com/googleapis/python-crc32c)
-- google-resumable-media (from https://github.com/googleapis/google-resumable-media-python)
+- google-resumable-media (from https://github.com/googleapis/google-cloud-python/tree/main/packages/google-resumable-media)
 - googleapis-common-protos (from https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos, https://github.com/googleapis/python-api-common-protos, https://pypi.org/project/googleapis-common-protos/)
 - grpc-google-iam-v1 (from https://pypi.org/project/grpc-google-iam-v1/)
 - grpcio (from https://grpc.io)
@@ -101,7 +101,7 @@ The following software have components provided under the terms of this license:
 - oauthlib (from https://github.com/oauthlib/oauthlib)
 - packaging (from https://pypi.org/project/packaging/, https://pypi.org/project/packaging/22.0/)
 - pandas (from http://pandas.pydata.org, https://pandas.pydata.org)
-- prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator)
+- prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator, https://pypi.org/project/prometheus-fastapi-instrumentator/)
 - protobuf (from https://developers.google.com/protocol-buffers/)
 - psutil (from https://github.com/giampaolo/psutil)
 - pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
@@ -142,7 +142,7 @@ ISC
 The following software have components provided under the terms of this license:
 
 - grpcio (from https://grpc.io)
-- prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator)
+- prometheus-fastapi-instrumentator (from <https://github.com/trallnag/prometheus-fastapi-instrumentator>, https://github.com/trallnag/prometheus-fastapi-instrumentator, https://pypi.org/project/prometheus-fastapi-instrumentator/)
 - requests-oauthlib (from https://github.com/requests/requests-oauthlib)
 
 ========================================================================
