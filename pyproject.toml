@@ -9,21 +9,21 @@ description = "Wellbore Data Management Services (Wellbore-DMS)"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.115.12,<0.122.0",
+    "fastapi>=0.138.0",
     "pydantic>=2.11.3",
-    "aiohttp>=3.13.3",
+    "aiohttp>=3.14.1",
     "pyarrow>=20.0.0",
     "pandas>=2.3.2",
     "uvicorn",
-    "starlette>=0.47.1,<=0.50.0",
-    "urllib3>=0.26.3",
-    "pyjwt>=2.12.0",
-    "cryptography>=46.0.5",
+    "starlette>=1.3.1",
+    "urllib3>=2.7.0",
+    "pyjwt>=2.13.0",
+    "cryptography>=46.0.7",
     "azure-core>=1.38.0",
     "protobuf>=6.33.5",
     "pyasn1>=0.6.3",
     "typing-extensions",
-    "Click",
+    "click>=8.4.1",
     "backoff",
     "structlog",
     "python-rapidjson",
@@ -34,16 +34,16 @@ dependencies = [
     "numpy",
     "jsonschema",
     "anyio>=4.10.0",
-    "opentelemetry-api==1.36.0",
-    "opentelemetry-sdk==1.36.0",
-    "opentelemetry-semantic-conventions==0.57b0",
-    "azure-monitor-opentelemetry-exporter",
+    "opentelemetry-api==1.40.0",
+    "opentelemetry-sdk==1.40.0",
+    "opentelemetry-semantic-conventions==0.61b0",
+    "azure-monitor-opentelemetry-exporter>=1.0.0b46",
     "opentelemetry-exporter-gcp-trace",
     # for chunking feature
     "s3fs",
     "fsspec",
     "python-ulid",
-    "osdu-api==1.0.3",
+    "osdu-api==1.2.0",
     "osdu-log-recognition-lib==0.29.0",
     "osdu-data-ecosystem-storage==0.29.0",
     "osdu-data-ecosystem-search==0.29.0",
@@ -61,7 +61,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "osdu-wbddms-worker==0.2.0",
+    "osdu-wbddms-worker==0.3.0",
     "pip-tools>=7.5.1",
     "pytest",
     "asgi_lifespan",
@@ -90,7 +90,10 @@ dev = [
 where = ["app"]
 
 [tool.uv]
-# You can add uv-specific configurations here if needed
+# Match pip's `--extra-index-url` merge behaviour: consider every configured
+# index and pick the best version, instead of uv's default "first-index" which
+# would pin older packages mirrored on the OSDU private index.
+index-strategy = "unsafe-best-match"
 
 [[tool.uv.index]]
 url = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"

@@ -75,6 +75,34 @@ curl -X 'GET' '$OSDU_BASE_URL/api/os-wellbore-ddms/version' -H 'Authorization: B
 # How to contribute
 ## Install Software and Packages
 
+This project uses [**uv**](https://docs.astral.sh/uv/) for dependency management.
+`pyproject.toml` declares the dependencies and `uv.lock` is the resolved,
+committed source of truth. The `requirements.txt` / `requirements_dev.txt`
+files are generated exports of the lock, kept only for the Dockerfiles and the
+OSDU GitLab CI templates, which install with `pip install -r`.
+
+### Recommended: uv
+
+1. Clone the os-wellbore-ddms [repository](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services.git)
+2. [Install uv](https://docs.astral.sh/uv/getting-started/installation/)
+3. Create the virtual environment and install all dependencies (including dev
+   tooling) from `uv.lock`:
+
+    ```bash
+    # creates .venv and installs the locked prod + dev dependencies
+    uv sync
+
+    # for a production-only environment, omit the dev group
+    uv sync --no-dev
+    ```
+
+   `uv sync` reads the private OSDU index from `[[tool.uv.index]]` in
+   `pyproject.toml`, so no extra `--extra-index-url` flag is needed. Prefix
+   commands with `uv run` (e.g. `uv run pytest tests/unit`) to run them inside
+   the managed environment, or activate it with `source .venv/bin/activate`.
+
+### Alternative: pip with the exported requirements files
+
 1. Clone the os-wellbore-ddms [repository](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services.git)
 2. Download [Python](https://www.python.org/downloads/) **>=3.13**
 3. Create virtual environment in the wellbore project directory. This will create a folder inside the wellbore project directory. Typically a hidden folder  will be created, for example: ~/os-wellbore-ddms/.venv
@@ -452,46 +480,43 @@ docker build -t=$IMAGE_TAG --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DI
 
 ## How to update Python dependencies
 
-Anytime, you may want to ensure your virtual environment is in sync with your requirements specification.
-For this you can use:
+Dependencies are declared in `pyproject.toml` and pinned in `uv.lock` (the
+source of truth). The committed `requirements.txt` / `requirements_dev.txt` are
+generated exports of the lock.
+
+Anytime, you may want to ensure your virtual environment matches the lock:
 
 ```bash
-pip-sync requirements.txt
+uv sync
 ```
 
-If you want to work with other requirements file, you can specify them
+If you want to update the lock to the most recent versions allowed by the
+bounds set in `pyproject.toml`:
 
 ```bash
-pip-sync requirements_dev.txt
+# update every dependency within its pyproject bounds
+uv lock --upgrade
+
+# or update a single dependency, e.g. fastapi
+uv lock --upgrade-package fastapi
 ```
 
-**Note:** On a Windows workstation, platform-specific modules such as `pywin32` are also needed. In this case don't use `pip-sync` but `pip install` instead.
+To change a bound (for example to allow a newer major of fastapi), edit the
+relevant entry in `pyproject.toml` and re-run `uv lock`.
+
+After any change to `pyproject.toml` or `uv.lock`, regenerate the exported
+requirements files so the Docker/CI consumers stay in sync, and commit all of
+them together:
 
 ```bash
-pip install -r requirements_dev.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
+./scripts/regenerate-requirements.sh
+git add pyproject.toml uv.lock requirements.txt requirements_dev.txt
 ```
 
-If you want to update `requirements.txt` and/or `requirements_dev.txt` to retrieve the most recent version, respecting bounds set in `pyproject.toml`, you can use:
+CI enforces this: `uv lock --locked` fails the pipeline if `uv.lock` has drifted
+from `pyproject.toml`, and the exported files are regenerated and diffed.
 
-```bash
-pip-compile --output-file requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
-pip-compile --extra dev --output-file requirements_dev.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"
-```
-
-If you want to update the version of only one dependency, for instance fastapi:
-
-```bash
-pip install --upgrade fastapi
-```
-Then to add the new version to the requirements file, you can use:
-
-```bash
-pip freeze > requirements.txt
-```
-
-**Note:** On a Windows workstation, **don't** commit the `pywin32` back to the `requirements.txt` file, that will cause CICD to fail.
-
-For more information: <https://github.com/jazzband/pip-tools/>
+For more information: <https://docs.astral.sh/uv/>
 
 ### Debugging
 

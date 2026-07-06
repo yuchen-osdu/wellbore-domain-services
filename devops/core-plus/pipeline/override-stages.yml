@@ -1,6 +1,10 @@
 variables:
   ACCEPTANCE_TEST_DIR: tests/baremetal
   CIMPL_SERVICE: wellbore
+  # WDMS (FastAPI) is served under root_path /api/os-wellbore-ddms, which differs
+  # from CIMPL_SERVICE (wellbore). Override the spec URL so cimpl-check-openapi-spec
+  # fetches the correct path instead of the default /api/${CIMPL_SERVICE}/openapi.json.
+  CIMPL_OPENAPI_YAML_ROUTE: /api/os-wellbore-ddms/openapi.json
   CIMPL_INT_TEST_TYPE: python
   CIMPL_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
   CIMPL_SUPPORTED_PLATFORM: "linux/amd64"
