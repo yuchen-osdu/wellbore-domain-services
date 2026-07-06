@@ -53,6 +53,12 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
 
+  # Opt-in SBOM-based Python dependency scanning (reads uv.lock directly).
+  # Replaces the deprecated gemnasium-python analyzer, which cannot install
+  # numpy>=2.5 (requires Python >=3.12, gemnasium runs Python <=3.11).
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/sbom-python.yml"
+
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/gc-global.yml"
   
@@ -87,16 +93,19 @@ verify_existing_requirements:
     - .skipForTriggeringMergeRequests
   stage: build
   script:
-    - python -m pip install --upgrade pip==25.2 pip-tools
-    - pip-compile --output-file requirements.txt $PIP_EXTRA_INDEXES
-    - pip-compile --extra dev --output-file requirements_dev.txt $PIP_EXTRA_INDEXES
+    # uv.lock is the source of truth; requirements*.txt are generated exports.
+    - python -m pip install --upgrade pip "uv==0.11.19"
+    # fail if uv.lock is out of date with pyproject.toml
+    - uv lock --locked
+    # regenerate the exported requirements files from the lock
+    - ./scripts/regenerate-requirements.sh
     - git diff
-    # checking difference between existing requirements and the newly generated one
-    # and using the number of lines as exit status code
-    - exit $(git status -s | grep -e "^ M " | wc -l)
+    # fail if the committed lock or exports drifted from what was regenerated
+    - git diff --exit-code uv.lock requirements.txt requirements_dev.txt
   artifacts:
     when: always
     paths:
+      - "uv.lock"
       - "requirements*.txt"
     expire_in: 2 days
 
@@ -147,12 +156,6 @@ containerize:
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
-
-gemnasium-python-dependency_scanning:
-  variables:
-    PIP_REQUIREMENTS_FILE: gemnasium-requirements.txt
-  before_script:
-    - cat all-requirements.txt | grep -v "osdu-" | grep -v "wellbore-" > gemnasium-requirements.txt
 
 # Allow failure on flaky deployments
 aws-containerize:

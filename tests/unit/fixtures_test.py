@@ -151,8 +151,8 @@ async def test_app_configurable_with_unauthorized_client(
 
     # anonymous ok
     assert (await client.get("/about")).status_code == 200
-    # not authorized
-    assert (await client.get("/version")).status_code == 403
+    # not authenticated (HTTPBearer returns 401 when the bearer token is missing)
+    assert (await client.get("/version")).status_code == 401
 
     app, client = app_configurable_with_testclient(
         fake_opendes_authorized_user=True
@@ -207,7 +207,7 @@ async def test_app_configurable_with_client_and_mocks(
 
     finally:
         # remove the route we added to not mess with other tests
-        app.router.routes = [r for r in app.routes if r.name != inside_out_handler.__name__]
+        app.router.routes = [r for r in app.routes if getattr(r, 'name', None) != inside_out_handler.__name__]
 
 @pytest.mark.anyio
 async def test_app_can_be_mounted(worker_app_initialized_with_testclient):
@@ -235,7 +235,7 @@ async def test_worker_fixture_health_and_routes(worker_app_initialized_with_test
     assert resp.status_code == 200
 
     # route registered on the app
-    paths = {route.path for route in worker_app.routes}
+    paths = {getattr(route, 'path', None) for route in worker_app.routes}
     assert "/healthz" in paths
 
     # client base_url points to the test worker host configured in fixtures

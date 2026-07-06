@@ -55,7 +55,8 @@ async def test_about_with_cloud_provider(client):
 @pytest.mark.anyio
 async def test_version_requires_authentication(client):
     response = await client.get("/version")
-    assert response.status_code == 403
+    # HTTPBearer returns 401 (not 403) when the Authorization header is missing
+    assert response.status_code == 401
 
 
 @pytest.mark.skip("global app.conf.Config corruption")

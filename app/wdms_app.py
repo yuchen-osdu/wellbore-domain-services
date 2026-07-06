@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import logging
+import re
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
+from fastapi.routing import iter_route_contexts
 
 from app import __app_name__, __build_number__, __version__
 from app.auth.auth import require_opendes_authorized_user
@@ -51,7 +53,6 @@ from app.routers.bulk.utils import (
     set_trajectory_data_consistency_check,
     set_v3_input_dataframe_check,
     set_welllog_data_consistency_check,
-    update_operation_ids,
     set_ppfgdataset_consistency_check,
     set_wellpressuretestrawmeasurement_consistency_check,
 )
@@ -147,6 +148,47 @@ def _patch_openapi_schema(schema: dict) -> None:
                 _patch_node(param.get("schema", {}))
                 _fix_parameter_examples(param)
 
+def _normalize_operation_ids(schema: dict) -> None:
+    """Ensure every operation in the generated spec has a unique operationId.
+
+    The bulk router is mounted once per entity type (welllogs, wellboretrajectories,
+    ppfgdataset, wellpressuretestrawmeasurement).  Historically (FastAPI <0.138)
+    ``include_router`` deep-copied the routes, so ``update_operation_ids`` could
+    rename each duplicated APIRoute in place.  Since FastAPI 0.138 the same
+    ``APIRoute`` object is shared across inclusions (routes are wrapped in
+    ``_IncludedRouter`` and resolved lazily), so the deduplication must happen on
+    the generated spec instead.
+
+    This reproduces the historical behaviour exactly:
+
+    * The first occurrence of an explicit ``operationId`` (e.g. ``write_record_data``)
+      is kept as-is.
+    * Every operation with no explicit id, or whose explicit id was already used,
+      is renamed to a deterministic ``"<method>_<path>"`` id.
+    * Any :class:`OpenApiHandler` customisation registered against an original id
+      is propagated to the renamed id, so the custom request bodies still apply to
+      all of the duplicated bulk endpoints.
+    """
+    paths = schema.get("paths", {})
+    seen: set = set()
+    for route_context in iter_route_contexts(wdms_app.routes):
+        path = getattr(route_context, "path", None)
+        if path is None or path not in paths:
+            continue
+        explicit_id = getattr(route_context.original_route, "operation_id", None)
+        for method in route_context.methods or set():
+            operation = paths[path].get(method.lower())
+            if not isinstance(operation, dict) or "operationId" not in operation:
+                continue
+            operation_id = explicit_id
+            if not operation_id or operation_id in seen:
+                new_operation_id = re.sub(r"[^a-zA-Z0-9.]", "_", f"{method}_{path}").lower()
+                if operation_id and operation_id in OpenApiHandler._handlers:
+                    OpenApiHandler._handlers[new_operation_id] = OpenApiHandler._handlers[operation_id]
+                operation_id = new_operation_id
+            operation["operationId"] = operation_id
+            seen.add(operation_id)
+
 def custom_openapi(*args, **kwargs):
     if wdms_app.openapi_schema:
         return wdms_app.openapi_schema
@@ -158,8 +200,15 @@ def custom_openapi(*args, **kwargs):
         servers=wdms_app.servers
     )
 
-    routes_in_schemas = [route for route in wdms_app.routes if getattr(route, 'include_in_schema', True)]
-    OpenApiHandler(openapi_schema, [getattr(route, 'operation_id', None) for route in routes_in_schemas])
+    # Make operationIds unique first; this also propagates OpenApiHandler entries
+    # to the renamed duplicate bulk endpoints (see _normalize_operation_ids).
+    _normalize_operation_ids(openapi_schema)
+
+    # OpenApiHandler injects custom request body schemas for specific operation IDs.
+    # Drive it from the handler registry (now including the propagated ids) instead
+    # of route objects, since FastAPI >=0.138 stores routes as _IncludedRouter
+    # wrappers that do not expose operation_id at the top-level routes list.
+    OpenApiHandler(openapi_schema, list(OpenApiHandler._handlers.keys()))
 
     _patch_openapi_schema(openapi_schema)
 
@@ -404,8 +453,8 @@ wdms_app.include_router(log_recognition.router,
 # ---------------------------------------------------------------------------------------------------------------------
 
 
-# The multiple instantiation of bulk_utils router create some duplicated operation_id
-update_operation_ids(wdms_app)
+# Operation-id deduplication and OpenApiHandler customisations are applied lazily
+# inside custom_openapi() / _normalize_operation_ids() when the spec is generated.
 
 if Config.swagger_full_url_enabled.value:
     wdms_app.add_middleware(OpenAPIMiddleware)
