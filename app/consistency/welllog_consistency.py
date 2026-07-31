@@ -145,10 +145,8 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
                 f"Column(s) do(es) not match any {WellLogProperties.CURVE_ID.value} of the WellLog record."
             )
 
-        # A curve entry without a CurveID cannot be matched against bulk columns. Treat it as a
-        # consistency violation (client error) instead of letting the missing key raise an
-        # unhandled KeyError that surfaces as an HTTP 500. Only the curve index is reported (no
-        # record id / GUID) to avoid leaking identifiers into logs.
+        # A curve without a CurveID can't be matched to bulk columns; raise a client
+        # error instead of an unhandled KeyError that surfaces as HTTP 500.
         curves_missing_id = [index for index, c in enumerate(curves) if not c.get(WellLogProperties.CURVE_ID.value)]
         if curves_missing_id:
             raise ColumnDoesNotMatchCurveIdException(
