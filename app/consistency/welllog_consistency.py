@@ -145,6 +145,17 @@ class WelllogDataConsistencyChecks(DataConsistencyChecks):
                 f"Column(s) do(es) not match any {WellLogProperties.CURVE_ID.value} of the WellLog record."
             )
 
+        # A curve entry without a CurveID cannot be matched against bulk columns. Treat it as a
+        # consistency violation (client error) instead of letting the missing key raise an
+        # unhandled KeyError that surfaces as an HTTP 500. Only the curve index is reported (no
+        # record id / GUID) to avoid leaking identifiers into logs.
+        curves_missing_id = [index for index, c in enumerate(curves) if not c.get(WellLogProperties.CURVE_ID.value)]
+        if curves_missing_id:
+            raise ColumnDoesNotMatchCurveIdException(
+                f"WellLog record has curve(s) at index {curves_missing_id} without a"
+                f" '{WellLogProperties.CURVE_ID.value}' property, which is required to match the bulk data columns."
+            )
+
         curve_sizes_from_meta = {
             c[WellLogProperties.CURVE_ID.value]: c.get(WellLogProperties.NUMBER_OF_COLUMNS.value, 1) for c in curves
         }
