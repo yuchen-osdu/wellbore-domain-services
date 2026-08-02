@@ -1,7 +1,8 @@
 import pytest
 from pydantic import BaseModel
 
-from app.consistency import WelllogDataConsistencyChecks, ColumnDoesNotMatchCurveIdException
+from app.consistency import WelllogDataConsistencyChecks
+from app.consistency.welllog_consistency import ColumnDoesNotMatchCurveIdException
 from app.model.model_utils import to_record
 
 from tests.unit.generate_data import generate_df
