@@ -45,7 +45,10 @@ The following software have components provided under the terms of this license:
 - numpy (from https://pypi.org/project/numpy/)
 - opentelemetry-api (from https://pypi.org/project/opentelemetry-api/)
 - opentelemetry-exporter-gcp-trace (from https://github.com/GoogleCloudPlatform/opentelemetry-operations-python/tree/main/opentelemetry-exporter-gcp-trace)
-- opentelemetry-resourcedetector-gcp (from https://github.com/GoogleCloudPlatform/opentelemetry-operations-python/tree/main/opentelemetry-resourcedetector-gcp)
+- opentelemetry-exporter-otlp-proto-common (from https://pypi.org/project/opentelemetry-exporter-otlp-proto-common/)
+- opentelemetry-exporter-otlp-proto-http (from https://pypi.org/project/opentelemetry-exporter-otlp-proto-http/)
+- opentelemetry-proto (from https://pypi.org/project/opentelemetry-proto/)
+- opentelemetry-resourcedetector-gcp (from https://pypi.org/project/opentelemetry-resourcedetector-gcp/)
 - opentelemetry-sdk (from https://pypi.org/project/opentelemetry-sdk/)
 - opentelemetry-semantic-conventions (from https://pypi.org/project/opentelemetry-semantic-conventions/)
 - osdu-api (from https://pypi.org/project/osdu-api/)
@@ -254,6 +257,7 @@ PSF-2.0
 The following software have components provided under the terms of this license:
 
 - aiohappyeyeballs (from https://pypi.org/project/aiohappyeyeballs/)
+- typing-extensions (from https://pypi.org/project/typing-extensions/, https://pypi.org/project/typing-extensions/4.4.0/)
 
 ========================================================================
 Protobuf
