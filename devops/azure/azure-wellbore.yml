@@ -39,6 +39,7 @@
 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "cloud-providers/azure.yml"
 
 # JOBS
