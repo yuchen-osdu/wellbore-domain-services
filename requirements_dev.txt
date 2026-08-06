@@ -202,6 +202,7 @@ googleapis-common-protos==1.75.0
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
+    #   opentelemetry-exporter-otlp-proto-http
 grpc-google-iam-v1==0.14.4
     # via google-cloud-storage-control
 grpcio==1.81.1
@@ -309,6 +310,7 @@ opentelemetry-api==1.40.0
     # via
     #   azure-monitor-opentelemetry-exporter
     #   opentelemetry-exporter-gcp-trace
+    #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
@@ -317,12 +319,21 @@ opentelemetry-api==1.40.0
     #   wellbore-domain-services
 opentelemetry-exporter-gcp-trace==1.12.0
     # via wellbore-domain-services
+opentelemetry-exporter-otlp-proto-common==1.40.0
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-proto-http==1.40.0
+    # via wellbore-domain-services
+opentelemetry-proto==1.40.0
+    # via
+    #   opentelemetry-exporter-otlp-proto-common
+    #   opentelemetry-exporter-otlp-proto-http
 opentelemetry-resourcedetector-gcp==1.12.0a0
     # via opentelemetry-exporter-gcp-trace
 opentelemetry-sdk==1.40.0
     # via
     #   azure-monitor-opentelemetry-exporter
     #   opentelemetry-exporter-gcp-trace
+    #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   osdu-core-lib-python-azure
     #   osdu-wbddms-worker
@@ -405,7 +416,7 @@ proto-plus==1.28.0
     #   google-api-core
     #   google-cloud-storage-control
     #   google-cloud-trace
-protobuf==7.35.1
+protobuf==6.33.6
     # via
     #   google-api-core
     #   google-cloud-storage-control
@@ -413,6 +424,7 @@ protobuf==7.35.1
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status
+    #   opentelemetry-proto
     #   proto-plus
     #   wellbore-domain-services
 psutil==7.2.2
@@ -514,6 +526,7 @@ requests==2.34.2
     #   google-cloud-storage
     #   msal
     #   msrest
+    #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   osdu-api
     #   osdu-core-lib-python-aws
@@ -577,6 +590,7 @@ typing-extensions==4.15.0
     #   fastapi
     #   grpcio
     #   opentelemetry-api
+    #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
