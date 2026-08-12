@@ -27,6 +27,15 @@ cimpl-test-python:
   variables:
     CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
 
+cimpl-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
 #dev2 jobs
 
 cimpl-dev2-test-python:
@@ -34,7 +43,39 @@ cimpl-dev2-test-python:
   variables:
     CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
 
-cimpl-acceptance-test-python:
+cimpl-dev2-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+
+# osdu-main jobs
+
+cimpl-dev-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+
+cimpl-dev-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+
+cimpl-dev-backup-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+
+cimpl-dev-backup-acceptance-test-python:
   image: python:3.13
   variables:
     CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
