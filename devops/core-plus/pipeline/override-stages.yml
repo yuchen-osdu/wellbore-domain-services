@@ -58,12 +58,12 @@ cimpl-dev2-acceptance-test-python:
 cimpl-dev-test-python:
   image: python:3.13
   variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
 
 cimpl-dev-acceptance-test-python:
   image: python:3.13
   variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
   artifacts:
     when: always
     paths:
@@ -73,12 +73,12 @@ cimpl-dev-acceptance-test-python:
 cimpl-dev-backup-test-python:
   image: python:3.13
   variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
 
 cimpl-dev-backup-acceptance-test-python:
   image: python:3.13
   variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
   artifacts:
     when: always
     paths:
