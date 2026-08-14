@@ -35,9 +35,12 @@ from odes_schema.exceptions import  (
 
 from osdu_az.exceptions.data_access_error import (DataAccessError as OSDUPartitionException)
 
+from httpx import TimeoutException
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR, HTTP_504_GATEWAY_TIMEOUT
+
+from app.conf import Config
 from app.helper.logger import get_logger
 
 OSDU_DATA_ECOSYSTEM_SEARCH = "osdu-data-ecosystem-search"
@@ -86,8 +89,13 @@ async def http_storage_error_handler(request: Request, exc: OSDUStorageException
         status = exc.status_code
         errors = [load_content(exc.content)]
     elif isinstance(exc, OSDUStorageResponseHandlingException):
-        status = HTTP_500_INTERNAL_SERVER_ERROR
-        errors = exc.source.args
+        if isinstance(getattr(exc, "source", None), TimeoutException):
+            timeout = Config.de_client_config_timeout.value
+            status = HTTP_504_GATEWAY_TIMEOUT
+            errors = [f"Storage client timeout after {timeout}s: {exc.source}"]
+        else:
+            status = HTTP_500_INTERNAL_SERVER_ERROR
+            errors = exc.source.args
     else:
         status = HTTP_500_INTERNAL_SERVER_ERROR
         errors = exc.args

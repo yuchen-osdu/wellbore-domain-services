@@ -13,3 +13,4 @@ data:
   KEYCLOAK_AUTH: "yes"
   BASE_BUCKET: "wellbore"
   CLOUD_PROVIDER: "baremetal"
+  DE_CLIENT_CFG_TIMEOUT: "30"

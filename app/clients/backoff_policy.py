@@ -7,7 +7,7 @@ from httpx import (
 from odes_storage.exceptions import ResponseHandlingException
 
 
-_exceptions_type_to_retry = (RemoteProtocolError,)
+_exceptions_type_to_retry = (RemoteProtocolError, TimeoutException, ResponseHandlingException)
 
 
 def backoff_policy(on_backoff_handlers=None):

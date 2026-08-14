@@ -1,4 +1,5 @@
 #!/bin/bash
+BAREMETAL_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd $CI_PROJECT_DIR
 
 # Install necessary tools
@@ -12,6 +13,8 @@ export TOKEN=$(curl --location --request POST "$TEST_OPENID_PROVIDER_URL/protoco
 --data-urlencode "client_secret=$TEST_OPENID_PROVIDER_CLIENT_SECRET" \
 --data-urlencode "scope=openid" \
 --data-urlencode "grant_type=client_credentials" | jq -r ".id_token")
+
+source "$BAREMETAL_DIR/ensure-legal-tag.sh"
 
 # Setup Python environment
 python3 -m venv env

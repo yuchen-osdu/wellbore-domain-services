@@ -95,6 +95,28 @@ class MyException(Exception):
     pass
 
 
+@pytest.mark.parametrize("exception_factory, should_retry", [
+    (lambda: RemoteProtocolError("remote protocol error"), True),
+    (lambda: TimeoutException("read timeout"), True),
+    (lambda: ResponseHandlingException(TimeoutException("read timeout")), True),
+    (lambda: RuntimeError("not retried"), False),
+    (lambda: MyException("not retried"), False),
+])
+def test_backoff_retries_timeout_and_response_handling(exception_factory, should_retry):
+    """TimeoutException and ResponseHandlingException are retried, matching the backoff docstring."""
+    requested_retries_count = 3
+    with mock.patch.object(Config.de_client_backoff_max_tries, "value", requested_retries_count), \
+            mock.patch("time.sleep"):
+        mocky_func = mock.MagicMock(side_effect=exception_factory())
+        mocky_func.__name__ = "mocky"
+        decorated_mocked_func = backoff_policy()(mocky_func)
+        with pytest.raises(BaseException):
+            decorated_mocked_func()
+        expected = requested_retries_count if should_retry else 1
+        assert mocky_func.call_count == expected
+
+
+
 @pytest.mark.skip("global app.conf.Config corruption")
 @pytest.mark.parametrize("exception_type, requested_retries_count", [
     (RemoteProtocolError, 3),
