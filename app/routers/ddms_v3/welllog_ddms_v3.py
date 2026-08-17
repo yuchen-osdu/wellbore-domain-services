@@ -41,7 +41,7 @@ WELL_LOGS_API_BASE_PATH = '/welllogs'
 
 
 @router.get(
-    WELL_LOGS_API_BASE_PATH + "/{welllogid}",
+    WELL_LOGS_API_BASE_PATH + "/{record_id}",
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellLog using osdu schema",
@@ -52,14 +52,14 @@ WELL_LOGS_API_BASE_PATH = '/welllogs'
     },
 )
 async def get_welllog_osdu(
-        welllogid: WellLogId, request: Request, ctx: Context = Depends(get_ctx)
+        record_id: WellLogId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
     storage_client = await get_storage_record_service(ctx)
     # Note: version is dropped here
-    welllogid, _ = split_record_id_version(welllogid)
+    record_id, _ = split_record_id_version(record_id)
 
     welllog_record = await storage_client.get_record(
-        id=welllogid, data_partition_id=ctx.partition_id
+        id=record_id, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(welllog_record, request.state)
     await schema_library.validate_records([welllog_record], ctx)
@@ -67,7 +67,7 @@ async def get_welllog_osdu(
 
 
 @router.delete(
-    WELL_LOGS_API_BASE_PATH + "/{welllogid}",
+    WELL_LOGS_API_BASE_PATH + "/{record_id}",
     summary="Delete the welllog. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
     description=f"{REQUIRED_ROLES_WRITE}",
@@ -82,17 +82,17 @@ async def get_welllog_osdu(
     },
 )
 async def del_osdu_welllog(
-    welllogid: WellLogId,
+    record_id: WellLogId,
     purge: bool = False,
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
 ):
-    welllogid, _ = split_record_id_version(welllogid)
-    await delete_record(record_id=welllogid, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
+    record_id, _ = split_record_id_version(record_id)
+    await delete_record(record_id=record_id, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
 
 
 @router.get(
-    WELL_LOGS_API_BASE_PATH + "/{welllogid}/versions",
+    WELL_LOGS_API_BASE_PATH + "/{record_id}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the WellLog",
     description=f"{REQUIRED_ROLES_READ}",
@@ -102,20 +102,20 @@ async def del_osdu_welllog(
     },
 )
 async def get_osdu_welllog_versions(
-    welllogid: WellLogId, request: Request, ctx: Context = Depends(get_ctx)
+    record_id: WellLogId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
-    record = await fetch_record(ctx, welllogid)
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
-    welllogid, _ = split_record_id_version(welllogid)
+    record_id, _ = split_record_id_version(record_id)
 
     return await storage_client.get_all_record_versions(
-        id=welllogid, data_partition_id=ctx.partition_id
+        id=record_id, data_partition_id=ctx.partition_id
     )
 
 
 @router.get(
-    WELL_LOGS_API_BASE_PATH + "/{welllogid}/versions/{version}",
+    WELL_LOGS_API_BASE_PATH + "/{record_id}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the WellLog using OSDU welllog schema",
     description=f""""Get the WellLog object using its **id**. {REQUIRED_ROLES_READ}""",
@@ -126,12 +126,12 @@ async def get_osdu_welllog_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_welllog_version(
-    welllogid: WellLogId, version: int, request: Request, ctx: Context = Depends(get_ctx)
+    record_id: WellLogId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
     storage_client = await get_storage_record_service(ctx)
-    welllogid, _ = split_record_id_version(welllogid)
+    record_id, _ = split_record_id_version(record_id)
     welllog_record = await storage_client.get_record_version(
-        id=welllogid, version=version, data_partition_id=ctx.partition_id
+        id=record_id, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(welllog_record, request.state)
     await schema_library.validate_records([welllog_record], ctx)

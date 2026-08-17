@@ -1318,16 +1318,16 @@
         ]
       }
     },
-    "/ddms/v3/ppfgdataset/{osdu_record_id}": {
+    "/ddms/v3/ppfgdataset/{record_id}": {
       "delete": {
         "operationId": "delete_osdu_record",
         "parameters": [
           {
             "in": "path",
-            "name": "osdu_record_id",
+            "name": "record_id",
             "required": true,
             "schema": {
-              "title": "Osdu Record Id",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -1396,10 +1396,10 @@
         "parameters": [
           {
             "in": "path",
-            "name": "osdu_record_id",
+            "name": "record_id",
             "required": true,
             "schema": {
-              "title": "Osdu Record Id",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -1456,159 +1456,6 @@
           }
         ],
         "summary": "Get the record using the provided recordID",
-        "tags": [
-          "PPFGDataset v3"
-        ]
-      }
-    },
-    "/ddms/v3/ppfgdataset/{osdu_record_id}/versions": {
-      "get": {
-        "operationId": "get_record_versions",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "osdu_record_id",
-            "required": true,
-            "schema": {
-              "title": "Osdu Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecordVersions"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Record not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get all versions of the provided record",
-        "tags": [
-          "PPFGDataset v3"
-        ]
-      }
-    },
-    "/ddms/v3/ppfgdataset/{osdu_record_id}/versions/{version}": {
-      "get": {
-        "description": "Get the specific version of object using its **id**.",
-        "operationId": "get_specific_record_version",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "title": "Version",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "osdu_record_id",
-            "required": true,
-            "schema": {
-              "title": "Osdu Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Record"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Record not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get specific version for the provided OSDU record",
         "tags": [
           "PPFGDataset v3"
         ]
@@ -2513,6 +2360,159 @@
         ]
       }
     },
+    "/ddms/v3/ppfgdataset/{record_id}/versions": {
+      "get": {
+        "operationId": "get_record_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordVersions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get all versions of the provided record",
+        "tags": [
+          "PPFGDataset v3"
+        ]
+      }
+    },
+    "/ddms/v3/ppfgdataset/{record_id}/versions/{version}": {
+      "get": {
+        "description": "Get the specific version of object using its **id**.",
+        "operationId": "get_specific_record_version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get specific version for the provided OSDU record",
+        "tags": [
+          "PPFGDataset v3"
+        ]
+      }
+    },
     "/ddms/v3/ppfgdataset/{record_id}/versions/{version}/data": {
       "get": {
         "description": "Returns the data of a specific version according to the specified query parameters.\nMultiple media types response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**: In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (> 10 millions values or > 3000 columns)",
@@ -3014,18 +3014,18 @@
         ]
       }
     },
-    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}": {
+    "/ddms/v3/wellboreintervalsets/{record_id}": {
       "delete": {
         "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
         "operationId": "del_osdu_wellboreintervalsetid",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboreintervalsetsid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreintervalsetsid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -3085,11 +3085,11 @@
         "parameters": [
           {
             "in": "path",
-            "name": "wellboreintervalsetsid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreintervalsetsid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -3151,18 +3151,18 @@
         ]
       }
     },
-    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}/versions": {
+    "/ddms/v3/wellboreintervalsets/{record_id}/versions": {
       "get": {
         "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_wellboreintervalsetid_versions",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboreintervalsetsid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreintervalsetsid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -3224,18 +3224,18 @@
         ]
       }
     },
-    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}/versions/{version}": {
+    "/ddms/v3/wellboreintervalsets/{record_id}/versions/{version}": {
       "get": {
         "description": "Get the WellboreIntervalSet object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_wellboreintervalsetid_version",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboreintervalsetsid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreintervalsetsid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -3738,18 +3738,18 @@
         ]
       }
     },
-    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}": {
+    "/ddms/v3/wellboremarkersets/{record_id}": {
       "delete": {
         "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
         "operationId": "del_osdu_wellboremarkerset",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboremarkersetid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboremarkersetid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -3809,11 +3809,11 @@
         "parameters": [
           {
             "in": "path",
-            "name": "wellboremarkersetid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboremarkersetid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -3875,18 +3875,18 @@
         ]
       }
     },
-    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}/versions": {
+    "/ddms/v3/wellboremarkersets/{record_id}/versions": {
       "get": {
         "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_wellboremarkerset_versions",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboremarkersetid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboremarkersetid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -3948,18 +3948,18 @@
         ]
       }
     },
-    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}/versions/{version}": {
+    "/ddms/v3/wellboremarkersets/{record_id}/versions/{version}": {
       "get": {
         "description": "\"Get the WellboreMarkerSet object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_wellboremarkerset_version",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboremarkersetid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboremarkersetid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -4260,18 +4260,18 @@
         ]
       }
     },
-    "/ddms/v3/wellbores/{wellboreid}": {
+    "/ddms/v3/wellbores/{record_id}": {
       "delete": {
         "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
         "operationId": "del_osdu_wellbore",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboreid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -4331,11 +4331,11 @@
         "parameters": [
           {
             "in": "path",
-            "name": "wellboreid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -4397,18 +4397,18 @@
         ]
       }
     },
-    "/ddms/v3/wellbores/{wellboreid}/versions": {
+    "/ddms/v3/wellbores/{record_id}/versions": {
       "get": {
         "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_wellbore_versions",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboreid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -4470,18 +4470,18 @@
         ]
       }
     },
-    "/ddms/v3/wellbores/{wellboreid}/versions/{version}": {
+    "/ddms/v3/wellbores/{record_id}/versions/{version}": {
       "get": {
         "description": "\"Get the Wellbore object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_wellbore_version",
         "parameters": [
           {
             "in": "path",
-            "name": "wellboreid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -4942,6 +4942,153 @@
           }
         ],
         "summary": "Create or update the WellboreTrajectories using osdu schema",
+        "tags": [
+          "Trajectory v3"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{record_id}": {
+      "delete": {
+        "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
+        "operationId": "del_osdu_wellboretrajectory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "purge",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Purge",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Record deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellboreTrajectory not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete the wellboreTrajectory. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
+        "tags": [
+          "Trajectory v3"
+        ]
+      },
+      "get": {
+        "description": "Get the WellboreTrajectory object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_wellbore_trajectory_osdu",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Wellbore Trajectory not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the WellboreTrajectory using osdu schema",
         "tags": [
           "Trajectory v3"
         ]
@@ -5846,6 +5993,162 @@
         ]
       }
     },
+    "/ddms/v3/wellboretrajectories/{record_id}/versions": {
+      "get": {
+        "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_osdu_wellboretrajectory_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordVersions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellboreTrajectory not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get all versions of the WellboreTrajectory",
+        "tags": [
+          "Trajectory v3"
+        ]
+      }
+    },
+    "/ddms/v3/wellboretrajectories/{record_id}/versions/{version}": {
+      "get": {
+        "description": "\"Get the WellboreTrajectory object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_osdu_wellboretrajectory_version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellboreTrajectory not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory schema",
+        "tags": [
+          "Trajectory v3"
+        ]
+      }
+    },
     "/ddms/v3/wellboretrajectories/{record_id}/versions/{version}/data": {
       "get": {
         "description": "Returns the data of a specific version according to the specified query parameters.\nMultiple media types response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**: In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (> 10 millions values or > 3000 columns)",
@@ -6187,309 +6490,6 @@
           }
         ],
         "summary": "Returns data of the specified version.",
-        "tags": [
-          "Trajectory v3"
-        ]
-      }
-    },
-    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}": {
-      "delete": {
-        "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
-        "operationId": "del_osdu_wellboretrajectory",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "wellboretrajectoryid",
-            "required": true,
-            "schema": {
-              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboretrajectoryid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "purge",
-            "required": false,
-            "schema": {
-              "default": false,
-              "title": "Purge",
-              "type": "boolean"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Record deleted successfully"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "WellboreTrajectory not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Delete the wellboreTrajectory. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
-        "tags": [
-          "Trajectory v3"
-        ]
-      },
-      "get": {
-        "description": "Get the WellboreTrajectory object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
-        "operationId": "get_wellbore_trajectory_osdu",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "wellboretrajectoryid",
-            "required": true,
-            "schema": {
-              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboretrajectoryid",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Record"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Wellbore Trajectory not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get the WellboreTrajectory using osdu schema",
-        "tags": [
-          "Trajectory v3"
-        ]
-      }
-    },
-    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}/versions": {
-      "get": {
-        "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
-        "operationId": "get_osdu_wellboretrajectory_versions",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "wellboretrajectoryid",
-            "required": true,
-            "schema": {
-              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboretrajectoryid",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecordVersions"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "WellboreTrajectory not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get all versions of the WellboreTrajectory",
-        "tags": [
-          "Trajectory v3"
-        ]
-      }
-    },
-    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}/versions/{version}": {
-      "get": {
-        "description": "\"Get the WellboreTrajectory object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
-        "operationId": "get_osdu_wellboretrajectory_version",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "wellboretrajectoryid",
-            "required": true,
-            "schema": {
-              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboretrajectoryid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "title": "Version",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Record"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "WellboreTrajectory not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory schema",
         "tags": [
           "Trajectory v3"
         ]
@@ -6946,18 +6946,18 @@
         ]
       }
     },
-    "/ddms/v3/welllogacquisition/{welllogacquisitionid}": {
+    "/ddms/v3/welllogacquisition/{record_id}": {
       "delete": {
         "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
         "operationId": "del_osdu_welllogacquisitionid",
         "parameters": [
           {
             "in": "path",
-            "name": "welllogacquisitionid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogacquisitionid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -7017,11 +7017,11 @@
         "parameters": [
           {
             "in": "path",
-            "name": "welllogacquisitionid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogacquisitionid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -7083,18 +7083,18 @@
         ]
       }
     },
-    "/ddms/v3/welllogacquisition/{welllogacquisitionid}/versions": {
+    "/ddms/v3/welllogacquisition/{record_id}/versions": {
       "get": {
         "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_welllogacquisitionid_versions",
         "parameters": [
           {
             "in": "path",
-            "name": "welllogacquisitionid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogacquisitionid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -7156,18 +7156,18 @@
         ]
       }
     },
-    "/ddms/v3/welllogacquisition/{welllogacquisitionid}/versions/{version}": {
+    "/ddms/v3/welllogacquisition/{record_id}/versions/{version}": {
       "get": {
         "description": "Get the WellLogAcquisition object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_welllogacquisitionid_version",
         "parameters": [
           {
             "in": "path",
-            "name": "welllogacquisitionid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogacquisitionid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -7398,6 +7398,153 @@
           }
         ],
         "summary": "Create or update the WellLogs using osdu schema",
+        "tags": [
+          "WellLog"
+        ]
+      }
+    },
+    "/ddms/v3/welllogs/{record_id}": {
+      "delete": {
+        "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
+        "operationId": "del_osdu_welllog",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "purge",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Purge",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Record deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellLog not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete the welllog. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
+        "tags": [
+          "WellLog"
+        ]
+      },
+      "get": {
+        "description": "Get the WellLog object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_welllog_osdu",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellLog not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the WellLog using osdu schema",
         "tags": [
           "WellLog"
         ]
@@ -8447,6 +8594,162 @@
         ]
       }
     },
+    "/ddms/v3/welllogs/{record_id}/versions": {
+      "get": {
+        "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_osdu_welllog_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordVersions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellLog not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get all versions of the WellLog",
+        "tags": [
+          "WellLog"
+        ]
+      }
+    },
+    "/ddms/v3/welllogs/{record_id}/versions/{version}": {
+      "get": {
+        "description": "\"Get the WellLog object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
+        "operationId": "get_osdu_welllog_version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "WellLog not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get the given version of the WellLog using OSDU welllog schema",
+        "tags": [
+          "WellLog"
+        ]
+      }
+    },
     "/ddms/v3/welllogs/{record_id}/versions/{version}/data": {
       "get": {
         "description": "Returns the data of a specific version according to the specified query parameters.\nMultiple media types response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**: In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (> 10 millions values or > 3000 columns)",
@@ -9043,309 +9346,6 @@
         ]
       }
     },
-    "/ddms/v3/welllogs/{welllogid}": {
-      "delete": {
-        "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
-        "operationId": "del_osdu_welllog",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "welllogid",
-            "required": true,
-            "schema": {
-              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "purge",
-            "required": false,
-            "schema": {
-              "default": false,
-              "title": "Purge",
-              "type": "boolean"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Record deleted successfully"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "WellLog not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Delete the welllog. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
-        "tags": [
-          "WellLog"
-        ]
-      },
-      "get": {
-        "description": "Get the WellLog object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
-        "operationId": "get_welllog_osdu",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "welllogid",
-            "required": true,
-            "schema": {
-              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogid",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Record"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "WellLog not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get the WellLog using osdu schema",
-        "tags": [
-          "WellLog"
-        ]
-      }
-    },
-    "/ddms/v3/welllogs/{welllogid}/versions": {
-      "get": {
-        "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
-        "operationId": "get_osdu_welllog_versions",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "welllogid",
-            "required": true,
-            "schema": {
-              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogid",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecordVersions"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "WellLog not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get all versions of the WellLog",
-        "tags": [
-          "WellLog"
-        ]
-      }
-    },
-    "/ddms/v3/welllogs/{welllogid}/versions/{version}": {
-      "get": {
-        "description": "\"Get the WellLog object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
-        "operationId": "get_osdu_welllog_version",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "welllogid",
-            "required": true,
-            "schema": {
-              "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "title": "Version",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Record"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "WellLog not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get the given version of the WellLog using OSDU welllog schema",
-        "tags": [
-          "WellLog"
-        ]
-      }
-    },
     "/ddms/v3/wellpressuretestrawmeasurement": {
       "post": {
         "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\nBulkURI consistency:\n- ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set when creating a new record.\n- When updating an existing record, bulkURI must match the previous version exactly.\nRequests that violate these rules are rejected with HTTP 400.",
@@ -9423,16 +9423,16 @@
         ]
       }
     },
-    "/ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}": {
+    "/ddms/v3/wellpressuretestrawmeasurement/{record_id}": {
       "delete": {
-        "operationId": "delete__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id_",
+        "operationId": "delete__ddms_v3_wellpressuretestrawmeasurement__record_id_",
         "parameters": [
           {
             "in": "path",
-            "name": "osdu_record_id",
+            "name": "record_id",
             "required": true,
             "schema": {
-              "title": "Osdu Record Id",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -9497,14 +9497,14 @@
         ]
       },
       "get": {
-        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id_",
+        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__record_id_",
         "parameters": [
           {
             "in": "path",
-            "name": "osdu_record_id",
+            "name": "record_id",
             "required": true,
             "schema": {
-              "title": "Osdu Record Id",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -9561,159 +9561,6 @@
           }
         ],
         "summary": "Get the record using the provided recordID",
-        "tags": [
-          "WellPressureTestRawMeasurement v3"
-        ]
-      }
-    },
-    "/ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}/versions": {
-      "get": {
-        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id__versions",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "osdu_record_id",
-            "required": true,
-            "schema": {
-              "title": "Osdu Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecordVersions"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Record not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get all versions of the provided record",
-        "tags": [
-          "WellPressureTestRawMeasurement v3"
-        ]
-      }
-    },
-    "/ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}/versions/{version}": {
-      "get": {
-        "description": "Get the specific version of object using its **id**.",
-        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id__versions__version_",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "title": "Version",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "osdu_record_id",
-            "required": true,
-            "schema": {
-              "title": "Osdu Record Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "identifier of the data partition to query",
-            "in": "header",
-            "name": "data-partition-id",
-            "required": false,
-            "schema": {
-              "description": "identifier of the data partition to query",
-              "minLength": 1,
-              "title": "data partition id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Record"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Record not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get specific version for the provided OSDU record",
         "tags": [
           "WellPressureTestRawMeasurement v3"
         ]
@@ -10618,6 +10465,159 @@
         ]
       }
     },
+    "/ddms/v3/wellpressuretestrawmeasurement/{record_id}/versions": {
+      "get": {
+        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__record_id__versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordVersions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get all versions of the provided record",
+        "tags": [
+          "WellPressureTestRawMeasurement v3"
+        ]
+      }
+    },
+    "/ddms/v3/wellpressuretestrawmeasurement/{record_id}/versions/{version}": {
+      "get": {
+        "description": "Get the specific version of object using its **id**.",
+        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__record_id__versions__version_",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "identifier of the data partition to query",
+            "in": "header",
+            "name": "data-partition-id",
+            "required": false,
+            "schema": {
+              "description": "identifier of the data partition to query",
+              "minLength": 1,
+              "title": "data partition id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Record not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get specific version for the provided OSDU record",
+        "tags": [
+          "WellPressureTestRawMeasurement v3"
+        ]
+      }
+    },
     "/ddms/v3/wellpressuretestrawmeasurement/{record_id}/versions/{version}/data": {
       "get": {
         "description": "Returns the data of a specific version according to the specified query parameters.\nMultiple media types response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter, the response is always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**: In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (> 10 millions values or > 3000 columns)",
@@ -11110,18 +11110,18 @@
         ]
       }
     },
-    "/ddms/v3/wells/{wellid}": {
+    "/ddms/v3/wells/{record_id}": {
       "delete": {
         "description": "Required roles: 'users.datalake.editors' or 'users.datalake.admins'.",
         "operationId": "del_osdu_well",
         "parameters": [
           {
             "in": "path",
-            "name": "wellid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -11181,11 +11181,11 @@
         "parameters": [
           {
             "in": "path",
-            "name": "wellid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -11247,18 +11247,18 @@
         ]
       }
     },
-    "/ddms/v3/wells/{wellid}/versions": {
+    "/ddms/v3/wells/{record_id}/versions": {
       "get": {
         "description": "Required roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_well_versions",
         "parameters": [
           {
             "in": "path",
-            "name": "wellid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellid",
+              "title": "Record Id",
               "type": "string"
             }
           },
@@ -11320,18 +11320,18 @@
         ]
       }
     },
-    "/ddms/v3/wells/{wellid}/versions/{version}": {
+    "/ddms/v3/wells/{record_id}/versions/{version}": {
       "get": {
         "description": "\"Get the Well object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.",
         "operationId": "get_osdu_well_version",
         "parameters": [
           {
             "in": "path",
-            "name": "wellid",
+            "name": "record_id",
             "required": true,
             "schema": {
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellid",
+              "title": "Record Id",
               "type": "string"
             }
           },
