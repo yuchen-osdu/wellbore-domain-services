@@ -37,7 +37,7 @@ WELLBORE_TRAJECTORIES_API_BASE_PATH = '/wellboretrajectories'
 
 
 @router.get(
-    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{record_id}",
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellboreTrajectory using osdu schema",
@@ -48,14 +48,14 @@ WELLBORE_TRAJECTORIES_API_BASE_PATH = '/wellboretrajectories'
     },
 )
 async def get_wellbore_trajectory_osdu(
-    wellboretrajectoryid: WellboreTrajectoryId, request: Request, ctx: Context = Depends(get_ctx)
+    record_id: WellboreTrajectoryId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
     storage_client = await get_storage_record_service(ctx)
     # Note: version is dropped here
-    wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
+    record_id, _ = split_record_id_version(record_id)
 
     wellboretrajectory_record = await storage_client.get_record(
-        id=wellboretrajectoryid, data_partition_id=ctx.partition_id
+        id=record_id, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboretrajectory_record, request.state)
     await schema_library.validate_records([wellboretrajectory_record], ctx)
@@ -63,7 +63,7 @@ async def get_wellbore_trajectory_osdu(
 
 
 @router.delete(
-    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{record_id}",
     summary="Delete the wellboreTrajectory. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
     description=f"{REQUIRED_ROLES_WRITE}",
@@ -76,17 +76,17 @@ async def get_wellbore_trajectory_osdu(
     },
 )
 async def del_osdu_wellboretrajectory(
-    wellboretrajectoryid: WellboreTrajectoryId,
+    record_id: WellboreTrajectoryId,
     purge: bool = False,
     ctx: Context = Depends(get_ctx),
     bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access),
 ):
-    wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
-    await delete_record(record_id=wellboretrajectoryid, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
+    record_id, _ = split_record_id_version(record_id)
+    await delete_record(record_id=record_id, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
 
 
 @router.get(
-    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}/versions",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{record_id}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the WellboreTrajectory",
     description=f"{REQUIRED_ROLES_READ}",
@@ -96,20 +96,20 @@ async def del_osdu_wellboretrajectory(
     },
 )
 async def get_osdu_wellboretrajectory_versions(
-    wellboretrajectoryid: WellboreTrajectoryId, request: Request, ctx: Context = Depends(get_ctx)
+    record_id: WellboreTrajectoryId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
-    record = await fetch_record(ctx, wellboretrajectoryid)
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
-    wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
+    record_id, _ = split_record_id_version(record_id)
 
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(
-        id=wellboretrajectoryid, data_partition_id=ctx.partition_id
+        id=record_id, data_partition_id=ctx.partition_id
     )
 
 
 @router.get(
-    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{wellboretrajectoryid}/versions/{version}",
+    WELLBORE_TRAJECTORIES_API_BASE_PATH + "/{record_id}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory schema",
     description=f""""Get the WellboreTrajectory object using its **id**. {REQUIRED_ROLES_READ}""",
@@ -120,12 +120,12 @@ async def get_osdu_wellboretrajectory_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_wellboretrajectory_version(
-    wellboretrajectoryid: WellboreTrajectoryId, version: int, request: Request, ctx: Context = Depends(get_ctx)
+    record_id: WellboreTrajectoryId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
     storage_client = await get_storage_record_service(ctx)
-    wellboretrajectoryid, _ = split_record_id_version(wellboretrajectoryid)
+    record_id, _ = split_record_id_version(record_id)
     wellboretrajectory_record = await storage_client.get_record_version(
-        id=wellboretrajectoryid, version=version, data_partition_id=ctx.partition_id
+        id=record_id, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboretrajectory_record, request.state)
     await schema_library.validate_records([wellboretrajectory_record], ctx)

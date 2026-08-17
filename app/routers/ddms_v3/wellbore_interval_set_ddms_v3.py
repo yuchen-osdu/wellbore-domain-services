@@ -34,7 +34,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/wellboreintervalsets/{wellboreintervalsetsid}",
+    "/wellboreintervalsets/{record_id}",
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellboreIntervalSet using osdu schema",
@@ -44,10 +44,10 @@ router = APIRouter()
         status.HTTP_404_NOT_FOUND: {"description": "WellboreIntervalSet not found"}
     },
 )
-async def get_wellboreintervalsetid_osdu(wellboreintervalsetsid: WellboreIntervalSetId,
+async def get_wellboreintervalsetid_osdu(record_id: WellboreIntervalSetId,
                                          ctx: Context = Depends(get_ctx)) -> Record:
     # Note: version is dropped here
-    record_id, _ = split_record_id_version(wellboreintervalsetsid)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     wellboreintervalsetid_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
     await schema_library.validate_records([wellboreintervalsetid_record], ctx)
@@ -55,7 +55,7 @@ async def get_wellboreintervalsetid_osdu(wellboreintervalsetsid: WellboreInterva
 
 
 @router.delete(
-    "/wellboreintervalsets/{wellboreintervalsetsid}",
+    "/wellboreintervalsets/{record_id}",
     summary="Delete the WellboreIntervalSetId. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
     description=f"{REQUIRED_ROLES_WRITE}",
@@ -69,14 +69,14 @@ async def get_wellboreintervalsetid_osdu(wellboreintervalsetsid: WellboreInterva
         },
     },
 )
-async def del_osdu_wellboreintervalsetid(wellboreintervalsetsid: WellboreIntervalSetId, ctx: Context = Depends(get_ctx)):
-    wellboreintervalsetsid, _ = split_record_id_version(wellboreintervalsetsid)
+async def del_osdu_wellboreintervalsetid(record_id: WellboreIntervalSetId, ctx: Context = Depends(get_ctx)):
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
-    await storage_client.delete_record(id=wellboreintervalsetsid, data_partition_id=ctx.partition_id)
+    await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
 
 
 @router.get(
-    "/wellboreintervalsets/{wellboreintervalsetsid}/versions",
+    "/wellboreintervalsets/{record_id}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the WellboreIntervalSet",
     description=f"{REQUIRED_ROLES_READ}",
@@ -85,17 +85,17 @@ async def del_osdu_wellboreintervalsetid(wellboreintervalsetsid: WellboreInterva
         status.HTTP_404_NOT_FOUND: {"description": "WellboreIntervalSet not found"}
     },
 )
-async def get_osdu_wellboreintervalsetid_versions(wellboreintervalsetsid: WellboreIntervalSetId, request: Request,
+async def get_osdu_wellboreintervalsetid_versions(record_id: WellboreIntervalSetId, request: Request,
                                                   ctx: Context = Depends(get_ctx)) -> RecordVersions:
-    wellboreintervalsetsid, _ = split_record_id_version(wellboreintervalsetsid)
-    record = await fetch_record(ctx, wellboreintervalsetsid)
+    record_id, _ = split_record_id_version(record_id)
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
-    return await storage_client.get_all_record_versions(id=wellboreintervalsetsid, data_partition_id=ctx.partition_id)
+    return await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
 
 
 @router.get(
-    "/wellboreintervalsets/{wellboreintervalsetsid}/versions/{version}",
+    "/wellboreintervalsets/{record_id}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the WellboreIntervalSet using OSDU WellboreIntervalSetId schema",
     description=f"""Get the WellboreIntervalSet object using its **id**. {REQUIRED_ROLES_READ}""",
@@ -106,12 +106,12 @@ async def get_osdu_wellboreintervalsetid_versions(wellboreintervalsetsid: Wellbo
     response_model_exclude_unset=True,
 )
 async def get_osdu_wellboreintervalsetid_version(
-        wellboreintervalsetsid: WellboreIntervalSetId, version: int, request: Request, ctx: Context = Depends(get_ctx)
+        record_id: WellboreIntervalSetId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
-    wellboreintervalsetsid, _ = split_record_id_version(wellboreintervalsetsid)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     wellboreintervalsetid_record = await storage_client.get_record_version(
-        id=wellboreintervalsetsid, version=version, data_partition_id=ctx.partition_id
+        id=record_id, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellboreintervalsetid_record, request.state)
     await schema_library.validate_records([wellboreintervalsetid_record], ctx)

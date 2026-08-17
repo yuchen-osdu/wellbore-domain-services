@@ -29,7 +29,7 @@ WELLLOG_ACQUISITION_ID_WITH_VERSION = f"{WELLLOG_ACQUISITION_ID}:{WELLLOG_ACQUIS
 
 @pytest.mark.anyio
 async def test_get_welllogacquisitionid_osdu_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for GET /ddms/v3/welllogacquisition/{welllogacquisitionid}"""
+    """Happy path test case for GET /ddms/v3/welllogacquisition/{record_id}"""
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(dir_path, WELLLOG_ACQUISITION_SAMPLE_FILE), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
@@ -56,7 +56,7 @@ async def test_get_welllogacquisitionid_osdu_success(mocker, app_configurable_wi
 
 @pytest.mark.anyio
 async def test_del_osdu_welllogacquisitionid_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for DELETE /ddms/v3/welllogacquisition/{welllogacquisitionid}"""
+    """Happy path test case for DELETE /ddms/v3/welllogacquisition/{record_id}"""
     expected_response = Response()
 
     mocked_storage_client = mocker.Mock(spec=StorageRecordServiceClient)
@@ -76,7 +76,7 @@ async def test_del_osdu_welllogacquisitionid_success(mocker, app_configurable_wi
 
 @pytest.mark.anyio
 async def test_get_osdu_welllogacquisitionid_versions_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for GET /ddms/v3/welllogacquisition/{welllogacquisitionid}/versions"""
+    """Happy path test case for GET /ddms/v3/welllogacquisition/{record_id}/versions"""
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(dir_path, WELLLOG_ACQUISITION_SAMPLE_FILE), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
@@ -106,7 +106,7 @@ async def test_get_osdu_welllogacquisitionid_versions_success(mocker, app_config
 @pytest.mark.anyio
 async def test_get_osdu_welllogacquisitionid_versions_with_version_suffix_success(
         mocker, app_configurable_with_testclient):
-    """Regression test for GET /ddms/v3/welllogacquisition/{welllogacquisitionid}/versions with id including version."""
+    """Regression test for GET /ddms/v3/welllogacquisition/{record_id}/versions with id including version."""
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(dir_path, WELLLOG_ACQUISITION_SAMPLE_FILE), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
@@ -144,7 +144,7 @@ async def test_get_osdu_welllogacquisitionid_versions_with_version_suffix_succes
 
 
 async def test_get_osdu_welllogacquisitionid_version_success(mocker, app_configurable_with_testclient):
-    """Happy path test case for GET /ddms/v3/welllogacquisition/{welllogacquisitionid}/versions/{version}"""
+    """Happy path test case for GET /ddms/v3/welllogacquisition/{record_id}/versions/{version}"""
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(dir_path, WELLLOG_ACQUISITION_SAMPLE_FILE), "r", encoding="utf-8") as f:
         record_json = json.load(f)[0]
