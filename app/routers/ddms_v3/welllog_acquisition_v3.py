@@ -35,7 +35,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/welllogacquisition/{welllogacquisitionid}",
+    "/welllogacquisition/{record_id}",
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the WellLogAcquisition using osdu schema",
@@ -45,10 +45,10 @@ router = APIRouter()
         status.HTTP_404_NOT_FOUND: {"description": "WellLogAcquisition not found"}
     },
 )
-async def get_welllogacquisitionid_osdu(welllogacquisitionid: WellLogAcquisitionId,
+async def get_welllogacquisitionid_osdu(record_id: WellLogAcquisitionId,
                                          ctx: Context = Depends(get_ctx)) -> Record:
     # Note: version is dropped here
-    record_id, _ = split_record_id_version(welllogacquisitionid)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     welllogacquisitionid_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
     await schema_library.validate_records([welllogacquisitionid_record], ctx)
@@ -56,7 +56,7 @@ async def get_welllogacquisitionid_osdu(welllogacquisitionid: WellLogAcquisition
 
 
 @router.delete(
-    "/welllogacquisition/{welllogacquisitionid}",
+    "/welllogacquisition/{record_id}",
     summary="Delete the WellLogAcquisitionId. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
     description=f"{REQUIRED_ROLES_WRITE}",
@@ -70,13 +70,13 @@ async def get_welllogacquisitionid_osdu(welllogacquisitionid: WellLogAcquisition
         },
     },
 )
-async def del_osdu_welllogacquisitionid(welllogacquisitionid: WellLogAcquisitionId, ctx: Context = Depends(get_ctx)):
-    record_id, _ = split_record_id_version(welllogacquisitionid)
+async def del_osdu_welllogacquisitionid(record_id: WellLogAcquisitionId, ctx: Context = Depends(get_ctx)):
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
 
 
-@router.get("/welllogacquisition/{welllogacquisitionid}/versions",
+@router.get("/welllogacquisition/{record_id}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the WellLogAcquisition",
     description=f"{REQUIRED_ROLES_READ}",
@@ -85,16 +85,16 @@ async def del_osdu_welllogacquisitionid(welllogacquisitionid: WellLogAcquisition
         status.HTTP_404_NOT_FOUND: {"description": "WellLogAcquisition not found"}
     },
 )
-async def get_osdu_welllogacquisitionid_versions(welllogacquisitionid: WellLogAcquisitionId, request: Request,
+async def get_osdu_welllogacquisitionid_versions(record_id: WellLogAcquisitionId, request: Request,
                                                   ctx: Context = Depends(get_ctx)) -> RecordVersions:
-    record_id, _ = split_record_id_version(welllogacquisitionid)
+    record_id, _ = split_record_id_version(record_id)
     record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
 
 
-@router.get("/welllogacquisition/{welllogacquisitionid}/versions/{version}",
+@router.get("/welllogacquisition/{record_id}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the WellLogAcquisition using OSDU WellLogAcquisitionId schema",
     description=f"Get the WellLogAcquisition object using its **id**. {REQUIRED_ROLES_READ}",
@@ -105,9 +105,9 @@ async def get_osdu_welllogacquisitionid_versions(welllogacquisitionid: WellLogAc
     response_model_exclude_unset=True,
 )
 async def get_osdu_welllogacquisitionid_version(
-        welllogacquisitionid: WellLogAcquisitionId, version: int, request: Request, ctx: Context = Depends(get_ctx)
+        record_id: WellLogAcquisitionId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
-    record_id, _ = split_record_id_version(welllogacquisitionid)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     welllogacquisitionid_record = await storage_client.get_record_version(
         id=record_id, version=version, data_partition_id=ctx.partition_id

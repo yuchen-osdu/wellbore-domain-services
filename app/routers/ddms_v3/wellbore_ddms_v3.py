@@ -33,7 +33,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/wellbores/{wellboreid}",
+    "/wellbores/{record_id}",
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the Wellbore using osdu schema",
@@ -42,10 +42,10 @@ router = APIRouter()
     responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
 )
 async def get_wellbore_osdu(
-    wellboreid: WellboreId, ctx: Context = Depends(get_ctx)
+    record_id: WellboreId, ctx: Context = Depends(get_ctx)
 ) -> Record:
     # Note: version is dropped here
-    record_id, _ = split_record_id_version(wellboreid)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     wellbore_record = await storage_client.get_record(
         id=record_id, data_partition_id=ctx.partition_id
@@ -55,7 +55,7 @@ async def get_wellbore_osdu(
 
 
 @router.delete(
-    "/wellbores/{wellboreid}",
+    "/wellbores/{record_id}",
     summary="Delete the wellbore. The API performs a logical deletion of the given record. "
     "No recursive delete for OSDU kinds",
     description=f"{REQUIRED_ROLES_WRITE}",
@@ -67,16 +67,16 @@ async def get_wellbore_osdu(
         status.HTTP_204_NO_CONTENT: {"description": "Record deleted successfully"},
     },
 )
-async def del_osdu_wellbore(wellboreid: WellboreId, ctx: Context = Depends(get_ctx)):
-    wellboreid, _ = split_record_id_version(wellboreid)
+async def del_osdu_wellbore(record_id: WellboreId, ctx: Context = Depends(get_ctx)):
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     await storage_client.delete_record(
-        id=wellboreid, data_partition_id=ctx.partition_id
+        id=record_id, data_partition_id=ctx.partition_id
     )
 
 
 @router.get(
-    "/wellbores/{wellboreid}/versions",
+    "/wellbores/{record_id}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the Wellbore",
     description=f"{REQUIRED_ROLES_READ}",
@@ -84,19 +84,19 @@ async def del_osdu_wellbore(wellboreid: WellboreId, ctx: Context = Depends(get_c
     responses={status.HTTP_404_NOT_FOUND: {"description": "Wellbore not found"}},
 )
 async def get_osdu_wellbore_versions(
-    wellboreid: WellboreId, request: Request, ctx: Context = Depends(get_ctx)
+    record_id: WellboreId, request: Request, ctx: Context = Depends(get_ctx)
 ) -> RecordVersions:
-    wellboreid, _ = split_record_id_version(wellboreid)
-    record = await fetch_record(ctx, wellboreid)
+    record_id, _ = split_record_id_version(record_id)
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(
-        id=wellboreid, data_partition_id=ctx.partition_id
+        id=record_id, data_partition_id=ctx.partition_id
     )
 
 
 @router.get(
-    "/wellbores/{wellboreid}/versions/{version}",
+    "/wellbores/{record_id}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the Wellbore using OSDU wellbore schema",
     description=f""""Get the Wellbore object using its **id**. {REQUIRED_ROLES_READ}""",
@@ -105,15 +105,15 @@ async def get_osdu_wellbore_versions(
     response_model_exclude_unset=True,
 )
 async def get_osdu_wellbore_version(
-    wellboreid: WellboreId,
+    record_id: WellboreId,
     version: int,
     request: Request,
     ctx: Context = Depends(get_ctx),
 ) -> Record:
-    wellboreid, _ = split_record_id_version(wellboreid)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     wellbore_record = await storage_client.get_record_version(
-        id=wellboreid, version=version, data_partition_id=ctx.partition_id
+        id=record_id, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(wellbore_record, request.state)
     await schema_library.validate_records([wellbore_record], ctx)

@@ -23,14 +23,14 @@ router = APIRouter()
 ConsistencyCheckFunction = Callable[[Record], None]
 
 def validate_record_id(api_config: APIConfiguration = Depends(get_api_config),
-        osdu_record_id: str = Path(...)
+        record_id: str = Path(...)
 ) -> str:
     """
-    Validates the osdu_record_id against the provided id regex pattern
+    Validates the record_id against the provided id regex pattern
     Raises HTTPException(422) if validation fails.
     """
     try:
-        return TypeAdapter(api_config.record_id_constraint).validate_python(osdu_record_id)
+        return TypeAdapter(api_config.record_id_constraint).validate_python(record_id)
     except ValidationError as e:
         error_msg = ""
         for error_detail in e.errors():
@@ -42,7 +42,7 @@ def validate_record_id(api_config: APIConfiguration = Depends(get_api_config),
 
 
 @router.get(
-    "/{osdu_record_id}",
+    "/{record_id}",
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the record using the provided recordID",
@@ -51,10 +51,10 @@ def validate_record_id(api_config: APIConfiguration = Depends(get_api_config),
         status.HTTP_404_NOT_FOUND: {"description": "Record not found"}
     }
 )
-async def get_osdu_record(request: Request, osdu_record_id: str = Depends(validate_record_id),
+async def get_osdu_record(request: Request, record_id: str = Depends(validate_record_id),
                           ctx: Context = Depends(get_ctx)) -> Record:
     # Note: version is dropped here
-    record_id, _ = split_record_id_version(osdu_record_id)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
 
     fetched_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
@@ -65,7 +65,7 @@ async def get_osdu_record(request: Request, osdu_record_id: str = Depends(valida
 
 
 @router.delete(
-    "/{osdu_record_id}",
+    "/{record_id}",
     summary="Delete the record using id. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
     operation_id="delete_osdu_record",
@@ -78,13 +78,13 @@ async def get_osdu_record(request: Request, osdu_record_id: str = Depends(valida
         },
     },
 )
-async def delete_osdu_record(osdu_record_id: str = Depends(validate_record_id), ctx: Context = Depends(get_ctx),
+async def delete_osdu_record(record_id: str = Depends(validate_record_id), ctx: Context = Depends(get_ctx),
                              purge: bool = False, bulk_uri_access: BulkIdAccess = Depends(get_bulk_id_access)):
-    record_id, _ = split_record_id_version(osdu_record_id)
+    record_id, _ = split_record_id_version(record_id)
     await delete_record(record_id=record_id, purge=purge, ctx=ctx, bulk_uri_access=bulk_uri_access)
 
 
-@router.get("/{osdu_record_id}/versions",
+@router.get("/{record_id}/versions",
             response_model=RecordVersions,
             summary="Get all versions of the provided record",
             operation_id="get_record_versions",
@@ -92,15 +92,15 @@ async def delete_osdu_record(osdu_record_id: str = Depends(validate_record_id), 
                 status.HTTP_404_NOT_FOUND: {"description": "Record not found"}
             }
             )
-async def get_record_versions(request: Request, osdu_record_id: str = Depends(validate_record_id),
+async def get_record_versions(request: Request, record_id: str = Depends(validate_record_id),
                               ctx: Context = Depends(get_ctx)) -> RecordVersions:
-    record_id, _ = split_record_id_version(osdu_record_id)
+    record_id, _ = split_record_id_version(record_id)
     record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
     return await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
 
-@router.get("/{osdu_record_id}/versions/{version}",
+@router.get("/{record_id}/versions/{version}",
             response_model=Record,
             summary="Get specific version for the provided OSDU record",
             description="Get the specific version of object using its **id**. ",
@@ -110,10 +110,10 @@ async def get_record_versions(request: Request, osdu_record_id: str = Depends(va
             },
             response_model_exclude_unset=True,
             )
-async def get_specific_record_version(version: int, request: Request, osdu_record_id: str = Depends(validate_record_id),
+async def get_specific_record_version(version: int, request: Request, record_id: str = Depends(validate_record_id),
                                       ctx: Context = Depends(get_ctx)
 ) -> Record:
-    record_id, _ = split_record_id_version(osdu_record_id)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     osdu_record = await storage_client.get_record_version(
         id=record_id, version=version, data_partition_id=ctx.partition_id

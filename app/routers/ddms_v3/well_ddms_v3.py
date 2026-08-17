@@ -33,7 +33,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/wells/{wellid}",
+    "/wells/{record_id}",
     response_model=Record,
     response_model_exclude_unset=True,
     summary="Get the Well using osdu schema",
@@ -43,9 +43,9 @@ router = APIRouter()
         status.HTTP_404_NOT_FOUND: {"description": "Well not found"}
     },
 )
-async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Record:
+async def get_well_osdu(record_id: WellId, ctx: Context = Depends(get_ctx)) -> Record:
     # Note: version is dropped here
-    record_id, _ = split_record_id_version(wellid)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record(id=record_id, data_partition_id=ctx.partition_id)
     await schema_library.validate_records([well_record], ctx)
@@ -53,7 +53,7 @@ async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Reco
 
 
 @router.delete(
-    "/wells/{wellid}",
+    "/wells/{record_id}",
     summary="Delete the well. The API performs a logical deletion of the given record. "
             "No recursive delete for OSDU kinds",
     description=f"{REQUIRED_ROLES_WRITE}",
@@ -67,14 +67,14 @@ async def get_well_osdu(wellid: WellId, ctx: Context = Depends(get_ctx)) -> Reco
         },
     },
 )
-async def del_osdu_well(wellid: WellId, ctx: Context = Depends(get_ctx)):
-    wellid, _ = split_record_id_version(wellid)
+async def del_osdu_well(record_id: WellId, ctx: Context = Depends(get_ctx)):
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
-    await storage_client.delete_record(id=wellid, data_partition_id=ctx.partition_id)
+    await storage_client.delete_record(id=record_id, data_partition_id=ctx.partition_id)
 
 
 @router.get(
-    "/wells/{wellid}/versions",
+    "/wells/{record_id}/versions",
     response_model=RecordVersions,
     summary="Get all versions of the Well",
     description=f"{REQUIRED_ROLES_READ}",
@@ -83,16 +83,16 @@ async def del_osdu_well(wellid: WellId, ctx: Context = Depends(get_ctx)):
         status.HTTP_404_NOT_FOUND: {"description": "Well not found"}
     },
 )
-async def get_osdu_well_versions(wellid: WellId, request: Request, ctx: Context = Depends(get_ctx)) -> RecordVersions:
-    wellid, _ = split_record_id_version(wellid)
-    record = await fetch_record(ctx, wellid)
+async def get_osdu_well_versions(record_id: WellId, request: Request, ctx: Context = Depends(get_ctx)) -> RecordVersions:
+    record_id, _ = split_record_id_version(record_id)
+    record = await fetch_record(ctx, record_id)
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     storage_client = await get_storage_record_service(ctx)
-    return await storage_client.get_all_record_versions(id=wellid, data_partition_id=ctx.partition_id)
+    return await storage_client.get_all_record_versions(id=record_id, data_partition_id=ctx.partition_id)
 
 
 @router.get(
-    "/wells/{wellid}/versions/{version}",
+    "/wells/{record_id}/versions/{version}",
     response_model=Record,
     summary="Get the given version of the Well using OSDU well schema",
     description=f""""Get the Well object using its **id**. {REQUIRED_ROLES_READ}""",
@@ -103,12 +103,12 @@ async def get_osdu_well_versions(wellid: WellId, request: Request, ctx: Context 
     response_model_exclude_unset=True,
 )
 async def get_osdu_well_version(
-    wellid: WellId, version: int, request: Request, ctx: Context = Depends(get_ctx)
+    record_id: WellId, version: int, request: Request, ctx: Context = Depends(get_ctx)
 ) -> Record:
-    wellid, _ = split_record_id_version(wellid)
+    record_id, _ = split_record_id_version(record_id)
     storage_client = await get_storage_record_service(ctx)
     well_record = await storage_client.get_record_version(
-        id=wellid, version=version, data_partition_id=ctx.partition_id
+        id=record_id, version=version, data_partition_id=ctx.partition_id
     )
     DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(well_record, request.state)
     await schema_library.validate_records([well_record], ctx)
