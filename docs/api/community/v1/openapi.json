@@ -65,7 +65,7 @@
         ]
       }
     },
-    "/ddms/v3/wellbores/{wellboreid}": {
+    "/ddms/v3/wellbores/{record_id}": {
       "get": {
         "tags": [
           "Wellbore"
@@ -80,13 +80,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboreid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreid"
+              "title": "Record Id"
             }
           },
           {
@@ -151,13 +151,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboreid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreid"
+              "title": "Record Id"
             }
           },
           {
@@ -202,7 +202,7 @@
         }
       }
     },
-    "/ddms/v3/wellbores/{wellboreid}/versions": {
+    "/ddms/v3/wellbores/{record_id}/versions": {
       "get": {
         "tags": [
           "Wellbore"
@@ -217,13 +217,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboreid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreid"
+              "title": "Record Id"
             }
           },
           {
@@ -275,7 +275,7 @@
         }
       }
     },
-    "/ddms/v3/wellbores/{wellboreid}/versions/{version}": {
+    "/ddms/v3/wellbores/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "Wellbore"
@@ -290,13 +290,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboreid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Wellbore:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreid"
+              "title": "Record Id"
             }
           },
           {
@@ -587,7 +587,7 @@
         }
       }
     },
-    "/ddms/v3/wells/{wellid}": {
+    "/ddms/v3/wells/{record_id}": {
       "get": {
         "tags": [
           "Well"
@@ -602,13 +602,13 @@
         ],
         "parameters": [
           {
-            "name": "wellid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellid"
+              "title": "Record Id"
             }
           },
           {
@@ -673,13 +673,13 @@
         ],
         "parameters": [
           {
-            "name": "wellid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellid"
+              "title": "Record Id"
             }
           },
           {
@@ -724,7 +724,7 @@
         }
       }
     },
-    "/ddms/v3/wells/{wellid}/versions": {
+    "/ddms/v3/wells/{record_id}/versions": {
       "get": {
         "tags": [
           "Well"
@@ -739,13 +739,13 @@
         ],
         "parameters": [
           {
-            "name": "wellid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellid"
+              "title": "Record Id"
             }
           },
           {
@@ -797,7 +797,7 @@
         }
       }
     },
-    "/ddms/v3/wells/{wellid}/versions/{version}": {
+    "/ddms/v3/wells/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "Well"
@@ -812,13 +812,13 @@
         ],
         "parameters": [
           {
-            "name": "wellid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Well:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellid"
+              "title": "Record Id"
             }
           },
           {
@@ -1026,7 +1026,7 @@
         }
       }
     },
-    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}": {
+    "/ddms/v3/wellboremarkersets/{record_id}": {
       "get": {
         "tags": [
           "Marker"
@@ -1041,13 +1041,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboremarkersetid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboremarkersetid"
+              "title": "Record Id"
             }
           },
           {
@@ -1112,13 +1112,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboremarkersetid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboremarkersetid"
+              "title": "Record Id"
             }
           },
           {
@@ -1163,7 +1163,7 @@
         }
       }
     },
-    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}/versions": {
+    "/ddms/v3/wellboremarkersets/{record_id}/versions": {
       "get": {
         "tags": [
           "Marker"
@@ -1178,13 +1178,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboremarkersetid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboremarkersetid"
+              "title": "Record Id"
             }
           },
           {
@@ -1236,7 +1236,7 @@
         }
       }
     },
-    "/ddms/v3/wellboremarkersets/{wellboremarkersetid}/versions/{version}": {
+    "/ddms/v3/wellboremarkersets/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "Marker"
@@ -1251,13 +1251,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboremarkersetid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreMarkerSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboremarkersetid"
+              "title": "Record Id"
             }
           },
           {
@@ -1750,7 +1750,7 @@
         }
       }
     },
-    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}": {
+    "/ddms/v3/wellboreintervalsets/{record_id}": {
       "get": {
         "tags": [
           "Wellbore IntervalSet"
@@ -1765,13 +1765,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboreintervalsetsid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreintervalsetsid"
+              "title": "Record Id"
             }
           },
           {
@@ -1836,13 +1836,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboreintervalsetsid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreintervalsetsid"
+              "title": "Record Id"
             }
           },
           {
@@ -1887,7 +1887,7 @@
         }
       }
     },
-    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}/versions": {
+    "/ddms/v3/wellboreintervalsets/{record_id}/versions": {
       "get": {
         "tags": [
           "Wellbore IntervalSet"
@@ -1902,13 +1902,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboreintervalsetsid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreintervalsetsid"
+              "title": "Record Id"
             }
           },
           {
@@ -1960,7 +1960,7 @@
         }
       }
     },
-    "/ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}/versions/{version}": {
+    "/ddms/v3/wellboreintervalsets/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "Wellbore IntervalSet"
@@ -1975,13 +1975,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboreintervalsetsid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreIntervalSet:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboreintervalsetsid"
+              "title": "Record Id"
             }
           },
           {
@@ -2198,7 +2198,7 @@
         }
       }
     },
-    "/ddms/v3/welllogacquisition/{welllogacquisitionid}": {
+    "/ddms/v3/welllogacquisition/{record_id}": {
       "get": {
         "tags": [
           "WellLog Acquisition"
@@ -2213,13 +2213,13 @@
         ],
         "parameters": [
           {
-            "name": "welllogacquisitionid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogacquisitionid"
+              "title": "Record Id"
             }
           },
           {
@@ -2284,13 +2284,13 @@
         ],
         "parameters": [
           {
-            "name": "welllogacquisitionid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogacquisitionid"
+              "title": "Record Id"
             }
           },
           {
@@ -2335,7 +2335,7 @@
         }
       }
     },
-    "/ddms/v3/welllogacquisition/{welllogacquisitionid}/versions": {
+    "/ddms/v3/welllogacquisition/{record_id}/versions": {
       "get": {
         "tags": [
           "WellLog Acquisition"
@@ -2350,13 +2350,13 @@
         ],
         "parameters": [
           {
-            "name": "welllogacquisitionid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogacquisitionid"
+              "title": "Record Id"
             }
           },
           {
@@ -2408,7 +2408,7 @@
         }
       }
     },
-    "/ddms/v3/welllogacquisition/{welllogacquisitionid}/versions/{version}": {
+    "/ddms/v3/welllogacquisition/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "WellLog Acquisition"
@@ -2423,13 +2423,13 @@
         ],
         "parameters": [
           {
-            "name": "welllogacquisitionid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:master-data\\-\\-WellLogAcquisition:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogacquisitionid"
+              "title": "Record Id"
             }
           },
           {
@@ -2942,7 +2942,7 @@
         }
       }
     },
-    "/ddms/v3/welllogs/{welllogid}": {
+    "/ddms/v3/welllogs/{record_id}": {
       "get": {
         "tags": [
           "WellLog"
@@ -2957,13 +2957,13 @@
         ],
         "parameters": [
           {
-            "name": "welllogid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogid"
+              "title": "Record Id"
             }
           },
           {
@@ -3028,13 +3028,13 @@
         ],
         "parameters": [
           {
-            "name": "welllogid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogid"
+              "title": "Record Id"
             }
           },
           {
@@ -3089,7 +3089,7 @@
         }
       }
     },
-    "/ddms/v3/welllogs/{welllogid}/versions": {
+    "/ddms/v3/welllogs/{record_id}/versions": {
       "get": {
         "tags": [
           "WellLog"
@@ -3104,13 +3104,13 @@
         ],
         "parameters": [
           {
-            "name": "welllogid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogid"
+              "title": "Record Id"
             }
           },
           {
@@ -3162,7 +3162,7 @@
         }
       }
     },
-    "/ddms/v3/welllogs/{welllogid}/versions/{version}": {
+    "/ddms/v3/welllogs/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "WellLog"
@@ -3177,13 +3177,13 @@
         ],
         "parameters": [
           {
-            "name": "welllogid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellLog:[\\w\\-\\.\\:\\%]+$",
-              "title": "Welllogid"
+              "title": "Record Id"
             }
           },
           {
@@ -3409,7 +3409,7 @@
         }
       }
     },
-    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}": {
+    "/ddms/v3/wellboretrajectories/{record_id}": {
       "get": {
         "tags": [
           "Trajectory v3"
@@ -3424,13 +3424,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboretrajectoryid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboretrajectoryid"
+              "title": "Record Id"
             }
           },
           {
@@ -3495,13 +3495,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboretrajectoryid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboretrajectoryid"
+              "title": "Record Id"
             }
           },
           {
@@ -3556,7 +3556,7 @@
         }
       }
     },
-    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}/versions": {
+    "/ddms/v3/wellboretrajectories/{record_id}/versions": {
       "get": {
         "tags": [
           "Trajectory v3"
@@ -3571,13 +3571,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboretrajectoryid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboretrajectoryid"
+              "title": "Record Id"
             }
           },
           {
@@ -3629,7 +3629,7 @@
         }
       }
     },
-    "/ddms/v3/wellboretrajectories/{wellboretrajectoryid}/versions/{version}": {
+    "/ddms/v3/wellboretrajectories/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "Trajectory v3"
@@ -3644,13 +3644,13 @@
         ],
         "parameters": [
           {
-            "name": "wellboretrajectoryid",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "pattern": "^[\\w\\-\\.]+:work-product-component\\-\\-WellboreTrajectory:[\\w\\-\\.\\:\\%]+$",
-              "title": "Wellboretrajectoryid"
+              "title": "Record Id"
             }
           },
           {
@@ -9481,7 +9481,7 @@
         }
       }
     },
-    "/ddms/v3/ppfgdataset/{osdu_record_id}": {
+    "/ddms/v3/ppfgdataset/{record_id}": {
       "get": {
         "tags": [
           "PPFGDataset v3"
@@ -9495,12 +9495,12 @@
         ],
         "parameters": [
           {
-            "name": "osdu_record_id",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Osdu Record Id"
+              "title": "Record Id"
             }
           },
           {
@@ -9564,12 +9564,12 @@
         ],
         "parameters": [
           {
-            "name": "osdu_record_id",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Osdu Record Id"
+              "title": "Record Id"
             }
           },
           {
@@ -9624,7 +9624,7 @@
         }
       }
     },
-    "/ddms/v3/ppfgdataset/{osdu_record_id}/versions": {
+    "/ddms/v3/ppfgdataset/{record_id}/versions": {
       "get": {
         "tags": [
           "PPFGDataset v3"
@@ -9638,12 +9638,12 @@
         ],
         "parameters": [
           {
-            "name": "osdu_record_id",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Osdu Record Id"
+              "title": "Record Id"
             }
           },
           {
@@ -9695,7 +9695,7 @@
         }
       }
     },
-    "/ddms/v3/ppfgdataset/{osdu_record_id}/versions/{version}": {
+    "/ddms/v3/ppfgdataset/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "PPFGDataset v3"
@@ -9720,12 +9720,12 @@
             }
           },
           {
-            "name": "osdu_record_id",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Osdu Record Id"
+              "title": "Record Id"
             }
           },
           {
@@ -9854,13 +9854,13 @@
         }
       }
     },
-    "/ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}": {
+    "/ddms/v3/wellpressuretestrawmeasurement/{record_id}": {
       "get": {
         "tags": [
           "WellPressureTestRawMeasurement v3"
         ],
         "summary": "Get the record using the provided recordID",
-        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id_",
+        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__record_id_",
         "security": [
           {
             "HTTPBearer": []
@@ -9868,12 +9868,12 @@
         ],
         "parameters": [
           {
-            "name": "osdu_record_id",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Osdu Record Id"
+              "title": "Record Id"
             }
           },
           {
@@ -9929,7 +9929,7 @@
           "WellPressureTestRawMeasurement v3"
         ],
         "summary": "Delete the record using id. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds",
-        "operationId": "delete__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id_",
+        "operationId": "delete__ddms_v3_wellpressuretestrawmeasurement__record_id_",
         "security": [
           {
             "HTTPBearer": []
@@ -9937,12 +9937,12 @@
         ],
         "parameters": [
           {
-            "name": "osdu_record_id",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Osdu Record Id"
+              "title": "Record Id"
             }
           },
           {
@@ -9997,13 +9997,13 @@
         }
       }
     },
-    "/ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}/versions": {
+    "/ddms/v3/wellpressuretestrawmeasurement/{record_id}/versions": {
       "get": {
         "tags": [
           "WellPressureTestRawMeasurement v3"
         ],
         "summary": "Get all versions of the provided record",
-        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id__versions",
+        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__record_id__versions",
         "security": [
           {
             "HTTPBearer": []
@@ -10011,12 +10011,12 @@
         ],
         "parameters": [
           {
-            "name": "osdu_record_id",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Osdu Record Id"
+              "title": "Record Id"
             }
           },
           {
@@ -10068,14 +10068,14 @@
         }
       }
     },
-    "/ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}/versions/{version}": {
+    "/ddms/v3/wellpressuretestrawmeasurement/{record_id}/versions/{version}": {
       "get": {
         "tags": [
           "WellPressureTestRawMeasurement v3"
         ],
         "summary": "Get specific version for the provided OSDU record",
         "description": "Get the specific version of object using its **id**.",
-        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id__versions__version_",
+        "operationId": "get__ddms_v3_wellpressuretestrawmeasurement__record_id__versions__version_",
         "security": [
           {
             "HTTPBearer": []
@@ -10093,12 +10093,12 @@
             }
           },
           {
-            "name": "osdu_record_id",
+            "name": "record_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Osdu Record Id"
+              "title": "Record Id"
             }
           },
           {
