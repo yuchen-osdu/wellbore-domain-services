@@ -14,8 +14,10 @@
 # limitations under the License.
 include:
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "cloud-providers/aws-global-variables.yml"
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "cloud-providers/aws-global.yml"
 
 aws-containerize:

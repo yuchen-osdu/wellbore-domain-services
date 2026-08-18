@@ -41,32 +41,40 @@ variables:
 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "standard-setup.yml"
 
     # for compile-and-unit-test
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "build/python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "scanners/fossa-python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "scanners/gitlab-ultimate.yml"
 
   # Opt-in SBOM-based Python dependency scanning (reads uv.lock directly).
   # Replaces the deprecated gemnasium-python analyzer, which cannot install
   # numpy>=2.5 (requires Python >=3.12, gemnasium runs Python <=3.11).
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "scanners/sbom-python.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "cloud-providers/gc-global.yml"
   
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "cloud-providers/cimpl-global.yml"  
 
   # IBM it tests "ibm-test"
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "cloud-providers/aws-global.yml"
 
   # AWS overrides
@@ -80,6 +88,7 @@ include:
   - local: "devops/core-plus/pipeline/override-stages.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: release/0.30
     file: "reporting/reporting.yml"
 
 #Override Python Image defined in python.yml
