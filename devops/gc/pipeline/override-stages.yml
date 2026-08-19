@@ -1,0 +1,46 @@
+variables:
+  GC_SERVICE: wellbore
+  GC_VENDOR: gc
+  GC_INT_TEST_TYPE: python
+  GC_PYTHON_INT_TEST_SUBDIR: tests/gc
+  GC_SUPPORTED_PLATFORM: "linux/amd64"
+
+gc-containerize-gitlab:
+  variables:
+    BUILD_PATH: "./build/Dockerfile"
+    BUILD_ARGS: >
+      --build-arg PIP_WHEEL_DIR=python-packages
+      --build-arg build_date="$CI_JOB_STARTED_AT"
+      --build-arg build_number=$CI_COMMIT_SHORT_SHA
+      --build-arg commit_id=$CI_COMMIT_SHORT_SHA
+      --build-arg build_origin="Gitlab"
+      --build-arg commit_branch=$CI_COMMIT_BRANCH
+
+gc-containerize-gcr:
+  variables:
+    BUILD_PATH: "./build/Dockerfile"
+    BUILD_ARGS: >
+      --build-arg PIP_WHEEL_DIR=python-packages
+      --build-arg build_date="$CI_JOB_STARTED_AT"
+      --build-arg build_number=$CI_COMMIT_SHORT_SHA
+      --build-arg commit_id=$CI_COMMIT_SHORT_SHA
+      --build-arg build_origin="Gitlab"
+      --build-arg commit_branch=$CI_COMMIT_BRANCH
+
+gc-acceptance-test-python:
+  script:
+    - curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz
+    - tar -xf google-cloud-cli-linux-x86_64.tar.gz
+    - ./google-cloud-sdk/install.sh -q
+    - source $(pwd)/google-cloud-sdk/path.bash.inc
+    - gcloud auth login --cred-file=$GC_INTEGRATION_TESTER_SA_FILE
+    - export PRIVILEGED_USER_TOKEN=$(gcloud auth print-identity-token)
+    - gcloud auth login --cred-file=$GC_R3_ADMIN_TESTER_FILE
+    - export DE_ADMIN_USER_TOKEN=$(gcloud auth print-identity-token)
+    - gcloud auth login --cred-file=$GC_R3_EDITOR_TESTER_FILE
+    - export DE_EDITOR_USER_TOKEN=$(gcloud auth print-identity-token)
+    - gcloud auth login --cred-file=$GC_R3_OPS_TESTER_FILE
+    - export DE_OPS_USER_TOKEN=$(gcloud auth print-identity-token)
+    - cd $GC_PYTHON_INT_TEST_SUBDIR
+    - chmod +x ./run-integration-tests.sh
+    - ./run-integration-tests.sh

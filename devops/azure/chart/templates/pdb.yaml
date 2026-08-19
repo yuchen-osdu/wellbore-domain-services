@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+   name: {{ .Values.deployment.name }}{{ include "os-wellbore-ddms.name-suffix" . }}-pdb
+{{ include "os-wellbore-ddms.namespace" . | indent 3 }}
+spec:
+   minAvailable: 1
+   selector:
+    matchLabels:
+      app: {{ .Values.deployment.name }}{{ include "os-wellbore-ddms.name-suffix" . }}

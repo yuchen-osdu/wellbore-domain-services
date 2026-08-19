@@ -1,0 +1,67 @@
+variables:
+  ACCEPTANCE_TEST_DIR: tests/baremetal
+  CIMPL_SERVICE: wellbore
+  # WDMS (FastAPI) is served under root_path /api/os-wellbore-ddms, which differs
+  # from CIMPL_SERVICE (wellbore). Override the spec URL so cimpl-check-openapi-spec
+  # fetches the correct path instead of the default /api/${CIMPL_SERVICE}/openapi.json.
+  CIMPL_OPENAPI_YAML_ROUTE: /api/os-wellbore-ddms/openapi.json
+  CIMPL_INT_TEST_TYPE: python
+  CIMPL_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
+  CIMPL_SUPPORTED_PLATFORM: "linux/amd64"
+  DISABLE_INTEGRATION_TEST: true
+
+cimpl-containerize-gitlab:
+  needs:
+    - "compile-and-unit-test"
+  variables:
+    CIMPL_BUILD_PATH: "./build/Dockerfile"
+    CIMPL_BUILD_ARGS: >
+      --build-arg PIP_WHEEL_DIR=python-packages
+      --build-arg build_date="$CI_JOB_STARTED_AT"
+      --build-arg build_number=$CI_COMMIT_SHORT_SHA
+      --build-arg commit_id=$CI_COMMIT_SHORT_SHA
+      --build-arg build_origin="Gitlab"
+      --build-arg commit_branch=$CI_COMMIT_BRANCH
+
+cimpl-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+#dev2 jobs
+
+cimpl-dev2-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+
+# osdu-main jobs
+
+cimpl-dev-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+
+cimpl-dev-backup-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'

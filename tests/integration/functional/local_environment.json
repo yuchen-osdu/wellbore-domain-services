@@ -1,0 +1,34 @@
+{
+  "description": "This is just a convenient file to ease to run the integration/functional tests locally. Empty value will be ignored",
+  "name": "wdms integration/functional local environment",
+  "values": [
+    {
+      "enabled": true,
+      "key": "token", "value": "R4nd0m_T0k3n_5Tr1nG"
+    },
+    {
+      "enabled": true,
+      "key": "cloud_provider", "value": "local"
+    },
+    {
+      "enabled": true,
+      "key": "base_url", "value": "http://localhost:8080/api/os-wellbore-ddms"
+    },
+    {
+      "enabled": true,
+      "key": "data_partition", "value": "local-partition"
+    },
+    {
+      "enabled": false,
+      "key": "acl_domain", "value": "domain.ext"
+    },
+    {
+      "enabled": false,
+      "key": "legal_tag", "value": "local-partition-legal"
+    },
+    {
+      "enabled": true,
+      "key": "authorityKind", "value": "osdu"
+    }
+  ]
+}

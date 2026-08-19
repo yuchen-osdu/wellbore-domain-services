@@ -1,0 +1,43 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from app.bulk_persistence import MimeTypes
+import pytest
+
+
+def test_list_all_types():
+    assert len(list(MimeTypes.types())) > 0
+
+
+@pytest.mark.parametrize(
+    "value,expected", [
+        ('application/x-parquet', MimeTypes.PARQUET),
+        ('APPLICATION/X-PARQUET', MimeTypes.PARQUET),
+        ('application/parquet', MimeTypes.PARQUET),
+        ('APPLICATION/PARQUET', MimeTypes.PARQUET),
+        ('parquet', MimeTypes.PARQUET),
+        ('.parquet', MimeTypes.PARQUET),
+        ('PARQUET', MimeTypes.PARQUET),
+        ('application/json', MimeTypes.JSON),
+        ('application/messagepack', MimeTypes.MSGPACK)
+    ])
+def test_mime_from_valid_string(value, expected):
+    assert MimeTypes.from_str(value) == expected
+
+
+def test_mime_from_invalid_string():
+    with pytest.raises(ValueError) as e:
+        MimeTypes.from_str('unknown_type')
+    assert 'unknown_type' in str(e.value)
+

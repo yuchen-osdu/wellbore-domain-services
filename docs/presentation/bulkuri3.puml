@@ -1,0 +1,18 @@
+@startuml
+  autonumber
+  actor Client as C
+  participant "WDMS API\n(WellLog bulk routes)" as API
+  participant "Storage Service" as SR
+  participant "BulkIO" as BIO
+  participant "WellLog Record" as REC
+
+  group Read path (both flows)
+  C -> API: GET /welllogs/{id}/data
+  API -> SR: fetch record {id}
+  SR --> API: record with bulkURI
+  API -> BIO: read_data(bulk_id from bulkURI)
+  BIO --> API: bulk payload
+  API --> C: 200 OK
+  end
+
+@enduml

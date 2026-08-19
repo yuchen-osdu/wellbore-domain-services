@@ -1,0 +1,89 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+parameters:
+# The following parameter allows injecting additional templates to perform post build tasks
+# such as pushing the generated docker manifest to some central shared container repositories.
+# E.g.:
+# postBuildTemplates
+# - template: <template-1 full name>.yaml
+#   parameters:
+#     <parameter name>: <parameter value>
+#     <parameter name>: <parameter value>
+#     ...
+# - template: <template-2 full name>.yaml
+#   parameters:
+#     <parameter name>: <parameter value>
+#     <parameter name>: <parameter value>
+#     ...
+  - name: postBuildTemplates
+    type: object
+    default: []
+
+
+steps:
+- template: steps-define-variables.yaml
+
+- task: Bash@3
+  displayName: 'set version info'
+  inputs:
+    targetType: 'inline'
+    script: |
+      build_number=$(Build.BuildNumber)
+      patch_number=${build_number:0:8}
+      python ./build/set_version.py build_number=$build_number patch_number=$patch_number
+
+- task: Bash@3
+  displayName: 'prepare artifacts'
+  inputs:
+    targetType: 'inline'
+    script: |
+      echo ----- GET IMAGE TAG ------------=
+      echo $(tag_name)
+
+      echo ----- PUBLISH ARTIFACTS ------------
+      echo $(tag_name)> $(Build.ArtifactStagingDirectory)/image_tag.txt
+      directories_to_copy=(deploy scripts tests)
+      for directory_to_copy in  ${directories_to_copy[@]}; do
+        echo copying $directory_to_copy/
+        mkdir $(Build.ArtifactStagingDirectory)/$directory_to_copy
+        cp -R $directory_to_copy/* $(Build.ArtifactStagingDirectory)/$directory_to_copy/
+      done
+
+- task: Bash@3
+  displayName: 'build $(app) image'
+  inputs:
+    targetType: 'inline'
+    script: |
+      current_utc_date=`date --utc`
+      echo $current_utc_date
+
+      echo ----- BUILD IMAGE ------------
+      docker build -t=$(app):$(tag_name) \
+                   -t=$(app):latest \
+                   --rm . -f ./build/Dockerfile \
+                   --build-arg PIP_WHEEL_DIR=python-packages \
+                   --build-arg build_date="$current_utc_date" \
+                   --build-arg build_number="$(Build.BuildNumber)" \
+                   --build-arg commit_id=$(commit_id) \
+                   --build-arg build_origin="AzureDevops build/$(Build.DefinitionName)" \
+                   --build-arg commit_branch=$(Build.SourceBranch)
+
+
+- ${{ each postBuildTemplate in parameters.postBuildTemplates }}:
+  - template: ${{ postBuildTemplate.template }}
+    parameters:
+      ${{ each parameter in postBuildTemplate.parameters }}:
+        ${{ parameter.key }}: ${{ parameter.value }}
+

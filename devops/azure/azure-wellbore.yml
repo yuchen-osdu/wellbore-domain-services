@@ -1,0 +1,143 @@
+# EXPECTED PIPELINE INHERITED GROUP VARIABLES
+# --------------------------------------------------------------------------------
+# AZURE                     (Protected Branch)
+# AZURE_APP_ID              (Protected Branch)
+# AZURE_APP_ID_OTHER        (Protected Branch)
+# AZURE_APP_OID_OTHER       (Protected Branch)
+# AZURE_BASE                (Protected Branch)
+# AZURE_BASENAME_21         (Protected Branch)
+# AZURE_DNS_NAME            (Protected Branch)
+# AZURE_ELASTIC_HOST        (Protected Branch)
+# AZURE_ELASTIC_PASSWORD    (Protected Branch/Masked Variable)
+# AZURE_INVALID_JWT         (Protected Branch)
+# AZURE_NO_ACCESS_ID        (Protected Branch)
+# AZURE_NO_ACCESS_SECRET    (Protected Branch/Masked Variable)
+# AZURE_PRINCIPAL_ID        (Protected Branch)
+# AZURE_PRINCIPAL_SECRET    (Protected Branch/Masked Variable)
+# AZURE_REGISTRY            (Protected Branch)
+# AZURE_SERVICEBUS_KEY      (Protected Branch/Masked Variable)
+# AZURE_STORAGE_KEY         (Protected Branch/Masked Variable)
+# AZURE_SUBSCRIPTION_ID     (Protected Branch)
+# AZURE_SUBSCRIPTION_NAME   (Protected Branch)
+# AZURE_TENANT_ID           (Protected Branch)
+
+# EXPECTED PIPELINE VARIABLES
+# --------------------------------------------------------------------------------
+# AZURE_TEST_SUBDIR
+
+## azure variables
+
+.maven:
+  variables:
+
+.azure_variables:
+  variables:
+    ELASTIC_PORT: 9243
+    WELLBORE_URL: https://${AZURE_DNS_NAME}/api/os-wellbore-ddms
+    AZURE_TEST_TYPE: python
+    CLOUD_PROVIDER: az
+
+include:
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/azure.yml"
+
+# JOBS
+# --------------------------------------------------------------------------------
+
+azure_containerize:
+  tags: ["osdu-medium"]
+  image: danielscholl/azure-build-image
+  stage: containerize
+  needs: ["compile-and-unit-test"]
+  variables:
+    SHA_IMAGE: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - az --version
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+  script:
+    - echo "Azure Deployment for Wellbore DMS"
+    # Dockerfile used from AZURE_DOCKER_SUBDIR
+    - echo "Startup docker build is $AZURE_DOCKER_SUBDIR"
+    - docker build -f $AZURE_DOCKER_SUBDIR -t $CI_REGISTRY_IMAGE/$SHA_IMAGE .
+    # Gitlab Container Registry
+    - docker push ${CI_REGISTRY_IMAGE}/$SHA_IMAGE
+    - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE $CI_REGISTRY_IMAGE/$LATEST_IMAGE
+    - docker push ${CI_REGISTRY_IMAGE}/$LATEST_IMAGE
+
+    # Azure Container Registry
+    - az acr login -n $AZURE_REGISTRY
+    - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker push ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+    - docker push ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+  only:
+    variables:
+      - $AZURE == '1'
+
+azure_containerize_helm:
+  variables:
+    AZURE_HELM_SUBDIR: osdu-ddms/standard-ddms
+
+# Following instructions in standard-ddms docs: https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure/-/blob/master/osdu-ddms/standard-ddms/README.md
+azure_deploy:
+  script:
+    # Install Service
+    - helm show chart $HELM_CHART_OCI --version $HELM_CHART_OCI_VERSION
+    - ENV_VAULT=$(kubectl get cm -n osdu osdu-svc-config -o jsonpath={.data.ENV_KEYVAULT} | sed -e 's/https:\/\///;s/.vault.azure.*//')
+    - >-
+      helm upgrade -i osdu-gitlab-$CI_PROJECT_NAME $HELM_CHART_OCI --version $HELM_CHART_OCI_VERSION -n osdu --wait --timeout 5m
+      -f devops/azure/wellbore.values.yaml
+      --set azure.tenant=$AZURE_TENANT_ID
+      --set azure.subscription=$AZURE_SUBSCRIPTION_ID
+      --set azure.resourcegroup=$(az keyvault secret show --id https://${ENV_VAULT}.vault.azure.net/secrets/base-name-cr --query value -otsv)-rg
+      --set azure.identity=$(az keyvault secret show --id https://${ENV_VAULT}.vault.azure.net/secrets/base-name-cr --query value -otsv)-osdu-identity
+      --set azure.identity_id=$(az keyvault secret show --id https://${ENV_VAULT}.vault.azure.net/secrets/osdu-identity-id --query value -otsv)
+      --set azure.keyvault.name=$ENV_VAULT
+      --set azure.acr=${AZURE_REGISTRY}.azurecr.io
+      --set configuration[0].container.image=${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
+      --set configuration[0].container.tag=${CI_COMMIT_SHA}
+      --set ingress.dns=$AZURE_DNS_NAME
+    - POD_SERVICE_NAME=wellbore-ddms
+    - pod=$(kubectl get pod -n osdu|grep $POD_SERVICE_NAME |tail -1 |awk '{print $1}') || echo "[WARN] Not able to get pod but helm upgrade was successful"
+    - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=300s)
+    - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
+    - |
+      echo "AZURE_REGISTRY_TOKEN=$(az acr login -n $AZURE_REGISTRY --expose-token --query 'accessToken' -otsv)" >> ${CI_PROJECT_DIR}/acr_tokens.env
+      echo "DST_REGISTRY_TOKEN=$(az acr login -n msosdu --expose-token --query 'accessToken' -otsv)" >> ${CI_PROJECT_DIR}/acr_tokens.env
+  artifacts:
+    reports:
+      dotenv: ${CI_PROJECT_DIR}/acr_tokens.env
+
+azure_swagger_test:
+  variables:
+    AZURE_SWAGGER_PATH: api/os-wellbore-ddms/docs
+
+azure_test_py:
+  image: python:3.13-slim
+  tags: ["osdu-small"]
+  stage: integration
+  needs: ["azure_deploy"]
+  allow_failure: false
+  extends:
+    - .azure_variables
+  script:
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install wheel
+    - pip install setuptools==70.0.0
+    - pip install -r requirements.txt
+    - pip install -r requirements_dev.txt
+    - svctoken=$(python devops/scripts/azure_jwt_client.py)
+    - cd $AZURE_TEST_SUBDIR
+    - python ./gen_postman_env.py --token ${svctoken} --base_url ${WELLBORE_URL} --cloud_provider ${CLOUD_PROVIDER} --acl_domain ${DOMAIN} --legal_tag ${LEGAL_TAG} --data_partition ${DATA_PARTITION_ID}
+    - pytest ./functional --environment="./generated/postman_environment.json" --insecure --timeout-request=15000 --filter-tag=!search -p no:randomly
+  only:
+    variables:
+      - $AZURE == '1' && $AZURE_SKIP_DEPLOY != 'true' && $AZURE_TEST_TYPE == 'python'
+  except:
+    variables:
+      - $AZURE_SKIP_TEST == 'true'

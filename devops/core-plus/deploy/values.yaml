@@ -1,0 +1,30 @@
+global:
+  domain: ""
+  limitsEnabled: true
+  dataPartitionId: "osdu"
+  wdms_workers:
+    enabled: true # Disable WDMS worker deployment for e2e tests for stability reason
+
+data:
+  logLevel: "INFO"
+  requestsCpu: "370m"
+  requestsMemory: "710Mi"
+  limitsCpu: "1"
+  limitsMemory: "3G"
+  image: ""
+  imagePullPolicy: "IfNotPresent"
+  serviceAccountName: "wellbore"
+  WDMSWorkerHost: "http://wellbore-worker"
+
+conf:
+  configmap: "wellbore-config"
+  appName: "wellbore"
+  keycloakSecretName: "wellbore-keycloak-secret"
+  s3SecretName: "wellbore-seaweedfs-secret"
+  replicas: 1
+
+istio:
+  proxyCPU: "5m"
+  proxyCPULimit: "200m"
+  proxyMemory: "50Mi"
+  proxyMemoryLimit: "256Mi"
