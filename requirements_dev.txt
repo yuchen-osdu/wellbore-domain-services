@@ -362,7 +362,7 @@ osdu-core-lib-python==0.29.0
     #   wellbore-domain-services
 osdu-core-lib-python-aws==0.29.0
     # via wellbore-domain-services
-osdu-core-lib-python-azure==0.29.0
+osdu-core-lib-python-azure==0.29.3
     # via wellbore-domain-services
 osdu-core-lib-python-baremetal==0.29.0
     # via wellbore-domain-services

@@ -34,5 +34,4 @@ def test_version_info():
 
 
 def test_python_version():
-    # check python version >=3.11
-    assert version_info.major == 3 and version_info.minor >= 11, 'Python version required >=3.11'
+    assert version_info >= (3, 12), 'Python version required >=3.12'

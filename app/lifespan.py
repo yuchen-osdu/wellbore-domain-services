@@ -22,8 +22,8 @@ def startup_event():
     service_name = Config.service_name.value
     logger.init_logger(service_name=service_name, config=Config)
 
-    # check python version >=3.13
-    assert sys.version_info.major == 3 and sys.version_info.minor >= 13, 'Python version required >=3.13'
+    # Keep the runtime assertion aligned with pyproject.toml and the SPI image.
+    assert sys.version_info >= (3, 12), 'Python version required >=3.12'
 
     check_environment(Config)
     MainInjector().configure(app_injector)

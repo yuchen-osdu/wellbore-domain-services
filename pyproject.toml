@@ -50,7 +50,8 @@ dependencies = [
     "osdu-data-ecosystem-search==0.29.0",
     "osdu-core-lib-python-ibm==0.29.0",
     "osdu-core-lib-python-gcp==0.29.0",
-    "osdu-core-lib-python-azure==0.29.0",
+    # 0.29.0 passes a raw resource to DefaultAzureCredential; 0.29.4 regresses it.
+    "osdu-core-lib-python-azure==0.29.3",
     "osdu-core-lib-python-aws==0.29.0",
     "osdu-core-lib-python-baremetal==0.29.0",
     "osdu-core-lib-python==0.29.0",
@@ -88,7 +89,8 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["app"]
+where = ["."]
+include = ["app*", "wdms_client*"]
 
 [tool.uv]
 # Match pip's `--extra-index-url` merge behaviour: consider every configured
