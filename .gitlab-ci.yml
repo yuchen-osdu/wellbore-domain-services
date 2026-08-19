@@ -39,9 +39,6 @@ variables:
   # ignore model_curated_test.py workaround because ci/cd hang-out when test are long.
   PYTEST_OPTIONS: "--ignore=tests/unit/model/model_curated_test.py --durations=25 --strict-markers"
 
-  CIMPL_STACK: "1"
-  DEV: "1"
-  DEV_BACKUP: "1"
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
