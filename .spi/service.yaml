@@ -1,0 +1,26 @@
+# Service descriptor owned by this fork. Template sync never overwrites .spi/**.
+
+schemaVersion: 1
+
+service:
+  name: wellbore-domain-services
+  archetype: python-uv-fastapi
+
+build:
+  python:
+    packageManager: uv
+    lockfile: uv.lock
+    runtimeVersion: "3.12"
+    compatibilityVersions: ["3.13"]
+    distribution: wellbore-domain-services
+    importPackage: app
+    testExtras: [dev]
+
+tests:
+  unit:
+    type: pytest
+    path: tests/unit
+    coverage: true
+
+container:
+  appModule: app.wdms_app:wdms_app
