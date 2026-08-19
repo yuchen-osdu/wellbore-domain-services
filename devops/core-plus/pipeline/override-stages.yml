@@ -65,13 +65,3 @@ cimpl-dev-backup-acceptance-test-python:
     paths:
       - test-results.log
       - '**/allure-results/'
-
-cimpl-prod-acceptance-test-python:
-  image: python:3.13
-  variables:
-    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
-  artifacts:
-    when: always
-    paths:
-      - test-results.log
-      - '**/allure-results/'
