@@ -4,17 +4,5 @@
 # reviewed by the engineering system rather than by service maintainers alone.
 # Template-sync never overwrites `.spi/**` or this file.
 #
-# TODO(spi): choose a GitHub team/user that has access to this repository
-# (for example "@my-org/engineering-system"), run:
-#
-# python3 .github/scripts/service-config/generate_codeowners.py \
-#   --path CODEOWNERS --owners "@my-org/engineering-system"
-#
-# Commit CODEOWNERS and set SPI_ENGINEERING_OWNERS to the same value for future
-# initialization. Settings Apply is read-only and only reports this condition.
-#
-# The rule stays commented out until a valid owner is configured: an unknown owner
-# makes the ruleset's require_code_owner_review silently ineffective.
-#
-# /.spi/ @<org>/<engineering-system-team>
+/.spi/ @yuchen-wang99
 # END spi-service-descriptor
