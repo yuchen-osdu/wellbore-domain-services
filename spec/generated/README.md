@@ -1,0 +1,1 @@
+This contains the automatically generated and fully exhaustive list of APIs. Some of these may be deprecated, in alpha stage, or experimental. You can find the recommended version [here](../../docs/api/openapi.json)

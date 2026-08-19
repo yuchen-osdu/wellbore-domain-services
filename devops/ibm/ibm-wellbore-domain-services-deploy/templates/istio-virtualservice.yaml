@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ .Values.conf.appName }}-vs
+spec:
+  gateways:
+  - osdu-gateway
+  hosts:
+    {{- if .Values.conf.domain }}
+    - {{ printf "osdu.%s" .Values.conf.domain | quote }}
+    {{- else if .Values.conf.loadbalancerIP}}
+    - {{ (index (lookup "v1" "Service" "istio-ingress" "istio-ingress").status.loadBalancer.ingress 0).ip }}
+    {{- else if .Values.conf.loadbalancerHN}}
+    - {{ (index (lookup "v1" "Service" "istio-ingress" "istio-ingress").status.loadBalancer.ingress 0).hostname }}
+    {{- else }}
+    - "*"
+    {{- end }}
+  http:
+  - match:
+    - uri:
+        prefix: /api/os-wellbore-ddms/
+    route:
+    - destination:
+        host: {{ .Release.Name }}-ibm-wellbore-domain-services-deploy
+        port:
+          number: 8080

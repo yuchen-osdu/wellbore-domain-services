@@ -1,0 +1,70 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+parameters:
+# The following parameter allows injecting additional templates to perform post build tasks
+# such as pushing the generated docker manifest to some central shared container repositories.
+  - name: postBuildTemplates
+    type: object
+    default: []
+
+
+stages:
+  - stage: build
+    jobs:
+      - job: unit_test_version3_10
+        steps:
+          - template: steps-unit-tests.yaml
+            parameters:
+              allow_to_fail: true
+              python_version: '3.10'
+              include_coverage: false
+      - job: unit_test_version3_11
+        steps:
+          - template: steps-unit-tests.yaml
+            parameters:
+              allow_to_fail: true
+              python_version: '3.11'
+              include_coverage: false
+      - job: build
+        dependsOn:
+        - unit_test_version3_10
+        - unit_test_version3_11
+        steps:
+          - template: steps-build.yaml
+            parameters:
+              postBuildTemplates: ${{ parameters.postBuildTemplates }}
+      - job: setupVariables
+        steps:
+          - task: Bash@3
+            displayName: 'setup basePath'
+            name: 'setupBasePath'
+            env:
+              build_reason: $(Build.Reason)
+              pull_request_id: $(System.PullRequest.PullRequestId)
+            inputs:
+              targetType: 'inline'
+              script: |
+                set -e
+
+                echo "build_reason: $build_reason"
+                echo "pull_request_id: $pull_request_id"
+
+                basePath=/api/os-wellbore-ddms
+                if [ "${build_reason}" == "PullRequest" ]; then
+                  echo "Pull Request. Changing BasePath"
+                  basePath=$basePath---pr${pull_request_id}
+                fi
+                echo "setting: basePath=$basePath"
+                echo "##vso[task.setvariable variable=basePath;isOutput=true]${basePath}"

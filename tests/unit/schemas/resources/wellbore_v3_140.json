@@ -1,0 +1,3570 @@
+[
+  {
+  "kind": "osdu:wks:master-data--Wellbore:1.4.0",
+  "acl": {
+    "owners": [
+      "2P5C+i72T*.u6vZNYl-YE.DTrp.nAd7lG4z2l.TDmQ*y.02FpMqy82U@MDHVuhmy1sJ.uJ2usvzZ5o7.rZ.sb.YeF2eLXmPlQ.-W.TXWtt.Q.bRQQv1.c2B6xDG.ag3U.oR",
+      "Zt3.WjApI.Ifb_Y.f0.Gy1YMTyI.6UM89L.VX9cV.FL4*GeO*KB@poEzOdPvo.E41vrDpLToJ.j1I20alHK.FxWCpWn3c5Q.yaY9h.cwVAt.yVOsBui.wKCzAB.7CBl.xgX.xzf6Gy45qe.in"
+    ],
+    "viewers": [
+      "HgEya9K.P2@NRF0-CO.pK8L0WA1Q.CMTQ.kZmL.PXVxvUYxtt.YAVCwN6NC.8MR6QsLxgn.7AnS.Tf5IG7wMY.kBxNKAN3.Cax",
+      "ltVUWrY4o.c9.UvZf0asW.N1iaCk9wlKP.4dcuXV++.YX.MBnFH.h.bdlQ0ulRtz.3kxdPJ.9e@tvxE6.lQjXY.1Uhz.0u8AzoAzt.ojrQtywRC9.3rD8OEJdsG.iEANZRq"
+    ]
+  },
+  "legal": {
+    "legaltags": [
+      "consequat incididunt commodo anim quis",
+      "deserunt do Ut"
+    ],
+    "otherRelevantDataCountries": [
+      "ZI",
+      "SP",
+      "OM"
+    ],
+    "status": "compliant"
+  },
+  "modifyUser": "dolore minim cupidatat in",
+  "version": 13164311,
+  "id": "DYo92vzUI:master-data--Wellbore:HncxTgzoDU",
+  "tags": {
+    "laborum_7": "in fugiat ut",
+    "esse_dc": "reprehenderit nulla pariatur est deserunt",
+    "veniam5d": "quis"
+  },
+  "meta": [
+    {
+      "kind": "DateTime",
+      "persistableReference": "Ut",
+      "propertyNames": [
+        "et",
+        "tempor laboris nostrud exercitation",
+        "culpa",
+        "amet"
+      ],
+      "name": "do minim"
+    },
+    {
+      "kind": "CRS",
+      "persistableReference": "sunt commodo cillum labore ex",
+      "name": "ea voluptate in aliquip",
+      "propertyNames": [
+        "amet sint voluptate pariatur laboris",
+        "Excepteur esse"
+      ],
+      "coordinateReferenceSystemID": "fMbNR:reference-data--CoordinateReferenceSystem:gwsgDAmD:4"
+    }
+  ],
+  "createTime": "1949-05-22T12:30:39.0Z",
+  "data": {
+    "VerticalMeasurements": [
+      {
+        "VerticalMeasurement": -85336799.33011389,
+        "VerticalMeasurementID": "ut Excepteur",
+        "VerticalMeasurementUnitOfMeasureID": "7dRZ3SA4:reference-data--UnitOfMeasure:iWlyA:5361542",
+        "VerticalMeasurementDescription": "commodo mollit deserunt",
+        "VerticalReferenceEntityID": "o:master-data--Well:d31t3-d:546",
+        "RigID": ".a:master-data--Rig:FS6Qscl:",
+        "WellboreTVDTrajectoryID": "g-dy:work-product-component--WellboreTrajectory:CQcZl:",
+        "VerticalMeasurementSourceID": "3h8q.:reference-data--VerticalMeasurementSource:EQ:7661461619",
+        "TerminationDateTime": "1989-12-31T06:15:01.0Z",
+        "VerticalMeasurementTypeID": "MLnU2z:reference-data--VerticalMeasurementType:JN-f9t:5",
+        "VerticalReferenceID": "fugiat aliqua",
+        "EffectiveDateTime": "1968-12-21T01:47:04.0Z",
+        "VerticalMeasurementPathID": "TGRmFOCOB:reference-data--VerticalMeasurementPath:A7a9EW5NdCX:",
+        "VerticalCRSID": "d:reference-data--CoordinateReferenceSystem:g:4581"
+      },
+      {
+        "VerticalCRSID": "af48jpRI:reference-data--CoordinateReferenceSystem:kEWwgttmO_:90277",
+        "VerticalMeasurement": -30879386.846651465,
+        "VerticalMeasurementPathID": "EqNKXD:reference-data--VerticalMeasurementPath:sUS5:749275",
+        "RigID": "eT:master-data--Rig:Gf1:359449",
+        "TerminationDateTime": "2008-12-14T06:12:01.0Z",
+        "VerticalMeasurementSourceID": "TPPCo:reference-data--VerticalMeasurementSource:fk:772415",
+        "VerticalReferenceID": "id",
+        "WellboreTVDTrajectoryID": "rVT:work-product-component--WellboreTrajectory:o-:8",
+        "VerticalMeasurementDescription": "ut id",
+        "EffectiveDateTime": "1977-09-27T09:31:48.0Z",
+        "VerticalMeasurementID": "nulla incididunt labore in et",
+        "VerticalReferenceEntityID": "NO7tCj1xfc:master-data--Rig:Kcm9DpeYmJ:420",
+        "VerticalMeasurementUnitOfMeasureID": "ckWDsd:reference-data--UnitOfMeasure:16eTo:324254792",
+        "VerticalMeasurementTypeID": "I-j:reference-data--VerticalMeasurementType:fKR3e4gGk:8193837"
+      },
+      {
+        "VerticalMeasurementSourceID": "4FsZLW-:reference-data--VerticalMeasurementSource:LgEf_w:63552",
+        "VerticalMeasurementDescription": "ut non aliqua Lorem culpa",
+        "RigID": "PHbO1Ne4:master-data--Rig:MKd6kSBp:",
+        "EffectiveDateTime": "2001-08-29T13:06:19.0Z",
+        "VerticalReferenceID": "in",
+        "WellboreTVDTrajectoryID": "CDKf5jQ:work-product-component--WellboreTrajectory:p4:867",
+        "VerticalCRSID": "cnp1z--5:reference-data--CoordinateReferenceSystem:pTt37YNN:7",
+        "VerticalMeasurementID": "ipsum Ut",
+        "VerticalReferenceEntityID": "T6ViiCt:master-data--Well:RBNs:71184",
+        "VerticalMeasurementTypeID": "_kuOT173Xz3:reference-data--VerticalMeasurementType:e6VF.LLn:7883",
+        "TerminationDateTime": "1960-12-18T15:29:09.0Z",
+        "VerticalMeasurementUnitOfMeasureID": "VfJQLDX:reference-data--UnitOfMeasure:YNj1Dhs:",
+        "VerticalMeasurement": -76459466.48095888,
+        "VerticalMeasurementPathID": "dx6AKgpLm:reference-data--VerticalMeasurementPath:eT:3179"
+      }
+    ],
+    "FormationNameAtTotalDepth": "eiusmod tempor nisi exercitation proident",
+    "WellboreTrajectoryTypeID": "Y:reference-data--WellboreTrajectoryType:K5T:Aklz:22",
+    "TechnicalAssuranceTypeID": "xSl06Q:reference-data--TechnicalAssuranceType:DOiafJUYvC:057",
+    "WasBusinessInterestFinancialOperated": true,
+    "StatusSummaryID": "Q-0niMZXqM:reference-data--WellStatusSummary:Qa0:9",
+    "FacilityID": "veniam",
+    "DrillingReasons": [
+      {
+        "TerminationDateTime": "1991-01-11T01:06:47.0Z",
+        "DrillingReasonTypeID": "X2qzL3lS:reference-data--DrillingReasonType:4_b-:2",
+        "EffectiveDateTime": "1961-01-02T14:45:55.0Z",
+        "Remark": "Excepteur elit eiusmod officia in",
+        "LaheeClassID": "fYy7hwe03:reference-data--LaheeClass:R7Fa22%b4:2432901405"
+      },
+      {
+        "LaheeClassID": "knvS:reference-data--LaheeClass:c:BaCOwWtt:",
+        "EffectiveDateTime": "1996-07-08T11:50:08.0Z",
+        "DrillingReasonTypeID": "k:reference-data--DrillingReasonType:%JmNAU5S:85444",
+        "Remark": "laboris occaecat",
+        "TerminationDateTime": "1967-08-17T01:12:33.0Z"
+      },
+      {
+        "TerminationDateTime": "1956-05-07T23:18:01.0Z",
+        "DrillingReasonTypeID": "ubn_F:reference-data--DrillingReasonType:UND:04956",
+        "Remark": "fugiat",
+        "LaheeClassID": "MTUpnYm9Q:reference-data--LaheeClass:MGvVz6:050852",
+        "EffectiveDateTime": "2003-03-18T14:59:56.0Z"
+      },
+      {
+        "EffectiveDateTime": "1965-05-29T15:24:44.0Z",
+        "DrillingReasonTypeID": "cDH3T1:reference-data--DrillingReasonType:GSzcj:",
+        "Remark": "ea ut",
+        "LaheeClassID": "5-WIAU:reference-data--LaheeClass:X_QHpT:8665",
+        "TerminationDateTime": "1964-09-22T23:02:22.0Z"
+      },
+      {
+        "LaheeClassID": "XxzHcCf:reference-data--LaheeClass:V_%V:919777974",
+        "Remark": "voluptate",
+        "EffectiveDateTime": "1947-05-31T03:57:16.0Z",
+        "TerminationDateTime": "1989-11-02T12:43:26.0Z",
+        "DrillingReasonTypeID": "TSVR:reference-data--DrillingReasonType:dq:4443"
+      }
+    ],
+    "PrimaryMaterialID": "B0iBBDF:reference-data--MaterialType::rfT.:878080",
+    "TechnicalAssuranceID": "RNf5:reference-data--TechnicalAssuranceType:dm:2552415396",
+    "KickOffWellbore": "H:master-data--Wellbore:v:36416612",
+    "TargetFormation": "bS:reference-data--GeologicalFormation:i993BX:91582772",
+    "ExtensionProperties": {
+      "ipsum_8": "cillum nisi commodo consectetur"
+    },
+    "FacilitySpecifications": [
+      {
+        "TerminationDateTime": "1974-06-05T02:31:49.0Z",
+        "FacilitySpecificationQuantity": 75996309.50697052,
+        "FacilitySpecificationIndicator": true,
+        "EffectiveDateTime": "2013-08-30T07:53:18.0Z",
+        "FacilitySpecificationDateTime": "1984-12-19T18:26:48.0Z",
+        "UnitOfMeasureID": ".3CEm:reference-data--UnitOfMeasure:UPFJBD15Wz:177993316",
+        "FacilitySpecificationText": "mollit dolore magna",
+        "ParameterTypeID": "-D7r7V7Qhm:reference-data--ParameterType:5HOc:3615"
+      },
+      {
+        "TerminationDateTime": "1958-06-14T15:15:10.0Z",
+        "FacilitySpecificationQuantity": 29469076.50676222,
+        "FacilitySpecificationDateTime": "2009-09-19T11:35:36.0Z",
+        "EffectiveDateTime": "1998-05-26T01:13:50.0Z",
+        "FacilitySpecificationIndicator": true,
+        "FacilitySpecificationText": "elit culpa Duis esse",
+        "UnitOfMeasureID": "4:reference-data--UnitOfMeasure:l:lbSg:2590",
+        "ParameterTypeID": "QoFQgsjq4:reference-data--ParameterType:zBKi8gMZeG8:837544784"
+      }
+    ],
+    "WasBusinessInterestObligatory": true,
+    "WellboreReasonID": "JM1G-lyv:reference-data--WellboreReason:olGw0unNWb:",
+    "InitialOperatorID": "vFd.5HkhQ:master-data--Organisation:7b:4390308622",
+    "Source": "magna",
+    "InterestTypeID": "kOU:reference-data--WellInterestType:L3:9",
+    "BusinessIntentionID": "G:reference-data--WellBusinessIntention:9o%eL%34LN:116196877",
+    "OperatingEnvironmentID": "Q3DuZD_GY:reference-data--OperatingEnvironment:45udn.N:333545",
+    "WasBusinessInterestTechnical": false,
+    "ConditionID": "2dMgqm8GAo9:reference-data--WellCondition:zBl_YL:",
+    "FacilityStates": [
+      {
+        "TerminationDateTime": "1959-11-08T06:50:56.0Z",
+        "Remark": "aute in amet",
+        "FacilityStateTypeID": "ao-NMAy-D:reference-data--FacilityStateType:8Fy0r%L1:07",
+        "EffectiveDateTime": "1949-05-24T14:50:33.0Z"
+      }
+    ],
+    "TertiaryProductTypeID": "M:reference-data--WellProductType:7eRQ:",
+    "ProjectedBottomHoleLocation": {
+      "SpatialParameterTypeID": ".hVBW:reference-data--SpatialParameterType:QbEZzZ:6753571493",
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "persistableReferenceCrs": "aliqua Excepteur esse nisi ex",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "properties": {
+              "ea_": false
+            },
+            "geometry": {
+              "type": "AnyCrsGeometryCollection",
+              "geometries": [
+                {
+                  "type": "AnyCrsMultiLineString",
+                  "coordinates": [
+                    [
+                      [
+                        -41863064.69243717,
+                        21759048.45987326,
+                        -76855278.32981062
+                      ],
+                      [
+                        -84481814.12474294,
+                        -23634081.92130603
+                      ]
+                    ],
+                    [
+                      [
+                        88392731.21446064,
+                        -39575547.71693548,
+                        75262229.6079269,
+                        -30549309.09317039
+                      ],
+                      [
+                        -29653070.981037065,
+                        -59044708.80126904,
+                        82158802.80490068,
+                        -74066718.50064039,
+                        -67697253.76623067
+                      ]
+                    ],
+                    [
+                      [
+                        -69307400.59085123,
+                        -48322807.4557674,
+                        34443016.03014234,
+                        92550844.83435792,
+                        -682313.619005084
+                      ],
+                      [
+                        88825574.59625572,
+                        -27295078.73153378,
+                        -90867057.38864331,
+                        -77796985.65429287
+                      ],
+                      [
+                        13841264.990396723,
+                        84173598.95204553,
+                        24795224.614628688,
+                        -35403308.67592851
+                      ],
+                      [
+                        76136179.69439113,
+                        31948179.01053843,
+                        -71494891.92530254,
+                        47610632.711076856
+                      ]
+                    ],
+                    [
+                      [
+                        79010115.12406516,
+                        -80609826.77762978,
+                        22175054.476464376,
+                        -8220314.927524179,
+                        35562152.72562364
+                      ],
+                      [
+                        62439236.324284494,
+                        -7743543.904124245
+                      ],
+                      [
+                        -82144947.22166526,
+                        -64478232.90804395,
+                        -46037477.825803764
+                      ],
+                      [
+                        98584116.03907374,
+                        6143742.707689539,
+                        -97472491.21308321
+                      ]
+                    ],
+                    [
+                      [
+                        -52166655.05986371,
+                        34072858.45076229,
+                        -82990953.83435923,
+                        36252173.23581582,
+                        39542197.66132027
+                      ],
+                      [
+                        52599207.731330246,
+                        -50784632.434694044,
+                        -41345441.60762228
+                      ],
+                      [
+                        28925838.67656395,
+                        96652374.3931824,
+                        38504095.75047618
+                      ],
+                      [
+                        18041535.369756058,
+                        -70752396.11790782,
+                        5560986.980821297
+                      ]
+                    ]
+                  ],
+                  "bbox": [
+                    58513340.06676939,
+                    77447501.78763846,
+                    43172961.009943575,
+                    -80813509.9910218
+                  ]
+                },
+                {
+                  "type": "AnyCrsMultiPoint",
+                  "coordinates": [
+                    [
+                      49275488.17911637,
+                      89050051.11941528,
+                      -15436019.862356037
+                    ],
+                    [
+                      2555134.258572772,
+                      25742105.584998325,
+                      -95429826.80643761,
+                      7461866.487620145
+                    ],
+                    [
+                      1513500.4935521036,
+                      -32675295.46238044,
+                      -97179278.1165844
+                    ],
+                    [
+                      42762572.9763813,
+                      55294993.7339012,
+                      76157925.34145275
+                    ]
+                  ],
+                  "bbox": [
+                    50823218.42914638,
+                    27390267.366290748,
+                    -29375107.617710665,
+                    -90194404.55139019,
+                    99736120.75045103
+                  ]
+                },
+                {
+                  "type": "AnyCrsPolygon",
+                  "coordinates": [
+                    [
+                      [
+                        -51170206.69298549,
+                        32225567.34438537,
+                        3858233.656633377
+                      ],
+                      [
+                        -95753537.19245954,
+                        70863208.56073195,
+                        -44722176.086645946,
+                        -26043.542727544904
+                      ],
+                      [
+                        35781736.0796195,
+                        78902697.2099078,
+                        -75726857.16623414
+                      ],
+                      [
+                        44205890.1222218,
+                        -4756210.964652136
+                      ]
+                    ],
+                    [
+                      [
+                        -10667762.219780758,
+                        -52606384.39511933,
+                        -66454086.10530612,
+                        -76345742.56106824,
+                        18796281.37077743
+                      ],
+                      [
+                        -67566542.17127582,
+                        -12920661.009168416
+                      ],
+                      [
+                        -59244961.38694932,
+                        -47606402.50106807,
+                        -32956935.179226376,
+                        63183699.4813281
+                      ],
+                      [
+                        59732170.06669173,
+                        -16941533.048027366
+                      ]
+                    ],
+                    [
+                      [
+                        76050874.81763676,
+                        34165739.76799527,
+                        -64196252.8909172
+                      ],
+                      [
+                        -29193402.611477777,
+                        80160554.51292923,
+                        -28114975.49619624,
+                        72820517.4175477
+                      ],
+                      [
+                        -39765682.74731664,
+                        3395420.0061657876
+                      ],
+                      [
+                        17553043.920511916,
+                        81943983.4448986,
+                        -29793494.949932486,
+                        19062650.251114115,
+                        -2976748.3274434805
+                      ],
+                      [
+                        -93900525.65393914,
+                        -198150.06774178147,
+                        98024022.64262137
+                      ]
+                    ],
+                    [
+                      [
+                        68918200.51729217,
+                        -53745768.77915571
+                      ],
+                      [
+                        72946779.24906087,
+                        58284406.90274766
+                      ],
+                      [
+                        5188501.997931257,
+                        -83589816.12466094,
+                        -79556579.37219258,
+                        -95401407.17242093
+                      ],
+                      [
+                        66802910.749872,
+                        -28578444.12276545,
+                        34886263.24034193,
+                        -26792814.69693342,
+                        2724832.647542
+                      ],
+                      [
+                        -49392759.21104369,
+                        -28696209.647221908,
+                        14783447.412970528,
+                        91660779.11782756
+                      ]
+                    ],
+                    [
+                      [
+                        66593815.17630854,
+                        42700475.4353998,
+                        73800656.31624094,
+                        -16622331.715419486,
+                        -4241169.532715872
+                      ],
+                      [
+                        76792923.62943763,
+                        68718149.6186539
+                      ],
+                      [
+                        18609672.03810817,
+                        -75715855.55999167,
+                        -36590807.81679447
+                      ],
+                      [
+                        14607445.24337931,
+                        43262042.532197654
+                      ],
+                      [
+                        32681014.57848203,
+                        -3891618.8851062357
+                      ]
+                    ]
+                  ],
+                  "bbox": [
+                    -96822159.40273254,
+                    69977473.66109374,
+                    -77533009.91860603,
+                    10475178.685899526,
+                    59116948.64356181
+                  ]
+                },
+                {
+                  "type": "AnyCrsPoint",
+                  "coordinates": [
+                    -68363691.83962299,
+                    5210137.4695715755
+                  ],
+                  "bbox": [
+                    -97489219.44513449,
+                    -80046823.31676842,
+                    -74762809.53244312,
+                    -71861241.87275285
+                  ]
+                }
+              ],
+              "bbox": [
+                -37192471.93146409,
+                6956370.966313526,
+                1099429.0176616013,
+                25208904.254863545,
+                45309577.84132263
+              ]
+            },
+            "bbox": [
+              75853701.00095713,
+              62976274.281606704,
+              74555218.20560387,
+              -18343318.378743142
+            ]
+          }
+        ],
+        "VerticalCoordinateReferenceSystemID": "n:reference-data--CoordinateReferenceSystem:O:29670643",
+        "persistableReferenceUnitZ": "est elit ut",
+        "bbox": [
+          -50581037.877474785,
+          25331940.909414172,
+          76303261.77096912,
+          77472566.8970645,
+          51351291.26960936
+        ],
+        "VerticalUnitID": "7qx51hhcY1:reference-data--UnitOfMeasure:TbF:22961791",
+        "CoordinateReferenceSystemID": "zthIdXB-B:reference-data--CoordinateReferenceSystem:MmT9.ljUFn:8388474",
+        "persistableReferenceVerticalCrs": "cupidatat"
+      },
+      "AppliedOperations": [
+        "dolor esse tempor Lorem",
+        "cupidatat exercitation incididunt culpa",
+        "aliquip culpa fugiat",
+        "laborum",
+        "ea sunt"
+      ],
+      "QualitativeSpatialAccuracyTypeID": "VXK3A9El_J:reference-data--QualitativeSpatialAccuracyType:686:8",
+      "QuantitativeAccuracyBandID": "aA2Pab:reference-data--QuantitativeAccuracyBand:ybau83:823",
+      "SpatialLocationCoordinatesDate": "2018-07-17T14:37:01.0Z",
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": null,
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                95984302.39413697,
+                97634794.52360368,
+                13525164.68691045,
+                -27806570.433877558
+              ],
+              "bbox": [
+                83220805.65995625,
+                25077114.29155408,
+                -28016411.37125744,
+                -30950248.063309178
+              ]
+            },
+            "bbox": [
+              77544138.43826479,
+              71889090.59628269,
+              -40384516.16874483,
+              -11733585.11363107,
+              54897310.86437863
+            ]
+          }
+        ],
+        "bbox": [
+          -19523550.727171928,
+          -29165803.948960096,
+          52563273.77893019,
+          84337948.26769337
+        ]
+      },
+      "CoordinateQualityCheckPerformedBy": "ad qui velit",
+      "CoordinateQualityCheckDateTime": "1964-11-03T12:40:04.0Z",
+      "CoordinateQualityCheckRemarks": [
+        "elit dolor",
+        "qui do mollit",
+        "consequat",
+        "in veniam ut velit consequat",
+        "consectetur deserunt ut eu"
+      ],
+      "SpatialGeometryTypeID": "sH:reference-data--SpatialGeometryType:snfpJBp:6215364"
+    },
+    "CurrentOperatorID": "ak.yl5pz:master-data--Organisation:2_OUyl9SM:6350247432",
+    "PrimaryProductTypeID": "cgg5Pl9iwV3:reference-data--WellProductType:mYp:HS0qg:85",
+    "OutcomeID": "H:reference-data--WellBusinessIntentionOutcome:c2y0wnq4m0-:9482609548",
+    "FacilityTypeID": "F:reference-data--FacilityType:djm:7128098423",
+    "TrajectoryTypeID": "dkJBIwG3jC:reference-data--WellboreTrajectoryType:Jdz1STPux_:04450492",
+    "FacilityOperators": [
+      {
+        "TerminationDateTime": "2021-06-28T21:23:45.0Z",
+        "Remark": "Lorem anim in Duis cillum",
+        "FacilityOperatorID": "ad",
+        "FacilityOperatorOrganisationID": "3w:master-data--Organisation:_wxC9EFx:01",
+        "EffectiveDateTime": "2011-06-23T12:42:20.0Z"
+      },
+      {
+        "EffectiveDateTime": "1951-07-29T13:06:09.0Z",
+        "TerminationDateTime": "1946-01-01T18:50:45.0Z",
+        "FacilityOperatorOrganisationID": "5C:master-data--Organisation:qBA6wB:",
+        "FacilityOperatorID": "nisi do Lorem",
+        "Remark": "aliqua in"
+      },
+      {
+        "Remark": "cupidatat exercitation fugiat",
+        "EffectiveDateTime": "1954-12-03T01:09:43.0Z",
+        "FacilityOperatorID": "cillum aute laborum deserunt",
+        "TerminationDateTime": "1978-03-10T11:34:41.0Z",
+        "FacilityOperatorOrganisationID": "QxO8aM:master-data--Organisation:-jHh1%Z9F4c:52746"
+      },
+      {
+        "FacilityOperatorOrganisationID": "I5HcYHA:master-data--Organisation:2Zy:5875743141",
+        "TerminationDateTime": "1944-05-10T18:45:05.0Z",
+        "Remark": "sint ullamco",
+        "FacilityOperatorID": "exercitation sed do",
+        "EffectiveDateTime": "2018-07-10T07:19:34.0Z"
+      }
+    ],
+    "FacilityName": "voluptate culpa eu tempor dolor",
+    "GeoContexts": [
+      {
+        "GeoTypeID": "Field",
+        "FieldID": "G5K5gvG:master-data--Field:LQd:405932"
+      },
+      {
+        "PlayID": "ErFlc5x:master-data--Play:d:4830326",
+        "GeoTypeID": "1gQ:reference-data--PlayType:Ug8SLv:22"
+      },
+      {
+        "ProspectID": "C3:master-data--Prospect:ydg%hm45d:41",
+        "GeoTypeID": "VhWNEQZzz:reference-data--ProspectType:vj6yFb:551"
+      }
+    ],
+    "DataSourceOrganisationID": "28Q:master-data--Organisation:lhvSEPL:9700",
+    "NameAliases": [
+      {
+        "TerminationDateTime": "1998-07-31T08:31:52.0Z",
+        "AliasName": "ut et in laborum amet",
+        "DefinitionOrganisationID": "8WmRPywq:master-data--Organisation:clG:69",
+        "AliasNameTypeID": "rNrdj:reference-data--AliasNameType:.WGw6V9Po4:",
+        "EffectiveDateTime": "1982-06-27T15:48:19.0Z"
+      },
+      {
+        "DefinitionOrganisationID": "z:master-data--Organisation:C:897685947",
+        "EffectiveDateTime": "2001-12-02T17:24:52.0Z",
+        "TerminationDateTime": "1944-11-07T01:58:52.0Z",
+        "AliasNameTypeID": "fiKKkg:reference-data--AliasNameType:j:KJd3xK2EY:0239",
+        "AliasName": "ipsum nisi tempor id"
+      },
+      {
+        "EffectiveDateTime": "1998-05-08T11:38:46.0Z",
+        "TerminationDateTime": "2011-02-25T22:28:49.0Z",
+        "AliasNameTypeID": "f7OMo:reference-data--AliasNameType:tkK3m:371927",
+        "DefinitionOrganisationID": "SX7ewxoya:reference-data--StandardsOrganisation:wu5L:5266470211",
+        "AliasName": "culpa eiusmod do minim aliqua"
+      }
+    ],
+    "WellboreCosts": [
+      {
+        "ActivityTypeID": "ue99Vsi:reference-data--WellActivityPhaseType:3JwM7ij4AdC:3983149",
+        "Cost": -44260763.87583329
+      },
+      {
+        "Cost": 39318563.06910664,
+        "ActivityTypeID": "UxCo2c:reference-data--WellActivityPhaseType:uW:35568664"
+      },
+      {
+        "Cost": 32719573.792351156,
+        "ActivityTypeID": "GssY6k_3:reference-data--WellActivityPhaseType:GzFxD-XwFg8:3624"
+      },
+      {
+        "ActivityTypeID": ".UtzBYE:reference-data--WellActivityPhaseType:pYRc:63",
+        "Cost": 51114903.95070982
+      }
+    ],
+    "FacilityEvents": [
+      {
+        "FacilityEventTypeID": "I4Ic0y:reference-data--FacilityEventType:dk0uEpdG_I3:6749187707",
+        "EffectiveDateTime": "2012-12-23T15:54:26.0Z",
+        "Remark": "eiusmod",
+        "TerminationDateTime": "2015-12-06T16:31:26.0Z"
+      },
+      {
+        "FacilityEventTypeID": "jJm:reference-data--FacilityEventType:PiSHCz%Qnu4:32262687",
+        "Remark": "aliquip deserunt occaecat pariatur",
+        "TerminationDateTime": "1992-04-10T18:34:05.0Z",
+        "EffectiveDateTime": "1978-11-23T11:57:29.0Z"
+      },
+      {
+        "Remark": "in",
+        "FacilityEventTypeID": "-kemn6brxrI:reference-data--FacilityEventType:W1TDK:",
+        "EffectiveDateTime": "1968-05-12T21:38:48.0Z",
+        "TerminationDateTime": "2014-02-13T01:20:42.0Z"
+      },
+      {
+        "Remark": "reprehenderit",
+        "EffectiveDateTime": "1956-01-31T09:11:25.0Z",
+        "FacilityEventTypeID": "SqH2zH9GY:reference-data--FacilityEventType:6xr:",
+        "TerminationDateTime": "2015-10-27T06:34:59.0Z"
+      },
+      {
+        "EffectiveDateTime": "1986-12-07T22:20:30.0Z",
+        "FacilityEventTypeID": "iBHTL:reference-data--FacilityEventType:ORnN1Pw_g7:",
+        "TerminationDateTime": "1977-06-22T01:34:23.0Z",
+        "Remark": "deserunt quis laboris eu"
+      }
+    ],
+    "DefaultVerticalMeasurementID": "eiusmod",
+    "TechnicalAssurances": [
+      {
+        "TechnicalAssuranceTypeID": "59Fq:reference-data--TechnicalAssuranceType:xwIpjBM5Z:",
+        "AcceptableUsage": [
+          {
+            "WorkflowPersonaTypeID": "C0Ox0xaJXi:reference-data--WorkflowPersonaType:cnI:32135677",
+            "DataQualityID": "Y1otEZ75MvN:work-product-component--DataQuality::-Ev:7694699",
+            "QualityDataRuleSetID": "OFG9GMXKvR:reference-data--QualityDataRuleSet:Ex3sp:yiH1F:080959420",
+            "ValueChainStatusTypeID": "LvA7:reference-data--ValueChainStatusType:LHVux:375",
+            "DataQualityRuleSetID": "06mw4J_GC:reference-data--DataQualityRuleSet:Fu:760782",
+            "WorkflowUsageTypeID": "xYMNGv:reference-data--WorkflowUsageType:.Pno::853814322",
+            "WorkflowPersona": "_CgLUMGn:reference-data--WorkflowPersonaType:MQqxS:75776571",
+            "WorkflowUsage": "z.173p:reference-data--WorkflowUsageType:JB-g:41975"
+          },
+          {
+            "DataQualityRuleSetID": "ThDMrXXAd:reference-data--DataQualityRuleSet:pQGQKxktr%:7508100",
+            "ValueChainStatusTypeID": "g:reference-data--ValueChainStatusType:DnV:7685",
+            "WorkflowPersona": "ud.:reference-data--WorkflowPersonaType:JT%bEHkp0o:8903771",
+            "DataQualityID": "NmOqTb7:work-product-component--DataQuality:rg6k:71640282",
+            "WorkflowPersonaTypeID": "MX6JA4mF:reference-data--WorkflowPersonaType:Hh08oE80JU3:33064548",
+            "QualityDataRuleSetID": "T3dnY2sro:reference-data--QualityDataRuleSet:JVLV3zh:59497071",
+            "WorkflowUsage": "br5KmGQv4j:reference-data--WorkflowUsageType:N:",
+            "WorkflowUsageTypeID": "9tA:reference-data--WorkflowUsageType:FAs:"
+          },
+          {
+            "WorkflowPersona": "N:reference-data--WorkflowPersonaType:MNI:0701",
+            "WorkflowUsage": "Xis:reference-data--WorkflowUsageType:VcqCJjjgSZ8:",
+            "ValueChainStatusTypeID": "901.y:reference-data--ValueChainStatusType:6:I:2444862169",
+            "QualityDataRuleSetID": "w:reference-data--QualityDataRuleSet:X2DFk:585649",
+            "WorkflowUsageTypeID": "-_2wg:reference-data--WorkflowUsageType:T7LL1skvsD:2",
+            "DataQualityRuleSetID": "zf2QX8-p:reference-data--DataQualityRuleSet:z::952971",
+            "DataQualityID": "wK:work-product-component--DataQuality:oHJIVe7:551",
+            "WorkflowPersonaTypeID": "lVGvZ:reference-data--WorkflowPersonaType:wBIx:795779016"
+          },
+          {
+            "ValueChainStatusTypeID": "GHmAIT_U3:reference-data--ValueChainStatusType:h_FW1:w:2793801788",
+            "WorkflowUsageTypeID": "xMu:reference-data--WorkflowUsageType:Sm%R.ym67Rf:",
+            "DataQualityID": "6:work-product-component--DataQuality:%jQXPxcas:8",
+            "WorkflowUsage": "3j9hBvbyrFQ:reference-data--WorkflowUsageType:DKPBY:0",
+            "WorkflowPersonaTypeID": "8_C8c7B8R1y:reference-data--WorkflowPersonaType:8::71",
+            "DataQualityRuleSetID": "XDRa_90KmG:reference-data--DataQualityRuleSet:A2yLHQKTDMj:35",
+            "WorkflowPersona": "D0:reference-data--WorkflowPersonaType:1JRsQ:",
+            "QualityDataRuleSetID": "FRG8dwL:reference-data--QualityDataRuleSet:fL:9yUN:464"
+          },
+          {
+            "WorkflowPersonaTypeID": "N:reference-data--WorkflowPersonaType:2ZR05bu:7.:235362",
+            "DataQualityRuleSetID": "lYMUNz:reference-data--DataQualityRuleSet:V:651670506",
+            "WorkflowPersona": "2aYgX5:reference-data--WorkflowPersonaType:Wz1Bq:471880695",
+            "ValueChainStatusTypeID": "MlL1:reference-data--ValueChainStatusType:xBjhmhZwx-:0330510969",
+            "DataQualityID": "NwY:work-product-component--DataQuality:slX7:209099280",
+            "WorkflowUsage": "klEh8469:reference-data--WorkflowUsageType:Vk-DJG:",
+            "WorkflowUsageTypeID": "4QtNcF:reference-data--WorkflowUsageType:LThWw:81",
+            "QualityDataRuleSetID": "0:reference-data--QualityDataRuleSet:VT:"
+          }
+        ],
+        "EffectiveDate": "1968-11-25",
+        "Reviewers": [
+          {
+            "OrganisationID": "s_T_Y0p0q6:master-data--Organisation:lpaZa4KB:224528049",
+            "DataGovernanceRoleTypeID": "fxz:reference-data--DataGovernanceRoleType:s-qs0:03419",
+            "RoleTypeID": "fR-T:reference-data--ContactRoleType:dF_wUJTK:9589",
+            "PhoneNumber": "cupidatat",
+            "Comment": "nulla quis esse aliqua",
+            "Name": "magna ea cillum ex",
+            "WorkflowPersonaTypeID": "V:reference-data--WorkflowPersonaType:O4H:4386637904",
+            "EmailAddress": "consequat consectetur"
+          },
+          {
+            "OrganisationID": "cZf:master-data--Organisation:jVI-2E1:2",
+            "EmailAddress": "voluptate Excepteur exercitation ex",
+            "RoleTypeID": "8j-0-A:reference-data--ContactRoleType:X-A:748",
+            "WorkflowPersonaTypeID": "rxEY2t6wj:reference-data--WorkflowPersonaType:akaNb:7303248280",
+            "PhoneNumber": "nostrud incididunt consectetur eiusmod ut",
+            "DataGovernanceRoleTypeID": "AW-eFvmA:reference-data--DataGovernanceRoleType:_ocV8gHV:5",
+            "Comment": "mollit labore cupidatat fugiat",
+            "Name": "sint amet elit ad et"
+          },
+          {
+            "WorkflowPersonaTypeID": "2zYjs05:reference-data--WorkflowPersonaType:juwo:",
+            "EmailAddress": "deserunt",
+            "Name": "sit",
+            "DataGovernanceRoleTypeID": "8:reference-data--DataGovernanceRoleType:UUXyTiflyR:",
+            "PhoneNumber": "occaecat dolor",
+            "Comment": "laborum in reprehenderit aute",
+            "RoleTypeID": "Utc9WeFF:reference-data--ContactRoleType:w%dfYO:2",
+            "OrganisationID": "Jo:master-data--Organisation:vFOQC:3"
+          },
+          {
+            "WorkflowPersonaTypeID": "WmqiJqiw:reference-data--WorkflowPersonaType:oY:352626394",
+            "PhoneNumber": "cupidatat incididunt consectetur elit fugiat",
+            "OrganisationID": "U6az.XyO:master-data--Organisation:JeOEkc:32",
+            "DataGovernanceRoleTypeID": "2oZbWzpQO:reference-data--DataGovernanceRoleType:91BH:1",
+            "EmailAddress": "reprehenderit",
+            "Name": "aliqua dolore",
+            "Comment": "culpa nulla dolor",
+            "RoleTypeID": "T0AWnPD:reference-data--ContactRoleType:XGB1FAnMPl:6327"
+          }
+        ],
+        "UnacceptableUsage": [
+          {
+            "ValueChainStatusTypeID": "Ef:reference-data--ValueChainStatusType:S_nyO9%EKu:0940602",
+            "DataQualityRuleSetID": "vLOokjb9o:reference-data--DataQualityRuleSet:iDRjLV:0791816",
+            "WorkflowUsageTypeID": "xbmZommbJ:reference-data--WorkflowUsageType:OGSoj:50",
+            "WorkflowPersona": "RD9u:reference-data--WorkflowPersonaType:A1JlOTO:320673764",
+            "DataQualityID": "3I:work-product-component--DataQuality:4AJtCnD%c:9382990373",
+            "QualityDataRuleSetID": "j4s:reference-data--QualityDataRuleSet:i:23077",
+            "WorkflowPersonaTypeID": "nMl:reference-data--WorkflowPersonaType:3hk:1075",
+            "WorkflowUsage": "h:reference-data--WorkflowUsageType::J0FyQ:240733638"
+          },
+          {
+            "WorkflowPersona": "Qjo6bz:reference-data--WorkflowPersonaType:mBXC8jdRH:538",
+            "WorkflowUsageTypeID": "S6:reference-data--WorkflowUsageType:j:52",
+            "WorkflowUsage": "7S:reference-data--WorkflowUsageType:EkiDMr5%:44",
+            "ValueChainStatusTypeID": "ldVG3ax:reference-data--ValueChainStatusType:vnkd9Vk6ap:63798053",
+            "DataQualityID": "vCpmVztRcYs:work-product-component--DataQuality:gLW51w8h9:56597649",
+            "DataQualityRuleSetID": "G5EQ:reference-data--DataQualityRuleSet:TDwI8I:9502",
+            "WorkflowPersonaTypeID": "OsCOodVu:reference-data--WorkflowPersonaType:E_e:3676",
+            "QualityDataRuleSetID": "qZxrRE8e.:reference-data--QualityDataRuleSet:j:1910192329"
+          },
+          {
+            "DataQualityRuleSetID": "uVp:reference-data--DataQualityRuleSet:in4S:181076911",
+            "QualityDataRuleSetID": "mV5L5:reference-data--QualityDataRuleSet:LS3:0",
+            "ValueChainStatusTypeID": "m:reference-data--ValueChainStatusType:%QenNJN0:91",
+            "DataQualityID": "G-WS2Cg:work-product-component--DataQuality:iZ:73204023",
+            "WorkflowPersona": "KXHCPsbNH:reference-data--WorkflowPersonaType:Bc:711",
+            "WorkflowUsage": "cFS7or:reference-data--WorkflowUsageType:zZ9EgPgF:61615",
+            "WorkflowPersonaTypeID": "zvRA:reference-data--WorkflowPersonaType:Z%a5gPe3:8",
+            "WorkflowUsageTypeID": "Xy.Stn:reference-data--WorkflowUsageType:Jm:686973949"
+          }
+        ],
+        "Comment": "velit cupidatat nostrud nulla"
+      },
+      {
+        "TechnicalAssuranceTypeID": "Zc.pb35N:reference-data--TechnicalAssuranceType:lF--EB3zovP:9614",
+        "EffectiveDate": "1973-02-27",
+        "UnacceptableUsage": [
+          {
+            "WorkflowUsage": "476fz0:reference-data--WorkflowUsageType:YA_QyW:949202",
+            "WorkflowPersona": "yqgSqCVPVh:reference-data--WorkflowPersonaType:xbM.w:",
+            "ValueChainStatusTypeID": "BJVuux4:reference-data--ValueChainStatusType:TEU:51845942",
+            "DataQualityRuleSetID": "ImchBMc3:reference-data--DataQualityRuleSet:49d:911279",
+            "DataQualityID": "e:work-product-component--DataQuality:-T0yOj:1231270470",
+            "QualityDataRuleSetID": "paTq5pvN:reference-data--QualityDataRuleSet:_ic8wc2%:99206",
+            "WorkflowUsageTypeID": "8G-Y-:reference-data--WorkflowUsageType:A32RbkG5:75224632",
+            "WorkflowPersonaTypeID": "Jkh6l5I:reference-data--WorkflowPersonaType:7:38"
+          },
+          {
+            "DataQualityRuleSetID": "3jNDIgh:reference-data--DataQualityRuleSet:SFDyK_v::4932776563",
+            "DataQualityID": "x:work-product-component--DataQuality:g0ofUZ:0",
+            "WorkflowPersona": "Tz:reference-data--WorkflowPersonaType:nWkYnwa:709",
+            "ValueChainStatusTypeID": "0VKWeGCSxT2:reference-data--ValueChainStatusType:fDC:51544",
+            "WorkflowUsage": "F-:reference-data--WorkflowUsageType:h36fW3oHS:8728128",
+            "QualityDataRuleSetID": "B_D:reference-data--QualityDataRuleSet:6bvWG:",
+            "WorkflowUsageTypeID": "0Dgz:reference-data--WorkflowUsageType:1xo:oHUJ:5",
+            "WorkflowPersonaTypeID": "j8jOJXc:reference-data--WorkflowPersonaType:iUnm-:412991272"
+          },
+          {
+            "WorkflowUsage": "b1glDSZ_:reference-data--WorkflowUsageType:keZKE:594170",
+            "DataQualityID": "Aih:work-product-component--DataQuality:9:033342",
+            "ValueChainStatusTypeID": "1QyZ6.mRk:reference-data--ValueChainStatusType:hQrEf1a%:453412590",
+            "QualityDataRuleSetID": "t3w9.U9:reference-data--QualityDataRuleSet:y4Pyth7c:31321",
+            "WorkflowPersona": "IkEJpV4pg:reference-data--WorkflowPersonaType:meBIr7:Ov0:1",
+            "WorkflowPersonaTypeID": "f8fO:reference-data--WorkflowPersonaType:%AEdNv:426",
+            "WorkflowUsageTypeID": "id8KkYsbXS:reference-data--WorkflowUsageType:5y:773",
+            "DataQualityRuleSetID": "ZmucePCZ6P:reference-data--DataQualityRuleSet:9Y0ExKBt7:0479411"
+          }
+        ],
+        "AcceptableUsage": [
+          {
+            "WorkflowUsageTypeID": "TQ:reference-data--WorkflowUsageType:unrJF:",
+            "WorkflowPersonaTypeID": "hXjY4CMT:reference-data--WorkflowPersonaType:aG:69506318",
+            "ValueChainStatusTypeID": "0x2SeoB:reference-data--ValueChainStatusType:ShO3Annlp:39770704",
+            "WorkflowPersona": "xLtCXmnBL:reference-data--WorkflowPersonaType:6n8IE%:0092129090",
+            "DataQualityID": "Tq3PdxEzW:work-product-component--DataQuality:dA:",
+            "DataQualityRuleSetID": "EKNnPYZGea3:reference-data--DataQualityRuleSet:XQf1:8V:776",
+            "QualityDataRuleSetID": "yzuGp_5Ix:reference-data--QualityDataRuleSet:9%kT5t:26614",
+            "WorkflowUsage": "UT4vjV:reference-data--WorkflowUsageType:1fWq:"
+          },
+          {
+            "WorkflowUsage": "5o:reference-data--WorkflowUsageType:neap:6365266",
+            "WorkflowPersona": "rKG9TF9oz0:reference-data--WorkflowPersonaType:sy:987",
+            "DataQualityRuleSetID": "zBdv:reference-data--DataQualityRuleSet:N:111553",
+            "ValueChainStatusTypeID": "sCfAzAG:reference-data--ValueChainStatusType:FN36dp9CYud:1",
+            "QualityDataRuleSetID": "pMPqp7vS:reference-data--QualityDataRuleSet:NX:5635613",
+            "WorkflowPersonaTypeID": "jbGkkUOg:reference-data--WorkflowPersonaType:_:733",
+            "DataQualityID": "1:work-product-component--DataQuality:Y3eVlN:6137461507",
+            "WorkflowUsageTypeID": "OSY5u:reference-data--WorkflowUsageType:M:wi_UHQPrh:68"
+          },
+          {
+            "QualityDataRuleSetID": "a9:reference-data--QualityDataRuleSet:T:4649456",
+            "DataQualityRuleSetID": "H:reference-data--DataQualityRuleSet:4U_Xz:30765068",
+            "DataQualityID": "Mepc:work-product-component--DataQuality:wco6wf8a:499227521",
+            "WorkflowUsageTypeID": "p5:reference-data--WorkflowUsageType:7iLQ:1:0839830187",
+            "WorkflowPersona": "362Wt:reference-data--WorkflowPersonaType:dJpwR:94208",
+            "ValueChainStatusTypeID": "M:reference-data--ValueChainStatusType:CslelD-_G:7581326",
+            "WorkflowPersonaTypeID": "3-j:reference-data--WorkflowPersonaType:ihJ4wpnV:4324916",
+            "WorkflowUsage": "Car7Zy6HiIm:reference-data--WorkflowUsageType:JPCfZpo4Q9:809"
+          },
+          {
+            "WorkflowUsage": "Bzi9czo2yBv:reference-data--WorkflowUsageType:mkB:191",
+            "WorkflowUsageTypeID": "1WyI60BA:reference-data--WorkflowUsageType:c:76363",
+            "DataQualityID": "FQrekSpW30W:work-product-component--DataQuality:nfHjKjP7:806998305",
+            "DataQualityRuleSetID": "MI:reference-data--DataQualityRuleSet:9INz2B:72290",
+            "ValueChainStatusTypeID": "DAC:reference-data--ValueChainStatusType:GJH%0:F3:2",
+            "WorkflowPersona": "gtU:reference-data--WorkflowPersonaType:7TOuwhe0y2A:340276917",
+            "QualityDataRuleSetID": "Q3o:reference-data--QualityDataRuleSet:UkO:tnC:0400",
+            "WorkflowPersonaTypeID": "eV6r:reference-data--WorkflowPersonaType:s0pTcsv_8f:431978680"
+          }
+        ],
+        "Reviewers": [
+          {
+            "Comment": "aliquip adipisicing",
+            "EmailAddress": "dolore id Lorem pariatur",
+            "WorkflowPersonaTypeID": "vKWsF:reference-data--WorkflowPersonaType:7oW7yz:8606",
+            "OrganisationID": "rjo6ace:master-data--Organisation:GzY.:41976831",
+            "RoleTypeID": "1hrP:reference-data--ContactRoleType:fu:2358015",
+            "PhoneNumber": "commodo",
+            "DataGovernanceRoleTypeID": "z0YGexL:reference-data--DataGovernanceRoleType:8427WhH:019830724",
+            "Name": "magna ad est"
+          },
+          {
+            "EmailAddress": "adipisicing fugiat",
+            "RoleTypeID": "-fNeJF2:reference-data--ContactRoleType:rMgV:82",
+            "WorkflowPersonaTypeID": "QG:reference-data--WorkflowPersonaType:c:020485",
+            "DataGovernanceRoleTypeID": "O9ZJ7ibTBd5:reference-data--DataGovernanceRoleType:llmJfqZHfxt:634014784",
+            "OrganisationID": "0xroqI7V:master-data--Organisation:TC7pf:369",
+            "Name": "Lorem nostrud commodo",
+            "Comment": "Ut in",
+            "PhoneNumber": "dolore labore"
+          },
+          {
+            "Name": "laboris Lorem",
+            "EmailAddress": "ullamco ipsum",
+            "Comment": "veniam Ut adipisicing",
+            "OrganisationID": "t5H:master-data--Organisation:EgksZ3lgA:0521844",
+            "RoleTypeID": "hRq:reference-data--ContactRoleType:Dg6S:67",
+            "DataGovernanceRoleTypeID": "kLNuZlbqi:reference-data--DataGovernanceRoleType:%:0483620",
+            "WorkflowPersonaTypeID": "_Oio8nNp:reference-data--WorkflowPersonaType:fV:mN:",
+            "PhoneNumber": "velit ipsum"
+          },
+          {
+            "EmailAddress": "do consectetur Ut incididunt",
+            "Name": "cupidatat Excepteur voluptate fugiat",
+            "PhoneNumber": "voluptate veniam ipsum est laborum",
+            "OrganisationID": "Yi2vOPmw:master-data--Organisation:6Z:4",
+            "DataGovernanceRoleTypeID": "4ukZ:reference-data--DataGovernanceRoleType:T:coF8%RQ:98496983",
+            "Comment": "reprehenderit aliquip culpa",
+            "RoleTypeID": "SfgG:reference-data--ContactRoleType:DoGaf6w:76162",
+            "WorkflowPersonaTypeID": "34A:reference-data--WorkflowPersonaType:Z0UsM:645144381"
+          },
+          {
+            "Comment": "aliquip dolore sit incididunt",
+            "EmailAddress": "magna eu incididunt consectetur",
+            "RoleTypeID": "52w77P8l:reference-data--ContactRoleType:0Kcaz:19",
+            "DataGovernanceRoleTypeID": "VOdTckNAS:reference-data--DataGovernanceRoleType:Q9j:006",
+            "PhoneNumber": "laboris",
+            "OrganisationID": "KA:master-data--Organisation:u4QA1BTD:00599175",
+            "Name": "dolore tempor",
+            "WorkflowPersonaTypeID": "E6I92xH:reference-data--WorkflowPersonaType:RuJ:4"
+          }
+        ],
+        "Comment": "et"
+      }
+    ],
+    "VersionCreationReason": "magna cillum",
+    "ResourceHostRegionIDs": [
+      "v.f2hiNX.Y:reference-data--OSDURegion:4ILFfj:8",
+      "4l_mRg:reference-data--OSDURegion:iUAf6RB:",
+      "-k:reference-data--OSDURegion:QP:4",
+      "nY5KST0NJ:reference-data--OSDURegion:JSu:Y:"
+    ],
+    "FluidDirectionID": "Ur46.:reference-data--WellFluidDirection:Bxq3RjChJ:0074491",
+    "WasBusinessInterestFinancialNonOperated": false,
+    "ExistenceKind": "Ylq0Q:reference-data--ExistenceKind:WUGuOm5:",
+    "HistoricalInterests": [
+      {
+        "EffectiveDateTime": "2001-08-27",
+        "TerminationDateTime": "2014-07-30",
+        "InterestTypeID": "V5934ka:reference-data--WellInterestType:jM1txPpDG:51147155"
+      },
+      {
+        "EffectiveDateTime": "1947-02-17",
+        "InterestTypeID": "3xfDvCa:reference-data--WellInterestType:0y7uAjnkXB:0849252854",
+        "TerminationDateTime": "2005-03-18"
+      },
+      {
+        "InterestTypeID": "i._qxV31:reference-data--WellInterestType:n:2655659215",
+        "EffectiveDateTime": "1944-04-03",
+        "TerminationDateTime": "2011-02-04"
+      },
+      {
+        "InterestTypeID": "1JtH3M88g:reference-data--WellInterestType:z6:58",
+        "TerminationDateTime": "1981-09-05",
+        "EffectiveDateTime": "2003-09-02"
+      }
+    ],
+    "FacilityNameAliases": [
+      {
+        "AliasName": "dolore sunt",
+        "EffectiveDateTime": "1958-08-08T15:51:43.0Z",
+        "DefinitionOrganisationID": "pTl8ViHD2i:reference-data--StandardsOrganisation:.xNvX:8",
+        "TerminationDateTime": "2005-03-28T21:20:40.0Z",
+        "AliasNameTypeID": "e:reference-data--AliasNameType:d:76243567"
+      },
+      {
+        "DefinitionOrganisationID": "xpt:reference-data--StandardsOrganisation:sDn:086",
+        "AliasNameTypeID": "j:reference-data--AliasNameType:ijhrUMl%u:9762808859",
+        "AliasName": "dolor officia",
+        "TerminationDateTime": "2014-01-16T05:20:32.0Z",
+        "EffectiveDateTime": "2001-10-07T07:14:46.0Z"
+      },
+      {
+        "AliasNameTypeID": "e7dLIB1E:reference-data--AliasNameType:6aQYb0-e:21606980",
+        "AliasName": "voluptate ex consectetur ipsum adipisicing",
+        "EffectiveDateTime": "2009-08-17T12:12:52.0Z",
+        "TerminationDateTime": "1968-09-04T15:57:10.0Z",
+        "DefinitionOrganisationID": "9erP:reference-data--StandardsOrganisation:EZS4aj4Tni_:76458"
+      },
+      {
+        "AliasNameTypeID": "JBQas:reference-data--AliasNameType:xitQQe:997785301",
+        "EffectiveDateTime": "1952-12-31T08:26:50.0Z",
+        "DefinitionOrganisationID": "rF2nn:master-data--Organisation:QWm9d::979",
+        "AliasName": "Lorem",
+        "TerminationDateTime": "2007-08-22T17:21:22.0Z"
+      }
+    ],
+    "ResourceHomeRegionID": "VQVl:reference-data--OSDURegion:IGjeGdIg:20092445",
+    "RoleID": "JNgQ-ya:reference-data--WellRole:m:745089",
+    "DefinitiveTrajectoryID": "8uS7ZWhf2R:work-product-component--WellboreTrajectory:J3:8",
+    "SecondaryProductTypeID": "B1y.:reference-data--WellProductType:v6:17779781",
+    "ResourceSecurityClassification": "sK20:reference-data--ResourceSecurityClassification:zs:24909476",
+    "GeographicBottomHoleLocation": {
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "incididunt5": 68761827,
+              "dolor_af4": -60113717,
+              "anim_763": -60525881.45390669,
+              "in_b": 56122415.596850306,
+              "eiusmod5": -8798657.206786633
+            },
+            "geometry": {
+              "type": "GeometryCollection",
+              "geometries": [
+                {
+                  "type": "LineString",
+                  "coordinates": [
+                    [
+                      -81792559.50912067,
+                      -45418246.36283134
+                    ],
+                    [
+                      29483417.574040696,
+                      -55006801.29561706,
+                      -41926259.409159906,
+                      19756762.797628164
+                    ],
+                    [
+                      -47032224.30351514,
+                      -58302258.07352018,
+                      -2320178.3222562373,
+                      -59624671.34276859
+                    ],
+                    [
+                      -18670273.941456065,
+                      51964169.57762134,
+                      10291994.111806348,
+                      36581959.434823155
+                    ]
+                  ],
+                  "bbox": [
+                    15708805.184235826,
+                    91673440.19394019,
+                    -20737679.115251034,
+                    33835644.2334677,
+                    92277302.9261713
+                  ]
+                },
+                {
+                  "type": "MultiPoint",
+                  "coordinates": [
+                    [
+                      37850516.02349645,
+                      -20940247.509705335
+                    ],
+                    [
+                      -33055157.651089974,
+                      -40302293.5207912,
+                      -69270592.11219212
+                    ],
+                    [
+                      2402456.899469495,
+                      69324244.46515635,
+                      -88892620.48643185
+                    ],
+                    [
+                      76648878.67118677,
+                      -54599963.52554457,
+                      -8225067.2889482975,
+                      42600483.751413584,
+                      71004170.29257658
+                    ]
+                  ],
+                  "bbox": [
+                    72402594.51516432,
+                    9352095.041859433,
+                    66396612.14650124,
+                    74799776.52744183
+                  ]
+                },
+                {
+                  "type": "Point",
+                  "coordinates": [
+                    13549782.435456976,
+                    1961133.977661863,
+                    -99206940.60109636,
+                    -15389094.670024186,
+                    87326345.8755286
+                  ],
+                  "bbox": [
+                    49105172.55400494,
+                    44052347.55992076,
+                    39094764.48789516,
+                    70222596.73636007,
+                    -8144102.038217917
+                  ]
+                },
+                {
+                  "type": "MultiPoint",
+                  "coordinates": [
+                    [
+                      -77903874.61277875,
+                      -65781113.06209435,
+                      49054859.26461083
+                    ],
+                    [
+                      64717125.1386261,
+                      -79965179.39737089,
+                      -51680970.32461838
+                    ],
+                    [
+                      -86646488.47666505,
+                      98421713.09966189,
+                      -89907759.98339713
+                    ]
+                  ],
+                  "bbox": [
+                    22612176.372837633,
+                    82019617.45698154,
+                    12557962.602053314,
+                    64388391.171153784,
+                    -23471958.10174471
+                  ]
+                }
+              ],
+              "bbox": [
+                69356858.15707007,
+                -11515332.122744441,
+                -73967205.51637518,
+                44933200.40987077
+              ]
+            },
+            "bbox": [
+              -4629069.6790115535,
+              88496352.58245847,
+              -58521726.92501368,
+              41076477.387871265
+            ]
+          },
+          {
+            "type": "Feature",
+            "properties": null,
+            "geometry": null,
+            "bbox": [
+              -40520769.542786494,
+              -31578108.845056564,
+              -40295867.1839107,
+              67717239.22785005,
+              -38148393.78376191
+            ]
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "dolor_9": -92266162
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -35597290.67168762,
+                      -47074424.61784361,
+                      -1265470.7029983848
+                    ],
+                    [
+                      -21714117.93645999,
+                      -78367569.25090204,
+                      7380735.222838908,
+                      -45802366.787785485
+                    ],
+                    [
+                      -16321858.426399395,
+                      61229650.86643246
+                    ],
+                    [
+                      -76262441.31891957,
+                      -53026119.520917006
+                    ]
+                  ],
+                  [
+                    [
+                      -20859356.66543442,
+                      -95679210.57857521
+                    ],
+                    [
+                      -10791466.841751367,
+                      13332264.22804758,
+                      -61803389.69745951
+                    ],
+                    [
+                      -84578434.23322484,
+                      -96480287.77825521,
+                      58617947.957640916
+                    ],
+                    [
+                      -26597809.160607427,
+                      81169331.50088903
+                    ]
+                  ],
+                  [
+                    [
+                      52597230.51296154,
+                      98936662.48442572
+                    ],
+                    [
+                      -80374917.54071987,
+                      -45651381.106519274,
+                      8098628.893811017
+                    ],
+                    [
+                      -7489357.857759282,
+                      67170067.3599428,
+                      87998985.69495553,
+                      -66668764.57122368,
+                      -62753565.1748727
+                    ],
+                    [
+                      6054140.705918893,
+                      -8097444.7901085615
+                    ],
+                    [
+                      70717601.77529785,
+                      29059939.70414096,
+                      -1805398.5999354273,
+                      26357340.415474907,
+                      -39505434.71434806
+                    ]
+                  ],
+                  [
+                    [
+                      -40495506.84536569,
+                      -57667355.263656475,
+                      -51794393.66416494
+                    ],
+                    [
+                      -41869960.80236125,
+                      34888570.81047675,
+                      89079368.37610886,
+                      -93080506.28433801
+                    ],
+                    [
+                      -71253516.91697322,
+                      75487949.47334573,
+                      20187206.064126894,
+                      79971054.49192217
+                    ],
+                    [
+                      -37060310.263785824,
+                      97668968.39490047
+                    ],
+                    [
+                      -56402966.442735925,
+                      12463605.858088389,
+                      93404450.55665198,
+                      75871553.85258481,
+                      -22238162.776926666
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      11208308.030637264,
+                      -46689613.454331934,
+                      -53470637.436861314,
+                      46559714.66909313
+                    ],
+                    [
+                      56329138.526174635,
+                      82890867.55793044,
+                      -10504665.170525312,
+                      -10824677.875572592
+                    ],
+                    [
+                      -77696746.7268986,
+                      83585192.01001674,
+                      -88312538.84549682
+                    ],
+                    [
+                      -48590544.978190355,
+                      93136280.33321252
+                    ]
+                  ],
+                  [
+                    [
+                      56926914.76670465,
+                      -87562447.52651599,
+                      -15540558.190846458
+                    ],
+                    [
+                      91455043.60299227,
+                      -52530244.72683643,
+                      42700407.262583375,
+                      -60272603.300069824
+                    ],
+                    [
+                      37773850.8945311,
+                      -34689759.08583678
+                    ],
+                    [
+                      -19493327.24524586,
+                      80629532.26345944,
+                      43961484.11150196,
+                      -568123.0638498515
+                    ]
+                  ],
+                  [
+                    [
+                      -96481614.65111223,
+                      -77709465.77617604,
+                      59267982.91239005,
+                      77423139.48013797,
+                      41036735.711458355
+                    ],
+                    [
+                      -32920533.10722445,
+                      32161108.775449336,
+                      10227522.88120386
+                    ],
+                    [
+                      87474681.22369456,
+                      -60208150.30286064
+                    ],
+                    [
+                      -6549657.508703843,
+                      -41993774.533046424,
+                      -13327826.97929366
+                    ]
+                  ],
+                  [
+                    [
+                      30537017.009503335,
+                      -79667334.92564398,
+                      -88889236.06981094,
+                      -52206223.16330654,
+                      -69291827.26571754
+                    ],
+                    [
+                      -79136773.5695305,
+                      40852139.29538515
+                    ],
+                    [
+                      77839676.24770507,
+                      80470871.2306503,
+                      -81428377.38344732
+                    ],
+                    [
+                      -46791546.94639125,
+                      50706410.72548652,
+                      -57932699.451253876
+                    ],
+                    [
+                      -39960787.04323272,
+                      34760610.83503565
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      -65653829.15149518,
+                      -29047991.22123
+                    ],
+                    [
+                      63955100.25662017,
+                      -80759166.80353887,
+                      24917114.14871356
+                    ],
+                    [
+                      -26298342.68423477,
+                      58297239.811121434,
+                      -54412225.49888283
+                    ],
+                    [
+                      63858451.54964885,
+                      17534229.554232165,
+                      -52896032.57440725,
+                      -42289323.35715501,
+                      -5355988.563522458
+                    ],
+                    [
+                      25414537.17451936,
+                      -13290887.48274745,
+                      70973573.14941803,
+                      -61282819.70855181,
+                      65154370.41040531
+                    ]
+                  ],
+                  [
+                    [
+                      -55740691.03197319,
+                      29470894.304124445,
+                      -6602153.674302086,
+                      41962484.513558835,
+                      56316525.15611789
+                    ],
+                    [
+                      92309730.31326598,
+                      62168648.16296187,
+                      3577420.360549003,
+                      61150445.11705953,
+                      -76829405.23828223
+                    ],
+                    [
+                      93556572.97051072,
+                      -72500074.84035438,
+                      -74391737.41995966,
+                      69214739.77941331
+                    ],
+                    [
+                      73247242.13617453,
+                      -23380759.783794343
+                    ],
+                    [
+                      -32142045.60822946,
+                      72346176.41575417,
+                      27273767.964140266,
+                      -17957715.698179543
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      75543534.97320628,
+                      -68623678.46299373,
+                      65440723.46885747,
+                      96920615.16005802
+                    ],
+                    [
+                      11889188.929080367,
+                      -88889613.68919836,
+                      45401344.75405863
+                    ],
+                    [
+                      82148013.30880901,
+                      -59847561.38672897,
+                      -11722158.023525313,
+                      -98182498.02916415,
+                      1616334.8019871563
+                    ],
+                    [
+                      -16141497.99095288,
+                      -89331672.05493847,
+                      -72681616.26242256,
+                      46908148.57258332,
+                      26932203.307368785
+                    ]
+                  ],
+                  [
+                    [
+                      72673028.04420063,
+                      22629995.184821248
+                    ],
+                    [
+                      14235748.953258127,
+                      10789401.14688225,
+                      -33198474.244075514,
+                      76981460.97161517,
+                      48787782.873716086
+                    ],
+                    [
+                      -11259043.363865122,
+                      53166161.41548991,
+                      62180285.88939512
+                    ],
+                    [
+                      -9610657.369472265,
+                      55482772.98718983,
+                      -96683091.17649181
+                    ]
+                  ],
+                  [
+                    [
+                      -37037291.022954874,
+                      -33179375.7853629,
+                      -11103994.781251922
+                    ],
+                    [
+                      97793723.27253538,
+                      29648085.546179414,
+                      7504515.445677713,
+                      -42690643.845792286
+                    ],
+                    [
+                      80133107.59987059,
+                      -12900195.946741581,
+                      -20745907.773796394,
+                      -32112203.971896186,
+                      -23151875.89979908
+                    ],
+                    [
+                      -99965697.3404791,
+                      -9654326.666376293,
+                      42722316.951883405,
+                      -12079692.388112307
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      -74026618.89238846,
+                      -1425291.38619785,
+                      59130936.84339863,
+                      -59818550.263949975,
+                      32242012.282348424
+                    ],
+                    [
+                      17699600.320975035,
+                      28568918.871087685,
+                      -81600990.47103485
+                    ],
+                    [
+                      73109231.59220168,
+                      -34961666.20134937
+                    ],
+                    [
+                      -77038045.03822222,
+                      82517947.0860362,
+                      22300954.89893347,
+                      -11028059.0192886,
+                      48749679.75953439
+                    ]
+                  ],
+                  [
+                    [
+                      -35663996.07746939,
+                      -11581513.46582967,
+                      -14888154.351617828,
+                      70215249.95771402
+                    ],
+                    [
+                      98948566.03249037,
+                      -96190707.65149327,
+                      -23705658.761637643,
+                      10715626.697636306,
+                      61114159.65687242
+                    ],
+                    [
+                      -51834776.497868404,
+                      23177229.762517393,
+                      -5527532.362358525
+                    ],
+                    [
+                      -36897223.36156067,
+                      -45667589.769354075,
+                      45855973.192937404
+                    ],
+                    [
+                      -73872480.26404881,
+                      -76152786.26678175,
+                      26043591.54862936,
+                      -68359499.69945452,
+                      -13880142.657066405
+                    ]
+                  ],
+                  [
+                    [
+                      -28645007.413096905,
+                      31568010.411912933
+                    ],
+                    [
+                      99753553.34804335,
+                      -21244684.484197125,
+                      10767100.132433578,
+                      -88843297.55667728,
+                      -6606105.318936691
+                    ],
+                    [
+                      68308846.66743994,
+                      1307520.1504006833
+                    ],
+                    [
+                      -80660862.8381279,
+                      37937006.56820661,
+                      52597068.71796724,
+                      92554380.04706153,
+                      -51090322.70567502
+                    ]
+                  ],
+                  [
+                    [
+                      14469744.972856537,
+                      -67644413.54422474,
+                      36784442.94811678,
+                      -76427360.11788218
+                    ],
+                    [
+                      -23261933.331505924,
+                      70336555.08076665,
+                      -38860764.5264436
+                    ],
+                    [
+                      71772244.02305982,
+                      -900369.6377175748,
+                      10146625.31523256,
+                      60161169.43259913
+                    ],
+                    [
+                      -89346871.04606794,
+                      -18906244.835553214,
+                      49188228.623713404,
+                      47645611.86188382
+                    ]
+                  ],
+                  [
+                    [
+                      53567449.73564127,
+                      -46117341.128845155,
+                      -36481010.21127073,
+                      -18144737.004523396,
+                      50092749.54189086
+                    ],
+                    [
+                      -58107718.80623902,
+                      97567165.02069655,
+                      -70131922.86926022,
+                      31725064.338932827,
+                      8696403.965167448
+                    ],
+                    [
+                      -78737702.01013781,
+                      36299214.18983132,
+                      55086671.14158851
+                    ],
+                    [
+                      74075279.36740884,
+                      90357573.93679976
+                    ],
+                    [
+                      -65853787.35426959,
+                      -23620975.490522206,
+                      -66746471.49812114
+                    ]
+                  ]
+                ]
+              ],
+              "bbox": [
+                -61154519.2221687,
+                -87431863.07551594,
+                -8647365.625794709,
+                50758946.948028415
+              ]
+            },
+            "bbox": [
+              -35260184.965169825,
+              16542155.9693055,
+              7655123.730411574,
+              5080209.444170579,
+              67022167.461732954
+            ]
+          },
+          {
+            "type": "Feature",
+            "properties": null,
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -99638786.55917251,
+                  44473291.275533974
+                ],
+                [
+                  -45986678.02945029,
+                  3312068.3070728183,
+                  -14621515.611776233,
+                  -89463697.30929127,
+                  11126209.322058633
+                ],
+                [
+                  -7863392.66583395,
+                  88229354.08433554
+                ],
+                [
+                  -17566718.154523402,
+                  4051327.969741434
+                ]
+              ],
+              "bbox": [
+                97223794.74105775,
+                -38188152.00477139,
+                63190135.61424926,
+                -36697655.723418854,
+                24734265.20398189
+              ]
+            },
+            "bbox": [
+              59186308.588103086,
+              -72867433.64301753,
+              24525715.732763678,
+              -16040534.941815719
+            ]
+          }
+        ],
+        "bbox": [
+          41672715.881006986,
+          9610456.93319209,
+          -41454687.79520636,
+          17354689.068101764,
+          34422160.449570924
+        ]
+      },
+      "CoordinateQualityCheckRemarks": [
+        "Lorem sunt veniam minim adipisicing",
+        "sunt"
+      ],
+      "QuantitativeAccuracyBandID": "k0JacC:reference-data--QuantitativeAccuracyBand:tVX:1283019",
+      "CoordinateQualityCheckPerformedBy": "adipisicing",
+      "AppliedOperations": [
+        "pariatur",
+        "irure fugiat sit est",
+        "consectetur aliquip",
+        "in Lorem",
+        "nulla dolor"
+      ],
+      "QualitativeSpatialAccuracyTypeID": "aFgniXO42P:reference-data--QualitativeSpatialAccuracyType:B:7399949",
+      "SpatialParameterTypeID": "x_owBy-eLv:reference-data--SpatialParameterType:p001PPL1.H:3395668599",
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "persistableReferenceCrs": "ad fugiat",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "properties": null,
+            "geometry": {
+              "type": "AnyCrsMultiPoint",
+              "coordinates": [
+                [
+                  28170983.953896716,
+                  -95312905.0929889,
+                  40600804.513958246
+                ],
+                [
+                  -66605203.995799966,
+                  42041525.8503446,
+                  54907395.42228785,
+                  -6237165.455265626
+                ],
+                [
+                  20192380.464095965,
+                  59309983.527967066,
+                  90950157.72581628,
+                  -66743033.8963255
+                ]
+              ],
+              "bbox": [
+                -18181805.87296368,
+                6304497.217742115,
+                -16579448.819654077,
+                -79227474.29250869
+              ]
+            },
+            "bbox": [
+              38090950.61990601,
+              70213615.26608753,
+              79651461.43305185,
+              -21843859.277152866
+            ]
+          },
+          {
+            "type": "AnyCrsFeature",
+            "properties": {
+              "cillum__15": 71893721
+            },
+            "geometry": {
+              "type": "AnyCrsMultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      89111536.57400247,
+                      -74823144.08613388,
+                      -9668909.684431732,
+                      -8259066.791638151
+                    ],
+                    [
+                      7636030.303128675,
+                      -60273581.4613637,
+                      -51802637.0444423
+                    ],
+                    [
+                      -91938155.08238164,
+                      85529811.09466001,
+                      -3997847.2796092182,
+                      -83545104.27861372
+                    ],
+                    [
+                      73938468.9098356,
+                      -11976674.692882597,
+                      -2787101.5151656866,
+                      -71584720.87242283
+                    ],
+                    [
+                      -58170306.649225004,
+                      83930390.68173185
+                    ]
+                  ],
+                  [
+                    [
+                      -63905264.66283355,
+                      84345741.81653053
+                    ],
+                    [
+                      -80423886.64915094,
+                      85357309.64314583,
+                      -51598528.5656978,
+                      -48818782.03831749,
+                      -68039252.0151899
+                    ],
+                    [
+                      39223942.14220902,
+                      -74024073.44428921,
+                      60527101.14924884,
+                      -55535713.342848144,
+                      -43623153.68394696
+                    ],
+                    [
+                      38440455.667806,
+                      -52982761.005320534,
+                      74415921.69824988
+                    ]
+                  ],
+                  [
+                    [
+                      -17923313.11597106,
+                      -31365717.331768334
+                    ],
+                    [
+                      70271080.38111997,
+                      75196225.27191246,
+                      -41714354.894584484,
+                      -61292118.53377836
+                    ],
+                    [
+                      60982170.41938183,
+                      1117961.7629204243,
+                      -79873003.97283979,
+                      -46844373.162720695,
+                      -38553512.09061393
+                    ],
+                    [
+                      4989697.646723881,
+                      93624567.10247838,
+                      -27264815.333303556
+                    ],
+                    [
+                      21302491.63742964,
+                      -68807229.76505724
+                    ]
+                  ],
+                  [
+                    [
+                      30401768.902346045,
+                      -12584030.81998524
+                    ],
+                    [
+                      -56909059.40735071,
+                      -50135176.808318116
+                    ],
+                    [
+                      4388159.863670453,
+                      -36917853.503874846,
+                      81751413.96524897,
+                      21156800.14556028,
+                      -98392354.49902447
+                    ],
+                    [
+                      -10770084.493959352,
+                      -36941462.15617589,
+                      -6435115.168456078,
+                      -10540991.00293988,
+                      -19971966.566610694
+                    ],
+                    [
+                      -57509798.96703397,
+                      -25620282.376520634,
+                      -58015483.071494535,
+                      83569724.53798518
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      -4418146.857928067,
+                      -8883932.453559235,
+                      -5486002.379970029,
+                      -71422968.75068279
+                    ],
+                    [
+                      -40308186.93816693,
+                      42539250.32690659
+                    ],
+                    [
+                      91292152.47438434,
+                      -72853740.99625418,
+                      15763860.858386263
+                    ],
+                    [
+                      -4119105.56996049,
+                      -78791494.00691041,
+                      -11953234.735062912,
+                      -320787.5639369041,
+                      -85668610.16494045
+                    ]
+                  ],
+                  [
+                    [
+                      -26428629.51479025,
+                      84816974.18110326,
+                      -2277052.2127952874,
+                      63219391.474850625
+                    ],
+                    [
+                      -4256558.746782184,
+                      9349496.935086265,
+                      -90397613.81801903,
+                      -64339006.3975871,
+                      96986062.17725101
+                    ],
+                    [
+                      -99736234.67939876,
+                      -82347263.12073377,
+                      89910519.70838356
+                    ],
+                    [
+                      -19610560.60282895,
+                      52616074.64508581,
+                      81030931.48032486,
+                      -45230201.861863196,
+                      56614860.4370116
+                    ],
+                    [
+                      47056678.23140925,
+                      -19007561.931655407
+                    ]
+                  ],
+                  [
+                    [
+                      40042702.409845054,
+                      -81141028.67855646,
+                      81150369.44897461,
+                      -68428131.11408928
+                    ],
+                    [
+                      -76163697.34475064,
+                      -13740660.702528954,
+                      -38827119.83633098
+                    ],
+                    [
+                      -36088961.87258828,
+                      -84696282.41333382
+                    ],
+                    [
+                      -93506257.80107962,
+                      19347311.1306978,
+                      -30200174.7606377,
+                      57430763.45921871
+                    ],
+                    [
+                      -78435125.20542523,
+                      -2201264.908366725
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      -20588629.153562814,
+                      -46468900.80675865,
+                      -87804592.85760784,
+                      23729148.296400756,
+                      -76956194.51411185
+                    ],
+                    [
+                      -39894877.79503502,
+                      21190094.95677975
+                    ],
+                    [
+                      77410005.7472888,
+                      66211921.358225554,
+                      84399497.81823903
+                    ],
+                    [
+                      -84645940.30026324,
+                      2178000.528869495,
+                      1521936.3372308165,
+                      -83479779.04809804
+                    ]
+                  ],
+                  [
+                    [
+                      99122902.11634165,
+                      2794968.1823643297
+                    ],
+                    [
+                      26613337.72471641,
+                      32435213.669442415,
+                      -51261464.04048606,
+                      -76380784.06500295
+                    ],
+                    [
+                      69033450.01033375,
+                      -61526919.33646206
+                    ],
+                    [
+                      -90057560.2859844,
+                      51976393.109638005
+                    ]
+                  ],
+                  [
+                    [
+                      16675456.09792149,
+                      -18595135.031213507,
+                      -50248660.09886293
+                    ],
+                    [
+                      81830933.99293905,
+                      -1864909.0043856353,
+                      -6884006.395077929
+                    ],
+                    [
+                      38517615.98504096,
+                      -26385896.884966597,
+                      15835917.444160447,
+                      11785834.900925666,
+                      18809976.099841624
+                    ],
+                    [
+                      31664482.27105744,
+                      33516456.598163307,
+                      33637981.63103025,
+                      95579366.81534404,
+                      -42803653.485959314
+                    ]
+                  ],
+                  [
+                    [
+                      4611582.629621118,
+                      65248684.50576031,
+                      -54767063.26306511
+                    ],
+                    [
+                      -28402130.507977948,
+                      97125395.37598649,
+                      87118098.90254235,
+                      -29532476.350671157
+                    ],
+                    [
+                      89014349.62735769,
+                      50575441.157280385,
+                      -29661166.670532778,
+                      -31900612.691382006
+                    ],
+                    [
+                      44633668.71077162,
+                      -95399845.76137945,
+                      8684395.136445165
+                    ],
+                    [
+                      -39728439.62278909,
+                      18498344.723081857,
+                      51868131.42884615,
+                      70001684.24880081,
+                      -84134295.70748256
+                    ]
+                  ],
+                  [
+                    [
+                      -17881901.330574542,
+                      -51122826.414988905,
+                      27949299.40322599
+                    ],
+                    [
+                      32956655.14537987,
+                      99307828.19334912,
+                      -92051821.25791231,
+                      50665702.3369759
+                    ],
+                    [
+                      -50451859.420541264,
+                      70364172.07734752,
+                      -50410336.859342396
+                    ],
+                    [
+                      28931167.989951015,
+                      -52546198.14082135,
+                      -15192745.945997983,
+                      -4583914.564586669
+                    ]
+                  ]
+                ]
+              ],
+              "bbox": [
+                -94822644.56761673,
+                -98400891.74608666,
+                91259092.01084441,
+                -20467668.742953718,
+                47639819.21874666
+              ]
+            },
+            "bbox": [
+              -59332837.805897154,
+              -33082197.930043943,
+              10826518.448123738,
+              -42565493.71245435
+            ]
+          },
+          {
+            "type": "AnyCrsFeature",
+            "properties": {
+              "quic": "ut dolor reprehenderit anim ut",
+              "Lorem__": "reprehenderit quis culpa amet",
+              "qui1_": -25842991.24309954
+            },
+            "geometry": {
+              "type": "AnyCrsGeometryCollection",
+              "geometries": [
+                {
+                  "type": "AnyCrsMultiLineString",
+                  "coordinates": [
+                    [
+                      [
+                        -42647728.389088854,
+                        39391839.78142443,
+                        -92283650.06525718,
+                        63319399.38635221,
+                        96575248.32725582
+                      ],
+                      [
+                        17371192.642621085,
+                        29959571.29250309
+                      ],
+                      [
+                        6539477.290017575,
+                        89215950.37298736,
+                        77456562.5313353,
+                        -91693650.69227093
+                      ]
+                    ],
+                    [
+                      [
+                        -78369042.29845777,
+                        -36355692.93663787,
+                        -47598601.238246955,
+                        -47371090.787519224,
+                        15263259.17090194
+                      ],
+                      [
+                        36776071.60583374,
+                        -31651278.85626839,
+                        97605978.81177932,
+                        8133477.500113443,
+                        -95966510.0013819
+                      ],
+                      [
+                        16790722.493017495,
+                        -78269854.81615165,
+                        40166600.74603754,
+                        99377757.6237629
+                      ]
+                    ],
+                    [
+                      [
+                        86595311.6172483,
+                        -4980395.277126163,
+                        82393242.13250008,
+                        -7822298.305308893
+                      ],
+                      [
+                        84881371.79470256,
+                        96979102.44895479,
+                        -36558687.01034568
+                      ],
+                      [
+                        -65179548.00841108,
+                        -17659276.284066275
+                      ],
+                      [
+                        79382189.68753466,
+                        44387788.301232934,
+                        29976371.027749658,
+                        -55869145.821040764
+                      ],
+                      [
+                        -19848095.61184375,
+                        34728219.02555379,
+                        -90015529.71521771,
+                        90000218.34663162,
+                        73691738.1031962
+                      ]
+                    ],
+                    [
+                      [
+                        96774165.26984254,
+                        99074819.60570654,
+                        -32072287.166840047,
+                        -67512842.01588166,
+                        17074702.746282116
+                      ],
+                      [
+                        84379685.40676174,
+                        -22649842.25842175,
+                        96854594.13336006,
+                        71382346.24391931
+                      ]
+                    ],
+                    [
+                      [
+                        -15869061.008231,
+                        90815728.81470582,
+                        71971256.17296213,
+                        52652217.428501874
+                      ],
+                      [
+                        -30846133.21332839,
+                        6905467.811670512
+                      ]
+                    ]
+                  ],
+                  "bbox": [
+                    -19890408.89020343,
+                    -38627074.93780606,
+                    -60623391.198028155,
+                    43225237.13813868,
+                    -55236590.446766056
+                  ]
+                }
+              ],
+              "bbox": [
+                69609380.19516128,
+                -40433368.83290241,
+                -7749293.461994261,
+                27984619.787847653,
+                -86870820.01829389
+              ]
+            },
+            "bbox": [
+              9267546.602372572,
+              16558616.814685673,
+              -78756907.21725368,
+              52713259.386778414
+            ]
+          },
+          {
+            "type": "AnyCrsFeature",
+            "properties": {
+              "occaecat_9": "dolore ut",
+              "veniam_a9": "reprehenderit nostrud ut incididunt magna"
+            },
+            "geometry": {
+              "type": "AnyCrsPoint",
+              "coordinates": [
+                -77854149.19109179,
+                96281267.05325475,
+                32901182.91722539,
+                43026245.56093112,
+                33729771.57926802
+              ],
+              "bbox": [
+                67460144.17172962,
+                -49347736.489202745,
+                -24576828.904378682,
+                -55269346.93715451,
+                86673953.35214183
+              ]
+            },
+            "bbox": [
+              17863666.34146133,
+              -88838321.84150173,
+              -99400574.99954621,
+              -51616034.07542174
+            ]
+          },
+          {
+            "type": "AnyCrsFeature",
+            "properties": null,
+            "geometry": {
+              "type": "AnyCrsMultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      38541390.77875358,
+                      -45077854.47677566,
+                      35262682.568318516,
+                      29367400.217821166,
+                      -90556899.50513184
+                    ],
+                    [
+                      -78681382.21357515,
+                      -26364279.258514345,
+                      -76756978.15484938,
+                      53546247.769984156
+                    ],
+                    [
+                      -2769956.7536608726,
+                      -47085639.11077049,
+                      -61946365.12640292,
+                      78643195.13658914
+                    ],
+                    [
+                      28179372.12573965,
+                      -99008265.14614625,
+                      66512035.645694494,
+                      -11335884.113890946,
+                      13695753.313698083
+                    ],
+                    [
+                      40631390.937999874,
+                      -6209583.310323507,
+                      66597957.371813536,
+                      -39222469.88339819
+                    ]
+                  ],
+                  [
+                    [
+                      -1150404.3575746268,
+                      55615889.02941796,
+                      35234114.688929975,
+                      -86479146.8390049
+                    ],
+                    [
+                      74954213.97487569,
+                      -43188910.89825021,
+                      -49575568.98527877
+                    ],
+                    [
+                      -73063453.99489364,
+                      60630745.381370276,
+                      -92914099.31111965,
+                      2994730.048635885
+                    ],
+                    [
+                      39939370.83532187,
+                      -29464812.50938268,
+                      -95139350.13038035
+                    ]
+                  ],
+                  [
+                    [
+                      79068753.88924247,
+                      50136879.30470207
+                    ],
+                    [
+                      17937410.04905212,
+                      -36909731.15266099,
+                      -57747042.45990521
+                    ],
+                    [
+                      -24241836.581581295,
+                      -97105713.89109534
+                    ],
+                    [
+                      -72716202.15209913,
+                      -86644571.72067404,
+                      59385040.39992103,
+                      97463699.50021738,
+                      -89838471.75282417
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      -51642981.17004977,
+                      -59706007.101480864,
+                      -81873100.89462732,
+                      -9144128.280074403
+                    ],
+                    [
+                      -95594321.24409191,
+                      -57168127.96028727,
+                      -52935705.221254036,
+                      -84999350.17361575,
+                      -9838515.949539155
+                    ],
+                    [
+                      -47111703.261450775,
+                      13989297.448578224,
+                      -51258012.829203725
+                    ],
+                    [
+                      -72641723.52423185,
+                      -76494132.4105112,
+                      88850899.13484198,
+                      -26750627.044317693
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      -93974201.88764374,
+                      9529491.569962412,
+                      -59929086.932581544
+                    ],
+                    [
+                      -85339309.38097212,
+                      -58837646.08331188,
+                      -90551178.74283975
+                    ],
+                    [
+                      -33735628.990223065,
+                      -91522321.22490337,
+                      8053557.643332109,
+                      76967827.31275195
+                    ],
+                    [
+                      -13176352.992327958,
+                      -86510148.0581617,
+                      -33186127.928851053,
+                      25097254.183424056,
+                      -73768172.48787595
+                    ]
+                  ],
+                  [
+                    [
+                      72477369.34052771,
+                      71839539.64932346
+                    ],
+                    [
+                      -19113991.32484208,
+                      -76520523.65256327,
+                      73551139.40563253,
+                      73898860.22653621
+                    ],
+                    [
+                      -14380433.336793974,
+                      -4462436.48958309,
+                      -57041888.48463232
+                    ],
+                    [
+                      -21830011.626982525,
+                      -43436065.57587916,
+                      -12831003.1280265
+                    ],
+                    [
+                      25464415.2526664,
+                      3831140.059000358,
+                      92405324.52996176,
+                      69714365.95616859,
+                      20253243.04886453
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      -90111220.3049236,
+                      40488784.87346396,
+                      -71573906.06258702,
+                      57058535.75346932
+                    ],
+                    [
+                      -15312950.365342885,
+                      85014382.18472135,
+                      -87298649.49704956
+                    ],
+                    [
+                      86436349.63619024,
+                      8809064.303326681,
+                      -30064846.37512073,
+                      75047046.73458183,
+                      17892887.23873277
+                    ],
+                    [
+                      14142994.879541352,
+                      -48072928.47497731
+                    ]
+                  ]
+                ]
+              ],
+              "bbox": [
+                94488152.38778216,
+                -80519842.47811884,
+                -3207749.608720273,
+                -42011406.56648003
+              ]
+            },
+            "bbox": [
+              76148945.4987064,
+              22247989.67514731,
+              99131278.11465555,
+              -85961712.21857199
+            ]
+          }
+        ],
+        "CoordinateReferenceSystemID": "aw0wevbF:reference-data--CoordinateReferenceSystem:dhcZ:861476",
+        "VerticalCoordinateReferenceSystemID": "Gd8IB6PNg:reference-data--CoordinateReferenceSystem:%dsY:534019426",
+        "VerticalUnitID": "s7V.R:reference-data--UnitOfMeasure:1Izec:",
+        "persistableReferenceVerticalCrs": "in",
+        "bbox": [
+          -92977245.71610315,
+          26619229.25624764,
+          -60508881.3829014,
+          34421709.52382207,
+          59779726.51119888
+        ],
+        "persistableReferenceUnitZ": "deserunt consequat adipisicing"
+      },
+      "SpatialLocationCoordinatesDate": "1959-07-22T13:26:03.0Z",
+      "SpatialGeometryTypeID": "4eZIlg:reference-data--SpatialGeometryType:IGaMbUj:885365",
+      "CoordinateQualityCheckDateTime": "1975-01-22T04:58:18.0Z"
+    },
+    "FacilityDescription": "ipsum fugiat elit et",
+    "WellID": "Au:master-data--Well:jA5cbBvsVZ:81",
+    "ResourceLifecycleStatus": "jM:reference-data--ResourceLifecycleStatus:3YEu0JIB9iY:736640004",
+    "ResourceCurationStatus": "k:reference-data--ResourceCurationStatus:DrZ7MO:75",
+    "SequenceNumber": -5041585,
+    "SpatialLocation": {
+      "CoordinateQualityCheckPerformedBy": "cillum aliquip ad minim officia",
+      "CoordinateQualityCheckDateTime": "1972-08-16T19:37:20.0Z",
+      "CoordinateQualityCheckRemarks": [
+        "adipisicing aute fugiat consequat",
+        "anim exercitation deserunt",
+        "laborum nostrud",
+        "ullamco id",
+        "nostrud reprehenderit qui"
+      ],
+      "QuantitativeAccuracyBandID": "f:reference-data--QuantitativeAccuracyBand:Cg:307812",
+      "SpatialParameterTypeID": "D0eG:reference-data--SpatialParameterType:nW1d_aRK8N:7784272",
+      "AppliedOperations": [
+        "dolor ea",
+        "pariatur Ut Lorem quis ullamco"
+      ],
+      "SpatialLocationCoordinatesDate": "1955-07-19T05:55:22.0Z",
+      "QualitativeSpatialAccuracyTypeID": "unu3N1V:reference-data--QualitativeSpatialAccuracyType:%N:3453",
+      "SpatialGeometryTypeID": "V2RB:reference-data--SpatialGeometryType:VcEWafLQ:089253",
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "persistableReferenceCrs": "veniam exercitation",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "properties": {
+              "proident_06": true
+            },
+            "geometry": {
+              "type": "AnyCrsLineString",
+              "coordinates": [
+                [
+                  -70148268.5373231,
+                  21432384.067319483
+                ],
+                [
+                  -63573525.40469119,
+                  -57578170.304650046,
+                  -76136604.33468492
+                ]
+              ],
+              "bbox": [
+                86449866.52263996,
+                -87437790.31666212,
+                59998890.88249299,
+                -99050430.26619028
+              ]
+            },
+            "bbox": [
+              -6578081.596137464,
+              -38867677.86411482,
+              -82426179.72160693,
+              -44825250.40472169
+            ]
+          }
+        ],
+        "CoordinateReferenceSystemID": "qiY:reference-data--CoordinateReferenceSystem:QMahm:463",
+        "bbox": [
+          60825202.95229161,
+          -3375333.5375463814,
+          57076596.57259193,
+          9340015.217538953
+        ],
+        "VerticalUnitID": "JT-CjTB_p:reference-data--UnitOfMeasure:e1vQeZmb3:0",
+        "VerticalCoordinateReferenceSystemID": "V2:reference-data--CoordinateReferenceSystem:4MS3Y:50",
+        "persistableReferenceVerticalCrs": "sint anim consectetur mollit",
+        "persistableReferenceUnitZ": "Duis ullamco occaecat"
+      },
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "aliqua764": true
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -48898793.981889166,
+                      -64918493.66265712,
+                      -92470372.95306228
+                    ],
+                    [
+                      -77129482.0361725,
+                      83035659.1379585,
+                      87964972.42684892,
+                      -87046797.33437297,
+                      52906822.53834942
+                    ],
+                    [
+                      59358921.19604877,
+                      72304712.73776582,
+                      43300931.59418741
+                    ],
+                    [
+                      75024573.41287157,
+                      77997106.53116453,
+                      -6822119.508744046
+                    ],
+                    [
+                      -85894085.6776746,
+                      23947341.462752014,
+                      72445192.63331634,
+                      10882589.866693467
+                    ]
+                  ],
+                  [
+                    [
+                      -33759216.15031896,
+                      -87162481.31468134,
+                      26594079.557886958
+                    ],
+                    [
+                      67595758.64097619,
+                      92947073.48402399,
+                      1658669.7669848055,
+                      38208962.62070149,
+                      -44598202.77463602
+                    ],
+                    [
+                      -86599924.806648,
+                      3078297.269079849,
+                      -33836071.81949702,
+                      -29423844.39698431
+                    ],
+                    [
+                      61573307.94535828,
+                      41630140.11237255,
+                      33464574.747983426,
+                      19480317.600920215
+                    ]
+                  ]
+                ]
+              ],
+              "bbox": [
+                -82669226.04761326,
+                -7677545.531684384,
+                93962467.63335028,
+                -94755393.6666503,
+                16493930.328490242
+              ]
+            },
+            "bbox": [
+              94856332.13844585,
+              -47239114.91974244,
+              -33935514.40608482,
+              -56974611.72912137,
+              42443849.58297601
+            ]
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "in_8e3": 37982276.53026748
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -26479323.214614347,
+                      -20722000.615159124,
+                      42433867.12608448,
+                      97442956.64020908
+                    ],
+                    [
+                      1785658.9378706217,
+                      62340655.764784366,
+                      -59884687.44348319,
+                      -47305519.457407795,
+                      -17942343.59717226
+                    ],
+                    [
+                      -66355214.44787804,
+                      66557284.97400448,
+                      -23782550.585327327,
+                      -11472866.026276752,
+                      6879820.701718971
+                    ],
+                    [
+                      54719751.05773091,
+                      47770784.2979404,
+                      52760128.69981837,
+                      -89441003.82059048,
+                      95691816.82470262
+                    ]
+                  ]
+                ]
+              ],
+              "bbox": [
+                47399420.78181535,
+                94682932.75214407,
+                -7961288.159273058,
+                1050390.7852606773,
+                34096223.570926994
+              ]
+            },
+            "bbox": [
+              -40465501.57181774,
+              14237798.366720632,
+              -73858855.39085042,
+              -79651737.77316912,
+              71905772.2061705
+            ]
+          },
+          {
+            "type": "Feature",
+            "properties": null,
+            "geometry": {
+              "type": "MultiLineString",
+              "coordinates": [
+                [
+                  [
+                    40104997.94335121,
+                    -32716598.93196526,
+                    -67186858.97932908,
+                    -61890991.77281099
+                  ],
+                  [
+                    74790319.1204769,
+                    96618420.57207176,
+                    54037853.98644698,
+                    -87016989.01018457
+                  ]
+                ],
+                [
+                  [
+                    -93837101.90886542,
+                    85193071.82321113,
+                    16987482.8247419,
+                    -30355593.865703493
+                  ],
+                  [
+                    92043477.99244478,
+                    -76100363.6039761,
+                    -26830750.717804655,
+                    17335544.654454023
+                  ],
+                  [
+                    84678774.71804738,
+                    -64724879.34852802,
+                    1692896.899597466,
+                    5673.619918361306,
+                    46559655.267739356
+                  ],
+                  [
+                    -96299061.74746393,
+                    -33453705.16331221,
+                    -70540857.68696947
+                  ]
+                ]
+              ],
+              "bbox": [
+                14789944.361240596,
+                -9990873.289153695,
+                30284808.322863355,
+                9427867.199525446,
+                -85381592.20775065
+              ]
+            },
+            "bbox": [
+              15838398.838549182,
+              14790819.932264164,
+              20374654.367955342,
+              -84716894.03778593
+            ]
+          },
+          {
+            "type": "Feature",
+            "properties": null,
+            "geometry": {
+              "type": "MultiLineString",
+              "coordinates": [
+                [
+                  [
+                    -66068439.67555336,
+                    32092924.878695443,
+                    74606323.2816144,
+                    -74913442.08550549,
+                    -51898350.200760834
+                  ],
+                  [
+                    41950292.318286866,
+                    -47385064.8197846,
+                    -46898350.637175,
+                    -60471276.13197232
+                  ],
+                  [
+                    2321944.3151350617,
+                    81745680.41950768,
+                    58987770.6494022
+                  ],
+                  [
+                    59028058.420415044,
+                    17168780.507832542
+                  ]
+                ],
+                [
+                  [
+                    38355625.95018965,
+                    14491580.019015938
+                  ],
+                  [
+                    64016020.63688719,
+                    42890404.470383465,
+                    -11835972.093008667
+                  ],
+                  [
+                    15761831.130270407,
+                    -37156365.65994707,
+                    -1031578.7902544141,
+                    -75774878.39717177
+                  ]
+                ],
+                [
+                  [
+                    -32016092.38628465,
+                    87457006.287978,
+                    69164115.32625303
+                  ],
+                  [
+                    23677656.627598867,
+                    -77057226.31531498
+                  ]
+                ],
+                [
+                  [
+                    -72343543.38347766,
+                    -73971814.60445972,
+                    72839126.17434782
+                  ],
+                  [
+                    6482714.0365510285,
+                    -12043832.845202789,
+                    -67328598.15157077,
+                    14532224.756801322,
+                    -34306974.64015911
+                  ],
+                  [
+                    -38693211.47632512,
+                    24234830.22181061,
+                    -45786515.67087906,
+                    -52799463.01945617,
+                    11604933.547695711
+                  ],
+                  [
+                    66795381.74786213,
+                    -42231587.748824514,
+                    64740971.54856077
+                  ],
+                  [
+                    15933506.571540624,
+                    -36898251.34945286,
+                    -16821453.174640164
+                  ]
+                ]
+              ],
+              "bbox": [
+                -85454914.0049722,
+                -75948164.01030602,
+                -65700236.77252752,
+                -66085615.657183625,
+                -5464708.807725519
+              ]
+            },
+            "bbox": [
+              41921627.15305784,
+              -46919330.883247375,
+              -91104142.337221,
+              -18900312.12266235,
+              10457323.195908263
+            ]
+          },
+          {
+            "type": "Feature",
+            "properties": null,
+            "geometry": {
+              "type": "MultiLineString",
+              "coordinates": [
+                [
+                  [
+                    -40646043.90942876,
+                    -29522395.352568045,
+                    -75037209.5027929
+                  ],
+                  [
+                    -2077862.156180039,
+                    -38975534.532015584,
+                    36584472.337928206,
+                    80619173.26516068,
+                    -53285863.947473414
+                  ],
+                  [
+                    -65207886.082544245,
+                    57252734.706113815,
+                    21321771.995922938,
+                    -95429159.18119122
+                  ]
+                ],
+                [
+                  [
+                    97510081.95670465,
+                    37851444.250575125,
+                    -35146135.13622786,
+                    -28273317.549508974
+                  ],
+                  [
+                    83204511.26684913,
+                    96007975.01243308,
+                    93297842.191297
+                  ],
+                  [
+                    44958277.21795419,
+                    71738955.03887638,
+                    -94370257.45600851,
+                    -45104722.47127071
+                  ]
+                ],
+                [
+                  [
+                    -29843753.857641995,
+                    -74365738.41422635
+                  ],
+                  [
+                    44555182.37052959,
+                    -1840130.4346214384
+                  ],
+                  [
+                    -61652411.416553065,
+                    -69126646.48794796,
+                    5013273.802102253,
+                    -83650429.92221327,
+                    -3897765.0886663496
+                  ],
+                  [
+                    -51766483.396797925,
+                    60291419.54630405,
+                    50524842.4758521,
+                    -93730734.92577513,
+                    60393150.64842892
+                  ],
+                  [
+                    67403923.08446667,
+                    77657735.9945564,
+                    -26996446.1866135
+                  ]
+                ]
+              ],
+              "bbox": [
+                34318892.09208706,
+                34473527.06997907,
+                33536608.668760687,
+                6793543.927807927,
+                -5485883.11806415
+              ]
+            },
+            "bbox": [
+              -92683007.48945668,
+              -37148461.74020203,
+              72930688.00978526,
+              -53567064.348154105,
+              -74310773.49507993
+            ]
+          }
+        ],
+        "bbox": [
+          -48060856.69697273,
+          16599041.695901826,
+          53423591.08822465,
+          -21743704.661867455
+        ]
+      }
+    },
+    "ShowProductTypeID": "ks1yYOQ:reference-data--WellProductType:xkXM0:9128"
+  },
+  "modifyTime": "1971-07-26T12:52:49.0Z",
+  "ancestry": {
+    "parents": [
+      "o4ypLXoMgbD:PkMHLj61kTU:X:65539",
+      "usTrAINVj:tCXjGN2F:qs:0",
+      "uh:.2Uolt1:L.R%:820237"
+    ]
+  },
+  "createUser": "ex sunt dolor consequat dolore"
+},
+  {
+  "id": "namespace:master-data--Wellbore:c7c421a7-f496-5aef-8093-298c32bfdea9",
+  "kind": "osdu:wks:master-data--Wellbore:1.4.0",
+  "version": 1562066009929332,
+  "acl": {
+    "owners": [
+      "someone@company.com"
+    ],
+    "viewers": [
+      "someone@company.com"
+    ]
+  },
+  "legal": {
+    "legaltags": [
+      "Example legaltags"
+    ],
+    "otherRelevantDataCountries": [
+      "US"
+    ],
+    "status": "compliant"
+  },
+  "tags": {
+    "NameOfKey": "String value"
+  },
+  "createTime": "2020-12-16T11:46:20.163Z",
+  "createUser": "some-user@some-company-cloud.com",
+  "modifyTime": "2020-12-16T11:52:24.477Z",
+  "modifyUser": "some-user@some-company-cloud.com",
+  "ancestry": {
+    "parents": []
+  },
+  "meta": [
+    {
+      "kind": "Unit",
+      "name": "m",
+      "persistableReference": "{\"abcd\":{\"a\":0.0,\"b\":1.0,\"c\":1.0,\"d\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"L\",\"type\":\"UM\"},\"type\":\"UAD\"}",
+      "unitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+      "propertyNames": [
+        "FacilitySpecifications[0].FacilitySpecificationQuantity",
+        "VerticalMeasurements[0].VerticalMeasurement"
+      ]
+    },
+    {
+      "kind": "Unit",
+      "name": "USD",
+      "persistableReference": "{\"abcd\":{\"a\":0.0,\"b\":1,\"c\":1,\"d\":0.0},\"symbol\":\"USD\",\"baseMeasurement\":{\"ancestry\":\"cost.USD\",\"type\":\"UM\"},\"type\":\"UAD\"}",
+      "unitOfMeasureID": "namespace:reference-data--UnitOfMeasure:USD:",
+      "propertyNames": [
+        "WellboreCosts[].Cost"
+      ]
+    }
+  ],
+  "data": {
+    "ResourceHomeRegionID": "namespace:reference-data--OSDURegion:AWSEastUSA:",
+    "ResourceHostRegionIDs": [
+      "namespace:reference-data--OSDURegion:AWSEastUSA:"
+    ],
+    "ResourceCurationStatus": "namespace:reference-data--ResourceCurationStatus:CREATED:",
+    "ResourceLifecycleStatus": "namespace:reference-data--ResourceLifecycleStatus:LOADING:",
+    "ResourceSecurityClassification": "namespace:reference-data--ResourceSecurityClassification:RESTRICTED:",
+    "Source": "Example Data Source",
+    "ExistenceKind": "namespace:reference-data--ExistenceKind:Prototype:",
+    "NameAliases": [
+      {
+        "AliasName": "Example AliasName",
+        "AliasNameTypeID": "namespace:reference-data--AliasNameType:RegulatoryIdentifier:",
+        "DefinitionOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+        "TerminationDateTime": "2020-02-13T09:13:15.55Z"
+      }
+    ],
+    "GeoContexts": [
+      {
+        "GeoPoliticalEntityID": "namespace:master-data--GeoPoliticalEntity:SomeUniqueGeoPoliticalEntityID:",
+        "GeoTypeID": "namespace:reference-data--GeoPoliticalEntityType:Area:"
+      },
+      {
+        "BasinID": "namespace:master-data--Basin:SomeUniqueBasinID:",
+        "GeoTypeID": "namespace:reference-data--BasinType:ArcWrenchOceanContinent:"
+      },
+      {
+        "FieldID": "namespace:master-data--Field:SomeUniqueFieldID:",
+        "GeoTypeID": "Field"
+      },
+      {
+        "PlayID": "namespace:master-data--Play:SomeUniquePlayID:",
+        "GeoTypeID": "namespace:reference-data--PlayType:CarbonCaptureAndStorage:"
+      },
+      {
+        "ProspectID": "namespace:master-data--Prospect:SomeUniqueProspectID:",
+        "GeoTypeID": "namespace:reference-data--ProspectType:Structural.Anticline:"
+      }
+    ],
+    "SpatialLocation": {
+      "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
+      "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
+      "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Assumed:",
+      "CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
+      "CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55Z",
+      "CoordinateQualityCheckRemarks": [
+        "Example CoordinateQualityCheckRemarks"
+      ],
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "CoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+        "VerticalCoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
+        "VerticalUnitID": "namespace:reference-data--UnitOfMeasure:m:",
+        "persistableReferenceCrs": "{\"authCode\":{\"auth\":\"OSDU\",\"code\":\"32021079\"},\"lateBoundCRS\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.18333333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.48333333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.66666666666666],UNIT[\\\"Foot_US\\\",0.3048006096012192],AUTHORITY[\\\"EPSG\\\",32021]]\"},\"name\":\"NAD27 * OGP-Usa Conus / North Dakota CS27 South zone [32021,15851]\",\"singleCT\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"type\":\"ST\",\"ver\":\"PE_10_9_1\",\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],OPERATIONACCURACY[5.0],AUTHORITY[\\\"EPSG\\\",15851]]\"},\"type\":\"EBC\",\"ver\":\"PE_10_9_1\"}",
+        "persistableReferenceVerticalCrs": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5714\"},\"name\":\"MSL_Height\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"VERTCS[\\\"MSL_Height\\\",VDATUM[\\\"Mean_Sea_Level\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5714]]\"}",
+        "persistableReferenceUnitZ": "{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "properties": {},
+            "geometry": {
+              "type": "AnyCrsPoint",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "AppliedOperations": [
+        "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+        "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+      ],
+      "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+      "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:"
+    },
+    "VersionCreationReason": "Example VersionCreationReason",
+    "TechnicalAssuranceTypeID": "namespace:reference-data--TechnicalAssuranceType:Certified:",
+    "TechnicalAssurances": [
+      {
+        "TechnicalAssuranceTypeID": "namespace:reference-data--TechnicalAssuranceType:Trusted:",
+        "Reviewers": [
+          {
+            "RoleTypeID": "namespace:reference-data--ContactRoleType:AccountOwner:",
+            "DataGovernanceRoleTypeID": "namespace:reference-data--DataGovernanceRoleType:SME:",
+            "WorkflowPersonaTypeID": "namespace:reference-data--WorkflowPersonaType:SeismicProcessor:",
+            "OrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+            "Name": "John Smith"
+          }
+        ],
+        "AcceptableUsage": [
+          {
+            "WorkflowUsageTypeID": "namespace:reference-data--WorkflowUsageType:SeismicProcessing:",
+            "WorkflowPersonaTypeID": "namespace:reference-data--WorkflowPersonaType:SeismicProcessor:",
+            "DataQualityRuleSetID": "namespace:reference-data--DataQualityRuleSet:SeismicProcessingQCRuleSet:",
+            "DataQualityID": "namespace:work-product-component--DataQuality:6a433d16-07c8-4f4d-9ddc-5608e2ec4234:1562066077849221",
+            "ValueChainStatusTypeID": "namespace:reference-data--ValueChainStatusType:Exploration:"
+          }
+        ],
+        "UnacceptableUsage": [
+          {
+            "WorkflowUsageTypeID": "namespace:reference-data--WorkflowUsageType:SeismicInterpretation:",
+            "WorkflowPersonaTypeID": "namespace:reference-data--WorkflowPersonaType:SeismicInterpreter:",
+            "DataQualityRuleSetID": "namespace:reference-data--DataQualityRuleSet:SeismicInterpretationQCRuleSet:",
+            "DataQualityID": "namespace:work-product-component--DataQuality:d79bf97c-ff7c-4b82-89b5-c88520c15017:1562066009929332",
+            "ValueChainStatusTypeID": "namespace:reference-data--ValueChainStatusType:FieldDevelopment:"
+          }
+        ],
+        "EffectiveDate": "2020-02-13",
+        "Comment": "This is free form text from reviewer, e.g. restrictions on use"
+      }
+    ],
+    "FacilityID": "Example External Facility Identifier",
+    "FacilityTypeID": "namespace:reference-data--FacilityType:Well:",
+    "FacilityOperators": [
+      {
+        "FacilityOperatorID": "Example Facility Operator ID",
+        "FacilityOperatorOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+        "Remark": "Example Remark"
+      }
+    ],
+    "InitialOperatorID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+    "CurrentOperatorID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+    "DataSourceOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+    "OperatingEnvironmentID": "namespace:reference-data--OperatingEnvironment:Onshore:",
+    "FacilityName": "Example FacilityName",
+    "FacilityDescription": "Example Facility Description",
+    "FacilityStates": [
+      {
+        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+        "FacilityStateTypeID": "namespace:reference-data--FacilityStateType:Closed:",
+        "Remark": "Example Remark"
+      }
+    ],
+    "FacilityEvents": [
+      {
+        "FacilityEventTypeID": "namespace:reference-data--FacilityEventType:Abandon:",
+        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+        "Remark": "Example Remark"
+      }
+    ],
+    "FacilitySpecifications": [
+      {
+        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+        "FacilitySpecificationQuantity": 12345.6,
+        "FacilitySpecificationDateTime": "2020-02-13T09:13:15.55Z",
+        "FacilitySpecificationIndicator": true,
+        "FacilitySpecificationText": "Example FacilitySpecificationText",
+        "UnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+        "ParameterTypeID": "namespace:reference-data--ParameterType:SlotName:"
+      }
+    ],
+    "WellID": "namespace:master-data--Well:SomeUniqueWellID:",
+    "SequenceNumber": 2,
+    "VerticalMeasurements": [
+      {
+        "VerticalMeasurementID": "Example VerticalMeasurementID",
+        "RigID": "namespace:master-data--Rig:SomeUniqueRigID:",
+        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+        "VerticalMeasurement": 12345.6,
+        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+        "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:ArbitraryPoint:",
+        "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:MeasuredDepth:",
+        "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:DRL:",
+        "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+        "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+        "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+        "VerticalReferenceID": "Example VerticalReferenceID",
+        "VerticalReferenceEntityID": "namespace:master-data--Rig:SomeUniqueRigID:",
+        "VerticalMeasurementDescription": "Example VerticalMeasurementDescription"
+      }
+    ],
+    "DrillingReasons": [
+      {
+        "LaheeClassID": "namespace:reference-data--LaheeClass:DeeperPoolTest:",
+        "EffectiveDateTime": "2020-02-13T09:13:15.55Z",
+        "TerminationDateTime": "2020-02-13T09:13:15.55Z",
+        "Remark": "Example Remark"
+      }
+    ],
+    "WellboreReasonID": "namespace:reference-data--WellboreReason:AccidentalSidetrack:",
+    "KickOffWellbore": "namespace:master-data--Wellbore:SomeUniqueWellboreID:",
+    "TrajectoryTypeID": "namespace:reference-data--WellboreTrajectoryType:Vertical:",
+    "DefinitiveTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+    "TargetFormation": "namespace:reference-data--GeologicalFormation:Bakken:",
+    "FormationNameAtTotalDepth": "Example FormationNameAtTotalDepth",
+    "DefaultVerticalMeasurementID": "Example DefaultVerticalMeasurementID",
+    "ProjectedBottomHoleLocation": {
+      "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
+      "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
+      "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Assumed:",
+      "CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
+      "CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55Z",
+      "CoordinateQualityCheckRemarks": [
+        "Example CoordinateQualityCheckRemarks"
+      ],
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "CoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+        "VerticalCoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
+        "VerticalUnitID": "namespace:reference-data--UnitOfMeasure:m:",
+        "persistableReferenceCrs": "{\"authCode\":{\"auth\":\"OSDU\",\"code\":\"32021079\"},\"lateBoundCRS\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.18333333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.48333333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.66666666666666],UNIT[\\\"Foot_US\\\",0.3048006096012192],AUTHORITY[\\\"EPSG\\\",32021]]\"},\"name\":\"NAD27 * OGP-Usa Conus / North Dakota CS27 South zone [32021,15851]\",\"singleCT\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"type\":\"ST\",\"ver\":\"PE_10_9_1\",\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],OPERATIONACCURACY[5.0],AUTHORITY[\\\"EPSG\\\",15851]]\"},\"type\":\"EBC\",\"ver\":\"PE_10_9_1\"}",
+        "persistableReferenceVerticalCrs": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5714\"},\"name\":\"MSL_Height\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"VERTCS[\\\"MSL_Height\\\",VDATUM[\\\"Mean_Sea_Level\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5714]]\"}",
+        "persistableReferenceUnitZ": "{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "properties": {},
+            "geometry": {
+              "type": "AnyCrsPoint",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "AppliedOperations": [
+        "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+        "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+      ],
+      "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+      "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:"
+    },
+    "GeographicBottomHoleLocation": {
+      "SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55Z",
+      "QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:Length.LessThan1m:",
+      "QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:Assumed:",
+      "CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
+      "CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55Z",
+      "CoordinateQualityCheckRemarks": [
+        "Example CoordinateQualityCheckRemarks"
+      ],
+      "AsIngestedCoordinates": {
+        "type": "AnyCrsFeatureCollection",
+        "CoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:BoundProjected:EPSG::32021_EPSG::15851:",
+        "VerticalCoordinateReferenceSystemID": "namespace:reference-data--CoordinateReferenceSystem:Vertical:EPSG::5714:",
+        "VerticalUnitID": "namespace:reference-data--UnitOfMeasure:m:",
+        "persistableReferenceCrs": "{\"authCode\":{\"auth\":\"OSDU\",\"code\":\"32021079\"},\"lateBoundCRS\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"32021\"},\"name\":\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"PROJCS[\\\"NAD_1927_StatePlane_North_Dakota_South_FIPS_3302\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-100.5],PARAMETER[\\\"Standard_Parallel_1\\\",46.18333333333333],PARAMETER[\\\"Standard_Parallel_2\\\",47.48333333333333],PARAMETER[\\\"Latitude_Of_Origin\\\",45.66666666666666],UNIT[\\\"Foot_US\\\",0.3048006096012192],AUTHORITY[\\\"EPSG\\\",32021]]\"},\"name\":\"NAD27 * OGP-Usa Conus / North Dakota CS27 South zone [32021,15851]\",\"singleCT\":{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"15851\"},\"name\":\"NAD_1927_To_WGS_1984_79_CONUS\",\"type\":\"ST\",\"ver\":\"PE_10_9_1\",\"wkt\":\"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],OPERATIONACCURACY[5.0],AUTHORITY[\\\"EPSG\\\",15851]]\"},\"type\":\"EBC\",\"ver\":\"PE_10_9_1\"}",
+        "persistableReferenceVerticalCrs": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"5714\"},\"name\":\"MSL_Height\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"VERTCS[\\\"MSL_Height\\\",VDATUM[\\\"Mean_Sea_Level\\\"],PARAMETER[\\\"Vertical_Shift\\\",0.0],PARAMETER[\\\"Direction\\\",1.0],UNIT[\\\"Meter\\\",1.0],AUTHORITY[\\\"EPSG\\\",5714]]\"}",
+        "persistableReferenceUnitZ": "{\"scaleOffset\":{\"scale\":1.0,\"offset\":0.0},\"symbol\":\"m\",\"baseMeasurement\":{\"ancestry\":\"Length\",\"type\":\"UM\"},\"type\":\"USO\"}",
+        "features": [
+          {
+            "type": "AnyCrsFeature",
+            "properties": {},
+            "geometry": {
+              "type": "AnyCrsPoint",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "Wgs84Coordinates": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                12345.6,
+                12345.6
+              ],
+              "bbox": [
+                12345.6,
+                12345.6,
+                12345.6,
+                12345.6
+              ]
+            },
+            "bbox": [
+              12345.6,
+              12345.6,
+              12345.6,
+              12345.6
+            ]
+          }
+        ],
+        "bbox": [
+          12345.6,
+          12345.6,
+          12345.6,
+          12345.6
+        ]
+      },
+      "AppliedOperations": [
+        "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+        "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+      ],
+      "SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+      "SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:"
+    },
+    "BusinessIntentionID": "namespace:reference-data--WellBusinessIntention:Appraise:",
+    "RoleID": "namespace:reference-data--WellRole:Inject.MultipleProducts:",
+    "InterestTypeID": "namespace:reference-data--WellInterestType:Yes:",
+    "HistoricalInterests": [
+      {
+        "InterestTypeID": "namespace:reference-data--WellInterestType:Yes:",
+        "EffectiveDateTime": "2020-02-13",
+        "TerminationDateTime": "2020-02-13"
+      }
+    ],
+    "WasBusinessInterestFinancialOperated": true,
+    "WasBusinessInterestFinancialNonOperated": true,
+    "WasBusinessInterestObligatory": true,
+    "WasBusinessInterestTechnical": true,
+    "PrimaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+    "SecondaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+    "TertiaryProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+    "ShowProductTypeID": "namespace:reference-data--WellProductType:Gas:",
+    "ConditionID": "namespace:reference-data--WellCondition:Active:",
+    "FluidDirectionID": "namespace:reference-data--WellFluidDirection:DualFlow:",
+    "OutcomeID": "namespace:reference-data--WellBusinessIntentionOutcome:Achieved:",
+    "StatusSummaryID": "namespace:reference-data--WellStatusSummary:Planning:",
+    "WellboreCosts": [
+      {
+        "ActivityTypeID": "namespace:reference-data--WellActivityPhaseType:RMOVE:",
+        "Cost": 12345.6
+      }
+    ],
+    "ExtensionProperties": {}
+  }
+}
+]

@@ -1,0 +1,34 @@
+[
+    {
+        "acl": {
+            "viewers": [
+                "data.default.viewers@{{datapartitionid}}.{{domain}}"
+            ],
+            "owners": [
+                "data.default.owners@{{datapartitionid}}.{{domain}}"
+            ]
+        },
+        "data": {
+            "FacilityName": "{{wellName}}",
+            "FacilityNameAliases": [
+                {
+                    "AliasName": "20-000-00000-00",
+                    "AliasNameTypeID": "{{datapartitionid}}:reference-data--AliasNameType:UniqueIdentifier:"
+                }
+            ],
+            "ExtensionProperties": {}
+        },
+        "id": "{{datapartitionid}}:master-data--Well:{{wellId}}",
+        "kind": "osdu:wks:master-data--Well:1.0.0",
+        "legal": {
+            "legaltags": [
+                "{{legaltags}}"
+            ],
+            "otherRelevantDataCountries": [
+                "FR",
+                "US"
+            ],
+            "status": "compliant"
+        }
+    }
+]

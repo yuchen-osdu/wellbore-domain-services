@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ibm-wellbore-domain-services-deploy.fullname" . }}
+  labels:
+    {{- include "ibm-wellbore-domain-services-deploy.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ibm-wellbore-domain-services-deploy.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ibm-wellbore-domain-services-deploy.selectorLabels" . | nindent 8 }}
+        sidecar.istio.io/inject: "{{ .Values.sidecarIstioInjected }}"
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ibm-wellbore-domain-services-deploy.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ .Values.initimage.name }}
+          image: {{ .Values.initimage.initrepository }}:{{ .Values.initimage.tag }}
+          imagePullPolicy: {{ .Values.initimage.pullPolicy }}
+          command: ['sh', '-c', './health_probe.sh $(HEALTH_URI)/info && sleep 5']
+          env:
+            - name: HEALTH_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: wellbore-domain-services-config
+                  key: AUTHORIZE_API
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - uvicorn
+          args:
+            - 'app.wdms_app:wdms_app'
+            - '--host'
+            - '0.0.0.0'
+            - '--port'
+            - '8080'
+          env:
+            - name: ibm.db.password
+              valueFrom:
+                secretKeyRef:
+                  key: adminPassword
+                  name: {{ .Release.Name }}-couchdb
+            - name: partition.keycloak.client_secret
+              valueFrom:
+                secretKeyRef:
+                  key: partition_service_secret_data
+                  name: props-secret-generated-password
+            - name: partition.keycloak.url
+              valueFrom:
+                configMapKeyRef:
+                  key: partition.keycloak.url
+                  name: partition-config
+            - name: COS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: root-user
+                  name: {{ .Release.Name }}-minio
+            - name: COS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: root-password
+                  name: {{ .Release.Name }}-minio
+          envFrom:
+          - configMapRef:
+              name: "{{ .Values.conf.configmap }}"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

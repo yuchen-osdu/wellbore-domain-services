@@ -1,0 +1,124 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+parameters:
+  - name: providers
+    type: object
+    default: []
+        # ex:
+        # providers:
+        #   - name: Azure
+        #     short_name: az
+        #     environments: 
+        #     - name: dev
+        #       # TODO: The following templates needs to be injected as parameters
+        #       authenticationTemplate: ${{ getImageTemplate }}
+        #       authenticationTemplateParameters: ${{ getImageTemplateParameters }}
+        #       preDeployTemplates:
+        #       - template: ${{ my_template }}
+        #         parameters: ${{ my_template_params }}
+        #       - ...
+        #       postDeployTemplates:
+        #       - template: ${{ my_template }}
+        #         parameters: ${{ my_template_params }}
+        #       - ...
+        #     getImageTemplate: ${{ authenticationTemplate }}
+        #     getImageTemplateParameters: ${{ authenticationTemplateParameter }}
+
+stages:
+
+- ${{ each provider in parameters.providers }}:
+  - ${{ each environment in provider.environments }}:
+    - stage: 'Deploy_${{ provider.name }}_${{ environment.name }}'
+
+      variables:
+
+      - group: '${{ provider.name }} Target Env Secrets - ${{ environment.name }}'
+      - group: '${{ provider.name }} Target Env - ${{ environment.name }}'
+
+      - name: env # This variable is used as input of the helm template
+        value: ${{ environment.name }}
+
+      jobs:
+      - deployment: pull_push_deploy_${{ environment.name }}
+        pool:
+          vmImage: "ubuntu-latest"
+        environment: ${{ environment.name }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - template: /devops/azure/template/steps-define-variables.yaml
+              - template: ${{ provider.getImageTemplate }}
+                parameters: ${{ provider.getImageTemplateParameters }}
+              - ${{ each preDeployTemplate in environment.preDeployTemplates }}:
+                - template: ${{ preDeployTemplate.template }}
+                  parameters:
+                    ${{ each parameter in preDeployTemplate.parameters }}:
+                      ${{ parameter.key }}: ${{ parameter.value }}
+              - template: /devops/azure/template/steps-push-image.yaml
+                parameters:
+                  azureSubscription: $(SERVICE_CONNECTION_NAME)
+                  sourceACRName: $(us_acr_name)
+                  destinationACRName: $(CONTAINER_REGISTRY_NAME)
+                  environment: ${{ environment.name }}
+                  imageTag: $(defineVariables.tag_name_output)
+                  appName: $(app)
+              - template: devops/tasks/aks-deployment-steps.yml@pipelineTemplatesRepo
+                parameters:
+                  environment: ${{ environment.name }}
+                  serviceName: $(app)
+                  providerName:  ${{ provider.short_name }}
+                  chartPath: $(chartPath)
+                  valuesFile: $(valuesFile)
+                  hldRegPath: $(hldRegPath)
+
+      # specific deployment job to use the correct subscription
+      # verifies previous job, and allows independent retry in case of timeout
+      - deployment: verify_deployment_${{ environment.name }}
+        dependsOn: pull_push_deploy_${{ environment.name }}
+        environment: ${{ environment.name }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: devops/tasks/flux-service-wait.yml@pipelineTemplatesRepo
+                  parameters:
+                    environment: ${{ environment.name }}
+                    serviceName: $(fluxServiceName)
+                    imageRepoName: $(app)
+                    skipDeploy: false
+
+      - job: e2e_test_${{ environment.name }}
+        dependsOn: verify_deployment_${{ environment.name }}
+        steps:
+          - template: /devops/azure/template/steps-e2e-tests.yaml
+            parameters:
+              # base_path comes from global_vars, that should be used globally in the pipeline
+              serviceUrl: https://$(ISTIO_DNS_HOST)$(base_path)
+              osduBaseUrl: https://$(ISTIO_DNS_HOST)
+              aclDomain: $(DOMAIN)
+              legalTag: $(LEGAL_TAG)
+              dataPartition: $(MY_TENANT)
+              cloudProvider:  ${{ provider.short_name }}
+              authenticationTemplate: ${{ environment.authenticationTemplate }}
+              authenticationTemplateParameters: ${{ environment.authenticationTemplateParameters }}
+              environmentName: ${{ environment.name }}
+
+      - ${{ each postDeployTemplate in environment.postDeployTemplates }}:
+        - template: ${{ postDeployTemplate.template }}
+          parameters:
+            dependsOn: e2e_test_${{ environment.name }}
+            ${{ each parameter in postDeployTemplate.parameters }}:
+              ${{ parameter.key }}: ${{ parameter.value }}

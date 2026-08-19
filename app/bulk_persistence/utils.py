@@ -1,0 +1,69 @@
+# Copyright 2021 Schlumberger
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from itertools import zip_longest
+from logging import INFO
+from typing import Optional
+
+import pandas as pd
+import pyarrow.parquet as pa
+
+from app.helper.logger import get_logger
+from .capture_timings import capture_timings
+
+
+WDMS_INDEX_NAME = '_wdms_index_'
+
+def worker_make_log_captured_timing_handler(level=INFO):
+    """log captured timing from the worker subprocess (no access to context)"""
+
+    def log_captured_timing(tag, wall, cpu):
+        logger = get_logger()
+        if logger:
+            logger.log(level, f"Timing of {tag}, wall={wall:.5f}s, cpu={cpu:.5f}s")
+
+    return log_captured_timing
+
+
+worker_capture_timing_handlers = [worker_make_log_captured_timing_handler(INFO)]
+
+
+def share_items(seq1, seq2):
+    """Returns True if seq1 contains common items with seq2."""
+    return not set(seq1).isdisjoint(seq2)
+
+
+def by_pairs(iterable):
+    """Yield successive 2 elements from iterable.
+    Fill with None if less than 2 items in iterable."""
+    return zip_longest(*[iter(iterable)] * 2, fillvalue=None)
+
+
+def rename_index(dataframe: pd.DataFrame, name):
+    """Rename the dataframe index"""
+    dataframe.index.name = name
+    return dataframe
+
+
+@capture_timings("get_num_rows", handlers=worker_capture_timing_handlers)
+def get_num_rows(dataset: pa.ParquetDataset) -> int:
+    """Returns the number of rows from a pyarrow ParquetDataset"""
+    
+    return sum([fragment.metadata.num_rows for fragment in dataset.fragments])
+
+
+@capture_timings("index_union", handlers=worker_capture_timing_handlers)
+def index_union(idx1: pd.Index, idx2: Optional[pd.Index]):
+    """Union of two Index object (check pd.Index.union doc string for more details)"""
+    return idx1.union(idx2) if idx2 is not None else idx1

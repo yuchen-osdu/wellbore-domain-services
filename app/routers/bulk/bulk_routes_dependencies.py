@@ -1,0 +1,134 @@
+import abc
+from abc import ABC
+from typing import Optional, Annotated
+from fastapi import Request, Query
+from packaging.version import Version
+
+from app.bulk_persistence import BulkURI, BulkIO, GetDataParams
+from app.bulk_persistence.model_chunking import CURVES_EXAMPLES, BULK_FILTER_DESCRIPTION, \
+    BULK_FILTER_EXAMPLES
+from app.model.log_bulk import LogBulkHelper
+from app.context import get_ctx
+
+BULK_URI_FIELD = "bulkURI"
+
+EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS = {
+    "WellboreIntervalSet": "1.1.0",
+    "WellboreTrajectory": "1.2.0",
+    "WellboreMarkerSet": "1.3.0",
+    "WellLog": "1.3.0",
+    "PPFGDataset" : "1.1.0",
+    "WellPressureTestRawMeasurement": "1.0.0"
+}
+
+
+class BulkIdAccess(ABC):
+    @staticmethod
+    @abc.abstractmethod
+    def get_bulk_uri(record) -> BulkURI:
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def set_bulk_uri(record, bulk_id: str):
+        ...
+
+
+class OsduBulkIdAccess(BulkIdAccess):
+    @staticmethod
+    def get_bulk_uri(record) -> BulkURI:
+        bulk_uri = None
+        if hasattr(record, "data") and isinstance(record.data, dict):
+            extension_properties = record.data.get("ExtensionProperties", None)
+            if extension_properties:
+                wdms = extension_properties.get("wdms", None)
+                bulk_uri = wdms.get(BULK_URI_FIELD, None) if wdms else None
+        elif (
+            hasattr(record, "data")
+            and hasattr(record.data, "ExtensionProperties")
+            and isinstance(record.data.ExtensionProperties, dict)
+        ):
+            wdms = record.data.ExtensionProperties.get("wdms", None)
+            bulk_uri = wdms.get(BULK_URI_FIELD, None) if wdms else None
+        return BulkURI.decode(bulk_uri)
+
+    @staticmethod
+    def set_bulk_uri(record, bulk_id: str):
+        if not record.data.get("ExtensionProperties", None):
+            record.data["ExtensionProperties"] = {}
+        elif not record.data["ExtensionProperties"].get("wdms", None):
+            record.data["ExtensionProperties"]["wdms"] = {}
+        bulk_uri = BulkURI.from_bulk_storage_V1(bulk_id=bulk_id)
+        record.data.setdefault("ExtensionProperties", {}).setdefault("wdms", {})[BULK_URI_FIELD] = bulk_uri.encode()
+        OsduBulkIdAccess._set_bulk_uri_ddms_datasets(record, bulk_uri)
+
+    @staticmethod
+    def _set_bulk_uri_ddms_datasets(record, bulk_uri: BulkURI):
+        kind_parts = record.kind.split("--")
+        kind_version = kind_parts[1] if len(kind_parts) == 2 else None
+        kind_version_parts = kind_version.split(":") if kind_version and len(kind_version.split(":")) == 2 else None
+        if kind_version_parts and kind_version_parts[0] in EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS and \
+                Version(kind_version_parts[1]) >= Version(EARLIEST_KIND_VERSION_INCLUDING_DDMSDATASETS[kind_version_parts[0]]):
+            if not record.data.get("DDMSDatasets", None):
+                record.data["DDMSDatasets"] = []
+            record.data.setdefault("DDMSDatasets", []).append(bulk_uri.encode_for_ddms_datasets())
+
+class LogBulkIdAccess(BulkIdAccess):
+    @staticmethod
+    def get_bulk_uri(record, custom_bulk_id_path: Optional[str] = None) -> BulkURI:
+        return LogBulkHelper.get_bulk_uri(record=record, custom_bulk_id_path=custom_bulk_id_path)
+
+    @staticmethod
+    def set_bulk_uri(record, bulk_id: str):
+        LogBulkHelper.update_bulk_uri(record=record, bulk_uri=BulkURI.from_bulk_storage_V1(bulk_id=bulk_id))
+
+
+async def set_log_bulk_id_access(request: Request):
+    request.state.bulk_id_access = LogBulkIdAccess
+
+
+async def set_osdu_bulk_id_access(request: Request):
+    request.state.bulk_id_access = OsduBulkIdAccess
+
+def get_data_parameters(
+        offset: Annotated[
+            int | None,
+            Query(ge=0,
+                description='The number of rows that are to be skipped and not included in the result.',
+                examples=[5])
+        ] = None,
+        limit: Annotated[
+            int | None,
+            Query(ge=1,
+                description='The maximum number of rows to be returned.',
+                examples=[100])
+        ] = None,
+        curves: Annotated[
+            str | None,
+            Query(description='Filters curves. List of curves to be returned. '
+                            'The curves are returned in the same order as it is given.',
+                examples=CURVES_EXAMPLES)
+        ] = None,
+        describe: Annotated[
+            bool | None,
+            Query(description='The "describe" query option allows clients to request a description of the matching result. '
+                    '(number of rows, columns name)',
+                examples=['false'])
+        ] = False,
+        bulk_filter: Annotated[
+            list[str] | None,
+            Query(alias='filter',
+                description=BULK_FILTER_DESCRIPTION,
+                examples=BULK_FILTER_EXAMPLES)
+        ] = None,
+        ) -> GetDataParams:
+    return GetDataParams(offset=offset, limit=limit, curves=curves, describe=describe, filter=bulk_filter)
+
+
+def get_bulk_id_access(request: Request) -> BulkIdAccess:
+    if not getattr(request.state, "bulk_id_access", None):
+        raise RuntimeError("bulk_id_access dependency is not defined")
+    return request.state.bulk_id_access
+
+async def get_bulk_io() -> BulkIO:
+    return await get_ctx().app_injector.get(BulkIO)

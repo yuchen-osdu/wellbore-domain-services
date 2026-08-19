@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace | quote }}
+  name: {{ .Values.conf.appName | quote }}
+  labels:
+    app: {{ .Values.conf.appName | quote }}
+    type: ddms
+    source: python
+spec:
+  replicas: {{ .Values.conf.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.conf.appName | quote }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.conf.appName | quote }}
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+        sidecar.istio.io/proxyCPU: {{ .Values.istio.proxyCPU | quote }}
+        sidecar.istio.io/proxyMemory: {{ .Values.istio.proxyMemory | quote }}
+        sidecar.istio.io/proxyCPULimit: {{ .Values.istio.proxyCPULimit | quote }}
+        sidecar.istio.io/proxyMemoryLimit: {{ .Values.istio.proxyMemoryLimit | quote }}
+    spec:
+      serviceAccountName: {{ .Values.data.serviceAccountName | quote }}
+      containers:
+        - name: {{ .Values.conf.appName | quote }}
+          image: {{ .Values.data.image | quote }}
+          imagePullPolicy: {{ .Values.data.imagePullPolicy | quote }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.conf.configmap | quote }}
+            - secretRef:
+                name: {{ .Values.conf.keycloakSecretName | quote }}
+          env:
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-%s" .Values.global.dataPartitionId .Values.conf.s3SecretName | quote }}
+                  key: {{ printf "SEAWEEDFS_ACCESS_KEY_%s" .Values.global.dataPartitionId | upper | quote }}
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-%s" .Values.global.dataPartitionId .Values.conf.s3SecretName | quote }}
+                  key: {{ printf "SEAWEEDFS_SECRET_KEY_%s" .Values.global.dataPartitionId | upper | quote }}
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-%s" .Values.global.dataPartitionId .Values.conf.s3SecretName | quote }}
+                  key: {{ printf "SEAWEEDFS_ENDPOINT_%s" .Values.global.dataPartitionId | upper | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/os-wellbore-ddms/healthz
+              port: 8080
+            initialDelaySeconds: 190
+            periodSeconds: 60
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/os-wellbore-ddms/readiness
+              port: 8080
+            periodSeconds: 60
+          resources:
+            requests:
+              cpu: {{ .Values.data.requestsCpu | quote }}
+              memory: {{ .Values.data.requestsMemory | quote }}
+            {{- if .Values.global.limitsEnabled }}
+            limits:
+              cpu: {{ .Values.data.limitsCpu | quote }}
+              memory: {{ .Values.data.limitsMemory | quote }}
+            {{- end }}

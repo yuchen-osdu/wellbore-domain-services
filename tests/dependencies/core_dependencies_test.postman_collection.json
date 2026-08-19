@@ -1,0 +1,1207 @@
+{
+	"info": {
+		"_postman_id": "036eb323-faba-4f88-8e23-e4ca346a70f9",
+		"name": "Core dependencies",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Entitlements",
+			"item": [
+				{
+					"name": "entitlements - get groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
+									"    pm.response.to.be.ok;",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"    pm.expect(pm.response.json().groups).to.not.be.empty;",
+									"    pm.test(testName, () => true);",
+									"    console.log(pm.response.json())",
+									"}catch(e){",
+									"    console.log(resobj);",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"value": "{{data_partition}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/entitlements/v2/groups",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"entitlements",
+								"v2",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Storage",
+			"item": [
+				{
+					"name": "storage -  create logset record",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const resobj = pm.response.json();",
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
+									"    pm.response.to.have.status(201);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"    pm.expect(resobj.recordCount).to.eql(1);",
+									"    pm.expect(resobj.recordIds.length).to.eql(1);",
+									"    if (resobj.skippedRecordIds)",
+									"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+									"    // stored the record id for the following tests",
+									"    let record_id = resobj.recordIds[0];",
+									"    console.log(\"created-logset-record-id\", record_id)",
+									"    pm.variables.set(\"created-logset-record-id\", record_id);",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(resobj);",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"kind\": \"{{logSetKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"storage",
+								"v2",
+								"records"
+							],
+							"query": [
+								{
+									"key": "skipdupes",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "storage -  get logset record by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
+									"    pm.response.to.be.ok;",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(pm.response.json());",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/storage/v2/records/{{created-logset-record-id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"storage",
+								"v2",
+								"records",
+								"{{created-logset-record-id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "storage -  delete logset record Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+									"try{",
+									"    pm.response.to.have.status(204);",
+									"    pm.test(testName, () => true);",
+									"}catch(e){",
+									"    console.log(pm.response.json());",
+									"    pm.test(testName, () => {throw new Error(e.message)});",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/storage/v2/records/{{created-logset-record-id}}:delete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"storage",
+								"v2",
+								"records",
+								"{{created-logset-record-id}}:delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "search setUp - dummy records creation",
+					"item": [
+						{
+							"name": "search -  create dummy logset record",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.withBody;",
+											"    pm.response.to.be.json;",
+											"    pm.expect(resobj.recordCount).to.eql(1);",
+											"    pm.expect(resobj.recordIds.length).to.eql(1);",
+											"    if (resobj.skippedRecordIds)",
+											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{data_partition}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:logSet:WDMS-dependencies-test-dummy-logset\",\n        \"kind\": \"{{logSetKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"storage",
+										"v2",
+										"records"
+									],
+									"query": [
+										{
+											"key": "skipdupes",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search -  create dummy well record",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.withBody;",
+											"    pm.response.to.be.json;",
+											"    pm.expect(resobj.recordCount).to.eql(1);",
+											"    pm.expect(resobj.recordIds.length).to.eql(1);",
+											"    if (resobj.skippedRecordIds)",
+											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{data_partition}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:well:WDMS-dependencies-test-dummy-well\",\n        \"kind\": \"{{wellKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"storage",
+										"v2",
+										"records"
+									],
+									"query": [
+										{
+											"key": "skipdupes",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search -  create dummy wellbore record",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.withBody;",
+											"    pm.response.to.be.json;",
+											"    pm.expect(resobj.recordCount).to.eql(1);",
+											"    pm.expect(resobj.recordIds.length).to.eql(1);",
+											"    if (resobj.skippedRecordIds)",
+											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{data_partition}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:wellbore:WDMS-dependencies-test-dummy-wellbore\",\n        \"kind\": \"{{wellboreKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"storage",
+										"v2",
+										"records"
+									],
+									"query": [
+										{
+											"key": "skipdupes",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search -  create dummy log record",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const resobj = pm.response.json();",
+											"",
+											"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"",
+											"try{",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.withBody;",
+											"    pm.response.to.be.json;",
+											"    pm.expect(resobj.recordCount).to.eql(1);",
+											"    pm.expect(resobj.recordIds.length).to.eql(1);",
+											"    if (resobj.skippedRecordIds)",
+											"        pm.expect(resobj.skippedRecordIds.length).to.eql(0);",
+											"    pm.test(testName, () => true);",
+											"}catch(e){",
+											"    console.log(resobj);",
+											"    pm.test(testName, () => {throw new Error(e.message)});",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "data-partition-id",
+										"type": "text",
+										"value": "{{data_partition}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"id\": \"{{data_partition}}:log:WDMS-dependencies-test-dummy-log\",\n        \"kind\": \"{{logKind}}\",\n        \"acl\": {\n            \"owners\": [\"{{acl_owner}}\"],\n            \"viewers\": [\"{{acl_viewer}}\"]\n        },\n        \"legal\": {\n            \"legaltags\": [\"{{legal_tag}}\"],\n            \"otherRelevantDataCountries\": [\"US\",\"FR\"]\n        },\n        \"data\": {\n            \"msg\": \"WDMS dependency test to Data Ecosystem\"\n        }\n    }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/storage/v2/records?skipdupes=false",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"storage",
+										"v2",
+										"records"
+									],
+									"query": [
+										{
+											"key": "skipdupes",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "This setup phase aims to create records with well known kinds (well, wellbore, logset, log) to ensure API calls to search service will not fail because of missing records kind. \r\nIndeed, search APIs will only return records that have been indexed. This indexation is triggered asynchronously after record creation. It could cause the failure of these tests the very first time they are run.",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "search logset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
+									"    pm.response.to.be.ok;\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"\r",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							},
+							{
+								"key": "appkey",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"kind\": \"{{logSetKind}}\",\r\n  \"limit\": 30,\r\n  \"returnedFields\": [\"id\", \"data.name\", \"legal\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/v2/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"v2",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search wellbores",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
+									"    pm.response.to.be.ok;\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"\r",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"kind\": \"{{wellboreKind}}\",\r\n  \"limit\": 30,\r\n  \"returnedFields\": [\"id\", \"data.name\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/v2/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"v2",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search well",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
+									"    pm.response.to.be.ok;\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"\r",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"kind\": \"{{wellKind}}\",\r\n  \"limit\": 30,\r\n  \"returnedFields\": [\"id\", \"data.name\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/v2/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"v2",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search logs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const testName = pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\"\r",
+									"try{\r",
+									"    pm.response.to.be.ok;\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"\r",
+									"    pm.expect(pm.response.json().results).to.not.be.empty;\r",
+									"    pm.test(testName, () => true);\r",
+									"}catch(e){\r",
+									"    console.log(pm.response.json());\r",
+									"    pm.test(testName, () => {throw new Error(e.message)});\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "data-partition-id",
+								"type": "text",
+								"value": "{{data_partition}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"kind\": \"{{logKind}}\",\r\n  \"limit\": 30,\r\n  \"returnedFields\": [\"id\", \"data.name\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/v2/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"v2",
+								"query"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Schemas",
+			"item": [
+				{
+					"name": "schemas - get schemas DDMS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//This test doesnt match with the other tests based on a try catch for a better way to manage errors\r",
+									"//the main request ( {{base_url}}/api/schema-service/v1/schema?source={{sourceKind}}&scope=SHARED ) will be run once\r",
+									"//based on this request the script will complete the URL to check all schemas listed in a json file\r",
+									"var getRequest = pm.request;\r",
+									"var url_variables = pm.request.url.toString()+\"&authority={{authorityKindName}}&entityType={{entityTypeName}}\";\r",
+									"var schemasVersionsListJson = JSON.parse(pm.environment.get(\"schemas_versions_list_json\")); //set as environment variable and not collection variable\r",
+									"var authoritiesCount = Object.keys(schemasVersionsListJson).length\r",
+									"console.log(schemasVersionsListJson);\r",
+									"\r",
+									"pm.test(pm.info.requestName + \" [\" + pm.environment.get('base_url') + \"]\", function () {\r",
+									"    for (let i = 0; i < authoritiesCount; i++) {\r",
+									"        var currentAuthority = Object.keys(schemasVersionsListJson)[i];\r",
+									"        console.log(\"Test on authority :\"+currentAuthority);\r",
+									"        pm.test(\"Test on authority :\"+currentAuthority, function () {\r",
+									"            pm.variables.set(\"authorityKindName\", currentAuthority);\r",
+									"            var entitiesCount = Object.keys(schemasVersionsListJson[currentAuthority]).length\r",
+									"\r",
+									"            for (let j = 0; j < entitiesCount; j++) {\r",
+									"                var entityTypeName = Object.keys(schemasVersionsListJson[currentAuthority])[j];\r",
+									"                pm.variables.set(\"entityTypeName\", entityTypeName);\r",
+									"                getRequest.url = pm.variables.replaceIn(url_variables);\r",
+									"\r",
+									"                pm.sendRequest(getRequest, (error, response) => {\r",
+									"                    console.log(error ? error : response.json());\r",
+									"                    pm.expect(response).to.be.ok;\r",
+									"                    pm.expect(response).to.be.json;\r",
+									"                    const responseJson = response.json();\r",
+									"                    let schemaInfosLenght = responseJson.schemaInfos.length;\r",
+									"                    pm.expect(schemaInfosLenght).gt(0);\r",
+									"\r",
+									"                    // because requests are asynchronous all context is lost, the only way is to get info from the response\r",
+									"                    let localAuthority = responseJson.schemaInfos[0].schemaIdentity.authority;\r",
+									"                    let localEntityType = responseJson.schemaInfos[0].schemaIdentity.entityType;\r",
+									"\r",
+									"                    console.log(\"Request get schemas for \" + localAuthority + \":\" + localEntityType);\r",
+									"                    \r",
+									"                    //check versions\r",
+									"                    var all_registered_versions = [];\r",
+									"                    for (let k = 0; k < schemaInfosLenght; k++) {\r",
+									"                        var kind = responseJson.schemaInfos[k].schemaIdentity.id.split(\":\");\r",
+									"                        all_registered_versions.push(kind[3]);\r",
+									"                    }\r",
+									"\r",
+									"                    console.log(\"all_registered_versions = \" + all_registered_versions);\r",
+									"\r",
+									"                    var versions_to_check = schemasVersionsListJson[localAuthority][localEntityType].versions;\r",
+									"                    for (let i_version = 0; i_version < versions_to_check.length; i_version++) {\r",
+									"                        let version_to_check = versions_to_check[i_version];\r",
+									"                        pm.test(\"Check schema id : \"+ localAuthority + \":\" + localEntityType + \":\" + version_to_check, function () {\r",
+									"                            console.log(\"checking \" + version_to_check + \" to be included in \" + all_registered_versions);\r",
+									"                            pm.expect(all_registered_versions).to.includes(version_to_check);\r",
+									"                        });\r",
+									"                    }\r",
+									"                });\r",
+									"            }\r",
+									"        });\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-partition-id",
+								"value": "{{data_partition}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/schema-service/v1/schema?source={{sourceKind}}&scope=SHARED",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"schema-service",
+								"v1",
+								"schema"
+							],
+							"query": [
+								{
+									"key": "source",
+									"value": "{{sourceKind}}"
+								},
+								{
+									"key": "scope",
+									"value": "SHARED"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "authorityKind",
+			"value": "osdu"
+		},
+		{
+			"key": "sourceKind",
+			"value": "wks"
+		},
+		{
+			"key": "schemas_versions_list_json",
+			"value": ""
+		},
+		{
+			"key": "wellKind",
+			"value": "{{authorityKind}}:wks:well:1.0.2"
+		},
+		{
+			"key": "wellboreKind",
+			"value": "{{authorityKind}}:wks:wellbore:1.0.6"
+		},
+		{
+			"key": "logSetKind",
+			"value": "{{authorityKind}}:wks:logSet:1.0.5"
+		},
+		{
+			"key": "logKind",
+			"value": "{{authorityKind}}:wks:log:1.0.5"
+		},
+		{
+			"key": "data_partition",
+			"value": ""
+		},
+		{
+			"key": "base_url",
+			"value": ""
+		},
+		{
+			"key": "legal_tag",
+			"value": ""
+		},
+		{
+			"key": "acl_domain",
+			"value": ""
+		},
+		{
+			"key": "acl_owner",
+			"value": "data.default.owners@{{data_partition}}.{{acl_domain}}"
+		},
+		{
+			"key": "acl_viewer",
+			"value": "data.default.viewers@{{data_partition}}.{{acl_domain}}"
+		}
+	]
+}
