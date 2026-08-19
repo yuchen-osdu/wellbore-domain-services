@@ -8,6 +8,7 @@ variables:
   CIMPL_INT_TEST_TYPE: python
   CIMPL_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
   CIMPL_SUPPORTED_PLATFORM: "linux/amd64"
+  DISABLE_INTEGRATION_TEST: true
 
 cimpl-containerize-gitlab:
   needs:
@@ -22,22 +23,43 @@ cimpl-containerize-gitlab:
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
-cimpl-test-python:
-  image: python:3.13
-  variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
-
-#dev2 jobs
-
-cimpl-dev2-test-python:
-  image: python:3.13
-  variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
-
 cimpl-acceptance-test-python:
   image: python:3.13
   variables:
     CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+#dev2 jobs
+
+cimpl-dev2-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+
+# osdu-main jobs
+
+cimpl-dev-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+
+cimpl-dev-backup-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
   artifacts:
     when: always
     paths:
