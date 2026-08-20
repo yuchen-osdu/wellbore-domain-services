@@ -69,7 +69,7 @@ azure-keyvault-certificates==4.11.1
     # via azure-keyvault
 azure-keyvault-keys==4.11.1
     # via azure-keyvault
-azure-keyvault-secrets==4.11.0
+azure-keyvault-secrets==4.11.1
     # via azure-keyvault
 azure-monitor-opentelemetry-exporter==1.0.0b53
     # via wellbore-domain-services
