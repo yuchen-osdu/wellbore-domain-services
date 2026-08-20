@@ -146,7 +146,7 @@ dpath==2.2.0
     # via wellbore-schema-manipulation
 execnet==2.1.2
     # via pytest-xdist
-fastapi==0.138.0
+fastapi==0.138.2
     # via
     #   osdu-data-ecosystem-schema
     #   osdu-data-ecosystem-search
