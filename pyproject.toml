@@ -92,6 +92,10 @@ dev = [
 where = ["."]
 include = ["app*", "wdms_client*"]
 
+[tool.setuptools.package-data]
+"app" = ["model_examples/*.json"]
+"app.schemas" = ["known_schemas/*.json"]
+
 [tool.uv]
 # Match pip's `--extra-index-url` merge behaviour: consider every configured
 # index and pick the best version, instead of uv's default "first-index" which
