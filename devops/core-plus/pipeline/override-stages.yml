@@ -55,6 +55,14 @@ cimpl-prod-test-python:
     CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
 
 cimpl-prod-acceptance-test-python:
+  # The upstream template extends [.cimpl-prod-variables, .maven]. Our .maven
+  # stub has an empty `variables:` (null), and because it is listed last in the
+  # extends chain it wipes the entire variable map inherited from
+  # .cimpl-prod-variables (TEST_OPENID_PROVIDER_URL, LEGAL_*, etc.). That left
+  # $TOKEN empty and broke gen_postman_env.py. This is a python (shell) job, not
+  # a Maven job, so drop .maven and keep only .cimpl-prod-variables.
+  extends:
+    - .cimpl-prod-variables
   image: python:3.13
   variables:
     CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
