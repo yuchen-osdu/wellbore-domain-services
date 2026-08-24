@@ -21,6 +21,10 @@ tests:
     type: pytest
     path: tests/unit
     coverage: true
+  acceptance:
+    type: pytest
+    path: tests/integration
+    runnerPath: .spi/run_acceptance.py
 
 container:
   appModule: app.wdms_app:wdms_app
