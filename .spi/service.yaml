@@ -21,6 +21,10 @@ tests:
     type: pytest
     path: tests/unit
     coverage: true
+  acceptance:
+    type: python
+    path: .
+    runnerPath: tests/integration/run_containerized_acceptance.py
 
 container:
   appModule: app.wdms_app:wdms_app
