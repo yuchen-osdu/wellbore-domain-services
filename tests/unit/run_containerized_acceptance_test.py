@@ -14,6 +14,7 @@ REQUIRED_ENVIRONMENT = {
     "INTEGRATION_TESTER_ACCESS_TOKEN": "token",
     "WDMS_ACL_DOMAIN": "dataservices.energy",
     "WDMS_BASE_URL": "https://example.test/api/os-wellbore-ddms",
+    "WDMS_LEGAL_URL": "https://example.test/api/legal/v1",
     "WDMS_DATA_PARTITION": "opendes",
     "WDMS_LEGAL_TAG": "opendes-test-legal-tag",
 }
@@ -44,6 +45,7 @@ class RunContainerizedAcceptanceTest(unittest.TestCase):
             mock.patch.dict(os.environ, environment, clear=True),
             mock.patch.object(runner.os, "chdir") as chdir,
             mock.patch.object(runner.Path, "mkdir") as mkdir,
+            mock.patch.object(runner, "_ensure_legal_tag") as ensure_legal_tag,
             mock.patch.object(
                 runner.subprocess,
                 "run",
@@ -56,6 +58,12 @@ class RunContainerizedAcceptanceTest(unittest.TestCase):
         self.assertEqual(exit_error.exception.code, 17)
         chdir.assert_called_once_with(Path("/tmp/repository").resolve())
         mkdir.assert_called_once_with(parents=True, exist_ok=True)
+        ensure_legal_tag.assert_called_once_with(
+            "token",
+            "https://example.test/api/legal/v1",
+            "opendes-test-legal-tag",
+            "opendes",
+        )
         self.assertEqual(run.call_count, 2)
         self.assertIn(
             "tests/integration/gen_postman_env.py",
@@ -97,6 +105,44 @@ class RunContainerizedAcceptanceTest(unittest.TestCase):
                 write.assert_called_once_with(
                     f"ERROR: required environment variable {missing_name} is not set\n"
                 )
+
+    def test_legal_tag_creation_is_idempotent(self):
+        runner = load_runner()
+        with mock.patch.object(
+            runner,
+            "_legal_request",
+            side_effect=[(404, ""), (201, "{}")],
+        ) as request:
+            runner._ensure_legal_tag(
+                "token",
+                "https://example.test/api/legal/v1/",
+                "opendes-wdms-ci",
+                "opendes",
+            )
+
+        self.assertEqual(request.call_count, 2)
+        self.assertEqual("GET", request.call_args_list[0].args[0])
+        self.assertEqual("POST", request.call_args_list[1].args[0])
+        self.assertEqual(
+            "wdms-ci",
+            request.call_args_list[1].kwargs["payload"]["name"],
+        )
+
+    def test_existing_legal_tag_is_not_recreated(self):
+        runner = load_runner()
+        with mock.patch.object(
+            runner,
+            "_legal_request",
+            return_value=(200, "{}"),
+        ) as request:
+            runner._ensure_legal_tag(
+                "token",
+                "https://example.test/api/legal/v1",
+                "opendes-wdms-ci",
+                "opendes",
+            )
+
+        request.assert_called_once()
 
 
 if __name__ == "__main__":

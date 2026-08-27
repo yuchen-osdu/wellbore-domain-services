@@ -1,6 +1,6 @@
 # Service descriptor owned by this fork. Template sync never overwrites .spi/**.
 
-schemaVersion: 1
+schemaVersion: 2
 
 service:
   name: wellbore-domain-services
@@ -25,6 +25,22 @@ tests:
     type: python
     path: .
     runnerPath: tests/integration/run_containerized_acceptance.py
+    timeoutMinutes: 60
+    maxAttempts: 2
+    bindings:
+      WDMS_BASE_URL:
+        source: gateway
+        suffix: /api/os-wellbore-ddms
+      WDMS_LEGAL_URL:
+        source: gateway
+        suffix: /api/legal/v1
+      WDMS_ACL_DOMAIN:
+        source: entitlementDomain
+      WDMS_LEGAL_TAG:
+        source: partition
+        suffix: -wdms-ci
+      WDMS_DATA_PARTITION:
+        source: partition
 
 container:
   appModule: app.wdms_app:wdms_app
