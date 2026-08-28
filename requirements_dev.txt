@@ -65,15 +65,15 @@ azure-identity==1.25.3
     #   osdu-core-lib-python-azure
 azure-keyvault==4.2.0
     # via osdu-core-lib-python-azure
-azure-keyvault-certificates==4.11.1
+azure-keyvault-certificates==4.11.2
     # via azure-keyvault
-azure-keyvault-keys==4.11.1
+azure-keyvault-keys==4.11.2
     # via azure-keyvault
-azure-keyvault-secrets==4.11.0
+azure-keyvault-secrets==4.11.2
     # via azure-keyvault
 azure-monitor-opentelemetry-exporter==1.0.0b53
     # via wellbore-domain-services
-azure-storage-blob==12.30.0
+azure-storage-blob==12.30.1
     # via
     #   adlfs
     #   osdu-core-lib-python-azure
