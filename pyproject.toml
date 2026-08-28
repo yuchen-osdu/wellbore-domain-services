@@ -21,7 +21,7 @@ dependencies = [
     "cryptography>=46.0.7",
     "azure-core>=1.38.0",
     "protobuf>=6.33.5",
-    "pyasn1>=0.6.3",
+    "pyasn1>=0.6.4",
     "typing-extensions",
     "click>=8.4.1",
     "backoff",
