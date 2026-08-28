@@ -7,7 +7,7 @@ aiobotocore==3.7.0
     # via s3fs
 aiohappyeyeballs==2.6.2
     # via aiohttp
-aiohttp==3.14.1
+aiohttp==3.14.3
     # via
     #   aiobotocore
     #   azure-core
@@ -103,7 +103,7 @@ click==8.4.1
     #   wellbore-domain-services
 colorama==0.4.6 ; sys_platform == 'win32'
     # via click
-cryptography==49.0.0
+cryptography==50.0.1
     # via
     #   azure-identity
     #   azure-keyvault-keys
@@ -346,7 +346,7 @@ psutil==7.2.2
     # via azure-monitor-opentelemetry-exporter
 pyarrow==24.0.0
     # via wellbore-domain-services
-pyasn1==0.6.3
+pyasn1==0.6.4
     # via
     #   pyasn1-modules
     #   wellbore-domain-services

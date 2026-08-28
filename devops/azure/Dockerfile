@@ -14,6 +14,12 @@
 
 FROM python:3.13-slim
 
+# The base image lags behind on Debian security updates, so container_scanning
+# reports its openssl as vulnerable even when every Python dependency is current.
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt ./
 
 RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
