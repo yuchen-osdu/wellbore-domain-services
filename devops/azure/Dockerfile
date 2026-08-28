@@ -14,9 +14,17 @@
 
 FROM python:3.13-slim
 
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt ./
 
-RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
+# setuptools and msgpack are not pinned by requirements.txt: setuptools ships with
+# the base image and msgpack is pulled in transitively, so both are upgraded after
+# the requirements install to keep the published image free of known advisories.
+RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple" \
+    && pip install --upgrade "setuptools>=78.1.1" "msgpack>=1.2.1"
 
 COPY ./app /app
 ENV PYTHONPATH=./
