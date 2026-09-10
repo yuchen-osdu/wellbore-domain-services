@@ -114,6 +114,7 @@ def build_request_create_osdu_unknown_kind_welllog():
     return RequestRunner(rq_proto)
 
 def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: Dict[str, int] = {'Example CurveID': 1}) -> RequestRunner:
+    # b_use_fixed_id=True => client-supplied id (now unique per run via uuid4), not a literally fixed id
     if b_use_fixed_id:
         id_field = '"id": "{{data_partition}}:work-product-component--WellLog:' + str(uuid.uuid4()) + '",'
     else:

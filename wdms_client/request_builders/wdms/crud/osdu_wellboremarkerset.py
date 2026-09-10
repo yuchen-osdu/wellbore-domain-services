@@ -78,6 +78,7 @@ def build_request_get_versions_of_osdu_wellboremarkerset() -> RequestRunner:
 
 
 def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestRunner:
+    # b_use_fixed_id=True => client-supplied id (now unique per run via uuid4), not a literally fixed id
     if b_use_fixed_id:
         id_field = '"id": "{{data_partition}}:work-product-component--WellboreMarkerSet:' + str(uuid.uuid4()) + '",'
     else:
