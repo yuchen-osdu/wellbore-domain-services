@@ -13,12 +13,15 @@
 # limitations under the License.
 
 import json
-from unittest.mock import create_autospec, patch
+from unittest.mock import Mock, create_autospec, patch
 
 from fastapi import HTTPException
+from fastapi.exceptions import RequestValidationError
 import pytest
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from app.clients import StorageRecordServiceClient
+from app.errors.validation_error import http422_error_handler
 
 
 storage_record_service_client_mock = create_autospec(StorageRecordServiceClient, spec_set=True, instance=True)
@@ -104,3 +107,27 @@ async def test_storage_response_handling_without_timeout_stays_500(nope_logger_f
     assert body["origin"] == OSDU_DATA_ECOSYSTEM_STORAGE
     assert body["errors"] == ["connection reset"]
 
+
+@pytest.mark.parametrize("invalid_value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.anyio
+async def test_validation_error_handler_omits_non_json_input(nope_logger_fixture, invalid_value):
+    error = {
+        "type": "string_type",
+        "loc": ("body", "log_unit"),
+        "msg": "Input should be a valid string",
+        "input": invalid_value,
+    }
+
+    response = await http422_error_handler(
+        Mock(url="http://test/log-recognition/family"),
+        RequestValidationError([error]),
+    )
+
+    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert json.loads(response.body) == {
+        "errors": [{
+            "loc": ["body", "log_unit"],
+            "msg": "Input should be a valid string",
+            "type": "string_type",
+        }]
+    }

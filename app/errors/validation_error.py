@@ -35,7 +35,11 @@ async def http422_error_handler(
     """
 
     get_logger().exception(f"http422_error_handler - {request.url}")
-    return JSONResponse(content=jsonable_encoder({"errors": exc.errors()}), status_code=HTTP_422_UNPROCESSABLE_ENTITY)
+    errors = [
+        {key: error[key] for key in ("loc", "msg", "type")}
+        for error in exc.errors()
+    ]
+    return JSONResponse(content=jsonable_encoder({"errors": errors}), status_code=HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 async def json_schema_error_handler(
