@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+
 from ....request_runner import RequestRunner, Request
 
 
@@ -77,7 +79,7 @@ def build_request_get_versions_of_osdu_wellboremarkerset() -> RequestRunner:
 
 def build_request_create_osdu_wellboremarkerset(b_use_fixed_id=True) -> RequestRunner:
     if b_use_fixed_id:
-        id_field = '"id": "{{data_partition}}:work-product-component--WellboreMarkerSet:c7c421a7-f496-5aef-8093-298c32bfdea9",'
+        id_field = '"id": "{{data_partition}}:work-product-component--WellboreMarkerSet:' + str(uuid.uuid4()) + '",'
     else:
         id_field = ''
 
