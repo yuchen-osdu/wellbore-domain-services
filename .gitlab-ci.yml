@@ -25,17 +25,6 @@ variables:
   AZURE_TEST_SUBDIR: tests/integration
   AZURE_TEST_TYPE: python
 
-  AWS_SERVICE: wellbore-ddms
-  AWS_SERVICE_GATEWAY: osdu-services/osdu-gateway
-  AWS_SERVICE_NAMESPACE_SUFFIX: wellbore-ddms
-  AWS_ENVIRONMENT: dev
-  AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
-  AWS_TEST_SUBDIR: tests/aws-test/build-aws
-  AWS_CHART_SUBDIR: devops/aws/chart
-  AWS_INT_TEST_TYPE: python
-  AWS_DEPLOY_TARGET: TF
-  AWS_EKS_DEPLOYMENT_NAME: os-wellbore-ddms
-
   # ignore model_curated_test.py workaround because ci/cd hang-out when test are long.
   PYTEST_OPTIONS: "--ignore=tests/unit/model/model_curated_test.py --durations=25 --strict-markers"
 
@@ -64,13 +53,6 @@ include:
   
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/cimpl-global.yml"  
-
-  # IBM it tests "ibm-test"
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws-global.yml"
-
-  # AWS overrides
-  - local: "/devops/aws/pipeline/override-stages.yml" 
 
   # AZURE it tests "azure_test_py"
   - local: "/devops/azure/azure-wellbore.yml" 
@@ -158,9 +140,6 @@ containerize:
     - docker push $CI_REGISTRY_IMAGE:latest
 
 # Allow failure on flaky deployments
-aws-containerize:
-  allow_failure: true
-
 azure_containerize:
   allow_failure: true
 
@@ -168,12 +147,6 @@ gc-deploy:
   allow_failure: true
 
 azure_deploy:
-  allow_failure: true
-
-aws-update-tf:
-  allow_failure: true
-
-aws-test-python:
   allow_failure: true
 
 azure_swagger_test:

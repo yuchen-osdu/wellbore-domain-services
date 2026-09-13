@@ -87,11 +87,6 @@ class MainInjector(AppInjectorModule):
             logger.info('using ibm injector')
             IBMInjector().configure(app_injector)
 
-        if Config.cloud_provider.value == 'aws':
-            from app.injector.aws_injector import AwsInjector
-            logger.info('using aws injector')
-            AwsInjector().configure(app_injector)
-
         if Config.cloud_provider.value == 'baremetal':
             from app.injector.baremetal_injector import BaremetalInjector
             logger.info('using baremetal injector')
