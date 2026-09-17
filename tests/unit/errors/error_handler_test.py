@@ -131,3 +131,25 @@ async def test_validation_error_handler_omits_non_json_input(nope_logger_fixture
             "type": "string_type",
         }]
     }
+
+
+@pytest.mark.anyio
+async def test_validation_error_handler_handles_missing_error_key(nope_logger_fixture):
+    error = {
+        "loc": ("body", "log_unit"),
+        "msg": "Input should be a valid string",
+    }
+
+    response = await http422_error_handler(
+        Mock(url="http://test/log-recognition/family"),
+        RequestValidationError([error]),
+    )
+
+    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert json.loads(response.body) == {
+        "errors": [{
+            "loc": ["body", "log_unit"],
+            "msg": "Input should be a valid string",
+            "type": None,
+        }]
+    }
