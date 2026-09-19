@@ -71,14 +71,12 @@ backoff==2.2.1
     #   wellbore-domain-services
 boto3==1.43.0
     # via
-    #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-ibm
 botocore==1.43.0
     # via
     #   aiobotocore
     #   boto3
-    #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-ibm
     #   s3transfer
@@ -285,7 +283,6 @@ opentelemetry-semantic-conventions==0.61b0
     #   wellbore-domain-services
 osdu-api==1.2.0
     # via
-    #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-azure
     #   osdu-core-lib-python-baremetal
     #   wellbore-domain-services
@@ -296,8 +293,6 @@ osdu-core-lib-python==0.29.0
     #   osdu-core-lib-python-gcp
     #   osdu-core-lib-python-ibm
     #   wellbore-domain-services
-osdu-core-lib-python-aws==0.29.0
-    # via wellbore-domain-services
 osdu-core-lib-python-azure==0.29.0
     # via wellbore-domain-services
 osdu-core-lib-python-baremetal==0.29.0
@@ -395,7 +390,6 @@ requests==2.34.2
     #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   osdu-api
-    #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-baremetal
     #   requests-oauthlib
 requests-oauthlib==2.0.0

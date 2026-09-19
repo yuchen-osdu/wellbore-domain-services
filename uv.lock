@@ -1813,21 +1813,6 @@ wheels = [
 ]
 
 [[package]]
-name = "osdu-core-lib-python-aws"
-version = "0.29.0"
-source = { registry = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/" }
-dependencies = [
-    { name = "boto3" },
-    { name = "botocore" },
-    { name = "osdu-api" },
-    { name = "requests" },
-]
-sdist = { url = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/files/b8179c121ae65b1394c3835c3e5804adef24eea4b9209646df690e2bcc52718e/osdu_core_lib_python_aws-0.29.0.tar.gz", hash = "sha256:b8179c121ae65b1394c3835c3e5804adef24eea4b9209646df690e2bcc52718e" }
-wheels = [
-    { url = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/files/9c6ab6c5f2923112b1d4ce121d9d433f5cff8a64e82e55687118b444777b7a9b/osdu_core_lib_python_aws-0.29.0-py3-none-any.whl", hash = "sha256:9c6ab6c5f2923112b1d4ce121d9d433f5cff8a64e82e55687118b444777b7a9b" },
-]
-
-[[package]]
 name = "osdu-core-lib-python-azure"
 version = "0.29.0"
 source = { registry = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/" }
@@ -3083,7 +3068,6 @@ dependencies = [
     { name = "opentelemetry-semantic-conventions" },
     { name = "osdu-api" },
     { name = "osdu-core-lib-python" },
-    { name = "osdu-core-lib-python-aws" },
     { name = "osdu-core-lib-python-azure" },
     { name = "osdu-core-lib-python-baremetal" },
     { name = "osdu-core-lib-python-gcp" },
@@ -3167,7 +3151,6 @@ requires-dist = [
     { name = "opentelemetry-semantic-conventions", specifier = "==0.61b0" },
     { name = "osdu-api", specifier = "==1.2.0" },
     { name = "osdu-core-lib-python", specifier = "==0.29.0" },
-    { name = "osdu-core-lib-python-aws", specifier = "==0.29.0" },
     { name = "osdu-core-lib-python-azure", specifier = "==0.29.0" },
     { name = "osdu-core-lib-python-baremetal", specifier = "==0.29.0" },
     { name = "osdu-core-lib-python-gcp", specifier = "==0.29.0" },
