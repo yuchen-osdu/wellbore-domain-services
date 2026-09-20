@@ -7,7 +7,7 @@ aiobotocore==3.7.0
     # via s3fs
 aiohappyeyeballs==2.6.2
     # via aiohttp
-aiohttp==3.14.1
+aiohttp==3.14.3
     # via
     #   aiobotocore
     #   azure-core
@@ -31,7 +31,7 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.14.0
+anyio==4.14.2
     # via
     #   httpx
     #   starlette
@@ -124,7 +124,7 @@ colorama==0.4.6 ; os_name == 'nt' or sys_platform == 'win32'
     #   pytest
 coverage==7.14.3
     # via pytest-cov
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   azure-identity
     #   azure-keyvault-keys
@@ -387,7 +387,7 @@ pandas==2.3.3
     #   wellbore-domain-services
 pathable==0.6.0
     # via jsonschema-path
-pip==26.1.2
+pip==26.2
     # via pip-tools
 pip-tools==7.5.3
     # via wellbore-domain-services
@@ -542,7 +542,7 @@ s3fs==2026.6.0
     # via wellbore-domain-services
 s3transfer==0.17.1
     # via boto3
-setuptools==82.0.1
+setuptools==83.0.0
     # via
     #   pip-tools
     #   pytest-dependency
