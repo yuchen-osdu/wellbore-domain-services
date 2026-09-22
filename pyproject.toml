@@ -44,7 +44,7 @@ dependencies = [
     "s3fs",
     "fsspec",
     "python-ulid",
-    "osdu-api==1.2.0",
+    "osdu-api~=1.2.0",
     "osdu-log-recognition-lib==0.29.0",
     "osdu-data-ecosystem-storage==0.29.0",
     "osdu-data-ecosystem-search==0.29.0",

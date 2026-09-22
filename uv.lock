@@ -1791,16 +1791,16 @@ wheels = [
 
 [[package]]
 name = "osdu-api"
-version = "1.2.0"
+version = "1.2.1"
 source = { registry = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/" }
 dependencies = [
     { name = "httpx" },
     { name = "requests" },
     { name = "tenacity" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/ab/e60af18317ca43cff26e5ffba2be213ddacb7a7f633c1967b590c9707b58/osdu_api-1.2.0.tar.gz", hash = "sha256:5dde2b9e012dc66a7e4dfdc835c5c10ed9df402e7538e7421ae80a6d69c4e6dd", size = 63047, upload-time = "2026-04-08T13:11:19.083Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4b/91/2a272ec08d1330ba37762c31dea49ab5d1c8ceee5882ac64748d4e8c134d/osdu_api-1.2.1.tar.gz", hash = "sha256:8831471bc9334b3c2aeb05aa2967453f0f7b0e217a741878b1b2b58f89c9b8b4", size = 65562, upload-time = "2026-09-18T13:50:49.574Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f0/1b/48ca4bfa73326fea50c6c945ed9a4a3f9886f56adef10733f4bbbd4cab65/osdu_api-1.2.0-py3-none-any.whl", hash = "sha256:8528b4686b433e7659c8ad9dd179ada9a7e3a72f2ef6b72972eeb3d351728d6c", size = 165795, upload-time = "2026-04-08T13:11:17.708Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/4c/5a821cbd08dd19e856fa569d38b90ee45ff579e77b6f615caf837994988a/osdu_api-1.2.1-py3-none-any.whl", hash = "sha256:4d69e159c80de0e55ae398349fecff2d3d542bd92300ff4df09b09646bdd2753", size = 167536, upload-time = "2026-09-18T13:50:48.261Z" },
 ]
 
 [[package]]
@@ -3165,7 +3165,7 @@ requires-dist = [
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = "==1.40.0" },
     { name = "opentelemetry-sdk", specifier = "==1.40.0" },
     { name = "opentelemetry-semantic-conventions", specifier = "==0.61b0" },
-    { name = "osdu-api", specifier = "==1.2.0" },
+    { name = "osdu-api", specifier = "~=1.2.0" },
     { name = "osdu-core-lib-python", specifier = "==0.29.0" },
     { name = "osdu-core-lib-python-aws", specifier = "==0.29.0" },
     { name = "osdu-core-lib-python-azure", specifier = "==0.29.0" },
