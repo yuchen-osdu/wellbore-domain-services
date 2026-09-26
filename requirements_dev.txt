@@ -7,7 +7,7 @@ aiobotocore==3.7.0
     # via s3fs
 aiohappyeyeballs==2.6.2
     # via aiohttp
-aiohttp==3.14.1
+aiohttp==3.14.3
     # via
     #   aiobotocore
     #   azure-core
@@ -31,7 +31,7 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.14.0
+anyio==4.14.2
     # via
     #   httpx
     #   starlette
@@ -83,14 +83,12 @@ backoff==2.2.1
     #   wellbore-domain-services
 boto3==1.43.0
     # via
-    #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-ibm
 botocore==1.43.0
     # via
     #   aiobotocore
     #   boto3
-    #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-ibm
     #   s3transfer
@@ -126,7 +124,7 @@ colorama==0.4.6 ; os_name == 'nt' or sys_platform == 'win32'
     #   pytest
 coverage==7.14.3
     # via pytest-cov
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   azure-identity
     #   azure-keyvault-keys
@@ -348,7 +346,6 @@ orderly-set==5.5.0
     # via deepdiff
 osdu-api==1.2.0
     # via
-    #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-azure
     #   osdu-core-lib-python-baremetal
     #   wellbore-domain-services
@@ -360,8 +357,6 @@ osdu-core-lib-python==0.29.0
     #   osdu-core-lib-python-ibm
     #   osdu-wbddms-worker
     #   wellbore-domain-services
-osdu-core-lib-python-aws==0.29.0
-    # via wellbore-domain-services
 osdu-core-lib-python-azure==0.29.0
     # via wellbore-domain-services
 osdu-core-lib-python-baremetal==0.29.0
@@ -392,7 +387,7 @@ pandas==2.3.3
     #   wellbore-domain-services
 pathable==0.6.0
     # via jsonschema-path
-pip==26.1.2
+pip==26.2
     # via pip-tools
 pip-tools==7.5.3
     # via wellbore-domain-services
@@ -529,7 +524,6 @@ requests==2.34.2
     #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   osdu-api
-    #   osdu-core-lib-python-aws
     #   osdu-core-lib-python-baremetal
     #   osdu-wbddms-worker
     #   requests-oauthlib
@@ -548,7 +542,7 @@ s3fs==2026.6.0
     # via wellbore-domain-services
 s3transfer==0.17.1
     # via boto3
-setuptools==82.0.1
+setuptools==83.0.0
     # via
     #   pip-tools
     #   pytest-dependency
