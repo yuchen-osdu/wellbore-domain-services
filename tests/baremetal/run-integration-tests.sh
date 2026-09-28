@@ -39,5 +39,7 @@ python gen_postman_env.py \
 --acl_domain $GROUP_ID \
 --legal_tag $LEGAL_TAG
 
-# Run pytest
-pytest ./functional --environment="./generated/postman_environment.json" --filter-tag='!search|!chunking|!bulk|!describe' -p no:randomly
+# Run pytest (retry transient 5xx from shared CIMPL)
+pytest ./functional --environment="./generated/postman_environment.json" \
+  --filter-tag='!search|!chunking|!bulk|!describe' -p no:randomly \
+  --retry-on-error=503
