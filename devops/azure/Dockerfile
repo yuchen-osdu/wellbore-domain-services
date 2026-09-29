@@ -22,12 +22,7 @@ RUN apt-get update \
 
 COPY requirements.txt ./
 
-# setuptools/msgpack: pin via requirements when present, then force-upgrade and
-# drop ensurepip bundled wheels + pip cache so Trivy/Syft cannot still report
-# the base-image copies (CVE-2025-47273 / GHSA-6v7p-g79w-8964).
-RUN pip install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple" \
-    && pip install --no-cache-dir --upgrade --force-reinstall "setuptools>=78.1.1" "msgpack>=1.2.1" \
-    && rm -rf /root/.cache/pip /usr/local/lib/python3.*/ensurepip
+RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
 
 COPY ./app /app
 ENV PYTHONPATH=./
