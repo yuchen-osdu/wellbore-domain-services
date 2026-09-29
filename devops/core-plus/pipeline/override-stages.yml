@@ -167,17 +167,21 @@ cimpl-prod-acceptance-test-python:
 
         SORTED_CURRENT="sorted-current-${VERSION}.json"
         SORTED_LIVE="sorted-live-${VERSION}.json"
+        # YAML round-trip via yq collapses whole floats (92.0) to ints; FastAPI live
+        # JSON keeps them as floats. Normalize numbers to strings so the compare is
+        # type-stable (same approach as rafs-ddms-services).
+        NUMERIC_NORMALIZE_FILTER='walk(if type == "number" then ((. * 1.0) | tostring) else . end)'
 
         if [[ "${COMMITTED_SPEC_EXT}" == ".json" ]]; then
-          jq -S '.' "${CURRENT_SPEC_PATH}" > "${SORTED_CURRENT}"
+          jq -S "${NUMERIC_NORMALIZE_FILTER}" "${CURRENT_SPEC_PATH}" > "${SORTED_CURRENT}"
         else
-          yq -o=json '.' "${CURRENT_SPEC_PATH}" | jq -S '.' > "${SORTED_CURRENT}"
+          yq -o=json '.' "${CURRENT_SPEC_PATH}" | jq -S "${NUMERIC_NORMALIZE_FILTER}" > "${SORTED_CURRENT}"
         fi
 
         if [[ "${LIVE_SPEC_EXT}" == ".json" ]]; then
-          jq -S '.' "${LIVE_SPEC}" > "${SORTED_LIVE}"
+          jq -S "${NUMERIC_NORMALIZE_FILTER}" "${LIVE_SPEC}" > "${SORTED_LIVE}"
         else
-          yq -o=json '.' "${LIVE_SPEC}" | jq -S '.' > "${SORTED_LIVE}"
+          yq -o=json '.' "${LIVE_SPEC}" | jq -S "${NUMERIC_NORMALIZE_FILTER}" > "${SORTED_LIVE}"
         fi
 
         if ! diff -u "${SORTED_CURRENT}" "${SORTED_LIVE}"; then
