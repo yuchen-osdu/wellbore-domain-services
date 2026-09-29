@@ -3,8 +3,6 @@ info:
   title: Wellbore DDMS OSDU
   description: build local
   version: '0.29'
-servers:
-- url: /api/os-wellbore-ddms
 paths:
   /about:
     get:
@@ -42,28 +40,27 @@ paths:
           description: Forbidden
       security:
       - HTTPBearer: []
-  /ddms/v3/wellbores/{wellboreid}:
+  /ddms/v3/wellbores/{record_id}:
     get:
       tags:
       - Wellbore
       summary: Get the Wellbore using osdu schema
       description: 'Get the Wellbore object using its **id**.
 
-        Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or
-        ''users.datalake.admins''.
+        Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''.
 
         In addition, users must be a member of data groups to access the data.'
       operationId: get_wellbore_osdu
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboreid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$
-          title: Wellboreid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -97,20 +94,20 @@ paths:
     delete:
       tags:
       - Wellbore
-      summary: Delete the wellbore. The API performs a logical deletion of the given
-        record. No recursive delete for OSDU kinds
+      summary: Delete the wellbore. The API performs a logical deletion of the given record. No recursive delete for OSDU
+        kinds
       description: 'Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
       operationId: del_osdu_wellbore
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboreid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$
-          title: Wellboreid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -137,26 +134,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellbores/{wellboreid}/versions:
+  /ddms/v3/wellbores/{record_id}/versions:
     get:
       tags:
       - Wellbore
       summary: Get all versions of the Wellbore
-      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors''
-        or ''users.datalake.admins''.
+      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''.
 
         In addition, users must be a member of data groups to access the data.'
       operationId: get_osdu_wellbore_versions
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboreid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$
-          title: Wellboreid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -187,25 +183,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellbores/{wellboreid}/versions/{version}:
+  /ddms/v3/wellbores/{record_id}/versions/{version}:
     get:
       tags:
       - Wellbore
       summary: Get the given version of the Wellbore using OSDU wellbore schema
-      description: "\"Get the Wellbore object using its **id**. \nRequired roles:\
-        \ 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      description: "\"Get the Wellbore object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_osdu_wellbore_version
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboreid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-Wellbore:[\w\-\.\:\%]+$
-          title: Wellboreid
+          title: Record Id
       - name: version
         in: path
         required: true
@@ -392,25 +387,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wells/{wellid}:
+  /ddms/v3/wells/{record_id}:
     get:
       tags:
       - Well
       summary: Get the Well using osdu schema
-      description: "Get the Well object using its **id**. \nRequired roles: 'users.datalake.viewers'\
-        \ or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data."
+      description: "Get the Well object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_well_osdu
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$
-          title: Wellid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -444,20 +438,19 @@ paths:
     delete:
       tags:
       - Well
-      summary: Delete the well. The API performs a logical deletion of the given record.
-        No recursive delete for OSDU kinds
+      summary: Delete the well. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds
       description: 'Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
       operationId: del_osdu_well
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$
-          title: Wellid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -484,26 +477,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wells/{wellid}/versions:
+  /ddms/v3/wells/{record_id}/versions:
     get:
       tags:
       - Well
       summary: Get all versions of the Well
-      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors''
-        or ''users.datalake.admins''.
+      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''.
 
         In addition, users must be a member of data groups to access the data.'
       operationId: get_osdu_well_versions
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$
-          title: Wellid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -534,25 +526,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wells/{wellid}/versions/{version}:
+  /ddms/v3/wells/{record_id}/versions/{version}:
     get:
       tags:
       - Well
       summary: Get the given version of the Well using OSDU well schema
-      description: "\"Get the Well object using its **id**. \nRequired roles: 'users.datalake.viewers'\
-        \ or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data."
+      description: "\"Get the Well object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_osdu_well_version
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-Well:[\w\-\.\:\%]+$
-          title: Wellid
+          title: Record Id
       - name: version
         in: path
         required: true
@@ -689,25 +680,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboremarkersets/{wellboremarkersetid}:
+  /ddms/v3/wellboremarkersets/{record_id}:
     get:
       tags:
       - Marker
       summary: Get the WellboreMarkerSet using osdu schema
-      description: "Get the WellboreMarkerSet object using its **id**. \nRequired\
-        \ roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      description: "Get the WellboreMarkerSet object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_wellbore_markerset_osdu
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboremarkersetid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$
-          title: Wellboremarkersetid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -741,20 +731,20 @@ paths:
     delete:
       tags:
       - Marker
-      summary: Delete the wellboreMarkerset. The API performs a logical deletion of
-        the given record. No recursive delete for OSDU kinds
+      summary: Delete the wellboreMarkerset. The API performs a logical deletion of the given record. No recursive delete
+        for OSDU kinds
       description: 'Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
       operationId: del_osdu_wellboremarkerset
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboremarkersetid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$
-          title: Wellboremarkersetid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -781,26 +771,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboremarkersets/{wellboremarkersetid}/versions:
+  /ddms/v3/wellboremarkersets/{record_id}/versions:
     get:
       tags:
       - Marker
       summary: Get all versions of the WellboreMarkerSet
-      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors''
-        or ''users.datalake.admins''.
+      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''.
 
         In addition, users must be a member of data groups to access the data.'
       operationId: get_osdu_wellboremarkerset_versions
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboremarkersetid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$
-          title: Wellboremarkersetid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -831,26 +820,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboremarkersets/{wellboremarkersetid}/versions/{version}:
+  /ddms/v3/wellboremarkersets/{record_id}/versions/{version}:
     get:
       tags:
       - Marker
-      summary: Get the given version of the WellboreMarkerSet using OSDU WellboreMarkerset
-        schema
-      description: "\"Get the WellboreMarkerSet object using its **id**. \nRequired\
-        \ roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      summary: Get the given version of the WellboreMarkerSet using OSDU WellboreMarkerset schema
+      description: "\"Get the WellboreMarkerSet object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_osdu_wellboremarkerset_version
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboremarkersetid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreMarkerSet:[\w\-\.\:\%]+$
-          title: Wellboremarkersetid
+          title: Record Id
       - name: version
         in: path
         required: true
@@ -987,8 +974,7 @@ paths:
                   - WorkflowUsage: '{{datapartitionid}}:reference-data--WorkflowUsageType:SeismicInterpretation:'
                     WorkflowPersona: '{{datapartitionid}}:reference-data--WorkflowPersonaType:SeismicInterpreter:'
                   EffectiveDate: '2020-02-13'
-                  Comment: This is free form text from reviewer, e.g. restrictions
-                    on use
+                  Comment: This is free form text from reviewer, e.g. restrictions on use
                 Name: Example Name
                 Description: Example Description
                 CreationDateTime: '2020-02-13T09:13:15.55Z'
@@ -1059,10 +1045,8 @@ paths:
                     - 12345.6
                     - 12345.6
                   AppliedOperations:
-                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points
-                    converted
-                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24;
-                    1 points successfully transformed
+                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted
+                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed
                   SpatialParameterTypeID: '{{datapartitionid}}:reference-data--SpatialParameterType:Outline:'
                   SpatialGeometryTypeID: '{{datapartitionid}}:reference-data--SpatialGeometryType:Point:'
                 SpatialArea:
@@ -1130,10 +1114,8 @@ paths:
                     - 12345.6
                     - 12345.6
                   AppliedOperations:
-                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points
-                    converted
-                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24;
-                    1 points successfully transformed
+                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted
+                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed
                   SpatialParameterTypeID: '{{datapartitionid}}:reference-data--SpatialParameterType:Outline:'
                   SpatialGeometryTypeID: '{{datapartitionid}}:reference-data--SpatialGeometryType:Point:'
                 GeoContexts:
@@ -1206,25 +1188,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}:
+  /ddms/v3/wellboreintervalsets/{record_id}:
     get:
       tags:
       - Wellbore IntervalSet
       summary: Get the WellboreIntervalSet using osdu schema
-      description: "Get the WellboreIntervalSet object using its **id**. \nRequired\
-        \ roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      description: "Get the WellboreIntervalSet object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_wellboreintervalsetid_osdu
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboreintervalsetsid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$
-          title: Wellboreintervalsetsid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -1258,20 +1239,20 @@ paths:
     delete:
       tags:
       - Wellbore IntervalSet
-      summary: Delete the WellboreIntervalSetId. The API performs a logical deletion
-        of the given record. No recursive delete for OSDU kinds
+      summary: Delete the WellboreIntervalSetId. The API performs a logical deletion of the given record. No recursive delete
+        for OSDU kinds
       description: 'Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
       operationId: del_osdu_wellboreintervalsetid
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboreintervalsetsid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$
-          title: Wellboreintervalsetsid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -1298,26 +1279,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}/versions:
+  /ddms/v3/wellboreintervalsets/{record_id}/versions:
     get:
       tags:
       - Wellbore IntervalSet
       summary: Get all versions of the WellboreIntervalSet
-      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors''
-        or ''users.datalake.admins''.
+      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''.
 
         In addition, users must be a member of data groups to access the data.'
       operationId: get_osdu_wellboreintervalsetid_versions
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboreintervalsetsid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$
-          title: Wellboreintervalsetsid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -1348,26 +1328,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboreintervalsets/{wellboreintervalsetsid}/versions/{version}:
+  /ddms/v3/wellboreintervalsets/{record_id}/versions/{version}:
     get:
       tags:
       - Wellbore IntervalSet
-      summary: Get the given version of the WellboreIntervalSet using OSDU WellboreIntervalSetId
-        schema
-      description: "Get the WellboreIntervalSet object using its **id**. \nRequired\
-        \ roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      summary: Get the given version of the WellboreIntervalSet using OSDU WellboreIntervalSetId schema
+      description: "Get the WellboreIntervalSet object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_osdu_wellboreintervalsetid_version
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboreintervalsetsid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreIntervalSet:[\w\-\.\:\%]+$
-          title: Wellboreintervalsetsid
+          title: Record Id
       - name: version
         in: path
         required: true
@@ -1503,25 +1481,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/welllogacquisition/{welllogacquisitionid}:
+  /ddms/v3/welllogacquisition/{record_id}:
     get:
       tags:
       - WellLog Acquisition
       summary: Get the WellLogAcquisition using osdu schema
-      description: "Get the WellLogAcquisition object using its **id**. \nRequired\
-        \ roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      description: "Get the WellLogAcquisition object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_welllogacquisitionid_osdu
       security:
       - HTTPBearer: []
       parameters:
-      - name: welllogacquisitionid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-WellLogAcquisition:[\w\-\.\:\%]+$
-          title: Welllogacquisitionid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -1555,20 +1532,20 @@ paths:
     delete:
       tags:
       - WellLog Acquisition
-      summary: Delete the WellLogAcquisitionId. The API performs a logical deletion
-        of the given record. No recursive delete for OSDU kinds
+      summary: Delete the WellLogAcquisitionId. The API performs a logical deletion of the given record. No recursive delete
+        for OSDU kinds
       description: 'Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
       operationId: del_osdu_welllogacquisitionid
       security:
       - HTTPBearer: []
       parameters:
-      - name: welllogacquisitionid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-WellLogAcquisition:[\w\-\.\:\%]+$
-          title: Welllogacquisitionid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -1595,26 +1572,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/welllogacquisition/{welllogacquisitionid}/versions:
+  /ddms/v3/welllogacquisition/{record_id}/versions:
     get:
       tags:
       - WellLog Acquisition
       summary: Get all versions of the WellLogAcquisition
-      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors''
-        or ''users.datalake.admins''.
+      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''.
 
         In addition, users must be a member of data groups to access the data.'
       operationId: get_osdu_welllogacquisitionid_versions
       security:
       - HTTPBearer: []
       parameters:
-      - name: welllogacquisitionid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-WellLogAcquisition:[\w\-\.\:\%]+$
-          title: Welllogacquisitionid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -1645,26 +1621,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/welllogacquisition/{welllogacquisitionid}/versions/{version}:
+  /ddms/v3/welllogacquisition/{record_id}/versions/{version}:
     get:
       tags:
       - WellLog Acquisition
-      summary: Get the given version of the WellLogAcquisition using OSDU WellLogAcquisitionId
-        schema
-      description: "Get the WellLogAcquisition object using its **id**. \nRequired\
-        \ roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      summary: Get the given version of the WellLogAcquisition using OSDU WellLogAcquisitionId schema
+      description: "Get the WellLogAcquisition object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_osdu_welllogacquisitionid_version
       security:
       - HTTPBearer: []
       parameters:
-      - name: welllogacquisitionid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:master-data\-\-WellLogAcquisition:[\w\-\.\:\%]+$
-          title: Welllogacquisitionid
+          title: Record Id
       - name: version
         in: path
         required: true
@@ -1707,9 +1681,8 @@ paths:
       tags:
       - WellLog Acquisition
       summary: Create or update the WellLogAcquisition using osdu schema
-      description: "From WellLog 1.5.0 new attributes are introduced WellLogAcquisitionDetails.WellLogAcquisitionID\n\
-        \    to reference a WellLogAcquisition into a WellLog record. (ref. [WellLog\
-        \ 1.5.0 schemas]\n    (https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Examples/work-product-component/WellLog.1.5.0.json#L405))\n\
+      description: "From WellLog 1.5.0 new attributes are introduced WellLogAcquisitionDetails.WellLogAcquisitionID\n    to\
+        \ reference a WellLogAcquisition into a WellLog record. (ref. [WellLog 1.5.0 schemas]\n    (https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Examples/work-product-component/WellLog.1.5.0.json#L405))\n\
         \    \n    \nRequired roles: 'users.datalake.editors' or 'users.datalake.admins'."
       operationId: post_welllogacquisitionid_osdu
       security:
@@ -1856,10 +1829,8 @@ paths:
                     - 12345.6
                     - 12345.6
                   AppliedOperations:
-                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points
-                    converted
-                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24;
-                    1 points successfully transformed
+                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted
+                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed
                   SpatialParameterTypeID: 'namespace:reference-data--SpatialParameterType:Outline:'
                   SpatialGeometryTypeID: 'namespace:reference-data--SpatialGeometryType:Point:'
                 VersionCreationReason: Example VersionCreationReason
@@ -1885,8 +1856,7 @@ paths:
                     DataQualityID: namespace:work-product-component--DataQuality:d79bf97c-ff7c-4b82-89b5-c88520c15017:1562066009929332
                     ValueChainStatusTypeID: 'namespace:reference-data--ValueChainStatusType:FieldDevelopment:'
                   EffectiveDate: '2020-02-13'
-                  Comment: This is free form text from reviewer, e.g. restrictions
-                    on use
+                  Comment: This is free form text from reviewer, e.g. restrictions on use
                 ProjectID: Example External Project Identifier
                 ProjectName: Example ProjectName
                 Purpose: Example Purpose
@@ -2025,25 +1995,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/welllogs/{welllogid}:
+  /ddms/v3/welllogs/{record_id}:
     get:
       tags:
       - WellLog
       summary: Get the WellLog using osdu schema
-      description: "Get the WellLog object using its **id**. \nRequired roles: 'users.datalake.viewers'\
-        \ or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data."
+      description: "Get the WellLog object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_welllog_osdu
       security:
       - HTTPBearer: []
       parameters:
-      - name: welllogid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$
-          title: Welllogid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -2077,20 +2046,19 @@ paths:
     delete:
       tags:
       - WellLog
-      summary: Delete the welllog. The API performs a logical deletion of the given
-        record. No recursive delete for OSDU kinds
+      summary: Delete the welllog. The API performs a logical deletion of the given record. No recursive delete for OSDU kinds
       description: 'Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
       operationId: del_osdu_welllog
       security:
       - HTTPBearer: []
       parameters:
-      - name: welllogid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$
-          title: Welllogid
+          title: Record Id
       - name: purge
         in: query
         required: false
@@ -2124,26 +2092,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/welllogs/{welllogid}/versions:
+  /ddms/v3/welllogs/{record_id}/versions:
     get:
       tags:
       - WellLog
       summary: Get all versions of the WellLog
-      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors''
-        or ''users.datalake.admins''.
+      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''.
 
         In addition, users must be a member of data groups to access the data.'
       operationId: get_osdu_welllog_versions
       security:
       - HTTPBearer: []
       parameters:
-      - name: welllogid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$
-          title: Welllogid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -2174,25 +2141,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/welllogs/{welllogid}/versions/{version}:
+  /ddms/v3/welllogs/{record_id}/versions/{version}:
     get:
       tags:
       - WellLog
       summary: Get the given version of the WellLog using OSDU welllog schema
-      description: "\"Get the WellLog object using its **id**. \nRequired roles: 'users.datalake.viewers'\
-        \ or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data."
+      description: "\"Get the WellLog object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_osdu_welllog_version
       security:
       - HTTPBearer: []
       parameters:
-      - name: welllogid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellLog:[\w\-\.\:\%]+$
-          title: Welllogid
+          title: Record Id
       - name: version
         in: path
         required: true
@@ -2240,11 +2206,9 @@ paths:
 
         BulkURI consistency:
 
-        - ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set
-        when creating a new record.
+        - ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set when creating a new record.
 
-        - When updating an existing record, bulkURI must match the previous version
-        exactly.
+        - When updating an existing record, bulkURI must match the previous version exactly.
 
         Requests that violate these rules are rejected with HTTP 400.'
       operationId: post_welllog_osdu
@@ -2352,25 +2316,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboretrajectories/{wellboretrajectoryid}:
+  /ddms/v3/wellboretrajectories/{record_id}:
     get:
       tags:
       - Trajectory v3
       summary: Get the WellboreTrajectory using osdu schema
-      description: "Get the WellboreTrajectory object using its **id**. \nRequired\
-        \ roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      description: "Get the WellboreTrajectory object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_wellbore_trajectory_osdu
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboretrajectoryid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$
-          title: Wellboretrajectoryid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -2404,20 +2367,20 @@ paths:
     delete:
       tags:
       - Trajectory v3
-      summary: Delete the wellboreTrajectory. The API performs a logical deletion
-        of the given record. No recursive delete for OSDU kinds
+      summary: Delete the wellboreTrajectory. The API performs a logical deletion of the given record. No recursive delete
+        for OSDU kinds
       description: 'Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
       operationId: del_osdu_wellboretrajectory
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboretrajectoryid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$
-          title: Wellboretrajectoryid
+          title: Record Id
       - name: purge
         in: query
         required: false
@@ -2451,26 +2414,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboretrajectories/{wellboretrajectoryid}/versions:
+  /ddms/v3/wellboretrajectories/{record_id}/versions:
     get:
       tags:
       - Trajectory v3
       summary: Get all versions of the WellboreTrajectory
-      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors''
-        or ''users.datalake.admins''.
+      description: 'Required roles: ''users.datalake.viewers'' or ''users.datalake.editors'' or ''users.datalake.admins''.
 
         In addition, users must be a member of data groups to access the data.'
       operationId: get_osdu_wellboretrajectory_versions
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboretrajectoryid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$
-          title: Wellboretrajectoryid
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -2501,26 +2463,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellboretrajectories/{wellboretrajectoryid}/versions/{version}:
+  /ddms/v3/wellboretrajectories/{record_id}/versions/{version}:
     get:
       tags:
       - Trajectory v3
-      summary: Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory
-        schema
-      description: "\"Get the WellboreTrajectory object using its **id**. \nRequired\
-        \ roles: 'users.datalake.viewers' or 'users.datalake.editors' or 'users.datalake.admins'.\n\
-        In addition, users must be a member of data groups to access the data."
+      summary: Get the given version of the WellboreTrajectory using OSDU wellboreTrajectory schema
+      description: "\"Get the WellboreTrajectory object using its **id**. \nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data."
       operationId: get_osdu_wellboretrajectory_version
       security:
       - HTTPBearer: []
       parameters:
-      - name: wellboretrajectoryid
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
           pattern: ^[\w\-\.]+:work-product-component\-\-WellboreTrajectory:[\w\-\.\:\%]+$
-          title: Wellboretrajectoryid
+          title: Record Id
       - name: version
         in: path
         required: true
@@ -2568,11 +2528,9 @@ paths:
 
         BulkURI consistency:
 
-        - ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set
-        when creating a new record.
+        - ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set when creating a new record.
 
-        - When updating an existing record, bulkURI must match the previous version
-        exactly.
+        - When updating an existing record, bulkURI must match the previous version exactly.
 
         Requests that violate these rules are rejected with HTTP 400.'
       operationId: post_wellboretrajectory_osdu
@@ -2718,10 +2676,8 @@ paths:
                     - 12345.6
                     - 12345.6
                   AppliedOperations:
-                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points
-                    converted
-                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24;
-                    1 points successfully transformed
+                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted
+                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed
                   SpatialParameterTypeID: 'namespace:reference-data--SpatialParameterType:Outline:'
                   SpatialGeometryTypeID: 'namespace:reference-data--SpatialGeometryType:Point:'
                 SpatialArea:
@@ -2789,10 +2745,8 @@ paths:
                     - 12345.6
                     - 12345.6
                   AppliedOperations:
-                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points
-                    converted
-                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24;
-                    1 points successfully transformed
+                  - conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted
+                  - transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed
                   SpatialParameterTypeID: 'namespace:reference-data--SpatialParameterType:Outline:'
                   SpatialGeometryTypeID: 'namespace:reference-data--SpatialGeometryType:Point:'
                 GeoContexts:
@@ -2869,18 +2823,14 @@ paths:
       tags:
       - WellLog
       summary: Create a new session on the given record for writing bulk data.
-      description: "Initiate a session based on record version provided. The session\
-        \ is isolated from any other modifications. \nInside a session, individual\
-        \ chunk doesn't generate new individual record version.  \n \nA new single\
-        \ version is created only at session completion 'aggregating' all updates.\n\
-        \ A typical workflow is:\n 1. create a session\n 2. send X chunks (can be\
-        \ parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\n\
-        If the session is not completed before, it's automatically dropped. \nThe\
-        \ session duration is specified in the request but cannot exceeds 24 hours.\n\
-        \n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted**\
-        \ can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to\
-        \ **False** after completing the session \n(with _PATCH /{record_id}/sessions/{session_id}_\
-        \ API). See swagger examples for details."
+      description: "Initiate a session based on record version provided. The session is isolated from any other modifications.\
+        \ \nInside a session, individual chunk doesn't generate new individual record version.  \n \nA new single version\
+        \ is created only at session completion 'aggregating' all updates.\n A typical workflow is:\n 1. create a session\n\
+        \ 2. send X chunks (can be parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\nIf the session\
+        \ is not completed before, it's automatically dropped. \nThe session duration is specified in the request but cannot\
+        \ exceeds 24 hours.\n\n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted**\
+        \ can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to **False** after completing the session \n\
+        (with _PATCH /{record_id}/sessions/{session_id}_ API). See swagger examples for details."
       operationId: post__ddms_v3_welllogs__record_id__sessions
       security:
       - HTTPBearer: []
@@ -2979,8 +2929,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Session'
-                title: Response List Session Ddms V3 Welllogs  Record Id  Sessions
-                  Get
+                title: Response List Session Ddms V3 Welllogs  Record Id  Sessions Get
         '401':
           description: Unauthorized
         '403':
@@ -3051,10 +3000,9 @@ paths:
       tags:
       - WellLog
       summary: Update a session, either commit or abandon.
-      description: "Either validates the session' bulk data, a new version of record\
-        \ will be created with data sent\n                within the session. Either\
-        \ abandon the session, and let record unchanged.  \n                Note:\
-        \ bulk data consistency check will be run when committing bulk data."
+      description: "Either validates the session' bulk data, a new version of record will be created with data sent\n    \
+        \            within the session. Either abandon the session, and let record unchanged.  \n                Note: bulk\
+        \ data consistency check will be run when committing bulk data."
       operationId: patch__ddms_v3_welllogs__record_id__sessions__session_id_
       security:
       - HTTPBearer: []
@@ -3126,18 +3074,14 @@ paths:
       tags:
       - WellLog
       summary: Writes data as a whole bulk, creates a new version.
-      description: "Writes data to the associated record. It creates a new version.\n\
-        Payload is expected to contain the entire bulk which will replace as latest\
-        \ version\nany previous bulk. Previous bulk versions are accessible via the\
-        \ get bulk data version API.\nSupport JSON and Parquet format ('Content_Type'\
-        \ must be set accordingly).\nSupport http chunked encoding transfer.\n\nRequired\
-        \ roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\n**Important**:\
-        \ In order to minimize writing time, it's necessary to:  \n- Double check\
-        \ whether bulk data is big enough to be sent with chunking APIs: meaning >\
-        \ 10 millions values or > 3000 columns\n    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data\
-        \ API\n- Ensure all curve's values are in the same chunk to be sent\n- Each\
-        \ chunk should contain as many as columns it is possible until upper limits\
-        \ are reached (> 10 millions values or > 3000 columns)"
+      description: "Writes data to the associated record. It creates a new version.\nPayload is expected to contain the entire\
+        \ bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get\
+        \ bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http\
+        \ chunked encoding transfer.\n\nRequired roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\n**Important**:\
+        \ In order to minimize writing time, it's necessary to:  \n- Double check whether bulk data is big enough to be sent\
+        \ with chunking APIs: meaning > 10 millions values or > 3000 columns\n    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data\
+        \ API\n- Ensure all curve's values are in the same chunk to be sent\n- Each chunk should contain as many as columns\
+        \ it is possible until upper limits are reached (> 10 millions values or > 3000 columns)"
       operationId: write_record_data
       security:
       - HTTPBearer: []
@@ -3178,24 +3122,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       requestBody:
-        description: "\nContains the data corresponding to the dataframe. The header\
-          \ \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet**\
-          \ format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
-          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON\
-          \ format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
-          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\"\
-          :[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
+        description: "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly\
+          \ to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
+          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
+          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\"\
+          :[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
         required: true
         content:
           application/json:
             schema:
-              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\
-                \n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n\
-                \  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n  \
-                \  ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n  \
-                \  [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n   \
-                \   1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n\
-                \      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n   \
+                \ 1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n\
+                \    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n\
+                \    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n\
+                \    ]\n  ]\n}"
           application/x-parquet:
             schema:
               type: string
@@ -3204,25 +3144,19 @@ paths:
       tags:
       - WellLog
       summary: Returns the data according to the specified query parameters.
-      description: "Returns the data according to the specified query parameters.\n\
-        Multiple media types response are available (\"application/json\", \"application/x-parquet\"\
-        ).  \nThe desired format can be specify in the \"Accept\" header, default\
-        \ is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query\
-        \ parameter, the response is always provided in JSON.  \nThe requested columns\
-        \ must not exceed 3000. \nThe query parameter __curves__ can be use to limit\
-        \ the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or\
-        \ 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data.\n\n**Important**: In\
-        \ order to minimize reading time.\n\n1. Partial reading\n    - Select only\
-        \ needed columns\n    \nNote: using curves filtering has a cost, use it only\
-        \ if it reduces significantly the amount of retrieved bulk data.\n\n2. Full\
-        \ reading\n    - Try to read all the curves, if those errors are returned\
-        \ go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n \
-        \       - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the\
-        \ resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n\
-        \    - Get curve names and number of rows per curve by using describe parameter\n\
-        \       - Each request should fetch as many as columns it is possible until\
-        \ upper limits are reached (> 10 millions values or > 3000 columns)"
+      description: "Returns the data according to the specified query parameters.\nMultiple media types response are available\
+        \ (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header,\
+        \ default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter, the response is\
+        \ always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__ can be\
+        \ use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or\
+        \ 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**:\
+        \ In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves\
+        \ filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n\
+        \    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns\
+        \ requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds\
+        \ the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe\
+        \ parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (>\
+        \ 10 millions values or > 3000 columns)"
       operationId: get__ddms_v3_welllogs__record_id__data
       security:
       - HTTPBearer: []
@@ -3242,13 +3176,11 @@ paths:
             minimum: 0
             format: int64
           - type: 'null'
-          description: The number of rows that are to be skipped and not included
-            in the result.
+          description: The number of rows that are to be skipped and not included in the result.
           examples:
           - 5
           title: Offset
-        description: The number of rows that are to be skipped and not included in
-          the result.
+        description: The number of rows that are to be skipped and not included in the result.
       - name: limit
         in: query
         required: false
@@ -3270,11 +3202,9 @@ paths:
           anyOf:
           - type: string
           - type: 'null'
-          description: Filters curves. List of curves to be returned. The curves are
-            returned in the same order as it is given.
+          description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
           title: Curves
-        description: Filters curves. List of curves to be returned. The curves are
-          returned in the same order as it is given.
+        description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
         examples:
           all:
             summary: Select all curves
@@ -3298,14 +3228,14 @@ paths:
           anyOf:
           - type: boolean
           - type: 'null'
-          description: The "describe" query option allows clients to request a description
-            of the matching result. (number of rows, columns name)
+          description: The "describe" query option allows clients to request a description of the matching result. (number
+            of rows, columns name)
           examples:
           - 'false'
           default: false
           title: Describe
-        description: The "describe" query option allows clients to request a description
-          of the matching result. (number of rows, columns name)
+        description: The "describe" query option allows clients to request a description of the matching result. (number of
+          rows, columns name)
       - name: filter
         in: query
         required: false
@@ -3315,17 +3245,13 @@ paths:
             items:
               type: string
           - type: 'null'
-          description: "\n\nThe \"filter\" query parameter allows clients to filter\
-            \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-            \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-            Note: If the column name contains ':', enclose it in double quotation\
-            \ marks (\").\n"
+          description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+            \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.\
+            \  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
           title: Filter
-        description: "\n\nThe \"filter\" query parameter allows clients to filter\
-          \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-          \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-          Note: If the column name contains ':', enclose it in double quotation marks\
-          \ (\").\n"
+        description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+          \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in. \
+          \ \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
         examples:
           simple-md-filter:
             summary: Select rows when column 'MD' values >= 1000
@@ -3459,11 +3385,9 @@ paths:
     post:
       tags:
       - WellLog
-      summary: Send a data chunk. Session must be complete/commit once all chunks
-        are sent.
-      description: 'Send a data chunk. Session must be complete/commit once all chunks
-        are sent. This will create a new and single version aggregating all and previous
-        bulk.Support JSON and Parquet format (''Content_Type'' must be set accordingly).
+      summary: Send a data chunk. Session must be complete/commit once all chunks are sent.
+      description: 'Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and
+        single version aggregating all and previous bulk.Support JSON and Parquet format (''Content_Type'' must be set accordingly).
         Support http chunked encoding.
 
         Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
@@ -3517,24 +3441,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       requestBody:
-        description: "\nContains the data corresponding to the dataframe. The header\
-          \ \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet**\
-          \ format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
-          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON\
-          \ format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
-          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\"\
-          :[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
+        description: "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly\
+          \ to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
+          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
+          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\"\
+          :[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
         required: true
         content:
           application/json:
             schema:
-              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\
-                \n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n\
-                \  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n  \
-                \  ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n  \
-                \  [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n   \
-                \   1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n\
-                \      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n   \
+                \ 1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n\
+                \    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n\
+                \    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n\
+                \    ]\n  ]\n}"
           application/x-parquet:
             schema:
               type: string
@@ -3544,25 +3464,19 @@ paths:
       tags:
       - WellLog
       summary: Returns data of the specified version.
-      description: "Returns the data of a specific version according to the specified\
-        \ query parameters.\nMultiple media types response are available (\"application/json\"\
-        , \"application/x-parquet\").  \nThe desired format can be specify in the\
-        \ \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested\
-        \ using __describe__ query parameter, the response is always provided in JSON.\
-        \  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__\
-        \ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers'\
-        \ or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data.\n\n**Important**: In\
-        \ order to minimize reading time.\n\n1. Partial reading\n    - Select only\
-        \ needed columns\n    \nNote: using curves filtering has a cost, use it only\
-        \ if it reduces significantly the amount of retrieved bulk data.\n\n2. Full\
-        \ reading\n    - Try to read all the curves, if those errors are returned\
-        \ go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n \
-        \       - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the\
-        \ resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n\
-        \    - Get curve names and number of rows per curve by using describe parameter\n\
-        \       - Each request should fetch as many as columns it is possible until\
-        \ upper limits are reached (> 10 millions values or > 3000 columns)"
+      description: "Returns the data of a specific version according to the specified query parameters.\nMultiple media types\
+        \ response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in\
+        \ the \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter,\
+        \ the response is always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__\
+        \ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**:\
+        \ In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves\
+        \ filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n\
+        \    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns\
+        \ requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds\
+        \ the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe\
+        \ parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (>\
+        \ 10 millions values or > 3000 columns)"
       operationId: get__ddms_v3_welllogs__record_id__versions__version__data
       security:
       - HTTPBearer: []
@@ -3589,13 +3503,11 @@ paths:
             minimum: 0
             format: int64
           - type: 'null'
-          description: The number of rows that are to be skipped and not included
-            in the result.
+          description: The number of rows that are to be skipped and not included in the result.
           examples:
           - 5
           title: Offset
-        description: The number of rows that are to be skipped and not included in
-          the result.
+        description: The number of rows that are to be skipped and not included in the result.
       - name: limit
         in: query
         required: false
@@ -3617,11 +3529,9 @@ paths:
           anyOf:
           - type: string
           - type: 'null'
-          description: Filters curves. List of curves to be returned. The curves are
-            returned in the same order as it is given.
+          description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
           title: Curves
-        description: Filters curves. List of curves to be returned. The curves are
-          returned in the same order as it is given.
+        description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
         examples:
           all:
             summary: Select all curves
@@ -3645,14 +3555,14 @@ paths:
           anyOf:
           - type: boolean
           - type: 'null'
-          description: The "describe" query option allows clients to request a description
-            of the matching result. (number of rows, columns name)
+          description: The "describe" query option allows clients to request a description of the matching result. (number
+            of rows, columns name)
           examples:
           - 'false'
           default: false
           title: Describe
-        description: The "describe" query option allows clients to request a description
-          of the matching result. (number of rows, columns name)
+        description: The "describe" query option allows clients to request a description of the matching result. (number of
+          rows, columns name)
       - name: filter
         in: query
         required: false
@@ -3662,17 +3572,13 @@ paths:
             items:
               type: string
           - type: 'null'
-          description: "\n\nThe \"filter\" query parameter allows clients to filter\
-            \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-            \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-            Note: If the column name contains ':', enclose it in double quotation\
-            \ marks (\").\n"
+          description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+            \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.\
+            \  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
           title: Filter
-        description: "\n\nThe \"filter\" query parameter allows clients to filter\
-          \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-          \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-          Note: If the column name contains ':', enclose it in double quotation marks\
-          \ (\").\n"
+        description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+          \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in. \
+          \ \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
         examples:
           simple-md-filter:
             summary: Select rows when column 'MD' values >= 1000
@@ -3807,18 +3713,14 @@ paths:
       tags:
       - Trajectory v3
       summary: Create a new session on the given record for writing bulk data.
-      description: "Initiate a session based on record version provided. The session\
-        \ is isolated from any other modifications. \nInside a session, individual\
-        \ chunk doesn't generate new individual record version.  \n \nA new single\
-        \ version is created only at session completion 'aggregating' all updates.\n\
-        \ A typical workflow is:\n 1. create a session\n 2. send X chunks (can be\
-        \ parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\n\
-        If the session is not completed before, it's automatically dropped. \nThe\
-        \ session duration is specified in the request but cannot exceeds 24 hours.\n\
-        \n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted**\
-        \ can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to\
-        \ **False** after completing the session \n(with _PATCH /{record_id}/sessions/{session_id}_\
-        \ API). See swagger examples for details."
+      description: "Initiate a session based on record version provided. The session is isolated from any other modifications.\
+        \ \nInside a session, individual chunk doesn't generate new individual record version.  \n \nA new single version\
+        \ is created only at session completion 'aggregating' all updates.\n A typical workflow is:\n 1. create a session\n\
+        \ 2. send X chunks (can be parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\nIf the session\
+        \ is not completed before, it's automatically dropped. \nThe session duration is specified in the request but cannot\
+        \ exceeds 24 hours.\n\n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted**\
+        \ can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to **False** after completing the session \n\
+        (with _PATCH /{record_id}/sessions/{session_id}_ API). See swagger examples for details."
       operationId: post__ddms_v3_wellboretrajectories__record_id__sessions
       security:
       - HTTPBearer: []
@@ -3917,8 +3819,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Session'
-                title: Response List Session Ddms V3 Wellboretrajectories  Record
-                  Id  Sessions Get
+                title: Response List Session Ddms V3 Wellboretrajectories  Record Id  Sessions Get
         '401':
           description: Unauthorized
         '403':
@@ -3989,10 +3890,9 @@ paths:
       tags:
       - Trajectory v3
       summary: Update a session, either commit or abandon.
-      description: "Either validates the session' bulk data, a new version of record\
-        \ will be created with data sent\n                within the session. Either\
-        \ abandon the session, and let record unchanged.  \n                Note:\
-        \ bulk data consistency check will be run when committing bulk data."
+      description: "Either validates the session' bulk data, a new version of record will be created with data sent\n    \
+        \            within the session. Either abandon the session, and let record unchanged.  \n                Note: bulk\
+        \ data consistency check will be run when committing bulk data."
       operationId: patch__ddms_v3_wellboretrajectories__record_id__sessions__session_id_
       security:
       - HTTPBearer: []
@@ -4064,18 +3964,14 @@ paths:
       tags:
       - Trajectory v3
       summary: Writes data as a whole bulk, creates a new version.
-      description: "Writes data to the associated record. It creates a new version.\n\
-        Payload is expected to contain the entire bulk which will replace as latest\
-        \ version\nany previous bulk. Previous bulk versions are accessible via the\
-        \ get bulk data version API.\nSupport JSON and Parquet format ('Content_Type'\
-        \ must be set accordingly).\nSupport http chunked encoding transfer.\n\nRequired\
-        \ roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\n**Important**:\
-        \ In order to minimize writing time, it's necessary to:  \n- Double check\
-        \ whether bulk data is big enough to be sent with chunking APIs: meaning >\
-        \ 10 millions values or > 3000 columns\n    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data\
-        \ API\n- Ensure all curve's values are in the same chunk to be sent\n- Each\
-        \ chunk should contain as many as columns it is possible until upper limits\
-        \ are reached (> 10 millions values or > 3000 columns)"
+      description: "Writes data to the associated record. It creates a new version.\nPayload is expected to contain the entire\
+        \ bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get\
+        \ bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http\
+        \ chunked encoding transfer.\n\nRequired roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\n**Important**:\
+        \ In order to minimize writing time, it's necessary to:  \n- Double check whether bulk data is big enough to be sent\
+        \ with chunking APIs: meaning > 10 millions values or > 3000 columns\n    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data\
+        \ API\n- Ensure all curve's values are in the same chunk to be sent\n- Each chunk should contain as many as columns\
+        \ it is possible until upper limits are reached (> 10 millions values or > 3000 columns)"
       operationId: post__ddms_v3_wellboretrajectories__record_id__data
       security:
       - HTTPBearer: []
@@ -4116,24 +4012,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       requestBody:
-        description: "\nContains the data corresponding to the dataframe. The header\
-          \ \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet**\
-          \ format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
-          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON\
-          \ format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
-          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\"\
-          :[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
+        description: "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly\
+          \ to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
+          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
+          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\"\
+          :[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
         required: true
         content:
           application/json:
             schema:
-              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\
-                \n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n\
-                \  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n  \
-                \  ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n  \
-                \  [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n   \
-                \   1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n\
-                \      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n   \
+                \ 1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n\
+                \    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n\
+                \    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n\
+                \    ]\n  ]\n}"
           application/x-parquet:
             schema:
               type: string
@@ -4142,25 +4034,19 @@ paths:
       tags:
       - Trajectory v3
       summary: Returns the data according to the specified query parameters.
-      description: "Returns the data according to the specified query parameters.\n\
-        Multiple media types response are available (\"application/json\", \"application/x-parquet\"\
-        ).  \nThe desired format can be specify in the \"Accept\" header, default\
-        \ is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query\
-        \ parameter, the response is always provided in JSON.  \nThe requested columns\
-        \ must not exceed 3000. \nThe query parameter __curves__ can be use to limit\
-        \ the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or\
-        \ 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data.\n\n**Important**: In\
-        \ order to minimize reading time.\n\n1. Partial reading\n    - Select only\
-        \ needed columns\n    \nNote: using curves filtering has a cost, use it only\
-        \ if it reduces significantly the amount of retrieved bulk data.\n\n2. Full\
-        \ reading\n    - Try to read all the curves, if those errors are returned\
-        \ go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n \
-        \       - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the\
-        \ resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n\
-        \    - Get curve names and number of rows per curve by using describe parameter\n\
-        \       - Each request should fetch as many as columns it is possible until\
-        \ upper limits are reached (> 10 millions values or > 3000 columns)"
+      description: "Returns the data according to the specified query parameters.\nMultiple media types response are available\
+        \ (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header,\
+        \ default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter, the response is\
+        \ always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__ can be\
+        \ use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or\
+        \ 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**:\
+        \ In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves\
+        \ filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n\
+        \    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns\
+        \ requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds\
+        \ the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe\
+        \ parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (>\
+        \ 10 millions values or > 3000 columns)"
       operationId: get__ddms_v3_wellboretrajectories__record_id__data
       security:
       - HTTPBearer: []
@@ -4180,13 +4066,11 @@ paths:
             minimum: 0
             format: int64
           - type: 'null'
-          description: The number of rows that are to be skipped and not included
-            in the result.
+          description: The number of rows that are to be skipped and not included in the result.
           examples:
           - 5
           title: Offset
-        description: The number of rows that are to be skipped and not included in
-          the result.
+        description: The number of rows that are to be skipped and not included in the result.
       - name: limit
         in: query
         required: false
@@ -4208,11 +4092,9 @@ paths:
           anyOf:
           - type: string
           - type: 'null'
-          description: Filters curves. List of curves to be returned. The curves are
-            returned in the same order as it is given.
+          description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
           title: Curves
-        description: Filters curves. List of curves to be returned. The curves are
-          returned in the same order as it is given.
+        description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
         examples:
           all:
             summary: Select all curves
@@ -4236,14 +4118,14 @@ paths:
           anyOf:
           - type: boolean
           - type: 'null'
-          description: The "describe" query option allows clients to request a description
-            of the matching result. (number of rows, columns name)
+          description: The "describe" query option allows clients to request a description of the matching result. (number
+            of rows, columns name)
           examples:
           - 'false'
           default: false
           title: Describe
-        description: The "describe" query option allows clients to request a description
-          of the matching result. (number of rows, columns name)
+        description: The "describe" query option allows clients to request a description of the matching result. (number of
+          rows, columns name)
       - name: filter
         in: query
         required: false
@@ -4253,17 +4135,13 @@ paths:
             items:
               type: string
           - type: 'null'
-          description: "\n\nThe \"filter\" query parameter allows clients to filter\
-            \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-            \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-            Note: If the column name contains ':', enclose it in double quotation\
-            \ marks (\").\n"
+          description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+            \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.\
+            \  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
           title: Filter
-        description: "\n\nThe \"filter\" query parameter allows clients to filter\
-          \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-          \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-          Note: If the column name contains ':', enclose it in double quotation marks\
-          \ (\").\n"
+        description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+          \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in. \
+          \ \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
         examples:
           simple-md-filter:
             summary: Select rows when column 'MD' values >= 1000
@@ -4397,11 +4275,9 @@ paths:
     post:
       tags:
       - Trajectory v3
-      summary: Send a data chunk. Session must be complete/commit once all chunks
-        are sent.
-      description: 'Send a data chunk. Session must be complete/commit once all chunks
-        are sent. This will create a new and single version aggregating all and previous
-        bulk.Support JSON and Parquet format (''Content_Type'' must be set accordingly).
+      summary: Send a data chunk. Session must be complete/commit once all chunks are sent.
+      description: 'Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and
+        single version aggregating all and previous bulk.Support JSON and Parquet format (''Content_Type'' must be set accordingly).
         Support http chunked encoding.
 
         Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
@@ -4455,24 +4331,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       requestBody:
-        description: "\nContains the data corresponding to the dataframe. The header\
-          \ \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet**\
-          \ format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
-          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON\
-          \ format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
-          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\"\
-          :[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
+        description: "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly\
+          \ to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
+          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
+          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\"\
+          :[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
         required: true
         content:
           application/json:
             schema:
-              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\
-                \n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n\
-                \  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n  \
-                \  ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n  \
-                \  [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n   \
-                \   1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n\
-                \      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n   \
+                \ 1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n\
+                \    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n\
+                \    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n\
+                \    ]\n  ]\n}"
           application/x-parquet:
             schema:
               type: string
@@ -4482,25 +4354,19 @@ paths:
       tags:
       - Trajectory v3
       summary: Returns data of the specified version.
-      description: "Returns the data of a specific version according to the specified\
-        \ query parameters.\nMultiple media types response are available (\"application/json\"\
-        , \"application/x-parquet\").  \nThe desired format can be specify in the\
-        \ \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested\
-        \ using __describe__ query parameter, the response is always provided in JSON.\
-        \  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__\
-        \ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers'\
-        \ or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data.\n\n**Important**: In\
-        \ order to minimize reading time.\n\n1. Partial reading\n    - Select only\
-        \ needed columns\n    \nNote: using curves filtering has a cost, use it only\
-        \ if it reduces significantly the amount of retrieved bulk data.\n\n2. Full\
-        \ reading\n    - Try to read all the curves, if those errors are returned\
-        \ go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n \
-        \       - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the\
-        \ resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n\
-        \    - Get curve names and number of rows per curve by using describe parameter\n\
-        \       - Each request should fetch as many as columns it is possible until\
-        \ upper limits are reached (> 10 millions values or > 3000 columns)"
+      description: "Returns the data of a specific version according to the specified query parameters.\nMultiple media types\
+        \ response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in\
+        \ the \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter,\
+        \ the response is always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__\
+        \ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**:\
+        \ In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves\
+        \ filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n\
+        \    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns\
+        \ requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds\
+        \ the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe\
+        \ parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (>\
+        \ 10 millions values or > 3000 columns)"
       operationId: get__ddms_v3_wellboretrajectories__record_id__versions__version__data
       security:
       - HTTPBearer: []
@@ -4527,13 +4393,11 @@ paths:
             minimum: 0
             format: int64
           - type: 'null'
-          description: The number of rows that are to be skipped and not included
-            in the result.
+          description: The number of rows that are to be skipped and not included in the result.
           examples:
           - 5
           title: Offset
-        description: The number of rows that are to be skipped and not included in
-          the result.
+        description: The number of rows that are to be skipped and not included in the result.
       - name: limit
         in: query
         required: false
@@ -4555,11 +4419,9 @@ paths:
           anyOf:
           - type: string
           - type: 'null'
-          description: Filters curves. List of curves to be returned. The curves are
-            returned in the same order as it is given.
+          description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
           title: Curves
-        description: Filters curves. List of curves to be returned. The curves are
-          returned in the same order as it is given.
+        description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
         examples:
           all:
             summary: Select all curves
@@ -4583,14 +4445,14 @@ paths:
           anyOf:
           - type: boolean
           - type: 'null'
-          description: The "describe" query option allows clients to request a description
-            of the matching result. (number of rows, columns name)
+          description: The "describe" query option allows clients to request a description of the matching result. (number
+            of rows, columns name)
           examples:
           - 'false'
           default: false
           title: Describe
-        description: The "describe" query option allows clients to request a description
-          of the matching result. (number of rows, columns name)
+        description: The "describe" query option allows clients to request a description of the matching result. (number of
+          rows, columns name)
       - name: filter
         in: query
         required: false
@@ -4600,17 +4462,13 @@ paths:
             items:
               type: string
           - type: 'null'
-          description: "\n\nThe \"filter\" query parameter allows clients to filter\
-            \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-            \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-            Note: If the column name contains ':', enclose it in double quotation\
-            \ marks (\").\n"
+          description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+            \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.\
+            \  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
           title: Filter
-        description: "\n\nThe \"filter\" query parameter allows clients to filter\
-          \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-          \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-          Note: If the column name contains ':', enclose it in double quotation marks\
-          \ (\").\n"
+        description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+          \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in. \
+          \ \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
         examples:
           simple-md-filter:
             summary: Select rows when column 'MD' values >= 1000
@@ -4745,12 +4603,10 @@ paths:
       tags:
       - WellLog
       summary: Returns statistics of record's data for selected curves
-      description: "Returns the statistics on bulk data identified by the record in\
-        \ its last version.\n\n    \nIf wanted curves is an array:  \n    - requests\
-        \ \"ARRAY\" retrieves all dimensions of the array  \n    - requests \"ARRAY[M:N]\"\
-        , retrieves all dimensions between M and N.\n  \n    \n    \nData types supported:\
-        \  \n            - int  \n            - float  \n            - date  \n  \n\
-        \      \n    No unit conversion is supported. Statistics will be returned\
+      description: "Returns the statistics on bulk data identified by the record in its last version.\n\n    \nIf wanted curves\
+        \ is an array:  \n    - requests \"ARRAY\" retrieves all dimensions of the array  \n    - requests \"ARRAY[M:N]\"\
+        , retrieves all dimensions between M and N.\n  \n    \n    \nData types supported:  \n            - int  \n      \
+        \      - float  \n            - date  \n  \n      \n    No unit conversion is supported. Statistics will be returned\
         \ using the same units as recorded in Curves[].CurveUnit"
       operationId: get__ddms_v3_welllogs__record_id__data_statistics
       security:
@@ -4844,15 +4700,12 @@ paths:
     get:
       tags:
       - WellLog
-      summary: Returns statistics of record's data for selected curves at requested
-        version
-      description: "Returns the statistics on bulk data identified by the record and\
-        \ given version.\n    \nIf wanted curves is an array:  \n    - requests \"\
-        ARRAY\" retrieves all dimensions of the array  \n    - requests \"ARRAY[M:N]\"\
-        , retrieves all dimensions between M and N.\n  \n      \n    \nData types\
-        \ supported:  \n            - int  \n            - float  \n            -\
-        \ date  \n  \n    \n    No unit conversion is supported. Statistics will be\
-        \ returned using the same units as recorded in Curves[].CurveUnit"
+      summary: Returns statistics of record's data for selected curves at requested version
+      description: "Returns the statistics on bulk data identified by the record and given version.\n    \nIf wanted curves\
+        \ is an array:  \n    - requests \"ARRAY\" retrieves all dimensions of the array  \n    - requests \"ARRAY[M:N]\"\
+        , retrieves all dimensions between M and N.\n  \n      \n    \nData types supported:  \n            - int  \n    \
+        \        - float  \n            - date  \n  \n    \n    No unit conversion is supported. Statistics will be returned\
+        \ using the same units as recorded in Curves[].CurveUnit"
       operationId: get__ddms_v3_welllogs__record_id__versions__version__data_statistics
       security:
       - HTTPBearer: []
@@ -4954,10 +4807,9 @@ paths:
       tags:
       - WellLog
       summary: Trigger computations of record's data statistics of record's data
-      description: "Trigger the computation of statistics on bulk data for\n    the\
-        \ record identified by the record_id at its last version   \n\n    No unit\
-        \ conversion is supported. Statistics will be returned using the same units\
-        \ as recorded in Curves[].CurveUnit"
+      description: "Trigger the computation of statistics on bulk data for\n    the record identified by the record_id at\
+        \ its last version   \n\n    No unit conversion is supported. Statistics will be returned using the same units as\
+        \ recorded in Curves[].CurveUnit"
       operationId: post__ddms_v3_welllogs__record_id__versions__version__data_statistics
       security:
       - HTTPBearer: []
@@ -5013,18 +4865,14 @@ paths:
       tags:
       - PPFGDataset v3
       summary: Create a new session on the given record for writing bulk data.
-      description: "Initiate a session based on record version provided. The session\
-        \ is isolated from any other modifications. \nInside a session, individual\
-        \ chunk doesn't generate new individual record version.  \n \nA new single\
-        \ version is created only at session completion 'aggregating' all updates.\n\
-        \ A typical workflow is:\n 1. create a session\n 2. send X chunks (can be\
-        \ parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\n\
-        If the session is not completed before, it's automatically dropped. \nThe\
-        \ session duration is specified in the request but cannot exceeds 24 hours.\n\
-        \n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted**\
-        \ can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to\
-        \ **False** after completing the session \n(with _PATCH /{record_id}/sessions/{session_id}_\
-        \ API). See swagger examples for details."
+      description: "Initiate a session based on record version provided. The session is isolated from any other modifications.\
+        \ \nInside a session, individual chunk doesn't generate new individual record version.  \n \nA new single version\
+        \ is created only at session completion 'aggregating' all updates.\n A typical workflow is:\n 1. create a session\n\
+        \ 2. send X chunks (can be parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\nIf the session\
+        \ is not completed before, it's automatically dropped. \nThe session duration is specified in the request but cannot\
+        \ exceeds 24 hours.\n\n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted**\
+        \ can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to **False** after completing the session \n\
+        (with _PATCH /{record_id}/sessions/{session_id}_ API). See swagger examples for details."
       operationId: post__ddms_v3_ppfgdataset__record_id__sessions
       security:
       - HTTPBearer: []
@@ -5123,8 +4971,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Session'
-                title: Response List Session Ddms V3 Ppfgdataset  Record Id  Sessions
-                  Get
+                title: Response List Session Ddms V3 Ppfgdataset  Record Id  Sessions Get
         '401':
           description: Unauthorized
         '403':
@@ -5195,10 +5042,9 @@ paths:
       tags:
       - PPFGDataset v3
       summary: Update a session, either commit or abandon.
-      description: "Either validates the session' bulk data, a new version of record\
-        \ will be created with data sent\n                within the session. Either\
-        \ abandon the session, and let record unchanged.  \n                Note:\
-        \ bulk data consistency check will be run when committing bulk data."
+      description: "Either validates the session' bulk data, a new version of record will be created with data sent\n    \
+        \            within the session. Either abandon the session, and let record unchanged.  \n                Note: bulk\
+        \ data consistency check will be run when committing bulk data."
       operationId: patch__ddms_v3_ppfgdataset__record_id__sessions__session_id_
       security:
       - HTTPBearer: []
@@ -5270,18 +5116,14 @@ paths:
       tags:
       - PPFGDataset v3
       summary: Writes data as a whole bulk, creates a new version.
-      description: "Writes data to the associated record. It creates a new version.\n\
-        Payload is expected to contain the entire bulk which will replace as latest\
-        \ version\nany previous bulk. Previous bulk versions are accessible via the\
-        \ get bulk data version API.\nSupport JSON and Parquet format ('Content_Type'\
-        \ must be set accordingly).\nSupport http chunked encoding transfer.\n\nRequired\
-        \ roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\n**Important**:\
-        \ In order to minimize writing time, it's necessary to:  \n- Double check\
-        \ whether bulk data is big enough to be sent with chunking APIs: meaning >\
-        \ 10 millions values or > 3000 columns\n    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data\
-        \ API\n- Ensure all curve's values are in the same chunk to be sent\n- Each\
-        \ chunk should contain as many as columns it is possible until upper limits\
-        \ are reached (> 10 millions values or > 3000 columns)"
+      description: "Writes data to the associated record. It creates a new version.\nPayload is expected to contain the entire\
+        \ bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get\
+        \ bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http\
+        \ chunked encoding transfer.\n\nRequired roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\n**Important**:\
+        \ In order to minimize writing time, it's necessary to:  \n- Double check whether bulk data is big enough to be sent\
+        \ with chunking APIs: meaning > 10 millions values or > 3000 columns\n    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data\
+        \ API\n- Ensure all curve's values are in the same chunk to be sent\n- Each chunk should contain as many as columns\
+        \ it is possible until upper limits are reached (> 10 millions values or > 3000 columns)"
       operationId: post__ddms_v3_ppfgdataset__record_id__data
       security:
       - HTTPBearer: []
@@ -5322,24 +5164,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       requestBody:
-        description: "\nContains the data corresponding to the dataframe. The header\
-          \ \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet**\
-          \ format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
-          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON\
-          \ format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
-          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\"\
-          :[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
+        description: "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly\
+          \ to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
+          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
+          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\"\
+          :[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
         required: true
         content:
           application/json:
             schema:
-              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\
-                \n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n\
-                \  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n  \
-                \  ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n  \
-                \  [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n   \
-                \   1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n\
-                \      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n   \
+                \ 1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n\
+                \    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n\
+                \    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n\
+                \    ]\n  ]\n}"
           application/x-parquet:
             schema:
               type: string
@@ -5348,25 +5186,19 @@ paths:
       tags:
       - PPFGDataset v3
       summary: Returns the data according to the specified query parameters.
-      description: "Returns the data according to the specified query parameters.\n\
-        Multiple media types response are available (\"application/json\", \"application/x-parquet\"\
-        ).  \nThe desired format can be specify in the \"Accept\" header, default\
-        \ is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query\
-        \ parameter, the response is always provided in JSON.  \nThe requested columns\
-        \ must not exceed 3000. \nThe query parameter __curves__ can be use to limit\
-        \ the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or\
-        \ 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data.\n\n**Important**: In\
-        \ order to minimize reading time.\n\n1. Partial reading\n    - Select only\
-        \ needed columns\n    \nNote: using curves filtering has a cost, use it only\
-        \ if it reduces significantly the amount of retrieved bulk data.\n\n2. Full\
-        \ reading\n    - Try to read all the curves, if those errors are returned\
-        \ go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n \
-        \       - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the\
-        \ resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n\
-        \    - Get curve names and number of rows per curve by using describe parameter\n\
-        \       - Each request should fetch as many as columns it is possible until\
-        \ upper limits are reached (> 10 millions values or > 3000 columns)"
+      description: "Returns the data according to the specified query parameters.\nMultiple media types response are available\
+        \ (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header,\
+        \ default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter, the response is\
+        \ always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__ can be\
+        \ use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or\
+        \ 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**:\
+        \ In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves\
+        \ filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n\
+        \    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns\
+        \ requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds\
+        \ the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe\
+        \ parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (>\
+        \ 10 millions values or > 3000 columns)"
       operationId: get__ddms_v3_ppfgdataset__record_id__data
       security:
       - HTTPBearer: []
@@ -5386,13 +5218,11 @@ paths:
             minimum: 0
             format: int64
           - type: 'null'
-          description: The number of rows that are to be skipped and not included
-            in the result.
+          description: The number of rows that are to be skipped and not included in the result.
           examples:
           - 5
           title: Offset
-        description: The number of rows that are to be skipped and not included in
-          the result.
+        description: The number of rows that are to be skipped and not included in the result.
       - name: limit
         in: query
         required: false
@@ -5414,11 +5244,9 @@ paths:
           anyOf:
           - type: string
           - type: 'null'
-          description: Filters curves. List of curves to be returned. The curves are
-            returned in the same order as it is given.
+          description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
           title: Curves
-        description: Filters curves. List of curves to be returned. The curves are
-          returned in the same order as it is given.
+        description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
         examples:
           all:
             summary: Select all curves
@@ -5442,14 +5270,14 @@ paths:
           anyOf:
           - type: boolean
           - type: 'null'
-          description: The "describe" query option allows clients to request a description
-            of the matching result. (number of rows, columns name)
+          description: The "describe" query option allows clients to request a description of the matching result. (number
+            of rows, columns name)
           examples:
           - 'false'
           default: false
           title: Describe
-        description: The "describe" query option allows clients to request a description
-          of the matching result. (number of rows, columns name)
+        description: The "describe" query option allows clients to request a description of the matching result. (number of
+          rows, columns name)
       - name: filter
         in: query
         required: false
@@ -5459,17 +5287,13 @@ paths:
             items:
               type: string
           - type: 'null'
-          description: "\n\nThe \"filter\" query parameter allows clients to filter\
-            \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-            \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-            Note: If the column name contains ':', enclose it in double quotation\
-            \ marks (\").\n"
+          description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+            \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.\
+            \  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
           title: Filter
-        description: "\n\nThe \"filter\" query parameter allows clients to filter\
-          \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-          \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-          Note: If the column name contains ':', enclose it in double quotation marks\
-          \ (\").\n"
+        description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+          \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in. \
+          \ \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
         examples:
           simple-md-filter:
             summary: Select rows when column 'MD' values >= 1000
@@ -5603,11 +5427,9 @@ paths:
     post:
       tags:
       - PPFGDataset v3
-      summary: Send a data chunk. Session must be complete/commit once all chunks
-        are sent.
-      description: 'Send a data chunk. Session must be complete/commit once all chunks
-        are sent. This will create a new and single version aggregating all and previous
-        bulk.Support JSON and Parquet format (''Content_Type'' must be set accordingly).
+      summary: Send a data chunk. Session must be complete/commit once all chunks are sent.
+      description: 'Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and
+        single version aggregating all and previous bulk.Support JSON and Parquet format (''Content_Type'' must be set accordingly).
         Support http chunked encoding.
 
         Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
@@ -5661,24 +5483,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       requestBody:
-        description: "\nContains the data corresponding to the dataframe. The header\
-          \ \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet**\
-          \ format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
-          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON\
-          \ format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
-          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\"\
-          :[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
+        description: "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly\
+          \ to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
+          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
+          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\"\
+          :[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
         required: true
         content:
           application/json:
             schema:
-              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\
-                \n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n\
-                \  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n  \
-                \  ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n  \
-                \  [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n   \
-                \   1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n\
-                \      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n   \
+                \ 1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n\
+                \    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n\
+                \    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n\
+                \    ]\n  ]\n}"
           application/x-parquet:
             schema:
               type: string
@@ -5688,25 +5506,19 @@ paths:
       tags:
       - PPFGDataset v3
       summary: Returns data of the specified version.
-      description: "Returns the data of a specific version according to the specified\
-        \ query parameters.\nMultiple media types response are available (\"application/json\"\
-        , \"application/x-parquet\").  \nThe desired format can be specify in the\
-        \ \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested\
-        \ using __describe__ query parameter, the response is always provided in JSON.\
-        \  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__\
-        \ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers'\
-        \ or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data.\n\n**Important**: In\
-        \ order to minimize reading time.\n\n1. Partial reading\n    - Select only\
-        \ needed columns\n    \nNote: using curves filtering has a cost, use it only\
-        \ if it reduces significantly the amount of retrieved bulk data.\n\n2. Full\
-        \ reading\n    - Try to read all the curves, if those errors are returned\
-        \ go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n \
-        \       - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the\
-        \ resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n\
-        \    - Get curve names and number of rows per curve by using describe parameter\n\
-        \       - Each request should fetch as many as columns it is possible until\
-        \ upper limits are reached (> 10 millions values or > 3000 columns)"
+      description: "Returns the data of a specific version according to the specified query parameters.\nMultiple media types\
+        \ response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in\
+        \ the \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter,\
+        \ the response is always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__\
+        \ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**:\
+        \ In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves\
+        \ filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n\
+        \    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns\
+        \ requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds\
+        \ the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe\
+        \ parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (>\
+        \ 10 millions values or > 3000 columns)"
       operationId: get__ddms_v3_ppfgdataset__record_id__versions__version__data
       security:
       - HTTPBearer: []
@@ -5733,13 +5545,11 @@ paths:
             minimum: 0
             format: int64
           - type: 'null'
-          description: The number of rows that are to be skipped and not included
-            in the result.
+          description: The number of rows that are to be skipped and not included in the result.
           examples:
           - 5
           title: Offset
-        description: The number of rows that are to be skipped and not included in
-          the result.
+        description: The number of rows that are to be skipped and not included in the result.
       - name: limit
         in: query
         required: false
@@ -5761,11 +5571,9 @@ paths:
           anyOf:
           - type: string
           - type: 'null'
-          description: Filters curves. List of curves to be returned. The curves are
-            returned in the same order as it is given.
+          description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
           title: Curves
-        description: Filters curves. List of curves to be returned. The curves are
-          returned in the same order as it is given.
+        description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
         examples:
           all:
             summary: Select all curves
@@ -5789,14 +5597,14 @@ paths:
           anyOf:
           - type: boolean
           - type: 'null'
-          description: The "describe" query option allows clients to request a description
-            of the matching result. (number of rows, columns name)
+          description: The "describe" query option allows clients to request a description of the matching result. (number
+            of rows, columns name)
           examples:
           - 'false'
           default: false
           title: Describe
-        description: The "describe" query option allows clients to request a description
-          of the matching result. (number of rows, columns name)
+        description: The "describe" query option allows clients to request a description of the matching result. (number of
+          rows, columns name)
       - name: filter
         in: query
         required: false
@@ -5806,17 +5614,13 @@ paths:
             items:
               type: string
           - type: 'null'
-          description: "\n\nThe \"filter\" query parameter allows clients to filter\
-            \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-            \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-            Note: If the column name contains ':', enclose it in double quotation\
-            \ marks (\").\n"
+          description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+            \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.\
+            \  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
           title: Filter
-        description: "\n\nThe \"filter\" query parameter allows clients to filter\
-          \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-          \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-          Note: If the column name contains ':', enclose it in double quotation marks\
-          \ (\").\n"
+        description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+          \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in. \
+          \ \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
         examples:
           simple-md-filter:
             summary: Select rows when column 'MD' values >= 1000
@@ -5951,18 +5755,14 @@ paths:
       tags:
       - WellPressureTestRawMeasurement v3
       summary: Create a new session on the given record for writing bulk data.
-      description: "Initiate a session based on record version provided. The session\
-        \ is isolated from any other modifications. \nInside a session, individual\
-        \ chunk doesn't generate new individual record version.  \n \nA new single\
-        \ version is created only at session completion 'aggregating' all updates.\n\
-        \ A typical workflow is:\n 1. create a session\n 2. send X chunks (can be\
-        \ parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\n\
-        If the session is not completed before, it's automatically dropped. \nThe\
-        \ session duration is specified in the request but cannot exceeds 24 hours.\n\
-        \n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted**\
-        \ can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to\
-        \ **False** after completing the session \n(with _PATCH /{record_id}/sessions/{session_id}_\
-        \ API). See swagger examples for details."
+      description: "Initiate a session based on record version provided. The session is isolated from any other modifications.\
+        \ \nInside a session, individual chunk doesn't generate new individual record version.  \n \nA new single version\
+        \ is created only at session completion 'aggregating' all updates.\n A typical workflow is:\n 1. create a session\n\
+        \ 2. send X chunks (can be parallelized)\n 3. commit the session  \n   \nSession has an expiry time.\nIf the session\
+        \ is not completed before, it's automatically dropped. \nThe session duration is specified in the request but cannot\
+        \ exceeds 24 hours.\n\n**Note**: For `WellLog` and `WellboreTrajectory` kind, the attribute **extendedLoadCompleted**\
+        \ can be set into session.meta \nto set \"record.data.IsExtendedLoad\" to **False** after completing the session \n\
+        (with _PATCH /{record_id}/sessions/{session_id}_ API). See swagger examples for details."
       operationId: post__ddms_v3_wellpressuretestrawmeasurement__record_id__sessions
       security:
       - HTTPBearer: []
@@ -6061,8 +5861,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Session'
-                title: Response List Session Ddms V3 Wellpressuretestrawmeasurement  Record
-                  Id  Sessions Get
+                title: Response List Session Ddms V3 Wellpressuretestrawmeasurement  Record Id  Sessions Get
         '401':
           description: Unauthorized
         '403':
@@ -6133,10 +5932,9 @@ paths:
       tags:
       - WellPressureTestRawMeasurement v3
       summary: Update a session, either commit or abandon.
-      description: "Either validates the session' bulk data, a new version of record\
-        \ will be created with data sent\n                within the session. Either\
-        \ abandon the session, and let record unchanged.  \n                Note:\
-        \ bulk data consistency check will be run when committing bulk data."
+      description: "Either validates the session' bulk data, a new version of record will be created with data sent\n    \
+        \            within the session. Either abandon the session, and let record unchanged.  \n                Note: bulk\
+        \ data consistency check will be run when committing bulk data."
       operationId: patch__ddms_v3_wellpressuretestrawmeasurement__record_id__sessions__session_id_
       security:
       - HTTPBearer: []
@@ -6208,18 +6006,14 @@ paths:
       tags:
       - WellPressureTestRawMeasurement v3
       summary: Writes data as a whole bulk, creates a new version.
-      description: "Writes data to the associated record. It creates a new version.\n\
-        Payload is expected to contain the entire bulk which will replace as latest\
-        \ version\nany previous bulk. Previous bulk versions are accessible via the\
-        \ get bulk data version API.\nSupport JSON and Parquet format ('Content_Type'\
-        \ must be set accordingly).\nSupport http chunked encoding transfer.\n\nRequired\
-        \ roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\n**Important**:\
-        \ In order to minimize writing time, it's necessary to:  \n- Double check\
-        \ whether bulk data is big enough to be sent with chunking APIs: meaning >\
-        \ 10 millions values or > 3000 columns\n    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data\
-        \ API\n- Ensure all curve's values are in the same chunk to be sent\n- Each\
-        \ chunk should contain as many as columns it is possible until upper limits\
-        \ are reached (> 10 millions values or > 3000 columns)"
+      description: "Writes data to the associated record. It creates a new version.\nPayload is expected to contain the entire\
+        \ bulk which will replace as latest version\nany previous bulk. Previous bulk versions are accessible via the get\
+        \ bulk data version API.\nSupport JSON and Parquet format ('Content_Type' must be set accordingly).\nSupport http\
+        \ chunked encoding transfer.\n\nRequired roles: 'users.datalake.editors' or 'users.datalake.admins'.\n\n**Important**:\
+        \ In order to minimize writing time, it's necessary to:  \n- Double check whether bulk data is big enough to be sent\
+        \ with chunking APIs: meaning > 10 millions values or > 3000 columns\n    - If no, use instead POST /ddms/v3/welllogs/MY_RECORD_ID/data\
+        \ API\n- Ensure all curve's values are in the same chunk to be sent\n- Each chunk should contain as many as columns\
+        \ it is possible until upper limits are reached (> 10 millions values or > 3000 columns)"
       operationId: post__ddms_v3_wellpressuretestrawmeasurement__record_id__data
       security:
       - HTTPBearer: []
@@ -6260,24 +6054,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       requestBody:
-        description: "\nContains the data corresponding to the dataframe. The header\
-          \ \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet**\
-          \ format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
-          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON\
-          \ format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
-          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\"\
-          :[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
+        description: "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly\
+          \ to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
+          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
+          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\"\
+          :[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
         required: true
         content:
           application/json:
             schema:
-              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\
-                \n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n\
-                \  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n  \
-                \  ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n  \
-                \  [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n   \
-                \   1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n\
-                \      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n   \
+                \ 1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n\
+                \    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n\
+                \    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n\
+                \    ]\n  ]\n}"
           application/x-parquet:
             schema:
               type: string
@@ -6286,25 +6076,19 @@ paths:
       tags:
       - WellPressureTestRawMeasurement v3
       summary: Returns the data according to the specified query parameters.
-      description: "Returns the data according to the specified query parameters.\n\
-        Multiple media types response are available (\"application/json\", \"application/x-parquet\"\
-        ).  \nThe desired format can be specify in the \"Accept\" header, default\
-        \ is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query\
-        \ parameter, the response is always provided in JSON.  \nThe requested columns\
-        \ must not exceed 3000. \nThe query parameter __curves__ can be use to limit\
-        \ the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or\
-        \ 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data.\n\n**Important**: In\
-        \ order to minimize reading time.\n\n1. Partial reading\n    - Select only\
-        \ needed columns\n    \nNote: using curves filtering has a cost, use it only\
-        \ if it reduces significantly the amount of retrieved bulk data.\n\n2. Full\
-        \ reading\n    - Try to read all the curves, if those errors are returned\
-        \ go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n \
-        \       - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the\
-        \ resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n\
-        \    - Get curve names and number of rows per curve by using describe parameter\n\
-        \       - Each request should fetch as many as columns it is possible until\
-        \ upper limits are reached (> 10 millions values or > 3000 columns)"
+      description: "Returns the data according to the specified query parameters.\nMultiple media types response are available\
+        \ (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in the \"Accept\" header,\
+        \ default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter, the response is\
+        \ always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__ can be\
+        \ use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors' or\
+        \ 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**:\
+        \ In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves\
+        \ filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n\
+        \    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns\
+        \ requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds\
+        \ the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe\
+        \ parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (>\
+        \ 10 millions values or > 3000 columns)"
       operationId: get__ddms_v3_wellpressuretestrawmeasurement__record_id__data
       security:
       - HTTPBearer: []
@@ -6324,13 +6108,11 @@ paths:
             minimum: 0
             format: int64
           - type: 'null'
-          description: The number of rows that are to be skipped and not included
-            in the result.
+          description: The number of rows that are to be skipped and not included in the result.
           examples:
           - 5
           title: Offset
-        description: The number of rows that are to be skipped and not included in
-          the result.
+        description: The number of rows that are to be skipped and not included in the result.
       - name: limit
         in: query
         required: false
@@ -6352,11 +6134,9 @@ paths:
           anyOf:
           - type: string
           - type: 'null'
-          description: Filters curves. List of curves to be returned. The curves are
-            returned in the same order as it is given.
+          description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
           title: Curves
-        description: Filters curves. List of curves to be returned. The curves are
-          returned in the same order as it is given.
+        description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
         examples:
           all:
             summary: Select all curves
@@ -6380,14 +6160,14 @@ paths:
           anyOf:
           - type: boolean
           - type: 'null'
-          description: The "describe" query option allows clients to request a description
-            of the matching result. (number of rows, columns name)
+          description: The "describe" query option allows clients to request a description of the matching result. (number
+            of rows, columns name)
           examples:
           - 'false'
           default: false
           title: Describe
-        description: The "describe" query option allows clients to request a description
-          of the matching result. (number of rows, columns name)
+        description: The "describe" query option allows clients to request a description of the matching result. (number of
+          rows, columns name)
       - name: filter
         in: query
         required: false
@@ -6397,17 +6177,13 @@ paths:
             items:
               type: string
           - type: 'null'
-          description: "\n\nThe \"filter\" query parameter allows clients to filter\
-            \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-            \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-            Note: If the column name contains ':', enclose it in double quotation\
-            \ marks (\").\n"
+          description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+            \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.\
+            \  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
           title: Filter
-        description: "\n\nThe \"filter\" query parameter allows clients to filter\
-          \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-          \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-          Note: If the column name contains ':', enclose it in double quotation marks\
-          \ (\").\n"
+        description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+          \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in. \
+          \ \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
         examples:
           simple-md-filter:
             summary: Select rows when column 'MD' values >= 1000
@@ -6541,11 +6317,9 @@ paths:
     post:
       tags:
       - WellPressureTestRawMeasurement v3
-      summary: Send a data chunk. Session must be complete/commit once all chunks
-        are sent.
-      description: 'Send a data chunk. Session must be complete/commit once all chunks
-        are sent. This will create a new and single version aggregating all and previous
-        bulk.Support JSON and Parquet format (''Content_Type'' must be set accordingly).
+      summary: Send a data chunk. Session must be complete/commit once all chunks are sent.
+      description: 'Send a data chunk. Session must be complete/commit once all chunks are sent. This will create a new and
+        single version aggregating all and previous bulk.Support JSON and Parquet format (''Content_Type'' must be set accordingly).
         Support http chunked encoding.
 
         Required roles: ''users.datalake.editors'' or ''users.datalake.admins''.'
@@ -6599,24 +6373,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
       requestBody:
-        description: "\nContains the data corresponding to the dataframe. The header\
-          \ \"Content-Type\" must be set accordingly to the format sent:\n<br/>&nbsp;**Parquet**\
-          \ format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
-          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON\
-          \ format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
-          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\"\
-          :[\"Ref\",\"col_1\",\"col_2\"],\"index\":[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
+        description: "\nContains the data corresponding to the dataframe. The header \"Content-Type\" must be set accordingly\
+          \ to the format sent:\n<br/>&nbsp;**Parquet** format(*application/x-parquet*): see [Apache parquet website](https://parquet.apache.org/).\n\
+          <br/>&nbsp;**JSON** format (*application/json*): see [Pandas.Dataframe JSON format orient \"split\"](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html).\n\
+          .\n Examples in JSON for data with 5 rows and 3 columns: \n<br/>`{\"columns\":[\"Ref\",\"col_1\",\"col_2\"],\"index\"\
+          :[0,1,2,3,4],\"data\":[[0.0,1111.1,2222.1],[0.5,1111.2,2222.2],[1.0,1111.3,2222.3],[1.5,1111.4,2222.4],[2.0,1111.5,2222.5]]}`<br/>&nbsp;"
         required: true
         content:
           application/json:
             schema:
-              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\
-                \n  ],\n  \"index\":[\n    0,\n    1,\n    2,\n    3,\n    4\n  ],\n\
-                \  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n  \
-                \  ],\n    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n  \
-                \  [\n      1.0,\n      1111.3,\n      2222.3\n    ],\n    [\n   \
-                \   1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n\
-                \      1111.5,\n      2222.5\n    ]\n  ]\n}"
+              example: "{\n  \"columns\":[\n    \"Ref\",\n    \"col_1\",\n    \"col_2\"\n  ],\n  \"index\":[\n    0,\n   \
+                \ 1,\n    2,\n    3,\n    4\n  ],\n  \"data\":[\n    [\n      0.0,\n      1111.1,\n      2222.1\n    ],\n\
+                \    [\n      0.5,\n      1111.2,\n      2222.2\n    ],\n    [\n      1.0,\n      1111.3,\n      2222.3\n\
+                \    ],\n    [\n      1.5,\n      1111.4,\n      2222.4\n    ],\n    [\n      2.0,\n      1111.5,\n      2222.5\n\
+                \    ]\n  ]\n}"
           application/x-parquet:
             schema:
               type: string
@@ -6626,25 +6396,19 @@ paths:
       tags:
       - WellPressureTestRawMeasurement v3
       summary: Returns data of the specified version.
-      description: "Returns the data of a specific version according to the specified\
-        \ query parameters.\nMultiple media types response are available (\"application/json\"\
-        , \"application/x-parquet\").  \nThe desired format can be specify in the\
-        \ \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested\
-        \ using __describe__ query parameter, the response is always provided in JSON.\
-        \  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__\
-        \ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers'\
-        \ or 'users.datalake.editors' or 'users.datalake.admins'.\nIn addition, users\
-        \ must be a member of data groups to access the data.\n\n**Important**: In\
-        \ order to minimize reading time.\n\n1. Partial reading\n    - Select only\
-        \ needed columns\n    \nNote: using curves filtering has a cost, use it only\
-        \ if it reduces significantly the amount of retrieved bulk data.\n\n2. Full\
-        \ reading\n    - Try to read all the curves, if those errors are returned\
-        \ go to next steps:\n        - HTTP 400 \"Too many columns requested\"\n \
-        \       - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the\
-        \ resource requested exceeds the limit\" (When WBDDMS worker are enabled)\n\
-        \    - Get curve names and number of rows per curve by using describe parameter\n\
-        \       - Each request should fetch as many as columns it is possible until\
-        \ upper limits are reached (> 10 millions values or > 3000 columns)"
+      description: "Returns the data of a specific version according to the specified query parameters.\nMultiple media types\
+        \ response are available (\"application/json\", \"application/x-parquet\").  \nThe desired format can be specify in\
+        \ the \"Accept\" header, default is Parquet.  \n\nWhen bulk statistics are requested using __describe__ query parameter,\
+        \ the response is always provided in JSON.  \nThe requested columns must not exceed 3000. \nThe query parameter __curves__\
+        \ can be use to limit the number of columns.  \n\nRequired roles: 'users.datalake.viewers' or 'users.datalake.editors'\
+        \ or 'users.datalake.admins'.\nIn addition, users must be a member of data groups to access the data.\n\n**Important**:\
+        \ In order to minimize reading time.\n\n1. Partial reading\n    - Select only needed columns\n    \nNote: using curves\
+        \ filtering has a cost, use it only if it reduces significantly the amount of retrieved bulk data.\n\n2. Full reading\n\
+        \    - Try to read all the curves, if those errors are returned go to next steps:\n        - HTTP 400 \"Too many columns\
+        \ requested\"\n        - HTTP 400 \"Too many values requested\"\n        - HTTP 413 \"the resource requested exceeds\
+        \ the limit\" (When WBDDMS worker are enabled)\n    - Get curve names and number of rows per curve by using describe\
+        \ parameter\n       - Each request should fetch as many as columns it is possible until upper limits are reached (>\
+        \ 10 millions values or > 3000 columns)"
       operationId: get__ddms_v3_wellpressuretestrawmeasurement__record_id__versions__version__data
       security:
       - HTTPBearer: []
@@ -6671,13 +6435,11 @@ paths:
             minimum: 0
             format: int64
           - type: 'null'
-          description: The number of rows that are to be skipped and not included
-            in the result.
+          description: The number of rows that are to be skipped and not included in the result.
           examples:
           - 5
           title: Offset
-        description: The number of rows that are to be skipped and not included in
-          the result.
+        description: The number of rows that are to be skipped and not included in the result.
       - name: limit
         in: query
         required: false
@@ -6699,11 +6461,9 @@ paths:
           anyOf:
           - type: string
           - type: 'null'
-          description: Filters curves. List of curves to be returned. The curves are
-            returned in the same order as it is given.
+          description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
           title: Curves
-        description: Filters curves. List of curves to be returned. The curves are
-          returned in the same order as it is given.
+        description: Filters curves. List of curves to be returned. The curves are returned in the same order as it is given.
         examples:
           all:
             summary: Select all curves
@@ -6727,14 +6487,14 @@ paths:
           anyOf:
           - type: boolean
           - type: 'null'
-          description: The "describe" query option allows clients to request a description
-            of the matching result. (number of rows, columns name)
+          description: The "describe" query option allows clients to request a description of the matching result. (number
+            of rows, columns name)
           examples:
           - 'false'
           default: false
           title: Describe
-        description: The "describe" query option allows clients to request a description
-          of the matching result. (number of rows, columns name)
+        description: The "describe" query option allows clients to request a description of the matching result. (number of
+          rows, columns name)
       - name: filter
         in: query
         required: false
@@ -6744,17 +6504,13 @@ paths:
             items:
               type: string
           - type: 'null'
-          description: "\n\nThe \"filter\" query parameter allows clients to filter\
-            \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-            \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-            Note: If the column name contains ':', enclose it in double quotation\
-            \ marks (\").\n"
+          description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+            \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.\
+            \  \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
           title: Filter
-        description: "\n\nThe \"filter\" query parameter allows clients to filter\
-          \ by rows, it selects rows data following the pattern `$column_name:$operator:$value`.\
-          \  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in.  \n\n\
-          Note: If the column name contains ':', enclose it in double quotation marks\
-          \ (\").\n"
+        description: "\n\nThe \"filter\" query parameter allows clients to filter by rows, it selects rows data following\
+          \ the pattern `$column_name:$operator:$value`.  \nThe supported operators are : lt, lte, gt, gte, eq, neq, in. \
+          \ \n\nNote: If the column name contains ':', enclose it in double quotation marks (\").\n"
         examples:
           simple-md-filter:
             summary: Select rows when column 'MD' values >= 1000
@@ -6884,7 +6640,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/ppfgdataset/{osdu_record_id}:
+  /ddms/v3/ppfgdataset/{record_id}:
     get:
       tags:
       - PPFGDataset v3
@@ -6893,12 +6649,12 @@ paths:
       security:
       - HTTPBearer: []
       parameters:
-      - name: osdu_record_id
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
-          title: Osdu Record Id
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -6932,18 +6688,18 @@ paths:
     delete:
       tags:
       - PPFGDataset v3
-      summary: Delete the record using id. The API performs a logical deletion of
-        the given record. No recursive delete for OSDU kinds
+      summary: Delete the record using id. The API performs a logical deletion of the given record. No recursive delete for
+        OSDU kinds
       operationId: delete_osdu_record
       security:
       - HTTPBearer: []
       parameters:
-      - name: osdu_record_id
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
-          title: Osdu Record Id
+          title: Record Id
       - name: purge
         in: query
         required: false
@@ -6977,7 +6733,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/ppfgdataset/{osdu_record_id}/versions:
+  /ddms/v3/ppfgdataset/{record_id}/versions:
     get:
       tags:
       - PPFGDataset v3
@@ -6986,12 +6742,12 @@ paths:
       security:
       - HTTPBearer: []
       parameters:
-      - name: osdu_record_id
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
-          title: Osdu Record Id
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -7022,7 +6778,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/ppfgdataset/{osdu_record_id}/versions/{version}:
+  /ddms/v3/ppfgdataset/{record_id}/versions/{version}:
     get:
       tags:
       - PPFGDataset v3
@@ -7039,12 +6795,12 @@ paths:
           type: integer
           title: Version
           format: int64
-      - name: osdu_record_id
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
-          title: Osdu Record Id
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -7085,11 +6841,9 @@ paths:
 
         BulkURI consistency:
 
-        - ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set
-        when creating a new record.
+        - ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set when creating a new record.
 
-        - When updating an existing record, bulkURI must match the previous version
-        exactly.
+        - When updating an existing record, bulkURI must match the previous version exactly.
 
         Requests that violate these rules are rejected with HTTP 400.'
       operationId: create_or_update_osdu_record
@@ -7135,21 +6889,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}:
+  /ddms/v3/wellpressuretestrawmeasurement/{record_id}:
     get:
       tags:
       - WellPressureTestRawMeasurement v3
       summary: Get the record using the provided recordID
-      operationId: get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id_
+      operationId: get__ddms_v3_wellpressuretestrawmeasurement__record_id_
       security:
       - HTTPBearer: []
       parameters:
-      - name: osdu_record_id
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
-          title: Osdu Record Id
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -7183,18 +6937,18 @@ paths:
     delete:
       tags:
       - WellPressureTestRawMeasurement v3
-      summary: Delete the record using id. The API performs a logical deletion of
-        the given record. No recursive delete for OSDU kinds
-      operationId: delete__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id_
+      summary: Delete the record using id. The API performs a logical deletion of the given record. No recursive delete for
+        OSDU kinds
+      operationId: delete__ddms_v3_wellpressuretestrawmeasurement__record_id_
       security:
       - HTTPBearer: []
       parameters:
-      - name: osdu_record_id
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
-          title: Osdu Record Id
+          title: Record Id
       - name: purge
         in: query
         required: false
@@ -7228,21 +6982,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}/versions:
+  /ddms/v3/wellpressuretestrawmeasurement/{record_id}/versions:
     get:
       tags:
       - WellPressureTestRawMeasurement v3
       summary: Get all versions of the provided record
-      operationId: get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id__versions
+      operationId: get__ddms_v3_wellpressuretestrawmeasurement__record_id__versions
       security:
       - HTTPBearer: []
       parameters:
-      - name: osdu_record_id
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
-          title: Osdu Record Id
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -7273,13 +7027,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /ddms/v3/wellpressuretestrawmeasurement/{osdu_record_id}/versions/{version}:
+  /ddms/v3/wellpressuretestrawmeasurement/{record_id}/versions/{version}:
     get:
       tags:
       - WellPressureTestRawMeasurement v3
       summary: Get specific version for the provided OSDU record
       description: Get the specific version of object using its **id**.
-      operationId: get__ddms_v3_wellpressuretestrawmeasurement__osdu_record_id__versions__version_
+      operationId: get__ddms_v3_wellpressuretestrawmeasurement__record_id__versions__version_
       security:
       - HTTPBearer: []
       parameters:
@@ -7290,12 +7044,12 @@ paths:
           type: integer
           title: Version
           format: int64
-      - name: osdu_record_id
+      - name: record_id
         in: path
         required: true
         schema:
           type: string
-          title: Osdu Record Id
+          title: Record Id
       - name: data-partition-id
         in: header
         required: false
@@ -7336,11 +7090,9 @@ paths:
 
         BulkURI consistency:
 
-        - ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set
-        when creating a new record.
+        - ExtensionProperties.wdms.bulkURI is managed by WBDDMS and must not be set when creating a new record.
 
-        - When updating an existing record, bulkURI must match the previous version
-        exactly.
+        - When updating an existing record, bulkURI must match the previous version exactly.
 
         Requests that violate these rules are rejected with HTTP 400.'
       operationId: post__ddms_v3_wellpressuretestrawmeasurement
@@ -7391,8 +7143,8 @@ paths:
       tags:
       - log-recognition
       summary: Recognize family and unit
-      description: Find the most probable family and unit using family assignment
-        rule based catalogs. User defined catalog will have the priority.
+      description: Find the most probable family and unit using family assignment rule based catalogs. User defined catalog
+        will have the priority.
       operationId: family
       security:
       - HTTPBearer: []
@@ -7438,11 +7190,10 @@ paths:
       tags:
       - log-recognition
       summary: Upload user-defined catalog with family assignment rules
-      description: "Upload user-defined catalog with family assignment rules for specific\
-        \ partition ID.\n            If there is an existing catalog, it will be replaced.\
-        \ It takes maximum of 5 mins to replace the existing catalog. \n         \
-        \   Hence, any call to retrieve the family should be made after 5 mins of\
-        \ uploading the catalog. \nRequired roles: 'users.datalake.editors' or 'users.datalake.admins'."
+      description: "Upload user-defined catalog with family assignment rules for specific partition ID.\n            If there\
+        \ is an existing catalog, it will be replaced. It takes maximum of 5 mins to replace the existing catalog. \n    \
+        \        Hence, any call to retrieve the family should be made after 5 mins of uploading the catalog. \nRequired roles:\
+        \ 'users.datalake.editors' or 'users.datalake.admins'."
       operationId: upload-catalog
       security:
       - HTTPBearer: []
@@ -7687,8 +7438,7 @@ components:
             type: object
           - type: 'null'
           title: Meta
-          description: miscellaneous metadata associated to the session. The session
-            creator can set some data here.
+          description: miscellaneous metadata associated to the session. The session creator can set some data here.
         id:
           type: string
           format: uuid
@@ -7705,15 +7455,13 @@ components:
           format: int64
         mode:
           $ref: '#/components/schemas/SessionUpdateMode'
-          description: merge mode at commit. If 'update', existing data will be merged
-            with the data sent during the session. If 'overrride', existing data will
-            be ignored, the final result will only contains data sent within the session.
+          description: merge mode at commit. If 'update', existing data will be merged with the data sent during the session.
+            If 'overrride', existing data will be ignored, the final result will only contains data sent within the session.
         expiry:
           type: string
           format: date-time
           title: Expiry
-          description: If the session is not committed before this dead line, session
-            is automatically abandoned.
+          description: If the session is not committed before this dead line, session is automatically abandoned.
         createdTime:
           type: string
           format: date-time
@@ -7767,14 +7515,12 @@ components:
             type: object
           - type: 'null'
           title: Meta
-          description: miscellaneous metadata associated to the session. The session
-            creator can set some data here.
+          description: miscellaneous metadata associated to the session. The session creator can set some data here.
         fromVersion:
           type: integer
           title: Fromversion
-          description: specify the version on top of which update will be applied.
-            By default use the latest one (0). Not relevant if overwrite is set to
-            True.
+          description: specify the version on top of which update will be applied. By default use the latest one (0). Not
+            relevant if overwrite is set to True.
           default: 0
           format: int64
         timeToLive:
@@ -7785,15 +7531,14 @@ components:
           format: int64
         mode:
           $ref: '#/components/schemas/SessionUpdateMode'
-          description: merge mode at commit. If 'update', existing data will be merged
-            with the data sent during the session. If 'overwrite', existing data will
-            be ignored, the final result will only contains data sent within the session.
+          description: merge mode at commit. If 'update', existing data will be merged with the data sent during the session.
+            If 'overwrite', existing data will be ignored, the final result will only contains data sent within the session.
       type: object
       required:
       - mode
       title: CreateDataSessionRequest
-      description: "Note:\nif fromVersion is provided, should we:\n    force mode\
-        \ to 'update'\n    raise an error if mode is overwrite"
+      description: "Note:\nif fromVersion is provided, should we:\n    force mode to 'update'\n    raise an error if mode\
+        \ is overwrite"
     CreateUpdateRecordsResponse:
       properties:
         recordCount:
@@ -7881,8 +7626,7 @@ components:
             type: string
           type: array
           title: Columns
-          description: list of column. May be truncated if too many columns, then
-            contains the firsts and lasts once
+          description: list of column. May be truncated if too many columns, then contains the firsts and lasts once
         indexStart:
           type: string
           title: Indexstart
@@ -8109,8 +7853,7 @@ components:
             type: object
           - type: 'null'
           title: Meta
-          description: miscellaneous metadata associated to the session. The session
-            creator can set some data here.
+          description: miscellaneous metadata associated to the session. The session creator can set some data here.
         id:
           type: string
           format: uuid
@@ -8127,15 +7870,13 @@ components:
           format: int64
         mode:
           $ref: '#/components/schemas/SessionUpdateMode'
-          description: merge mode at commit. If 'update', existing data will be merged
-            with the data sent during the session. If 'overrride', existing data will
-            be ignored, the final result will only contains data sent within the session.
+          description: merge mode at commit. If 'update', existing data will be merged with the data sent during the session.
+            If 'overrride', existing data will be ignored, the final result will only contains data sent within the session.
         expiry:
           type: string
           format: date-time
           title: Expiry
-          description: If the session is not committed before this dead line, session
-            is automatically abandoned.
+          description: If the session is not committed before this dead line, session is automatically abandoned.
         createdTime:
           type: string
           format: date-time
@@ -8275,3 +8016,5 @@ components:
     HTTPBearer:
       type: http
       scheme: bearer
+servers:
+- url: /api/os-wellbore-ddms
