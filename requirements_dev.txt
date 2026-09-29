@@ -31,7 +31,7 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.14.0
+anyio==4.15.1
     # via
     #   httpx
     #   starlette
@@ -548,7 +548,7 @@ s3fs==2026.6.0
     # via wellbore-domain-services
 s3transfer==0.17.1
     # via boto3
-setuptools==82.0.1
+setuptools==84.0.0
     # via
     #   pip-tools
     #   pytest-dependency
@@ -576,7 +576,7 @@ tomlkit==0.15.0
     # via pylint
 types-jsonschema==4.26.0.20260518
     # via wellbore-schema-manipulation
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via
     #   aiohttp
     #   aiosignal

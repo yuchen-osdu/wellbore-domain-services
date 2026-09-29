@@ -22,7 +22,12 @@ RUN apt-get update \
 
 COPY requirements.txt ./
 
-RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
+# setuptools and msgpack are not pinned by requirements.txt but appear in the
+# published Azure image (base layers / transitive install). Upgrade them after
+# the requirements install so container_scanning clears CVE-2025-47273 and
+# GHSA-6v7p-g79w-8964. anyio is bumped via requirements.txt itself.
+RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple" \
+    && pip install --upgrade "setuptools>=78.1.1" "msgpack>=1.2.1"
 
 COPY ./app /app
 ENV PYTHONPATH=./

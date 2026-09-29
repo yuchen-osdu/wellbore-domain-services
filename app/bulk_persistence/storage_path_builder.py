@@ -34,8 +34,15 @@ def basename(path) -> str:
 
 
 def hash_record_id(record_id: str) -> str:
-    """encode the record_id to be a valid path name"""
-    return hashlib.sha1(record_id.encode()).hexdigest()
+    """encode the record_id to be a valid path name.
+
+    SHA-1 is used as a stable non-cryptographic path identifier. Existing blob
+    object keys are derived from this digest, so the algorithm cannot change
+    without a storage migration. usedforsecurity=False documents that intent;
+    nosemgrep suppresses gitlab.bandit.B303-2 which matches any sha1(...) call.
+    """
+    # nosemgrep: gitlab.bandit.B303-2
+    return hashlib.sha1(record_id.encode(), usedforsecurity=False).hexdigest()
 
 
 def build_base_path(base_directory: str, protocol: Optional[str] = None) -> str:
