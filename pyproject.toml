@@ -34,6 +34,9 @@ dependencies = [
     "numpy",
     "jsonschema",
     "anyio>=4.14.2",
+    # Container-scan remediations (also force-upgraded in Dockerfiles):
+    "setuptools>=78.1.1",
+    "msgpack>=1.2.1",
     "opentelemetry-api==1.40.0",
     "opentelemetry-sdk==1.40.0",
     "opentelemetry-semantic-conventions==0.61b0",
