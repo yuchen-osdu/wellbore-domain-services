@@ -2,9 +2,13 @@ variables:
   ACCEPTANCE_TEST_DIR: tests/baremetal
   CIMPL_SERVICE: wellbore
   # WDMS (FastAPI) is served under root_path /api/os-wellbore-ddms, which differs
-  # from CIMPL_SERVICE (wellbore). Override the spec URL so cimpl-check-openapi-spec
-  # fetches the correct path instead of the default /api/${CIMPL_SERVICE}/openapi.json.
+  # from CIMPL_SERVICE (wellbore). Override the live OpenAPI URL so the check
+  # fetches /api/os-wellbore-ddms/openapi.json instead of /api/${CIMPL_SERVICE}/openapi.json.
   CIMPL_OPENAPI_YAML_ROUTE: /api/os-wellbore-ddms/openapi.json
+  # Committed community OpenAPI is YAML (same pattern as rafs-ddms-services).
+  # Shared cimpl-openapi defaults to openapi.json when the live route is .json;
+  # point explicitly at the YAML file and override the compare job below.
+  CIMPL_OPENAPI_SPEC_PATH: docs/api/community/v1/openapi.yaml
   CIMPL_INT_TEST_TYPE: python
   CIMPL_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
   CIMPL_SUPPORTED_PLATFORM: "linux/amd64"
@@ -54,3 +58,163 @@ cimpl-prod-acceptance-test-python:
     paths:
       - test-results.log
       - '**/allure-results/'
+
+
+# Local override: live endpoint is JSON (FastAPI /openapi.json) while the committed
+# community spec is YAML. Shared cimpl-openapi.yml compares same-extension only;
+# convert both sides to sorted JSON (rafs-ddms-services pattern).
+.cimpl-osdu-main-check-openapi-spec:
+  script:
+    - LIVE_SPEC_EXT=".yaml"
+    - COMMITTED_SPEC_EXT=".yaml"
+    - |
+      IS_PYTHON_SERVICE="false"
+      if [ ! -f "pom.xml" ] && { [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; }; then
+        IS_PYTHON_SERVICE="true"
+      fi
+    - |
+      if [ -z "${CIMPL_OPENAPI_CONFIG_ROUTE}" ]; then
+        CIMPL_OPENAPI_CONFIG_ROUTE="/api/${CIMPL_SERVICE}/api-docs/swagger-config"
+      fi
+    - |
+      if [ -n "${CIMPL_OPENAPI_YAML_ROUTE}" ]; then
+        echo "CIMPL_OPENAPI_YAML_ROUTE is set. Using '${CIMPL_OPENAPI_YAML_ROUTE}' as override"
+        URLS="${CIMPL_OPENAPI_YAML_ROUTE}"
+        if [[ "${URLS}" == *.json ]]; then
+          LIVE_SPEC_EXT=".json"
+        fi
+      elif [ "${IS_PYTHON_SERVICE}" = "true" ]; then
+        echo "Python service detected. Defaulting to JSON OpenAPI spec."
+        URLS="/api/${CIMPL_SERVICE}/openapi.json"
+        LIVE_SPEC_EXT=".json"
+      else
+        CONFIG_URL="https://${CIMPL_DOMAIN}${CIMPL_OPENAPI_CONFIG_ROUTE}"
+        echo "Fetching swagger config from ${CONFIG_URL}"
+        if wget -t 3 -T 30 --waitretry 30 -qO swagger-config.json "${CONFIG_URL}"; then
+          URLS=$(jq -r '.url // .urls[].url' swagger-config.json | sed 's/api-docs/api-docs\.yaml/g')
+        fi
+        if [ -z "${URLS}" ]; then
+          echo "No URLs found in swagger-config or fetch failed, falling back to default v1 route"
+          URLS="/api/${CIMPL_SERVICE}/v1/api-docs.yaml"
+        fi
+      fi
+    - |
+      if [ -z "${CIMPL_OPENAPI_SPEC_PATH}" ]; then
+        echo "CIMPL_OPENAPI_SPEC_PATH not set, using default"
+        CIMPL_OPENAPI_SPEC_PATH="docs/api/community/v1/openapi.yaml"
+      fi
+      if [[ "${CIMPL_OPENAPI_SPEC_PATH}" == *.json ]]; then
+        COMMITTED_SPEC_EXT=".json"
+      fi
+      echo "Committed spec path: ${CIMPL_OPENAPI_SPEC_PATH}"
+      echo "Live spec format: ${LIVE_SPEC_EXT}; committed spec format: ${COMMITTED_SPEC_EXT}"
+    - EXIT_CODE=0
+    - NUM_FAILED=0
+    - NUM_URLS=$(echo "${URLS}" | wc -w)
+    - LOCAL_VERSIONS=$(ls docs/api/community 2>/dev/null || true)
+    - |
+      for URL in ${URLS}; do
+        VERSION=$(basename "${URL}" .yaml)
+        if [[ ! "$VERSION" =~ v[0-9] ]]; then
+          VERSION=$(echo "${URL}" | grep -o 'v[0-9][^/?]*' | tail -n 1 || true)
+          if [ -z "${VERSION}" ] && [ -n "${CIMPL_OPENAPI_SPEC_PATH}" ]; then
+            VERSION=$(echo "${CIMPL_OPENAPI_SPEC_PATH}" | grep -o 'v[0-9][^/]*' | tail -n 1 || true)
+          fi
+          if [ -z "${VERSION}" ]; then VERSION="v1"; fi
+        fi
+
+        LOCAL_VERSIONS=$(echo "${LOCAL_VERSIONS}" | sed "s/${VERSION}//g" | xargs)
+
+        if [ "${NUM_URLS}" -eq 1 ]; then
+          LIVE_SPEC="live-openapi-spec${LIVE_SPEC_EXT}"
+        else
+          LIVE_SPEC="live-openapi-spec-${VERSION}${LIVE_SPEC_EXT}"
+        fi
+
+        if [ -n "${CIMPL_OPENAPI_SPEC_PATH}" ]; then
+          CURRENT_SPEC_PATH="${CIMPL_OPENAPI_SPEC_PATH}"
+        else
+          CURRENT_SPEC_PATH="docs/api/community/${VERSION}/openapi${COMMITTED_SPEC_EXT}"
+        fi
+
+        echo "Checking OpenAPI spec for version ${VERSION} (URL: https://${CIMPL_DOMAIN}${URL}, Local: ${CURRENT_SPEC_PATH})"
+
+        FETCH_URL="https://${CIMPL_DOMAIN}${URL}"
+        if ! wget -t 3 -T 30 --waitretry 30 -qO "${LIVE_SPEC}" "${FETCH_URL}"; then
+          echo "Failed to fetch OpenAPI spec from ${FETCH_URL}"
+          EXIT_CODE=1
+          NUM_FAILED=$((NUM_FAILED + 1))
+          continue
+        fi
+
+        if grep -q '##default' "${LIVE_SPEC}"; then
+          echo "--------------------------------------------------------------------------------"
+          echo "Live OpenAPI spec for ${VERSION} contains '##default' markers."
+          echo "This indicates degraded spec generation, likely caused by a dependency version change in the service."
+          echo "Affected lines:"
+          grep -n '##default' "${LIVE_SPEC}"
+          echo "--------------------------------------------------------------------------------"
+          EXIT_CODE=1
+          NUM_FAILED=$((NUM_FAILED + 1))
+          continue
+        fi
+
+        if [ ! -f "${CURRENT_SPEC_PATH}" ]; then
+          echo "Committed OpenAPI spec couldn't be found at ${CURRENT_SPEC_PATH}"
+          mkdir -p "$(dirname "${CURRENT_SPEC_PATH}")"
+          echo "{}" > "${CURRENT_SPEC_PATH}"
+        fi
+
+        SORTED_CURRENT="sorted-current-${VERSION}.json"
+        SORTED_LIVE="sorted-live-${VERSION}.json"
+        # YAML round-trip via yq collapses whole floats (92.0) to ints; FastAPI live
+        # JSON keeps them as floats. Normalize numbers to strings so the compare is
+        # type-stable (same approach as rafs-ddms-services).
+        NUMERIC_NORMALIZE_FILTER='walk(if type == "number" then ((. * 1.0) | tostring) else . end)'
+
+        if [[ "${COMMITTED_SPEC_EXT}" == ".json" ]]; then
+          jq -S "${NUMERIC_NORMALIZE_FILTER}" "${CURRENT_SPEC_PATH}" > "${SORTED_CURRENT}"
+        else
+          yq -o=json '.' "${CURRENT_SPEC_PATH}" | jq -S "${NUMERIC_NORMALIZE_FILTER}" > "${SORTED_CURRENT}"
+        fi
+
+        if [[ "${LIVE_SPEC_EXT}" == ".json" ]]; then
+          jq -S "${NUMERIC_NORMALIZE_FILTER}" "${LIVE_SPEC}" > "${SORTED_LIVE}"
+        else
+          yq -o=json '.' "${LIVE_SPEC}" | jq -S "${NUMERIC_NORMALIZE_FILTER}" > "${SORTED_LIVE}"
+        fi
+
+        if ! diff -u "${SORTED_CURRENT}" "${SORTED_LIVE}"; then
+          echo "--------------------------------------------------------------------------------"
+          echo "The committed OpenAPI spec for ${VERSION} differs (or doesn't exist) from the"
+          echo "one served by the running service. Please review these differences."
+          echo "--------------------------------------------------------------------------------"
+          echo "To update the committed spec, run the following:"
+          echo "$ mkdir -p ${CURRENT_SPEC_PATH%/*}"
+          if [[ "${COMMITTED_SPEC_EXT}" == ".json" ]]; then
+            echo "$ wget -O ${CURRENT_SPEC_PATH} '${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}/artifacts/raw/${LIVE_SPEC}?inline=false'"
+          else
+            echo "$ wget -O live-openapi-spec.json '${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}/artifacts/raw/${LIVE_SPEC}?inline=false'"
+            echo "$ yq -P '.' live-openapi-spec.json > ${CURRENT_SPEC_PATH}"
+          fi
+          echo "$ git add ${CURRENT_SPEC_PATH}"
+          echo "$ git commit -m 'docs: update OpenAPI spec for ${VERSION} to match deployed service'"
+          echo "$ git push"
+          echo "--------------------------------------------------------------------------------"
+          EXIT_CODE=1
+          NUM_FAILED=$((NUM_FAILED + 1))
+        else
+          echo "OpenAPI spec for ${VERSION} is up to date."
+        fi
+      done
+    - echo "${NUM_FAILED}/${NUM_URLS} OpenAPI specs need to be reviewed/updated"
+    - |
+      if [ -z "${CIMPL_OPENAPI_SPEC_PATH}" ] && [ -n "${LOCAL_VERSIONS}" ]; then
+        echo "--------------------------------------------------------------------------------"
+        echo "The following versions exist in docs/api/community but were not found in the"
+        echo "service configuration (swagger-config or fallback route): ${LOCAL_VERSIONS}"
+        echo "Please remove these unused versions or update the service configuration."
+        echo "--------------------------------------------------------------------------------"
+        EXIT_CODE=1
+      fi
+    - exit $EXIT_CODE
