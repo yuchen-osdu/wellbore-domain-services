@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import uuid
 from typing import List, Dict
 from ....request_runner import RequestRunner, Request
 
@@ -113,8 +114,9 @@ def build_request_create_osdu_unknown_kind_welllog():
     return RequestRunner(rq_proto)
 
 def build_request_create_osdu_welllog(b_use_fixed_id=True, curves: Dict[str, int] = {'Example CurveID': 1}) -> RequestRunner:
+    # b_use_fixed_id=True => client-supplied id (now unique per run via uuid4), not a literally fixed id
     if b_use_fixed_id:
-        id_field = '"id": "{{data_partition}}:work-product-component--WellLog:c7c421a7-f496-5aef-8093-298c32bfdea9",'
+        id_field = '"id": "{{data_partition}}:work-product-component--WellLog:' + str(uuid.uuid4()) + '",'
     else:
         id_field = ''
 
