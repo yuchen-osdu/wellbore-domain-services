@@ -98,7 +98,7 @@ compile-and-unit-test:
     paths:
       - all-requirements.txt
       - ./**/python-*-output.txt
-      - spec/generated/openapi.json
+      - docs/api/community/v1/openapi.json
 
 pylint:
   tags: ["osdu-small"]

@@ -367,7 +367,7 @@ It is best understood as a layered platform: OSDU core services at the base, WDM
 <!-- _class: lead -->
 # Resources
 
-- [OpenAPI specifications](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/blob/master/spec/generated/openapi.json?ref_type=heads)
+- [OpenAPI specifications](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/blob/master/docs/api/community/v1/openapi.json?ref_type=heads)
 - [Documentation and diagrams](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/tree/master/docs?ref_type=heads)
 - [WDMS wiki pages](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/-/wikis/home)
 - [WDMS Worker Service](https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services-worker)

@@ -9,7 +9,7 @@ This software includes the following software and licenses:
 The following software have components provided under the terms of this license:
 
 - aiohappyeyeballs (from https://pypi.org/project/aiohappyeyeballs/)
-- multidict (from https://github.com/aio-libs/multidict)
+- multidict (from https://github.com/aio-libs/multidict, https://pypi.org/project/multidict/)
 - pyarrow (from https://arrow.apache.org/, https://pypi.org/project/pyarrow/, https://pypi.org/project/pyarrow/17.0.0/)
 - typing-extensions (from https://pypi.org/project/typing-extensions/, https://pypi.org/project/typing-extensions/4.4.0/)
 
@@ -42,7 +42,7 @@ The following software have components provided under the terms of this license:
 - importlib-metadata (from https://pypi.org/project/importlib-metadata/)
 - jsonpath-ng (from https://pypi.org/project/jsonpath-ng/)
 - msgpack (from https://msgpack.org/, https://pypi.org/project/msgpack/, https://pypi.org/project/msgpack/1.0.6/)
-- multidict (from https://github.com/aio-libs/multidict)
+- multidict (from https://github.com/aio-libs/multidict, https://pypi.org/project/multidict/)
 - numpy (from https://pypi.org/project/numpy/)
 - opentelemetry-api (from https://pypi.org/project/opentelemetry-api/)
 - opentelemetry-exporter-gcp-trace (from https://github.com/GoogleCloudPlatform/opentelemetry-operations-python/tree/main/opentelemetry-exporter-gcp-trace)
