@@ -11581,5 +11581,10 @@
         ]
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "/api/os-wellbore-ddms"
+    }
+  ]
 }
