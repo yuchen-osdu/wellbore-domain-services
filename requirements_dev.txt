@@ -7,7 +7,7 @@ aiobotocore==3.7.0
     # via s3fs
 aiohappyeyeballs==2.6.2
     # via aiohttp
-aiohttp==3.14.3
+aiohttp==3.14.5
     # via
     #   aiobotocore
     #   azure-core
@@ -101,12 +101,13 @@ cachetools==7.1.4
     #   osdu-core-lib-python-azure
     #   osdu-core-lib-python-baremetal
     #   osdu-core-lib-python-gcp
-certifi==2026.6.17
+certifi==2026.10.19
     # via
     #   httpcore
     #   httpx
     #   msrest
     #   requests
+    #   wellbore-domain-services
 cffi==2.0.0 ; platform_python_implementation != 'PyPy'
     # via cryptography
 charset-normalizer==3.4.7
@@ -629,7 +630,7 @@ wrapt==2.2.2
     # via aiobotocore
 xmltodict==1.0.4
     # via osdu-log-recognition-lib
-yarl==1.24.2
+yarl==1.25.1
     # via aiohttp
 zipp==4.1.0
     # via importlib-metadata
