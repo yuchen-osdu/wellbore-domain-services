@@ -36,10 +36,20 @@ def context_base():
 
 
 def test_context_repr(context_base):
-    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "check_test_not_cleanup", "app_key": "app_key", "api_key": "api_key", "x_user_id": null, "x_collaboration": "c_space", "x_app_id": "my-x-app-id"}'
+    expected = '{"tracer": null, "correlation_id": "correlation_id", "request_id": "request_id", "dev_mode": true, "partition_id": "check_test_not_cleanup", "app_key": "***", "api_key": "***", "x_user_id": null, "x_collaboration": "c_space", "x_app_id": "my-x-app-id"}'
 
     assert str(context_base) == expected
     assert repr(context_base) == expected
+
+
+def test_azure_log_properties_omit_api_keys(context_base):
+    from app.helper.logger import AzureContextLoggerAdapter
+
+    context_base.set_current()
+    properties = AzureContextLoggerAdapter._set_extra_attrs()
+    assert "app-key" not in properties
+    assert "api-key" not in properties
+    assert properties["correlation-id"] == "correlation_id"
 
 
 def test_context_basic(context_base):
