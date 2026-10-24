@@ -2,8 +2,8 @@ variables:
   ACCEPTANCE_TEST_DIR: tests/baremetal
   CIMPL_SERVICE: wellbore
   # WDMS (FastAPI) is served under root_path /api/os-wellbore-ddms, which differs
-  # from CIMPL_SERVICE (wellbore). Override the spec URL so cimpl-check-openapi-spec
-  # fetches the correct path instead of the default /api/${CIMPL_SERVICE}/openapi.json.
+  # from CIMPL_SERVICE (wellbore). Override the live OpenAPI URL so the check
+  # fetches /api/os-wellbore-ddms/openapi.json instead of /api/${CIMPL_SERVICE}/openapi.json.
   CIMPL_OPENAPI_YAML_ROUTE: /api/os-wellbore-ddms/openapi.json
   CIMPL_INT_TEST_TYPE: python
   CIMPL_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
@@ -23,27 +23,6 @@ cimpl-containerize-gitlab:
       --build-arg build_origin="Gitlab"
       --build-arg commit_branch=$CI_COMMIT_BRANCH
 
-cimpl-acceptance-test-python:
-  image: python:3.13
-  variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
-  artifacts:
-    when: always
-    paths:
-      - test-results.log
-      - '**/allure-results/'
-#dev2 jobs
-
-cimpl-dev2-acceptance-test-python:
-  image: python:3.13
-  variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
-  artifacts:
-    when: always
-    paths:
-      - test-results.log
-      - '**/allure-results/'
-
 # osdu-main jobs
 
 cimpl-dev-acceptance-test-python:
@@ -57,6 +36,16 @@ cimpl-dev-acceptance-test-python:
       - '**/allure-results/'
 
 cimpl-dev-backup-acceptance-test-python:
+  image: python:3.13
+  variables:
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
+
+cimpl-prod-acceptance-test-python:
   image: python:3.13
   variables:
     CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
