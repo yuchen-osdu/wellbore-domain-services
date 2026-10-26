@@ -12,7 +12,9 @@ RUN apk add python-${version} py${version}-pip --no-cache
 RUN python3 -m venv /wdms/venv
 
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
+RUN pip3 install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple" \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "setuptools>=78.1.1" "msgpack>=1.2.1" \
+    && rm -rf /root/.cache/pip /wdms/venv/lib/python*/ensurepip /usr/lib/python*/ensurepip
 
 
 FROM cgr.dev/chainguard/wolfi-base AS production

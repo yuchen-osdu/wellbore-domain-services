@@ -39,7 +39,10 @@ python gen_postman_env.py \
 --acl_domain $GROUP_ID \
 --legal_tag $LEGAL_TAG
 
-# Run pytest
+# Run pytest (retry transient 5xx from shared CIMPL; tee for CI artifact)
+set -o pipefail
 pytest ./functional --environment="./generated/postman_environment.json" \
   --filter-tag='!search|!chunking|!bulk|!describe' -p no:randomly \
-  --alluredir=$CI_PROJECT_DIR/tests/cimpl/allure-results --clean-alluredir
+  --retry-on-error=503 \
+  --alluredir=$CI_PROJECT_DIR/tests/cimpl/allure-results --clean-alluredir \
+  2>&1 | tee "$CI_PROJECT_DIR/test-results.log"

@@ -9,6 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import uuid
 from typing import Dict
 
 from ....request_runner import RequestRunner, Request
@@ -75,8 +76,9 @@ def build_request_get_versions_of_osdu_ppfgdataset() -> RequestRunner:
 
 
 def build_request_create_osdu_ppfgdataset(b_use_fixed_id=True, curves: Dict[str, int] = dict()) -> RequestRunner:
+    # b_use_fixed_id=True => client-supplied id (now unique per run via uuid4), not a literally fixed id
     if b_use_fixed_id:
-        id_field = '"id": "{{data_partition}}:work-product-component--PPFGDataset:bb2f4d26-6446-508a-b137-7239ee1bbea1",'
+        id_field = '"id": "{{data_partition}}:work-product-component--PPFGDataset:' + str(uuid.uuid4()) + '",'
     else:
         id_field = ''
 

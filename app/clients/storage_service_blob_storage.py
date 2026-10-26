@@ -68,9 +68,13 @@ class StorageRecordServiceBlobStorage:
         self._auth_check = auth_check_coro
 
 
+    _RECORD_FOLDER_PATH_DIGEST = "md5"
+
     @staticmethod
     def _get_record_folder(record_id: str, data_partition: str):
-        encoded_id = hashlib.md5(record_id.encode()).hexdigest()
+        encoded_id = hashlib.new(
+            StorageRecordServiceBlobStorage._RECORD_FOLDER_PATH_DIGEST, record_id.encode(), usedforsecurity=False
+        ).hexdigest()
         folder = f'{data_partition or "global"}_r_{encoded_id}'
         return folder
 
