@@ -39,12 +39,12 @@ dependencies = [
     "oauthlib>=4.0.0",
     "setuptools>=78.1.1",
     "msgpack>=1.2.1",
-    "opentelemetry-api==1.40.0",
-    "opentelemetry-sdk==1.40.0",
-    "opentelemetry-semantic-conventions==0.61b0",
+    "opentelemetry-api==1.45.1",
+    "opentelemetry-sdk==1.45.1",
+    "opentelemetry-semantic-conventions==0.66b1",
     "azure-monitor-opentelemetry-exporter>=1.0.0b46",
     "opentelemetry-exporter-gcp-trace",
-    "opentelemetry-exporter-otlp-proto-http==1.40.0",
+    "opentelemetry-exporter-otlp-proto-http==1.45.1",
     # for chunking feature
     "s3fs",
     "fsspec",
@@ -85,7 +85,7 @@ dev = [
     # Generates fake token for local integration tests runs
     "pyjwt",
     "deepdiff",
-    "pylint",
+    "pylint>=4.0.9",
     "uvicorn",
     "allure-pytest>=2.13.0",
     "allure-python-commons>=2.13.0",
@@ -99,6 +99,14 @@ where = ["app"]
 # index and pick the best version, instead of uv's default "first-index" which
 # would pin older packages mirrored on the OSDU private index.
 index-strategy = "unsafe-best-match"
+# osdu-wbddms-worker 0.3.0 still requires OpenTelemetry 1.40.0. Keep the
+# service on the patched 1.45.1 line anyway.
+override-dependencies = [
+    "opentelemetry-api==1.45.1",
+    "opentelemetry-sdk==1.45.1",
+    "opentelemetry-semantic-conventions==0.66b1",
+    "opentelemetry-exporter-otlp-proto-http==1.45.1",
+]
 
 [[tool.uv.index]]
 url = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/"

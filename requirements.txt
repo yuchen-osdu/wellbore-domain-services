@@ -203,8 +203,6 @@ idna==3.18
     #   httpx
     #   requests
     #   yarl
-importlib-metadata==8.7.1
-    # via opentelemetry-api
 isodate==0.7.2
     # via
     #   azure-keyvault-certificates
@@ -252,10 +250,11 @@ oauthlib==4.0.0
     # via
     #   requests-oauthlib
     #   wellbore-domain-services
-opentelemetry-api==1.40.0
+opentelemetry-api==1.45.1
     # via
     #   azure-monitor-opentelemetry-exporter
     #   opentelemetry-exporter-gcp-trace
+    #   opentelemetry-exporter-http-transport
     #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   opentelemetry-sdk
@@ -264,25 +263,30 @@ opentelemetry-api==1.40.0
     #   wellbore-domain-services
 opentelemetry-exporter-gcp-trace==1.12.0
     # via wellbore-domain-services
-opentelemetry-exporter-otlp-proto-common==1.40.0
+opentelemetry-exporter-http-transport==0.66b1
     # via opentelemetry-exporter-otlp-proto-http
-opentelemetry-exporter-otlp-proto-http==1.40.0
+opentelemetry-exporter-otlp-common==0.66b1
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-proto-common==1.45.1
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-proto-http==1.45.1
     # via wellbore-domain-services
-opentelemetry-proto==1.40.0
+opentelemetry-proto==1.45.1
     # via
     #   opentelemetry-exporter-otlp-proto-common
     #   opentelemetry-exporter-otlp-proto-http
 opentelemetry-resourcedetector-gcp==1.12.0a0
     # via opentelemetry-exporter-gcp-trace
-opentelemetry-sdk==1.40.0
+opentelemetry-sdk==1.45.1
     # via
     #   azure-monitor-opentelemetry-exporter
     #   opentelemetry-exporter-gcp-trace
+    #   opentelemetry-exporter-otlp-common
     #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   osdu-core-lib-python-azure
     #   wellbore-domain-services
-opentelemetry-semantic-conventions==0.61b0
+opentelemetry-semantic-conventions==0.66b1
     # via
     #   opentelemetry-sdk
     #   osdu-core-lib-python-azure
@@ -393,6 +397,7 @@ requests==2.34.2
     #   google-cloud-storage
     #   msal
     #   msrest
+    #   opentelemetry-exporter-http-transport
     #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-resourcedetector-gcp
     #   osdu-api
@@ -475,5 +480,3 @@ xmltodict==1.0.4
     # via osdu-log-recognition-lib
 yarl==1.25.1
     # via aiohttp
-zipp==4.1.0
-    # via importlib-metadata
