@@ -383,7 +383,7 @@ osdu-data-ecosystem-storage==0.29.0
     # via wellbore-domain-services
 osdu-log-recognition-lib==0.29.0
     # via wellbore-domain-services
-osdu-wbddms-worker==0.3.0
+osdu-wbddms-worker==0.3.1
     # via wellbore-domain-services
 packaging==26.2
     # via

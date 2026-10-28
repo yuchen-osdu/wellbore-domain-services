@@ -7,14 +7,6 @@ resolution-markers = [
     "python_full_version < '3.13'",
 ]
 
-[manifest]
-overrides = [
-    { name = "opentelemetry-api", specifier = "==1.45.1" },
-    { name = "opentelemetry-exporter-otlp-proto-http", specifier = "==1.45.1" },
-    { name = "opentelemetry-sdk", specifier = "==1.45.1" },
-    { name = "opentelemetry-semantic-conventions", specifier = "==0.66b1" },
-]
-
 [[package]]
 name = "adlfs"
 version = "2026.5.0"
@@ -2129,7 +2121,7 @@ wheels = [
 
 [[package]]
 name = "osdu-wbddms-worker"
-version = "0.3.0"
+version = "0.3.1"
 source = { registry = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple/" }
 dependencies = [
     { name = "fastapi" },
@@ -2148,9 +2140,9 @@ dependencies = [
     { name = "urllib3" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/files/0e7577dfeceb232bf2c7830992bc357eef0a529d63087f4e4671908de8400e81/osdu_wbddms_worker-0.3.0.tar.gz", hash = "sha256:0e7577dfeceb232bf2c7830992bc357eef0a529d63087f4e4671908de8400e81" }
+sdist = { url = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/files/6260cdf60bb112b1a495128c1db4e9f549a39761f76b752e5e5d32e2c8282e3a/osdu_wbddms_worker-0.3.1.tar.gz", hash = "sha256:6260cdf60bb112b1a495128c1db4e9f549a39761f76b752e5e5d32e2c8282e3a" }
 wheels = [
-    { url = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/files/f5a377eb0926c2a6ce2a9acf592e8c65e83c97236345d62761c4df9d68892fa1/osdu_wbddms_worker-0.3.0-py3-none-any.whl", hash = "sha256:f5a377eb0926c2a6ce2a9acf592e8c65e83c97236345d62761c4df9d68892fa1" },
+    { url = "https://community.opengroup.org/api/v4/projects/465/packages/pypi/files/705d76eaa6f7a42aa1249bc3be0e1593d997a8d54842bb1f5320337a010d842d/osdu_wbddms_worker-0.3.1-py3-none-any.whl", hash = "sha256:705d76eaa6f7a42aa1249bc3be0e1593d997a8d54842bb1f5320337a010d842d" },
 ]
 
 [[package]]
@@ -3352,7 +3344,7 @@ requires-dist = [
     { name = "osdu-data-ecosystem-search", specifier = "==0.29.0" },
     { name = "osdu-data-ecosystem-storage", specifier = "==0.29.0" },
     { name = "osdu-log-recognition-lib", specifier = "==0.29.0" },
-    { name = "osdu-wbddms-worker", marker = "extra == 'dev'", specifier = "==0.3.0" },
+    { name = "osdu-wbddms-worker", marker = "extra == 'dev'", specifier = "==0.3.1" },
     { name = "packaging", specifier = ">=25.0" },
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "pip-tools", marker = "extra == 'dev'", specifier = ">=7.5.1" },
