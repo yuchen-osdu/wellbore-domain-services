@@ -19,8 +19,9 @@ entity_names = {
     "trajectory": "work-product-component--WellboreTrajectory",
     "marker": "work-product-component--WellboreMarkerSet",
     "wellboreintervalset": "work-product-component--WellboreIntervalSet",
-    "ppfgdatset" : "work-product-component--PPFGDataset",
-    "wellpressuretestrawmeasurement" : "work-product-component--WellPressureTestRawMeasurement"
+    "ppfgdataset": "work-product-component--PPFGDataset",
+    "welllogacquisition": "master-data--WellLogAcquisition",
+    "wellpressuretestrawmeasurement": "work-product-component--WellPressureTestRawMeasurement"
 }
 
 
@@ -33,11 +34,10 @@ class DMSV3RouterUtils:
         if entity and record and version == "V3":
             kind_elements = get_kind_meta(record.kind)
             entity_in_kind = kind_elements.entity_type
-            if entity.value in entity_names:
-                matches = entity_names[entity.value] == entity_in_kind
-                if not matches:
-                    raise HTTPException(status_code=status_code,
-                                        detail="Record is not an OSDU " + entity.value)
+            expected_kind = entity_names.get(entity.value)
+            if expected_kind is None or expected_kind != entity_in_kind:
+                raise HTTPException(status_code=status_code,
+                                    detail="Record is not an OSDU " + entity.value)
 
     @staticmethod
     def raise_if_not_osdu_right_entities_kind(records: List[Record], state):
