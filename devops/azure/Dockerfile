@@ -14,9 +14,15 @@
 
 FROM python:3.13-slim
 
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt ./
 
-RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
+RUN pip install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple" \
+    && pip install --no-cache-dir --upgrade --force-reinstall "setuptools>=78.1.1" "msgpack>=1.2.1" \
+    && rm -rf /root/.cache/pip /usr/local/lib/python3.*/ensurepip
 
 COPY ./app /app
 ENV PYTHONPATH=./
