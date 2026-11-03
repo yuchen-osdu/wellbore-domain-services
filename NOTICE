@@ -39,13 +39,14 @@ The following software have components provided under the terms of this license:
 - grpc-google-iam-v1 (from https://pypi.org/project/grpc-google-iam-v1/)
 - grpcio (from https://grpc.io)
 - grpcio-status (from https://pypi.org/project/grpcio-status/)
-- importlib-metadata (from https://pypi.org/project/importlib-metadata/)
 - jsonpath-ng (from https://pypi.org/project/jsonpath-ng/)
 - msgpack (from https://msgpack.org/, https://pypi.org/project/msgpack/, https://pypi.org/project/msgpack/1.0.6/)
 - multidict (from https://github.com/aio-libs/multidict, https://pypi.org/project/multidict/)
 - numpy (from https://pypi.org/project/numpy/)
 - opentelemetry-api (from https://pypi.org/project/opentelemetry-api/)
 - opentelemetry-exporter-gcp-trace (from https://github.com/GoogleCloudPlatform/opentelemetry-operations-python/tree/main/opentelemetry-exporter-gcp-trace)
+- opentelemetry-exporter-http-transport (from https://pypi.org/project/opentelemetry-exporter-http-transport/)
+- opentelemetry-exporter-otlp-common (from https://pypi.org/project/opentelemetry-exporter-otlp-common/)
 - opentelemetry-exporter-otlp-proto-common (from https://pypi.org/project/opentelemetry-exporter-otlp-proto-common/)
 - opentelemetry-exporter-otlp-proto-http (from https://pypi.org/project/opentelemetry-exporter-otlp-proto-http/)
 - opentelemetry-proto (from https://pypi.org/project/opentelemetry-proto/)
@@ -235,7 +236,6 @@ The following software have components provided under the terms of this license:
 - typing-inspection (from https://pypi.org/project/typing-inspection/)
 - urllib3 (from https://pypi.org/project/urllib3/, https://pypi.org/project/urllib3/2.0.2/, https://pypi.org/project/urllib3/2.0.4/)
 - xmltodict (from https://pypi.org/project/xmltodict/)
-- zipp (from https://pypi.org/project/zipp/, https://pypi.org/project/zipp/3.19.0/, https://pypi.org/project/zipp/3.19.2/)
 
 ========================================================================
 MPL-2.0

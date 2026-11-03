@@ -186,6 +186,12 @@ class ConfigurationContainer:
         default="",
     )
 
+    commit_message: EnvVar = EnvVar(
+        key="OS_WELLBORE_DDMS_COMMIT_MESSAGE",
+        description="optional title of the commit the service was built from, reported by the info endpoint",
+        default="",
+    )
+
     dev_mode: EnvVar = EnvVar(
         key="OS_WELLBORE_DDMS_DEV_MODE",
         description="dev mode",

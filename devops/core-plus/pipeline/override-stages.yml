@@ -14,6 +14,7 @@ cimpl-containerize-gitlab:
   needs:
     - "compile-and-unit-test"
   variables:
+    commit_message: $CI_COMMIT_TITLE
     CIMPL_BUILD_PATH: "./build/Dockerfile"
     CIMPL_BUILD_ARGS: >
       --build-arg PIP_WHEEL_DIR=python-packages
@@ -21,7 +22,8 @@ cimpl-containerize-gitlab:
       --build-arg build_number=$CI_COMMIT_SHORT_SHA
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
-      --build-arg commit_branch=$CI_COMMIT_BRANCH
+      --build-arg commit_branch=$CI_COMMIT_REF_NAME
+      --build-arg commit_message
 
 # osdu-main jobs
 
