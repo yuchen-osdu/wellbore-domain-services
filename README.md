@@ -348,7 +348,6 @@ Data access layer implementation are available into [Wellbore-cloud libraries](h
 - osdu-core-lib-python-gcp
 - osdu-core-lib-python-azure
 - osdu-core-lib-python-aws
-- osdu-core-lib-python-ibm
 - osdu-core-lib-python-baremetal
 
 

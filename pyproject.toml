@@ -53,7 +53,6 @@ dependencies = [
     "osdu-log-recognition-lib==0.29.0",
     "osdu-data-ecosystem-storage==0.29.0",
     "osdu-data-ecosystem-search==0.29.0",
-    "osdu-core-lib-python-ibm==0.29.0",
     "osdu-core-lib-python-gcp==0.29.0",
     "osdu-core-lib-python-azure==0.29.0",
     "osdu-core-lib-python-baremetal==0.29.0",

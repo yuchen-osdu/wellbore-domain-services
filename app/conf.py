@@ -105,11 +105,11 @@ class ConfigurationContainer:
     cloud_provider: EnvVar = EnvVar(
         key="CLOUD_PROVIDER",
         description=(
-            'Short name of the current cloud provider environment, must be "aws" or "gc" or "az" or "ibm" or "baremetal"'
+            'Short name of the current cloud provider environment, must be "aws" or "gc" or "az" or "baremetal"'
         ),
         default=None,
         is_mandatory=True,
-        allowed_values=["aws", "gc", "az", "local", "ibm", "baremetal"],
+        allowed_values=["aws", "gc", "az", "local", "baremetal"],
         factory=lambda x: x.lower(),
     )
 
@@ -476,15 +476,6 @@ def cloud_provider_additional_environment(config: ConfigurationContainer):
             default="http://partition/api/partition"
         )
 
-    if provider == "ibm":
-        config.add_from_env(
-            attribute_name="default_data_tenant_project_id",
-            env_var_key="OS_WELLBORE_DDMS_DATA_PROJECT_ID",
-            description="IBM data tenant ID",
-            default="logstore-ibm",
-            is_mandatory=True,
-            override=True,
-        )
     if provider == "aws":
         config.add_from_env(
             attribute_name="aws_region",
