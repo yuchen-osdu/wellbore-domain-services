@@ -334,7 +334,7 @@ Both WDMS and the worker use a provider pattern.
 ### Main service
 
 - `app/injector/main_injector.py`
-- Selects Azure, AWS, GCP, IBM, or baremetal implementations
+- Selects Azure, AWS, GCP, or baremetal implementations
 
 ### Worker service
 
