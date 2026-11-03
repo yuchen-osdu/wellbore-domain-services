@@ -34,6 +34,9 @@ ARG build_origin="Personal build"
 ARG commit_id
 ARG commit_branch
 ENV OS_WELLBORE_DDMS_BUILD_DETAILS build_date=$build_date;build_number=$build_number;build_origin=$build_origin;commit_id=$commit_id;commit_branch=$commit_branch
+# kept apart from the build details, a commit message may contain ";" or "="
+ARG commit_message
+ENV OS_WELLBORE_DDMS_COMMIT_MESSAGE="$commit_message"
 
 
 EXPOSE 8080

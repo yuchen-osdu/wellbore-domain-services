@@ -127,13 +127,13 @@ containerize:
     - tag_name="_gitlab_$commit_id"
     - echo $tag_name
     - echo ---- ---- DATE
-    - current_utc_date=`date --utc`
+    - current_utc_date=`date -u +%Y-%m-%dT%H:%M:%SZ`
     - echo $current_utc_date
     - echo ---- ---- COMMIT BRANCH
-    - commit_branch=$commit_id
+    - commit_branch=$CI_COMMIT_REF_NAME
     - echo $commit_branch
     - echo ---- ---- BUILD IMAGE
-    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch --build-arg commit_message="$CI_COMMIT_TITLE"
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG

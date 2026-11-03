@@ -395,6 +395,34 @@
         "title": "CommitSessionResponse",
         "type": "object"
       },
+      "ConnectedOuterService": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "title": "ConnectedOuterService",
+        "type": "object"
+      },
       "CreateDataSessionRequest": {
         "description": "Note:\nif fromVersion is provided, should we:\n    force mode to 'update'\n    raise an error if mode is overwrite",
         "properties": {
@@ -699,6 +727,97 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "InfoResponse": {
+        "properties": {
+          "artifactId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifactid"
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch"
+          },
+          "buildTime": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buildtime"
+          },
+          "commitId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commitid"
+          },
+          "commitMessage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commitmessage"
+          },
+          "connectedOuterServices": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ConnectedOuterService"
+            },
+            "title": "Connectedouterservices",
+            "type": "array"
+          },
+          "groupId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Groupid"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "title": "InfoResponse",
         "type": "object"
       },
       "JSONOrient": {
@@ -1236,6 +1355,31 @@
           }
         },
         "summary": "Get About",
+        "tags": [
+          "Wellbore DDMS"
+        ]
+      }
+    },
+    "/ddms/v3/info": {
+      "get": {
+        "description": "Build information of the service, no authentication required.",
+        "operationId": "get__ddms_v3_info",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Version info",
         "tags": [
           "Wellbore DDMS"
         ]
