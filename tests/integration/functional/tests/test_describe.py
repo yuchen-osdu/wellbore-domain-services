@@ -27,7 +27,7 @@ def build_request_get_data_describe(entity_type: str, record_id: str, filters=No
     url = build_base_url(entity_type) + f'/{record_id}/data'
     url = url + '?' + 'describe=true'
     if filters:
-        url = url + '?' + '&'.join(f'{k}={v}' for k, v in filters.items())
+        url = url + '&' + '&'.join(f'{k}={v}' for k, v in filters.items())
 
     return build_request(f'{entity_type} get data', 'GET', url)
 
@@ -133,9 +133,8 @@ def test_describe_with_offset_filter_without_session(with_wdms_env):
 
         for (params, expected_status, expected_data) in validation_list:
             headers = {'Content-Type': serializer.mime_type, 'Accept': serializer.mime_type}
-            result = build_request_get_data_describe(entity_type, record_id
+            result = build_request_get_data_describe(entity_type, record_id, filters=params
                                                      ).call(with_wdms_env,
-                                                            params=params,
                                                             headers=headers,
                                                             assert_status=expected_status)
             if result.ok:
