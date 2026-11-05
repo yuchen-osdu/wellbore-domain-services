@@ -71,7 +71,7 @@ steps:
 - task: PublishPipelineArtifact@1
   condition: succeededOrFailed()
   inputs:
-    targetPath: $(System.DefaultWorkingDirectory)/spec/generated/openapi.json
+    targetPath: $(System.DefaultWorkingDirectory)/docs/api/community/v1/openapi.json
     artifactName: OpenApiSpec
 
 - ${{ if eq(parameters.include_coverage, true) }}:

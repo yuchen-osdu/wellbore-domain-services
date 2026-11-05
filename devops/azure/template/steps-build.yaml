@@ -66,7 +66,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      current_utc_date=`date --utc`
+      current_utc_date=`date -u +%Y-%m-%dT%H:%M:%SZ`
       echo $current_utc_date
 
       echo ----- BUILD IMAGE ------------
@@ -78,7 +78,10 @@ steps:
                    --build-arg build_number="$(Build.BuildNumber)" \
                    --build-arg commit_id=$(commit_id) \
                    --build-arg build_origin="AzureDevops build/$(Build.DefinitionName)" \
-                   --build-arg commit_branch=$(Build.SourceBranch)
+                   --build-arg commit_branch=$(Build.SourceBranch) \
+                   --build-arg commit_message="$COMMIT_MESSAGE"
+  env:
+    COMMIT_MESSAGE: $(Build.SourceVersionMessage)
 
 
 - ${{ each postBuildTemplate in parameters.postBuildTemplates }}:

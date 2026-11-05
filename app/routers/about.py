@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict
+from typing import Dict, List
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app import __version__, __app_name__, __build_number__, __release__
@@ -21,6 +21,19 @@ from app.routers.common_parameters import response_401, response_403
 from app.routers.bulk.bulk_routes_dependencies import BulkIO, get_bulk_io
 
 router = APIRouter()
+info_router = APIRouter()
+
+INFO_GROUP_ID = 'org.opengroup.osdu'
+INFO_ARTIFACT_ID = 'os-wellbore-ddms'
+
+
+def _build_details() -> Dict[str, str]:
+    # very basic parsing for now
+    key_val_list = [key_val.split('=', 1) for key_val in Config.build_details.value.split(';') if '=' in key_val]
+    return {
+        key_val[0].strip(): key_val[1].replace('\\"', '"').strip(' "')
+        for key_val in key_val_list
+    }
 
 
 class AboutResponse(BaseModel):
@@ -56,12 +69,7 @@ async def get_version(
         user=Depends(require_opendes_authorized_user, use_cache=False),
         bulk_io: BulkIO = Depends(get_bulk_io),
 ):
-    # very basic parsing for now
-    key_val_list = [key_val.split('=', 1) for key_val in Config.build_details.value.split(';') if '=' in key_val]
-    details = {
-        key_val[0].strip(): key_val[1].replace('\\"', '"').strip(' "')
-        for key_val in key_val_list
-    }
+    details = _build_details()
     # some additional environment info
     details.update({k: Config.get_env_or_attribute(k).printable_value for k in [
         "environment_name",
@@ -80,4 +88,35 @@ async def get_version(
         buildNumber=__build_number__,
         release=__release__,
         details=details
+    )
+
+
+class ConnectedOuterService(BaseModel):
+    name: str | None = None
+    version: str | None = None
+
+
+class InfoResponse(BaseModel):
+    groupId: str | None = None
+    artifactId: str | None = None
+    version: str | None = None
+    buildTime: str | None = None
+    branch: str | None = None
+    commitId: str | None = None
+    commitMessage: str | None = None
+    connectedOuterServices: List[ConnectedOuterService] = []
+
+
+@info_router.get("/info", response_model=InfoResponse, include_in_schema=True,
+                 summary="Version info", description="Build information of the service, no authentication required.")
+async def get_info() -> InfoResponse:
+    details = _build_details()
+    return InfoResponse(
+        groupId=INFO_GROUP_ID,
+        artifactId=INFO_ARTIFACT_ID,
+        version=__version__,
+        buildTime=details.get('build_date') or None,
+        branch=details.get('commit_branch') or None,
+        commitId=details.get('commit_id') or None,
+        commitMessage=Config.commit_message.value or None,
     )

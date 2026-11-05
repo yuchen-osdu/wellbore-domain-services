@@ -2,17 +2,19 @@ variables:
   ACCEPTANCE_TEST_DIR: tests/baremetal
   CIMPL_SERVICE: wellbore
   # WDMS (FastAPI) is served under root_path /api/os-wellbore-ddms, which differs
-  # from CIMPL_SERVICE (wellbore). Override the spec URL so cimpl-check-openapi-spec
-  # fetches the correct path instead of the default /api/${CIMPL_SERVICE}/openapi.json.
+  # from CIMPL_SERVICE (wellbore). Override the live OpenAPI URL so the check
+  # fetches /api/os-wellbore-ddms/openapi.json instead of /api/${CIMPL_SERVICE}/openapi.json.
   CIMPL_OPENAPI_YAML_ROUTE: /api/os-wellbore-ddms/openapi.json
   CIMPL_INT_TEST_TYPE: python
   CIMPL_BAREMETAL_PYTHON_INT_TEST_SUBDIR: tests/baremetal
   CIMPL_SUPPORTED_PLATFORM: "linux/amd64"
+  DISABLE_INTEGRATION_TEST: true
 
 cimpl-containerize-gitlab:
   needs:
     - "compile-and-unit-test"
   variables:
+    commit_message: $CI_COMMIT_TITLE
     CIMPL_BUILD_PATH: "./build/Dockerfile"
     CIMPL_BUILD_ARGS: >
       --build-arg PIP_WHEEL_DIR=python-packages
@@ -20,49 +22,32 @@ cimpl-containerize-gitlab:
       --build-arg build_number=$CI_COMMIT_SHORT_SHA
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
-      --build-arg commit_branch=$CI_COMMIT_BRANCH
+      --build-arg commit_branch=$CI_COMMIT_REF_NAME
+      --build-arg commit_message
 
-cimpl-test-python:
+# osdu-main jobs
+
+cimpl-dev-acceptance-test-python:
   image: python:3.13
   variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
-
-#dev2 jobs
-
-cimpl-dev2-test-python:
-  image: python:3.13
-  variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
-
-cimpl-acceptance-test-python:
-  image: python:3.13
-  variables:
-    CIMPL_WELLBORE_BASE_URL: https://osdu.$CIMPL_DOMAIN/api/os-wellbore-ddms
+    CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
   artifacts:
     when: always
     paths:
       - test-results.log
       - '**/allure-results/'
 
-# prod jobs
-# The upstream ci-cd-pipelines template pins the prod python jobs to python:3.9,
-# but WDMS requires Python >=3.12 (e.g. adlfs==2026.5.0 requires >=3.10), which
-# breaks dependency install. Override the image to match the dev variants.
-
-cimpl-prod-test-python:
+cimpl-dev-backup-acceptance-test-python:
   image: python:3.13
   variables:
     CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - '**/allure-results/'
 
 cimpl-prod-acceptance-test-python:
-  # The upstream template extends [.cimpl-prod-variables, .maven]. Our .maven
-  # stub has an empty `variables:` (null), and because it is listed last in the
-  # extends chain it wipes the entire variable map inherited from
-  # .cimpl-prod-variables (TEST_OPENID_PROVIDER_URL, LEGAL_*, etc.). That left
-  # $TOKEN empty and broke gen_postman_env.py. This is a python (shell) job, not
-  # a Maven job, so drop .maven and keep only .cimpl-prod-variables.
-  extends:
-    - .cimpl-prod-variables
   image: python:3.13
   variables:
     CIMPL_WELLBORE_BASE_URL: https://$CIMPL_DOMAIN/api/os-wellbore-ddms

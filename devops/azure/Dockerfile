@@ -14,15 +14,15 @@
 
 FROM python:3.13-slim
 
-# The base image lags behind on Debian security updates, so container_scanning
-# reports its openssl as vulnerable even when every Python dependency is current.
 RUN apt-get update \
     && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
 
-RUN pip install -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple"
+RUN pip install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple" \
+    && pip install --no-cache-dir --upgrade --force-reinstall "setuptools>=78.1.1" "msgpack>=1.2.1" \
+    && rm -rf /root/.cache/pip /usr/local/lib/python3.*/ensurepip
 
 COPY ./app /app
 ENV PYTHONPATH=./
@@ -34,6 +34,9 @@ ARG build_origin="Personal build"
 ARG commit_id
 ARG commit_branch
 ENV OS_WELLBORE_DDMS_BUILD_DETAILS build_date=$build_date;build_number=$build_number;build_origin=$build_origin;commit_id=$commit_id;commit_branch=$commit_branch
+# kept apart from the build details, a commit message may contain ";" or "="
+ARG commit_message
+ENV OS_WELLBORE_DDMS_COMMIT_MESSAGE="$commit_message"
 
 
 EXPOSE 8080

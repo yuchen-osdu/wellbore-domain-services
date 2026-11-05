@@ -348,7 +348,6 @@ Data access layer implementation are available into [Wellbore-cloud libraries](h
 - osdu-core-lib-python-gcp
 - osdu-core-lib-python-azure
 - osdu-core-lib-python-aws
-- osdu-core-lib-python-ibm
 - osdu-core-lib-python-baremetal
 
 
@@ -407,19 +406,7 @@ Data access layer implementation are available into [Wellbore-cloud libraries](h
 
 #### AWS
 
-- The following environment variables are required when the cloud provider is set to AWS:
-  - SERVICE_HOST_SEARCH: The Search Service host
-  - SERVICE_HOST_SCHEMA: The Schema Service host
-  - SERVICE_HOST_STORAGE: The Storage Service host
-  - SERVICE_HOST_PARTITION: The Partition Service host
-
-  ```bash
-  python main.py -e CLOUD_PROVIDER aws \
-  -e SERVICE_HOST_SEARCH search_host \
-  -e SERVICE_HOST_SCHEMA schema_host \
-  -e SERVICE_HOST_STORAGE storage_host \
-  -e SERVICE_HOST_PARTITION partition_host 
-  ```
+AWS provider support has been removed from this repository.
 
 Note: If you're running locally, you may need to provide environmental variables in your IDE. Here is a sample for providing a `.env` file.
 
