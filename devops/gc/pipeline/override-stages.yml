@@ -7,6 +7,7 @@ variables:
 
 gc-containerize-gitlab:
   variables:
+    commit_message: $CI_COMMIT_TITLE
     BUILD_PATH: "./build/Dockerfile"
     BUILD_ARGS: >
       --build-arg PIP_WHEEL_DIR=python-packages
@@ -14,10 +15,12 @@ gc-containerize-gitlab:
       --build-arg build_number=$CI_COMMIT_SHORT_SHA
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
-      --build-arg commit_branch=$CI_COMMIT_BRANCH
+      --build-arg commit_branch=$CI_COMMIT_REF_NAME
+      --build-arg commit_message
 
 gc-containerize-gcr:
   variables:
+    commit_message: $CI_COMMIT_TITLE
     BUILD_PATH: "./build/Dockerfile"
     BUILD_ARGS: >
       --build-arg PIP_WHEEL_DIR=python-packages
@@ -25,7 +28,8 @@ gc-containerize-gcr:
       --build-arg build_number=$CI_COMMIT_SHORT_SHA
       --build-arg commit_id=$CI_COMMIT_SHORT_SHA
       --build-arg build_origin="Gitlab"
-      --build-arg commit_branch=$CI_COMMIT_BRANCH
+      --build-arg commit_branch=$CI_COMMIT_REF_NAME
+      --build-arg commit_message
 
 gc-acceptance-test-python:
   script:

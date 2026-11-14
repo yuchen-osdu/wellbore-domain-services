@@ -14,7 +14,7 @@
 
 # this file will be updated in the build pipeline
 
-__version__ = '0.29'
-__release__ = 'M26 Venus Preview 1'
+__version__ = '0.31'
+__release__ = 'M28'
 __build_number__ = 'local'
 __app_name__ = 'Wellbore DDMS OSDU'

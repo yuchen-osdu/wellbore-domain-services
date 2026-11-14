@@ -85,12 +85,6 @@ class AzureContextLoggerAdapter(logging.LoggerAdapter):
         if ctx.partition_id:
             properties.setdefault('data-partition-id', ctx.partition_id)
 
-        if ctx.app_key:
-            properties.setdefault('app-key', ctx.app_key)
-
-        if ctx.api_key:
-            properties.setdefault('api-key', ctx.api_key)
-
         return properties
 
     def process(self, msg, kwargs):
