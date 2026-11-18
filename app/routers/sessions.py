@@ -21,6 +21,7 @@ from app.bulk_persistence import (Session,
                                   SessionUpdateMode,
                                   DataConsistencyChecks)
 from app.routers.ddms_v3.ddms_v3_utils import DMSV3RouterUtils
+from app.routers.record_utils import fetch_record
 from app.routers.bulk.utils import get_data_consistency_checks
 from app.context import Context
 
@@ -198,7 +199,10 @@ async def get_session(record_id: str,
 )
 async def delete_session(record_id: str,
                          session_id: UUID,
+                         request: Request,
                          with_storages: WithSessionStorages = Depends(get_session_dependencies)):
+    record = await fetch_record(with_storages.ctx, record_id)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
     force_delete = True
     await with_storages.sessions_storage.delete_session(with_storages.tenant, record_id, session_id, force_delete)
 

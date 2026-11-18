@@ -156,6 +156,9 @@ async def post_chunk_data(record_id: str,
                           bulk_io: BulkIO = Depends(get_bulk_io),
                           df_validation_func: DataFrameValidationFunc = Depends(get_df_validation_func),
                           ) -> DataframeBasicDescribe:
+    record = await fetch_record(get_ctx(), record_id)
+    DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
+
     # fetch the session
     i_session = await with_session.get_session(record_id, session_id)
     if i_session.session.state != SessionState.Open:
@@ -351,6 +354,8 @@ async def complete_session(
 
         # --------  SESSION ABANDON SEQUENCE ----------------------
         if update_request.state == UpdateSessionStateValue.Abandon:
+            record = await fetch_record(ctx, record_id)
+            DMSV3RouterUtils.raise_if_not_osdu_right_entity_kind(record, request.state)
             async with sessions_storage.initiate_abandon(tenant, record_id, session_id) as abandon_guard:
                 # get the session if some information is needed
                 i_session: SessionInternal = abandon_guard.session
