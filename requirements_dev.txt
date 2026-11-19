@@ -349,7 +349,7 @@ opentelemetry-semantic-conventions==0.66b1
     #   wellbore-domain-services
 orderly-set==5.5.0
     # via deepdiff
-osdu-api==1.2.0
+osdu-api==1.2.1
     # via
     #   osdu-core-lib-python-azure
     #   osdu-core-lib-python-baremetal

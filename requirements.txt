@@ -286,7 +286,7 @@ opentelemetry-semantic-conventions==0.66b1
     #   opentelemetry-sdk
     #   osdu-core-lib-python-azure
     #   wellbore-domain-services
-osdu-api==1.2.0
+osdu-api==1.2.1
     # via
     #   osdu-core-lib-python-azure
     #   osdu-core-lib-python-baremetal
