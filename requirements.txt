@@ -241,7 +241,7 @@ numpy==2.5.0
     # via
     #   pandas
     #   wellbore-domain-services
-oauthlib==4.0.0
+oauthlib==4.0.1
     # via
     #   requests-oauthlib
     #   wellbore-domain-services
