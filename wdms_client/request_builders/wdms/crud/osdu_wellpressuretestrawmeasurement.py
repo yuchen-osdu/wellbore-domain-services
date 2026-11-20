@@ -1,4 +1,5 @@
 
+import uuid
 from typing import Dict
 
 from ....request_runner import RequestRunner, Request
@@ -62,8 +63,9 @@ def build_request_get_versions_of_osdu_wellpressuretestrawmeasurement() -> Reque
     return RequestRunner(rq_proto)
 
 def build_request_create_osdu_wellpressuretestrawmeasurement(b_use_fixed_id=True, curves: Dict[str, int] = dict()) -> RequestRunner:
+    # b_use_fixed_id=True => client-supplied id (now unique per run via uuid4), not a literally fixed id
     if b_use_fixed_id:
-        id_field = '"id": "{{data_partition}}:work-product-component--WellPressureTestRawMeasurement:0c4b5c5b-32cd-57d2-b6a7-bbff6801fb09",'
+        id_field = '"id": "{{data_partition}}:work-product-component--WellPressureTestRawMeasurement:' + str(uuid.uuid4()) + '",'
     else:
         id_field = ''
 

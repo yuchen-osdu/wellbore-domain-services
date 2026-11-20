@@ -44,13 +44,6 @@ async def resolve_tenant(data_partition_id: str) -> Tenant:
             bucket_name=Config.az_bulk_container
         )
 
-    if Config.cloud_provider.value == 'ibm':
-        return Tenant(
-            data_partition_id=data_partition_id,
-            project_id=Config.default_data_tenant_project_id.value,
-            bucket_name='logstore-osdu-ibm'
-        )
-
     if Config.cloud_provider.value == 'aws':
         return Tenant(
             data_partition_id=data_partition_id,

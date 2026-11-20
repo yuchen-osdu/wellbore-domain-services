@@ -68,7 +68,16 @@ class DataframeSerializerSync:
         """
         orient = JSONOrient.get(orient)
 
-        return df.fillna("NaN").to_json(orient=orient.value, **kwargs)
+        # Do not fill NaN with the string "NaN" here. A null in the source data is
+        # meaningful information (e.g. "no measurement was recorded") and must
+        # round-trip back to the client as JSON null, not as the string "NaN".
+        # This matters in particular for legacy-data migration: a null attribute
+        # value is a fact to be preserved, not a placeholder to be substituted.
+        # Modern pandas already serialises np.nan as valid JSON null, so no
+        # substitution is required. The read path keeps .replace("NaN", np.nan)
+        # only for backward compatibility with blobs previously stored with the
+        # literal string "NaN".
+        return df.to_json(orient=orient.value, **kwargs)
 
     @classmethod
     def to_parquet(cls, df: pd.DataFrame, path_or_buf=None, *, storage_options=None):

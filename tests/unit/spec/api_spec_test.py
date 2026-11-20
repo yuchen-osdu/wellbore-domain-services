@@ -18,18 +18,21 @@ If the test fails, it replaces the saved spec with the current version.
 The updated spec file must then be committed with the latest changes.
 """
 
-OPENAPI_PATH = 'spec/generated/openapi.json'
-
 import pytest
 import rapidjson as json
 from openapi_spec_validator import validate
+
+from app.conf import Config
+
+OPENAPI_PATH = 'docs/api/community/v1/openapi.json'
+
 
 @pytest.fixture
 async def openapi_json(app_configurable_with_testclient):
     app, _ = app_configurable_with_testclient()
 
-    # get the openapi spec
-    openapi_spec = app.openapi()
+    # FastAPI adds root_path to servers on the first HTTP request, not app.openapi().
+    openapi_spec = {**app.openapi(), "servers": [{"url": Config.openapi_prefix.value}]}
     yield openapi_spec
 
 
@@ -47,6 +50,15 @@ async def test_api_spec(openapi_json):
             specfile.write(openapi_text)
         # assert error
         assert False, f"{OPENAPI_PATH} has changed, commit the updated file"
+
+
+@pytest.mark.anyio
+async def test_served_api_spec_matches_baseline(openapi_json, app_configurable_with_testclient):
+    _, client = app_configurable_with_testclient()
+    response = await client.get(f"{Config.openapi_prefix.value}/openapi.json")
+
+    assert response.status_code == 200
+    assert response.json() == openapi_json
 
 
 @pytest.mark.anyio
