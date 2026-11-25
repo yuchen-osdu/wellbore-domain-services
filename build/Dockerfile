@@ -14,6 +14,7 @@ RUN python3 -m venv /wdms/venv
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt --extra-index-url "https://community.opengroup.org/api/v4/projects/465/packages/pypi/simple" \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "setuptools>=78.1.1" "msgpack>=1.2.1" \
+    && python3 -m pip uninstall -y pip \
     && rm -rf /root/.cache/pip /wdms/venv/lib/python*/ensurepip /usr/lib/python*/ensurepip
 
 
@@ -31,6 +32,9 @@ ARG build_origin="Personal build"
 ARG commit_id
 ARG commit_branch
 ENV OS_WELLBORE_DDMS_BUILD_DETAILS=build_date=$build_date;build_number=$build_number;build_origin=$build_origin;commit_id=$commit_id;commit_branch=$commit_branch
+# kept apart from the build details, a commit message may contain ";" or "="
+ARG commit_message
+ENV OS_WELLBORE_DDMS_COMMIT_MESSAGE="$commit_message"
 
 ARG version=3.13
 RUN apk add python-${version} --no-cache

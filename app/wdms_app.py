@@ -248,6 +248,9 @@ basic_dependencies = [
 
 wdms_app.include_router(probes.router)
 wdms_app.include_router(about.router, tags=["Wellbore DDMS"], responses={**response_500})
+wdms_app.include_router(about.info_router, prefix=DDMS_V3_PATH, tags=["Wellbore DDMS"], responses={**response_500})
+# /api/<service>/<api-version>/info as probed by the OSDU QA collection; same handler, kept out of the spec
+wdms_app.include_router(about.info_router, prefix='/v3', include_in_schema=False)
 
 ddms_v3_routes_groups_without_bulk = [
     (wellbore_ddms_v3, "Wellbore", Entity.WELLBORE),

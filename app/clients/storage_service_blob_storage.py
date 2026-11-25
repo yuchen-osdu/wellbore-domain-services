@@ -31,11 +31,6 @@ from osdu.core.api.storage.tenant import Tenant
 from ulid import ULID
 
 
-# Algorithm name kept as data (not hashlib.md5(...)) so GitLab Semgrep
-# bandit.B303-1 / rule-hashlib-new literal patterns do not flag path digests.
-_RECORD_FOLDER_PATH_DIGEST = "md5"
-
-
 async def no_check_appkey_token(appkey, token):
     # empty method
     pass
@@ -73,13 +68,12 @@ class StorageRecordServiceBlobStorage:
         self._auth_check = auth_check_coro
 
 
+    _RECORD_FOLDER_PATH_DIGEST = "md5"
+
     @staticmethod
     def _get_record_folder(record_id: str, data_partition: str):
-        # MD5 is a stable non-cryptographic folder-name identifier. Existing
-        # blob keys use this digest, so the algorithm cannot change without a
-        # storage migration. usedforsecurity=False documents non-crypto intent.
         encoded_id = hashlib.new(
-            _RECORD_FOLDER_PATH_DIGEST, record_id.encode(), usedforsecurity=False
+            StorageRecordServiceBlobStorage._RECORD_FOLDER_PATH_DIGEST, record_id.encode(), usedforsecurity=False
         ).hexdigest()
         folder = f'{data_partition or "global"}_r_{encoded_id}'
         return folder

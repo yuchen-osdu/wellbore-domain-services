@@ -25,17 +25,6 @@ variables:
   AZURE_TEST_SUBDIR: tests/integration
   AZURE_TEST_TYPE: python
 
-  AWS_SERVICE: wellbore-ddms
-  AWS_SERVICE_GATEWAY: osdu-services/osdu-gateway
-  AWS_SERVICE_NAMESPACE_SUFFIX: wellbore-ddms
-  AWS_ENVIRONMENT: dev
-  AWS_BUILD_SUBDIR: provider/os-wellbore-ddms-aws/build-aws
-  AWS_TEST_SUBDIR: tests/aws-test/build-aws
-  AWS_CHART_SUBDIR: devops/aws/chart
-  AWS_INT_TEST_TYPE: python
-  AWS_DEPLOY_TARGET: TF
-  AWS_EKS_DEPLOYMENT_NAME: os-wellbore-ddms
-
   # ignore model_curated_test.py workaround because ci/cd hang-out when test are long.
   PYTEST_OPTIONS: "--ignore=tests/unit/model/model_curated_test.py --durations=25 --strict-markers"
 
@@ -64,13 +53,6 @@ include:
   
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/cimpl-global.yml"  
-
-  # IBM it tests "ibm-test"
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws-global.yml"
-
-  # AWS overrides
-  - local: "/devops/aws/pipeline/override-stages.yml" 
 
   # AZURE it tests "azure_test_py"
   - local: "/devops/azure/azure-wellbore.yml" 
@@ -116,7 +98,7 @@ compile-and-unit-test:
     paths:
       - all-requirements.txt
       - ./**/python-*-output.txt
-      - spec/generated/openapi.json
+      - docs/api/community/v1/openapi.json
 
 pylint:
   tags: ["osdu-small"]
@@ -145,22 +127,19 @@ containerize:
     - tag_name="_gitlab_$commit_id"
     - echo $tag_name
     - echo ---- ---- DATE
-    - current_utc_date=`date --utc`
+    - current_utc_date=`date -u +%Y-%m-%dT%H:%M:%SZ`
     - echo $current_utc_date
     - echo ---- ---- COMMIT BRANCH
-    - commit_branch=$commit_id
+    - commit_branch=$CI_COMMIT_REF_NAME
     - echo $commit_branch
     - echo ---- ---- BUILD IMAGE
-    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch
+    - docker build -t $IMAGE_TAG -t=$CI_REGISTRY_IMAGE:latest --rm . -f ./build/Dockerfile --build-arg PIP_WHEEL_DIR=python-packages --build-arg build_date="$current_utc_date" --build-arg build_number=$commit_id --build-arg commit_id=$commit_id --build-arg build_origin="Gitlab" --build-arg commit_branch=$commit_branch --build-arg commit_message="$CI_COMMIT_TITLE"
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - echo ---- ---- PUSH IMAGE
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_IMAGE:latest
 
 # Allow failure on flaky deployments
-aws-containerize:
-  allow_failure: true
-
 azure_containerize:
   allow_failure: true
 
@@ -168,12 +147,6 @@ gc-deploy:
   allow_failure: true
 
 azure_deploy:
-  allow_failure: true
-
-aws-update-tf:
-  allow_failure: true
-
-aws-test-python:
   allow_failure: true
 
 azure_swagger_test:

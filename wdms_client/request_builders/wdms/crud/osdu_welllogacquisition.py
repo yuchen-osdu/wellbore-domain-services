@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+
 from ....request_runner import RequestRunner, Request
 
 
@@ -76,8 +78,9 @@ def build_request_get_versions_of_osdu_welllogacquisition() -> RequestRunner:
 
 
 def build_request_create_osdu_welllogacquisition(b_use_fixed_id=True) -> RequestRunner:
+    # b_use_fixed_id=True => client-supplied id (now unique per run via uuid4), not a literally fixed id
     if b_use_fixed_id:
-        id_field = '"id": "{{data_partition}}:master-data--WellLogAcquisition:9cdfd40a-e3b7-506a-968d-0e327a4660df",'
+        id_field = '"id": "{{data_partition}}:master-data--WellLogAcquisition:' + str(uuid.uuid4()) + '",'
     else:
         id_field = ''
 

@@ -85,3 +85,52 @@ async def test_version(client_with_authenticated_user):
     assert 'release' in response_json
     assert response_json['service'] == 'Wellbore DDMS OSDU'
     assert response_json['buildNumber'] == 'local'
+
+
+@pytest.mark.anyio
+async def test_info_does_not_require_authentication(client):
+    response = await client.get("/ddms/v3/info")
+    assert response.status_code == 200
+
+    response_json = response.json()
+    assert response_json['groupId'] == 'org.opengroup.osdu'
+    assert response_json['artifactId'] == 'os-wellbore-ddms'
+    assert response_json['version']
+    assert response_json['connectedOuterServices'] == []
+
+
+@pytest.mark.anyio
+async def test_info_reads_build_details(client, monkeypatch):
+    # monkeypatch restores the shared Config after the test
+    monkeypatch.setattr(Config.build_details, 'value',
+                        'build_date="2026-10-28T12:00:00Z";build_number=abc1234;build_origin=Gitlab;'
+                        'commit_id=abc1234;commit_branch=master')
+    monkeypatch.setattr(Config.commit_message, 'value', 'Fix a; b = c')
+
+    response = await client.get("/ddms/v3/info")
+    assert response.status_code == 200
+
+    response_json = response.json()
+    assert response_json['buildTime'] == '2026-10-28T12:00:00Z'
+    assert response_json['branch'] == 'master'
+    assert response_json['commitId'] == 'abc1234'
+    assert response_json['commitMessage'] == 'Fix a; b = c'
+
+
+@pytest.mark.anyio
+async def test_info_without_build_details_returns_nulls(client, monkeypatch):
+    monkeypatch.setattr(Config.build_details, 'value', '')
+    monkeypatch.setattr(Config.commit_message, 'value', '')
+
+    response_json = (await client.get("/ddms/v3/info")).json()
+    assert response_json['buildTime'] is None
+    assert response_json['branch'] is None
+    assert response_json['commitId'] is None
+    assert response_json['commitMessage'] is None
+
+
+@pytest.mark.anyio
+async def test_info_alias_matches_versioned_path(client):
+    response = await client.get("/v3/info")
+    assert response.status_code == 200
+    assert response.json() == (await client.get("/ddms/v3/info")).json()
