@@ -33,9 +33,12 @@ def basename(path) -> str:
     return os_path_basename(path)
 
 
+_RECORD_ID_PATH_DIGEST = "sha1"
+
+
 def hash_record_id(record_id: str) -> str:
     """encode the record_id to be a valid path name"""
-    return hashlib.sha1(record_id.encode()).hexdigest()
+    return hashlib.new(_RECORD_ID_PATH_DIGEST, record_id.encode(), usedforsecurity=False).hexdigest()
 
 
 def build_base_path(base_directory: str, protocol: Optional[str] = None) -> str:

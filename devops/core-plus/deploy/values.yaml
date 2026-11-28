@@ -1,5 +1,7 @@
 global:
   domain: ""
+  # Host the HTTPRoute attaches to when httpRoute.hostnames is empty.
+  hostname: ""
   limitsEnabled: true
   dataPartitionId: "osdu"
   wdms_workers:
@@ -22,6 +24,21 @@ conf:
   keycloakSecretName: "wellbore-keycloak-secret"
   s3SecretName: "wellbore-seaweedfs-secret"
   replicas: 1
+
+httpRoute:
+  enabled: false
+  # Route name. Defaults to "<release>-route" so it never collides with a route of the same name
+  # defined outside this chart.
+  name: ""
+  parentRefs:
+    - name: cimpl-gateway
+      namespace: istio-system
+  # Defaults to global.hostname when empty. The render fails when both are empty.
+  hostnames: []
+  # One rule per entry. Optional per entry: pathType (default PathPrefix), serviceName
+  # (default conf.appName), port (default 80), filters (for example URLRewrite).
+  routes:
+    - path: /api/os-wellbore-ddms/
 
 istio:
   proxyCPU: "5m"

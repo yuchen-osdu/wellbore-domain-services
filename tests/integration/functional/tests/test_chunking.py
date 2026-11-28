@@ -15,6 +15,7 @@
 import io
 from contextlib import contextmanager
 import random
+from unittest.mock import Mock
 from uuid import UUID
 
 import numpy.testing as npt
@@ -28,7 +29,7 @@ from wdms_client.request_builders.wdms.crud.osdu_wellpressuretestrawmeasurement 
 from ..generate_dataframe import generate_df
 
 from .fixtures import with_wdms_env
-from wdms_client.request_runner import RequestRunner, Request
+from wdms_client.request_runner import RequestRunner, Request, RunResult
 
 from wdms_client.request_builders.wdms.crud.osdu_welllog import (
     build_request_create_osdu_welllog,
@@ -75,17 +76,41 @@ def create_record(env, entity_type: str, curves: List[str]):
     # TODO: when we have the version in the response must return as well
     record_id = resobj.recordIds[0]
 
-    yield record_id
+    try:
+        yield record_id
+    finally:
+        if entity_type == "well_log":
+            build_request_delete_osdu_welllog(record_id).call(env)
+        elif entity_type == "wellbore_trajectory":
+            build_request_delete_osdu_wellboretrajectory(record_id).call(env)
+        elif entity_type == "ppfgdataset":
+            build_request_delete_osdu_ppfgdataset(record_id).call(env)
+        elif entity_type == "wellpressuretestrawmeasurement":
+            build_request_delete_osdu_wellpressuretestrawmeasurement(record_id).call(env)
 
-    # actually
-    if entity_type == "well_log":
-        build_request_delete_osdu_welllog(record_id).call(env)
-    elif entity_type == "wellbore_trajectory":
-        build_request_delete_osdu_wellboretrajectory(record_id).call(env)
-    elif entity_type == "ppfgdataset":
-        build_request_delete_osdu_ppfgdataset(record_id).call(env)
-    elif entity_type == "wellpressuretestrawmeasurement":
-        build_request_delete_osdu_wellpressuretestrawmeasurement(record_id).call(env)
+
+@pytest.mark.parametrize(("entity_type", "builder_suffix"), [
+    ("well_log", "welllog"),
+    ("wellbore_trajectory", "wellboretrajectory"),
+    ("ppfgdataset", "ppfgdataset"),
+    ("wellpressuretestrawmeasurement", "wellpressuretestrawmeasurement"),
+])
+def test_create_record_cleans_up_after_failure(monkeypatch, entity_type, builder_suffix):
+    create_runner = Mock(spec=RequestRunner)
+    create_runner.call.return_value = Mock(spec=RunResult)
+    create_runner.call.return_value.get_response_obj.return_value.recordIds = ["record-id"]
+    delete_builder = Mock()
+    monkeypatch.setattr(f"{__name__}.build_request_create_osdu_{builder_suffix}", Mock(return_value=create_runner))
+    monkeypatch.setattr(f"{__name__}.build_request_delete_osdu_{builder_suffix}", delete_builder)
+    env = object()
+
+    with pytest.raises(AssertionError, match="bulk assertion failed"):
+        with create_record(env, entity_type, ["MD"]) as record_id:
+            assert record_id == "record-id"
+            raise AssertionError("bulk assertion failed")
+
+    delete_builder.assert_called_once_with("record-id")
+    delete_builder.return_value.call.assert_called_once_with(env)
 
 
 def build_request(name, method, url, *, payload=None, headers=None) -> RequestRunner:

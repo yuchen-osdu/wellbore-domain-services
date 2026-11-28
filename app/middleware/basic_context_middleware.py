@@ -72,8 +72,6 @@ class CreateBasicContextMiddleware(BaseHTTPMiddleware):
             correlation_id=correlation_id,
             request_id=request_id,
             partition_id=partition_id,
-            app_key=app_key,
-            api_key=api_key,
         )
 
         Context.clear_current()
